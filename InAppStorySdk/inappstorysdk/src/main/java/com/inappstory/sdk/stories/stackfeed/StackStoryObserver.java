@@ -40,7 +40,10 @@ public class StackStoryObserver implements IStackFeedActions {
             String listId,
             StackStoryUpdatedCallback stackStoryUpdated
     ) {
-        this.stories = new ArrayList<>(stories);
+        if (stories == null)
+            this.stories = new ArrayList<>();
+        else
+            this.stories = new ArrayList<>(stories);
         this.appearanceManager = appearanceManager;
         this.sessionId = sessionId;
         this.feed = feed;
