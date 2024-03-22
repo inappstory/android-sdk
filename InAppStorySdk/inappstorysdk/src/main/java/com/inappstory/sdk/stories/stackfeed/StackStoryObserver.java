@@ -195,16 +195,15 @@ public class StackStoryObserver implements IStackFeedActions {
                 break;
             }
         }
-        if (listId == null) return;
-        if (!listId.equals(this.listId())) return;
+        boolean useOldIndex = false;
         if (openedIndex < 0) return;
+        if (listId == null || !listId.equals(this.listId()))
+            useOldIndex = true;
+        if (useOldIndex) {
+            generateNewStackStoryData(oldIndex, stackStoryUpdated);
+            return;
+        }
         int newIndex = (openedIndex + 1) % stories.size();
-       /* for (int i = 0; i < stories.size(); i++) {
-            if (!stories.get(i).isOpened) {
-                newIndex = i;
-                break;
-            }
-        }*/
         checkLastIndex(newIndex, stackStoryUpdated);
     }
 
