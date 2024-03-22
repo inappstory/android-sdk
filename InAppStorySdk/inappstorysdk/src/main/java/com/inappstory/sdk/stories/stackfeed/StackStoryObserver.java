@@ -40,7 +40,7 @@ public class StackStoryObserver implements IStackFeedActions {
             String listId,
             StackStoryUpdatedCallback stackStoryUpdated
     ) {
-        this.stories = stories;
+        this.stories = new ArrayList<>(stories);
         this.appearanceManager = appearanceManager;
         this.sessionId = sessionId;
         this.feed = feed;
@@ -192,6 +192,7 @@ public class StackStoryObserver implements IStackFeedActions {
                 break;
             }
         }
+        if (listId == null) return;
         if (!listId.equals(this.listId())) return;
         if (openedIndex < 0) return;
         int newIndex = (openedIndex + 1) % stories.size();
