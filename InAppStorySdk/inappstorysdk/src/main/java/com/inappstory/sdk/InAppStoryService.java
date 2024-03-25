@@ -209,11 +209,11 @@ public class InAppStoryService {
     }
 
     public boolean statV2Disallowed() {
-        return !sessionHolder.allowStatV2();
+        return !sessionHolder.allowStatV2() || !InAppStoryManager.getInstance().isSendStatistic();
     }
 
     public boolean statV1Disallowed() {
-        return !sessionHolder.allowStatV1();
+        return !sessionHolder.allowStatV1() || !InAppStoryManager.getInstance().isSendStatistic();
     }
 
     public InAppStoryService(String userId) {
