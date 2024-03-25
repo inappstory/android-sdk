@@ -1,6 +1,20 @@
 Change Log
 ==========
 
+Version *1.18.0-rc5 (855)*
+----------------------------
+
+* New: letter limit in model
+* New: eventGame, gameLoadFailed in JS
+* New: reloadGameReader in JS
+* New: closeStoryReader with forceClose option
+* New: showStoryOnce
+* New: isDeviceIDEnabled and public gameDemoMode settings
+* Update: change escape string algorithm to more optimal
+* Update: change stackFeed logic
+* Fixed: setMinimumFontSize in WebViews
+* Fixed: change resources cache keys (sha1 and url dependency)
+
 Version *1.17.16 (816)*
 ----------------------------
 
