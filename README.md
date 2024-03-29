@@ -54,9 +54,9 @@ If your project uses `ProGuard` obfuscation, add following rules to proguard con
 SDK can be initialized from any point with `Context` access (`Application`, `Activity`, `Fragment`, etc.)
 
 ```kotlin
+	InAppStoryManager.initSDK(context)
 	InAppStoryManager.Builder()
      		.apiKey(apiKey) //Non-null String
-      		.context(context) //Context
       		.userId(userId) //Non-null String
 	    	.create();
 ```
