@@ -36,15 +36,15 @@ implementation 'androidx.webkit:webkit:1.4.0'
 If your project uses `ProGuard` obfuscation, add following rules to proguard config file:
 
 ```gradle
-	-keepattributes *Annotation*
+-keepattributes *Annotation*
 
-	-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-	    public *;
-	}
+-keepclassmembers class fqcn.of.javascript.interface.for.webview {
+	public *;
+}
 
-	-keep class com.inappstory.sdk.** {
-	    *;
-	}
+-keep class com.inappstory.sdk.** {
+	*;
+}
 ```
 
 ## Getting started
