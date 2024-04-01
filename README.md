@@ -12,23 +12,23 @@ The library is intended for Phone and Tablet projects (not intended for Android 
 
 Add jitpack maven repo to the root `build.gradle` in the `repositories` section :
 ```gradle
-	allprojects {
-	    repositories {
-	        ...
-	        maven { url 'https://jitpack.io' }
-	    }
+allprojects {
+	repositories {
+		...
+		maven { url 'https://jitpack.io' }
 	}
+}
 ```
 
 In the project `build.gradle` (app level) in the `dependencies` section add:
 ```gradle
-	implementation 'com.github.inappstory:android-sdk:1.18.0'
+implementation 'com.github.inappstory:android-sdk:1.18.0'
 ```
 
 Also for correct work in `dependencies` you need to add:
 ```gradle
-	implementation 'androidx.recyclerview:recyclerview:1.2.1'
-	implementation 'androidx.webkit:webkit:1.4.0'
+implementation 'androidx.recyclerview:recyclerview:1.2.1'
+implementation 'androidx.webkit:webkit:1.4.0'
 ```
 
 ## ProGuard
@@ -72,7 +72,7 @@ fun createInAppStoryManager(
 
 **Context and userId - is not optional parameters. UserId can't be longer than 255 characters.** Api key is a SDK authorization key. It can be set through `Builder` or in `values/constants.xml`
 ```xml
-	<string name="csApiKey">xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</string>
+<string name="csApiKey">xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</string>
 ```
 
 You can also specify another SDK settings for `InAppStoryManager.Builder`
@@ -84,16 +84,16 @@ After initialization you can use `InAppStoryManager` class via `InAppStoryManage
 `StoriesList` is extends RecyclerView class and can be added like any `View` class. For example - via xml
 
 ```xml
-	<com.inappstory.sdk.stories.ui.list.StoriesList
-	    android:layout_width="match_parent"
-	    android:layout_height="wrap_content"
-	    android:id="@+id/stories_list"/>
+<com.inappstory.sdk.stories.ui.list.StoriesList
+	android:layout_width="match_parent"
+	android:layout_height="wrap_content"
+	android:id="@+id/stories_list"/>
 ```
 
 After SDK initialization you can load stories in `StoriesList`
 
 ```kotlin
-	storiesList.loadStories(); 
+storiesList.loadStories(); 
 ```
 This method also can be used to reload list (for example in PtR case)
 
