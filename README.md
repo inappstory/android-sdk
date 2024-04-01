@@ -51,8 +51,8 @@ If your project uses `ProGuard` obfuscation, add following rules to proguard con
 
 ### SDK Initialization
 
-SDK has to be initialized only in Application class through method `InAppStoryManager.initSdk(context: Context)` 
-Then, from any class (Application, Activity, Fragment, etc.) you need to call `InAppStoryManager.Builder(). ... .create()`
+SDK has to be initialized only in Application class through method `InAppStoryManager.initSdk(context: Context)`.
+Then, from any class (Application, Activity, Fragment, etc.) you need to call `InAppStoryManager.Builder(). ... .create()`:
 
 ```kotlin
 fun initInAppStorySdk(context: Context) { //Have to call from Application class and pass application context
