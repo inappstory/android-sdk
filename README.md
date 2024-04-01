@@ -4,7 +4,7 @@ A library for embedding stories into an application with customization.
 
 ## Requirements
 
-The minimum SDK version is 19 (Android 4.4).
+The minimum SDK version is 21 (Android 5.0).
 
 The library is intended for Phone and Tablet projects (not intended for Android TV or Android Wear applications).
 
@@ -22,7 +22,7 @@ Add jitpack maven repo to the root `build.gradle` in the `repositories` section 
 
 In the project `build.gradle` (app level) in the `dependencies` section add:
 ```gradle
-	implementation 'com.github.inappstory:android-sdk:1.16.5'
+	implementation 'com.github.inappstory:android-sdk:1.18.0'
 ```
 
 Also for correct work in `dependencies` you need to add:
@@ -51,14 +51,23 @@ If your project uses `ProGuard` obfuscation, add following rules to proguard con
 
 ### SDK Initialization
 
-SDK can be initialized from any point with `Context` access (`Application`, `Activity`, `Fragment`, etc.)
+SDK has to be initialized only in Application class through method `InAppStoryManager.initSdk(context: Context)` 
+Then, from any class (Application, Activity, Fragment, etc.) you need to call `InAppStoryManager.Builder(). ... .create()`
 
 ```kotlin
-	InAppStoryManager.Builder()
-     		.apiKey(apiKey) //Non-null String
-      		.context(context) //Context
-      		.userId(userId) //Non-null String
-	    	.create();
+fun initInAppStorySdk(context: Context) { //Have to call from Application class and pass application context
+    InAppStoryManager.initSdk(context)
+}
+
+fun createInAppStoryManager(
+    apiKey: String,
+    userId: String
+): InAppStoryManager {
+    return InAppStoryManager.Builder()
+        .apiKey(apiKey)
+        .userId(userId)
+        .create()
+}
 ```
 
 **Context and userId - is not optional parameters. UserId can't be longer than 255 characters.** Api key is a SDK authorization key. It can be set through `Builder` or in `values/constants.xml`
