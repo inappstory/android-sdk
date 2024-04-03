@@ -206,7 +206,7 @@ public class StoriesRepository implements IStoriesRepository {
 
     @Override
     public void getStoryByIdAsync(final int storyId, final IGetStoryCallback<IStoryDTO> callback) {
-        getStoryByStringId(Integer.toString(storyId), callback);
+        getStoryByStringId(Integer.toString(storyId), false, callback);
     }
 
     @Override
@@ -254,7 +254,11 @@ public class StoriesRepository implements IStoriesRepository {
     }
 
     @Override
-    public void getStoryByStringId(final String storyId, final IGetStoryCallback<IStoryDTO> callback) {
+    public void getStoryByStringId(
+            final String storyId,
+            final boolean once,
+            final IGetStoryCallback<IStoryDTO> callback
+    ) {
         if (addToStoryByIdCallbacks(storyId, callback)) return;
         synchronized (cachedStoriesLock) {
             IStoryDTO storyDTO = cachedStories.get(storyId);
@@ -263,7 +267,8 @@ public class StoriesRepository implements IStoriesRepository {
                 return;
             }
         }
-        new GetStoryById(storyId).get(new IGetStoryCallback<Pair<IStoryDTO, IPreviewStoryDTO>>() {
+        GetStoryById getStoryById = new GetStoryById(storyId);
+        (once ? getStoryById.once() : getStoryById).get(new IGetStoryCallback<Pair<IStoryDTO, IPreviewStoryDTO>>() {
             @Override
             public void onSuccess(Pair<IStoryDTO, IPreviewStoryDTO> response) {
                 synchronized (cachedStoriesLock) {
@@ -447,7 +452,7 @@ public class StoriesRepository implements IStoriesRepository {
     private List<IPreviewStoryDTO> getNonOpenedStories(List<IPreviewStoryDTO> allStories) {
         List<IPreviewStoryDTO> result = new ArrayList<>();
         Set<String> opened = getOpenedStories();
-        for (IPreviewStoryDTO storyDTO: allStories) {
+        for (IPreviewStoryDTO storyDTO : allStories) {
             if (!opened.contains(Integer.toString(storyDTO.getId())) && !storyDTO.isOpened()) {
                 result.add(storyDTO);
             }
@@ -495,7 +500,6 @@ public class StoriesRepository implements IStoriesRepository {
         }
         return opens;
     }
-
 
 
     private void saveStoryOpened(int id, StoryType type) {

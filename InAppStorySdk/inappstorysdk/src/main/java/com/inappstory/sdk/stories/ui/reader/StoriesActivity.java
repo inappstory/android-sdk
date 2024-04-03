@@ -70,7 +70,6 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
             ScreensManager.getInstance().closeGameReader();
             StatusBarController.showStatusBar(this);
             IASCore.getInstance().statisticV1Repository.forceSend();
-            ScreensManager.created = 0;
             cleanReader();
             System.gc();
             pauseDestroyed = true;
@@ -543,7 +542,6 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
 
             StatusBarController.showStatusBar(this);
             IASCore.getInstance().statisticV1Repository.forceSend();
-            ScreensManager.created = 0;
             cleanReader();
             System.gc();
             pauseDestroyed = true;

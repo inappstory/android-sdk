@@ -216,7 +216,6 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
 
     public void onDestroyView() {
         IASCore.getInstance().statisticV1Repository.forceSend();
-        ScreensManager.created = System.currentTimeMillis();
         super.onDestroyView();
     }
 

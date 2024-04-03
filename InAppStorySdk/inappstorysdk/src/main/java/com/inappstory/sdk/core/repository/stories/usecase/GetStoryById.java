@@ -23,7 +23,13 @@ public class GetStoryById {
         this.storyId = storyId;
     }
 
+    public GetStoryById once() {
+        once = true;
+        return this;
+    }
+
     final String storyId;
+    boolean once = false;
     final String EXPAND_STRING = "slides_html,slides_structure,layout,slides_duration,src_list,img_placeholder_src_list,slides_screenshot_share,slides_payload";
 
     public void get(final IGetStoryCallback<Pair<IStoryDTO, IPreviewStoryDTO>> callback) {

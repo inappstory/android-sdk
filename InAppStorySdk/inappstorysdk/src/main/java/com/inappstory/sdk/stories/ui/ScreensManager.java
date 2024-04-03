@@ -88,8 +88,6 @@ public class ScreensManager {
         setOldTempShareId(null);
     }
 
-    public static long created = 0;
-
     public void setOldTempShareId(String tempShareId) {
         this.oldTempShareId = tempShareId;
     }

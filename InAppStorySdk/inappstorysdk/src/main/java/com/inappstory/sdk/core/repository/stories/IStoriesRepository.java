@@ -23,7 +23,7 @@ public interface IStoriesRepository extends IFavoriteStoriesManager, ILikeDislik
 
     void setCurrentStory(Integer storyId);
 
-    void getStoryByStringId(String storyId, IGetStoryCallback<IStoryDTO> callback);
+    void getStoryByStringId(String storyId, boolean once, IGetStoryCallback<IStoryDTO> callback);
 
     void clearCachedList(String listID);
 

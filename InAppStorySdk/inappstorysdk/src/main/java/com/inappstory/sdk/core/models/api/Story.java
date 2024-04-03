@@ -52,10 +52,6 @@ public class Story {
         return image;
     }
 
-    public Image getProperImage(int quality) {
-        return Image.getProperImage(image, quality);
-    }
-
     public boolean isOpened() {
         return isOpened;
     }

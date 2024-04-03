@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 
+import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 
 import com.inappstory.sdk.core.IASCore;
@@ -11,6 +12,7 @@ import com.inappstory.sdk.core.models.js.StoryIdSlideIndex;
 import com.inappstory.sdk.core.repository.statistic.IStatisticV1Repository;
 import com.inappstory.sdk.core.repository.stories.IStoriesRepository;
 import com.inappstory.sdk.core.repository.stories.dto.IPreviewStoryDTO;
+import com.inappstory.sdk.core.utils.network.JsonParser;
 import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.core.models.api.Story.StoryType;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
@@ -163,16 +165,46 @@ public class ReaderManager {
                 }
             });
         } else {
-            InAppStoryManager.getInstance().showStoryWithSlide(
+            IASCore.getInstance().showSingleStory(
                     storyId + "",
+                    false,
                     parentFragment.getContext(),
+                    getAppearanceManagerFromReaderSettings(
+                            parentFragment.readerSettings
+                    ),
+                    null,
                     slideIndex,
-                    parentFragment.readerSettings,
                     storyType,
                     SourceType.SINGLE,
                     ShowStory.ACTION_CUSTOM
             );
         }
+    }
+
+    private AppearanceManager getAppearanceManagerFromReaderSettings(
+            String managerSettings
+    ) {
+        AppearanceManager appearanceManager = new AppearanceManager();
+        if (managerSettings != null) {
+            StoriesReaderSettings settings = JsonParser.fromJson(managerSettings, StoriesReaderSettings.class);
+            appearanceManager.csHasLike(settings.hasLike);
+            appearanceManager.csHasFavorite(settings.hasFavorite);
+            appearanceManager.csHasShare(settings.hasShare);
+            appearanceManager.csClosePosition(settings.closePosition);
+            appearanceManager.csCloseOnOverscroll(settings.closeOnOverscroll);
+            appearanceManager.csCloseOnSwipe(settings.closeOnSwipe);
+            appearanceManager.csIsDraggable(true);
+            appearanceManager.csTimerGradientEnable(settings.timerGradientEnable);
+            appearanceManager.csStoryReaderAnimation(settings.readerAnimation);
+            appearanceManager.csCloseIcon(settings.closeIcon);
+            appearanceManager.csDislikeIcon(settings.dislikeIcon);
+            appearanceManager.csLikeIcon(settings.likeIcon);
+            appearanceManager.csRefreshIcon(settings.refreshIcon);
+            appearanceManager.csFavoriteIcon(settings.favoriteIcon);
+            appearanceManager.csShareIcon(settings.shareIcon);
+            appearanceManager.csSoundIcon(settings.soundIcon);
+        }
+        return appearanceManager;
     }
 
     void sendStat(int position, SourceType source) {

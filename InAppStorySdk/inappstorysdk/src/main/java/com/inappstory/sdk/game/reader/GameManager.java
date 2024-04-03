@@ -10,6 +10,7 @@ import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 
 import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.models.api.Story;
 import com.inappstory.sdk.core.repository.session.interfaces.IGetSessionCallback;
 import com.inappstory.sdk.core.repository.session.dto.SessionDTO;
 import com.inappstory.sdk.inner.share.InnerShareData;
@@ -28,6 +29,8 @@ import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.ClickAction;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.SlideData;
 import com.inappstory.sdk.core.repository.statistic.StatisticV2Manager;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.SourceType;
+import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
 import com.inappstory.sdk.usecase.callbacks.IUseCaseCallbackWithContext;
@@ -189,10 +192,16 @@ public class GameManager {
         if (options.openStory != null
                 && options.openStory.id != null
                 && !options.openStory.id.isEmpty()) {
-            InAppStoryManager.getInstance().showStoryCustom(
+            IASCore.getInstance().showSingleStory(
                     options.openStory.id,
+                    false,
                     host,
-                    AppearanceManager.getCommonInstance()
+                    AppearanceManager.getCommonInstance(),
+                    null,
+                    null,
+                    Story.StoryType.COMMON,
+                    SourceType.SINGLE,
+                    ShowStory.ACTION_CUSTOM
             );
         }
         host.gameCompleted(gameState, null);

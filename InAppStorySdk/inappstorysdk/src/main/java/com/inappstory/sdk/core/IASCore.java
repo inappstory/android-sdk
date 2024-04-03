@@ -7,13 +7,22 @@ import android.net.Network;
 import android.net.NetworkCapabilities;
 import android.net.NetworkInfo;
 import android.os.Build;
+import android.os.Handler;
+import android.text.TextUtils;
 import android.util.Pair;
 import android.webkit.URLUtil;
 
+import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 
+import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.repository.statistic.IStatisticV1Repository;
 import com.inappstory.sdk.core.repository.statistic.StatisticV1Repository;
+import com.inappstory.sdk.core.repository.statistic.StatisticV2Manager;
+import com.inappstory.sdk.core.repository.stories.dto.IPreviewStoryDTO;
+import com.inappstory.sdk.core.repository.stories.dto.IStoryDTO;
+import com.inappstory.sdk.core.repository.stories.interfaces.IGetStoriesPreviewsCallback;
+import com.inappstory.sdk.core.repository.stories.interfaces.IGetStoryCallback;
 import com.inappstory.sdk.core.utils.lrudiskcache.FileManager;
 import com.inappstory.sdk.core.utils.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.core.utils.network.NetworkClient;
@@ -33,11 +42,18 @@ import com.inappstory.sdk.core.models.ImagePlaceholderValue;
 import com.inappstory.sdk.core.models.api.Story.StoryType;
 import com.inappstory.sdk.core.models.StoryPlaceholder;
 import com.inappstory.sdk.core.cache.StoryDownloadManager;
+import com.inappstory.sdk.stories.callbacks.CallbackManager;
+import com.inappstory.sdk.stories.callbacks.IShowStoryCallback;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.CloseReader;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.SourceType;
 import com.inappstory.sdk.stories.outercallbacks.screen.DefaultOpenStoriesReader;
 import com.inappstory.sdk.stories.outercallbacks.screen.IOpenStoriesReader;
+import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.uidomain.list.listnotify.ChangeUserIdListNotify;
+import com.inappstory.sdk.utils.StringsUtils;
 
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -46,6 +62,7 @@ import java.util.Map;
 public class IASCore {
     private static IASCore INSTANCE;
     private static final Object lock = new Object();
+    public final static int TAG_LIMIT = 4000;
 
     public static IASCore getInstance() {
         synchronized (lock) {
@@ -54,7 +71,6 @@ public class IASCore {
             return INSTANCE;
         }
     }
-
 
 
     public Map<String, String> getPlaceholders() {
@@ -134,17 +150,182 @@ public class IASCore {
     public void setUserId(String userId) {
         if (userId != null && this.userId != null && !this.userId.equals(userId)) {
             this.userId = userId;
+            getStoriesRepository(StoryType.COMMON).clearCachedLists();
+            getStoriesRepository(StoryType.UGC).clearCachedLists();
+            downloadManager.cleanTasks();
+            closeSession();
             synchronized (changeUserIdLock) {
-                for (ChangeUserIdListNotify notify: changeUserIdListNotifies) {
+                for (ChangeUserIdListNotify notify : changeUserIdListNotifies) {
                     notify.onChange();
                 }
             }
         } else {
             this.userId = userId;
         }
+
     }
 
     private String userId;
+
+
+    private String lastSingleOpen = null;
+
+    public void showSingleStory(
+            final String storyId,
+            final boolean once,
+            final Context context,
+            final AppearanceManager manager,
+            final IShowStoryCallback callback,
+            final Integer slide,
+            final StoryType type,
+            final SourceType readerSource,
+            final int readerAction
+    ) {
+        if (this.userId == null || StringsUtils.getBytesLength(this.userId) > 255) {
+            InAppStoryManager.showELog(
+                    InAppStoryManager.IAS_ERROR_TAG,
+                    StringsUtils.getErrorStringFromContext(
+                            context,
+                            R.string.ias_setter_user_length_error
+                    )
+            );
+            return;
+        }
+        if (lastSingleOpen != null &&
+                lastSingleOpen.equals(storyId)) return;
+        lastSingleOpen = storyId;
+        getStoriesRepository(type).getStoryByStringId(
+                storyId,
+                once,
+                new IGetStoryCallback<IStoryDTO>() {
+                    @Override
+                    public void onSuccess(IStoryDTO story) {
+                        if (story != null) {
+                            try {
+                                int c = Integer.parseInt(lastSingleOpen);
+                                if (c != story.getId())
+                                    return;
+                            } catch (Exception ignored) {
+
+                            }
+                            if (callback != null)
+                                callback.onShow();
+                            ArrayList<Integer> stIds = new ArrayList<>();
+                            stIds.add(story.getId());
+                            ScreensManager.getInstance().openStoriesReader(
+                                    context,
+                                    null,
+                                    manager,
+                                    stIds,
+                                    0,
+                                    readerSource,
+                                    readerAction,
+                                    slide,
+                                    null,
+                                    StoryType.COMMON
+                            );
+                            new Handler().postDelayed(new Runnable() {
+                                @Override
+                                public void run() {
+                                    lastSingleOpen = null;
+                                }
+                            }, 1000);
+                        } else {
+                            if (callback != null)
+                                callback.onError();
+                            lastSingleOpen = null;
+                        }
+                    }
+
+                    @Override
+                    public void onError() {
+                        if (callback != null)
+                            callback.onError();
+                        lastSingleOpen = null;
+                    }
+                }
+        );
+    }
+
+    public void showOnboardingStories(
+            final Integer limit,
+            final String feed,
+            final List<String> tags,
+            final List<String> currentTags,
+            final Context outerContext,
+            final AppearanceManager manager
+    ) {
+        if (tags != null && StringsUtils.getBytesLength(TextUtils.join(",", tags)) > TAG_LIMIT) {
+            InAppStoryManager.showELog(
+                    InAppStoryManager.IAS_ERROR_TAG,
+                    StringsUtils.getErrorStringFromContext(
+                            outerContext,
+                            R.string.ias_setter_tags_length_error
+                    )
+            );
+            return;
+        }
+        String tagsString = null;
+        if (tags != null) {
+            tagsString = TextUtils.join(",", tags);
+        } else if (currentTags != null) {
+            tagsString = TextUtils.join(",", currentTags);
+        }
+
+        getStoriesRepository(StoryType.COMMON).getOnboardingStoriesAsync(
+                feed,
+                limit,
+                tagsString,
+                new IGetStoriesPreviewsCallback() {
+                    @Override
+                    public void onSuccess(List<IPreviewStoryDTO> response) {
+                        showLoadedOnboardings(response, outerContext, manager, feed);
+                    }
+
+                    @Override
+                    public void onError() {
+
+                    }
+                }
+        );
+    }
+
+    private void showLoadedOnboardings(
+            final List<IPreviewStoryDTO> response,
+            final Context outerContext,
+            final AppearanceManager manager,
+            final String feed
+    ) {
+        if (response == null || response.size() == 0) {
+            if (CallbackManager.getInstance().getOnboardingLoadCallback() != null) {
+                CallbackManager.getInstance().getOnboardingLoadCallback().onboardingLoad(
+                        0,
+                        StringsUtils.getNonNull(feed)
+                );
+            }
+            return;
+        }
+        ArrayList<Integer> storiesIds = new ArrayList<>();
+        for (IPreviewStoryDTO story : response) {
+            storiesIds.add(story.getId());
+        }
+        ScreensManager.getInstance().openStoriesReader(
+                outerContext,
+                null,
+                manager,
+                storiesIds,
+                0,
+                SourceType.ONBOARDING,
+                feed,
+                StoryType.COMMON
+        );
+        if (CallbackManager.getInstance().getOnboardingLoadCallback() != null) {
+            CallbackManager.getInstance().getOnboardingLoadCallback().onboardingLoad(
+                    response.size(),
+                    StringsUtils.getNonNull(feed)
+            );
+        }
+    }
 
     public IStoriesRepository getStoriesRepository(StoryType type) {
         if (type == StoryType.UGC) return ugcStoriesRepository;
@@ -181,7 +362,6 @@ public class IASCore {
     }
 
     private IOpenStoriesReader openStoriesReader = new DefaultOpenStoriesReader();
-
 
 
     public void closeSession() {
@@ -224,30 +404,55 @@ public class IASCore {
         connectivityManager = (ConnectivityManager) context
                 .getSystemService(Context.CONNECTIVITY_SERVICE);
         new ImageLoader(context);
-        if (filesRepository == null) {
-            filesRepository = new FilesRepository(context.getCacheDir(), cacheSizeType);
+        if (sessionRepository == null) {
             sessionRepository = new SessionRepository(context);
             storiesRepository = new StoriesRepository(StoryType.COMMON);
             ugcStoriesRepository = new StoriesRepository(StoryType.UGC);
             gameRepository = new GameRepository();
             statisticV1Repository = new StatisticV1Repository();
         }
+        if (filesRepository == null) {
+            filesRepository = new FilesRepository(context.getCacheDir(), cacheSizeType);
+        }
+    }
+
+    public void initFilesRepository(Context context, int cacheSizeType) {
+        if (filesRepository == null) {
+            filesRepository = new FilesRepository(context.getCacheDir(), cacheSizeType);
+        }
+    }
+
+    public void init(Context context) {
+        FileManager.deleteRecursive(new File(context.getFilesDir() + File.separator + "Stories"));
+        FileManager.deleteRecursive(new File(context.getFilesDir() + File.separator + "temp"));
+        connectivityManager = (ConnectivityManager) context
+                .getSystemService(Context.CONNECTIVITY_SERVICE);
+        new ImageLoader(context);
+        soundOn = !context.getResources().getBoolean(R.bool.defaultMuted);
+        if (sessionRepository == null) {
+            sessionRepository = new SessionRepository(context);
+            storiesRepository = new StoriesRepository(StoryType.COMMON);
+            ugcStoriesRepository = new StoriesRepository(StoryType.UGC);
+            gameRepository = new GameRepository();
+            statisticV1Repository = new StatisticV1Repository();
+        }
+
     }
 
     ConnectivityManager connectivityManager;
 
     public boolean isSoundOn() {
-        InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
-        if (inAppStoryManager == null)
-            return true;
-        else
-            return inAppStoryManager.soundOn();
+        return soundOn;
     }
 
+    private boolean soundOn = false;
+
     public void changeSoundStatus() {
-        if (InAppStoryManager.getInstance() != null) {
-            InAppStoryManager.getInstance().soundOn(!InAppStoryManager.getInstance().soundOn());
-        }
+        this.soundOn = !soundOn;
+    }
+
+    public void setSoundStatus(boolean soundOn) {
+        this.soundOn = soundOn;
     }
 
 
