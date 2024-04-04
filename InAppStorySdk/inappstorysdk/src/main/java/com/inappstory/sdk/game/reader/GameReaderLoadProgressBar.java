@@ -30,7 +30,6 @@ public class GameReaderLoadProgressBar extends View implements IGameReaderLoader
 
     public GameReaderLoadProgressBar(Context context) {
         this(context, null);
-        initSize();
     }
 
     private final int strokeWidthDP = 4;
@@ -87,7 +86,6 @@ public class GameReaderLoadProgressBar extends View implements IGameReaderLoader
 
     public GameReaderLoadProgressBar(Context context, AttributeSet attrs) {
         this(context, attrs, 0);
-        initSize();
     }
 
     public GameReaderLoadProgressBar(Context context, AttributeSet attrs, int defStyleAttr) {

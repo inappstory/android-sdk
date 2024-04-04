@@ -1105,7 +1105,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
             loaderView = gameLoaderView;
             customLoaderView = gameLoaderView.getView();
         } else {
-            GameReaderLoadProgressBar loadProgressBar = new GameReaderLoadProgressBar(getContext());
+            GameReaderLoadProgressBarWithText loadProgressBar = new GameReaderLoadProgressBarWithText(getContext());
             loaderView = loadProgressBar;
             customLoaderView = loadProgressBar;
         }
