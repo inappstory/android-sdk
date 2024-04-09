@@ -171,6 +171,10 @@ public class GameCacheManager {
 
                                             @Override
                                             public void onSuccess(Void ignore) {
+                                                progressCallback.onProgress(
+                                                        finalTotalFilesSize,
+                                                        finalTotalFilesSize
+                                                );
                                                 ProfilingManager.getInstance().setReady(resourcesHash);
                                                 String fileName = result + File.separator + INDEX_NAME;
                                                 loadedFilePath = fileName;
@@ -230,6 +234,8 @@ public class GameCacheManager {
                                                 unzipCallback.onError("Can't unarchive game");
                                                 return;
                                             }
+                                        } else {
+
                                         }
                                         unzipCallback.onSuccess(directory.getAbsolutePath());
                                     }
