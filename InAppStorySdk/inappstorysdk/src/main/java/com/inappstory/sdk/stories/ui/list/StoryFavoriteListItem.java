@@ -67,7 +67,12 @@ public class StoryFavoriteListItem extends BaseStoryListItem {
         final int[] i = {0};
 
         final InAppStoryService service = InAppStoryService.getInstance();
-        if (service == null) return;
+        if (count == 0 ||
+                service == null ||
+                service.getFavoriteImages() == null ||
+                service.getFavoriteImages().isEmpty()
+        )
+            return;
         RunnableCallback runnableCallback = new RunnableCallback() {
             @Override
             public void run(String path) {
