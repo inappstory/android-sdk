@@ -669,8 +669,8 @@ public class ReaderPageFragment extends Fragment {
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
+    public void onStart() {
+        super.onStart();
         boolean storyIsEmpty = (story == null);
         InAppStoryService service = InAppStoryService.getInstance();
         if (service != null && service.getDownloadManager() != null && storyIsEmpty) {
@@ -682,6 +682,11 @@ public class ReaderPageFragment extends Fragment {
         if (story != null) {
             loadIfStoryIsNotNull();
         }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
     }
 
     void loadIfStoryIsNotNull() {
