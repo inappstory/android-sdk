@@ -46,6 +46,7 @@ import com.inappstory.sdk.BuildConfig;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.game.cache.FilePathAndContent;
 import com.inappstory.sdk.game.cache.GameCacheManager;
 import com.inappstory.sdk.game.cache.SetGameLoggerCallback;
@@ -783,8 +784,9 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
     private void downloadGame(
             final String gameId
     ) {
-        InAppStoryService service = InAppStoryService.getInstance();
+        final InAppStoryService service = InAppStoryService.getInstance();
         if (service != null)
+            service.getGamePreloader().pause();
             service.gameCacheManager().getGame(
                     gameId,
                     interruption,
@@ -868,6 +870,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                                 manager.logger.sendSdkError(message, null);
                             }
                             gameLoadedErrorCallback.onError(null, message);
+                            service.getGamePreloader().restart();
                         }
 
                         @Override
@@ -885,6 +888,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                                 }
                             });
                             loaderView.setIndeterminate(true);
+                            service.getGamePreloader().restart();
                         }
                     },
                     new SetGameLoggerCallback() {

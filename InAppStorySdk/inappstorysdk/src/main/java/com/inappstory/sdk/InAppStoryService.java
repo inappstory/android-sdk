@@ -124,7 +124,11 @@ public class InAppStoryService {
 
     public HashMap<String, List<Integer>> listStoriesIds = new HashMap<>();
 
-    public GamePreloader gamePreloader = new GamePreloader();
+    public GamePreloader getGamePreloader() {
+        return gamePreloader;
+    }
+
+    private GamePreloader gamePreloader = new GamePreloader();
 
     public String getUserId() {
         if (userId == null) {

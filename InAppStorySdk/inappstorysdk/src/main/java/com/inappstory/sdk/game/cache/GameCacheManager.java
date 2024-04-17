@@ -4,7 +4,11 @@ import static com.inappstory.sdk.network.NetworkClient.NC_IS_UNAVAILABLE;
 
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+
 import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.lrudiskcache.FileManager;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
