@@ -237,18 +237,20 @@ public class SessionManager {
                         if (CallbackManager.getInstance().getErrorCallback() != null) {
                             CallbackManager.getInstance().getErrorCallback().sessionError();
                         }
+                        final List<OpenSessionCallback> localCallbacks = new ArrayList<>();
                         synchronized (openProcessLock) {
                             openProcess = false;
-                            new Handler(Looper.getMainLooper()).post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    for (OpenSessionCallback localCallback : callbacks)
-                                        if (localCallback != null)
-                                            localCallback.onError();
-                                    callbacks.clear();
-                                }
-                            });
+                            localCallbacks.addAll(callbacks);
+                            callbacks.clear();
                         }
+                        new Handler(Looper.getMainLooper()).post(new Runnable() {
+                            @Override
+                            public void run() {
+                                for (OpenSessionCallback localCallback : localCallbacks)
+                                    if (localCallback != null)
+                                        localCallback.onError();
+                            }
+                        });
                     }
                 }
         );
