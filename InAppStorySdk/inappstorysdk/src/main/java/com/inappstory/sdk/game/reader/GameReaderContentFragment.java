@@ -68,6 +68,7 @@ import com.inappstory.sdk.share.IASShareData;
 import com.inappstory.sdk.share.IASShareManager;
 import com.inappstory.sdk.share.IShareCompleteListener;
 import com.inappstory.sdk.share.ShareListener;
+import com.inappstory.sdk.stories.api.interfaces.IGameCenterData;
 import com.inappstory.sdk.stories.api.models.CachedSessionData;
 import com.inappstory.sdk.stories.api.models.GameCenterData;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderType;
@@ -821,7 +822,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                             setLoader(result);
                         }
                     },
-                    new UseCaseCallback<GameCenterData>() {
+                    new UseCaseCallback<IGameCenterData>() {
                         @Override
                         public void onError(String message) {
                             if (manager != null && manager.logger != null) {
@@ -831,29 +832,33 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                         }
 
                         @Override
-                        public void onSuccess(final GameCenterData gameCenterData) {
+                        public void onSuccess(final IGameCenterData iGameCenterData) {
                             if (manager == null) return;
-                            new Handler(Looper.getMainLooper()).post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    setLayout();
-                                    loaderView.setIndeterminate(false);
-                                    manager.statusHolder.setTotalReloadTries(
-                                            gameCenterData.canTryReloadCount()
-                                    );
-                                    manager.gameConfig = gameCenterData.initCode;
-                                    manager.path = gameCenterData.url;
-                                    try {
-                                        GameScreenOptions options = gameCenterData.options;
-                                        manager.resources = gameCenterData.resources;
-                                        setOrientationFromOptions(options);
-                                        setFullScreenFromOptions(options);
-                                    } catch (Exception ignored) {
+                            if (iGameCenterData instanceof GameCenterData) {
+                                new Handler(Looper.getMainLooper()).post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        GameCenterData gameCenterData = (GameCenterData) iGameCenterData;
+                                        setLayout();
+                                        loaderView.setIndeterminate(false);
+                                        manager.statusHolder.setTotalReloadTries(
+                                                gameCenterData.canTryReloadCount()
+                                        );
+                                        manager.gameConfig = gameCenterData.initCode;
+                                        manager.path = gameCenterData.url();
+                                        try {
+                                            GameScreenOptions options = gameCenterData.options;
+                                            manager.resources = gameCenterData.resources();
+                                            setOrientationFromOptions(options);
+                                            setFullScreenFromOptions(options);
+                                        } catch (Exception ignored) {
 
+                                        }
+                                        replaceConfigs();
                                     }
-                                    replaceConfigs();
-                                }
-                            });
+                                });
+                            }
+
                         }
                     },
                     new UseCaseCallback<FilePathAndContent>() {

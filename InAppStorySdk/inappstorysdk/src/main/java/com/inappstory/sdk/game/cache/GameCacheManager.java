@@ -8,18 +8,18 @@ import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.lrudiskcache.FileManager;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
+import com.inappstory.sdk.stories.api.interfaces.IGameCenterData;
 import com.inappstory.sdk.stories.api.models.GameCenterData;
 import com.inappstory.sdk.stories.api.models.GameLaunchConfigObject;
+import com.inappstory.sdk.stories.api.models.GameSplashScreen;
 import com.inappstory.sdk.stories.api.models.WebResource;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.cache.DownloadInterruption;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
-import com.inappstory.sdk.stories.utils.SessionManager;
 import com.inappstory.sdk.utils.ProgressCallback;
 
 import java.io.File;
-import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -48,11 +48,11 @@ public class GameCacheManager {
     private final ExecutorService gameUseCasesThread = Executors.newFixedThreadPool(1);
 
     public void getGame(
-            final String gameId,
+            String gameId,
             final DownloadInterruption interruption,
             final ProgressCallback progressCallback,
             final UseCaseWarnCallback<File> splashScreenCallback,
-            final UseCaseCallback<GameCenterData> gameModelCallback,
+            final UseCaseCallback<IGameCenterData> gameModelCallback,
             final UseCaseCallback<FilePathAndContent> gameLoadCallback,
             final SetGameLoggerCallback setGameLoggerCallback
     ) {
@@ -72,23 +72,23 @@ public class GameCacheManager {
         });
         new GetGameModelUseCase().get(gameId, new GameLoadCallback() {
             @Override
-            public void onSuccess(GameCenterData data) {
+            public void onSuccess(final IGameCenterData data) {
                 gameModelCallback.onSuccess(data);
-                final String archiveUrl = data.url;
+                final String archiveUrl = data.url();
                 final GetZipFileUseCase getZipFileUseCase =
                         new GetZipFileUseCase(
                                 archiveUrl,
-                                data.archiveSize,
-                                data.archiveSha1
+                                data.archiveSize(),
+                                data.archiveSha1()
                         );
                 final DownloadResourcesUseCase downloadResourcesUseCase =
-                        new DownloadResourcesUseCase(data.resources, gameId);
+                        new DownloadResourcesUseCase(data.resources(), data.id(), interruption);
                 final RemoveOldGameFilesUseCase removeOldGameFilesUseCase =
                         new RemoveOldGameFilesUseCase(archiveUrl);
                 DownloadSplashUseCase downloadSplashUseCase = new DownloadSplashUseCase(
-                        data.splashScreen,
+                        data.splashScreen(),
                         oldSplashPath[0],
-                        gameId
+                        data.id()
                 );
                 downloadSplashUseCase.download(new UseCaseCallback<File>() {
                     @Override
@@ -99,7 +99,7 @@ public class GameCacheManager {
                     @Override
                     public void onSuccess(File result) {
                         KeyValueStorage.saveString(
-                                "gameInstanceSplash_" + gameId,
+                                "gameInstanceSplash_" + data.id(),
                                 result.getAbsolutePath()
                         );
                         if (oldSplashPath[0] == null) {
@@ -110,19 +110,19 @@ public class GameCacheManager {
                 final long totalArchiveSize;
                 final long totalResourcesSize;
                 long tempResourcesSize = 0;
-                if (data.archiveSize != null)
-                    totalArchiveSize = data.archiveSize;
+                if (data.archiveSize() != null)
+                    totalArchiveSize = data.archiveSize();
                 else
                     totalArchiveSize = 0;
-                if (data.resources != null)
-                    for (WebResource resource : data.resources) {
+                if (data.resources() != null)
+                    for (WebResource resource : data.resources()) {
                         tempResourcesSize += resource.size;
                     }
                 totalResourcesSize = tempResourcesSize;
                 final long finalTotalFilesSize;
                 final long finalTotalDownloadsSize = totalArchiveSize + totalResourcesSize;
-                if (data.archiveUncompressedSize != null)
-                    finalTotalFilesSize = finalTotalDownloadsSize + data.archiveUncompressedSize;
+                if (data.archiveUncompressedSize() != null)
+                    finalTotalFilesSize = finalTotalDownloadsSize + data.archiveUncompressedSize();
                 else
                     finalTotalFilesSize = finalTotalDownloadsSize;
                 gameUseCasesThread.submit(new Runnable() {
@@ -145,7 +145,7 @@ public class GameCacheManager {
                                 String resourcesPath = result
                                         + File.separator
                                         + "resources_"
-                                        + gameId
+                                        + data.id()
                                         + File.separator;
                                 downloadResourcesUseCase.download(
                                         resourcesPath,

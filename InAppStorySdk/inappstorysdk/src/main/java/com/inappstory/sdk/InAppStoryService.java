@@ -12,13 +12,17 @@ import android.net.NetworkCapabilities;
 import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.util.Pair;
 import android.webkit.URLUtil;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.game.cache.GameCacheManager;
+import com.inappstory.sdk.game.cache.SuccessUseCaseCallback;
+import com.inappstory.sdk.game.preload.GamePreloader;
 import com.inappstory.sdk.game.reader.GameStoryData;
 import com.inappstory.sdk.game.reader.logger.GameLogSaver;
 import com.inappstory.sdk.game.reader.logger.GameLogSender;
@@ -28,6 +32,7 @@ import com.inappstory.sdk.imageloader.ImageLoader;
 import com.inappstory.sdk.lrudiskcache.CacheType;
 import com.inappstory.sdk.lrudiskcache.FileManager;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
+import com.inappstory.sdk.stories.api.interfaces.IGameCenterData;
 import com.inappstory.sdk.stories.api.models.ExceptionCache;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
 import com.inappstory.sdk.stories.api.models.Story;
@@ -118,6 +123,8 @@ public class InAppStoryService {
 
 
     public HashMap<String, List<Integer>> listStoriesIds = new HashMap<>();
+
+    public GamePreloader gamePreloader = new GamePreloader();
 
     public String getUserId() {
         if (userId == null) {
@@ -757,7 +764,7 @@ public class InAppStoryService {
             downloadManager = new StoryDownloadManager(context, cache);
     }
 
-    public void onCreate(Context context, ExceptionCache exceptionCache) {
+    public void onCreate(final Context context, ExceptionCache exceptionCache) {
         this.context = context;
         new Handler().post(new Runnable() {
             @Override
@@ -786,6 +793,21 @@ public class InAppStoryService {
         getDownloadManager().initDownloaders();
         logSaver = new GameLogSaver();
         logSender = new GameLogSender(this, logSaver);
+        gamePreloader.successUseCaseCallback = new SuccessUseCaseCallback<IGameCenterData>() {
+            @Override
+            public void onSuccess(final IGameCenterData result) {
+                new Handler(Looper.getMainLooper()).post(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(
+                                context,
+                                "Game " + result.id() + " is loaded",
+                                Toast.LENGTH_LONG
+                        ).show();
+                    }
+                });
+            }
+        };
     }
 
     private static final Object lock = new Object();

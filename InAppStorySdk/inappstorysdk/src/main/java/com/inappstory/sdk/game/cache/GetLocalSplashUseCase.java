@@ -14,7 +14,7 @@ public class GetLocalSplashUseCase {
     }
 
     @WorkerThread
-    void get(UseCaseCallback<File> splashScreenCallback) {
+    public void get(UseCaseCallback<File> splashScreenCallback) {
         String splashPath = KeyValueStorage.getString("gameInstanceSplash_" + gameId);
         if (splashPath != null) {
             File splash = new File(splashPath);

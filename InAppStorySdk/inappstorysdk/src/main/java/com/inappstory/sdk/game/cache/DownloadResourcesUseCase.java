@@ -2,8 +2,8 @@ package com.inappstory.sdk.game.cache;
 
 import androidx.annotation.WorkerThread;
 
-import com.inappstory.sdk.lrudiskcache.FileChecker;
 import com.inappstory.sdk.stories.api.models.WebResource;
+import com.inappstory.sdk.stories.cache.DownloadInterruption;
 import com.inappstory.sdk.utils.ProgressCallback;
 
 import java.util.List;
@@ -12,10 +12,16 @@ public class DownloadResourcesUseCase {
     private List<WebResource> resources;
     private long totalResourcesSize;
     private String gameInstanceId;
+    private final DownloadInterruption interruption;
 
-    public DownloadResourcesUseCase(List<WebResource> resources, String gameInstanceId) {
+    public DownloadResourcesUseCase(
+            List<WebResource> resources,
+            String gameInstanceId,
+            DownloadInterruption interruption
+    ) {
         this.resources = resources;
         this.gameInstanceId = gameInstanceId;
+        this.interruption = interruption;
         if (resources == null) return;
         totalResourcesSize = 0;
         for (WebResource resource : resources) {
@@ -26,7 +32,7 @@ public class DownloadResourcesUseCase {
     private boolean terminate;
 
     @WorkerThread
-    void download(
+    public void download(
             final String directory,
             final ProgressCallback progressCallback,
             final UseCaseCallback useCaseCallback
@@ -34,6 +40,9 @@ public class DownloadResourcesUseCase {
         final long[] cnt = new long[1];
         terminate = false;
         for (WebResource resource : resources) {
+            if (interruption.active) {
+                return;
+            }
             if (terminate) {
                 return;
             }
@@ -42,10 +51,11 @@ public class DownloadResourcesUseCase {
                     new ProgressCallback() {
                         @Override
                         public void onProgress(long loadedSize, long totalResourceSize) {
-                            progressCallback.onProgress(
-                                    cnt[0] + loadedSize,
-                                    totalResourcesSize
-                            );
+                            if (progressCallback != null)
+                                progressCallback.onProgress(
+                                        cnt[0] + loadedSize,
+                                        totalResourcesSize
+                                );
                         }
                     },
                     new UseCaseCallback<Void>() {

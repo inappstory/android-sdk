@@ -13,7 +13,7 @@ public class RemoveOldGameFilesUseCase extends GameNameHolder {
 
     String newUrl;
 
-    void remove() {
+    public void remove() {
         InAppStoryService inAppStoryService = InAppStoryService.getInstance();
         if (inAppStoryService == null) {
             return;

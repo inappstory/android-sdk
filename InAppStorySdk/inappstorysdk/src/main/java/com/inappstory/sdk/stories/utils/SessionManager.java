@@ -283,21 +283,25 @@ public class SessionManager {
                         if (CallbackManager.getInstance().getErrorCallback() != null) {
                             CallbackManager.getInstance().getErrorCallback().sessionError();
                         }
+                        final List<OpenSessionCallback> localCallbacks = new ArrayList<>();
+                        final List<IOpenSessionCallback> localStaticCallbacks = new ArrayList<>();
                         synchronized (openProcessLock) {
                             openProcess = false;
-                            new Handler(Looper.getMainLooper()).post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    for (OpenSessionCallback localCallback : callbacks)
-                                        if (localCallback != null)
-                                            localCallback.onError();
-                                    callbacks.clear();
-                                    for (IOpenSessionCallback localCallback : staticCallbacks)
-                                        if (localCallback != null)
-                                            localCallback.onError();
-                                }
-                            });
+                            localCallbacks.addAll(callbacks);
+                            callbacks.clear();
+                            localStaticCallbacks.addAll(staticCallbacks);
                         }
+                        new Handler(Looper.getMainLooper()).post(new Runnable() {
+                            @Override
+                            public void run() {
+                                for (OpenSessionCallback localCallback : localCallbacks)
+                                    if (localCallback != null)
+                                        localCallback.onError();
+                                for (IOpenSessionCallback localCallback : localStaticCallbacks)
+                                    if (localCallback != null)
+                                        localCallback.onError();
+                            }
+                        });
                     }
                 }
         );

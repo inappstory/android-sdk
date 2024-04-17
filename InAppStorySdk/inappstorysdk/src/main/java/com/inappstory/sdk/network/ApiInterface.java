@@ -57,6 +57,8 @@ public interface ApiInterface {
             @Query("tags") String tags,
             @Query("fields") String fields);
 
+    @GET("v2/preloadGames")
+    Request getPreloadGames();
 
     @GET("v2/feed/{feed}")
     Request getFeed(

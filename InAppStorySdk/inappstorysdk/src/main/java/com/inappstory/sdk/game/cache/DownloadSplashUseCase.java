@@ -26,7 +26,7 @@ public class DownloadSplashUseCase {
     }
 
     @WorkerThread
-    void download(
+    public void download(
             final UseCaseCallback<File> splashScreenCallback
     ) {
 

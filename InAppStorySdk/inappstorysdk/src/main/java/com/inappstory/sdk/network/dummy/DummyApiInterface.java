@@ -27,6 +27,11 @@ public class DummyApiInterface implements ApiInterface {
     }
 
     @Override
+    public Request getPreloadGames() {
+        return new DummyRequest();
+    }
+
+    @Override
     public Request getFeed(String feed, String test, Integer favorite,
                            String tags, String fields, String expand) {
         return new DummyRequest();
