@@ -26,6 +26,8 @@ public class SessionResponse {
 
     @SerializedName(SessionRequestFields.isAllowProfiling)
     public boolean isAllowProfiling;
+    @SerializedName(SessionRequestFields.isAllowGamePreload)
+    public boolean isAllowGamePreload;
     @SerializedName(SessionRequestFields.isAllowStatV1)
     public Boolean isAllowStatV1;
     @SerializedName(SessionRequestFields.isAllowStatV2)

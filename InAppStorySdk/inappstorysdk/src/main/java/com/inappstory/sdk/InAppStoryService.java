@@ -23,6 +23,7 @@ import androidx.annotation.NonNull;
 import com.inappstory.sdk.game.cache.GameCacheManager;
 import com.inappstory.sdk.game.cache.SuccessUseCaseCallback;
 import com.inappstory.sdk.game.preload.GamePreloader;
+import com.inappstory.sdk.game.preload.IGamePreloader;
 import com.inappstory.sdk.game.reader.GameStoryData;
 import com.inappstory.sdk.game.reader.logger.GameLogSaver;
 import com.inappstory.sdk.game.reader.logger.GameLogSender;
@@ -73,6 +74,13 @@ public class InAppStoryService {
             if (InAppStoryManager.getInstance() == null) return null;
             return INSTANCE;
         }
+    }
+
+    public void restartGamePreloader() {
+        IGamePreloader gamePreloader = getGamePreloader();
+        gamePreloader.pause();
+        gamePreloader.active(true);
+        gamePreloader.restart();
     }
 
     private ISessionHolder sessionHolder = new SessionHolder();

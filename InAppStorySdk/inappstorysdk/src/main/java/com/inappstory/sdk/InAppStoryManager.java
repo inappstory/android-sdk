@@ -17,6 +17,7 @@ import android.util.Pair;
 import androidx.annotation.NonNull;
 import androidx.annotation.StringRes;
 
+import com.inappstory.sdk.game.preload.IGamePreloader;
 import com.inappstory.sdk.lrudiskcache.CacheSize;
 import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.NetworkClient;
@@ -1108,6 +1109,24 @@ public class InAppStoryManager {
         inAppStoryService.setUserId(userId);
     }
 
+    public void preloadGames() {
+        Runnable preloading = new Runnable() {
+            @Override
+            public void run() {
+                InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+                    @Override
+                    public void use(@NonNull InAppStoryService service) throws Exception {
+                        service.restartGamePreloader();
+                    }
+                });
+            }
+        };
+        if (InAppStoryService.getInstance() == null) {
+            new Handler().postDelayed(preloading, 1000);
+        } else {
+            preloading.run();
+        }
+    }
 
     //Test
 

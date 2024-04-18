@@ -94,6 +94,7 @@ public class GamePreloader implements IGamePreloader {
     @Override
     public void restart() {
         if (!active) return;
+        loadedData = null;
         launch();
     }
 
