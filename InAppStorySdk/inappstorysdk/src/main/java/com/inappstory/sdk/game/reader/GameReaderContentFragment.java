@@ -947,10 +947,8 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         } else {
             options.lang = Locale.getDefault().toLanguageTag();
         }
-        options.dir = (
-                context.getResources().getConfiguration().getLayoutDirection() == View.LAYOUT_DIRECTION_RTL
-        ) ? "rtl" : "ltr";
         options.sessionId = CachedSessionData.getInstance(context).sessionId;
+        options.deviceId = "";
         if (inAppStoryManager == null || inAppStoryManager.isDeviceIDEnabled()) {
             options.deviceId = StringsUtils.getEscapedString(
                     Settings.Secure.getString(
