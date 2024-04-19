@@ -258,12 +258,19 @@ public class InAppStoryService {
                 manager.closeStatisticEvent(null, true);
             }
         });
-        SessionManager.getInstance().closeSession(
-                true,
-                false,
-                userId,
-                sessionHolder.getSessionId()
-        );
+        InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryManager manager) throws Exception {
+                SessionManager.getInstance().closeSession(
+                        true,
+                        false,
+                        manager.getCurrentLocale(),
+                        userId,
+                        sessionHolder.getSessionId()
+                );
+            }
+        });
+
     }
 
     public void clearLocalData() {

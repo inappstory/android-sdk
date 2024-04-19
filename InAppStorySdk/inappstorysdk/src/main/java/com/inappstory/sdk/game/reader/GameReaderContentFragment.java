@@ -943,15 +943,22 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
             options.userId = StringsUtils.getEscapedString(
                     inAppStoryManager.getUserId()
             );
+            options.lang = inAppStoryManager.getCurrentLocale().toLanguageTag();
+        } else {
+            options.lang = Locale.getDefault().toLanguageTag();
         }
+        options.dir = (
+                context.getResources().getConfiguration().getLayoutDirection() == View.LAYOUT_DIRECTION_RTL
+        ) ? "rtl" : "ltr";
         options.sessionId = CachedSessionData.getInstance(context).sessionId;
-        options.lang = Locale.getDefault().toLanguageTag();
-        options.deviceId = StringsUtils.getEscapedString(
-                Settings.Secure.getString(
-                        context.getContentResolver(),
-                        Settings.Secure.ANDROID_ID
-                )
-        );
+        if (inAppStoryManager == null || inAppStoryManager.isDeviceIDEnabled()) {
+            options.deviceId = StringsUtils.getEscapedString(
+                    Settings.Secure.getString(
+                            context.getContentResolver(),
+                            Settings.Secure.ANDROID_ID
+                    )
+            );
+        }
         options.placeholders = generatePlaceholders();
         SafeAreaInsets insets = new SafeAreaInsets();
         if (Build.VERSION.SDK_INT >= 28) {

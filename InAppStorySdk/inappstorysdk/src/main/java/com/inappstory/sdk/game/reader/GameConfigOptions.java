@@ -5,6 +5,7 @@ import java.util.ArrayList;
 public class GameConfigOptions {
     public String sessionId;
     public String lang;
+    public String dir;
     public String apiKey;
     public String appPackageId;
     public String deviceId;

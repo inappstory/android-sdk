@@ -87,6 +87,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -1068,6 +1069,7 @@ public class InAppStoryManager {
                 builder.apiKey() != null ? builder.apiKey() : context.getResources().getString(R.string.csApiKey),
                 builder.testKey() != null ? builder.testKey() : null,
                 builder.userId(),
+                builder.locale(),
                 builder.gameDemoMode(),
                 builder.isDeviceIdEnabled(),
                 builder.tags() != null ? builder.tags() : null,
@@ -1096,7 +1098,13 @@ public class InAppStoryManager {
                 new ForceCloseReaderCallback() {
                     @Override
                     public void onComplete() {
-                        SessionManager.getInstance().closeSession(sendStatistic, true, oldUserId, sessionId);
+                        SessionManager.getInstance().closeSession(
+                                sendStatistic,
+                                true,
+                                getCurrentLocale(),
+                                oldUserId,
+                                sessionId
+                        );
                     }
                 }
         );
@@ -1106,6 +1114,35 @@ public class InAppStoryManager {
         inAppStoryService.getDownloadManager().refreshLocals(Story.StoryType.UGC);
         inAppStoryService.getDownloadManager().cleanTasks(false);
         inAppStoryService.setUserId(userId);
+    }
+
+    private void setLocaleInner(@NonNull final Locale locale) {
+        InAppStoryService inAppStoryService = InAppStoryService.getInstance();
+        if (inAppStoryService == null) return;
+        if (currentLocale.toLanguageTag().equals(locale.toLanguageTag())) return;
+        final String sessionId = inAppStoryService.getSession().getSessionId();
+        clearCachedLists();
+        localOpensKey = null;
+        ScreensManager.getInstance().forceCloseAllReaders(
+                new ForceCloseReaderCallback() {
+                    @Override
+                    public void onComplete() {
+                        SessionManager.getInstance().closeSession(
+                                sendStatistic,
+                                true,
+                                getCurrentLocale(),
+                                getUserId(),
+                                sessionId
+                        );
+                        InAppStoryManager.this.currentLocale = locale;
+                    }
+                }
+        );
+        if (inAppStoryService.getFavoriteImages() != null)
+            inAppStoryService.getFavoriteImages().clear();
+        inAppStoryService.getDownloadManager().refreshLocals(Story.StoryType.COMMON);
+        inAppStoryService.getDownloadManager().refreshLocals(Story.StoryType.UGC);
+        inAppStoryService.getDownloadManager().cleanTasks(false);
     }
 
 
@@ -1119,6 +1156,17 @@ public class InAppStoryManager {
     public void setUserId(@NonNull String userId) {
         setUserIdInner(userId);
     }
+
+    public Locale getCurrentLocale() {
+        return currentLocale;
+    }
+
+    private Locale currentLocale = Locale.getDefault();
+
+    public void setLang(@NonNull Locale lang) {
+        setLocaleInner(lang);
+    }
+
 
     private String userId;
 
@@ -1191,6 +1239,7 @@ public class InAppStoryManager {
             String apiKey,
             String testKey,
             String userId,
+            Locale locale,
             boolean gameDemoMode,
             boolean isDeviceIDEnabled,
             ArrayList<String> tags,
@@ -2109,6 +2158,10 @@ public class InAppStoryManager {
             return userId;
         }
 
+        public Locale locale() {
+            return locale;
+        }
+
         public String apiKey() {
             return apiKey;
         }
@@ -2147,6 +2200,7 @@ public class InAppStoryManager {
 
         int cacheSize;
         String userId;
+        Locale locale = Locale.getDefault();
         String apiKey;
         String testKey;
         ArrayList<String> tags;
@@ -2164,6 +2218,11 @@ public class InAppStoryManager {
 
         public Builder gameDemoMode(boolean gameDemoMode) {
             Builder.this.gameDemoMode = gameDemoMode;
+            return Builder.this;
+        }
+
+        public Builder lang(Locale locale) {
+            Builder.this.locale = locale;
             return Builder.this;
         }
 
