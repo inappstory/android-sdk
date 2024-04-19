@@ -632,8 +632,13 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
         }
         options.sessionId = CachedSessionData.getInstance(this).sessionId;
         options.lang = Locale.getDefault().toLanguageTag();
-        options.deviceId = Settings.Secure.getString(getContentResolver(),
-                Settings.Secure.ANDROID_ID);
+        if (inAppStoryManager == null || inAppStoryManager.isDeviceIDEnabled()) {
+            options.deviceId = Settings.Secure.getString(getContentResolver(),
+                    Settings.Secure.ANDROID_ID);
+        } else {
+            options.deviceId = "";
+        }
+
         options.placeholders = generatePlaceholders();
         SafeAreaInsets insets = new SafeAreaInsets();
         if (Build.VERSION.SDK_INT >= 28) {

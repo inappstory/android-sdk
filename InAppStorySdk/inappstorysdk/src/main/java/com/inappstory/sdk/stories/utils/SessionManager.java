@@ -139,10 +139,14 @@ public class SessionManager {
     private void openSessionInner(final @NonNull InAppStoryService service) {
         Context context = service.getContext();
         String platform = "android";
-        String deviceId = Settings.Secure.getString(
-                context.getContentResolver(),
-                Settings.Secure.ANDROID_ID
-        );
+        InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
+        String deviceId = null;
+        if (inAppStoryManager != null && inAppStoryManager.isDeviceIDEnabled()) {
+            deviceId = Settings.Secure.getString(
+                    context.getContentResolver(),
+                    Settings.Secure.ANDROID_ID
+            );
+        }
         String model = Build.MODEL;
         String manufacturer = Build.MANUFACTURER;
         String brand = Build.BRAND;
