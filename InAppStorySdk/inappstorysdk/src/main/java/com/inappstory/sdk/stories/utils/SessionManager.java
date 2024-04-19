@@ -178,7 +178,7 @@ public class SessionManager {
         if (manager == null) return;
         Context context = service.getContext();
         String platform = "android";
-        String deviceId = "";
+        String deviceId = null;
         if (manager.isDeviceIDEnabled()) {
             deviceId = Settings.Secure.getString(
                     context.getContentResolver(),
