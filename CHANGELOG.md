@@ -1,10 +1,43 @@
 Change Log
 ==========
 
+Version *1.18.1 (861)*
+----------------------------
+
+* Update: game loader with infinite progress (changed behaviour)
+* Fixed: ConcurrentModificationException if session opens with error
+* Fixed: OOB for favorite cell
+* Fixed: first slide reopening
+
+Version *1.17.17 (817)*
+----------------------------
+
+* Fixed: ConcurrentModificationException if session opens with error
+* Fixed: OOB for favorite cell
+
+Version *1.18.0 (860)*
+----------------------------
+
+* New: new story and game reader display option. Now they can be shown in fragments instead of activities.
+* New: interface IStoriesListItemWithStoryData. It can be used instead of IStoriesListItem
+* New: letter limit in model
+* New: InAppStoryManager.closeStoryReader(forceClose: Boolean, forceCloseCallback: ForceCloseReaderCallback).
+* New: isDeviceIDEnabled and gameDemoMode options in InAppStoryManager.Builder.
+* New: InAppStoryManager.isStoryReaderOpened() and InAppStoryManager.isGameReaderOpened().
+* New: stack feed feature.
+* New: method showStoryOnce() to InAppStoryManager.
+* Update: InAppStoryManager initialization has changed. Now it has to be initialized only in Application class through method InAppStoryManager.initSdk(context: Context). Then, from any class (Application, Activity, Fragment, etc.) you need to call InAppStoryManager.Builder(). ... .create() (without passing context)
+* Update: change stackFeed logic
+* Update: signature of ListCallback's methods storiesLoaded and storiesUpdated. Now they have third argument data: List<StoryData>?
+* Update: GameReaderCallback interface. It was extended with method gameOpenError(data: GameStoryData?, gameId: String?)
+* Update: Contextless methods from Sizes class marked as deprecated and will be removed in next version. If you used them to conv ert sizes from dp to px, you can replace them to methods with context (f.e.: Sizes.dpToPxExt(sizeInDp: Int) -> Sizes.dpToPxExt(sizeInDp: Int, context: Context))
+* Fixed: setMinimumFontSize in WebViews
+* Fixed: change resources cache keys (sha1 and url dependency)
+
+
 Version *1.18.0-rc5 (855)*
 ----------------------------
 
-* New: letter limit in model
 * New: eventGame, gameLoadFailed in JS
 * New: reloadGameReader in JS
 * New: closeStoryReader with forceClose option
