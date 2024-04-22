@@ -1,7 +1,12 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
 buildscript {
-    
+    ext {
+        inappstory_output_version = "1.19.0-rc1"
+        inappstory_output_build = 900
+        inappstory_target_sdk = 31
+        inappstory_min_sdk = 21
+    }
     repositories {
         google()
         jcenter()

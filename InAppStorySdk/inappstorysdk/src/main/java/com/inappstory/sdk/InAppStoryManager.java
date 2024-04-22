@@ -15,9 +15,14 @@ import android.util.Log;
 import android.util.Pair;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.StringRes;
 
 import com.inappstory.sdk.lrudiskcache.CacheSize;
+import com.inappstory.sdk.modulesconnector.utils.ModuleInitializer;
+import com.inappstory.sdk.modulesconnector.utils.filepicker.DummyFilePicker;
+import com.inappstory.sdk.modulesconnector.utils.filepicker.IFilePicker;
+import com.inappstory.sdk.modulesconnector.utils.lottie.DummyLottieViewGenerator;
+import com.inappstory.sdk.modulesconnector.utils.lottie.ILottieView;
+import com.inappstory.sdk.modulesconnector.utils.lottie.ILottieViewGenerator;
 import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
@@ -82,7 +87,6 @@ import com.inappstory.sdk.utils.IVibrateUtils;
 import com.inappstory.sdk.utils.StringsUtils;
 
 import java.lang.reflect.Type;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -806,6 +810,39 @@ public class InAppStoryManager {
 
     String TEST_KEY = null;
 
+    public void setLottieViewGenerator(ILottieViewGenerator lottieViewGenerator) {
+        this.lottieViewGenerator = lottieViewGenerator;
+    }
+
+    public ILottieViewGenerator lottieViewGenerator = new DummyLottieViewGenerator();
+
+    public void setFilePicker(IFilePicker filePicker) {
+        this.filePicker = filePicker;
+    }
+
+    public IFilePicker filePicker = new DummyFilePicker();
+
+    private void initModule(String packageName, String className) {
+        try {
+            Class<?> clazz = Class.forName(packageName + "." + className);
+            Object newInstance = clazz.newInstance();
+            if (newInstance instanceof ModuleInitializer) {
+                ((ModuleInitializer) newInstance).initialize();
+                Log.e("MethodsInitialize", "Success " + className);
+            } else {
+                Log.e("MethodsInitialize", "Error " + className);
+            }
+        } catch (Exception e) {
+            Log.e("MethodsInitialize", "Error " + className);
+        }
+    }
+
+    private void initModules() {
+        initModule("com.inappstory.sdk.utils", "FilePickerCore");
+        initModule("com.inappstory.sdk.utils", "LottieViewCore");
+    }
+
+
     public static void initSDK(@NonNull Context context) {
         StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
         boolean calledFromApplication = false;
@@ -827,6 +864,7 @@ public class InAppStoryManager {
             }
         }
         INSTANCE.createServiceThread(context);
+        INSTANCE.initModules();
     }
 
     InAppStoryService service;

@@ -2,3 +2,5 @@ rootProject.name='InAppStorySdk'
 
 include ':inappstorysdk'
 include ':examples'
+include ':inappstoryutils:lottieview'
+include ':inappstoryutils:filepicker'

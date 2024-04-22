@@ -251,6 +251,7 @@ public class InAppStoryService {
 
     IGameLogSaver logSaver;
 
+
     void logout() {
         OldStatisticManager.useInstance(new GetOldStatisticManagerCallback() {
             @Override
