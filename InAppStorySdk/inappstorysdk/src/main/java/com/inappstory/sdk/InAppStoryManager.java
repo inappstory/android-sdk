@@ -838,8 +838,8 @@ public class InAppStoryManager {
     }
 
     private void initModules() {
-        initModule("com.inappstory.sdk.utils", "FilePickerCore");
-        initModule("com.inappstory.sdk.utils", "LottieViewCore");
+        initModule("com.inappstory.sdk.utils.filepicker", "FilePickerCore");
+        initModule("com.inappstory.sdk.utils.lottie", "LottieViewCore");
     }
 
 

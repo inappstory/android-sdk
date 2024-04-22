@@ -1,4 +1,4 @@
-package com.inappstory.sdk.utils;
+package com.inappstory.sdk.utils.filepicker;
 
 import androidx.annotation.NonNull;
 
