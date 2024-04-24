@@ -418,6 +418,12 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
         //      FragmentController.openFragment(StoriesActivity.this, storiesFragment);
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        ScreensManager.getInstance().currentScreen = this;
+    }
+
     private void setLoaderFragment() {
         try {
             FragmentManager fragmentManager = getSupportFragmentManager();

@@ -49,6 +49,7 @@ import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.managers.TimerManager;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
+import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.reader.ReaderManager;
 import com.inappstory.sdk.stories.ui.reader.StoriesFragment;
 import com.inappstory.sdk.stories.ui.reader.StoriesGradientObject;
@@ -240,7 +241,15 @@ public class ReaderPageFragment extends Fragment {
             close.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    InAppStoryManager.closeStoryReader(CloseStory.CLICK);
+                    Activity activity = getActivity();
+                    if (activity != null) {
+                        if (ScreensManager.getInstance().currentScreen == activity) {
+                            InAppStoryManager.closeStoryReader(CloseStory.CLICK);
+                        } else {
+                            activity.finish();
+                        }
+                    }
+
                 }
             });
         if (refresh != null)

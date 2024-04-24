@@ -91,6 +91,12 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
     }
 
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        ScreensManager.getInstance().currentScreen = this;
+    }
+
     StoriesFragment storiesFragment;
 
     public void shareComplete(boolean shared) {
