@@ -41,5 +41,6 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
     androidTestImplementation 'androidx.test:runner:1.4.0'
     androidTestImplementation 'androidx.test:rules:1.4.0'
+    implementation 'com.airbnb.android:lottie:6.4.0'
     implementation 'org.brotli:dec:0.1.2'
 }
