@@ -70,7 +70,6 @@ public class ReaderPageFragment extends Fragment {
     View aboveButtonsPanel;
     ReaderManager parentManager;
 
-    View blackBottom;
     View blackTop;
     View refresh;
     AppCompatImageView close;
@@ -98,7 +97,6 @@ public class ReaderPageFragment extends Fragment {
     void bindViews(View view) {
         close = view.findViewById(R.id.ias_close_button);
         refresh = view.findViewById(R.id.ias_refresh_button);
-        blackBottom = view.findViewById(R.id.ias_black_bottom);
         blackTop = view.findViewById(R.id.ias_black_top);
         buttonsPanel = view.findViewById(R.id.ias_buttons_panel);
         storiesView = view.findViewById(R.id.ias_stories_view);
@@ -202,7 +200,6 @@ public class ReaderPageFragment extends Fragment {
     void setViews(View view) {
         if (InAppStoryService.getInstance() == null) return;
 
-        setOffsets(view);
         if (timeline != null) {
             timeline.getTimelineManager().setSlidesCount(story.getSlidesCount());
         }
@@ -219,6 +216,7 @@ public class ReaderPageFragment extends Fragment {
             buttonsPanel.setButtonsStatus(story.getLike(), story.favorite ? 1 : 0);
             aboveButtonsPanel.setVisibility(buttonsPanel.getVisibility());
         }
+        setOffsets(view);
         if (storiesView != null)
             storiesView.getManager().setIndex(story.lastIndex);
 
@@ -234,7 +232,7 @@ public class ReaderPageFragment extends Fragment {
 
     private void setOffsets(View view) {
         if (!Sizes.isTablet(getContext())) {
-            if (blackBottom != null) {
+            if (blackTop != null) {
                 Point screenSize;
                 Rect readerContainer = getArguments().getParcelable("readerContainer");
                 int topOffset = 0;
@@ -248,19 +246,23 @@ public class ReaderPageFragment extends Fragment {
                 } else {
                     screenSize = maxSize;
                 }
-                LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) blackBottom.getLayoutParams();
+                LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) blackTop.getLayoutParams();
+                int panelHeight = getPanelHeight();
                 float realProps = screenSize.y / ((float) screenSize.x);
-                float sn = 1.85f;
+                float sn = 1.88f;
                 if (realProps > sn) {
-                    lp.height = (int) (screenSize.y - screenSize.x * sn) / 2;
+                    lp.height = (int) (screenSize.y - (screenSize.x * sn + panelHeight));
                     setCutout(view, lp.height);
                 } else {
                     setCutout(view, topOffset);
                 }
-                blackBottom.setLayoutParams(lp);
                 blackTop.setLayoutParams(lp);
             }
         }
+    }
+
+    private int getPanelHeight() {
+        return Sizes.dpToPxExt(60, getContext());
     }
 
     private void setCutout(View view, int minusOffset) {
@@ -432,10 +434,7 @@ public class ReaderPageFragment extends Fragment {
         blackTop.setId(R.id.ias_black_top);
         blackTop.setLayoutParams(new LinearLayout.LayoutParams(MATCH_PARENT, 1));
         blackTop.setBackgroundColor(Color.TRANSPARENT);
-        blackBottom = new View(context);
-        blackBottom.setId(R.id.ias_black_bottom);
-        blackBottom.setLayoutParams(new LinearLayout.LayoutParams(MATCH_PARENT, 1));
-        blackBottom.setBackgroundColor(Color.TRANSPARENT);
+
         RelativeLayout content = new RelativeLayout(context);
         content.setLayoutParams(new LinearLayout.LayoutParams(MATCH_PARENT,
                 MATCH_PARENT, 1));
@@ -469,7 +468,6 @@ public class ReaderPageFragment extends Fragment {
         content.addView(main);
         linearLayout.addView(blackTop);
         linearLayout.addView(content);
-        linearLayout.addView(blackBottom);
     }
 
     private RelativeLayout createReaderContainer(Context context) {

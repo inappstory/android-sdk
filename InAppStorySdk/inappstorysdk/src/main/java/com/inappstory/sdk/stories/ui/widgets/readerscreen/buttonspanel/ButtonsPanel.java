@@ -50,6 +50,8 @@ public class ButtonsPanel extends LinearLayout {
             favorite.setActivated(favVal == 1);
     }
 
+    public boolean isVisible = true;
+
     public void setButtonsVisibility(
             StoriesReaderAppearanceSettings readerSettings,
             boolean hasLike,
@@ -67,6 +69,7 @@ public class ButtonsPanel extends LinearLayout {
         sound.setVisibility(hasSound ? VISIBLE : GONE);
         sound.setActivated(InAppStoryService.getInstance().isSoundOn());
         boolean isVisible = (hasFavorite || hasLike || hasShare || hasSound);
+        this.isVisible = isVisible;
         if (isVisible) {
             setVisibility(VISIBLE);
         } else {

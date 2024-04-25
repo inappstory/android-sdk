@@ -83,10 +83,9 @@ public class StoriesLoaderFragment extends Fragment {
     }
 
     private void setOffsets(View view) {
-        View blackBottom = view.findViewById(R.id.ias_black_bottom);
         View blackTop = view.findViewById(R.id.ias_black_top);
         if (!Sizes.isTablet(getContext())) {
-            if (blackBottom != null) {
+            if (blackTop != null) {
                 Point screenSize;
                 Rect readerContainer = getArguments().getParcelable("readerContainer");
                 int topOffset = 0;
@@ -100,19 +99,23 @@ public class StoriesLoaderFragment extends Fragment {
                 } else {
                     screenSize = maxSize;
                 }
-                LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) blackBottom.getLayoutParams();
+                LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) blackTop.getLayoutParams();
+                int panelHeight = getPanelHeight();
                 float realProps = screenSize.y / ((float) screenSize.x);
-                float sn = 1.85f;
+                float sn = 1.88f;
                 if (realProps > sn) {
-                    lp.height = (int) (screenSize.y - screenSize.x * sn) / 2;
+                    lp.height = (int) (screenSize.y - (screenSize.x * sn + panelHeight));
                     setCutout(view, lp.height);
                 } else {
                     setCutout(view, topOffset);
                 }
-                blackBottom.setLayoutParams(lp);
                 blackTop.setLayoutParams(lp);
             }
         }
+    }
+
+    private int getPanelHeight() {
+        return Sizes.dpToPxExt(60, getContext());
     }
 
 
@@ -234,10 +237,6 @@ public class StoriesLoaderFragment extends Fragment {
         blackTop.setId(R.id.ias_black_top);
         blackTop.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 1));
         blackTop.setBackgroundColor(Color.TRANSPARENT);
-        View blackBottom = new View(context);
-        blackBottom.setId(R.id.ias_black_bottom);
-        blackBottom.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 1));
-        blackBottom.setBackgroundColor(Color.TRANSPARENT);
         RelativeLayout content = new RelativeLayout(context);
         content.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.MATCH_PARENT, 1));
@@ -269,7 +268,6 @@ public class StoriesLoaderFragment extends Fragment {
         content.addView(main);
         linearLayout.addView(blackTop);
         linearLayout.addView(content);
-        linearLayout.addView(blackBottom);
     }
 
     private RelativeLayout createTimelineContainer(Context context) {

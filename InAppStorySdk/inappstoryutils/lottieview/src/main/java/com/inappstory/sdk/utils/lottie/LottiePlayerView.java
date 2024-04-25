@@ -13,6 +13,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.util.zip.ZipInputStream;
 
 public class LottiePlayerView extends LottieAnimationView implements ILottieView {
     public LottiePlayerView(Context context) {
@@ -49,7 +50,13 @@ public class LottiePlayerView extends LottieAnimationView implements ILottieView
                     } catch (FileNotFoundException e) {
 
                     }
-                } else if (casted.second instanceof InputStream) {
+                } else if (casted.second instanceof ZipInputStream) {
+                  //  this.setImageAssetsFolder();
+                    setAnimation(
+                            (ZipInputStream) casted.second,
+                            (String) casted.first
+                    );
+                } if (casted.second instanceof InputStream) {
                     setAnimation(
                             (InputStream) casted.second,
                             (String) casted.first
