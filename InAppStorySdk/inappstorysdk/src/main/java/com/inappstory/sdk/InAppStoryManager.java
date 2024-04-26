@@ -1123,6 +1123,7 @@ public class InAppStoryManager {
         final String sessionId = inAppStoryService.getSession().getSessionId();
         clearCachedLists();
         localOpensKey = null;
+        //
         ScreensManager.getInstance().forceCloseAllReaders(
                 new ForceCloseReaderCallback() {
                     @Override
