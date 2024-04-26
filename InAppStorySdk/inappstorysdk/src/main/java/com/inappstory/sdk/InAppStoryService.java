@@ -88,6 +88,7 @@ public class InAppStoryService {
 
     }
 
+
     public static void useInstance(@NonNull UseServiceInstanceCallback callback) {
         InAppStoryService inAppStoryService = getInstance();
         try {
@@ -607,6 +608,11 @@ public class InAppStoryService {
     }
 
     Set<ListManager> listSubscribers;
+
+    public HashMap<String, StackStoryObserver> getStackStoryObservers() {
+        return stackStoryObservers;
+    }
+
     final HashMap<String, StackStoryObserver> stackStoryObservers = new HashMap<>();
     public static Set<ListManager> tempListSubscribers;
 

@@ -186,7 +186,7 @@ public class StackStoryObserver implements IStackFeedActions {
         }
     }
 
-    public void onUpdate(int storyId, String listId) {
+    public int onUpdateOpenedStatus(int storyId) {
         int openedIndex = -1;
         for (int i = 0; i < stories.size(); i++) {
             if (storyId == stories.get(i).id) {
@@ -195,6 +195,11 @@ public class StackStoryObserver implements IStackFeedActions {
                 break;
             }
         }
+        return openedIndex;
+    }
+
+    public void onUpdate(int storyId, String listId) {
+        int openedIndex = onUpdateOpenedStatus(storyId);
         boolean useOldIndex = false;
         if (openedIndex < 0) return;
         if (listId == null || !listId.equals(this.listId()))
@@ -230,6 +235,8 @@ public class StackStoryObserver implements IStackFeedActions {
         service.unsubscribeStackStoryObserver(StackStoryObserver.this);
     }
 
+    private boolean lastOpenedStoryStatus = false;
+
     @Override
     public void openReader(Context context) {
         InAppStoryService service = InAppStoryService.getInstance();
@@ -237,6 +244,7 @@ public class StackStoryObserver implements IStackFeedActions {
         final Story currentStory = stories.get(oldIndex);
         Story current = service.getDownloadManager().getStoryById(currentStory.id, Story.StoryType.COMMON);
         if (current != null) {
+            lastOpenedStoryStatus = current.isOpened;
             current.isOpened = true;
             current.saveStoryOpened(Story.StoryType.COMMON);
         }

@@ -26,6 +26,7 @@ import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.UgcStoryData;
+import com.inappstory.sdk.stories.stackfeed.StackStoryObserver;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 import com.inappstory.sdk.stories.ui.list.FavoriteImage;
@@ -309,6 +310,22 @@ public class StoryDownloadManager {
                 stories.set(ind, tmp);
             }
         }
+        updateStackIndexes(stories);
+
+    }
+
+    private void updateStackIndexes(final List<Story> stories) {
+        if (stories == null) return;
+        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryService service) throws Exception {
+                for (StackStoryObserver storyObserver : service.getStackStoryObservers().values()) {
+                    for (Story story : stories) {
+                        storyObserver.onUpdateOpenedStatus(story.id);
+                    }
+                }
+            }
+        });
     }
 
     public List<Story> getStoriesListByType(Story.StoryType type) {
@@ -350,7 +367,8 @@ public class StoryDownloadManager {
     }
 
 
-    public StoryDownloadManager() {}
+    public StoryDownloadManager() {
+    }
 
     public StoryDownloadManager(final Context context, ExceptionCache cache) {
         this.context = context;
