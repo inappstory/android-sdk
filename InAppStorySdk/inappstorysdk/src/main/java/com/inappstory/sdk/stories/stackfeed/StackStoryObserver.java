@@ -195,6 +195,7 @@ public class StackStoryObserver implements IStackFeedActions {
                 break;
             }
         }
+        generateNewStackStoryData(Math.max(oldIndex, 0), stackStoryUpdated);
         return openedIndex;
     }
 
