@@ -11,6 +11,7 @@ import static com.inappstory.sdk.AppearanceManager.TOP_LEFT;
 import static com.inappstory.sdk.AppearanceManager.TOP_RIGHT;
 import static com.inappstory.sdk.AppearanceManager.TOP_START;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.LinearGradient;
@@ -49,6 +50,8 @@ import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.managers.TimerManager;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
+import com.inappstory.sdk.stories.ui.ScreensManager;
+import com.inappstory.sdk.stories.ui.reader.BaseReaderScreen;
 import com.inappstory.sdk.stories.ui.reader.ReaderManager;
 import com.inappstory.sdk.stories.ui.reader.StoriesFragment;
 import com.inappstory.sdk.stories.ui.reader.StoriesGradientObject;
@@ -243,7 +246,14 @@ public class ReaderPageFragment extends Fragment {
             close.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    InAppStoryManager.closeStoryReader(CloseStory.CLICK);
+                    Activity activity = getActivity();
+                    if (activity != null) {
+                        if (ScreensManager.getInstance().currentScreen == activity) {
+                            InAppStoryManager.closeStoryReader(CloseStory.CLICK);
+                        } else if (activity instanceof BaseReaderScreen){
+                            activity.finish();
+                        }
+                    }
                 }
             });
         if (refresh != null)

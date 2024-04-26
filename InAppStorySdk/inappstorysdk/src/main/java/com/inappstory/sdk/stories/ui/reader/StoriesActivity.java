@@ -95,6 +95,12 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
 
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        ScreensManager.getInstance().currentScreen = this;
+    }
+
     public void unsubscribeClicks() {
         draggableFrame.removeListener(chromeFader);
     }
