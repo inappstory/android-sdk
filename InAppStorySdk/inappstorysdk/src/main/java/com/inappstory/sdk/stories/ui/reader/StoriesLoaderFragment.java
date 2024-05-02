@@ -82,6 +82,7 @@ public class StoriesLoaderFragment extends Fragment {
         setOffsets(view);
     }
 
+
     private void setOffsets(View view) {
         View blackTop = view.findViewById(R.id.ias_black_top);
         if (!Sizes.isTablet(getContext())) {
@@ -90,21 +91,21 @@ public class StoriesLoaderFragment extends Fragment {
                 Rect readerContainer = getArguments().getParcelable("readerContainer");
                 int topOffset = 0;
                 Point maxSize = Sizes.getScreenSize(getContext());
+                int height = Sizes.getFullPhoneHeight(getContext());
                 if (readerContainer != null) {
                     screenSize = new Point(
                             Math.min(readerContainer.width(), maxSize.x),
-                            Math.min(readerContainer.height(), maxSize.y)
+                            Math.min(readerContainer.height(), height)
                     );
                     topOffset = readerContainer.top;
                 } else {
                     screenSize = maxSize;
                 }
-                LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) blackTop.getLayoutParams();
-                int panelHeight = getPanelHeight();
                 float realProps = screenSize.y / ((float) screenSize.x);
-                float sn = 1.88f;
+                float sn = 805f / 428f;
+                LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) blackTop.getLayoutParams();
                 if (realProps > sn) {
-                    lp.height = (int) (screenSize.y - (screenSize.x * sn + panelHeight));
+                    lp.height = (int) (screenSize.y - (screenSize.x * sn) - getPanelHeight(getContext()));
                     setCutout(view, lp.height);
                 } else {
                     setCutout(view, topOffset);
@@ -114,8 +115,9 @@ public class StoriesLoaderFragment extends Fragment {
         }
     }
 
-    private int getPanelHeight() {
-        return Sizes.dpToPxExt(60, getContext());
+
+    private int getPanelHeight(Context context) {
+        return Sizes.dpToPxExt(60, context);
     }
 
 
@@ -310,7 +312,7 @@ public class StoriesLoaderFragment extends Fragment {
                 RelativeLayout.LayoutParams.MATCH_PARENT, Sizes.dpToPxExt(60, context)
         );
         buttonsPanelParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);
-        buttonsPanel.setVisibility(View.GONE);
+   //     buttonsPanel.setVisibility(View.GONE);
         buttonsPanel.setId(R.id.ias_buttons_panel);
         buttonsPanel.setOrientation(LinearLayout.HORIZONTAL);
         buttonsPanel.setBackgroundColor(Color.BLACK);

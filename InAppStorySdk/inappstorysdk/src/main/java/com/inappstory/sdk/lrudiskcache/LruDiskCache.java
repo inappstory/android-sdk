@@ -26,17 +26,6 @@ public class LruDiskCache {
     public static final long MB_100 = 100 * MB_1;
     public static final long MB_200 = 200 * MB_1;
 
-    public static final long MB_2000 = 2000 * MB_1;
-
-    public static void clear() throws IOException {
-        if (fastCache != null) fastCache.clearCache();
-        if (commonCache != null) commonCache.clearCache();
-        if (infiniteCache != null) infiniteCache.clearCache();
-        fastCache = null;
-        commonCache = null;
-        infiniteCache = null;
-    }
-
     public File getCacheDir() {
         return manager.getCacheDir();
     }
@@ -66,26 +55,16 @@ public class LruDiskCache {
         }
     }
 
-    private LruDiskCache(File cacheDir, String subPath, long cacheSize, CacheType cacheType) throws IOException {
+    LruDiskCache(File cacheDir, String subPath, long cacheSize, CacheType cacheType) throws IOException {
         this.manager = new FileManager(cacheDir, subPath);
         this.journal = new CacheJournal(manager);
         this.cacheSize = cacheSize;
         this.cacheType = cacheType;
     }
 
-    public File put(String key, File file) throws IOException {
-        synchronized (journal) {
-            keyIsValid(key);
-            String name = file.getAbsolutePath();
-            long time = System.currentTimeMillis();
-            long fileSize = manager.getFileSize(file);
-            CacheJournalItem item = new CacheJournalItem(key, name, time, fileSize);
-            File cacheFile = manager.put(file, name);
-            journal.delete(key, false);
-            journal.put(item, cacheSize);
-            journal.writeJournal();
-            return cacheFile;
-        }
+    public void put(String key, File file) throws IOException {
+        long fileSize = manager.getFileSize(file);
+        put(key, file, fileSize, fileSize);
     }
 
     public File put(String key, File file, long fileSize, long downloadedSize) throws IOException {
@@ -129,12 +108,6 @@ public class LruDiskCache {
         FileManager.deleteFolderRecursive(getCacheDir(), false);
     }
 
-    public Set<String> keySet() {
-        synchronized (journal) {
-            return journal.keySet();
-        }
-    }
-
     public long getCacheSize() {
         synchronized (journal) {
             return cacheSize;
@@ -144,24 +117,6 @@ public class LruDiskCache {
     public void setCacheSize(long cacheSize) {
         synchronized (journal) {
             this.cacheSize = cacheSize;
-        }
-    }
-
-    public long getUsedSpace() {
-        synchronized (journal) {
-            return journal.getCurrentCacheSize();
-        }
-    }
-
-    public long getFreeSpace() {
-        synchronized (journal) {
-            return cacheSize - journal.getCurrentCacheSize();
-        }
-    }
-
-    public long getJournalSize() {
-        synchronized (journal) {
-            return journal.getJournalSize();
         }
     }
 
@@ -191,7 +146,7 @@ public class LruDiskCache {
                 keyIsValid(key);
                 CacheJournalItem item = journal.get(key);
                 if (item != null) {
-                    File file = new File(item.getName());
+                    File file = new File(item.getFilePath());
                     if (!file.exists()) {
                         journal.delete(key, false);
                         file = null;

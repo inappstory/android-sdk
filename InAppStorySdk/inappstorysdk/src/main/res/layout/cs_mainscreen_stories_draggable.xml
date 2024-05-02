@@ -10,6 +10,7 @@
     <FrameLayout
         android:layout_width="match_parent"
         android:id="@+id/animatedContainer"
+        android:visibility="invisible"
         android:layout_height="match_parent">
 
         <View

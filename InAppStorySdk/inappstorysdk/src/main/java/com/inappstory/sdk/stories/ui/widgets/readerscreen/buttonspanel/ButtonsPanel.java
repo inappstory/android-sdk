@@ -68,13 +68,8 @@ public class ButtonsPanel extends LinearLayout {
         share.setVisibility(hasShare ? VISIBLE : GONE);
         sound.setVisibility(hasSound ? VISIBLE : GONE);
         sound.setActivated(InAppStoryService.getInstance().isSoundOn());
-        boolean isVisible = (hasFavorite || hasLike || hasShare || hasSound);
-        this.isVisible = isVisible;
-        if (isVisible) {
-            setVisibility(VISIBLE);
-        } else {
-            setVisibility(GONE);
-        }
+        this.isVisible = (hasFavorite || hasLike || hasShare || hasSound);
+        setVisibility(VISIBLE);
     }
 
     @Override

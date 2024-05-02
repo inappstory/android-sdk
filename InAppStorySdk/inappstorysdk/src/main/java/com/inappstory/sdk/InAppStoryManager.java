@@ -1,8 +1,6 @@
 package com.inappstory.sdk;
 
 import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_10;
-import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_100;
-import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_200;
 import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_5;
 
 import android.annotation.SuppressLint;
@@ -21,7 +19,6 @@ import com.inappstory.sdk.modulesconnector.utils.ModuleInitializer;
 import com.inappstory.sdk.modulesconnector.utils.filepicker.DummyFilePicker;
 import com.inappstory.sdk.modulesconnector.utils.filepicker.IFilePicker;
 import com.inappstory.sdk.modulesconnector.utils.lottie.DummyLottieViewGenerator;
-import com.inappstory.sdk.modulesconnector.utils.lottie.ILottieView;
 import com.inappstory.sdk.modulesconnector.utils.lottie.ILottieViewGenerator;
 import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.NetworkClient;
@@ -878,6 +875,7 @@ public class InAppStoryManager {
         this.soundOn = !context.getResources().getBoolean(R.bool.defaultMuted);
     }
 
+
     void createServiceThread(final Context context) {
         InAppStoryService.useInstance(new UseServiceInstanceCallback() {
             @Override
@@ -894,11 +892,10 @@ public class InAppStoryManager {
             public void run() {
                 Looper.prepare();
                 service = new InAppStoryService();
-                service.onCreate(context, exceptionCache);
+                service.onCreate(context, CacheSize.MEDIUM, exceptionCache);
                 Looper.loop();
             }
         });
-        //serviceThread.setUncaughtExceptionHandler(new InAppStoryService.DefaultExceptionHandler());
         serviceThread.start();
     }
 
@@ -1072,28 +1069,10 @@ public class InAppStoryManager {
                     R.string.ias_min_free_space_error));
             return;
         }
-        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
-            @Override
-            public void use(@NonNull InAppStoryService service) throws Exception {
-
-            }
-        });
         InAppStoryService inAppStoryService = InAppStoryService.getInstance();
         if (inAppStoryService != null) {
             inAppStoryService.setUserId(builder.userId);
-            long commonCacheSize = MB_100;
-            long fastCacheSize = MB_10;
-            switch (builder.cacheSize) {
-                case CacheSize.SMALL:
-                    fastCacheSize = MB_5;
-                    commonCacheSize = MB_10;
-                    break;
-                case CacheSize.LARGE:
-                    commonCacheSize = MB_200;
-                    break;
-            }
-            inAppStoryService.getFastCache().setCacheSize(fastCacheSize);
-            inAppStoryService.getCommonCache().setCacheSize(commonCacheSize);
+            inAppStoryService.setCacheSizes(context);
         }
         String domain = new HostFromSecretKey(
                 builder.apiKey
@@ -1116,13 +1095,14 @@ public class InAppStoryManager {
     }
 
     private void setUserIdInner(String userId) {
-        InAppStoryService inAppStoryService = InAppStoryService.getInstance();
-        if (inAppStoryService == null) return;
         if (userId == null || StringsUtils.getBytesLength(userId) > 255) {
             showELog(IAS_ERROR_TAG, StringsUtils.getErrorStringFromContext(context, R.string.ias_setter_user_length_error));
             return;
         }
         if (userId.equals(this.userId)) return;
+        InAppStoryService inAppStoryService = InAppStoryService.getInstance();
+        if (inAppStoryService == null) return;
+
         final String sessionId = inAppStoryService.getSession().getSessionId();
 
         clearCachedLists();
@@ -1146,8 +1126,6 @@ public class InAppStoryManager {
         inAppStoryService.setUserId(userId);
     }
 
-
-    //Test
 
     /**
      * use to change user id in runtime
@@ -1198,12 +1176,6 @@ public class InAppStoryManager {
             inAppStoryService.listStoriesIds.clear();
         }
     }
-
-    public void setActionBarColor(int actionBarColor) {
-        this.actionBarColor = actionBarColor;
-    }
-
-    public int actionBarColor = -1;
 
     public boolean isSendStatistic() {
         return sendStatistic;

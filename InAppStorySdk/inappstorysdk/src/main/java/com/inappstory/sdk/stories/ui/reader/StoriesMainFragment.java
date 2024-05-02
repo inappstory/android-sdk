@@ -13,6 +13,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.view.Window;
 import android.view.WindowManager;
 
@@ -299,6 +300,7 @@ public abstract class StoriesMainFragment extends Fragment implements
         blockView = view.findViewById(R.id.blockView);
         backTintView = view.findViewById(R.id.background);
         animatedContainer = view.findViewById(R.id.animatedContainer);
+
         if (savedInstanceState == null) {
             animatedContainer.setAlpha(0f);
         } else {

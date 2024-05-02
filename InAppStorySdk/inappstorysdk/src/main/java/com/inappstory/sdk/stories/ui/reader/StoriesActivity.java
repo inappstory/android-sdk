@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.graphics.Point;
+import android.graphics.Rect;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -47,6 +48,7 @@ import com.inappstory.sdk.stories.ui.reader.animations.PopupReaderAnimation;
 import com.inappstory.sdk.stories.ui.reader.animations.ReaderAnimation;
 import com.inappstory.sdk.stories.ui.reader.animations.ZoomReaderCenterAnimation;
 import com.inappstory.sdk.stories.ui.reader.animations.ZoomReaderFromCellAnimation;
+import com.inappstory.sdk.stories.ui.utils.FragmentAction;
 import com.inappstory.sdk.stories.ui.widgets.elasticview.ElasticDragDismissFrameLayout;
 import com.inappstory.sdk.stories.utils.IASBackPressHandler;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
@@ -133,7 +135,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
         }
     }
 
-    public void startAnim(final Bundle savedInstanceState) {
+    public void startAnim(final Bundle savedInstanceState, final Rect readerContainer) {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
                 WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
         try {
@@ -144,7 +146,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
                         public void onAnimationEnd() {
                             getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
                             isAnimation = false;
-                            createStoriesFragment(savedInstanceState);
+                            createStoriesFragment(savedInstanceState, readerContainer);
                             setStoriesFragment();
                         }
                     })
@@ -330,7 +332,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
     }
 
     @Override
-    protected void onCreate(Bundle savedInstanceState1) {
+    protected void onCreate(final Bundle savedInstanceState1) {
 
         cleaned = false;
         if (android.os.Build.VERSION.SDK_INT != Build.VERSION_CODES.O) {
@@ -427,24 +429,39 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
         service.getListReaderConnector().openReader();
         type = launchData.getType();
         draggableFrame.type = type;
-        if (android.os.Build.VERSION.SDK_INT != Build.VERSION_CODES.O) {
-            if (storiesContentFragment == null) {
-                setLoaderFragment();
-                startAnim(savedInstanceState1);
-            } else {
-                setStoriesFragment();
+        draggableFrame.post(new Runnable() {
+            @Override
+            public void run() {
+                animatedContainer.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        animatedContainer.setVisibility(View.VISIBLE);
+                    }
+                }, 100);
+                final Rect readerContainer = new Rect();
+                draggableFrame.getGlobalVisibleRect(readerContainer);
+                if (android.os.Build.VERSION.SDK_INT != Build.VERSION_CODES.O) {
+                    if (storiesContentFragment == null) {
+                        setLoaderFragment(readerContainer);
+                        startAnim(savedInstanceState1, readerContainer);
+                    } else {
+                        setStoriesFragment();
+                    }
+                } else {
+                    createStoriesFragment(savedInstanceState1, readerContainer);
+                    setStoriesFragment();
+                }
             }
-        } else {
-            createStoriesFragment(savedInstanceState1);
-            setStoriesFragment();
-        }
+        });
+
     }
 
-    private void setLoaderFragment() {
+    private void setLoaderFragment(Rect readerContainer) {
         try {
             FragmentManager fragmentManager = getSupportFragmentManager();
             StoriesLoaderFragment storiesLoaderFragment = new StoriesLoaderFragment();
             Bundle bundle = new Bundle();
+            bundle.putParcelable("readerContainer", readerContainer);
             setAppearanceSettings(bundle);
             storiesLoaderFragment.setArguments(bundle);
             FragmentTransaction t = fragmentManager.beginTransaction()
@@ -483,10 +500,11 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
         disableDrag(false);
     }
 
-    private void createStoriesFragment(Bundle savedInstanceState) {
+    private void createStoriesFragment(Bundle savedInstanceState, Rect readerContainer) {
         if (savedInstanceState == null) {
             storiesContentFragment = new StoriesContentFragment();
             Bundle bundle = new Bundle();
+            bundle.putParcelable("readerContainer", readerContainer);
             setAppearanceSettings(bundle);
             storiesContentFragment.setArguments(bundle);
         } else {

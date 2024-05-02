@@ -219,6 +219,14 @@ public class ReaderPageFragment extends Fragment {
         setOffsets(view);
         if (storiesView != null)
             storiesView.getManager().setIndex(story.lastIndex);
+        if (storiesView instanceof View) {
+            ((View) storiesView).post(new Runnable() {
+                @Override
+                public void run() {
+                    Log.e("storiesViewSize", ((View) storiesView).getHeight() + " " + ((View) storiesView).getWidth());
+                }
+            });
+        }
 
     }
 
@@ -237,21 +245,21 @@ public class ReaderPageFragment extends Fragment {
                 Rect readerContainer = getArguments().getParcelable("readerContainer");
                 int topOffset = 0;
                 Point maxSize = Sizes.getScreenSize(getContext());
+                int height = Sizes.getFullPhoneHeight(getContext());
                 if (readerContainer != null) {
                     screenSize = new Point(
                             Math.min(readerContainer.width(), maxSize.x),
-                            Math.min(readerContainer.height(), maxSize.y)
+                            Math.min(readerContainer.height(), height)
                     );
                     topOffset = readerContainer.top;
                 } else {
                     screenSize = maxSize;
                 }
-                LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) blackTop.getLayoutParams();
-                int panelHeight = getPanelHeight();
                 float realProps = screenSize.y / ((float) screenSize.x);
-                float sn = 1.88f;
+                float sn = 805f / 428f;
+                LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) blackTop.getLayoutParams();
                 if (realProps > sn) {
-                    lp.height = (int) (screenSize.y - (screenSize.x * sn + panelHeight));
+                    lp.height = (int) (screenSize.y - (screenSize.x * sn) - getPanelHeight(getContext()));
                     setCutout(view, lp.height);
                 } else {
                     setCutout(view, topOffset);
@@ -261,8 +269,8 @@ public class ReaderPageFragment extends Fragment {
         }
     }
 
-    private int getPanelHeight() {
-        return Sizes.dpToPxExt(60, getContext());
+    private int getPanelHeight(Context context) {
+        return Sizes.dpToPxExt(60, context);
     }
 
     private void setCutout(View view, int minusOffset) {
@@ -540,7 +548,7 @@ public class ReaderPageFragment extends Fragment {
     private void createButtonsPanel(Context context) {
         buttonsPanel = new ButtonsPanel(context, getArguments().getInt("story_id"));
         RelativeLayout.LayoutParams buttonsPanelParams = new RelativeLayout.LayoutParams(
-                MATCH_PARENT, Sizes.dpToPxExt(60, context)
+                MATCH_PARENT, getPanelHeight(context)
         );
         buttonsPanelParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);
         buttonsPanel.setVisibility(View.GONE);

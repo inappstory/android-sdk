@@ -124,7 +124,7 @@ public class Downloader {
         requestLog.isStatic = true;
         requestLog.id = requestId;
         responseLog.id = requestId;
-        String key = deleteQueryArgumentsFromUrlOld(url, deleteArguments);
+        String key = url;
         HashMap<String, String> headers = new HashMap<>();
         long offset = 0;
         if (cache.hasKey(key)) {

@@ -1,5 +1,6 @@
 package com.inappstory.sdk;
 
+import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_1;
 import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_10;
 import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_100;
 import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_5;
@@ -25,8 +26,7 @@ import com.inappstory.sdk.game.reader.logger.GameLogSender;
 import com.inappstory.sdk.game.reader.logger.IGameLogSaver;
 import com.inappstory.sdk.game.reader.logger.IGameLogSender;
 import com.inappstory.sdk.imageloader.ImageLoader;
-import com.inappstory.sdk.lrudiskcache.CacheType;
-import com.inappstory.sdk.lrudiskcache.FileManager;
+import com.inappstory.sdk.lrudiskcache.LruCachesHolder;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.stories.api.models.ExceptionCache;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
@@ -50,7 +50,6 @@ import com.inappstory.sdk.stories.utils.SessionManager;
 import com.inappstory.sdk.utils.ISessionHolder;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -327,75 +326,38 @@ public class InAppStoryService {
 
     private Context context;
 
+
+
     public LruDiskCache getFastCache() {
-        synchronized (cacheLock) {
-            if (fastCache == null) {
-                try {
-                    fastCache = LruDiskCache.create(
-                            context.getCacheDir(),
-                            IAS_PREFIX,
-                            MB_10, CacheType.FAST
-                    );
-                } catch (IOException e) {
-                    InAppStoryService.createExceptionLog(e);
-                }
-            }
-            return fastCache;
-        }
+        return cachesManager.getFastCache();
     }
 
     public LruDiskCache getInfiniteCache() {
-        synchronized (cacheLock) {
-            if (infiniteCache == null) {
-                try {
-                    long cacheType = context.getCacheDir().getFreeSpace();
-                    if (cacheType > 0) {
-                        infiniteCache = LruDiskCache.create(
-                                context.getFilesDir(),
-                                IAS_PREFIX,
-                                cacheType,
-                                CacheType.INFINITE
-                        );
-                    }
-                } catch (IOException e) {
-                    InAppStoryService.createExceptionLog(e);
-                }
-            }
-            return infiniteCache;
-        }
+        return cachesManager.getInfiniteCache();
     }
 
 
-    public LruDiskCache getCommonCache() {
-        synchronized (cacheLock) {
-            if (commonCache == null) {
-                try {
-                    long cacheType = MB_100;
-                    long fastCacheType = MB_10;
-                    long freeSpace = context.getCacheDir().getFreeSpace();
-                    if (freeSpace < cacheType + fastCacheType + MB_10) {
-                        cacheType = MB_50;
-                        if (freeSpace < cacheType + fastCacheType + MB_10) {
-                            cacheType = MB_10;
-                            fastCacheType = MB_5;
-                            if (freeSpace < cacheType + fastCacheType + MB_10) {
-                                cacheType = 0;
-                            }
-                        }
-                    }
-                    if (cacheType > 0) {
-                        commonCache = LruDiskCache.create(
-                                context.getCacheDir(),
-                                IAS_PREFIX,
-                                cacheType, CacheType.COMMON
-                        );
-                    }
-                } catch (IOException e) {
-                    InAppStoryService.createExceptionLog(e);
+    public void setCacheSizes(Context context) {
+        long cacheType = MB_100;
+        long fastCacheType = MB_10;
+        long freeSpace = context.getCacheDir().getFreeSpace();
+        if (freeSpace < cacheType + fastCacheType + MB_10) {
+            cacheType = MB_50;
+            if (freeSpace < cacheType + fastCacheType + MB_10) {
+                cacheType = MB_10;
+                fastCacheType = MB_5;
+                if (freeSpace < cacheType + fastCacheType + MB_10) {
+                    cacheType = MB_1;
+                    fastCacheType = MB_1;
                 }
             }
-            return commonCache;
         }
+        getFastCache().setCacheSize(fastCacheType);
+        getCommonCache().setCacheSize(cacheType);
+    }
+
+    public LruDiskCache getCommonCache() {
+        return cachesManager.getCommonCache();
     }
 
     boolean backPaused = false;
@@ -748,24 +710,15 @@ public class InAppStoryService {
     private ScheduledExecutorService checkSpaceThread = new ScheduledThreadPoolExecutor(1);
 
 
-    private void clearOldFiles() {
-        FileManager.deleteRecursive(new File(context.getFilesDir() + File.separator + "Stories"));
-        FileManager.deleteRecursive(new File(context.getFilesDir() + File.separator + "temp"));
-    }
-
     public void createDownloadManager(ExceptionCache cache) {
         if (downloadManager == null)
             downloadManager = new StoryDownloadManager(context, cache);
     }
 
-    public void onCreate(Context context, ExceptionCache exceptionCache) {
+    LruCachesHolder cachesManager;
+
+    public void onCreate(Context context, int cacheSize, ExceptionCache exceptionCache) {
         this.context = context;
-        new Handler().post(new Runnable() {
-            @Override
-            public void run() {
-                clearOldFiles();
-            }
-        });
         Thread.setDefaultUncaughtExceptionHandler(new DefaultExceptionHandler());
         new ImageLoader(context);
         createDownloadManager(exceptionCache);
@@ -785,8 +738,11 @@ public class InAppStoryService {
         }
         checkSpaceThread.scheduleAtFixedRate(checkFreeSpace, 1L, 60000L, TimeUnit.MILLISECONDS);
         getDownloadManager().initDownloaders();
+        cachesManager = new LruCachesHolder(context, cacheSize);
         logSaver = new GameLogSaver();
         logSender = new GameLogSender(this, logSaver);
+
+
     }
 
     private static final Object lock = new Object();
