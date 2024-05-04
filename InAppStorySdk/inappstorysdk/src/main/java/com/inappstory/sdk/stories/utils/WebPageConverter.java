@@ -13,6 +13,7 @@ import com.inappstory.sdk.stories.api.models.ImagePlaceholderType;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.cache.Downloader;
+import com.inappstory.sdk.utils.StringsUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -82,8 +83,8 @@ public class WebPageConverter {
         for (int i = 0; i < resourceKeys.size(); i++) {
             String resource = resourceUrls.get(i);
             String resourceKey = resourceKeys.get(i);
-            String key = Downloader.deleteQueryArgumentsFromUrlOld(resource, true);
-            File file = Downloader.updateFile(cache.getFullFile(key), resource, cache, key);
+            String key = StringsUtils.md5(resource);
+            File file = cache.getFullFile(key);
             if (file != null && file.exists() && file.length() > 0) {
                 resource = "file://" + file.getAbsolutePath();
             }
@@ -105,16 +106,14 @@ public class WebPageConverter {
                 if (placeholderValue != null) {
                     String path = "";
                     if (placeholderValue.first.getType() == ImagePlaceholderType.URL) {
-                        File file = cache.getFullFile(
-                                Downloader.deleteQueryArgumentsFromUrlOld(placeholderValue.first.getUrl(), true)
-                        );
+                        String uniqueKey = StringsUtils.md5(placeholderValue.first.getUrl());
+                        File file = cache.getFullFile(uniqueKey);
                         if (file != null && file.exists() && file.length() > 0) {
                             path = "file://" + file.getAbsolutePath();
                         } else {
                             if (placeholderValue.second.getType() == ImagePlaceholderType.URL) {
-                                file = cache.getFullFile(
-                                        Downloader.deleteQueryArgumentsFromUrlOld(placeholderValue.second.getUrl(), true)
-                                );
+                                uniqueKey = StringsUtils.md5(placeholderValue.second.getUrl());
+                                file = cache.getFullFile(uniqueKey);
                                 if (file != null && file.exists() && file.length() > 0) {
                                     path = "file://" + file.getAbsolutePath();
                                 }

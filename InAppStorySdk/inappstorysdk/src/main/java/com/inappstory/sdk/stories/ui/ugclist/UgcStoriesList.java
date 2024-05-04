@@ -392,7 +392,7 @@ public class UgcStoriesList extends RecyclerView {
         InAppStoryService service = InAppStoryService.getInstance();
         if (service != null)
             for (int id : storiesIds) {
-                Story story = service.getDownloadManager().getStoryById(id, Story.StoryType.UGC);
+                Story story = service.getStoryDownloadManager().getStoryById(id, Story.StoryType.UGC);
                 if (story != null) {
                     data.add(new UgcStoryData(story, SourceType.LIST));
                 }
@@ -482,7 +482,7 @@ public class UgcStoriesList extends RecyclerView {
                     if (callback != null) callback.loadError("");
                 }
             };
-            service.getDownloadManager().loadUgcStories(lcallback, payload);
+            service.getStoryDownloadManager().loadUgcStories(lcallback, payload);
 
         } else {
             new Handler().postDelayed(new Runnable() {
@@ -519,7 +519,7 @@ public class UgcStoriesList extends RecyclerView {
                                 if (callback != null) callback.loadError("");
                             }
                         };
-                        service1.getDownloadManager().loadUgcStories(lcallback, payload);
+                        service1.getStoryDownloadManager().loadUgcStories(lcallback, payload);
                     }
                 }
             }, 1000);

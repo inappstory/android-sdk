@@ -48,12 +48,10 @@ import com.inappstory.sdk.stories.ui.reader.animations.PopupReaderAnimation;
 import com.inappstory.sdk.stories.ui.reader.animations.ReaderAnimation;
 import com.inappstory.sdk.stories.ui.reader.animations.ZoomReaderCenterAnimation;
 import com.inappstory.sdk.stories.ui.reader.animations.ZoomReaderFromCellAnimation;
-import com.inappstory.sdk.stories.ui.utils.FragmentAction;
 import com.inappstory.sdk.stories.ui.widgets.elasticview.ElasticDragDismissFrameLayout;
 import com.inappstory.sdk.stories.utils.IASBackPressHandler;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 import com.inappstory.sdk.stories.utils.Sizes;
-import com.inappstory.sdk.stories.utils.StatusBarController;
 
 
 public class StoriesActivity extends AppCompatActivity implements BaseReaderScreen, ShowGoodsCallback {
@@ -552,7 +550,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
         blockView.setVisibility(View.VISIBLE);
         if (service != null) {
             service.getListReaderConnector().closeReader();
-            Story story = service.getDownloadManager()
+            Story story = service.getStoryDownloadManager()
                     .getStoryById(service.getCurrentId(), type);
             if (story != null) {
                 if (CallbackManager.getInstance().getCloseStoryCallback() != null) {
@@ -612,7 +610,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
         blockView.setVisibility(View.VISIBLE);
         if (service != null) {
             service.getListReaderConnector().closeReader();
-            Story story = service.getDownloadManager()
+            Story story = service.getStoryDownloadManager()
                     .getStoryById(service.getCurrentId(), type);
             if (story != null) {
                 if (CallbackManager.getInstance().getCloseStoryCallback() != null) {
@@ -662,7 +660,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
             public void use(@NonNull InAppStoryService service) throws Exception {
                 service.setCurrentIndex(0);
                 service.setCurrentId(0);
-                service.getDownloadManager().cleanStoriesIndex(type);
+                service.getStoryDownloadManager().cleanStoriesIndex(type);
                 cleaned = true;
             }
         });

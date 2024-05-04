@@ -9,11 +9,9 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 
@@ -21,7 +19,6 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager.widget.ViewPager;
 
-import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.inner.share.InnerShareData;
@@ -44,7 +41,6 @@ import com.inappstory.sdk.stories.statistic.GetOldStatisticManagerCallback;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.ui.OverlapFragmentObserver;
 import com.inappstory.sdk.stories.ui.ScreensManager;
-import com.inappstory.sdk.stories.ui.dialog.CancelListener;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPagerAdapter;
 import com.inappstory.sdk.stories.utils.IASBackPressHandler;
@@ -216,7 +212,7 @@ public class StoriesContentFragment extends Fragment
         if (service == null) {
             return;
         }
-        Story st = service.getDownloadManager().getStoryById(
+        Story st = service.getStoryDownloadManager().getStoryById(
                 storyId,
                 type
         );
@@ -448,7 +444,7 @@ public class StoriesContentFragment extends Fragment
 
     public void swipeCloseEvent(int position, boolean check) {
         if (check) {
-            Story story = InAppStoryService.getInstance().getDownloadManager()
+            Story story = InAppStoryService.getInstance().getStoryDownloadManager()
                     .getStoryById(currentIds.get(position), readerManager.storyType);
             if (story == null || story.disableClose) return;
             ScreensManager.getInstance().closeStoryReader(CloseStory.SWIPE);
@@ -474,8 +470,8 @@ public class StoriesContentFragment extends Fragment
 
 
     private int getCurIndexById(int id) {
-        if (InAppStoryService.getInstance().getDownloadManager() == null) return 0;
-        Story st = InAppStoryService.getInstance().getDownloadManager().getStoryById(id, readerManager.storyType);
+        if (InAppStoryService.getInstance().getStoryDownloadManager() == null) return 0;
+        Story st = InAppStoryService.getInstance().getStoryDownloadManager().getStoryById(id, readerManager.storyType);
         return st == null ? 0 : st.lastIndex;
     }
 

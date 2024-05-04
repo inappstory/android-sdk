@@ -23,4 +23,10 @@ public class UrlWithAlter {
     public String getAlter() {
         return alter;
     }
+
+    @NonNull
+    @Override
+    public String toString() {
+        return url + " " + alter;
+    }
 }

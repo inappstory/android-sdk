@@ -245,9 +245,10 @@ public class ZipLoader {
                             deleteFolderRecursive(gameDirFile, true);
                         }
                     }
-                    File cachedArchive = InAppStoryService.getInstance().getInfiniteCache().getFullFile(
-                            Downloader.deleteQueryArgumentsFromUrlOld(url, true)
-                    );
+                    File cachedArchive =
+                            InAppStoryService.getInstance().getInfiniteCache().getFullFile(
+                                    StringsUtils.md5(url)
+                            );
                     if (cachedArchive != null) {
                         if (gameCenterData != null &&
                                 !fileChecker.checkWithShaAndSize(

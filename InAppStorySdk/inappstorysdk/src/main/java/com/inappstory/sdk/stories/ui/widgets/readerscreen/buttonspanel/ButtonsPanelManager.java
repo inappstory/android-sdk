@@ -1,7 +1,5 @@
 package com.inappstory.sdk.stories.ui.widgets.readerscreen.buttonspanel;
 
-import android.os.Build;
-
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.inner.share.InnerShareData;
@@ -12,13 +10,10 @@ import com.inappstory.sdk.share.IShareCompleteListener;
 import com.inappstory.sdk.stories.api.models.ShareObject;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPageManager;
-import com.inappstory.sdk.utils.StringsUtils;
 
 import java.lang.reflect.Type;
 
@@ -65,7 +60,7 @@ public class ButtonsPanelManager {
         if (networkClient == null) {
             return;
         }
-        Story story = inAppStoryService.getDownloadManager().getStoryById(storyId, pageManager.getStoryType());
+        Story story = inAppStoryService.getStoryDownloadManager().getStoryById(storyId, pageManager.getStoryType());
         if (story == null) return;
         final int val;
         if (like) {
@@ -120,7 +115,7 @@ public class ButtonsPanelManager {
                     @Override
                     public void onSuccess(Response response) {
                         ProfilingManager.getInstance().setReady(likeUID);
-                        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId, pageManager.getStoryType());
+                        Story story = InAppStoryService.getInstance().getStoryDownloadManager().getStoryById(storyId, pageManager.getStoryType());
                         if (story != null)
                             story.like = val;
                         if (callback != null)
@@ -155,7 +150,7 @@ public class ButtonsPanelManager {
         if (networkClient == null) {
             return;
         }
-        Story story = inAppStoryService.getDownloadManager().getStoryById(storyId, pageManager.getStoryType());
+        Story story = inAppStoryService.getStoryDownloadManager().getStoryById(storyId, pageManager.getStoryType());
         if (story == null) return;
         final boolean val = story.favorite;
         if (!story.favorite)
@@ -177,7 +172,7 @@ public class ButtonsPanelManager {
                     @Override
                     public void onSuccess(Response response) {
                         ProfilingManager.getInstance().setReady(favUID);
-                        Story story = inAppStoryService.getDownloadManager().getStoryById(storyId, pageManager.getStoryType());
+                        Story story = inAppStoryService.getStoryDownloadManager().getStoryById(storyId, pageManager.getStoryType());
                         boolean res = !val;
                         if (story != null)
                             story.favorite = res;
@@ -226,7 +221,7 @@ public class ButtonsPanelManager {
         }
         if (inAppStoryService == null || inAppStoryService.isShareProcess())
             return;
-        final Story story = inAppStoryService.getDownloadManager().getStoryById(storyId, pageManager.getStoryType());
+        final Story story = inAppStoryService.getStoryDownloadManager().getStoryById(storyId, pageManager.getStoryType());
         if (story == null) return;
         final int slideIndex = story.lastIndex;
         StatisticManager.getInstance().sendShareStory(story.id, slideIndex,

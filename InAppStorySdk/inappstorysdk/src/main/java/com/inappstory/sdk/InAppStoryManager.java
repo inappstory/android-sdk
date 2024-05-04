@@ -255,7 +255,7 @@ public class InAppStoryManager {
         InAppStoryService.useInstance(new UseServiceInstanceCallback() {
             @Override
             public void use(@NonNull InAppStoryService service) {
-                service.getDownloadManager().clearCache();
+                service.getStoryDownloadManager().clearCache();
             }
         });
     }
@@ -268,7 +268,7 @@ public class InAppStoryManager {
         InAppStoryService.useInstance(new UseServiceInstanceCallback() {
             @Override
             public void use(@NonNull InAppStoryService service) {
-                service.getDownloadManager().clearCache();
+                service.getStoryDownloadManager().clearCache();
             }
         });
     }
@@ -947,9 +947,9 @@ public class InAppStoryManager {
                             @Override
                             public void onSuccess(Response response) {
                                 ProfilingManager.getInstance().setReady(favUID);
-                                service.getDownloadManager()
+                                service.getStoryDownloadManager()
                                         .clearAllFavoriteStatus(Story.StoryType.COMMON);
-                                service.getDownloadManager()
+                                service.getStoryDownloadManager()
                                         .clearAllFavoriteStatus(Story.StoryType.UGC);
                                 service.getFavoriteImages().clear();
                                 service.getListReaderConnector().clearAllFavorites();
@@ -999,7 +999,7 @@ public class InAppStoryManager {
                             @Override
                             public void onSuccess(Response response) {
                                 ProfilingManager.getInstance().setReady(favUID);
-                                Story story = service.getDownloadManager()
+                                Story story = service.getStoryDownloadManager()
                                         .getStoryById(storyId, Story.StoryType.COMMON);
                                 if (story != null)
                                     story.favorite = favorite;
@@ -1120,9 +1120,9 @@ public class InAppStoryManager {
         );
         if (inAppStoryService.getFavoriteImages() != null)
             inAppStoryService.getFavoriteImages().clear();
-        inAppStoryService.getDownloadManager().refreshLocals(Story.StoryType.COMMON);
-        inAppStoryService.getDownloadManager().refreshLocals(Story.StoryType.UGC);
-        inAppStoryService.getDownloadManager().cleanTasks(false);
+        inAppStoryService.getStoryDownloadManager().refreshLocals(Story.StoryType.COMMON);
+        inAppStoryService.getStoryDownloadManager().refreshLocals(Story.StoryType.UGC);
+        inAppStoryService.getStoryDownloadManager().cleanTasks(false);
         inAppStoryService.setUserId(userId);
     }
 
@@ -1251,7 +1251,7 @@ public class InAppStoryManager {
             public void use(@NonNull final InAppStoryService inAppStoryService) throws Exception {
                 inAppStoryService.listStoriesIds.clear();
                 inAppStoryService.getListSubscribers().clear();
-                inAppStoryService.getDownloadManager().cleanTasks();
+                inAppStoryService.getStoryDownloadManager().cleanTasks();
                 ScreensManager.getInstance().forceCloseAllReaders(
                         new ForceCloseReaderCallback() {
                             @Override
@@ -1350,7 +1350,7 @@ public class InAppStoryManager {
         for (Story story : response) {
             storiesIds.add(story.id);
         }
-        inAppStoryService.getDownloadManager().uploadingAdditional(stories, storyType);
+        inAppStoryService.getStoryDownloadManager().uploadingAdditional(stories, storyType);
         StoriesReaderLaunchData launchData = new StoriesReaderLaunchData(
                 null,
                 feed,
@@ -1447,7 +1447,7 @@ public class InAppStoryManager {
                                         @Override
                                         public void use(@NonNull InAppStoryService service) throws Exception {
                                             service.saveStoriesOpened(response.stories, Story.StoryType.COMMON);
-                                            service.getDownloadManager().uploadingAdditional(
+                                            service.getStoryDownloadManager().uploadingAdditional(
                                                     response.stories,
                                                     Story.StoryType.COMMON
                                             );
@@ -1748,8 +1748,8 @@ public class InAppStoryManager {
         InAppStoryService.useInstance(new UseServiceInstanceCallback() {
             @Override
             public void use(@NonNull InAppStoryService service) {
-                service.getDownloadManager().putStories(
-                        service.getDownloadManager().getStories(Story.StoryType.COMMON),
+                service.getStoryDownloadManager().putStories(
+                        service.getStoryDownloadManager().getStories(Story.StoryType.COMMON),
                         type
                 );
             }
@@ -1822,12 +1822,12 @@ public class InAppStoryManager {
             return;
         }
         lastSingleOpen = storyId;
-        service.getDownloadManager().getFullStoryByStringId(
+        service.getStoryDownloadManager().getFullStoryByStringId(
                 new GetStoryByIdCallback() {
                     @Override
                     public void getStory(final Story story, final String sessionId) {
                         if (story != null) {
-                            service.getDownloadManager().addCompletedStoryTask(story,
+                            service.getStoryDownloadManager().addCompletedStoryTask(story,
                                     Story.StoryType.COMMON);
                             if (isStoryReaderOpened()) {
                                 ScreensManager.getInstance().closeStoryReader(CloseStory.AUTO);
@@ -1919,12 +1919,12 @@ public class InAppStoryManager {
         if (lastSingleOpen != null &&
                 lastSingleOpen.equals(storyId)) return;
         lastSingleOpen = storyId;
-        service.getDownloadManager().getFullStoryByStringId(
+        service.getStoryDownloadManager().getFullStoryByStringId(
                 new GetStoryByIdCallback() {
                     @Override
                     public void getStory(final Story story, final String sessionId) {
                         if (story != null) {
-                            service.getDownloadManager().addCompletedStoryTask(story,
+                            service.getStoryDownloadManager().addCompletedStoryTask(story,
                                     Story.StoryType.COMMON);
                             if (isStoryReaderOpened()) {
                                 ScreensManager.getInstance().closeStoryReader(CloseStory.AUTO);

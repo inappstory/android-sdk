@@ -1,4 +1,27 @@
 package com.inappstory.sdk.stories.cache.usecases;
 
-public class GameFolderUseCase {
+import com.inappstory.sdk.lrudiskcache.CacheJournalItem;
+import com.inappstory.sdk.lrudiskcache.LruCachesHolder;
+import com.inappstory.sdk.lrudiskcache.LruDiskCache;
+import com.inappstory.sdk.stories.cache.FilesDownloadManager;
+
+public class GameFolderUseCase extends GetCacheFileUseCase<Void> {
+    public GameFolderUseCase(FilesDownloadManager filesDownloadManager) {
+        super(filesDownloadManager);
+    }
+
+    @Override
+    public Void getFile() {
+        return null;
+    }
+
+    @Override
+    protected CacheJournalItem generateCacheItem() {
+        return null;
+    }
+
+    @Override
+    protected LruDiskCache getCache() {
+        return filesDownloadManager.getCachesHolder().getInfiniteCache();
+    }
 }

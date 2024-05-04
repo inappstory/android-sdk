@@ -29,7 +29,6 @@ import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPageManager;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
-import com.inappstory.sdk.stories.utils.Sizes;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -88,11 +87,11 @@ public class ReaderManager {
     int latestShowStoryAction = ShowStory.ACTION_OPEN;
 
     public void sendShowStoryEvents(int storyId) {
-        if (InAppStoryService.getInstance() == null || InAppStoryService.getInstance().getDownloadManager() == null)
+        if (InAppStoryService.getInstance() == null || InAppStoryService.getInstance().getStoryDownloadManager() == null)
             return;
         if (lastSentId == storyId) return;
         lastSentId = storyId;
-        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId, storyType);
+        Story story = InAppStoryService.getInstance().getStoryDownloadManager().getStoryById(storyId, storyType);
         if (story != null) {
             if (CallbackManager.getInstance().getShowStoryCallback() != null) {
                 CallbackManager.getInstance().getShowStoryCallback().showStory(
@@ -227,7 +226,7 @@ public class ReaderManager {
                         @Override
                         public void run() {
                             Story.StoryType type = Story.StoryType.COMMON;
-                            Story st = service.getDownloadManager()
+                            Story st = service.getStoryDownloadManager()
                                     .getStoryById(storyId, type);
                             if (st != null) {
                                 if (st.getSlidesCount() <= slideIndex) {
@@ -299,7 +298,7 @@ public class ReaderManager {
         }
         InAppStoryService service = InAppStoryService.getInstance();
         if (service == null) return;
-        if (!service.getDownloadManager().changePriority(
+        if (!service.getStoryDownloadManager().changePriority(
                 storiesIds.get(pos),
                 adds,
                 storyType
@@ -309,7 +308,7 @@ public class ReaderManager {
                 host.forceFinish();
             return;
         }
-        service.getDownloadManager().addStoryTask(
+        service.getStoryDownloadManager().addStoryTask(
                 storiesIds.get(pos),
                 adds,
                 storyType);
@@ -338,7 +337,7 @@ public class ReaderManager {
         lastPos = position;
         lastSentId = 0;
         currentStoryId = storiesIds.get(position);
-        Story story = service.getDownloadManager().getStoryById(currentStoryId, storyType);
+        Story story = service.getStoryDownloadManager().getStoryById(currentStoryId, storyType);
         if (story != null) {
             if (firstStoryId > 0 && startedSlideInd > 0) {
                 if (story.getSlidesCount() > startedSlideInd)
@@ -435,11 +434,11 @@ public class ReaderManager {
 
         InAppStoryService service = InAppStoryService.getInstance();
         if (service == null) return;
-        Story story2 = service.getDownloadManager().getStoryById(id, storyType);
+        Story story2 = service.getStoryDownloadManager().getStoryById(id, storyType);
         if (story2 == null) return;
         StatisticManager.getInstance().sendCurrentState();
         if (hasCloseEvent) {
-            Story story = service.getDownloadManager().getStoryById(storiesIds.get(lastPos), storyType);
+            Story story = service.getStoryDownloadManager().getStoryById(storiesIds.get(lastPos), storyType);
             StatisticManager.getInstance().sendCloseStory(story.id, whence, story.lastIndex, story.getSlidesCount(), feedId);
         }
         StatisticManager.getInstance().sendViewStory(id, whence, feedId);

@@ -1,8 +1,5 @@
 package com.inappstory.sdk.stories.managers;
 
-import android.os.Handler;
-import android.util.Log;
-
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.InAppStoryService;
@@ -14,8 +11,6 @@ import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPageManager;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -196,7 +191,7 @@ public class TimerManager {
             @Override
             public void use(@NonNull InAppStoryService service) throws Exception {
                 Story.StoryType type = (pageManager != null) ? pageManager.getStoryType() : Story.StoryType.COMMON;
-                Story story = service.getDownloadManager()
+                Story story = service.getStoryDownloadManager()
                         .getStoryById(service.getCurrentId(), type);
                 if (story != null) {
                     StatisticManager.getInstance().addFakeEvents(story.id, story.lastIndex, story.getSlidesCount(),

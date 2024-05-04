@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
+import kotlin.NotImplementedError;
+
 public class LruDiskCache {
 
     private final CacheJournal journal;
@@ -55,7 +57,12 @@ public class LruDiskCache {
         }
     }
 
-    LruDiskCache(File cacheDir, String subPath, long cacheSize, CacheType cacheType) throws IOException {
+    LruDiskCache(
+            File cacheDir,
+            String subPath,
+            long cacheSize,
+            CacheType cacheType
+    ) throws IOException {
         this.manager = new FileManager(cacheDir, subPath);
         this.journal = new CacheJournal(manager);
         this.cacheSize = cacheSize;
@@ -63,21 +70,34 @@ public class LruDiskCache {
     }
 
     public void put(String key, File file) throws IOException {
-        long fileSize = manager.getFileSize(file);
-        put(key, file, fileSize, fileSize);
+        throw new NoSuchMethodError();
+        /*long fileSize = manager.getFileSize(file);
+        put(key, file, fileSize, fileSize);*/
     }
 
-    public File put(String key, File file, long fileSize, long downloadedSize) throws IOException {
-        synchronized (journal) {
+    public void put(String key, File file, long fileSize, long downloadedSize) throws IOException {
+        throw new NoSuchMethodError();
+   /*     synchronized (journal) {
             keyIsValid(key);
             String name = file.getAbsolutePath();
             long time = System.currentTimeMillis();
             CacheJournalItem item = new CacheJournalItem(key, name, time, fileSize, downloadedSize);
-            File cacheFile = manager.put(file, name);
+            manager.put(file, name);
             journal.delete(key, false);
             journal.put(item, cacheSize);
             journal.writeJournal();
-            return cacheFile;
+        }*/
+    }
+
+    public void put(CacheJournalItem item) throws IOException {
+        synchronized (journal) {
+            File file = new File(item.getFilePath());
+            keyIsValid(item.getUniqueKey());
+            String name = file.getAbsolutePath();
+            manager.put(file, name);
+            journal.delete(item.getUniqueKey(), false);
+            journal.put(item, cacheSize);
+            journal.writeJournal();
         }
     }
 
@@ -88,11 +108,8 @@ public class LruDiskCache {
     private void delete(String key, boolean writeJournal) throws IOException {
         synchronized (journal) {
             keyIsValid(key);
-            CacheJournalItem item = journal.delete(key, true);
-            if (item != null) {
-                if (writeJournal) {
-                    journal.writeJournal();
-                }
+            if (journal.delete(key, true) && writeJournal) {
+                journal.writeJournal();
             }
         }
     }

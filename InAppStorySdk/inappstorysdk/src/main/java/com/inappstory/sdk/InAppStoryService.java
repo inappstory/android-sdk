@@ -26,13 +26,13 @@ import com.inappstory.sdk.game.reader.logger.GameLogSender;
 import com.inappstory.sdk.game.reader.logger.IGameLogSaver;
 import com.inappstory.sdk.game.reader.logger.IGameLogSender;
 import com.inappstory.sdk.imageloader.ImageLoader;
-import com.inappstory.sdk.lrudiskcache.LruCachesHolder;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.stories.api.models.ExceptionCache;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.StoryPlaceholder;
 import com.inappstory.sdk.stories.api.models.logs.ExceptionLog;
+import com.inappstory.sdk.stories.cache.FilesDownloadManager;
 import com.inappstory.sdk.stories.cache.FakeStoryDownloadManager;
 import com.inappstory.sdk.stories.cache.StoryDownloadManager;
 import com.inappstory.sdk.stories.exceptions.ExceptionManager;
@@ -220,13 +220,13 @@ public class InAppStoryService {
     }
 
 
-    public StoryDownloadManager getDownloadManager() {
-        if (downloadManager == null) return fakeStoryDownloadManager;
-        return downloadManager;
+    public StoryDownloadManager getStoryDownloadManager() {
+        if (storyDownloadManager == null) return fakeStoryDownloadManager;
+        return storyDownloadManager;
     }
 
     FakeStoryDownloadManager fakeStoryDownloadManager = new FakeStoryDownloadManager();
-    StoryDownloadManager downloadManager;
+    StoryDownloadManager storyDownloadManager;
     GameCacheManager gameCacheManager = new GameCacheManager();
 
     public GameCacheManager gameCacheManager() {
@@ -268,14 +268,14 @@ public class InAppStoryService {
 
     public void clearLocalData() {
         listStoriesIds.clear();
-        downloadManager.clearLocalData();
+        storyDownloadManager.clearLocalData();
     }
 
     public List<FavoriteImage> getFavoriteImages() {
-        if (downloadManager == null) return new ArrayList<>();
-        if (downloadManager.favoriteImages == null)
-            downloadManager.favoriteImages = new ArrayList<>();
-        return downloadManager.favoriteImages;
+        if (storyDownloadManager == null) return new ArrayList<>();
+        if (storyDownloadManager.favoriteImages == null)
+            storyDownloadManager.favoriteImages = new ArrayList<>();
+        return storyDownloadManager.favoriteImages;
     }
 
 
@@ -294,7 +294,7 @@ public class InAppStoryService {
 
     public void onDestroy() {
         checkSpaceThread.shutdown();
-        getDownloadManager().destroy();
+        getStoryDownloadManager().destroy();
         if (INSTANCE == this)
             INSTANCE = null;
     }
@@ -329,11 +329,11 @@ public class InAppStoryService {
 
 
     public LruDiskCache getFastCache() {
-        return cachesManager.getFastCache();
+        return filesDownloadManager.getCachesHolder().getFastCache();
     }
 
     public LruDiskCache getInfiniteCache() {
-        return cachesManager.getInfiniteCache();
+        return filesDownloadManager.getCachesHolder().getInfiniteCache();
     }
 
 
@@ -357,7 +357,7 @@ public class InAppStoryService {
     }
 
     public LruDiskCache getCommonCache() {
-        return cachesManager.getCommonCache();
+        return filesDownloadManager.getCachesHolder().getCommonCache();
     }
 
     boolean backPaused = false;
@@ -656,9 +656,9 @@ public class InAppStoryService {
                                 return;
                             }
                             manager.setExceptionCache(new ExceptionCache(
-                                    service.getDownloadManager().getStories(Story.StoryType.COMMON),
-                                    service.getDownloadManager().favStories,
-                                    service.getDownloadManager().favoriteImages
+                                    service.getStoryDownloadManager().getStories(Story.StoryType.COMMON),
+                                    service.getStoryDownloadManager().favStories,
+                                    service.getStoryDownloadManager().favoriteImages
                             ));
                             synchronized (lock) {
                                 service.onDestroy();
@@ -711,11 +711,16 @@ public class InAppStoryService {
 
 
     public void createDownloadManager(ExceptionCache cache) {
-        if (downloadManager == null)
-            downloadManager = new StoryDownloadManager(context, cache);
+        if (storyDownloadManager == null)
+            storyDownloadManager = new StoryDownloadManager(context, cache);
     }
 
-    LruCachesHolder cachesManager;
+
+    public FilesDownloadManager getFilesDownloadManager() {
+        return filesDownloadManager;
+    }
+
+    private FilesDownloadManager filesDownloadManager;
 
     public void onCreate(Context context, int cacheSize, ExceptionCache exceptionCache) {
         this.context = context;
@@ -737,8 +742,8 @@ public class InAppStoryService {
             checkSpaceThread = new ScheduledThreadPoolExecutor(1);
         }
         checkSpaceThread.scheduleAtFixedRate(checkFreeSpace, 1L, 60000L, TimeUnit.MILLISECONDS);
-        getDownloadManager().initDownloaders();
-        cachesManager = new LruCachesHolder(context, cacheSize);
+        getStoryDownloadManager().initDownloaders();
+        filesDownloadManager = new FilesDownloadManager(context, cacheSize);
         logSaver = new GameLogSaver();
         logSender = new GameLogSender(this, logSaver);
 

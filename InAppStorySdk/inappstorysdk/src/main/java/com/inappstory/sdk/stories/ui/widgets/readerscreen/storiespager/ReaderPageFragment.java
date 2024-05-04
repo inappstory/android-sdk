@@ -5,8 +5,6 @@ import static com.inappstory.sdk.AppearanceManager.BOTTOM_END;
 import static com.inappstory.sdk.AppearanceManager.BOTTOM_LEFT;
 import static com.inappstory.sdk.AppearanceManager.BOTTOM_RIGHT;
 import static com.inappstory.sdk.AppearanceManager.BOTTOM_START;
-import static com.inappstory.sdk.AppearanceManager.CS_READER_SETTINGS;
-import static com.inappstory.sdk.AppearanceManager.CS_TIMER_GRADIENT;
 import static com.inappstory.sdk.AppearanceManager.TOP_END;
 import static com.inappstory.sdk.AppearanceManager.TOP_LEFT;
 import static com.inappstory.sdk.AppearanceManager.TOP_RIGHT;
@@ -26,7 +24,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.os.VibrationEffect;
 import android.util.Log;
 import android.view.DisplayCutout;
 import android.view.LayoutInflater;
@@ -46,7 +43,6 @@ import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
-import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.managers.TimerManager;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderAppearanceSettings;
@@ -170,8 +166,8 @@ public class ReaderPageFragment extends Fragment {
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
         if (InAppStoryService.getInstance() != null
-                && InAppStoryService.getInstance().getDownloadManager() != null) {
-            Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(
+                && InAppStoryService.getInstance().getStoryDownloadManager() != null) {
+            Story story = InAppStoryService.getInstance().getStoryDownloadManager().getStoryById(
                     storyId,
                     manager.getStoryType()
             );
@@ -666,8 +662,8 @@ public class ReaderPageFragment extends Fragment {
         bindViews(view);
         setActions();
         if (setManagers() && InAppStoryService.getInstance() != null
-                && InAppStoryService.getInstance().getDownloadManager() != null) {
-            InAppStoryService.getInstance().getDownloadManager().addSubscriber(manager);
+                && InAppStoryService.getInstance().getStoryDownloadManager() != null) {
+            InAppStoryService.getInstance().getStoryDownloadManager().addSubscriber(manager);
         } else {
             InAppStoryManager.closeStoryReader();
         }
@@ -679,8 +675,8 @@ public class ReaderPageFragment extends Fragment {
         super.onStart();
         boolean storyIsEmpty = (story == null);
         InAppStoryService service = InAppStoryService.getInstance();
-        if (service != null && service.getDownloadManager() != null && storyIsEmpty) {
-            story = service.getDownloadManager().getStoryById(
+        if (service != null && service.getStoryDownloadManager() != null && storyIsEmpty) {
+            story = service.getStoryDownloadManager().getStoryById(
                     storyId,
                     manager.getStoryType()
             );
@@ -713,7 +709,7 @@ public class ReaderPageFragment extends Fragment {
             if (parentManager != null)
                 parentManager.removeSubscriber(manager);
             if (InAppStoryService.getInstance() != null)
-                InAppStoryService.getInstance().getDownloadManager().removeSubscriber(manager);
+                InAppStoryService.getInstance().getStoryDownloadManager().removeSubscriber(manager);
         }
         super.onDestroyView();
     }

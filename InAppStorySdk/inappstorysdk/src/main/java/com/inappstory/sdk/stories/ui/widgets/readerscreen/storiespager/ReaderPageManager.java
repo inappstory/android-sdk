@@ -2,7 +2,6 @@ package com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager;
 
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 
@@ -17,7 +16,6 @@ import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickAction;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.UgcStoryData;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.statistic.GetOldStatisticManagerCallback;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
@@ -113,7 +111,7 @@ public class ReaderPageManager {
         if (this.slideIndex == slideIndex) return;
         if (checkIfManagersIsNull()) return;
         this.slideIndex = slideIndex;
-        Story story = InAppStoryService.getInstance().getDownloadManager()
+        Story story = InAppStoryService.getInstance().getStoryDownloadManager()
                 .getStoryById(storyId, getStoryType());
         timerManager.stopTimer();
         if (story != null) {
@@ -148,12 +146,12 @@ public class ReaderPageManager {
     }
 
     public void reloadStory() {
-        InAppStoryService.getInstance().getDownloadManager().reloadStory(storyId, getStoryType());
+        InAppStoryService.getInstance().getStoryDownloadManager().reloadStory(storyId, getStoryType());
     }
 
     public void widgetEvent(String widgetName, String widgetData) {
         Story story = InAppStoryService.getInstance()
-                .getDownloadManager().getStoryById(storyId, getStoryType());
+                .getStoryDownloadManager().getStoryById(storyId, getStoryType());
         if (story == null) return;
         Map<String, String> widgetEventMap = JsonParser.toMap(widgetData);
         if (widgetEventMap != null)
@@ -174,7 +172,7 @@ public class ReaderPageManager {
         if (object != null) {
 
             ClickAction action = ClickAction.BUTTON;
-            Story story = service.getDownloadManager().getStoryById(
+            Story story = service.getStoryDownloadManager().getStoryById(
                     storyId, getStoryType()
             );
             switch (object.getLink().getType()) {
@@ -336,7 +334,7 @@ public class ReaderPageManager {
     }
 
     public void openSlideByIndex(int index) {
-        Story story = InAppStoryService.getInstance().getDownloadManager()
+        Story story = InAppStoryService.getInstance().getStoryDownloadManager()
                 .getStoryById(storyId, getStoryType());
         if (index < 0) index = 0;
         if (story == null) return;
@@ -379,7 +377,7 @@ public class ReaderPageManager {
 
     public void resetCurrentDuration() {
         if (checkIfManagersIsNull()) return;
-        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId, getStoryType());
+        Story story = InAppStoryService.getInstance().getStoryDownloadManager().getStoryById(storyId, getStoryType());
 
         if (story == null) return;
         this.durations.clear();
@@ -434,7 +432,7 @@ public class ReaderPageManager {
         if (checkIfManagersIsNull()) return;
         InAppStoryService service = InAppStoryService.getInstance();
         if (service == null) return;
-        Story story = service.getDownloadManager().getStoryById(storyId, getStoryType());
+        Story story = service.getStoryDownloadManager().getStoryById(storyId, getStoryType());
         if (story == null) return;
         timerManager.setTimerDuration(0);
         int lastIndex = slideIndex;
@@ -466,7 +464,7 @@ public class ReaderPageManager {
         timerManager.stopTimer();
         timerManager.setCurrentDuration(localDurations.get(slideIndex));
         StatisticManager.getInstance().sendCurrentState();
-        service.getDownloadManager().changePriorityForSingle(storyId,
+        service.getStoryDownloadManager().changePriorityForSingle(storyId,
                 parentManager.storyType);
         if (getStoryType() == Story.StoryType.COMMON)
             service.sendPageOpenStatistic(storyId, slideIndex,
@@ -493,7 +491,7 @@ public class ReaderPageManager {
     public void showShareView(InnerShareData shareData) {
         if (parentManager != null) {
 
-            Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId, getStoryType());
+            Story story = InAppStoryService.getInstance().getStoryDownloadManager().getStoryById(storyId, getStoryType());
             if (story != null)
                 parentManager.showShareView(shareData, storyId, slideIndex);
         }
@@ -510,7 +508,7 @@ public class ReaderPageManager {
 
         InAppStoryService service = InAppStoryService.getInstance();
         if (service == null) return;
-        Story story = service.getDownloadManager().getStoryById(storyId, getStoryType());
+        Story story = service.getStoryDownloadManager().getStoryById(storyId, getStoryType());
 
         if (story == null) return;
         timerManager.setTimerDuration(0);
@@ -563,7 +561,7 @@ public class ReaderPageManager {
 
 
     void storyInfoLoaded() {
-        this.timelineManager.setDurations(InAppStoryService.getInstance().getDownloadManager()
+        this.timelineManager.setDurations(InAppStoryService.getInstance().getStoryDownloadManager()
                 .getStoryById(storyId, getStoryType()).durations, false);
     }
 

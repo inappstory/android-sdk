@@ -20,6 +20,7 @@ import com.inappstory.sdk.stories.api.models.logs.ApiLogResponse;
 import com.inappstory.sdk.stories.ui.list.StoryListItem;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
 import com.inappstory.sdk.stories.utils.RunnableCallback;
+import com.inappstory.sdk.utils.StringsUtils;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -236,10 +237,10 @@ public class Downloader {
 
     public static File getCoverVideo(@NonNull String url,
                                      LruDiskCache cache) throws IOException {
-        String key = deleteQueryArgumentsFromUrlOld(url, false);
+        String key = StringsUtils.md5(url);
 
         if (cache.hasKey(key)) {
-            return updateFile(cache.getFullFile(key), url, cache, key);
+            return cache.getFullFile(key);
         }
         return null;
     }
@@ -332,17 +333,13 @@ public class Downloader {
 
     public static String getFontFile(String url) {
         if (url == null || url.isEmpty()) return null;
-        String key = deleteQueryArgumentsFromUrlOld(url, true);
+        String key = StringsUtils.md5(url);
         File img = null;
         InAppStoryService service = InAppStoryService.getInstance();
         if (service == null) return null;
         LruDiskCache cache = service.getCommonCache();
         if (cache.hasKey(key)) {
-            try {
-                img = updateFile(cache.getFullFile(key), url, cache, key);
-            } catch (IOException e) {
-                img = cache.getFullFile(key);
-            }
+            img = cache.getFullFile(key);
         }
         if (img != null && img.exists()) {
             return img.getAbsolutePath();
@@ -350,7 +347,7 @@ public class Downloader {
         return null;
     }
 
-    private static DownloadFileState downloadFile(
+    public static DownloadFileState downloadFile(
             String url,
             File outputFile,
             FileLoadProgressCallback callback,

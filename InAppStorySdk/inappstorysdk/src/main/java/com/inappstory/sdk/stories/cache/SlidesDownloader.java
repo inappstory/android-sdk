@@ -9,6 +9,7 @@ import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.utils.LoopedExecutor;
+import com.inappstory.sdk.utils.StringsUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -75,12 +76,13 @@ class SlidesDownloader {
                 ArrayList<String> allUrls = new ArrayList<>();
                 allUrls.addAll(slideTask.urls);
                 allUrls.addAll(slideTask.videoUrls);
+
                 for (String url : allUrls) {
-                    String croppedUrl = Downloader.deleteQueryArgumentsFromUrlOld(url, true);
-                    if (!cache.hasKey(croppedUrl)) {
+                    String uniqueKey = StringsUtils.md5(url);
+                    if (!cache.hasKey(uniqueKey)) {
                         remove = true;
                     } else {
-                        if (cache.getFullFile(croppedUrl) == null) {
+                        if (cache.getFullFile(uniqueKey) == null) {
                             synchronized (pageTasksLock) {
                                 slideTask.loadType = 0;
                             }

@@ -73,7 +73,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
         InAppStoryService service = InAppStoryService.getInstance();
         if (service != null)
             for (int id : storiesIds) {
-                Story story = service.getDownloadManager().getStoryById(id, Story.StoryType.COMMON);
+                Story story = service.getStoryDownloadManager().getStoryById(id, Story.StoryType.COMMON);
                 if (story != null) {
                     data.add(new StoryData(story, feed, SourceType.LIST));
                 }
@@ -166,7 +166,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
             });
         } else {
             int hasUGC = useUGC ? 1 : 0;
-            final Story story = service.getDownloadManager()
+            final Story story = service.getStoryDownloadManager()
                     .getStoryById(storiesIds.get(position - hasUGC), Story.StoryType.COMMON);
             if (story == null) return;
             String imgUrl = (story.getImage() != null && story.getImage().size() > 0) ?
@@ -206,7 +206,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
         int hasUGC = useUGC ? 1 : 0;
         int index = ind - hasUGC;
         clickTimestamp = System.currentTimeMillis();
-        final Story current = service.getDownloadManager().getStoryById(storiesIds.get(index), Story.StoryType.COMMON);
+        final Story current = service.getStoryDownloadManager().getStoryById(storiesIds.get(index), Story.StoryType.COMMON);
         if (current != null) {
             if (callback != null) {
                 callback.itemClick(
@@ -312,7 +312,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
         }
         ArrayList<Integer> tempStories = new ArrayList();
         for (Integer storyId : storiesIds) {
-            Story story = service.getDownloadManager().getStoryById(storyId, Story.StoryType.COMMON);
+            Story story = service.getStoryDownloadManager().getStoryById(storyId, Story.StoryType.COMMON);
             if (story == null || !story.isHideInReader())
                 tempStories.add(storyId);
         }
@@ -348,7 +348,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
             int pref = pos * 10;
             InAppStoryService service = InAppStoryService.getInstance();
             if (service == null) return 0;
-            Story story = service.getDownloadManager()
+            Story story = service.getStoryDownloadManager()
                     .getStoryById(storiesIds.get(pos), Story.StoryType.COMMON);
             if (story == null) return 0;
             if (story.getVideoUrl() != null) pref += 5;

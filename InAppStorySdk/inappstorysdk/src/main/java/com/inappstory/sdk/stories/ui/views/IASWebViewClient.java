@@ -32,7 +32,7 @@ public class IASWebViewClient extends WebViewClient {
                 Downloader.downloadOrGetFile(url, true, cache, null, null);
                 return null;
             }
-            return Downloader.updateFile(cachedFile, url, cache, key);
+            return cachedFile;
         } catch (Exception e) {
             InAppStoryService.createExceptionLog(e);
             return null;

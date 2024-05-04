@@ -79,7 +79,7 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
         InAppStoryService service = InAppStoryService.getInstance();
         if (service != null)
             for (int id : storiesIds) {
-                Story story = service.getDownloadManager().getStoryById(id, Story.StoryType.UGC);
+                Story story = service.getStoryDownloadManager().getStoryById(id, Story.StoryType.UGC);
                 if (story != null) {
                     data.add(new UgcStoryData(story, SourceType.LIST));
                 }
@@ -125,7 +125,7 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
             });
         } else {
             int hasUGC = useUGC ? 1 : 0;
-            final Story story = InAppStoryService.getInstance().getDownloadManager()
+            final Story story = InAppStoryService.getInstance().getStoryDownloadManager()
                     .getStoryById(storiesIds.get(position - hasUGC), Story.StoryType.UGC);
             if (story == null) return;
             String imgUrl = (story.getImage() != null && story.getImage().size() > 0) ?
@@ -157,7 +157,7 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
         int hasUGC = useUGC ? 1 : 0;
         int index = ind - hasUGC;
         clickTimestamp = System.currentTimeMillis();
-        final Story current = service.getDownloadManager()
+        final Story current = service.getStoryDownloadManager()
                 .getStoryById(storiesIds.get(index), Story.StoryType.UGC);
         if (current != null) {
             if (callback != null) {
@@ -246,7 +246,7 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
         }
         ArrayList<Integer> tempStories = new ArrayList();
         for (Integer storyId : storiesIds) {
-            Story story = service.getDownloadManager().getStoryById(storyId, Story.StoryType.UGC);
+            Story story = service.getStoryDownloadManager().getStoryById(storyId, Story.StoryType.UGC);
             if (story == null || !story.isHideInReader())
                 tempStories.add(storyId);
         }
@@ -277,7 +277,7 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
         try {
             int pos = position - hasUGC;
             int pref = pos * 10;
-            Story story = InAppStoryService.getInstance().getDownloadManager()
+            Story story = InAppStoryService.getInstance().getStoryDownloadManager()
                     .getStoryById(storiesIds.get(pos), Story.StoryType.UGC);
             if (story.getVideoUrl() != null) pref += 5;
             return story.isOpened ? (pref + 2) : (pref + 1);

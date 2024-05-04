@@ -50,7 +50,7 @@ class UgcStoriesListManager implements ListManager {
         if (InAppStoryService.isNull()) {
             return;
         }
-        Story st = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId, Story.StoryType.UGC);
+        Story st = InAppStoryService.getInstance().getStoryDownloadManager().getStoryById(storyId, Story.StoryType.UGC);
         if (st == null) return;
         st.isOpened = true;
         st.saveStoryOpened(Story.StoryType.UGC);

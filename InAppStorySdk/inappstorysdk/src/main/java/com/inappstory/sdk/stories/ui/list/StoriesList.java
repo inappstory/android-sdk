@@ -368,7 +368,7 @@ public class StoriesList extends RecyclerView {
                         Story current = null;
                         InAppStoryService service = InAppStoryService.getInstance();
                         if (service != null)
-                            current = service.getDownloadManager()
+                            current = service.getStoryDownloadManager()
                                     .getStoryById(adapter.getStoriesIds().get(ind), Story.StoryType.COMMON);
                         if (current != null && currentPercentage > 0) {
                             scrolledItems.put(i, new ShownStoriesListItem(
@@ -646,7 +646,7 @@ public class StoriesList extends RecyclerView {
         InAppStoryService service = InAppStoryService.getInstance();
         if (service != null)
             for (int id : storiesIds) {
-                Story story = service.getDownloadManager().getStoryById(id, Story.StoryType.COMMON);
+                Story story = service.getStoryDownloadManager().getStoryById(id, Story.StoryType.COMMON);
                 if (story != null) {
                     data.add(new StoryData(story, feed, SourceType.LIST));
                 }
@@ -801,7 +801,7 @@ public class StoriesList extends RecyclerView {
                     callback.loadError(StringsUtils.getNonNull(getFeed()));
             }
         };
-        service.getDownloadManager().loadStories(getFeed(),
+        service.getStoryDownloadManager().loadStories(getFeed(),
                 lcallback, isFavoriteList, hasFavorite);
     }
 }

@@ -13,7 +13,6 @@ import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.game.reader.GameStoryData;
 import com.inappstory.sdk.stories.api.models.Image;
 import com.inappstory.sdk.stories.api.models.Story;
-import com.inappstory.sdk.stories.api.models.StoryFeedInfo;
 import com.inappstory.sdk.stories.cache.Downloader;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderLaunchData;
@@ -235,7 +234,7 @@ public class StackStoryObserver implements IStackFeedActions {
         InAppStoryService service = InAppStoryService.getInstance();
         if (service == null) return;
         final Story currentStory = stories.get(oldIndex);
-        Story current = service.getDownloadManager().getStoryById(currentStory.id, Story.StoryType.COMMON);
+        Story current = service.getStoryDownloadManager().getStoryById(currentStory.id, Story.StoryType.COMMON);
         if (current != null) {
             current.isOpened = true;
             current.saveStoryOpened(Story.StoryType.COMMON);

@@ -2,6 +2,7 @@ package com.inappstory.sdk.stories.cache;
 
 import android.content.Context;
 import android.os.Handler;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.WorkerThread;
@@ -21,6 +22,8 @@ import com.inappstory.sdk.stories.api.models.callbacks.GetStoryByIdCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadStoriesCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.SimpleListCallback;
+import com.inappstory.sdk.stories.cache.usecases.GetCacheFileUseCase;
+import com.inappstory.sdk.stories.cache.usecases.StoryResourceFileUseCase;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
@@ -390,23 +393,22 @@ public class StoryDownloadManager {
             @Override
             public DownloadPageFileStatus downloadFile(UrlWithAlter urlWithAlter, SlideTaskData slideTaskData) {
                 try {
+                    Log.e("StoryResources", slideTaskData.storyId + " " + slideTaskData.index + " " + urlWithAlter);
                     InAppStoryService service = InAppStoryService.getInstance();
                     if (service == null) return DownloadPageFileStatus.ERROR;
-                    DownloadFileState state = Downloader.downloadOrGetFile(
-                            urlWithAlter.getUrl(),
-                            true,
-                            service.getCommonCache(),
-                            null,
-                            null
-                    );
+                    GetCacheFileUseCase<DownloadFileState> useCase =
+                            new StoryResourceFileUseCase(
+                                    service.getFilesDownloadManager(),
+                                    urlWithAlter.getUrl()
+                            );
+                    DownloadFileState state = useCase.getFile();
                     if (urlWithAlter.getAlter() != null && (state == null || state.getFullFile() == null)) {
-                        Downloader.downloadOrGetFile(
-                                urlWithAlter.getAlter(),
-                                true,
-                                service.getCommonCache(),
-                                null,
-                                null
-                        );
+                        useCase =
+                                new StoryResourceFileUseCase(
+                                        service.getFilesDownloadManager(),
+                                        urlWithAlter.getAlter()
+                                );
+                        state = useCase.getFile();
                         if (state != null && state.getFullFile() != null)
                             return DownloadPageFileStatus.SUCCESS;
                         return DownloadPageFileStatus.SKIP;

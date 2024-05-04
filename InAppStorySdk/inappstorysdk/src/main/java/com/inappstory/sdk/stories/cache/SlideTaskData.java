@@ -33,6 +33,15 @@ public class SlideTaskData {
         return Objects.hash(storyId, index, storyType);
     }
 
+    @Override
+    public String toString() {
+        return "SlideTaskData{" +
+                "storyId=" + storyId +
+                ", index=" + index +
+                ", storyType=" + storyType +
+                '}';
+    }
+
     public Integer storyId;
     public Integer index;
     public Story.StoryType storyType;

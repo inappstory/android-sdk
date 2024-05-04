@@ -67,6 +67,10 @@ public class CacheJournalItem implements Serializable {
         this.downloadedSize = downloadedSize;
     }
 
+    public void setSize(long size) {
+        this.size = size;
+    }
+
     public boolean isReady() {
         return downloadedSize == size;
     }
