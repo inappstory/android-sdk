@@ -15,6 +15,7 @@ import androidx.appcompat.widget.AppCompatTextView;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.imageloader.RoundedCornerLayout;
+import com.inappstory.sdk.memcache.IGetBitmap;
 import com.inappstory.sdk.stories.ui.video.VideoPlayer;
 import com.inappstory.sdk.stories.ui.views.IStoriesListItem;
 import com.inappstory.sdk.stories.utils.Sizes;
