@@ -21,12 +21,16 @@ import com.inappstory.sdk.imageloader.ImageLoader;
 import com.inappstory.sdk.imageloader.RoundedCornerLayout;
 import com.inappstory.sdk.stories.cache.Downloader;
 import com.inappstory.sdk.stories.cache.FileLoadProgressCallback;
+import com.inappstory.sdk.stories.cache.usecases.IGetStoryCoverCallback;
+import com.inappstory.sdk.stories.cache.usecases.StoryCoverUseCase;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoryItemCoordinates;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.list.BaseStoryListItem;
 import com.inappstory.sdk.stories.ui.list.ClickCallback;
+import com.inappstory.sdk.stories.ui.list.StoryListItem;
 import com.inappstory.sdk.stories.ui.video.VideoPlayer;
+import com.inappstory.sdk.stories.ui.views.IStoriesListItem;
 import com.inappstory.sdk.stories.ui.views.IStoriesListItemWithStoryData;
 import com.inappstory.sdk.stories.utils.Sizes;
 
@@ -57,66 +61,17 @@ public class UgcStoryListItem extends BaseStoryListItem {
 
     protected View getDefaultCell() {
 
-        View v;
+        View v = null;
         if (getListItem != null) {
             v = getListItem.getView();
-        } else {
-            v = LayoutInflater.from(itemView.getContext()).inflate(R.layout.cs_story_list_inner_item, null, false);
-            View container = v.findViewById(R.id.container);
-            if (manager.csListItemInterface() == null || (manager.csListItemInterface().getView() == null
-                    && manager.csListItemInterface().getVideoView() == null)) {
-                if (manager.getRealHeight(itemView.getContext()) != null) {
-                    container.getLayoutParams().height = manager.getRealHeight(itemView.getContext());
-                }
-                if (manager.getRealWidth(itemView.getContext()) != null) {
-                    container.getLayoutParams().width = manager.getRealWidth(itemView.getContext());
-                }
-            }
-            RoundedCornerLayout cv = v.findViewById(R.id.item_cv);
-            cv.setBackgroundColor(Color.TRANSPARENT);
-            cv.setRadius(manager.csListItemRadius(itemView.getContext()));
-            title = v.findViewById(R.id.title);
-            hasAudioIcon = v.findViewById(R.id.hasAudio);
-            image = v.findViewById(R.id.image);
-            border = v.findViewById(R.id.border);
-            title.setTextSize(TypedValue.COMPLEX_UNIT_PX, manager.csListItemTitleSize(itemView.getContext()));
-            title.setTextColor(manager.csListItemTitleColor());
-            border.getBackground().setColorFilter(manager.csListItemBorderColor(),
-                    PorterDuff.Mode.SRC_ATOP);
         }
         return v;
     }
 
     protected View getDefaultVideoCell() {
-        View v;
+        View v = null;
         if (getListItem != null) {
             v = (getListItem.getVideoView() != null ? getListItem.getVideoView() : getListItem.getView());
-        } else {
-            v = LayoutInflater.from(itemView.getContext()).inflate(R.layout.cs_story_list_video_inner_item, null, false);
-            if (manager.csListItemInterface() == null || (manager.csListItemInterface().getView() == null
-                    && manager.csListItemInterface().getVideoView() == null)) {
-
-                View container = v.findViewById(R.id.container);
-                if (manager.getRealHeight(itemView.getContext()) != null) {
-                    container.getLayoutParams().height = manager.getRealHeight(itemView.getContext());
-                }
-                if (manager.getRealWidth(itemView.getContext()) != null) {
-                    container.getLayoutParams().width = manager.getRealWidth(itemView.getContext());
-                }
-            }
-            RoundedCornerLayout cv = v.findViewById(R.id.item_cv);
-            cv.setBackgroundColor(Color.TRANSPARENT);
-            cv.setRadius(manager.csListItemRadius(itemView.getContext()));
-            title = v.findViewById(R.id.title);
-            hasAudioIcon = v.findViewById(R.id.hasAudio);
-            video = v.findViewById(R.id.video);
-            image = v.findViewById(R.id.image);
-            border = v.findViewById(R.id.border);
-            title.setTextSize(TypedValue.COMPLEX_UNIT_PX, manager.csListItemTitleSize(itemView.getContext()));
-            title.setTextColor(manager.csListItemTitleColor());
-            ((GradientDrawable) border.getBackground()).setCornerRadius((int) (1.25 * manager.csListItemRadius(itemView.getContext())));
-            border.getBackground().setColorFilter(manager.csListItemBorderColor(),
-                    PorterDuff.Mode.SRC_ATOP);
         }
         return v;
     }
@@ -186,112 +141,58 @@ public class UgcStoryListItem extends BaseStoryListItem {
                     );
             }
         });
+        final IStoriesListItem getListItem = this.getListItem;
         if (getListItem != null) {
             this.backgroundColor = backgroundColor;
             getListItem.setId(itemView, id);
             getListItem.setTitle(itemView, titleText, titleColor);
             getListItem.setHasAudio(itemView, hasAudio);
-            String fileLink = ImageLoader.getInstance().getFileLink(imageUrl);
-            if (fileLink != null) {
-                getListItem.setImage(itemView, fileLink,
-                        UgcStoryListItem.this.backgroundColor);
-            } else {
-                if (imageUrl != null) {
-                    downloadFileAndSendToInterface(imageUrl, new RunnableCallback() {
-                        @Override
-                        public void run(String path) {
-                            ImageLoader.getInstance().addLink(imageUrl, path);
-                            getListItem.setImage(itemView, path,
-                                    UgcStoryListItem.this.backgroundColor);
-                        }
-
-                        @Override
-                        public void error() {
-                            getListItem.setImage(itemView, null,
-                                    UgcStoryListItem.this.backgroundColor);
-                        }
-                    });
-                } else {
-                    getListItem.setImage(itemView, null,
-                            UgcStoryListItem.this.backgroundColor);
-                }
-            }
-
             getListItem.setOpened(itemView, isOpened);
-            if (videoUrl != null) {
-                downloadFileAndSendToInterface(videoUrl, new RunnableCallback() {
-                    @Override
-                    public void run(String path) {
-                        getListItem.setVideo(itemView, path);
-                    }
-
-                    @Override
-                    public void error() {
-                        getListItem.setVideo(itemView, null);
-                    }
-                });
-            }
             if (getListItem instanceof IStoriesListItemWithStoryData) {
                 ((IStoriesListItemWithStoryData) getListItem).setCustomData(itemView, storyData);
             }
-            return;
-        }
+            InAppStoryService service = InAppStoryService.getInstance();
+            if (service == null) return;
 
-        RoundedCornerLayout cv = itemView.findViewById(R.id.item_cv);
-        cv.setBackgroundColor(Color.TRANSPARENT);
-        cv.setRadius(manager.csListItemRadius(itemView.getContext()));
-        if (border != null)
-            ((GradientDrawable) border.getBackground()).setCornerRadius((int) (1.25 * manager.csListItemRadius(itemView.getContext())));
-        if (title != null) {
-            title.setText(titleText);
-            if (titleColor != null) {
-                title.setTextColor(titleColor);
+            if (imageUrl != null) {
+                new StoryCoverUseCase(
+                        service.getFilesDownloadManager(),
+                        imageUrl,
+                        new IGetStoryCoverCallback() {
+                            @Override
+                            public void success(String file) {
+                                getListItem.setImage(itemView, file,
+                                        UgcStoryListItem.this.backgroundColor);
+                            }
+
+                            @Override
+                            public void error() {
+                                getListItem.setImage(itemView, null,
+                                        UgcStoryListItem.this.backgroundColor);
+                            }
+                        }
+                ).getFile();
             } else {
-                title.setTextColor(manager.csListItemTitleColor());
+                getListItem.setImage(itemView, null,
+                        UgcStoryListItem.this.backgroundColor);
             }
-            if (manager.csCustomFont() != null) {
-                title.setTypeface(manager.csCustomFont());
-            }
-        }
-        if (hasAudioIcon != null)
-            hasAudioIcon.setVisibility(hasAudio ? View.VISIBLE : View.GONE);
-        if (border != null) {
-            border.setVisibility(isOpened ?
-                    (manager.csListOpenedItemBorderVisibility() ? View.VISIBLE : View.GONE)
-                    : (manager.csListItemBorderVisibility() ? View.VISIBLE : View.GONE));
-            border.getBackground().setColorFilter(isOpened ? manager.csListOpenedItemBorderColor() :
-                            manager.csListItemBorderColor(),
-                    PorterDuff.Mode.SRC_ATOP);
-        }
-        if (InAppStoryService.isNull()) return;
-        if (videoUrl != null) {
-            if (image != null) {
-                if (imageUrl != null) {
-                    //  image.setImageResource(0);
-                    ImageLoader.getInstance().displayImage(imageUrl, 0, image,
-                            InAppStoryService.getInstance().getFastCache());
-                } else if (backgroundColor != null) {
-                    image.setImageResource(0);
-                    image.setBackgroundColor(backgroundColor);
-                }
-            }
-            if (video != null) {
-                video.release();
-                video.loadVideoByUrl(videoUrl);
-            }
-        } else {
-            if (video != null) {
-                video.release();
-            }
-            if (image != null) {
-                if (imageUrl != null) {
-                    //  image.setImageResource(0);
-                    ImageLoader.getInstance().displayImage(imageUrl, 0, image,
-                            InAppStoryService.getInstance().getFastCache());
-                } else if (backgroundColor != null) {
-                    image.setImageResource(0);
-                    image.setBackgroundColor(backgroundColor);
-                }
+
+            if (videoUrl != null) {
+                new StoryCoverUseCase(
+                        service.getFilesDownloadManager(),
+                        videoUrl,
+                        new IGetStoryCoverCallback() {
+                            @Override
+                            public void success(String file) {
+                                getListItem.setVideo(itemView, file);
+                            }
+
+                            @Override
+                            public void error() {
+
+                            }
+                        }
+                ).getFile();
             }
         }
     }

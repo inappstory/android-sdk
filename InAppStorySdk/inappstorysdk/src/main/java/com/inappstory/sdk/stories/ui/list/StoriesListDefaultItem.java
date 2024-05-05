@@ -162,7 +162,7 @@ public final class StoriesListDefaultItem implements IStoriesListItem {
         if (video != null) {
             if (videoPath != null) {
                 video.release();
-                video.loadVideoByUrl(videoPath);
+                video.loadVideo(videoPath);
             } else {
                 video.release();
             }

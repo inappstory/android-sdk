@@ -154,18 +154,27 @@ public class LruDiskCache {
     }
 
     public File getFullFile(String key) {
-        return FileManager.getFullFile(get(key));
+        return getFullFile(key, null);
+    }
+
+
+    public File getFullFile(String key, String type) {
+        return FileManager.getFullFile(get(key, type));
     }
 
     public DownloadFileState get(String key) {
+        return get(key, null);
+    }
+
+    public DownloadFileState get(String key, String type) {
         synchronized (journal) {
             try {
                 keyIsValid(key);
-                CacheJournalItem item = journal.get(key);
+                CacheJournalItem item = journal.get(key, type);
                 if (item != null) {
                     File file = new File(item.getFilePath());
                     if (!file.exists()) {
-                        journal.delete(key, false);
+                        journal.delete(key, type, false);
                         file = null;
                     }
                     journal.writeJournal();

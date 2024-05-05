@@ -14,16 +14,17 @@ public class GetLocalZipFileUseCase {
     long size;
     String sha1;
 
-    public GetLocalZipFileUseCase(String url,
-                                  long size,
-                                  String sha1) {
+    public GetLocalZipFileUseCase(
+            String url,
+            long size,
+            String sha1) {
         this.url = url;
         this.sha1 = sha1;
         this.size = size;
     }
 
     void get(
-             @NonNull LruDiskCache cache,
+            @NonNull LruDiskCache cache,
             UseCaseCallback<File> callback
     ) {
         FileChecker fileChecker = new FileChecker();

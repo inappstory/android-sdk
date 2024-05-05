@@ -39,10 +39,16 @@ public abstract class BaseStoryListItem extends RecyclerView.ViewHolder {
         this.manager = manager;
         this.isFavorite = isFavorite;
         this.isUGC = isUGC;
+        Context context = itemView.getContext();
         getFavoriteListItem = manager.csFavoriteListItemInterface();
         getListItem = manager.csListItemInterface();
         getUGCListItem = manager.csListUGCItemInterface();
-        Context context = itemView.getContext();
+        if (getListItem == null)
+            getListItem = new StoriesListDefaultItem(manager, context);
+        if (getFavoriteListItem == null || getFavoriteListItem.getFavoriteItem() == null)
+            getFavoriteListItem = new StoriesListDefaultFavoriteItem(manager, context);
+        if (getUGCListItem == null)
+            getUGCListItem = new StoriesListDefaultUgcEditorItem(manager, context);
         if (manager.csListItemMargin(context) >= 0) {
             RecyclerView.LayoutParams lp = (RecyclerView.LayoutParams) itemView.getLayoutParams();
             lp.setMargins(Sizes.dpToPxExt(manager.csListItemMargin(context) / 2, context), 0,
@@ -65,32 +71,6 @@ public abstract class BaseStoryListItem extends RecyclerView.ViewHolder {
                               String videoUrl,
                               StoryData storyData,
                               ClickCallback callback);
-
-   /* public void measure(int widthMeasureSpec, int heightMeasureSpec, float aspectRatio) {
-        int widthMode = MeasureSpec.getMode(widthMeasureSpec);
-        int widthSize = widthMode == MeasureSpec.UNSPECIFIED ? Integer.MAX_VALUE : MeasureSpec.getSize(widthMeasureSpec);
-        int heightMode = MeasureSpec.getMode(heightMeasureSpec);
-        int heightSize = heightMode == MeasureSpec.UNSPECIFIED ? Integer.MAX_VALUE : MeasureSpec.getSize(heightMeasureSpec);
-        if (heightMode == MeasureSpec.EXACTLY && widthMode == MeasureSpec.EXACTLY) {
-            measuredWidth = widthSize;
-            measuredHeight = heightSize;
-        } else if (heightMode == MeasureSpec.EXACTLY) {
-            measuredWidth = (int) Math.min(widthSize, heightSize * aspectRatio);
-            measuredHeight = (int) (measuredWidth / aspectRatio);
-        } else if (widthMode == MeasureSpec.EXACTLY) {
-            measuredHeight = (int) Math.min(heightSize, widthSize / aspectRatio);
-            measuredWidth = (int) (measuredHeight * aspectRatio);
-        } else {
-            if (widthSize > heightSize * aspectRatio) {
-                measuredHeight = heightSize;
-                measuredWidth = (int) (measuredHeight * aspectRatio);
-            } else {
-                measuredWidth = widthSize;
-                measuredHeight = (int) (measuredWidth / aspectRatio);
-            }
-
-        }
-    }*/
 
     public abstract void bindFavorite();
 
