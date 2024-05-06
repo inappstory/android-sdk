@@ -124,6 +124,7 @@ public class GameCacheManager {
 
                 final long[] totalProgress = {0};
                 final String[] resourcesHash = {""};
+                final String[] gameFolder = {""};
                 final DownloadResourcesUseCase downloadResourcesUseCase =
                         new DownloadResourcesUseCase(
                                 filesDownloadManager,
@@ -158,7 +159,7 @@ public class GameCacheManager {
                                                 finalTotalFilesSize
                                         );
                                         ProfilingManager.getInstance().setReady(resourcesHash[0]);
-                                        String fileName = result + File.separator + INDEX_NAME;
+                                        String fileName = gameFolder[0] + File.separator + INDEX_NAME;
                                         loadedFilePath = fileName;
                                         try {
                                             gameLoadCallback.onSuccess(
@@ -186,6 +187,7 @@ public class GameCacheManager {
 
                             @Override
                             public void onSuccess(String result) {
+                                gameFolder[0] = result;
                                 totalProgress[0] += 0.2 * finalTotalDownloadsSize;
                                 resourcesHash[0] = ProfilingManager.getInstance().addTask(
                                         "game_resources_download"

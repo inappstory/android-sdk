@@ -59,6 +59,7 @@ public class GameResourceUseCase extends GetCacheFileUseCase<Void> {
                 File.separator +
                 StringsUtils.md5(zipUrl) +
                 File.separator +
+                "resources_" +
                 gameInstanceId +
                 File.separator +
                 resource.key;

@@ -53,6 +53,7 @@ public class CacheJournal {
                         return item;
                     }
                 }
+                return null;
             }
             return current.get(0);
         }
