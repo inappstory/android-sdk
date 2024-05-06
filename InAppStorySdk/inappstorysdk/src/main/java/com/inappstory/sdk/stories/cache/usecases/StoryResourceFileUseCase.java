@@ -2,6 +2,8 @@ package com.inappstory.sdk.stories.cache.usecases;
 
 import android.util.Log;
 
+import androidx.annotation.WorkerThread;
+
 import com.inappstory.sdk.lrudiskcache.CacheJournalItem;
 import com.inappstory.sdk.lrudiskcache.LruCachesHolder;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
@@ -31,10 +33,10 @@ public class StoryResourceFileUseCase extends GetCacheFileUseCase<DownloadFileSt
                 "resources" +
                 File.separator +
                 uniqueKey +
-                "." +
                 Downloader.getFileExtensionFromUrl(url);
     }
 
+    @WorkerThread
     @Override
     public DownloadFileState getFile() {
         downloadLog.generateRequestLog(url);

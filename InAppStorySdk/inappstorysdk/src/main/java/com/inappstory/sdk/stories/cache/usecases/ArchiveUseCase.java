@@ -4,6 +4,7 @@ import static java.util.UUID.randomUUID;
 
 import androidx.annotation.WorkerThread;
 
+import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.game.cache.UseCaseCallback;
 import com.inappstory.sdk.lrudiskcache.CacheJournalItem;
 import com.inappstory.sdk.lrudiskcache.FileChecker;
@@ -15,33 +16,31 @@ import com.inappstory.sdk.stories.cache.Downloader;
 import com.inappstory.sdk.stories.cache.FileLoadProgressCallback;
 import com.inappstory.sdk.stories.cache.FilesDownloadManager;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
+import com.inappstory.sdk.utils.ProgressCallback;
 import com.inappstory.sdk.utils.StringsUtils;
 
 import java.io.File;
 
 public class ArchiveUseCase extends GetCacheFileUseCase<Void> {
     private final String url;
-    private final String instanceId;
     private final String archiveName;
     private final String archiveSha1;
     private final String type = "Archive";
     private final long totalFilesSize;
     private final long archiveSize;
-    private final FileLoadProgressCallback progressCallback;
+    private final ProgressCallback progressCallback;
     private final DownloadInterruption interruption;
     private final UseCaseCallback<File> useCaseCallback;
     private final FileChecker fileChecker = new FileChecker();
-    private int offset;
 
 
     public ArchiveUseCase(
             FilesDownloadManager filesDownloadManager,
             String url,
-            String instanceId,
             long archiveSize,
             String archiveSha1,
             long totalFilesSize,
-            FileLoadProgressCallback progressCallback,
+            ProgressCallback progressCallback,
             DownloadInterruption interruption,
             UseCaseCallback<File> useCaseCallback
     ) {
@@ -49,7 +48,6 @@ public class ArchiveUseCase extends GetCacheFileUseCase<Void> {
         this.url = url;
         this.totalFilesSize = totalFilesSize;
         this.uniqueKey = StringsUtils.md5(url);
-        this.instanceId = instanceId;
         this.archiveName = getArchiveName(url);
         this.archiveSize = archiveSize;
         this.archiveSha1 = archiveSha1;
@@ -65,7 +63,6 @@ public class ArchiveUseCase extends GetCacheFileUseCase<Void> {
                 archiveName +
                 File.separator +
                 uniqueKey +
-                "." +
                 Downloader.getFileExtensionFromUrl(url);
     }
 
@@ -102,7 +99,7 @@ public class ArchiveUseCase extends GetCacheFileUseCase<Void> {
                         cachedArchive.getParent() +
                                 File.separator + uniqueKey);
                 try {
-                    cache.delete(url);
+                    cache.delete(uniqueKey);
                     if (directory.exists()) {
                         FileManager.deleteRecursive(directory);
                     }
@@ -117,8 +114,39 @@ public class ArchiveUseCase extends GetCacheFileUseCase<Void> {
                 downloadLog.sendRequestResponseLog();
                 return true;
             }
+        } else {
+            removeOldVersions();
         }
         return false;
+    }
+
+    private void removeOldVersions() {
+        File gameDir = new File(
+                getCache().getCacheDir().getAbsolutePath() +
+                        File.separator +
+                        "v2" +
+                        File.separator +
+                        "zip" +
+                        File.separator +
+                        archiveName +
+                        File.separator
+        );
+        if (!gameDir.getAbsolutePath().startsWith(
+                getCache().getCacheDir().getAbsolutePath() +
+                        File.separator +
+                        "v2" +
+                        File.separator +
+                        "zip")
+        ) {
+            return;
+        }
+        if (gameDir.exists() && gameDir.isDirectory()) {
+            File[] files = gameDir.listFiles();
+            if (files == null) return;
+            for (File gameDirFile : files) {
+                FileManager.deleteRecursive(gameDirFile);
+            }
+        }
     }
 
     private void downloadArchive() {
@@ -138,10 +166,14 @@ public class ArchiveUseCase extends GetCacheFileUseCase<Void> {
             return;
         }
         String hash = randomUUID().toString();
-        File zipFile = new File(filePath);
-        DownloadFileState fileState = null;
+        DownloadFileState fileState = getCache().get(uniqueKey);
+        long offset = 0;
+        if (fileState != null) {
+            offset = fileState.downloadedSize;
+        }
         ProfilingManager.getInstance().addTask("game_download", hash);
         try {
+            downloadLog.generateResponseLog(false, filePath);
             fileState = Downloader.downloadFile(
                     url,
                     new File(filePath),
@@ -162,51 +194,32 @@ public class ArchiveUseCase extends GetCacheFileUseCase<Void> {
                         }
                     },
                     downloadLog.responseLog,
-                    null,
-                    0
-            );
-            fileState = Downloader.downloadFile(
-                    url,
-                    true,
-                    getCache(),
-                    zipFile,
-                    new FileLoadProgressCallback() {
-                        @Override
-                        public void onProgress(long loadedSize, long totalSize) {
-                            progressCallback.onProgress(loadedSize, totalSize);
-                        }
-
-                        @Override
-                        public void onSuccess(File file) {
-
-                        }
-
-                        @Override
-                        public void onError(String error) {
-                            useCaseCallback.onError(error);
-                        }
-                    },
                     interruption,
-                    hash
+                    offset
             );
+            if (fileState != null && fileState.file != null) {
+                if (fileState.downloadedSize == fileState.totalSize) {
+                    if (!fileChecker.checkWithShaAndSize(
+                            fileState.file,
+                            archiveSize,
+                            archiveSha1,
+                            true
+                    )) {
+                        useCaseCallback.onError("File sha or size is incorrect");
+                    } else {
+                        useCaseCallback.onSuccess(fileState.file);
+                    }
+                    ProfilingManager.getInstance().setReady(hash);
+                }
+                CacheJournalItem cacheJournalItem = generateCacheItem();
+                cacheJournalItem.setDownloadedSize(fileState.downloadedSize);
+                cacheJournalItem.setSize(fileState.totalSize);
+                getCache().put(cacheJournalItem);
+            } else {
+                useCaseCallback.onError("File downloading was interrupted");
+            }
         } catch (Exception e) {
             useCaseCallback.onError(e.getMessage());
-        }
-        if (fileState != null && fileState.file != null &&
-                (fileState.downloadedSize == fileState.totalSize)) {
-            if (!fileChecker.checkWithShaAndSize(
-                    fileState.file,
-                    archiveSize,
-                    archiveSha1,
-                    true
-            )) {
-                useCaseCallback.onError("File sha or size is incorrect");
-            } else {
-                useCaseCallback.onSuccess(fileState.file);
-            }
-            ProfilingManager.getInstance().setReady(hash);
-        } else {
-            useCaseCallback.onError("File downloading was interrupted");
         }
     }
 
@@ -220,8 +233,8 @@ public class ArchiveUseCase extends GetCacheFileUseCase<Void> {
                 archiveSha1,
                 null,
                 System.currentTimeMillis(),
-                archiveSize,
-                archiveSize
+                0,
+                0
         );
     }
 

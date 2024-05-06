@@ -34,7 +34,6 @@ public class StoryCoverUseCase extends GetCacheFileUseCase<Void> {
                 "covers" +
                 File.separator +
                 uniqueKey +
-                "." +
                 Downloader.getFileExtensionFromUrl(url);
     }
 

@@ -786,6 +786,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         if (service != null)
             service.gameCacheManager().getGame(
                     gameId,
+                    service.getFilesDownloadManager(),
                     interruption,
                     new ProgressCallback() {
                         @Override
@@ -858,11 +859,16 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                     },
                     new UseCaseCallback<FilePathAndContent>() {
                         @Override
-                        public void onError(String message) {
-                            if (manager != null && manager.logger != null) {
-                                manager.logger.sendSdkError(message, null);
-                            }
-                            gameLoadedErrorCallback.onError(null, message);
+                        public void onError(final String message) {
+                            webView.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    if (manager != null && manager.logger != null) {
+                                        manager.logger.sendSdkError(message, null);
+                                    }
+                                    gameLoadedErrorCallback.onError(null, message);
+                                }
+                            });
                         }
 
                         @Override
@@ -877,9 +883,9 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                                             ),
                                             "text/html; charset=utf-8", "UTF-8",
                                             null);
+                                    loaderView.setIndeterminate(true);
                                 }
                             });
-                            loaderView.setIndeterminate(true);
                         }
                     },
                     new SetGameLoggerCallback() {

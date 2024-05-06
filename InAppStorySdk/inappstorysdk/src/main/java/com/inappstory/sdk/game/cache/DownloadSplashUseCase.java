@@ -8,19 +8,29 @@ import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.lrudiskcache.FileChecker;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.stories.api.models.GameSplashScreen;
+import com.inappstory.sdk.stories.cache.DownloadFileState;
 import com.inappstory.sdk.stories.cache.Downloader;
 import com.inappstory.sdk.stories.cache.FileLoadProgressCallback;
+import com.inappstory.sdk.stories.cache.FilesDownloadManager;
+import com.inappstory.sdk.stories.cache.usecases.GameSplashUseCase;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
 
 import java.io.File;
 
 public class DownloadSplashUseCase {
     GameSplashScreen splashScreen;
+    FilesDownloadManager filesDownloadManager;
     String oldSplashPath;
     String gameId;
 
-    public DownloadSplashUseCase(GameSplashScreen splashScreen, String oldSplashPath, String gameId) {
+    public DownloadSplashUseCase(
+            FilesDownloadManager filesDownloadManager,
+            GameSplashScreen splashScreen,
+            String oldSplashPath,
+            String gameId
+    ) {
         this.splashScreen = splashScreen;
+        this.filesDownloadManager = filesDownloadManager;
         this.oldSplashPath = oldSplashPath;
         this.gameId = gameId;
     }
@@ -29,7 +39,6 @@ public class DownloadSplashUseCase {
     void download(
             final UseCaseCallback<File> splashScreenCallback
     ) {
-
         final FileChecker fileChecker = new FileChecker();
         File oldSplash = null;
         if (oldSplashPath != null) {
@@ -57,39 +66,13 @@ public class DownloadSplashUseCase {
             splashScreenCallback.onError("splash screen is not valid");
             return;
         }
-        InAppStoryService inAppStoryService = InAppStoryService.getInstance();
-        if (inAppStoryService == null) {
-            splashScreenCallback.onError("InAppStory service is unavailable");
-            return;
+        GameSplashUseCase gameSplashUseCase =
+                new GameSplashUseCase(filesDownloadManager, splashScreen);
+        DownloadFileState fileState = gameSplashUseCase.getFile();
+        if (fileState != null) {
+            splashScreenCallback.onSuccess(fileState.file);
+        } else  {
+            splashScreenCallback.onError("Can't download splash");
         }
-        Downloader.downloadFileBackground(
-                splashScreen.url,
-                false,
-                inAppStoryService.getInfiniteCache(),
-                new FileLoadProgressCallback() {
-                    @Override
-                    public void onProgress(long loadedSize, long totalSize) {
-
-                    }
-
-                    @Override
-                    public void onSuccess(File file) {
-                        if (fileChecker.checkWithShaAndSize(
-                                file,
-                                splashScreen.size,
-                                splashScreen.sha1,
-                                true
-                        )) {
-                            splashScreenCallback.onSuccess(file);
-                        }
-                    }
-
-                    @Override
-                    public void onError(String error) {
-                        splashScreenCallback.onError(error);
-                    }
-                },
-                null
-        );
     }
 }

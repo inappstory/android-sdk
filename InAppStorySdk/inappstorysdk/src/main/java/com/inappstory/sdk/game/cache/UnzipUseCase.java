@@ -20,7 +20,7 @@ public class UnzipUseCase {
     }
 
     @WorkerThread
-    boolean unzip(String targetDirectoryPath, ProgressCallback callback) {
+    public boolean unzip(String targetDirectoryPath, ProgressCallback callback) {
         try {
             File zipFile = new File(zipFilePath);
             if (!zipFile.exists()) return false;
