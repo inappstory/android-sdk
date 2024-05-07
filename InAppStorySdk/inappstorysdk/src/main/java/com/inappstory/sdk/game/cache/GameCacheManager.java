@@ -1,25 +1,15 @@
 package com.inappstory.sdk.game.cache;
 
-import static com.inappstory.sdk.network.NetworkClient.NC_IS_UNAVAILABLE;
 
-import android.util.Log;
-
-import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.lrudiskcache.FileManager;
-import com.inappstory.sdk.network.NetworkClient;
-import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.stories.api.models.GameCenterData;
-import com.inappstory.sdk.stories.api.models.GameLaunchConfigObject;
 import com.inappstory.sdk.stories.api.models.WebResource;
-import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.cache.DownloadInterruption;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
-import com.inappstory.sdk.stories.utils.SessionManager;
 import com.inappstory.sdk.utils.ProgressCallback;
 
 import java.io.File;
-import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -31,18 +21,7 @@ public class GameCacheManager {
         cachedGames.clear();
     }
 
-   /* public void getGame(String gameId, GameLoadCallback callback) {
-        getGameFromGameCenter(gameId, callback);
-    }
 
-    public GameCenterData getCachedGame(String gameId) {
-        CachedGame game = cachedGames.get(gameId);
-        if (game != null) {
-            return game.data;
-        }
-        return null;
-    }
-*/
     private static final String INDEX_NAME = "index.html";
     public static final String FILE = "file://";
     private final ExecutorService gameUseCasesThread = Executors.newFixedThreadPool(1);

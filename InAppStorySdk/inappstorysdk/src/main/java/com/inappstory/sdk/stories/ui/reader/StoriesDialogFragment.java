@@ -46,13 +46,14 @@ import com.inappstory.sdk.stories.statistic.GetOldStatisticManagerCallback;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
+import com.inappstory.sdk.stories.ui.widgets.elasticview.ElasticDragDismissFrameLayout;
 import com.inappstory.sdk.stories.utils.IASBackPressHandler;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 import com.inappstory.sdk.stories.utils.Sizes;
 
 import java.util.List;
 
-public class StoriesDialogFragment extends DialogFragment implements IASBackPressHandler, BaseReaderScreen {
+public class StoriesDialogFragment extends DialogFragment implements IASBackPressHandler, BaseReaderScreen, ShowGoodsCallback {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -180,14 +181,19 @@ public class StoriesDialogFragment extends DialogFragment implements IASBackPres
 
     }
 
+
+    ShowGoodsCallback currentGoodsCallback = null;
+
+
     @Override
     public void disableDrag(boolean disable) {
-
+        if (draggableFrame != null)
+            draggableFrame.dragIsDisabled(true);
     }
 
     @Override
     public void setShowGoodsCallback(ShowGoodsCallback callback) {
-
+        currentGoodsCallback = callback;
     }
 
     @Override
@@ -278,6 +284,8 @@ public class StoriesDialogFragment extends DialogFragment implements IASBackPres
     StoriesReaderAppearanceSettings appearanceSettings;
     StoriesReaderLaunchData launchData;
 
+    ElasticDragDismissFrameLayout draggableFrame;
+
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -285,6 +293,8 @@ public class StoriesDialogFragment extends DialogFragment implements IASBackPres
         int color = getArguments().getInt(AppearanceManager.CS_READER_BACKGROUND_COLOR, Color.BLACK);
         view.setBackgroundColor(color);
         type = launchData.getType();
+
+        draggableFrame = view.findViewById(R.id.draggable_frame);
         if (savedInstanceState == null) {
             storiesContentFragment = new StoriesContentFragment();
             Bundle args = new Bundle();
@@ -327,4 +337,26 @@ public class StoriesDialogFragment extends DialogFragment implements IASBackPres
     }
 
 
+
+    @Override
+    public void goodsIsOpened() {
+        timerIsLocked();
+        if (currentGoodsCallback != null)
+            currentGoodsCallback.goodsIsOpened();
+    }
+
+    @Override
+    public void goodsIsClosed(String widgetId) {
+        timerIsUnlocked();
+        if (currentGoodsCallback != null)
+            currentGoodsCallback.goodsIsClosed(widgetId);
+        currentGoodsCallback = null;
+    }
+
+    @Override
+    public void goodsIsCanceled(String widgetId) {
+        if (currentGoodsCallback != null)
+            currentGoodsCallback.goodsIsCanceled(widgetId);
+        currentGoodsCallback = null;
+    }
 }

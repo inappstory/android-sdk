@@ -60,9 +60,10 @@ public abstract class StoriesMainFragment extends Fragment implements
 
     @Override
     public void disableDrag(boolean disable) {
-        boolean draggable = appearanceSettings == null || appearanceSettings.csIsDraggable();
+        boolean draggable = !Sizes.isTablet(getContext()) && (appearanceSettings == null || appearanceSettings.csIsDraggable());
         if (draggableFrame != null)
             draggableFrame.dragIsDisabled(draggable && disable);
+
     }
 
     ElasticDragDismissFrameLayout draggableFrame;
@@ -105,16 +106,17 @@ public abstract class StoriesMainFragment extends Fragment implements
         return fragment;
     }
 
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+    }
+
     @Override
     public void goodsIsOpened() {
         timerIsLocked();
         if (currentGoodsCallback != null)
             currentGoodsCallback.goodsIsOpened();
-    }
-
-    @Override
-    public void onSaveInstanceState(@NonNull Bundle outState) {
-        super.onSaveInstanceState(outState);
     }
 
     @Override
