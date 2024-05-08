@@ -166,6 +166,15 @@ public class LruDiskCache {
         return get(key, null);
     }
 
+    public CacheJournalItem getJournalItem(String key, String type) {
+        return journal.get(key, type);
+    }
+
+
+    public CacheJournalItem getJournalItem(String key) {
+        return getJournalItem(key, null);
+    }
+
     public DownloadFileState get(String key, String type) {
         synchronized (journal) {
             try {

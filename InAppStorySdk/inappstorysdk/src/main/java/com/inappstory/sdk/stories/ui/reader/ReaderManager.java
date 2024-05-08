@@ -53,6 +53,8 @@ public class ReaderManager {
         }
     }
 
+
+
     public StoriesContentFragment getHost() {
         synchronized (hostLock) {
             return host;

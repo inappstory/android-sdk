@@ -22,6 +22,7 @@ import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.stories.api.models.CachedSessionData;
+import com.inappstory.sdk.stories.api.models.SessionCacheObject;
 import com.inappstory.sdk.stories.api.models.SessionRequestFields;
 import com.inappstory.sdk.stories.api.models.SessionResponse;
 import com.inappstory.sdk.stories.api.models.StatisticPermissions;
@@ -122,9 +123,9 @@ public class SessionManager {
                     @Override
                     public void use(@NonNull InAppStoryService service) throws Exception {
                         service.runStatisticThread();
+                        service.downloadBundleObjects(response.cacheObjects);
                     }
                 });
-                Downloader.downloadFonts(response.cachedFonts);
             }
         });
     }
@@ -134,7 +135,7 @@ public class SessionManager {
     }
 
     private final String FEATURES =
-            "animation,data,deeplink,placeholder,webp,resetTimers,gameReader,swipeUpItems,sendApi,imgPlaceholder";
+            "animation,data,deeplink,placeholder,webp,resetTimers,gameReader,swipeUpItems,sendApi,imgPlaceholder,assets";
 
     private final String SESSION_FIELDS = TextUtils.join(",", new String[]{
             SessionRequestFields.session,
@@ -148,7 +149,7 @@ public class SessionManager {
             SessionRequestFields.imagePlaceholders
     });
     private final String SESSION_EXPAND = TextUtils.join(",", new String[]{
-            SessionRequestFields.cachedFonts
+            SessionRequestFields.cacheObjects
     });
 
 

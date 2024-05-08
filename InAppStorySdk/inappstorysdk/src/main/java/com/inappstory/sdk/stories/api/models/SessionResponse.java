@@ -21,8 +21,8 @@ public class SessionResponse {
 
     @SerializedName(SessionRequestFields.previewAspectRatio)
     public float previewAspectRatio;
-    @SerializedName(SessionRequestFields.cachedFonts)
-    public List<CacheFontObject> cachedFonts;
+    @SerializedName(SessionRequestFields.cacheObjects)
+    public List<SessionCacheObject> cacheObjects;
 
     @SerializedName(SessionRequestFields.isAllowProfiling)
     public boolean isAllowProfiling;

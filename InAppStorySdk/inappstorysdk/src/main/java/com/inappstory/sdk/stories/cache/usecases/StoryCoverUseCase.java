@@ -11,6 +11,7 @@ import com.inappstory.sdk.stories.cache.FilesDownloadManager;
 import com.inappstory.sdk.utils.StringsUtils;
 
 import java.io.File;
+import java.io.IOException;
 
 public class StoryCoverUseCase extends GetCacheFileUseCase<Void> {
     IGetStoryCoverCallback getStoryCoverCallback;
@@ -50,25 +51,38 @@ public class StoryCoverUseCase extends GetCacheFileUseCase<Void> {
                     @Override
                     public void run() {
                         try {
-                            DownloadFileState fileState = Downloader.downloadFile(
+                            FinishDownloadFileCallback callback = new FinishDownloadFileCallback() {
+                                @Override
+                                public void finish(DownloadFileState fileState) {
+                                    downloadLog.sendResponseLog();
+                                    if (fileState == null || fileState.downloadedSize != fileState.totalSize) {
+                                        getStoryCoverCallback.error();
+                                        return;
+                                    }
+                                    Log.e("ScenarioDownload", "Downloaded: " + uniqueKey);
+                                    CacheJournalItem cacheJournalItem = generateCacheItem();
+                                    cacheJournalItem.setSize(fileState.totalSize);
+                                    cacheJournalItem.setDownloadedSize(fileState.totalSize);
+                                    try {
+                                        getCache().put(cacheJournalItem);
+                                    } catch (IOException e) {
+
+                                        getStoryCoverCallback.error();
+                                    }
+                                    getStoryCoverCallback.success(filePath);
+                                }
+                            };
+                            Downloader.downloadFile(
                                     url,
                                     new File(filePath),
                                     null,
                                     downloadLog.responseLog,
                                     null,
-                                    0
+                                    0,
+                                    filesDownloadManager,
+                                    callback
                             );
-                            downloadLog.sendResponseLog();
-                            if (fileState == null || fileState.downloadedSize != fileState.totalSize) {
-                                getStoryCoverCallback.error();
-                                return;
-                            }
-                            Log.e("ScenarioDownload", "Downloaded: " + uniqueKey);
-                            CacheJournalItem cacheJournalItem = generateCacheItem();
-                            cacheJournalItem.setSize(fileState.totalSize);
-                            cacheJournalItem.setDownloadedSize(fileState.totalSize);
-                            getCache().put(cacheJournalItem);
-                            getStoryCoverCallback.success(filePath);
+
                         } catch (Exception e) {
                             getStoryCoverCallback.error();
                         }
@@ -94,7 +108,8 @@ public class StoryCoverUseCase extends GetCacheFileUseCase<Void> {
                 null,
                 System.currentTimeMillis(),
                 0,
-                0
+                0,
+                null
         );
     }
 

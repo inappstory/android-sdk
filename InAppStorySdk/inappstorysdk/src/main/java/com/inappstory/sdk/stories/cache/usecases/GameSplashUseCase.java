@@ -14,6 +14,7 @@ import com.inappstory.sdk.stories.cache.FilesDownloadManager;
 import com.inappstory.sdk.utils.StringsUtils;
 
 import java.io.File;
+import java.io.IOException;
 
 public class GameSplashUseCase extends GetCacheFileUseCase<DownloadFileState> {
     private final FileChecker fileChecker = new FileChecker();
@@ -42,35 +43,49 @@ public class GameSplashUseCase extends GetCacheFileUseCase<DownloadFileState> {
     @Override
     public DownloadFileState getFile() {
         downloadLog.generateRequestLog(splashScreen.url);
-        DownloadFileState fileState = getCache().get(uniqueKey);
-        if (fileState == null || fileState.downloadedSize != fileState.totalSize) {
+        final DownloadFileState[] fileState = {getCache().get(uniqueKey)};
+        if (fileState[0] == null || fileState[0].downloadedSize != fileState[0].totalSize) {
             try {
                 downloadLog.sendRequestLog();
                 downloadLog.generateResponseLog(false, filePath);
-                fileState = Downloader.downloadFile(
+                FinishDownloadFileCallback callback =
+                        new FinishDownloadFileCallback() {
+                            @Override
+                            public void finish(DownloadFileState state) {
+                                downloadLog.sendResponseLog();
+                                if (state == null || state.downloadedSize != state.totalSize) {
+                                    fileState[0] = null;
+                                    return;
+                                }
+                                if (fileChecker.checkWithShaAndSize(
+                                        state.file,
+                                        splashScreen.size,
+                                        splashScreen.sha1,
+                                        true
+                                )) {
+                                    CacheJournalItem cacheJournalItem = generateCacheItem();
+                                    cacheJournalItem.setSize(state.totalSize);
+                                    cacheJournalItem.setDownloadedSize(state.totalSize);
+                                    try {
+                                        getCache().put(cacheJournalItem);
+                                    } catch (IOException e) {
+
+                                    }
+                                    fileState[0] =state;
+                                }
+                            }
+                        };
+                Downloader.downloadFile(
                         splashScreen.url,
                         new File(filePath),
                         null,
                         downloadLog.responseLog,
                         null,
-                        0
+                        0,
+                        filesDownloadManager,
+                        callback
                 );
-                downloadLog.sendResponseLog();
-                if (fileState == null || fileState.downloadedSize != fileState.totalSize)  {
-                    return null;
-                }
-                if (fileChecker.checkWithShaAndSize(
-                        fileState.file,
-                        splashScreen.size,
-                        splashScreen.sha1,
-                        true
-                )) {
-                    CacheJournalItem cacheJournalItem = generateCacheItem();
-                    cacheJournalItem.setSize(fileState.totalSize);
-                    cacheJournalItem.setDownloadedSize(fileState.totalSize);
-                    getCache().put(cacheJournalItem);
-                    return fileState;
-                }
+                return fileState[0];
             } catch (Exception e) {
                 e.printStackTrace();
                 return null;
@@ -79,7 +94,7 @@ public class GameSplashUseCase extends GetCacheFileUseCase<DownloadFileState> {
             downloadLog.generateResponseLog(true, filePath);
             downloadLog.sendRequestResponseLog();
         }
-        return fileState;
+        return fileState[0];
     }
 
     @Override
@@ -93,7 +108,8 @@ public class GameSplashUseCase extends GetCacheFileUseCase<DownloadFileState> {
                 null,
                 System.currentTimeMillis(),
                 0,
-                0
+                0,
+                null
         );
     }
 

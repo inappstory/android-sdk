@@ -20,6 +20,7 @@ import android.webkit.URLUtil;
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.game.cache.GameCacheManager;
+import com.inappstory.sdk.game.cache.UseCaseCallback;
 import com.inappstory.sdk.game.reader.GameStoryData;
 import com.inappstory.sdk.game.reader.logger.GameLogSaver;
 import com.inappstory.sdk.game.reader.logger.GameLogSender;
@@ -29,12 +30,15 @@ import com.inappstory.sdk.imageloader.ImageLoader;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.stories.api.models.ExceptionCache;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
+import com.inappstory.sdk.stories.api.models.SessionCacheObject;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.StoryPlaceholder;
 import com.inappstory.sdk.stories.api.models.logs.ExceptionLog;
+import com.inappstory.sdk.stories.cache.Downloader;
 import com.inappstory.sdk.stories.cache.FilesDownloadManager;
 import com.inappstory.sdk.stories.cache.FakeStoryDownloadManager;
 import com.inappstory.sdk.stories.cache.StoryDownloadManager;
+import com.inappstory.sdk.stories.cache.usecases.SessionBundleResourceUseCase;
 import com.inappstory.sdk.stories.exceptions.ExceptionManager;
 import com.inappstory.sdk.stories.managers.TimerManager;
 import com.inappstory.sdk.stories.stackfeed.StackStoryObserver;
@@ -66,6 +70,29 @@ public class InAppStoryService {
         synchronized (lock) {
             if (InAppStoryManager.getInstance() == null) return null;
             return INSTANCE;
+        }
+    }
+
+    public void downloadBundleObjects(
+            List<SessionCacheObject> cacheObjects
+    ) {
+        if (cacheObjects != null) {
+            for (SessionCacheObject sessionCacheObject : cacheObjects) {
+                new SessionBundleResourceUseCase(filesDownloadManager,
+                        new UseCaseCallback<File>() {
+                            @Override
+                            public void onError(String message) {
+
+                            }
+
+                            @Override
+                            public void onSuccess(File result) {
+
+                            }
+                        },
+                        sessionCacheObject
+                ).getFile();
+            }
         }
     }
 
@@ -325,7 +352,6 @@ public class InAppStoryService {
     }
 
     private Context context;
-
 
 
     public LruDiskCache getFastCache() {

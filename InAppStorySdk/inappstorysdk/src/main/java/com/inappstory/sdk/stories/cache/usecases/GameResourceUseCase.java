@@ -133,7 +133,38 @@ public class GameResourceUseCase extends GetCacheFileUseCase<Void> {
                 Log.e("ScenarioDownload", "Download: " + uniqueKey);
                 downloadLog.sendRequestLog();
                 downloadLog.generateResponseLog(false, filePath);
-                fileState = Downloader.downloadFile(
+                FinishDownloadFileCallback callback =
+                        new FinishDownloadFileCallback() {
+                            @Override
+                            public void finish(DownloadFileState fileState) {
+                                downloadLog.sendResponseLog();
+                                if (fileState == null || fileState.downloadedSize != fileState.totalSize) {
+                                    useCaseCallback.onError("Download interrupted");
+                                } else {
+                                    if (fileChecker.checkWithShaAndSize(
+                                            fileState.file,
+                                            resource.size,
+                                            resource.sha1,
+                                            true
+                                    )) {
+                                        Log.e("ScenarioDownload", "Downloaded: " + uniqueKey);
+                                        CacheJournalItem cacheJournalItem = generateCacheItem();
+                                        cacheJournalItem.setSize(fileState.totalSize);
+                                        cacheJournalItem.setDownloadedSize(fileState.totalSize);
+                                        try {
+                                            getCache().put(cacheJournalItem);
+                                        } catch (IOException e) {
+                                            useCaseCallback.onError(e.getMessage());
+                                        }
+                                        progressCallback.onProgress(resource.size, resource.size);
+                                        useCaseCallback.onSuccess(null);
+                                    } else {
+                                        useCaseCallback.onError("Wrong size or sha1");
+                                    }
+                                }
+                            }
+                        };
+                Downloader.downloadFile(
                         resource.url,
                         new File(filePath),
                         new FileLoadProgressCallback() {
@@ -154,29 +185,10 @@ public class GameResourceUseCase extends GetCacheFileUseCase<Void> {
                         },
                         downloadLog.responseLog,
                         interruption,
-                        offset
+                        offset,
+                        filesDownloadManager,
+                        callback
                 );
-                downloadLog.sendResponseLog();
-                if (fileState == null || fileState.downloadedSize != fileState.totalSize) {
-                    useCaseCallback.onError("Download interrupted");
-                } else {
-                    if (fileChecker.checkWithShaAndSize(
-                            fileState.file,
-                            resource.size,
-                            resource.sha1,
-                            true
-                    )) {
-                        Log.e("ScenarioDownload", "Downloaded: " + uniqueKey);
-                        CacheJournalItem cacheJournalItem = generateCacheItem();
-                        cacheJournalItem.setSize(fileState.totalSize);
-                        cacheJournalItem.setDownloadedSize(fileState.totalSize);
-                        getCache().put(cacheJournalItem);
-                        progressCallback.onProgress(resource.size, resource.size);
-                        useCaseCallback.onSuccess(null);
-                    } else {
-                        useCaseCallback.onError("Wrong size or sha1");
-                    }
-                }
             } catch (Exception e) {
                 useCaseCallback.onError(e.getMessage());
                 e.printStackTrace();
@@ -199,7 +211,8 @@ public class GameResourceUseCase extends GetCacheFileUseCase<Void> {
                 resource.key,
                 System.currentTimeMillis(),
                 resource.size,
-                0
+                0,
+                null
         );
     }
 

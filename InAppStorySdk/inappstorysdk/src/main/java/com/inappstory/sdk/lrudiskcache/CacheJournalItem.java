@@ -1,7 +1,5 @@
 package com.inappstory.sdk.lrudiskcache;
 
-import android.util.Log;
-
 import androidx.annotation.NonNull;
 
 import java.io.Serializable;
@@ -12,27 +10,30 @@ public class CacheJournalItem implements Serializable {
             String uniqueKey,
             String filePath,
             String ext,
-            String mimeType,
+            String type,
             String sha1,
             String replaceKey,
             long time,
             long size,
-            long downloadedSize
+            long downloadedSize,
+            String mimeType
     ) {
         this.uniqueKey = uniqueKey;
         this.filePath = filePath;
         this.ext = ext;
-        this.mimeType = mimeType;
+        this.type = type;
         this.sha1 = sha1;
         this.replaceKey = replaceKey;
         this.time = time;
         this.size = size;
         this.downloadedSize = downloadedSize;
+        this.mimeType = mimeType;
     }
 
     private String uniqueKey;
     private String filePath;
     private String ext;
+    private String type;
     private String mimeType;
     private String sha1;
     private String replaceKey;
@@ -45,8 +46,13 @@ public class CacheJournalItem implements Serializable {
     }
 
     @NonNull
+    public String getType() {
+        return type != null ? type : "";
+    }
+
+    @NonNull
     public String getMimeType() {
-        return mimeType != null ? mimeType : "";
+        return mimeType != null ? mimeType : "application/octet-stream";
     }
 
     @NonNull
@@ -115,7 +121,7 @@ public class CacheJournalItem implements Serializable {
         if (time != item.time) return false;
         if (Objects.equals(sha1, item.sha1)) return false;
         if (Objects.equals(uniqueKey, item.uniqueKey)) return false;
-        if (Objects.equals(mimeType, item.mimeType)) return false;
+        if (Objects.equals(type, item.type)) return false;
         if (Objects.equals(replaceKey, item.replaceKey)) return false;
         return filePath.equals(item.filePath);
     }
@@ -124,7 +130,7 @@ public class CacheJournalItem implements Serializable {
     public int hashCode() {
         int result = getUniqueKey().hashCode();
         result = 31 * result + getFilePath().hashCode();
-        result = 31 * result + getMimeType().hashCode();
+        result = 31 * result + getType().hashCode();
         result = 31 * result + getExt().hashCode();
         result = 31 * result + getReplaceKey().hashCode();
         result = 31 * result + getSha1().hashCode();

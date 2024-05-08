@@ -49,7 +49,7 @@ public class CacheJournal {
         if (current != null && current.size() > 0) {
             if (mimeType != null) {
                 for (CacheJournalItem item : current) {
-                    if (Objects.equals(item.getMimeType(), mimeType)) {
+                    if (Objects.equals(item.getType(), mimeType)) {
                         return item;
                     }
                 }
@@ -101,7 +101,7 @@ public class CacheJournal {
         boolean res = false;
         if (items != null) {
             for (CacheJournalItem item : items) {
-                if (mimeType == null || Objects.equals(mimeType, item.getMimeType())) {
+                if (mimeType == null || Objects.equals(mimeType, item.getType())) {
                     currentSize -= item.getSize();
                     if (withFile) fileManager.delete(item.getFilePath());
                     res = true;
@@ -151,13 +151,14 @@ public class CacheJournal {
                 for (CacheJournalItem item : list) {
                     stream.writeUTF(item.getUniqueKey());
                     stream.writeUTF(item.getFilePath());
-                    stream.writeUTF(item.getMimeType());
+                    stream.writeUTF(item.getType());
                     stream.writeUTF(item.getExt());
                     stream.writeUTF(item.getSha1());
                     stream.writeUTF(item.getReplaceKey());
                     stream.writeLong(item.getTime());
                     stream.writeLong(item.getSize());
                     stream.writeLong(item.getDownloadedSize());
+                    stream.writeUTF(item.getMimeType());
                 }
             } catch (IOException ex) {
                 if (stream != null) {
@@ -192,24 +193,26 @@ public class CacheJournal {
                 for (int c = 0; c < count; c++) {
                     String uniqueKey = stream.readUTF();
                     String filePath = stream.readUTF();
-                    String mimeType = stream.readUTF();
+                    String type = stream.readUTF();
                     String ext = stream.readUTF();
                     String sha1 = stream.readUTF();
                     String replaceKey = stream.readUTF();
                     long time = stream.readLong();
                     long size = stream.readLong();
+                    String mimeType = stream.readUTF();
                     currentSize += size;
                     long downloadedSize = stream.readLong();
                     CacheJournalItem item = new CacheJournalItem(
                             uniqueKey,
                             filePath,
                             ext,
-                            mimeType,
+                            type,
                             sha1,
                             replaceKey,
                             time,
                             size,
-                            downloadedSize
+                            downloadedSize,
+                            mimeType
                     );
                     putLink(item);
                 }

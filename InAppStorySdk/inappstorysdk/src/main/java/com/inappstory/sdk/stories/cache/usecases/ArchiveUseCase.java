@@ -20,6 +20,7 @@ import com.inappstory.sdk.utils.ProgressCallback;
 import com.inappstory.sdk.utils.StringsUtils;
 
 import java.io.File;
+import java.io.IOException;
 
 public class ArchiveUseCase extends GetCacheFileUseCase<Void> {
     private final String url;
@@ -165,7 +166,7 @@ public class ArchiveUseCase extends GetCacheFileUseCase<Void> {
             useCaseCallback.onError("No free space for download");
             return;
         }
-        String hash = randomUUID().toString();
+        final String hash = randomUUID().toString();
         DownloadFileState fileState = getCache().get(uniqueKey);
         long offset = 0;
         if (fileState != null) {
@@ -174,7 +175,38 @@ public class ArchiveUseCase extends GetCacheFileUseCase<Void> {
         ProfilingManager.getInstance().addTask("game_download", hash);
         try {
             downloadLog.generateResponseLog(false, filePath);
-            fileState = Downloader.downloadFile(
+
+            FinishDownloadFileCallback callback = new FinishDownloadFileCallback() {
+                @Override
+                public void finish(DownloadFileState fileState) {
+                    if (fileState != null && fileState.file != null) {
+                        if (fileState.downloadedSize == fileState.totalSize) {
+                            if (!fileChecker.checkWithShaAndSize(
+                                    fileState.file,
+                                    archiveSize,
+                                    archiveSha1,
+                                    true
+                            )) {
+                                useCaseCallback.onError("File sha or size is incorrect");
+                            } else {
+                                useCaseCallback.onSuccess(fileState.file);
+                            }
+                            ProfilingManager.getInstance().setReady(hash);
+                        }
+                        CacheJournalItem cacheJournalItem = generateCacheItem();
+                        cacheJournalItem.setDownloadedSize(fileState.downloadedSize);
+                        cacheJournalItem.setSize(fileState.totalSize);
+                        try {
+                            getCache().put(cacheJournalItem);
+                        } catch (IOException ignored) {
+
+                        }
+                    } else {
+                        useCaseCallback.onError("File downloading was interrupted");
+                    }
+                }
+            };
+            Downloader.downloadFile(
                     url,
                     new File(filePath),
                     new FileLoadProgressCallback() {
@@ -195,29 +227,10 @@ public class ArchiveUseCase extends GetCacheFileUseCase<Void> {
                     },
                     downloadLog.responseLog,
                     interruption,
-                    offset
+                    offset,
+                    filesDownloadManager,
+                    callback
             );
-            if (fileState != null && fileState.file != null) {
-                if (fileState.downloadedSize == fileState.totalSize) {
-                    if (!fileChecker.checkWithShaAndSize(
-                            fileState.file,
-                            archiveSize,
-                            archiveSha1,
-                            true
-                    )) {
-                        useCaseCallback.onError("File sha or size is incorrect");
-                    } else {
-                        useCaseCallback.onSuccess(fileState.file);
-                    }
-                    ProfilingManager.getInstance().setReady(hash);
-                }
-                CacheJournalItem cacheJournalItem = generateCacheItem();
-                cacheJournalItem.setDownloadedSize(fileState.downloadedSize);
-                cacheJournalItem.setSize(fileState.totalSize);
-                getCache().put(cacheJournalItem);
-            } else {
-                useCaseCallback.onError("File downloading was interrupted");
-            }
         } catch (Exception e) {
             useCaseCallback.onError(e.getMessage());
         }
@@ -234,7 +247,8 @@ public class ArchiveUseCase extends GetCacheFileUseCase<Void> {
                 null,
                 System.currentTimeMillis(),
                 0,
-                0
+                0,
+                null
         );
     }
 

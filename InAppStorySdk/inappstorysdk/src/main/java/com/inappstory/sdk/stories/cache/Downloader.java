@@ -2,7 +2,6 @@ package com.inappstory.sdk.stories.cache;
 
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.WorkerThread;
@@ -13,11 +12,11 @@ import com.inappstory.sdk.lrudiskcache.FileManager;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.network.utils.ConnectionHeadersMap;
 import com.inappstory.sdk.network.utils.ResponseStringFromStream;
-import com.inappstory.sdk.stories.api.models.CacheFontObject;
+import com.inappstory.sdk.stories.api.models.SessionCacheObject;
 import com.inappstory.sdk.stories.api.models.logs.ApiLogRequest;
 import com.inappstory.sdk.stories.api.models.logs.ApiLogRequestHeader;
 import com.inappstory.sdk.stories.api.models.logs.ApiLogResponse;
-import com.inappstory.sdk.stories.ui.list.StoryListItem;
+import com.inappstory.sdk.stories.cache.usecases.FinishDownloadFileCallback;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
 import com.inappstory.sdk.stories.utils.RunnableCallback;
 import com.inappstory.sdk.utils.StringsUtils;
@@ -85,15 +84,6 @@ public class Downloader {
         return delete ? url.split("\\?")[0] : url;
     }
 
-    public static void downloadFonts(List<CacheFontObject> cachedFonts) {
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service == null) return;
-        if (cachedFonts != null) {
-            for (CacheFontObject cacheFontObject : cachedFonts) {
-                downFontFile(cacheFontObject.url, service.getCommonCache());
-            }
-        }
-    }
 
 
     @WorkerThread
@@ -249,14 +239,6 @@ public class Downloader {
     private static final ExecutorService fontDownloader = Executors.newFixedThreadPool(1);
     private static final ExecutorService tmpFileDownloader = Executors.newFixedThreadPool(1);
 
-    private static void downFontFile(final String url, final LruDiskCache cache) {
-        fontDownloader.submit(new Callable<File>() {
-            @Override
-            public File call() throws Exception {
-                return FileManager.getFullFile(downloadOrGetFile(url, true, cache, null, null));
-            }
-        });
-    }
 
 
     public static void downloadFileBackground(
@@ -353,14 +335,17 @@ public class Downloader {
             FileLoadProgressCallback callback,
             ApiLogResponse apiLogResponse,
             DownloadInterruption interruption,
-            long downloadOffset
+            long downloadOffset,
+            FilesDownloadManager manager,
+            FinishDownloadFileCallback finishCallback
     ) throws Exception {
-
+        DownloadFileState state = null;
+        if (manager != null && !manager.addFinishCallback(url, finishCallback))
+            return null;
         InAppStoryManager.showDLog("InAppStory_File", url);
         outputFile.getParentFile().mkdirs();
         if (!outputFile.exists())
             outputFile.createNewFile();
-
 
         URL urlS = new URL(url);
         HttpURLConnection urlConnection = (HttpURLConnection) urlS.openConnection();
@@ -378,6 +363,8 @@ public class Downloader {
         try {
             urlConnection.connect();
         } catch (Exception e) {
+            if (manager != null)
+                manager.invokeFinishCallbacks(url, null);
             return null;
         }
         int status = urlConnection.getResponseCode();
@@ -387,6 +374,8 @@ public class Downloader {
         long freeSpace = outputFile.getFreeSpace();
         if (freeSpace > 0 && sz > freeSpace) {
             urlConnection.disconnect();
+            if (manager != null)
+                manager.invokeFinishCallbacks(url, null);
             return null;
         }
         boolean allowPartial = false;
@@ -423,6 +412,8 @@ public class Downloader {
                     decompression
             );
             apiLogResponse.generateFile(status, res, headers);
+            if (manager != null)
+                manager.invokeFinishCallbacks(url, null);
             return null;
         }
 
@@ -447,8 +438,10 @@ public class Downloader {
                 if (interruption != null && interruption.active) {
                     releaseStreamAndFile(fileOutputStream, lock);
                     if (allowPartial)
-                        return new DownloadFileState(outputFile, sz, outputFile.length());
-                    return null;
+                        state = new DownloadFileState(outputFile, sz, outputFile.length());
+                    if (manager != null)
+                        manager.invokeFinishCallbacks(url, state);
+                    return state;
                 } else {
                     fileOutputStream.write(buffer, 0, bufferLength);
                     cnt += bufferLength;
@@ -458,13 +451,37 @@ public class Downloader {
             }
             releaseStreamAndFile(fileOutputStream, lock);
             apiLogResponse.generateFile(status, outputFile.getAbsolutePath(), headers);
-            return new DownloadFileState(outputFile, outputFile.length(), outputFile.length());
+            state = new DownloadFileState(outputFile, outputFile.length(), outputFile.length());
         } catch (Exception e) {
             releaseStreamAndFile(fileOutputStream, lock);
-            if (allowPartial)
-                return new DownloadFileState(outputFile, sz, outputFile.length());
-            return null;
+            if (allowPartial) {
+                state = new DownloadFileState(outputFile, sz, outputFile.length());
+            }
         }
+        if (manager != null)
+            manager.invokeFinishCallbacks(url, state);
+        return state;
+    }
+
+    public static DownloadFileState downloadFile(
+            String url,
+            File outputFile,
+            FileLoadProgressCallback callback,
+            ApiLogResponse apiLogResponse,
+            DownloadInterruption interruption,
+            long downloadOffset
+    ) throws Exception {
+
+        return downloadFile(
+                url,
+                outputFile,
+                callback,
+                apiLogResponse,
+                interruption,
+                downloadOffset,
+                null,
+                null
+        );
     }
 
     public static String toCurlRequest(HttpURLConnection connection, byte[] body) {

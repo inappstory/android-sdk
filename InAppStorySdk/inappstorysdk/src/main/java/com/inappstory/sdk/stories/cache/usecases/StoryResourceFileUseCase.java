@@ -13,6 +13,7 @@ import com.inappstory.sdk.stories.cache.FilesDownloadManager;
 import com.inappstory.sdk.utils.StringsUtils;
 
 import java.io.File;
+import java.io.IOException;
 
 public class StoryResourceFileUseCase extends GetCacheFileUseCase<DownloadFileState> {
     private final String url;
@@ -41,29 +42,41 @@ public class StoryResourceFileUseCase extends GetCacheFileUseCase<DownloadFileSt
     public DownloadFileState getFile() {
         downloadLog.generateRequestLog(url);
         Log.e("ScenarioDownload", "UniqueKey: " + uniqueKey);
-        DownloadFileState fileState = getCache().get(uniqueKey);
-        if (fileState == null || fileState.downloadedSize != fileState.totalSize) {
+        final DownloadFileState[] fileState = {getCache().get(uniqueKey)};
+        if (fileState[0] == null || fileState[0].downloadedSize != fileState[0].totalSize) {
             try {
                 Log.e("ScenarioDownload", "Download: " + uniqueKey);
                 downloadLog.sendRequestLog();
                 downloadLog.generateResponseLog(false, filePath);
-                fileState = Downloader.downloadFile(
+                FinishDownloadFileCallback callback = new FinishDownloadFileCallback() {
+                    @Override
+                    public void finish(DownloadFileState state) {
+                        downloadLog.sendResponseLog();
+                        if (state == null || state.downloadedSize != state.totalSize)  {
+                            return;
+                        }
+                        Log.e("ScenarioDownload", "Downloaded: " + uniqueKey);
+                        CacheJournalItem cacheJournalItem = generateCacheItem();
+                        cacheJournalItem.setSize(state.totalSize);
+                        cacheJournalItem.setDownloadedSize(state.totalSize);
+                        try {
+                            getCache().put(cacheJournalItem);
+                        } catch (IOException e) {
+                        }
+                        fileState[0] = state;
+                    }
+                };
+                Downloader.downloadFile(
                         url,
                         new File(filePath),
                         null,
                         downloadLog.responseLog,
                         null,
-                        0
+                        0,
+                        filesDownloadManager,
+                        callback
                 );
-                downloadLog.sendResponseLog();
-                if (fileState == null || fileState.downloadedSize != fileState.totalSize)  {
-                    return null;
-                }
-                Log.e("ScenarioDownload", "Downloaded: " + uniqueKey);
-                CacheJournalItem cacheJournalItem = generateCacheItem();
-                cacheJournalItem.setSize(fileState.totalSize);
-                cacheJournalItem.setDownloadedSize(fileState.totalSize);
-                getCache().put(cacheJournalItem);
+
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -72,7 +85,7 @@ public class StoryResourceFileUseCase extends GetCacheFileUseCase<DownloadFileSt
             downloadLog.generateResponseLog(true, filePath);
             downloadLog.sendRequestResponseLog();
         }
-        return fileState;
+        return fileState[0];
     }
 
     @Override
@@ -86,7 +99,8 @@ public class StoryResourceFileUseCase extends GetCacheFileUseCase<DownloadFileSt
                 null,
                 System.currentTimeMillis(),
                 0,
-                0
+                0,
+                null
         );
     }
 

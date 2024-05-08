@@ -155,7 +155,8 @@ public class GameFolderUseCase extends GetCacheFileUseCase<Void> {
                 null,
                 System.currentTimeMillis(),
                 0,
-                0
+                0,
+                null
         );
     }
 
