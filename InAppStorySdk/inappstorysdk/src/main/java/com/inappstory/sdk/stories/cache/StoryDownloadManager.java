@@ -220,11 +220,22 @@ public class StoryDownloadManager {
         }
     }
 
-    void slideLoaded(SlideTaskData key) {
+
+    private void checkBundleResources(final ReaderPageManager subscriber, final SlideTaskData key) {
+        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryService service) throws Exception {
+                service.getSession().checkIfSessionAssetsIsReady();
+            }
+        });
+        subscriber.slideLoadedInCache(key.index);
+    }
+
+    void slideLoaded(final SlideTaskData key) {
         synchronized (lock) {
             for (ReaderPageManager subscriber : subscribers) {
                 if (subscriber.getStoryId() == key.storyId && subscriber.getStoryType() == key.storyType) {
-                    subscriber.slideLoadedInCache(key.index);
+                    checkBundleResources(subscriber, key);
                     return;
                 }
             }

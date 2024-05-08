@@ -3,7 +3,7 @@ package com.inappstory.sdk.stories.api.models;
 public class SessionRequestFields {
     public static final String session = "session";
     public static final String previewAspectRatio = "preview_aspect_ratio";
-    public static final String cacheObjects = "cache";
+    public static final String sessionAssets = "cache";
     public static final String isAllowProfiling = "is_allow_profiling";
     public static final String isAllowStatV1 = "is_allow_statistic_v1";
     public static final String isAllowStatV2 = "is_allow_statistic_v2";

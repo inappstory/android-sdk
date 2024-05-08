@@ -30,15 +30,14 @@ import com.inappstory.sdk.imageloader.ImageLoader;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.stories.api.models.ExceptionCache;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
-import com.inappstory.sdk.stories.api.models.SessionCacheObject;
+import com.inappstory.sdk.stories.api.models.SessionAsset;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.StoryPlaceholder;
 import com.inappstory.sdk.stories.api.models.logs.ExceptionLog;
-import com.inappstory.sdk.stories.cache.Downloader;
 import com.inappstory.sdk.stories.cache.FilesDownloadManager;
 import com.inappstory.sdk.stories.cache.FakeStoryDownloadManager;
 import com.inappstory.sdk.stories.cache.StoryDownloadManager;
-import com.inappstory.sdk.stories.cache.usecases.SessionBundleResourceUseCase;
+import com.inappstory.sdk.stories.cache.usecases.SessionAssetUseCase;
 import com.inappstory.sdk.stories.exceptions.ExceptionManager;
 import com.inappstory.sdk.stories.managers.TimerManager;
 import com.inappstory.sdk.stories.stackfeed.StackStoryObserver;
@@ -73,27 +72,34 @@ public class InAppStoryService {
         }
     }
 
-    public void downloadBundleObjects(
-            List<SessionCacheObject> cacheObjects
+    public void downloadSessionAssets(
+            List<SessionAsset> sessionAssets
     ) {
-        if (cacheObjects != null) {
-            for (SessionCacheObject sessionCacheObject : cacheObjects) {
-                new SessionBundleResourceUseCase(filesDownloadManager,
-                        new UseCaseCallback<File>() {
-                            @Override
-                            public void onError(String message) {
-
-                            }
-
-                            @Override
-                            public void onSuccess(File result) {
-
-                            }
-                        },
-                        sessionCacheObject
-                ).getFile();
+        if (sessionAssets != null) {
+            sessionHolder.addSessionAssetsKeys(sessionAssets);
+            for (SessionAsset sessionAsset : sessionAssets) {
+                downloadSessionAsset(sessionAsset);
             }
         }
+    }
+
+
+    private void downloadSessionAsset(final SessionAsset sessionAsset) {
+        new SessionAssetUseCase(filesDownloadManager,
+                new UseCaseCallback<File>() {
+                    @Override
+                    public void onError(String message) {
+
+                    }
+
+                    @Override
+                    public void onSuccess(File result) {
+                        sessionHolder.addSessionAsset(sessionAsset);
+                        sessionHolder.checkIfSessionAssetsIsReady(filesDownloadManager);
+                    }
+                },
+                sessionAsset
+        ).getFile();
     }
 
     private ISessionHolder sessionHolder = new SessionHolder();

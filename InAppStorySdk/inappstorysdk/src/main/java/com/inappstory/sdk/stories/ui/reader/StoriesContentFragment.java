@@ -21,6 +21,7 @@ import androidx.viewpager.widget.ViewPager;
 
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.inner.share.InnerShareFilesPrepare;
 import com.inappstory.sdk.inner.share.ShareFilesPrepareCallback;
@@ -252,6 +253,7 @@ public class StoriesContentFragment extends Fragment
                     }
                 }
         );
+        if (readerManager != null) readerManager.unsubscribeFromAssets();
         super.onDestroyView();
     }
 
@@ -280,7 +282,6 @@ public class StoriesContentFragment extends Fragment
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         // setRetainInstance(true);
     }
 
@@ -390,6 +391,8 @@ public class StoriesContentFragment extends Fragment
             forceFinish();
             return;
         }
+        if (readerManager == null) return;
+        readerManager.subscribeToAssets();
         readerManager.setParentFragment(this);
         getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 

@@ -1,14 +1,24 @@
 package com.inappstory.sdk.stories.utils;
 
 
+import com.inappstory.sdk.game.cache.SessionAssetsIsReadyCallback;
+import com.inappstory.sdk.game.cache.UseCaseCallback;
+import com.inappstory.sdk.lrudiskcache.LruCachesHolder;
 import com.inappstory.sdk.stories.api.models.Session;
+import com.inappstory.sdk.stories.api.models.SessionAsset;
 import com.inappstory.sdk.stories.api.models.StatisticPermissions;
+import com.inappstory.sdk.stories.cache.FilesDownloadManager;
+import com.inappstory.sdk.stories.cache.usecases.SessionAssetLocalUseCase;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.utils.ISessionHolder;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 public class SessionHolder implements ISessionHolder {
     private Session session;
@@ -16,6 +26,13 @@ public class SessionHolder implements ISessionHolder {
     private final Object sessionLock = new Object();
 
     private final HashMap<String, OldStatisticManager> statisticManagers = new HashMap<>();
+
+    private final HashMap<String, SessionAsset> cacheObjects = new HashMap<>();
+
+    private final Object cacheLock = new Object();
+
+    private HashSet<SessionAssetsIsReadyCallback> assetsIsReadyCallbacks = new HashSet<>();
+
 
     private final ArrayList<Integer> viewed = new ArrayList<>();
 
@@ -106,6 +123,73 @@ public class SessionHolder implements ISessionHolder {
     public boolean hasViewedIds() {
         synchronized (sessionLock) {
             return viewed.size() > 0;
+        }
+    }
+
+    @Override
+    public void addSessionAssetsKeys(List<SessionAsset> cacheObjects) {
+        synchronized (cacheLock) {
+            this.cacheObjects.clear();
+            for (SessionAsset object : cacheObjects) {
+                this.cacheObjects.put(object.filename, null);
+            }
+        }
+    }
+
+    @Override
+    public void addSessionAsset(SessionAsset object) {
+        synchronized (cacheLock) {
+            cacheObjects.put(object.filename, object);
+        }
+    }
+
+    @Override
+    public void addSessionAssetsIsReadyCallback(SessionAssetsIsReadyCallback callback) {
+        synchronized (cacheLock) {
+            assetsIsReadyCallbacks.add(callback);
+        }
+    }
+
+    @Override
+    public void removeSessionAssetsIsReadyCallback(SessionAssetsIsReadyCallback callback) {
+        synchronized (cacheLock) {
+            assetsIsReadyCallbacks.remove(callback);
+        }
+    }
+
+    @Override
+    public void checkIfSessionAssetsIsReady(FilesDownloadManager filesDownloadManager) {
+        final boolean[] cachesIsReady = {true};
+        synchronized (cacheLock) {
+            for (String key : cacheObjects.keySet()) {
+                if (!cachesIsReady[0]) return;
+                SessionAsset asset = cacheObjects.get(key);
+                if (asset == null) return;
+                new SessionAssetLocalUseCase(
+                        filesDownloadManager,
+                        new UseCaseCallback<File>() {
+                            @Override
+                            public void onError(String message) {
+                                cachesIsReady[0] = false;
+                            }
+
+                            @Override
+                            public void onSuccess(File result) {
+                            }
+                        },
+                        asset
+                ).getFile();
+            }
+
+        }
+        if (cachesIsReady[0]) {
+            Set<SessionAssetsIsReadyCallback> temp = new HashSet<>(assetsIsReadyCallbacks);
+            synchronized (cacheLock) {
+                assetsIsReadyCallbacks.clear();
+            }
+            for (SessionAssetsIsReadyCallback callback : temp) {
+                callback.isReady();
+            }
         }
     }
 

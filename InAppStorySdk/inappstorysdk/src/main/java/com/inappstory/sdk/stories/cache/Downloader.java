@@ -12,7 +12,6 @@ import com.inappstory.sdk.lrudiskcache.FileManager;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.network.utils.ConnectionHeadersMap;
 import com.inappstory.sdk.network.utils.ResponseStringFromStream;
-import com.inappstory.sdk.stories.api.models.SessionCacheObject;
 import com.inappstory.sdk.stories.api.models.logs.ApiLogRequest;
 import com.inappstory.sdk.stories.api.models.logs.ApiLogRequestHeader;
 import com.inappstory.sdk.stories.api.models.logs.ApiLogResponse;

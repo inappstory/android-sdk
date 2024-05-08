@@ -22,13 +22,11 @@ import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.stories.api.models.CachedSessionData;
-import com.inappstory.sdk.stories.api.models.SessionCacheObject;
 import com.inappstory.sdk.stories.api.models.SessionRequestFields;
 import com.inappstory.sdk.stories.api.models.SessionResponse;
 import com.inappstory.sdk.stories.api.models.StatisticPermissions;
 import com.inappstory.sdk.stories.api.models.StatisticSendObject;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
-import com.inappstory.sdk.stories.cache.Downloader;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.statistic.GetOldStatisticManagerCallback;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
@@ -123,7 +121,7 @@ public class SessionManager {
                     @Override
                     public void use(@NonNull InAppStoryService service) throws Exception {
                         service.runStatisticThread();
-                        service.downloadBundleObjects(response.cacheObjects);
+                        service.downloadSessionAssets(response.sessionAssets);
                     }
                 });
             }
@@ -149,7 +147,7 @@ public class SessionManager {
             SessionRequestFields.imagePlaceholders
     });
     private final String SESSION_EXPAND = TextUtils.join(",", new String[]{
-            SessionRequestFields.cacheObjects
+            SessionRequestFields.sessionAssets
     });
 
 

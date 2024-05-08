@@ -9,7 +9,7 @@ import com.inappstory.sdk.network.annotations.models.SerializedName;
  * Created by paperrose on 19.02.2018.
  */
 
-public class SessionCacheObject {
+public class SessionAsset {
     @SerializedName("url")
     public String url;
     @SerializedName("size")

@@ -15,6 +15,7 @@ import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.UseManagerInstanceCallback;
 import com.inappstory.sdk.UseServiceInstanceCallback;
+import com.inappstory.sdk.game.cache.SessionAssetsIsReadyCallback;
 import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
@@ -65,6 +66,8 @@ public class ReaderManager {
 
     public ReaderManager() {
     }
+
+
 
     public ReaderManager(
             String listID,
@@ -510,6 +513,31 @@ public class ReaderManager {
 
     private StoriesContentFragment parentFragment;
     private final HashSet<ReaderPageManager> subscribers = new HashSet<>();
+
+    private final SessionAssetsIsReadyCallback assetsIsReadyCallback = new SessionAssetsIsReadyCallback() {
+        @Override
+        public void isReady() {
+
+        }
+    };
+
+    public void subscribeToAssets() {
+        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryService service) throws Exception {
+                service.getSession().addSessionAssetsIsReadyCallback(assetsIsReadyCallback);
+            }
+        });
+    }
+
+    public void unsubscribeFromAssets() {
+        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryService service) throws Exception {
+                service.getSession().removeSessionAssetsIsReadyCallback(assetsIsReadyCallback);
+            }
+        });
+    }
 
     public void addSubscriber(ReaderPageManager manager) {
         synchronized (subscribers) {

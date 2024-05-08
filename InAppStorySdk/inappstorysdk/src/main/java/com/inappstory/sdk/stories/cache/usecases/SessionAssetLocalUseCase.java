@@ -1,11 +1,9 @@
 package com.inappstory.sdk.stories.cache.usecases;
 
-import android.util.Log;
-
 import com.inappstory.sdk.game.cache.UseCaseCallback;
 import com.inappstory.sdk.lrudiskcache.CacheJournalItem;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
-import com.inappstory.sdk.stories.api.models.SessionCacheObject;
+import com.inappstory.sdk.stories.api.models.SessionAsset;
 import com.inappstory.sdk.stories.cache.DownloadFileState;
 import com.inappstory.sdk.stories.cache.Downloader;
 import com.inappstory.sdk.stories.cache.FilesDownloadManager;
@@ -15,14 +13,14 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Objects;
 
-public class SessionBundleResourceUseCase extends GetCacheFileUseCase<Void> {
-    private final SessionCacheObject cacheObject;
+public class SessionAssetLocalUseCase extends GetCacheFileUseCase<Void> {
+    private final SessionAsset cacheObject;
     private final UseCaseCallback<File> useCaseCallback;
 
-    public SessionBundleResourceUseCase(
+    public SessionAssetLocalUseCase(
             FilesDownloadManager filesDownloadManager,
             UseCaseCallback<File> useCaseCallback,
-            SessionCacheObject cacheObject
+            SessionAsset cacheObject
     ) {
         super(filesDownloadManager);
         this.cacheObject = cacheObject;
@@ -45,60 +43,13 @@ public class SessionBundleResourceUseCase extends GetCacheFileUseCase<Void> {
         }
     }
 
-    private void downloadFile() {
-        downloadLog.sendRequestLog();
-        downloadLog.generateResponseLog(false, filePath);
-        filesDownloadManager.useBundleDownloader(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    FinishDownloadFileCallback callback = new FinishDownloadFileCallback() {
-                        @Override
-                        public void finish(DownloadFileState fileState) {
-                            downloadLog.sendResponseLog();
-                            if (fileState == null) {
-                                useCaseCallback.onError("Can't download bundle file: " + cacheObject.url);
-                                return;
-                            }
-                            CacheJournalItem cacheJournalItem = generateCacheItem();
-                            cacheJournalItem.setSize(fileState.totalSize);
-                            cacheJournalItem.setDownloadedSize(fileState.totalSize);
-                            try {
-                                getCache().put(cacheJournalItem);
-                            } catch (IOException e) {
-
-                            }
-                            useCaseCallback.onSuccess(fileState.file);
-                        }
-                    };
-                    Downloader.downloadFile(
-                            cacheObject.url,
-                            new File(filePath),
-                            null,
-                            downloadLog.responseLog,
-                            null,
-                            0,
-                            filesDownloadManager,
-                            callback
-                    );
-
-                } catch (Exception e) {
-                    useCaseCallback.onError(e.getMessage());
-                }
-            }
-        });
-
-    }
-
     @Override
     public Void getFile() {
-        if (!getLocalFile())
-            downloadFile();
+        getLocalFile();
         return null;
     }
 
     private boolean getLocalFile() {
-        downloadLog.generateRequestLog(cacheObject.url);
         CacheJournalItem cached = getCache().getJournalItem(uniqueKey);
         DownloadFileState fileState = null;
         if (cached != null) {
@@ -111,14 +62,13 @@ public class SessionBundleResourceUseCase extends GetCacheFileUseCase<Void> {
         if (fileState != null) {
             File file = fileState.getFullFile();
             if (file != null) {
-                downloadLog.generateResponseLog(true, filePath);
-                downloadLog.sendRequestResponseLog();
                 useCaseCallback.onSuccess(file);
                 return true;
             } else {
                 deleteCacheKey();
             }
         }
+        useCaseCallback.onError("No local file");
         return false;
     }
 
