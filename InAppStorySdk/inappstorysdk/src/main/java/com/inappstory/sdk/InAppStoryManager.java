@@ -1251,6 +1251,7 @@ public class InAppStoryManager {
         soundOn = !context.getResources().getBoolean(R.bool.defaultMuted);
         this.isDeviceIDEnabled = isDeviceIDEnabled;
         this.gameDemoMode = gameDemoMode;
+        this.currentLocale = locale;
         synchronized (tagsLock) {
             this.tags = tags;
         }
