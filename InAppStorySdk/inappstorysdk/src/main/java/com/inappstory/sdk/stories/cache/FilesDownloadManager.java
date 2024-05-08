@@ -31,6 +31,7 @@ public class FilesDownloadManager {
                         url,
                         new ArrayList<FinishDownloadFileCallback>()
                 );
+            } else {
                 isNewUrl = false;
             }
             downloadFileCallbacks.get(url).add(callback);

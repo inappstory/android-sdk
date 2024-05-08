@@ -60,7 +60,6 @@ public class SessionBundleResourceUseCase extends GetCacheFileUseCase<Void> {
                                 useCaseCallback.onError("Can't download bundle file: " + cacheObject.url);
                                 return;
                             }
-                            Log.e("ScenarioDownload", "Downloaded: " + uniqueKey);
                             CacheJournalItem cacheJournalItem = generateCacheItem();
                             cacheJournalItem.setSize(fileState.totalSize);
                             cacheJournalItem.setDownloadedSize(fileState.totalSize);
@@ -100,7 +99,6 @@ public class SessionBundleResourceUseCase extends GetCacheFileUseCase<Void> {
 
     private boolean getLocalFile() {
         downloadLog.generateRequestLog(cacheObject.url);
-        Log.e("ScenarioDownload", "UniqueKey: " + uniqueKey);
         CacheJournalItem cached = getCache().getJournalItem(uniqueKey);
         DownloadFileState fileState = null;
         if (cached != null) {
@@ -113,7 +111,6 @@ public class SessionBundleResourceUseCase extends GetCacheFileUseCase<Void> {
         if (fileState != null) {
             File file = fileState.getFullFile();
             if (file != null) {
-                Log.e("ScenarioDownload", "Cached: " + uniqueKey);
                 downloadLog.generateResponseLog(true, filePath);
                 downloadLog.sendRequestResponseLog();
                 useCaseCallback.onSuccess(file);

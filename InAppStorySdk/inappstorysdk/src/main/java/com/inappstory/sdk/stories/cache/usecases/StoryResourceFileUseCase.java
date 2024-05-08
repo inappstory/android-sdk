@@ -41,11 +41,9 @@ public class StoryResourceFileUseCase extends GetCacheFileUseCase<DownloadFileSt
     @Override
     public DownloadFileState getFile() {
         downloadLog.generateRequestLog(url);
-        Log.e("ScenarioDownload", "UniqueKey: " + uniqueKey);
         final DownloadFileState[] fileState = {getCache().get(uniqueKey)};
         if (fileState[0] == null || fileState[0].downloadedSize != fileState[0].totalSize) {
             try {
-                Log.e("ScenarioDownload", "Download: " + uniqueKey);
                 downloadLog.sendRequestLog();
                 downloadLog.generateResponseLog(false, filePath);
                 FinishDownloadFileCallback callback = new FinishDownloadFileCallback() {
@@ -55,7 +53,6 @@ public class StoryResourceFileUseCase extends GetCacheFileUseCase<DownloadFileSt
                         if (state == null || state.downloadedSize != state.totalSize)  {
                             return;
                         }
-                        Log.e("ScenarioDownload", "Downloaded: " + uniqueKey);
                         CacheJournalItem cacheJournalItem = generateCacheItem();
                         cacheJournalItem.setSize(state.totalSize);
                         cacheJournalItem.setDownloadedSize(state.totalSize);
@@ -81,7 +78,6 @@ public class StoryResourceFileUseCase extends GetCacheFileUseCase<DownloadFileSt
                 e.printStackTrace();
             }
         } else {
-            Log.e("ScenarioDownload", "Cached: " + uniqueKey);
             downloadLog.generateResponseLog(true, filePath);
             downloadLog.sendRequestResponseLog();
         }

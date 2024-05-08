@@ -130,7 +130,6 @@ public class GameResourceUseCase extends GetCacheFileUseCase<Void> {
                 offset = fileState.downloadedSize;
             }
             try {
-                Log.e("ScenarioDownload", "Download: " + uniqueKey);
                 downloadLog.sendRequestLog();
                 downloadLog.generateResponseLog(false, filePath);
                 FinishDownloadFileCallback callback =
@@ -147,7 +146,6 @@ public class GameResourceUseCase extends GetCacheFileUseCase<Void> {
                                             resource.sha1,
                                             true
                                     )) {
-                                        Log.e("ScenarioDownload", "Downloaded: " + uniqueKey);
                                         CacheJournalItem cacheJournalItem = generateCacheItem();
                                         cacheJournalItem.setSize(fileState.totalSize);
                                         cacheJournalItem.setDownloadedSize(fileState.totalSize);
