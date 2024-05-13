@@ -7,8 +7,12 @@ import android.os.Looper;
 import android.os.Vibrator;
 import android.view.View;
 
+import androidx.annotation.NonNull;
+
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.UseServiceInstanceCallback;
+import com.inappstory.sdk.game.cache.SessionAssetsIsReadyCallback;
 import com.inappstory.sdk.game.reader.GameStoryData;
 import com.inappstory.sdk.game.reader.GameReaderLoadProgressBar;
 import com.inappstory.sdk.inner.share.InnerShareData;
@@ -39,6 +43,7 @@ import com.inappstory.sdk.stories.utils.AudioModes;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
 import com.inappstory.sdk.stories.utils.WebPageConvertCallback;
 import com.inappstory.sdk.stories.utils.WebPageConverter;
+import com.inappstory.sdk.utils.ISessionHolder;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -268,21 +273,34 @@ public class StoriesViewManager {
                 index,
                 pageManager.getStoryType());
         if (slideInCache == 1) {
+            slideInCache(service, story, index);
+        } else {
+            slideNotInCache(service, index);
+        }
+    }
+
+    private void slideInCache(final InAppStoryService service, final Story story, final int index) {
+
+        ISessionHolder sessionHolder = service.getSession();
+        if (sessionHolder.checkIfSessionAssetsIsReady()) {
             innerLoad(story);
             pageManager.slideLoadedInCache(index, true);
         } else {
+            slideNotInCache(service, index);
+        }
+    }
 
-            if (slideInCache == -1) {
-                pageManager.slideLoadError(index);
-            } else {
-                if (!service.isConnected()) {
-                    if (CallbackManager.getInstance().getErrorCallback() != null) {
-                        CallbackManager.getInstance().getErrorCallback().noConnection();
-                    }
-                    return;
+    private void slideNotInCache(InAppStoryService service, int index) {
+        if (slideInCache == -1) {
+            pageManager.slideLoadError(index);
+        } else {
+            if (!service.isConnected()) {
+                if (CallbackManager.getInstance().getErrorCallback() != null) {
+                    CallbackManager.getInstance().getErrorCallback().noConnection();
                 }
-                pageManager.storyLoadStart();
+                return;
             }
+            pageManager.storyLoadStart();
         }
     }
 

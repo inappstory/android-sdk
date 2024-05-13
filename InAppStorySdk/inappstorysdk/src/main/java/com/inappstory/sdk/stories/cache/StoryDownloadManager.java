@@ -11,6 +11,7 @@ import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.UseServiceInstanceCallback;
+import com.inappstory.sdk.game.cache.SessionAssetsIsReadyCallback;
 import com.inappstory.sdk.listwidget.StoriesWidgetService;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.NetworkClient;
@@ -34,6 +35,7 @@ import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 import com.inappstory.sdk.stories.ui.list.FavoriteImage;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPageManager;
 import com.inappstory.sdk.stories.utils.SessionManager;
+import com.inappstory.sdk.utils.ISessionHolder;
 import com.inappstory.sdk.utils.StringsUtils;
 
 import java.io.IOException;
@@ -225,10 +227,21 @@ public class StoryDownloadManager {
         InAppStoryService.useInstance(new UseServiceInstanceCallback() {
             @Override
             public void use(@NonNull InAppStoryService service) throws Exception {
-                service.getSession().checkIfSessionAssetsIsReady();
+                ISessionHolder sessionHolder = service.getSession();
+                if (sessionHolder.checkIfSessionAssetsIsReady()) {
+                    subscriber.slideLoadedInCache(key.index);
+                } else {
+                    sessionHolder.addSessionAssetsIsReadyCallback(new SessionAssetsIsReadyCallback() {
+                        @Override
+                        public void isReady() {
+                            subscriber.slideLoadedInCache(key.index);
+                        }
+                    });
+                    service.downloadSessionAssets(sessionHolder.getSessionAssets());
+                }
+
             }
         });
-        subscriber.slideLoadedInCache(key.index);
     }
 
     void slideLoaded(final SlideTaskData key) {

@@ -29,7 +29,7 @@ public class IASWebViewClient extends WebViewClient {
         try {
             File cachedFile = cache.getFullFile(key);
             if (cachedFile == null) {
-                Downloader.downloadOrGetFile(url, true, cache, null, null);
+               // Downloader.downloadOrGetFile(url, true, cache, null, null);
                 return null;
             }
             return cachedFile;
@@ -89,6 +89,7 @@ public class IASWebViewClient extends WebViewClient {
             WebResourceResponse response = getChangedResponse(request.getUrl().toString());
             if (response != null) return response;
         } catch (FileNotFoundException ignored) {
+
         }
         return super.shouldInterceptRequest(view, request);
     }

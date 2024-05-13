@@ -7,12 +7,18 @@ import android.text.Spanned;
 import android.util.Log;
 import android.util.Pair;
 
+import androidx.annotation.NonNull;
+
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.UseServiceInstanceCallback;
+import com.inappstory.sdk.game.cache.UseCaseCallback;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderType;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
+import com.inappstory.sdk.stories.api.models.SessionAsset;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.cache.Downloader;
+import com.inappstory.sdk.stories.cache.usecases.SessionAssetLocalUseCase;
 import com.inappstory.sdk.utils.StringsUtils;
 
 import java.io.File;
@@ -93,38 +99,78 @@ public class WebPageConverter {
         return innerWebData;
     }
 
-    private String replaceImagePlaceholders(String innerWebData, Story story, final int index, LruDiskCache cache) throws IOException {
-        Map<String, Pair<ImagePlaceholderValue, ImagePlaceholderValue>> imgPlaceholders =
-                InAppStoryService.getInstance().getImagePlaceholdersValuesWithDefaults();
-        Map<String, String> imgPlaceholderKeys = story.getPlaceholdersList(index, "image-placeholder");
-        for (Map.Entry<String, String> entry : imgPlaceholderKeys.entrySet()) {
-            String placeholderKey = entry.getKey();
-            String placeholderName = entry.getValue();
-            if (placeholderKey != null && placeholderName != null) {
-                Pair<ImagePlaceholderValue, ImagePlaceholderValue> placeholderValue
-                        = imgPlaceholders.get(placeholderName);
-                if (placeholderValue != null) {
-                    String path = "";
-                    if (placeholderValue.first.getType() == ImagePlaceholderType.URL) {
-                        String uniqueKey = StringsUtils.md5(placeholderValue.first.getUrl());
-                        File file = cache.getFullFile(uniqueKey);
-                        if (file != null && file.exists() && file.length() > 0) {
-                            path = "file://" + file.getAbsolutePath();
-                        } else {
-                            if (placeholderValue.second.getType() == ImagePlaceholderType.URL) {
-                                uniqueKey = StringsUtils.md5(placeholderValue.second.getUrl());
-                                file = cache.getFullFile(uniqueKey);
-                                if (file != null && file.exists() && file.length() > 0) {
-                                    path = "file://" + file.getAbsolutePath();
+    private String replaceLayoutAssets(String layout) {
+        final String[] newLayout = {layout};
+        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryService service) throws Exception {
+                List<SessionAsset> assets = service.getSession().getSessionAssets();
+                for (final SessionAsset asset : assets) {
+                    new SessionAssetLocalUseCase(
+                            service.getFilesDownloadManager(),
+                            new UseCaseCallback<File>() {
+                                @Override
+                                public void onError(String message) {
+
                                 }
-                            }
-                        }
-                    }
-                    innerWebData = innerWebData.replace(placeholderKey, path);
+
+                                @Override
+                                public void onSuccess(File result) {
+                                    newLayout[0] = newLayout[0].replace(asset.replaceKey,
+                                            "file://" + result.getAbsolutePath());
+                                }
+                            },
+                            asset
+                    ).getFile();
                 }
             }
-        }
-        return innerWebData;
+        });
+        return newLayout[0];
+    }
+
+    private String replaceImagePlaceholders(String innerWebData,
+                                            final Story story,
+                                            final int index,
+                                            final LruDiskCache cache
+    ) throws IOException {
+        final String[] newData = {innerWebData};
+        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryService service) throws Exception {
+                Map<String, Pair<ImagePlaceholderValue, ImagePlaceholderValue>> imgPlaceholders =
+                        service.getImagePlaceholdersValuesWithDefaults();
+                Map<String, String> imgPlaceholderKeys = story.getPlaceholdersList(index, "image-placeholder");
+                for (Map.Entry<String, String> entry : imgPlaceholderKeys.entrySet()) {
+                    String placeholderKey = entry.getKey();
+                    String placeholderName = entry.getValue();
+                    if (placeholderKey != null && placeholderName != null) {
+                        Pair<ImagePlaceholderValue, ImagePlaceholderValue> placeholderValue
+                                = imgPlaceholders.get(placeholderName);
+                        if (placeholderValue != null) {
+                            String path = "";
+                            if (placeholderValue.first.getType() == ImagePlaceholderType.URL) {
+                                String uniqueKey = StringsUtils.md5(placeholderValue.first.getUrl());
+                                File file = cache.getFullFile(uniqueKey);
+                                if (file != null && file.exists() && file.length() > 0) {
+                                    path = "file://" + file.getAbsolutePath();
+                                } else {
+                                    if (placeholderValue.second.getType() == ImagePlaceholderType.URL) {
+                                        uniqueKey = StringsUtils.md5(placeholderValue.second.getUrl());
+                                        file = cache.getFullFile(uniqueKey);
+                                        if (file != null && file.exists() && file.length() > 0) {
+                                            path = "file://" + file.getAbsolutePath();
+                                        }
+                                    }
+                                }
+                            }
+                            newData[0] = newData[0].replace(placeholderKey, path);
+                        }
+                    }
+                }
+            }
+        });
+
+        return newData[0];
     }
 
     public void replaceEmptyAndLoad(int index, String layout,
@@ -166,6 +212,7 @@ public class WebPageConverter {
             LruDiskCache cache = service.getCommonCache();
             localData = replaceResources(localData, story, index, cache);
             localData = replaceImagePlaceholders(localData, story, index, cache);
+            newLayout = replaceLayoutAssets(layout);
             Pair<String, String> replaced = replacePlaceholders(localData, newLayout);
             newLayout = replaced.second;
             localData = replaced.first;

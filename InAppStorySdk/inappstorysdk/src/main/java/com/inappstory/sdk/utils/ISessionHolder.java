@@ -16,6 +16,7 @@ public interface ISessionHolder {
     boolean allowCrash();
     boolean allowUGC();
     String getSessionId();
+    List<SessionAsset> getSessionAssets();
     void setSessionPermissions(StatisticPermissions statisticPermissions);
     void setSession(Session session);
 
@@ -28,8 +29,8 @@ public interface ISessionHolder {
 
     void addSessionAssetsIsReadyCallback(SessionAssetsIsReadyCallback callback);
     void removeSessionAssetsIsReadyCallback(SessionAssetsIsReadyCallback callback);
-
-    void checkIfSessionAssetsIsReady(FilesDownloadManager filesDownloadManager);
+    boolean checkIfSessionAssetsIsReady();
+    boolean checkIfSessionAssetsIsReady(FilesDownloadManager filesDownloadManager);
 
     OldStatisticManager currentStatisticManager();
 

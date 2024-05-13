@@ -155,10 +155,10 @@ public class CacheJournal {
                     stream.writeUTF(item.getExt());
                     stream.writeUTF(item.getSha1());
                     stream.writeUTF(item.getReplaceKey());
+                    stream.writeUTF(item.getMimeType());
                     stream.writeLong(item.getTime());
                     stream.writeLong(item.getSize());
                     stream.writeLong(item.getDownloadedSize());
-                    stream.writeUTF(item.getMimeType());
                 }
             } catch (IOException ex) {
                 if (stream != null) {
@@ -197,9 +197,9 @@ public class CacheJournal {
                     String ext = stream.readUTF();
                     String sha1 = stream.readUTF();
                     String replaceKey = stream.readUTF();
+                    String mimeType = stream.readUTF();
                     long time = stream.readLong();
                     long size = stream.readLong();
-                    String mimeType = stream.readUTF();
                     currentSize += size;
                     long downloadedSize = stream.readLong();
                     CacheJournalItem item = new CacheJournalItem(
