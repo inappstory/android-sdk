@@ -228,6 +228,7 @@ public class StoriesContentFragment extends Fragment
 
     public ReaderManager readerManager;
 
+
     ReaderPagerAdapter outerViewPagerAdapter;
     View invMask;
 
@@ -374,13 +375,13 @@ public class StoriesContentFragment extends Fragment
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
-        if (readerManager != null) readerManager.host = this;
+        if (readerManager != null) readerManager.setHost(this);
         ScreensManager.getInstance().putGameObserver(getReaderUniqueId(), this);
     }
 
     @Override
     public void onDetach() {
-        if (readerManager != null && readerManager.host == this) readerManager.host = null;
+        if (readerManager != null && readerManager.hostIsEqual(this)) readerManager.setHost(null);
         ScreensManager.getInstance().removeGameObserver(getReaderUniqueId());
         super.onDetach();
     }

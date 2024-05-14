@@ -321,7 +321,7 @@ public class StoryDownloadManager {
             public void use(@NonNull InAppStoryService service) throws Exception {
                 for (StackStoryObserver storyObserver : service.getStackStoryObservers().values()) {
                     for (Story story : stories) {
-                        storyObserver.onUpdateOpenedStatus(story.id);
+                        storyObserver.onUpdateOpenedStatus(story.id, story.isOpened);
                     }
                 }
             }

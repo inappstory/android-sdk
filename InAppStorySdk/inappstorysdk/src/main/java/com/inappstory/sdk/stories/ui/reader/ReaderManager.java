@@ -40,8 +40,29 @@ public class ReaderManager {
     private String listID;
     public Story.StoryType storyType;
     public StoriesContentFragment host;
+    private final Object hostLock = new Object();
 
     public SourceType source = SourceType.SINGLE;
+
+
+    public void setHost(StoriesContentFragment host) {
+        synchronized (hostLock) {
+            this.host = host;
+        }
+    }
+
+    public boolean hostIsEqual(StoriesContentFragment host) {
+        synchronized (hostLock) {
+            return this.host == host;
+        }
+    }
+
+    public StoriesContentFragment getHost() {
+        synchronized (hostLock) {
+            return host;
+        }
+    }
+
 
     public ReaderManager() {
     }
@@ -285,7 +306,8 @@ public class ReaderManager {
                 adds,
                 storyType
         )) {
-            host.forceFinish();
+            StoriesContentFragment host = getHost();
+            if (host != null) host.forceFinish();
             return;
         }
         service.getDownloadManager().addStoryTask(

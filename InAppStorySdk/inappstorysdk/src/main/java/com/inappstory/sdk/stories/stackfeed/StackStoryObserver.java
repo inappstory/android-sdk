@@ -199,6 +199,16 @@ public class StackStoryObserver implements IStackFeedActions {
         return openedIndex;
     }
 
+    public void onUpdateOpenedStatus(int storyId, boolean status) {
+        for (int i = 0; i < stories.size(); i++) {
+            if (storyId == stories.get(i).id) {
+                stories.get(i).isOpened = status;
+                break;
+            }
+        }
+        generateNewStackStoryData(Math.max(oldIndex, 0), stackStoryUpdated);
+    }
+
     public void onUpdate(int storyId, String listId) {
         int openedIndex = onUpdateOpenedStatus(storyId);
         boolean useOldIndex = false;
