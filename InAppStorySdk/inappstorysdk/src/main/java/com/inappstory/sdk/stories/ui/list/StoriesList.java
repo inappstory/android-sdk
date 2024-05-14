@@ -6,6 +6,7 @@ import android.content.res.TypedArray;
 import android.graphics.Rect;
 import android.os.Handler;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
@@ -111,6 +112,7 @@ public class StoriesList extends RecyclerView {
     private String uniqueID;
 
     public void setCallback(ListCallback callback) {
+        Log.d("IAS_Temp_Logs", "StoriesList.setCallback() " + (callback != null));
         this.callback = callback;
     }
 
@@ -418,6 +420,8 @@ public class StoriesList extends RecyclerView {
      * @param favoriteItemClick (favoriteItemClick) - instance of OnFavoriteItemClick.
      */
     public void setOnFavoriteItemClick(OnFavoriteItemClick favoriteItemClick) {
+
+        Log.d("IAS_Temp_Logs", "StoriesList.setOnFavoriteItemClick() " + (favoriteItemClick != null));
         this.favoriteItemClick = favoriteItemClick;
     }
 
@@ -670,6 +674,8 @@ public class StoriesList extends RecyclerView {
 
         setOverScrollMode(getAppearanceManager().csListOverscroll() ?
                 OVER_SCROLL_ALWAYS : OVER_SCROLL_NEVER);
+
+        Log.d("IAS_Temp_Logs", "StoriesList.setOrRefreshAdapter() " + isFavoriteList + " " + (favoriteItemClick != null));
         adapter = new StoriesAdapter(getContext(),
                 uniqueID,
                 manager != null ? manager.currentSessionId : "",

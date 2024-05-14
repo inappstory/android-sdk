@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -149,6 +150,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    Log.d("IAS_Temp_Logs", "StoriesList.setOnFavoriteItemClick() " + (favoriteItemClick != null));
                     if (favoriteItemClick != null) {
                         favoriteItemClick.onClick();
                     }
@@ -197,17 +199,24 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
 
         InAppStoryService service = InAppStoryService.getInstance();
         if (service == null) return;
-
         if (System.currentTimeMillis() - clickTimestamp < 1500) {
             return;
         }
+
+
 
         ScreensManager.getInstance().activeStoryItem = new ActiveStoryItem(ind, listID);
         int hasUGC = useUGC ? 1 : 0;
         int index = ind - hasUGC;
         clickTimestamp = System.currentTimeMillis();
         final Story current = service.getDownloadManager().getStoryById(storiesIds.get(index), Story.StoryType.COMMON);
+        Log.d("IAS_Temp_Logs", "StoriesAdapter.onItemClick() "
+                + storiesIds.get(index) + " "
+                + (current != null) + " "
+                + (callback != null)
+        );
         if (current != null) {
+
             if (callback != null) {
                 callback.itemClick(
                         new StoryData(
@@ -327,6 +336,11 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
                 0,
                 Story.StoryType.COMMON,
                 coordinates
+        );
+        Log.d("IAS_Temp_Logs", "StoriesAdapter.openStoriesReader() "
+                + storiesIds.get(index) + " "
+                + (current != null) + " "
+                + (callback != null)
         );
         ScreensManager.getInstance().openStoriesReader(
                 context,

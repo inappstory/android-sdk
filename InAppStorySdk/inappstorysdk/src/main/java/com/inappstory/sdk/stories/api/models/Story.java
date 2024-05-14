@@ -509,5 +509,9 @@ public class Story implements Parcelable {
         return result;
     }
 
-
+    @NonNull
+    @Override
+    public String toString() {
+        return "Story{ id:" + id + " }";
+    }
 }

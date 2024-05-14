@@ -818,6 +818,7 @@ public class InAppStoryManager {
 
             }
         }
+        Log.d("IAS_Temp_Logs", "initSDK");
         if (!(context instanceof Application)) calledFromApplication = false;
         if (!calledFromApplication)
             showELog(IAS_ERROR_TAG, "Method must be called from Application class and context has to be an applicationContext");
@@ -2259,6 +2260,8 @@ public class InAppStoryManager {
          * @return {@link InAppStoryManager}
          */
         public InAppStoryManager create() {
+
+            Log.d("IAS_Temp_Logs", "InAppStoryManager.Builder.create()");
             synchronized (lock) {
                 if (INSTANCE == null) {
                     showELog(IAS_ERROR_TAG, "Method InAppStoryManager.init must be called from Application class");

@@ -142,6 +142,7 @@ public class StoryListItem extends BaseStoryListItem {
         itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Log.d("IAS_Temp_Logs", "StoryListItem.itemView.onClick()");
                 int[] location = new int[2];
                 v.getLocationOnScreen(location);
                 int x = location[0];
@@ -149,11 +150,13 @@ public class StoryListItem extends BaseStoryListItem {
                 ScreensManager.getInstance().coordinates =
                         new StoryItemCoordinates(x + v.getWidth() / 2 - Sizes.dpToPxExt(8, itemView.getContext()),
                                 y + v.getHeight() / 2);
-                if (StoryListItem.this.callback != null)
+                if (StoryListItem.this.callback != null) {
                     StoryListItem.this.callback.onItemClick(
                             getAbsoluteAdapterPosition(),
                             ScreensManager.getInstance().coordinates
                     );
+                    Log.d("IAS_Temp_Logs", "StoryListItem.callback.onItemClick()");
+                }
             }
         });
         if (getListItem != null) {
