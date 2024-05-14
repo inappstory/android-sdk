@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/black">
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/black"
+        android:clickable="true"
+        android:elevation="4dp"
+        android:focusable="true" />
+
+    <androidx.camera.view.PreviewView
+        android:id="@+id/previewView"
+        android:layout_width="match_parent"
+        android:layout_centerInParent="true"
+        android:layout_height="match_parent"
+        android:elevation="5dp" />
+
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:elevation="8dp"
+        android:layout_alignParentBottom="true"
+        android:layout_marginLeft="50dp"
+        android:layout_marginRight="50dp"
+        android:layout_marginBottom="92dp">
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true">
+
+            <com.inappstory.sdk.ugc.camerax.CameraButton
+                android:id="@+id/cameraButton"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:layout_centerInParent="true" />
+
+            <com.google.android.material.progressindicator.CircularProgressIndicator
+                android:id="@+id/videoProgress"
+                android:layout_width="72dp"
+                android:layout_height="72dp"
+                android:visibility="invisible"
+                app:indicatorColor="#FF0000"
+                app:indicatorSize="72dp"
+                app:trackColor="@color/white"
+                app:trackCornerRadius="4dp"
+                app:trackThickness="4dp" />
+        </RelativeLayout>
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/changeCam"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:src="@drawable/cs_camera_flip"
+            android:tint="@color/black"
+            app:backgroundTint="@color/white"
+            app:maxImageSize="36dp" />
+    </RelativeLayout>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/cameraText"
+        android:layout_alignParentBottom="true"
+        android:elevation="8dp"
+        android:layout_centerInParent="true"
+        android:layout_marginBottom="60dp"
+        android:gravity="center"
+        android:text="Tap for photo, hold for video"
+        android:textColor="@color/white" />
+
+</RelativeLayout>

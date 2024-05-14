@@ -1,5 +1,7 @@
 package com.inappstory.sdk.modulesconnector.utils.filepicker;
 
+import android.content.Context;
+
 import androidx.fragment.app.FragmentManager;
 
 import java.util.HashMap;
@@ -11,7 +13,7 @@ public class DummyFilePicker implements IFilePicker {
     }
 
     @Override
-    public void show(FragmentManager fragmentManager, OnFilesChooseCallback callback) {
+    public void show(Context context, FragmentManager fragmentManager, OnFilesChooseCallback callback) {
 
     }
 

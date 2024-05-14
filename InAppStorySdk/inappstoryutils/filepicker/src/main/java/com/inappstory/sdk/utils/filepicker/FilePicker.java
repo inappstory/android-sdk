@@ -1,5 +1,7 @@
 package com.inappstory.sdk.utils.filepicker;
 
+import android.content.Context;
+
 import androidx.fragment.app.FragmentManager;
 
 import com.inappstory.sdk.modulesconnector.utils.filepicker.IFilePicker;
@@ -14,7 +16,7 @@ public class FilePicker implements IFilePicker {
     }
 
     @Override
-    public void show(FragmentManager fragmentManager, OnFilesChooseCallback callback) {
+    public void show(Context context, FragmentManager fragmentManager, OnFilesChooseCallback callback) {
 
     }
 }
