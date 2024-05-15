@@ -146,11 +146,12 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
         InAppStoryService service = InAppStoryService.getInstance();
         if (holder == null || service == null) return;
         if (holder.isFavorite) {
+            Log.d("IAS_Temp_Logs", "StoriesAdapter.onBindViewHolderFavorite");
             holder.bindFavorite();
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Log.d("IAS_Temp_Logs", "StoriesList.setOnFavoriteItemClick() " + (favoriteItemClick != null));
+                    Log.d("IAS_Temp_Logs", "StoriesAdapter.onFavoriteItemClick() " + (favoriteItemClick != null));
                     if (favoriteItemClick != null) {
                         favoriteItemClick.onClick();
                     }
@@ -174,6 +175,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
             String imgUrl = (story.getImage() != null && story.getImage().size() > 0) ?
                     story.getProperImage(manager.csCoverQuality()).getUrl() : null;
 
+            Log.d("IAS_Temp_Logs", "StoriesAdapter.onBindViewHolderCommon");
             holder.bind(story.id,
                     story.getTitle(),
                     story.getTitleColor() != null ? Color.parseColor(story.getTitleColor()) : null,
