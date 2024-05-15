@@ -1,5 +1,6 @@
 package com.inappstory.sdk.utils.lottie;
 
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.util.Pair;
@@ -70,6 +71,12 @@ public class LottiePlayerView extends LottieAnimationView implements ILottieView
     @Override
     public void play() {
         this.playAnimation();
+        this.addAnimatorUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+
+            }
+        });
     }
 
     @Override

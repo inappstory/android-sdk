@@ -1,21 +1,46 @@
-package com.inappstory.sdk.utils.filepicker;
+package com.inappstory.sdk.utils.filepicker
 
-import androidx.annotation.NonNull;
+import android.net.Uri
+import androidx.fragment.app.FragmentManager
+import com.inappstory.sdk.InAppStoryManager
+import com.inappstory.sdk.UseManagerInstanceCallback
+import com.inappstory.sdk.modulesconnector.utils.ModuleInitializer
+import com.inappstory.sdk.modulesconnector.utils.filepicker.OnFilesChooseCallback
 
-import com.inappstory.sdk.InAppStoryManager;
-import com.inappstory.sdk.UseManagerInstanceCallback;
-import com.inappstory.sdk.modulesconnector.utils.ModuleInitializer;
-import com.inappstory.sdk.utils.filepicker.FilePicker;
+class FilePickerCore : ModuleInitializer {
+    companion object FilePickerVM {
+        var filesChooseCallback: OnFilesChooseCallback? = null
+        var parentFragmentManager: FragmentManager? = null
 
-public class FilePickerCore implements ModuleInitializer {
+        fun close() {
+            parentFragmentManager?.popBackStack()
+        }
 
-    @Override
-    public void initialize() {
-        InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
-            @Override
-            public void use(@NonNull InAppStoryManager manager) throws Exception {
-                manager.setFilePicker(new FilePicker());
+        fun cancel() {
+            parentFragmentManager?.popBackStack()
+            filesChooseCallback?.onCancel()
+            filesChooseCallback = null
+        }
+
+        fun closeWithError(error: String) {
+            parentFragmentManager?.popBackStack()
+            filesChooseCallback?.onError(error)
+            filesChooseCallback = null
+        }
+
+        fun closeWithResult(filesWithTypes: Array<String>) {
+            parentFragmentManager?.popBackStack()
+            filesChooseCallback?.onChoose(filesWithTypes)
+            filesChooseCallback = null
+        }
+    }
+
+    override fun initialize() {
+        InAppStoryManager.useInstance(object : UseManagerInstanceCallback() {
+            @Throws(Exception::class)
+            override fun use(manager: InAppStoryManager) {
+                manager.setFilePicker(FilePicker())
             }
-        });
+        })
     }
 }

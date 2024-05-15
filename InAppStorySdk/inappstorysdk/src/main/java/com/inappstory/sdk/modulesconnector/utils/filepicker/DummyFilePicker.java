@@ -13,7 +13,17 @@ public class DummyFilePicker implements IFilePicker {
     }
 
     @Override
+    public boolean onBackPressed() {
+        return false;
+    }
+
+    @Override
     public void show(Context context, FragmentManager fragmentManager, OnFilesChooseCallback callback) {
+
+    }
+
+    @Override
+    public void close() {
 
     }
 

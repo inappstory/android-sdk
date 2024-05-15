@@ -13,6 +13,7 @@ import android.view.ViewGroup
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.inappstory.sdk.utils.filepicker.FilePickerMainFragment
 import com.inappstory.sdk.utils.filepicker.R
 import com.inappstory.sdk.utils.filepicker.utils.BackPressedFragment
 import com.inappstory.sdk.utils.filepicker.utils.faststart.FastStart
@@ -128,8 +129,8 @@ internal class FilePickerFragment : BackPressedFragment() {
             return
         }
         uploadButton.setOnClickListener {
-            if (activity is FileChooseActivity && selectedFiles.isNotEmpty()) {
-                (activity as FileChooseActivity).sendResultMultiple(convertFiles().toTypedArray())
+            if (parentFragment is FilePickerMainFragment && selectedFiles.isNotEmpty()) {
+                (parentFragment as FilePickerMainFragment).sendResult(convertFiles().toTypedArray())
             }
         }
     }
@@ -321,9 +322,9 @@ internal class FilePickerFragment : BackPressedFragment() {
     }
 
     private fun openCameraScreen() {
-        if (activity is FileChooseActivity) {
+        if (parentFragment is FilePickerMainFragment) {
             loaded = false
-            (activity as FileChooseActivity).openFileCameraScreen(
+            (parentFragment as FilePickerMainFragment).openFileCameraScreen(
                 Bundle().also {
                     it.putString(
                         "cameraHint",

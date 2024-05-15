@@ -7,7 +7,6 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import com.inappstory.sdk.stories.utils.Sizes
 import com.inappstory.sdk.utils.filepicker.R
-import com.inappstory.sdk.utils.filepicker.old.FileChooseActivity
 
 class PhotoPreviewFragment : PreviewFragment() {
     override fun onCreateView(
@@ -32,11 +31,13 @@ class PhotoPreviewFragment : PreviewFragment() {
             it.layoutParams.width = x
             it.layoutParams.height = y
             it.requestLayout()
-            (requireActivity() as FileChooseActivity).loadPreview(
-                path = filePath,
-                isVideo = false,
-                imageView = it
-            )
+            if (parentFragment is CameraFlowFragment) {
+                (parentFragment as CameraFlowFragment).loadPreview(
+                    path = filePath,
+                    isVideo = false,
+                    imageView = it
+                )
+            }
         }
     }
 

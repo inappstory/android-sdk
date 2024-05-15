@@ -9,9 +9,13 @@ import java.util.HashMap;
 public interface IFilePicker {
     void setPickerSettings(HashMap<String, Object> settings);
 
+    boolean onBackPressed();
+
     void show(
             Context context,
             FragmentManager fragmentManager,
             OnFilesChooseCallback callback
     );
+
+    void close();
 }

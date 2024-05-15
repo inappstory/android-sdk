@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.Fragment
 import com.inappstory.sdk.utils.filepicker.R
-import com.inappstory.sdk.utils.filepicker.old.FileChooseActivity
 import com.inappstory.sdk.utils.filepicker.utils.faststart.FastStart
 import java.io.File
 
@@ -53,11 +52,14 @@ open class PreviewFragment : Fragment() {
                 newFile.renameTo(currentFile)
             }
         }
-        (activity as FileChooseActivity).sendResult(
-            if (currentFile.exists())
-                currentFile.absolutePath
-            else
-                ""
-        )
+        if (parentFragment is CameraFlowFragment) {
+            (parentFragment as CameraFlowFragment).sendResult(
+                if (currentFile.exists())
+                    currentFile.absolutePath
+                else
+                    ""
+            )
+        }
+
     }
 }

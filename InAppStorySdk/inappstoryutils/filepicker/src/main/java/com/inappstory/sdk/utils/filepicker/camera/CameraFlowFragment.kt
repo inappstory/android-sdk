@@ -4,7 +4,9 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import androidx.fragment.app.Fragment
+import com.inappstory.sdk.utils.filepicker.FilePickerMainFragment
 import com.inappstory.sdk.utils.filepicker.R
 import com.inappstory.sdk.utils.filepicker.utils.BackPressedFragment
 import java.io.File
@@ -59,6 +61,20 @@ class CameraFlowFragment : BackPressedFragment() {
         cachedFiles.forEach {
             val file = File(it)
             if (file.exists()) file.delete()
+        }
+    }
+
+    fun sendResult(file: String) {
+        if (parentFragment is FilePickerMainFragment) {
+            (parentFragment as FilePickerMainFragment).sendResult(arrayOf(file))
+        }
+    }
+
+    fun loadPreview(path: String, imageView: ImageView, isVideo: Boolean) {
+        if (parentFragment is FilePickerMainFragment) {
+            (parentFragment as FilePickerMainFragment).loadPreview(
+                path, imageView, isVideo
+            )
         }
     }
 
