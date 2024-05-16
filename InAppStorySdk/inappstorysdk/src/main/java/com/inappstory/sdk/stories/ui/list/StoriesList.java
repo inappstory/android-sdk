@@ -163,6 +163,8 @@ public class StoriesList extends RecyclerView {
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent e) {
+        Log.d("IAS_Temp_Logs", "StoriesList.onInterceptTouchEvent() " + this + " " + e.toString());
+
         if (e.getAction() == MotionEvent.ACTION_DOWN) {
             mPrevX = e.getX();
             mPrevY = e.getY();
@@ -477,6 +479,7 @@ public class StoriesList extends RecyclerView {
 
         @Override
         public boolean onInterceptTouchEvent(RecyclerView rv, MotionEvent e) {
+            Log.d("IAS_Temp_Logs", "RecyclerTouchListener.onInterceptTouchEvent() " + rv.toString() + " " + e.toString());
             View child = rv.findChildViewUnder(e.getX(), e.getY());
             checkAppearanceManager();
             if (touchListener == null)

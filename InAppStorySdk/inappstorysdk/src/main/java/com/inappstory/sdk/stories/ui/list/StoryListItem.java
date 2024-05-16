@@ -9,6 +9,7 @@ import android.os.Looper;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -139,6 +140,13 @@ public class StoryListItem extends BaseStoryListItem {
                      StoryData storyData,
                      ClickCallback callback) {
         this.callback = callback;
+        itemView.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                Log.d("IAS_Temp_Logs", "StoryListItem.onTouchEvent() " + v + " " + event.toString());
+                return false;
+            }
+        });
         itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
