@@ -9,9 +9,8 @@ import android.widget.ImageView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.inappstory.sdk.utils.filepicker.camera.CameraFlowFragment
-import com.inappstory.sdk.utils.filepicker.old.FilePickerAPI
-import com.inappstory.sdk.utils.filepicker.old.FilePickerFragment
-import com.inappstory.sdk.utils.filepicker.old.FilePreviewsCache
+import com.inappstory.sdk.utils.filepicker.file.FilePickerFragment
+import com.inappstory.sdk.utils.filepicker.file.FilePreviewsCache
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.File
@@ -58,14 +57,18 @@ class FilePickerMainFragment : Fragment() {
             t.addToBackStack(null)
             t.commitAllowingStateLoss()
         } catch (e: IllegalStateException) {
-            FilePickerCore.filesChooseCallback?.onError(e.message.orEmpty())
-            FilePickerCore.filesChooseCallback = null
-            FilePickerCore.close()
+            FilePickerVM.filesChooseCallback?.onError(
+                FilePickerVM.filePickerSettings?.cb,
+                FilePickerVM.filePickerSettings?.id,
+                e.message.orEmpty()
+            )
+            FilePickerVM.filesChooseCallback = null
+            FilePickerVM.close()
         }
     }
 
     fun sendResult(files: Array<String>) {
-        FilePickerCore.closeWithResult(files.map {
+        FilePickerVM.closeWithResult(files.map {
             Uri.fromFile(File(it)).toString()
                 .replace("file://", "http://file-assets")
         }.toTypedArray())

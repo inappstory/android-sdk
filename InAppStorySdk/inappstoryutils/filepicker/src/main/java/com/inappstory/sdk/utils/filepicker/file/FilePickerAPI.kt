@@ -1,4 +1,4 @@
-package com.inappstory.sdk.utils.filepicker.old
+package com.inappstory.sdk.utils.filepicker.file
 
 import android.content.Context
 import android.net.Uri

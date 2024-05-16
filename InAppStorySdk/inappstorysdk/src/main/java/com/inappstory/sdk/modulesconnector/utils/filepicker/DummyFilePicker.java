@@ -8,7 +8,7 @@ import java.util.HashMap;
 
 public class DummyFilePicker implements IFilePicker {
     @Override
-    public void setPickerSettings(HashMap<String, Object> settings) {
+    public void setPickerSettings(String settings) {
 
     }
 
@@ -18,7 +18,7 @@ public class DummyFilePicker implements IFilePicker {
     }
 
     @Override
-    public void show(Context context, FragmentManager fragmentManager, OnFilesChooseCallback callback) {
+    public void show(Context context, FragmentManager fragmentManager, int containerId, OnFilesChooseCallback callback) {
 
     }
 

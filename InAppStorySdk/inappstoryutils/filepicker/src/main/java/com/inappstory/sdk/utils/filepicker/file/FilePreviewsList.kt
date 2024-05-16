@@ -1,8 +1,7 @@
-package com.inappstory.sdk.utils.filepicker.old
+package com.inappstory.sdk.utils.filepicker.file
 
 import android.content.Context
 import android.util.AttributeSet
-import android.view.View
 import androidx.lifecycle.ViewTreeLifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager

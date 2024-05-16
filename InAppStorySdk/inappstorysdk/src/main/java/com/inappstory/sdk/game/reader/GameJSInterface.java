@@ -146,4 +146,11 @@ public class GameJSInterface {
     public void share(String id, String data) {
         manager.shareData(id, data);
     }
+
+
+
+    @JavascriptInterface
+    public void  openFilePicker(String data) {
+        manager.openFilePicker(data);
+    }
 }

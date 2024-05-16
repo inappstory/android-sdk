@@ -3,9 +3,12 @@ package com.inappstory.sdk.game.reader;
 import android.content.Context;
 import android.media.AudioManager;
 
+import androidx.annotation.NonNull;
+
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.UseManagerInstanceCallback;
 import com.inappstory.sdk.game.cache.SetGameLoggerCallback;
 import com.inappstory.sdk.game.reader.logger.AbstractGameLogger;
 import com.inappstory.sdk.game.reader.logger.GameLoggerLvl0;
@@ -322,6 +325,10 @@ public class GameManager {
             host.shareComplete(shareId, false);
         }
         ScreensManager.getInstance().clearShareIds();*/
+    }
+
+    void openFilePicker(String data) {
+        host.openFilePicker(data);
     }
 
     void shareData(String id, String data) {

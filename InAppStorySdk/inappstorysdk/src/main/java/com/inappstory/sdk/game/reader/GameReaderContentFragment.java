@@ -46,6 +46,7 @@ import com.inappstory.sdk.BuildConfig;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.UseManagerInstanceCallback;
 import com.inappstory.sdk.game.cache.FilePathAndContent;
 import com.inappstory.sdk.game.cache.GameCacheManager;
 import com.inappstory.sdk.game.cache.SetGameLoggerCallback;
@@ -59,6 +60,7 @@ import com.inappstory.sdk.imageloader.ImageLoader;
 import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.inner.share.InnerShareFilesPrepare;
 import com.inappstory.sdk.inner.share.ShareFilesPrepareCallback;
+import com.inappstory.sdk.modulesconnector.utils.filepicker.OnFilesChooseCallback;
 import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.NetworkClient;
@@ -261,6 +263,40 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                 onBackPressedLocked = false;
             }
         });
+    }
+
+    void openFilePicker(final String data) {
+        InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryManager manager) throws Exception {
+                manager.filePicker.setPickerSettings(data);
+                manager.filePicker.show(
+                        getContext(),
+                        getBaseGameReader().getGameReaderFragmentManager(),
+                        R.id.ias_file_picker_container,
+                        new OnFilesChooseCallback() {
+                            @Override
+                            public void onChoose(String cbName, String cbId, String[] filesWithTypes) {
+                                uploadFilesFromFilePicker(cbName, cbId, filesWithTypes);
+                            }
+
+                            @Override
+                            public void onCancel(String cbName, String cbId) {
+                                uploadFilesFromFilePicker(cbName, cbId, new String[0]);
+                            }
+
+                            @Override
+                            public void onError(String cbName, String cbId, String reason) {
+                                uploadFilesFromFilePicker(cbName, cbId, new String[0]);
+                            }
+                        }
+                );
+            }
+        });
+    }
+
+    private void uploadFilesFromFilePicker(String cbName, String cbId, String[] filesWithTypes) {
+
     }
 
     void share(InnerShareData shareObject) {
