@@ -28,10 +28,6 @@ public class IASWebViewClient extends WebViewClient {
         LruDiskCache cache = service.getCommonCache();
         try {
             File cachedFile = cache.getFullFile(key);
-            if (cachedFile == null) {
-                Downloader.downloadOrGetFile(url, true, cache, null, null);
-                return null;
-            }
             return Downloader.updateFile(cachedFile, url, cache, key);
         } catch (Exception e) {
             InAppStoryService.createExceptionLog(e);
