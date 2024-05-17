@@ -149,8 +149,14 @@ public class GameJSInterface {
 
 
 
+
     @JavascriptInterface
     public void  openFilePicker(String data) {
         manager.openFilePicker(data);
+    }
+
+    @JavascriptInterface
+    public boolean hasFilePicker() {
+        return manager.hasFilePicker();
     }
 }
