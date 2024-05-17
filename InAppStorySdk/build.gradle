@@ -7,7 +7,6 @@ buildscript {
         inappstory_target_sdk = 31
         inappstory_min_sdk = 21
 
-        inappstory_version = "1.17.0"
         camerax_version = "1.1.0"
         coroutines_version = "1.6.0"
         core_ktx_version = "1.6.0"
