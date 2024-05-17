@@ -154,9 +154,15 @@ public class GameActivity extends AppCompatActivity implements BaseGameReaderScr
     @Override
     public void permissionResult(
             final int requestCode,
-            @NonNull String[] permissions,
+            @NonNull final String[] permissions,
             @NonNull final int[] grantResults
     ) {
+        InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryManager manager) throws Exception {
+                manager.filePicker.permissionResult(requestCode, permissions, grantResults);
+            }
+        });
         useContentFragment(new FragmentAction<GameReaderContentFragment>() {
             @Override
             public void invoke(GameReaderContentFragment fragment) {
