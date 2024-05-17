@@ -8,8 +8,10 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.UseManagerInstanceCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.GameReaderLaunchData;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.utils.FragmentAction;
@@ -77,6 +79,8 @@ public class GameActivity extends AppCompatActivity implements BaseGameReaderScr
 
     @Override
     public void onBackPressed() {
+        InAppStoryManager manager = InAppStoryManager.getInstance();
+        if (manager != null && manager.filePicker.onBackPressed()) return;
         if (!useContentFragment(
                 new FragmentAction<GameReaderContentFragment>() {
                     @Override
