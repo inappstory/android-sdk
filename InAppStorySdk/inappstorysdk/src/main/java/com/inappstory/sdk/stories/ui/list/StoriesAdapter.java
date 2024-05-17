@@ -146,7 +146,6 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
         InAppStoryService service = InAppStoryService.getInstance();
         if (holder == null || service == null) return;
         if (holder.isFavorite) {
-            Log.d("IAS_Temp_Logs", "StoriesAdapter.onBindViewHolderFavorite");
             holder.bindFavorite();
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override

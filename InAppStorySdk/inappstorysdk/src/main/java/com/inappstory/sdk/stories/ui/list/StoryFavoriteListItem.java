@@ -6,6 +6,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -126,7 +127,18 @@ public class StoryFavoriteListItem extends BaseStoryListItem {
 
     public void bindFavorite() {
         InAppStoryService service = InAppStoryService.getInstance();
+
         if (service == null) return;
+
+        Log.d("IAS_Temp_Logs", "StoriesAdapter.onBindViewHolderFavorite");
+        itemView.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                Log.d("IAS_Temp_Logs", "StoryFavoriteListItem.onTouchEvent() " + v + " " + event.toString());
+                return false;
+            }
+        });
+
         if (getFavoriteListItem != null
                 && getFavoriteListItem.getFavoriteItem() != null) {
             int count = service.getFavoriteImages().size();
