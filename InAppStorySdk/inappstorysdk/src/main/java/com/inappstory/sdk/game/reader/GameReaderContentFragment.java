@@ -104,6 +104,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 public class GameReaderContentFragment extends Fragment implements OverlapFragmentObserver, IASBackPressHandler {
     private IASWebView webView;
@@ -296,7 +297,13 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
     }
 
     private void uploadFilesFromFilePicker(String cbName, String cbId, String[] filesWithTypes) {
-
+        Map<String, Object> payloadMap = new HashMap<>();
+        payloadMap.put("id", cbId);
+        payloadMap.put("response", filesWithTypes);
+        String payload = JsonParser.mapToJsonString(payloadMap).replaceAll(Pattern.quote("'"), "\\'");
+        String webString = "window." + cbName + "('" + payload + "');";
+        Log.e("webString", webString);
+        webView.evaluateJavascript(webString, null);
     }
 
     void share(InnerShareData shareObject) {
