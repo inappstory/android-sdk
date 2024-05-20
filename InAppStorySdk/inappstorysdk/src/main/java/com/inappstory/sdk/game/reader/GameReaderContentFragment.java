@@ -46,6 +46,7 @@ import com.inappstory.sdk.BuildConfig;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.UseManagerInstanceCallback;
 import com.inappstory.sdk.game.cache.FilePathAndContent;
 import com.inappstory.sdk.game.cache.GameCacheManager;
 import com.inappstory.sdk.game.cache.SetGameLoggerCallback;
@@ -59,6 +60,7 @@ import com.inappstory.sdk.imageloader.ImageLoader;
 import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.inner.share.InnerShareFilesPrepare;
 import com.inappstory.sdk.inner.share.ShareFilesPrepareCallback;
+import com.inappstory.sdk.modulesconnector.utils.filepicker.OnFilesChooseCallback;
 import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.NetworkClient;
@@ -102,6 +104,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 public class GameReaderContentFragment extends Fragment implements OverlapFragmentObserver, IASBackPressHandler {
     private IASWebView webView;
@@ -283,6 +286,47 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
             shareCustomOrDefault(shareData);
         }
 
+    }
+
+
+    void openFilePicker(final String data) {
+        InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryManager manager) throws Exception {
+                manager.getFilePicker().setPickerSettings(data);
+                manager.getFilePicker().show(
+                        getContext(),
+                        getBaseGameReader().getGameReaderFragmentManager(),
+                        R.id.ias_file_picker_container,
+                        new OnFilesChooseCallback() {
+                            @Override
+                            public void onChoose(String cbName, String cbId, String[] filesWithTypes) {
+                                uploadFilesFromFilePicker(cbName, cbId, filesWithTypes);
+                            }
+
+                            @Override
+                            public void onCancel(String cbName, String cbId) {
+                                uploadFilesFromFilePicker(cbName, cbId, new String[0]);
+                            }
+
+                            @Override
+                            public void onError(String cbName, String cbId, String reason) {
+                                uploadFilesFromFilePicker(cbName, cbId, new String[0]);
+                            }
+                        }
+                );
+            }
+        });
+    }
+
+    private void uploadFilesFromFilePicker(String cbName, String cbId, String[] filesWithTypes) {
+        Map<String, Object> payloadMap = new HashMap<>();
+        payloadMap.put("id", cbId);
+        payloadMap.put("response", filesWithTypes);
+        String payload = JsonParser.mapToJsonString(payloadMap).replaceAll(Pattern.quote("'"), "\\'");
+        String webString = "window." + cbName + "('" + payload + "');";
+        Log.e("webString", webString);
+        webView.evaluateJavascript(webString, null);
     }
 
     private void shareCustomOrDefault(IASShareData shareObject) {

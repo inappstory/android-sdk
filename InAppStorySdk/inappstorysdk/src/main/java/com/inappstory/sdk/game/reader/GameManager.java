@@ -13,6 +13,7 @@ import com.inappstory.sdk.game.reader.logger.GameLoggerLvl1;
 import com.inappstory.sdk.game.reader.logger.GameLoggerLvl2;
 import com.inappstory.sdk.game.reader.logger.GameLoggerLvl3;
 import com.inappstory.sdk.inner.share.InnerShareData;
+import com.inappstory.sdk.modulesconnector.utils.filepicker.DummyFilePicker;
 import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.JsonParser;
 
@@ -322,6 +323,15 @@ public class GameManager {
             host.shareComplete(shareId, false);
         }
         ScreensManager.getInstance().clearShareIds();*/
+    }
+
+    void openFilePicker(String data) {
+        host.openFilePicker(data);
+    }
+
+    boolean hasFilePicker() {
+        InAppStoryManager manager = InAppStoryManager.getInstance();
+        return (manager != null && !(manager.getFilePicker() instanceof DummyFilePicker));
     }
 
     void shareData(String id, String data) {

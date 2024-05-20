@@ -18,6 +18,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.StringRes;
 
 import com.inappstory.sdk.lrudiskcache.CacheSize;
+import com.inappstory.sdk.modulesconnector.utils.ModuleInitializer;
+import com.inappstory.sdk.modulesconnector.utils.filepicker.DummyFilePicker;
+import com.inappstory.sdk.modulesconnector.utils.filepicker.IFilePicker;
 import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
@@ -133,6 +136,36 @@ public class InAppStoryManager {
         synchronized (lock) {
             return INSTANCE == null;
         }
+    }
+
+    public void setFilePicker(IFilePicker filePicker) {
+        this.filePicker = filePicker;
+    }
+
+    private IFilePicker filePicker = new DummyFilePicker();
+
+    public IFilePicker getFilePicker() {
+        return filePicker;
+    }
+
+    private void initModule(String packageName, String className) {
+        try {
+            Class<?> clazz = Class.forName(packageName + "." + className);
+            Object newInstance = clazz.newInstance();
+            if (newInstance instanceof ModuleInitializer) {
+                ((ModuleInitializer) newInstance).initialize();
+                Log.e("MethodsInitialize", "Success " + className);
+            } else {
+                Log.e("MethodsInitialize", "Error " + className);
+            }
+        } catch (Exception e) {
+            Log.e("MethodsInitialize", "Error " + className);
+        }
+    }
+
+    private void initModules() {
+        initModule("com.inappstory.utils.iasfilepicker", "FilePickerCore");
+        initModule("com.inappstory.utils.iaslottie", "LottieViewCore");
     }
 
     public static void setInstance(InAppStoryManager manager) {
@@ -827,7 +860,9 @@ public class InAppStoryManager {
                 INSTANCE = new InAppStoryManager(context);
             }
         }
+
         INSTANCE.createServiceThread(context);
+        INSTANCE.initModules();
     }
 
     InAppStoryService service;

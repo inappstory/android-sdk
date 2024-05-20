@@ -75,7 +75,7 @@ public class GameJSInterface {
             String name,
             String data
     ) {
-        manager.jsEvent(name,  data);
+        manager.jsEvent(name, data);
         logMethod("name:" + name + " | data:" + data);
     }
 
@@ -141,6 +141,16 @@ public class GameJSInterface {
     public void emptyLoaded() {
     }
 
+
+    @JavascriptInterface
+    public void openFilePicker(String data) {
+        manager.openFilePicker(data);
+    }
+
+    @JavascriptInterface
+    public boolean hasFilePicker() {
+        return manager.hasFilePicker();
+    }
 
     @JavascriptInterface
     public void share(String id, String data) {
