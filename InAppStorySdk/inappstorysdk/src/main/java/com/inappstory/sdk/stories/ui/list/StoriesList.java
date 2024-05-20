@@ -276,11 +276,11 @@ public class StoriesList extends RecyclerView {
                 Log.d("IAS_Temp_Logs", "Scroll state: " + newState);
 
                 if (newState == SCROLL_STATE_IDLE) {
+                    Log.d("IAS_Temp_Logs", "stop scroll");
                     if (getParentForAccessibility() instanceof View) {
-                        Log.d("IAS_Temp_Logs", "stop scroll");
                         ViewCompat.stopNestedScroll((View)getParentForAccessibility(), ViewCompat.TYPE_NON_TOUCH);
-                        ViewCompat.stopNestedScroll(StoriesList.this, ViewCompat.TYPE_NON_TOUCH);
                     }
+                    ViewCompat.stopNestedScroll(StoriesList.this, ViewCompat.TYPE_NON_TOUCH);
                     if (scrollCallback != null && !scrolledItems.isEmpty()) {
                         scrollCallback.onVisibleAreaUpdated(
                                 new ArrayList<>(scrolledItems.values())
