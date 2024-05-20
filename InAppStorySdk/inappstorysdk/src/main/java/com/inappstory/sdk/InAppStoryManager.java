@@ -21,6 +21,8 @@ import com.inappstory.sdk.lrudiskcache.CacheSize;
 import com.inappstory.sdk.modulesconnector.utils.ModuleInitializer;
 import com.inappstory.sdk.modulesconnector.utils.filepicker.DummyFilePicker;
 import com.inappstory.sdk.modulesconnector.utils.filepicker.IFilePicker;
+import com.inappstory.sdk.modulesconnector.utils.lottie.DummyLottieViewGenerator;
+import com.inappstory.sdk.modulesconnector.utils.lottie.ILottieViewGenerator;
 import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
@@ -137,6 +139,12 @@ public class InAppStoryManager {
             return INSTANCE == null;
         }
     }
+
+    public void setLottieViewGenerator(ILottieViewGenerator lottieViewGenerator) {
+        this.lottieViewGenerator = lottieViewGenerator;
+    }
+
+    public ILottieViewGenerator lottieViewGenerator = new DummyLottieViewGenerator();
 
     public void setFilePicker(IFilePicker filePicker) {
         this.filePicker = filePicker;
