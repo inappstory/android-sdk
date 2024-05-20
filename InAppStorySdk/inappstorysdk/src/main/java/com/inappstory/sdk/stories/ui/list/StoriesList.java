@@ -14,6 +14,7 @@ import android.view.ViewConfiguration;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.view.ViewCompat;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -272,7 +273,14 @@ public class StoriesList extends RecyclerView {
             @Override
             public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
                 super.onScrollStateChanged(recyclerView, newState);
+                Log.d("IAS_Temp_Logs", "Scroll state: " + newState);
+
                 if (newState == SCROLL_STATE_IDLE) {
+                    if (getParentForAccessibility() instanceof View) {
+                        Log.d("IAS_Temp_Logs", "stop scroll");
+                        ViewCompat.stopNestedScroll((View)getParentForAccessibility(), ViewCompat.TYPE_NON_TOUCH);
+                        ViewCompat.stopNestedScroll(StoriesList.this, ViewCompat.TYPE_NON_TOUCH);
+                    }
                     if (scrollCallback != null && !scrolledItems.isEmpty()) {
                         scrollCallback.onVisibleAreaUpdated(
                                 new ArrayList<>(scrolledItems.values())
