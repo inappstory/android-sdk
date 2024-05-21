@@ -46,6 +46,7 @@ import com.inappstory.sdk.stories.statistic.GetOldStatisticManagerCallback;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
+import com.inappstory.sdk.stories.ui.widgets.elasticview.ElasticDragDismissFrameLayout;
 import com.inappstory.sdk.stories.utils.IASBackPressHandler;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 import com.inappstory.sdk.stories.utils.Sizes;
@@ -62,8 +63,12 @@ public class StoriesDialogFragment extends DialogFragment implements IASBackPres
                 .getSerializable(StoriesReaderAppearanceSettings.SERIALIZABLE_KEY);
         launchData = (StoriesReaderLaunchData) getArguments().
                 getSerializable(StoriesReaderLaunchData.SERIALIZABLE_KEY);
+
         return inflater.inflate(R.layout.cs_mainscreen_stories_draggable, container, false);
     }
+
+
+    ElasticDragDismissFrameLayout draggableFrame;
 
 
     @Override
@@ -180,14 +185,18 @@ public class StoriesDialogFragment extends DialogFragment implements IASBackPres
 
     }
 
+    ShowGoodsCallback currentGoodsCallback = null;
+
+
     @Override
     public void disableDrag(boolean disable) {
-
+        if (draggableFrame != null)
+            draggableFrame.dragIsDisabled(true);
     }
 
     @Override
     public void setShowGoodsCallback(ShowGoodsCallback callback) {
-
+        currentGoodsCallback = callback;
     }
 
     @Override
@@ -285,6 +294,7 @@ public class StoriesDialogFragment extends DialogFragment implements IASBackPres
         int color = getArguments().getInt(AppearanceManager.CS_READER_BACKGROUND_COLOR, Color.BLACK);
         view.setBackgroundColor(color);
         type = launchData.getType();
+        draggableFrame = view.findViewById(R.id.draggable_frame);
         if (savedInstanceState == null) {
             storiesContentFragment = new StoriesContentFragment();
             Bundle args = new Bundle();
