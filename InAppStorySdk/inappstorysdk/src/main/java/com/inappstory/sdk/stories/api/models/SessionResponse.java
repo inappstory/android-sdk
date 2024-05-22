@@ -18,7 +18,8 @@ public class SessionResponse {
     public boolean isAllowUgc;
     @SerializedName(SessionRequestFields.serverTimestamp)
     public Long serverTimestamp;
-
+    @SerializedName(SessionRequestFields.preloadGame)
+    public boolean preloadGame;
     @SerializedName(SessionRequestFields.previewAspectRatio)
     public float previewAspectRatio;
     @SerializedName(SessionRequestFields.sessionAssets)

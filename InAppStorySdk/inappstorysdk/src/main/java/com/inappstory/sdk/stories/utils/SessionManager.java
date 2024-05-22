@@ -144,6 +144,7 @@ public class SessionManager {
             SessionRequestFields.isAllowCrash,
             SessionRequestFields.isAllowUgc,
             SessionRequestFields.placeholders,
+            SessionRequestFields.preloadGame,
             SessionRequestFields.imagePlaceholders
     });
     private final String SESSION_EXPAND = TextUtils.join(",", new String[]{

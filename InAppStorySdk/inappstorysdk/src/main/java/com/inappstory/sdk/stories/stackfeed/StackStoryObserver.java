@@ -236,8 +236,7 @@ public class StackStoryObserver implements IStackFeedActions {
         service.unsubscribeStackStoryObserver(StackStoryObserver.this);
     }
 
-    @Override
-    public void openReader(Context context, boolean showNewStories) {
+    private void openReader(Context context, boolean showNewStories) {
         InAppStoryService service = InAppStoryService.getInstance();
         if (service == null) return;
         final Story currentStory = stories.get(oldIndex);
@@ -362,6 +361,6 @@ public class StackStoryObserver implements IStackFeedActions {
 
     @Override
     public void openReader(Context context) {
-        openReader(context, false);
+        openReader(context, true);
     }
 }

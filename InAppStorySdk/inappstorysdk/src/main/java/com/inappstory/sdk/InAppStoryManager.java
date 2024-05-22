@@ -1475,11 +1475,6 @@ public class InAppStoryManager {
                                         }
 
                                         @Override
-                                        public void openReader(Context context, boolean showNewStories) {
-                                            observer.openReader(context);
-                                        }
-
-                                        @Override
                                         public void unsubscribe() {
                                             observer.unsubscribe();
                                         }
