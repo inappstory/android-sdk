@@ -16,6 +16,7 @@ public class StoriesReaderLaunchData implements SerializableWithKey {
             String sessionId,
             List<Integer> storiesIds,
             int listIndex,
+            boolean shownOnlyNewStories,
             int firstAction,
             SourceType sourceType,
             Integer slideIndex,
@@ -26,6 +27,7 @@ public class StoriesReaderLaunchData implements SerializableWithKey {
         this.sessionId = sessionId;
         this.storiesIds = storiesIds;
         this.listIndex = listIndex;
+        this.shownOnlyNewStories = shownOnlyNewStories;
         this.sourceType = sourceType;
         this.firstAction = firstAction;
         this.slideIndex = slideIndex;
@@ -80,6 +82,13 @@ public class StoriesReaderLaunchData implements SerializableWithKey {
     private final Integer slideIndex;
     private final String feed;
     private final StoryType type;
+    private final boolean shownOnlyNewStories;
+
+
+
+    public boolean shownOnlyNewStories() {
+        return shownOnlyNewStories;
+    }
 
     public StoryItemCoordinates getInitCoordinates() {
         return initCoordinates;

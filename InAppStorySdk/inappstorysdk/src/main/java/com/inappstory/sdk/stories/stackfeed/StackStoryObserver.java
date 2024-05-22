@@ -185,7 +185,7 @@ public class StackStoryObserver implements IStackFeedActions {
         }
     }
 
-    public void onUpdate(int storyId, String listId) {
+    public void onUpdate(int storyId, String listId, boolean getNextNonOpened) {
         int openedIndex = -1;
         for (int i = 0; i < stories.size(); i++) {
             if (storyId == stories.get(i).id) {
@@ -202,7 +202,14 @@ public class StackStoryObserver implements IStackFeedActions {
             generateNewStackStoryData(oldIndex, stackStoryUpdated);
             return;
         }
+
         int newIndex = (openedIndex + 1) % stories.size();
+        for (int i = newIndex; i < stories.size(); i++) {
+            if (!stories.get(i).isOpened()) {
+                newIndex = i;
+                break;
+            }
+        }
         checkLastIndex(newIndex, stackStoryUpdated);
     }
 
@@ -230,16 +237,19 @@ public class StackStoryObserver implements IStackFeedActions {
     }
 
     @Override
-    public void openReader(Context context) {
+    public void openReader(Context context, boolean showNewStories) {
         InAppStoryService service = InAppStoryService.getInstance();
         if (service == null) return;
         final Story currentStory = stories.get(oldIndex);
         Story current = service.getStoryDownloadManager().getStoryById(currentStory.id, Story.StoryType.COMMON);
+        boolean currentStoryIsOpened = true;
         if (current != null) {
+            currentStoryIsOpened = current.isOpened;
             current.isOpened = true;
             current.saveStoryOpened(Story.StoryType.COMMON);
         }
-        service.getListReaderConnector().changeStory(currentStory.id, listId);
+        boolean showOnlyNewStories = !currentStoryIsOpened && showNewStories;
+        service.getListReaderConnector().changeStory(currentStory.id, listId, showOnlyNewStories);
         if (currentStory.getDeeplink() != null && !currentStory.getDeeplink().isEmpty()) {
             StatisticManager.getInstance().sendDeeplinkStory(
                     currentStory.id,
@@ -317,11 +327,12 @@ public class StackStoryObserver implements IStackFeedActions {
         } else if (!currentStory.isHideInReader()) {
             List<Integer> readerStories = new ArrayList<>();
             int j = 0;
-            int correctedIndex = 0;
+            int openIndex = 0;
             for (Story story : stories) {
+                if (showOnlyNewStories && story.isOpened()) continue;
                 if (!story.isHideInReader()) {
                     if (currentStory == story) {
-                        correctedIndex = j;
+                        openIndex = j;
                     }
                     readerStories.add(story.id);
                     j++;
@@ -332,7 +343,8 @@ public class StackStoryObserver implements IStackFeedActions {
                     feed,
                     sessionId,
                     readerStories,
-                    correctedIndex,
+                    openIndex,
+                    showOnlyNewStories,
                     ShowStory.ACTION_OPEN,
                     SourceType.STACK,
                     0,
@@ -346,5 +358,10 @@ public class StackStoryObserver implements IStackFeedActions {
             );
             return;
         }
+    }
+
+    @Override
+    public void openReader(Context context) {
+        openReader(context, false);
     }
 }

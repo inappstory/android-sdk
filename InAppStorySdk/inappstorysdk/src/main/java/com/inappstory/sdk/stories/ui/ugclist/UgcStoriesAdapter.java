@@ -256,6 +256,7 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
                 sessionId,
                 tempStories,
                 tempStories.indexOf(storiesIds.get(index)),
+                false,
                 ShowStory.ACTION_OPEN,
                 SourceType.LIST,
                 0,

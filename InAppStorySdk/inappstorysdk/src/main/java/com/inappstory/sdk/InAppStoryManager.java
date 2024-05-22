@@ -1357,6 +1357,7 @@ public class InAppStoryManager {
                 sessionId,
                 storiesIds,
                 0,
+                false,
                 ShowStory.ACTION_OPEN,
                 SourceType.ONBOARDING,
                 0,
@@ -1470,6 +1471,11 @@ public class InAppStoryManager {
                                     final IStackFeedActions stackFeedActions = new IStackFeedActions() {
                                         @Override
                                         public void openReader(Context context) {
+                                            observer.openReader(context);
+                                        }
+
+                                        @Override
+                                        public void openReader(Context context, boolean showNewStories) {
                                             observer.openReader(context);
                                         }
 
@@ -1763,6 +1769,7 @@ public class InAppStoryManager {
                 sessionId,
                 stIds,
                 0,
+                false,
                 readerAction,
                 readerSource,
                 slide,

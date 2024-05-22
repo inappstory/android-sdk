@@ -510,12 +510,12 @@ public class InAppStoryService {
     }
 
     public class ListReaderConnector {
-        public void changeStory(final int storyId, final String listID) {
+        public void changeStory(final int storyId, final String listID, final boolean shownOnlyNewStories) {
             useInstance(new UseServiceInstanceCallback() {
                 @Override
                 public void use(@NonNull InAppStoryService service) {
                     for (StackStoryObserver storyObserver : stackStoryObservers.values()) {
-                        storyObserver.onUpdate(storyId, listID);
+                        storyObserver.onUpdate(storyId, listID, shownOnlyNewStories);
                     }
                     for (ListManager sub : service.getListSubscribers()) {
                         sub.changeStory(storyId, listID);

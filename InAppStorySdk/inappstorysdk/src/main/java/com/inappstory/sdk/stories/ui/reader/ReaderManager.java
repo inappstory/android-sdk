@@ -71,6 +71,7 @@ public class ReaderManager {
 
     public ReaderManager(
             String listID,
+            boolean showOnlyNewStories,
             String sessionId,
             String feedId,
             String feedSlug,
@@ -79,6 +80,7 @@ public class ReaderManager {
             int latestShowStoryAction
     ) {
         this.listID = listID;
+        this.showOnlyNewStories = showOnlyNewStories;
         this.feedId = feedId;
         this.sessionId = sessionId;
         this.feedSlug = feedSlug;
@@ -356,7 +358,7 @@ public class ReaderManager {
         }
         final int pos = position;
 
-        service.getListReaderConnector().changeStory(currentStoryId, listID);
+        service.getListReaderConnector().changeStory(currentStoryId, listID, showOnlyNewStories);
         service.setCurrentId(currentStoryId);
         if (story != null) {
             currentSlideIndex = story.lastIndex;
@@ -432,6 +434,7 @@ public class ReaderManager {
     }
 
     private String feedId;
+    private boolean showOnlyNewStories;
     private String sessionId;
     private String feedSlug;
 

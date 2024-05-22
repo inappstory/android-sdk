@@ -249,7 +249,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
 
                 current.isOpened = true;
                 current.saveStoryOpened(Story.StoryType.COMMON);
-                service.getListReaderConnector().changeStory(current.id, listID);
+                service.getListReaderConnector().changeStory(current.id, listID, false);
                // notifyItemChanged(ind);
                 return;
             } else if (current.deeplink != null) {
@@ -299,7 +299,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
 
                 current.isOpened = true;
                 current.saveStoryOpened(Story.StoryType.COMMON);
-                service.getListReaderConnector().changeStory(current.id, listID);
+                service.getListReaderConnector().changeStory(current.id, listID, false);
                 return;
             }
             if (current.isHideInReader()) {
@@ -322,6 +322,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
                 sessionId,
                 tempStories,
                 tempStories.indexOf(storiesIds.get(index)),
+                false,
                 ShowStory.ACTION_OPEN,
                 isFavoriteList ? SourceType.FAVORITE : SourceType.LIST,
                 0,
