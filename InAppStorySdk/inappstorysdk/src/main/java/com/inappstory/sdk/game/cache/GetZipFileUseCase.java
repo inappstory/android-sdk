@@ -36,7 +36,7 @@ public class GetZipFileUseCase extends GameNameHolder {
     }
 
     @WorkerThread
-    void get(
+    public void get(
             final DownloadInterruption interruption,
             final @NonNull UseCaseCallback<File> callback,
             final ProgressCallback progressCallback,

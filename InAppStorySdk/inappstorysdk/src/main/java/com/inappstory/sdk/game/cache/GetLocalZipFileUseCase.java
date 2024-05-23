@@ -23,7 +23,7 @@ public class GetLocalZipFileUseCase {
         this.size = size;
     }
 
-    void get(
+    public void get(
             @NonNull LruDiskCache cache,
             UseCaseCallback<File> callback
     ) {

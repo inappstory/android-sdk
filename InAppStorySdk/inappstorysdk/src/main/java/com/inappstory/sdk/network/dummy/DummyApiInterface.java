@@ -124,6 +124,11 @@ public class DummyApiInterface implements ApiInterface {
     }
 
     @Override
+    public Request getPreloadGames() {
+        return new DummyRequest();
+    }
+
+    @Override
     public Request sessionOpen(String fields, String expand, String features, String platform,
                                String deviceId, String model, String manufacturer,
                                String brand, String screenWidth, String screenHeight,

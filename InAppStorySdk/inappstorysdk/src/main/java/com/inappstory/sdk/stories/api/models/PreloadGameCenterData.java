@@ -1,14 +1,13 @@
 package com.inappstory.sdk.stories.api.models;
 
-import com.inappstory.sdk.game.reader.GameScreenOptions;
 import com.inappstory.sdk.network.annotations.models.Required;
 import com.inappstory.sdk.network.annotations.models.SerializedName;
 import com.inappstory.sdk.stories.api.interfaces.IGameCenterData;
 
 import java.util.List;
-import java.util.Map;
 
-public class GameCenterData implements IGameCenterData {
+public class PreloadGameCenterData implements IGameCenterData {
+    @Required
     @SerializedName("id")
     public String id;
     @SerializedName("splashScreen")
@@ -19,19 +18,8 @@ public class GameCenterData implements IGameCenterData {
     public GameSplashAnimation splashAnimation;
     @SerializedName("resources")
     public List<WebResource> resources;
-    @SerializedName("options")
-    public GameScreenOptions options;
-    @SerializedName("loggerLevel")
-    public Integer loggerLevel;
-    @Required
     @SerializedName("downloadUrl")
     public String url;
-    @Required
-    @SerializedName("initCode")
-    public String initCode;
-
-    @SerializedName("canTryReloadCount")
-    public Integer canTryReloadCount;
 
     @SerializedName("archiveSize")
     public Long archiveSize;
@@ -39,6 +27,18 @@ public class GameCenterData implements IGameCenterData {
     @SerializedName("archiveSha1")
     public String archiveSha1;
 
+    @SerializedName("archiveUncompressedSize")
+    public Long archiveUncompressedSize;
+
+    @Override
+    public String id() {
+        return id;
+    }
+
+    @Override
+    public GameSplashScreen splashScreen() {
+        return splashScreen;
+    }
 
     @Override
     public GameSplashScreen splashLandscapeScreen() {
@@ -50,59 +50,27 @@ public class GameCenterData implements IGameCenterData {
         return splashAnimation;
     }
 
-    @SerializedName("instanceUserData")
-    public Map<String, Object> instanceUserData;
-
-    @SerializedName("archiveUncompressedSize")
-    public Long archiveUncompressedSize;
-
-    public int loggerLevel() {
-        if (loggerLevel == null) return 0;
-        return loggerLevel;
-    }
-
-    public int canTryReloadCount() {
-        if (canTryReloadCount == null)
-            return 5;
-        return canTryReloadCount;
-    }
-
-    public String id() {
-        return id;
-    }
-
-    public GameSplashScreen splashScreen() {
-        return splashScreen;
-    }
-
+    @Override
     public List<WebResource> resources() {
         return resources;
     }
 
-    public GameScreenOptions options() {
-        return options;
-    }
-
+    @Override
     public String url() {
         return url;
     }
 
-    public String initCode() {
-        return initCode;
-    }
-
+    @Override
     public Long archiveSize() {
         return archiveSize;
     }
 
+    @Override
     public String archiveSha1() {
         return archiveSha1;
     }
 
-    public Map<String, Object> instanceUserData() {
-        return instanceUserData;
-    }
-
+    @Override
     public Long archiveUncompressedSize() {
         return archiveUncompressedSize;
     }
@@ -121,5 +89,14 @@ public class GameCenterData implements IGameCenterData {
             }
         }
         return totalSize;
+    }
+
+    public void updateData(IGameCenterData gameCenterData) {
+        this.splashScreen = gameCenterData.splashScreen();
+        this.url = gameCenterData.url();
+        this.resources = gameCenterData.resources();
+        this.archiveSha1 = gameCenterData.archiveSha1();
+        this.archiveSize = gameCenterData.archiveSize();
+        this.archiveUncompressedSize = gameCenterData.archiveUncompressedSize();
     }
 }

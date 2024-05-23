@@ -1094,6 +1094,25 @@ public class InAppStoryManager {
         new ExceptionManager().sendSavedException();
     }
 
+    public void preloadGames() {
+        Runnable preloading = new Runnable() {
+            @Override
+            public void run() {
+                InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+                    @Override
+                    public void use(@NonNull InAppStoryService service) throws Exception {
+                        service.restartGamePreloader();
+                    }
+                });
+            }
+        };
+        if (InAppStoryService.getInstance() == null) {
+            new Handler().postDelayed(preloading, 1000);
+        } else {
+            preloading.run();
+        }
+    }
+
     private void setUserIdInner(String userId) {
         if (userId == null || StringsUtils.getBytesLength(userId) > 255) {
             showELog(IAS_ERROR_TAG, StringsUtils.getErrorStringFromContext(context, R.string.ias_setter_user_length_error));

@@ -4,13 +4,9 @@ import android.webkit.URLUtil;
 
 import androidx.annotation.WorkerThread;
 
-import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.lrudiskcache.FileChecker;
-import com.inappstory.sdk.lrudiskcache.LruDiskCache;
-import com.inappstory.sdk.stories.api.models.GameSplashScreen;
+import com.inappstory.sdk.stories.api.interfaces.IDownloadResource;
 import com.inappstory.sdk.stories.cache.DownloadFileState;
-import com.inappstory.sdk.stories.cache.Downloader;
-import com.inappstory.sdk.stories.cache.FileLoadProgressCallback;
 import com.inappstory.sdk.stories.cache.FilesDownloadManager;
 import com.inappstory.sdk.stories.cache.usecases.GameSplashUseCase;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
@@ -18,33 +14,36 @@ import com.inappstory.sdk.stories.utils.KeyValueStorage;
 import java.io.File;
 
 public class DownloadSplashUseCase {
-    GameSplashScreen splashScreen;
+    IDownloadResource resource;
     FilesDownloadManager filesDownloadManager;
     String oldSplashPath;
     String gameId;
+    String keyValueStorageKey;
 
     public DownloadSplashUseCase(
             FilesDownloadManager filesDownloadManager,
-            GameSplashScreen splashScreen,
+            IDownloadResource resource,
             String oldSplashPath,
+            String keyValueStorageKey,
             String gameId
     ) {
-        this.splashScreen = splashScreen;
+        this.resource = resource;
         this.filesDownloadManager = filesDownloadManager;
         this.oldSplashPath = oldSplashPath;
         this.gameId = gameId;
+        this.keyValueStorageKey = keyValueStorageKey;
     }
 
     @WorkerThread
-    void download(
+    public void download(
             final UseCaseCallback<File> splashScreenCallback
     ) {
         final FileChecker fileChecker = new FileChecker();
         File oldSplash = null;
         if (oldSplashPath != null) {
             oldSplash = new File(oldSplashPath);
-            if (splashScreen == null || !URLUtil.isValidUrl(splashScreen.url)) {
-                KeyValueStorage.removeString("gameInstanceSplash_" + gameId);
+            if (resource == null || !URLUtil.isValidUrl(resource.url())) {
+                KeyValueStorage.removeString(keyValueStorageKey + gameId);
                 if (oldSplash.exists()) {
                     oldSplash.deleteOnExit();
                 }
@@ -54,20 +53,20 @@ public class DownloadSplashUseCase {
 
             if (fileChecker.checkWithShaAndSize(
                     oldSplash,
-                    splashScreen.size,
-                    splashScreen.sha1,
+                    resource.size(),
+                    resource.sha1(),
                     false
             )) {
                 splashScreenCallback.onError("splash already downloaded");
                 return;
             }
         }
-        if (splashScreen == null || !URLUtil.isValidUrl(splashScreen.url)) {
+        if (resource == null || !URLUtil.isValidUrl(resource.url())) {
             splashScreenCallback.onError("splash screen is not valid");
             return;
         }
         GameSplashUseCase gameSplashUseCase =
-                new GameSplashUseCase(filesDownloadManager, splashScreen);
+                new GameSplashUseCase(filesDownloadManager, resource);
         DownloadFileState fileState = gameSplashUseCase.getFile();
         if (fileState != null) {
             splashScreenCallback.onSuccess(fileState.file);

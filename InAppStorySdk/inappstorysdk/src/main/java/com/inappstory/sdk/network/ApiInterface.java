@@ -194,6 +194,10 @@ public interface ApiInterface {
     Request getUgcEditor();
 
 
+
+    @GET("v2/game/preload")
+    Request getPreloadGames();
+
     @FormUrlEncoded
     @POST("v2/session/open")
     @ExcludeHeaders({

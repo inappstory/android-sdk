@@ -269,6 +269,8 @@ public class SessionManager {
                         cachedSessionData.token = ApiSettings.getInstance().getApiKey();
                         cachedSessionData.tags = service.getTagsString();
                         CachedSessionData.setInstance(cachedSessionData);
+
+                        if (response.preloadGame) service.restartGamePreloader();
                     }
 
                     @Override

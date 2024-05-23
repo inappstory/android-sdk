@@ -7,6 +7,7 @@ import com.inappstory.sdk.game.cache.UseCaseCallback;
 import com.inappstory.sdk.lrudiskcache.CacheJournalItem;
 import com.inappstory.sdk.lrudiskcache.FileChecker;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
+import com.inappstory.sdk.stories.api.interfaces.IDownloadResource;
 import com.inappstory.sdk.stories.api.models.GameSplashScreen;
 import com.inappstory.sdk.stories.cache.DownloadFileState;
 import com.inappstory.sdk.stories.cache.Downloader;
@@ -18,15 +19,15 @@ import java.io.IOException;
 
 public class GameSplashUseCase extends GetCacheFileUseCase<DownloadFileState> {
     private final FileChecker fileChecker = new FileChecker();
-    private final GameSplashScreen splashScreen;
+    private final IDownloadResource splashScreen;
 
     public GameSplashUseCase(
             FilesDownloadManager filesDownloadManager,
-            GameSplashScreen splashScreen
+            IDownloadResource splashScreen
     ) {
         super(filesDownloadManager);
         this.splashScreen = splashScreen;
-        this.uniqueKey = StringsUtils.md5(splashScreen.url);
+        this.uniqueKey = StringsUtils.md5(splashScreen.url());
         this.filePath = getCache().getCacheDir().getAbsolutePath() +
                 File.separator +
                 "v2" +
@@ -36,13 +37,13 @@ public class GameSplashUseCase extends GetCacheFileUseCase<DownloadFileState> {
                 "splashes" +
                 File.separator +
                 uniqueKey +
-                Downloader.getFileExtensionFromUrl(splashScreen.url);
+                Downloader.getFileExtensionFromUrl(splashScreen.url());
     }
 
     @WorkerThread
     @Override
     public DownloadFileState getFile() {
-        downloadLog.generateRequestLog(splashScreen.url);
+        downloadLog.generateRequestLog(splashScreen.url());
         final DownloadFileState[] fileState = {getCache().get(uniqueKey)};
         if (fileState[0] == null || fileState[0].downloadedSize != fileState[0].totalSize) {
             try {
@@ -59,8 +60,8 @@ public class GameSplashUseCase extends GetCacheFileUseCase<DownloadFileState> {
                                 }
                                 if (fileChecker.checkWithShaAndSize(
                                         state.file,
-                                        splashScreen.size,
-                                        splashScreen.sha1,
+                                        splashScreen.size(),
+                                        splashScreen.sha1(),
                                         true
                                 )) {
                                     CacheJournalItem cacheJournalItem = generateCacheItem();
@@ -76,7 +77,7 @@ public class GameSplashUseCase extends GetCacheFileUseCase<DownloadFileState> {
                             }
                         };
                 Downloader.downloadFile(
-                        splashScreen.url,
+                        splashScreen.url(),
                         new File(filePath),
                         null,
                         downloadLog.responseLog,

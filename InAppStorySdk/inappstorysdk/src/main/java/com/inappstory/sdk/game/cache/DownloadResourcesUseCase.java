@@ -47,14 +47,15 @@ public class DownloadResourcesUseCase {
     private boolean terminate;
 
     @WorkerThread
-    void download() {
+    public void download() {
         final long[] cnt = new long[1];
         terminate = false;
         for (WebResource resource : resources) {
             if (terminate) {
                 return;
             }
-            new GameResourceUseCase(downloadManager,
+            new GameResourceUseCase(
+                    downloadManager,
                     zipUrl,
                     gameInstanceId,
                     new ProgressCallback() {

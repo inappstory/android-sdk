@@ -1,14 +1,17 @@
 package com.inappstory.sdk.stories.api.models;
 
+import com.inappstory.sdk.network.annotations.models.SerializedName;
 import com.inappstory.sdk.stories.api.interfaces.IDownloadResource;
 
-import java.io.Serializable;
-
-public class WebResource implements Serializable, IDownloadResource {
-    public String key;
+public class GameSplashAnimation implements IDownloadResource {
+    @SerializedName("url")
     public String url;
+    @SerializedName("size")
+    public Long size;
+    @SerializedName("sha1")
     public String sha1;
-    public long size;
+    @SerializedName("loop")
+    public boolean loop;
 
     @Override
     public String url() {
@@ -17,7 +20,7 @@ public class WebResource implements Serializable, IDownloadResource {
 
     @Override
     public long size() {
-        return size;
+        return size != null ? size : 0;
     }
 
     @Override

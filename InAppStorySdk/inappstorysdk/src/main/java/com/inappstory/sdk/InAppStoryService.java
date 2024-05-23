@@ -13,14 +13,19 @@ import android.net.NetworkCapabilities;
 import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.util.Pair;
 import android.webkit.URLUtil;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.game.cache.GameCacheManager;
+import com.inappstory.sdk.game.cache.SuccessUseCaseCallback;
 import com.inappstory.sdk.game.cache.UseCaseCallback;
+import com.inappstory.sdk.game.preload.GamePreloader;
+import com.inappstory.sdk.game.preload.IGamePreloader;
 import com.inappstory.sdk.game.reader.GameStoryData;
 import com.inappstory.sdk.game.reader.logger.GameLogSaver;
 import com.inappstory.sdk.game.reader.logger.GameLogSender;
@@ -28,6 +33,8 @@ import com.inappstory.sdk.game.reader.logger.IGameLogSaver;
 import com.inappstory.sdk.game.reader.logger.IGameLogSender;
 import com.inappstory.sdk.imageloader.ImageLoader;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
+import com.inappstory.sdk.modulesconnector.utils.lottie.DummyLottieViewGenerator;
+import com.inappstory.sdk.stories.api.interfaces.IGameCenterData;
 import com.inappstory.sdk.stories.api.models.ExceptionCache;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
 import com.inappstory.sdk.stories.api.models.SessionAsset;
@@ -118,6 +125,25 @@ public class InAppStoryService {
 
     public InAppStoryService() {
 
+    }
+
+    public boolean hasLottieAnimation() {
+        InAppStoryManager manager = InAppStoryManager.getInstance();
+        if (manager != null) return !(manager.lottieViewGenerator instanceof DummyLottieViewGenerator);
+        return false;
+    }
+
+    public GamePreloader getGamePreloader() {
+        return gamePreloader;
+    }
+
+    private GamePreloader gamePreloader;
+
+    public void restartGamePreloader() {
+        IGamePreloader gamePreloader = getGamePreloader();
+        gamePreloader.pause();
+        gamePreloader.active(true);
+        gamePreloader.restart();
     }
 
     public static void useInstance(@NonNull UseServiceInstanceCallback callback) {
@@ -754,7 +780,7 @@ public class InAppStoryService {
 
     private FilesDownloadManager filesDownloadManager;
 
-    public void onCreate(Context context, int cacheSize, ExceptionCache exceptionCache) {
+    public void onCreate(final Context context, int cacheSize, ExceptionCache exceptionCache) {
         this.context = context;
         Thread.setDefaultUncaughtExceptionHandler(new DefaultExceptionHandler());
         new ImageLoader(context);
@@ -776,9 +802,26 @@ public class InAppStoryService {
         checkSpaceThread.scheduleAtFixedRate(checkFreeSpace, 1L, 60000L, TimeUnit.MILLISECONDS);
         getStoryDownloadManager().initDownloaders();
         filesDownloadManager = new FilesDownloadManager(context, cacheSize);
+
         logSaver = new GameLogSaver();
         logSender = new GameLogSender(this, logSaver);
 
+        gamePreloader = new GamePreloader(filesDownloadManager, hasLottieAnimation());
+        gamePreloader.successUseCaseCallback = new SuccessUseCaseCallback<IGameCenterData>() {
+            @Override
+            public void onSuccess(final IGameCenterData result) {
+                new Handler(Looper.getMainLooper()).post(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(
+                                context,
+                                "Game " + result.id() + " is loaded",
+                                Toast.LENGTH_LONG
+                        ).show();
+                    }
+                });
+            }
+        };
 
     }
 
