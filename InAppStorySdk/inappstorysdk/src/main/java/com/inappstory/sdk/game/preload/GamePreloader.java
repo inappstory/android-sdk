@@ -17,10 +17,12 @@ public class GamePreloader implements IGamePreloader {
 
     public GamePreloader(
             FilesDownloadManager filesDownloadManager,
-                         boolean useAnimSplash
+                         boolean useAnimSplash,
+            SuccessUseCaseCallback<IGameCenterData> successUseCaseCallback
     ) {
         this.filesDownloadManager = filesDownloadManager;
         this.useAnimSplash = useAnimSplash;
+        this.successUseCaseCallback = successUseCaseCallback;
     }
 
     LoadGameSplashesUseCase splashesUseCase;

@@ -129,15 +129,16 @@ public class InAppStoryService {
 
     public boolean hasLottieAnimation() {
         InAppStoryManager manager = InAppStoryManager.getInstance();
-        if (manager != null) return !(manager.lottieViewGenerator instanceof DummyLottieViewGenerator);
+        if (manager != null)
+            return !(manager.lottieViewGenerator instanceof DummyLottieViewGenerator);
         return false;
     }
 
-    public GamePreloader getGamePreloader() {
+    public IGamePreloader getGamePreloader() {
         return gamePreloader;
     }
 
-    private GamePreloader gamePreloader;
+    private IGamePreloader gamePreloader;
 
     public void restartGamePreloader() {
         IGamePreloader gamePreloader = getGamePreloader();
@@ -805,23 +806,25 @@ public class InAppStoryService {
 
         logSaver = new GameLogSaver();
         logSender = new GameLogSender(this, logSaver);
-
-        gamePreloader = new GamePreloader(filesDownloadManager, hasLottieAnimation());
-        gamePreloader.successUseCaseCallback = new SuccessUseCaseCallback<IGameCenterData>() {
-            @Override
-            public void onSuccess(final IGameCenterData result) {
-                new Handler(Looper.getMainLooper()).post(new Runnable() {
+        gamePreloader = new GamePreloader(
+                filesDownloadManager,
+                hasLottieAnimation(),
+                new SuccessUseCaseCallback<IGameCenterData>() {
                     @Override
-                    public void run() {
-                        Toast.makeText(
-                                context,
-                                "Game " + result.id() + " is loaded",
-                                Toast.LENGTH_LONG
-                        ).show();
+                    public void onSuccess(final IGameCenterData result) {
+                        new Handler(Looper.getMainLooper()).post(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(
+                                        context,
+                                        "Game " + result.id() + " is loaded",
+                                        Toast.LENGTH_LONG
+                                ).show();
+                            }
+                        });
                     }
-                });
-            }
-        };
+                }
+        );
 
     }
 

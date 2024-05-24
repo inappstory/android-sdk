@@ -841,7 +841,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
     ) {
         InAppStoryService.useInstance(new UseServiceInstanceCallback() {
             @Override
-            public void use(@NonNull InAppStoryService service) throws Exception {
+            public void use(@NonNull final InAppStoryService service) throws Exception {
                 service.getGamePreloader().pause();
                 service.gameCacheManager().getGame(
                         gameId,
@@ -936,6 +936,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
 
                             @Override
                             public void onSuccess(final FilePathAndContent result) {
+                                service.getGamePreloader().restart();
                                 webView.post(new Runnable() {
                                     @Override
                                     public void run() {

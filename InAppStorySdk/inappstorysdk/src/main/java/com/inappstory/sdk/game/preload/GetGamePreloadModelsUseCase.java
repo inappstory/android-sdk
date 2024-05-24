@@ -42,6 +42,5 @@ public class GetGamePreloadModelsUseCase {
                     }
                 }
         );
-        callback.onSuccess(new ArrayList<IGameCenterData>());
     }
 }

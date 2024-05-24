@@ -1,16 +1,16 @@
 package com.inappstory.sdk.game.preload;
 
 import com.inappstory.sdk.game.cache.DownloadResourcesUseCase;
-import com.inappstory.sdk.game.cache.GetZipFileUseCase;
-import com.inappstory.sdk.game.cache.RemoveOldGameFilesUseCase;
 import com.inappstory.sdk.game.cache.SuccessUseCaseCallback;
-import com.inappstory.sdk.game.cache.UnzipUseCase;
-import com.inappstory.sdk.game.cache.UseCaseCallback;
 import com.inappstory.sdk.stories.api.interfaces.IGameCenterData;
 import com.inappstory.sdk.stories.api.models.WebResource;
 import com.inappstory.sdk.stories.cache.DownloadInterruption;
 import com.inappstory.sdk.stories.cache.FilesDownloadManager;
+import com.inappstory.sdk.stories.cache.usecases.ArchiveUseCase;
+import com.inappstory.sdk.stories.cache.usecases.GameFolderUseCase;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
+import com.inappstory.sdk.utils.EmptyProgressCallback;
+import com.inappstory.sdk.utils.ProgressCallback;
 
 import java.io.File;
 import java.util.List;
@@ -49,14 +49,7 @@ public class LoadGameFilesUseCase {
         if (interruption.active) return;
         if (data.url() == null || data.url().isEmpty()) return;
         final String archiveUrl = data.url();
-        final GetZipFileUseCase getZipFileUseCase =
-                new GetZipFileUseCase(
-                        archiveUrl,
-                        data.archiveSize(),
-                        data.archiveSha1()
-                );
-        final RemoveOldGameFilesUseCase removeOldGameFilesUseCase =
-                new RemoveOldGameFilesUseCase(archiveUrl);
+        final ProgressCallback emptyProgress = new EmptyProgressCallback();
         final long totalArchiveSize;
         final long totalResourcesSize;
         long tempResourcesSize = 0;
@@ -75,72 +68,66 @@ public class LoadGameFilesUseCase {
             finalTotalFilesSize = finalTotalDownloadsSize + data.archiveUncompressedSize();
         else
             finalTotalFilesSize = finalTotalDownloadsSize;
-        gameUseCasesThread.submit(new Runnable() {
-            @Override
-            public void run() {
-                final UseCaseCallback<String> unzipCallback = new SuccessUseCaseCallback<String>() {
-                    @Override
-                    public void onSuccess(final String result) {
-                        if (interruption.active) return;
-                        final String resourcesHash =
-                                ProfilingManager.getInstance().addTask(
-                                        "game_resources_download"
-                                );
-                        if (data.resources() == null || data.resources().isEmpty()) {
-                            ProfilingManager.getInstance().setReady(resourcesHash);
-                            if (successUseCaseCallback != null)
+
+        final long[] totalProgress = {0};
+        final String[] resourcesHash = {""};
+        final String[] gameFolder = {""};
+        final DownloadResourcesUseCase downloadResourcesUseCase =
+                new DownloadResourcesUseCase(
+                        filesDownloadManager,
+                        data.resources(),
+                        data.id(),
+                        archiveUrl,
+                        interruption,
+                        emptyProgress,
+                        new SuccessUseCaseCallback<Void>() {
+                            @Override
+                            public void onSuccess(Void result) {
+                                ProfilingManager.getInstance().setReady(resourcesHash[0]);
                                 successUseCaseCallback.onSuccess(data);
-                        } else {
-                            DownloadResourcesUseCase downloadResourcesUseCase =
-                                    new DownloadResourcesUseCase(
-                                            filesDownloadManager,
-                                            data.resources(),
-                                            data.id(),
-                                            archiveUrl,
-                                            interruption,
-                                            null,
-                                            new SuccessUseCaseCallback<Void>() {
-                                                @Override
-                                                public void onSuccess(Void ignore) {
-                                                    ProfilingManager.getInstance().setReady(resourcesHash);
-                                                    if (successUseCaseCallback != null)
-                                                        successUseCaseCallback.onSuccess(data);
-                                                }
-                                            }
-                                    );
-                            downloadResourcesUseCase.download();
+                            }
                         }
+                );
+
+
+        final GameFolderUseCase gameFolderUseCase = new GameFolderUseCase(
+                filesDownloadManager,
+                archiveUrl,
+                new SuccessUseCaseCallback<String>() {
+                    @Override
+                    public void onSuccess(String result) {
+                        gameFolder[0] = result;
+                        totalProgress[0] += 0.2 * finalTotalDownloadsSize;
+                        resourcesHash[0] = ProfilingManager.getInstance().addTask(
+                                "game_resources_download"
+                        );
+                        downloadResourcesUseCase.download();
                     }
-                };
-                removeOldGameFilesUseCase.remove();
-                getZipFileUseCase.get(
+                },
+                emptyProgress
+        );
+
+        final ArchiveUseCase getZipFileUseCase =
+                new ArchiveUseCase(
+                        filesDownloadManager,
+                        archiveUrl,
+                        data.archiveSize(),
+                        data.archiveSha1(),
+                        finalTotalFilesSize,
+                        emptyProgress,
                         interruption,
                         new SuccessUseCaseCallback<File>() {
                             @Override
                             public void onSuccess(File result) {
-                                if (interruption.active) return;
-                                File directory = new File(
-                                        result.getParent() +
-                                                File.separator +
-                                                archiveUrl.hashCode());
-                                final UnzipUseCase unzipUseCase =
-                                        new UnzipUseCase(result.getAbsolutePath());
-                                if (!directory.exists()) {
-                                    boolean unzipResult = unzipUseCase.unzip(
-                                            directory.getAbsolutePath(),
-                                            null
-                                    );
-                                    if (!unzipResult) {
-                                        unzipCallback.onError("Can't unarchive game");
-                                        return;
-                                    }
-                                }
-                                unzipCallback.onSuccess(directory.getAbsolutePath());
+                                totalProgress[0] += result.length();
+                                gameFolderUseCase.getFile();
                             }
-                        },
-                        null,
-                        finalTotalFilesSize
+                        }
                 );
+        gameUseCasesThread.submit(new Runnable() {
+            @Override
+            public void run() {
+                getZipFileUseCase.getFile();
             }
         });
     }

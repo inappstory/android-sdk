@@ -77,7 +77,7 @@ public class DownloadResourcesUseCase {
 
                         @Override
                         public void onSuccess(Void result) {
-                            useCaseCallback.onSuccess(result);
+
                         }
                     },
                     resource
