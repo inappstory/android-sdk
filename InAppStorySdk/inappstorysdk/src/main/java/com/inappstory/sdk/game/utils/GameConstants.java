@@ -6,8 +6,9 @@ import java.util.Map;
 public class GameConstants {
     public static final String SPLASH_STATIC = "staticPortrait";
     public static final String SPLASH_ANIM = "anim";
-    public static final String SPLASH_STATIC_KV = "gameInstanceSplash_";
-    public static final String SPLASH_ANIM_KV = "gameInstanceAnimSplash_";
+    public static final String SPLASH_STATIC_KV = "gameInstanceStaticSplash_";
+    public static final String SPLASH_ANIM_KV = "gameInstanceAnimSplashFile_";
+    public static final String SPLASH_ANIM_KV_SETTINGS = "gameInstanceAnimSplashSettings_";
 
     public static final String INDEX_NAME = "index.html";
     public static final String FILE = "file://";

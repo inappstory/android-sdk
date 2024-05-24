@@ -4,6 +4,7 @@ import com.inappstory.sdk.game.cache.DownloadSplashUseCase;
 import com.inappstory.sdk.game.cache.GetLocalSplashesUseCase;
 import com.inappstory.sdk.game.cache.UseCaseCallback;
 import com.inappstory.sdk.game.utils.GameConstants;
+import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.interfaces.IGameCenterData;
 import com.inappstory.sdk.stories.cache.DownloadInterruption;
 import com.inappstory.sdk.stories.cache.FilesDownloadManager;
@@ -107,6 +108,15 @@ public class LoadGameSplashesUseCase {
                             GameConstants.SPLASH_ANIM_KV + gameData.id(),
                             result.getAbsolutePath()
                     );
+
+                    try {
+                        KeyValueStorage.saveString(
+                                GameConstants.SPLASH_ANIM_KV_SETTINGS + gameData.id(),
+                                JsonParser.getJson(gameData.splashAnimation())
+                        );
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
 
                     downloadSplash(
                             gamesDataIterator,

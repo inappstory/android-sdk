@@ -64,6 +64,7 @@ import com.inappstory.sdk.inner.share.InnerShareFilesPrepare;
 import com.inappstory.sdk.inner.share.ShareFilesPrepareCallback;
 import com.inappstory.sdk.modulesconnector.utils.filepicker.OnFilesChooseCallback;
 import com.inappstory.sdk.modulesconnector.utils.lottie.DummyLottieViewGenerator;
+import com.inappstory.sdk.modulesconnector.utils.lottie.ILottieView;
 import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.NetworkClient;
@@ -119,6 +120,8 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
     private IProgressLoaderView loaderView;
     private View baseContainer;
     private View customLoaderView = null;
+    private boolean useCustomLoadAnimation = false;
+    private ILottieView lottieView;
 
     public static final int GAME_READER_REQUEST = 405;
 
