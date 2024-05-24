@@ -198,8 +198,8 @@ public class AppearanceManager {
     private int csCloseIcon;
     private int csRefreshIcon;
     private int csSoundIcon;
-    private int csNavBarColor = Color.TRANSPARENT;
-    private int csNightNavBarColor = Color.TRANSPARENT;
+    private int csNavBarColor = Color.BLACK;
+    private int csNightNavBarColor = Color.BLACK;
     private int csReaderBackgroundColor = Color.BLACK;
 
     private Typeface csCustomFont;

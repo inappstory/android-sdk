@@ -9,6 +9,7 @@ import android.app.Activity;
 import android.content.DialogInterface;
 import android.graphics.Color;
 import android.graphics.Point;
+import android.graphics.Rect;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.os.Bundle;
@@ -227,12 +228,14 @@ public class StoriesDialogFragment extends DialogFragment implements IASBackPres
             }
         }
         dialogHeight = Math.min(dialogHeight, size.y);
-        int dialogWidth = Math.round(dialogHeight / 1.5f);
-
+        int dialogWidth = Math.round(dialogHeight / 1.78f);
+        screenRectangle = new Rect(0, 0, dialogWidth, dialogHeight);
         getDialog().getWindow().setLayout(dialogWidth, dialogHeight);
         getDialog().getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
 
     }
+
+    Rect screenRectangle = new Rect();
 
     @Override
     public boolean onBackPressed() {
@@ -278,7 +281,7 @@ public class StoriesDialogFragment extends DialogFragment implements IASBackPres
 
 
     public void changeStory(int index) {
-       // getArguments().putInt("index", index);
+        // getArguments().putInt("index", index);
     }
 
     Story.StoryType type = Story.StoryType.COMMON;
@@ -298,6 +301,8 @@ public class StoriesDialogFragment extends DialogFragment implements IASBackPres
         if (savedInstanceState == null) {
             storiesContentFragment = new StoriesContentFragment();
             Bundle args = new Bundle();
+
+            args.putParcelable("readerContainer", screenRectangle);
             args.putSerializable(appearanceSettings.getSerializableKey(), appearanceSettings);
             args.putSerializable(launchData.getSerializableKey(), launchData);
             setAppearanceSettings(args);
