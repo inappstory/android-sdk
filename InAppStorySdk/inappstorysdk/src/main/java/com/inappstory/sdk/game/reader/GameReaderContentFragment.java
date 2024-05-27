@@ -874,12 +874,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                                 final int percent = (int) ((loadedSize * 100) / totalSize);
 
                                 if (progressLoader != null)
-                                    progressLoader.post(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            progressLoader.setProgress(percent, 100);
-                                        }
-                                    });
+                                    progressLoader.setProgress(percent, 100);
                             }
                         },
                         new UseCaseWarnCallback<File>() {

@@ -1,5 +1,7 @@
 package com.inappstory.sdk.game.cache;
 
+import android.util.Log;
+
 import com.inappstory.sdk.game.utils.GameConstants;
 import com.inappstory.sdk.lrudiskcache.FileManager;
 import com.inappstory.sdk.stories.api.interfaces.IGameCenterData;
@@ -322,6 +324,7 @@ public class GameCacheManager {
 
             @Override
             public void onError(String message) {
+                Log.e("Game_Loading", message);
                 gameLoadCallback.onError("Can't retrieve game from game center");
             }
 
