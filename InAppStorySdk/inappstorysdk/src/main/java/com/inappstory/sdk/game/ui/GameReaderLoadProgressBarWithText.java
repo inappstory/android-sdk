@@ -1,4 +1,4 @@
-package com.inappstory.sdk.game.reader;
+package com.inappstory.sdk.game.ui;
 
 
 import android.annotation.SuppressLint;
@@ -11,7 +11,7 @@ import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.inappstory.sdk.stories.ui.views.IGameReaderLoaderView;
+import com.inappstory.sdk.stories.ui.widgets.LoadProgressBar;
 import com.inappstory.sdk.stories.utils.Sizes;
 
 
@@ -19,7 +19,7 @@ public class GameReaderLoadProgressBarWithText extends RelativeLayout implements
 
     private boolean isIndeterminate = true;
 
-    GameReaderLoadProgressBar progressBar;
+    LoadProgressBar progressBar;
     TextView progressText;
 
 
@@ -58,7 +58,7 @@ public class GameReaderLoadProgressBarWithText extends RelativeLayout implements
     }
 
     private void initProgressBar() {
-        this.progressBar = new GameReaderLoadProgressBar(getContext());
+        this.progressBar = new LoadProgressBar(getContext());
         this.progressBar.setIndeterminate(true);
         addView(progressBar);
     }
@@ -85,15 +85,21 @@ public class GameReaderLoadProgressBarWithText extends RelativeLayout implements
     @SuppressLint("DefaultLocale")
     @Override
     public void setProgress(int progress, int max) {
-        int currentProgress = (max == 0) ? 0 : (int) (100 * ((1f * progress) / max));
-        currentProgress = Math.min(currentProgress, 100);
-        this.progressBar.setProgress(currentProgress, 100);
+        int currentProgress = (max == 0) ? 0 : (int) (90 * ((1f * progress) / max));
+        currentProgress = Math.min(currentProgress, 90);
+        this.progressBar.setProgress(currentProgress, 90);
         this.progressText.setText(String.format("%d %%", currentProgress));
     }
 
     @Override
     public void setIndeterminate(boolean indeterminate) {
         this.isIndeterminate = indeterminate;
-        // this.progressText.setVisibility(indeterminate ? INVISIBLE : VISIBLE);
+    }
+
+    @SuppressLint("DefaultLocale")
+    @Override
+    public void launchFinalAnimation() {
+        this.progressBar.setProgress(100, 100);
+        this.progressText.setText(String.format("%d %%", 100));
     }
 }

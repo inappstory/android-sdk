@@ -53,17 +53,15 @@ import com.inappstory.sdk.game.cache.GameCacheManager;
 import com.inappstory.sdk.game.cache.SetGameLoggerCallback;
 import com.inappstory.sdk.game.cache.UseCaseCallback;
 import com.inappstory.sdk.game.cache.UseCaseWarnCallback;
-import com.inappstory.sdk.game.reader.logger.GameLoggerLvl0;
 import com.inappstory.sdk.game.reader.logger.GameLoggerLvl1;
-import com.inappstory.sdk.game.reader.logger.GameLoggerLvl2;
-import com.inappstory.sdk.game.reader.logger.GameLoggerLvl3;
+import com.inappstory.sdk.game.ui.GameProgressLoader;
+import com.inappstory.sdk.game.ui.GameReaderLoadProgressBarWithText;
 import com.inappstory.sdk.game.utils.GameConstants;
 import com.inappstory.sdk.imageloader.ImageLoader;
 import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.inner.share.InnerShareFilesPrepare;
 import com.inappstory.sdk.inner.share.ShareFilesPrepareCallback;
 import com.inappstory.sdk.modulesconnector.utils.filepicker.OnFilesChooseCallback;
-import com.inappstory.sdk.modulesconnector.utils.lottie.DummyLottieViewGenerator;
 import com.inappstory.sdk.modulesconnector.utils.lottie.ILottieView;
 import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.JsonParser;
@@ -91,9 +89,7 @@ import com.inappstory.sdk.stories.ui.OverlapFragmentObserver;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.views.IASWebView;
 import com.inappstory.sdk.stories.ui.views.IASWebViewClient;
-import com.inappstory.sdk.stories.ui.views.IGameLoaderView;
-import com.inappstory.sdk.stories.ui.views.IGameReaderLoaderView;
-import com.inappstory.sdk.stories.ui.views.IProgressLoaderView;
+import com.inappstory.sdk.stories.ui.views.IProgressLoader;
 import com.inappstory.sdk.stories.utils.AudioModes;
 import com.inappstory.sdk.stories.utils.IASBackPressHandler;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
@@ -117,11 +113,8 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
     private View closeButton;
     private View webViewContainer;
     private RelativeLayout loaderContainer;
-    private IProgressLoaderView loaderView;
+    private GameProgressLoader progressLoader;
     private View baseContainer;
-    private View customLoaderView = null;
-    private boolean useCustomLoadAnimation = false;
-    private ILottieView lottieView;
 
     public static final int GAME_READER_REQUEST = 405;
 
@@ -244,6 +237,24 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
             });
         }
 
+    }
+
+
+
+    void gameShouldForeground() {
+        long leftTime = Math.max(0, 2000 - (System.currentTimeMillis() - startDownloadTime));
+        webView.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                progressLoader.launchFinalAnimation();
+            }
+        }, leftTime);
+        webView.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                webView.evaluateJavascript("gameShouldForeground();", null);
+            }
+        }, leftTime + 100);
     }
 
     void updateUI() {
@@ -413,7 +424,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
             @Override
             public void onClick(View v) {
                 interruption.active = false;
-                changeView(customLoaderView, refreshGame);
+                changeView(progressLoader, refreshGame);
                 new Handler().postDelayed(new Runnable() {
                     @Override
                     public void run() {
@@ -740,7 +751,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
     Runnable showRefresh = new Runnable() {
         @Override
         public void run() {
-            changeView(refreshGame, customLoaderView);
+            changeView(refreshGame, progressLoader);
         }
     };
 
@@ -789,9 +800,13 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         for (Map.Entry<String, String> entry : splashKeys.entrySet()) {
             String path = KeyValueStorage.getString(entry.getValue() + manager.gameCenterId);
             if (path != null) {
-                File splash = new File(path);
-                splashPaths.put(entry.getKey(), splash);
-                hasSplashFile = hasSplashFile || splash.exists();
+                if (!path.isEmpty()) {
+                    File splash = new File(path);
+                    splashPaths.put(entry.getKey(), splash);
+                    hasSplashFile = hasSplashFile || splash.exists();
+                } else {
+                    splashPaths.put(entry.getKey(), null);
+                }
             }
         }
         if (!splashPaths.isEmpty()) {
@@ -810,6 +825,8 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                 inAppStoryManager.getOpenGameReader().onShowInFullscreen(getActivity());
         }
     }
+
+    private long startDownloadTime;
 
     private void setOrientationFromOptions(GameScreenOptions options) {
         if (options != null) {
@@ -842,6 +859,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
     private void downloadGame(
             final String gameId
     ) {
+        startDownloadTime = System.currentTimeMillis();
         InAppStoryService.useInstance(new UseServiceInstanceCallback() {
             @Override
             public void use(@NonNull final InAppStoryService service) throws Exception {
@@ -857,11 +875,11 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                                 if (totalSize == 0) return;
                                 final int percent = (int) ((loadedSize * 100) / totalSize);
 
-                                if (customLoaderView != null)
-                                    customLoaderView.post(new Runnable() {
+                                if (progressLoader != null)
+                                    progressLoader.post(new Runnable() {
                                         @Override
                                         public void run() {
-                                            loaderView.setProgress(percent, 100);
+                                            progressLoader.setProgress(percent, 100);
                                         }
                                     });
                             }
@@ -882,6 +900,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
 
                             @Override
                             public void onSuccess(Map<String, File> result) {
+
                                 setLoader(result);
                             }
                         },
@@ -904,7 +923,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                                     public void run() {
                                         setLayout();
                                         GameCenterData gameCenterData = (GameCenterData) iGameCenterData;
-                                        loaderView.setIndeterminate(false);
+                                        progressLoader.setIndeterminate(false);
                                         manager.statusHolder.setTotalReloadTries(
                                                 gameCenterData.canTryReloadCount()
                                         );
@@ -950,7 +969,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                                                 ),
                                                 "text/html; charset=utf-8", "UTF-8",
                                                 null);
-                                        loaderView.setIndeterminate(true);
+                                        progressLoader.setIndeterminate(true);
                                     }
                                 });
                             }
@@ -1141,11 +1160,14 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
 
 
     private void setLoader(Map<String, File> splashFile) {
-        File staticSplashFile = splashFile.get("staticPortrait");
+        File staticSplashFile = splashFile.get(GameConstants.SPLASH_STATIC);
         if (staticSplashFile == null || !staticSplashFile.exists()) {
             loader.setBackgroundColor(Color.BLACK);
         } else {
             ImageLoader.getInstance().displayImage(staticSplashFile.getAbsolutePath(), -1, loader);
+        }
+        if (splashFile.containsKey(GameConstants.SPLASH_ANIM)) {
+            progressLoader.launchLoaderAnimation(splashFile.get(GameConstants.SPLASH_ANIM));
         }
     }
 
@@ -1167,29 +1189,15 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         loader = view.findViewById(R.id.loader);
         baseContainer = view.findViewById(R.id.draggable_frame);
         loaderContainer = view.findViewById(R.id.loaderContainer);
+        progressLoader = view.findViewById(R.id.gameProgressLoader);
         refreshGame = view.findViewById(R.id.gameRefresh);
         refreshGame.setImageDrawable(
                 getResources().getDrawable(
                         AppearanceManager.getCommonInstance().csRefreshIcon()
                 )
         );
-        IGameReaderLoaderView gameReaderLoaderView = AppearanceManager.getCommonInstance().csGameReaderLoaderView();
-        IGameLoaderView gameLoaderView = AppearanceManager.getCommonInstance().csGameLoaderView();
-        if (gameReaderLoaderView != null) {
-            loaderView = gameReaderLoaderView;
-            customLoaderView = gameReaderLoaderView.getView(getContext());
-        } else if (gameLoaderView != null) {
-            loaderView = gameLoaderView;
-            customLoaderView = gameLoaderView.getView();
-        } else {
-            GameReaderLoadProgressBarWithText loadProgressBar = new GameReaderLoadProgressBarWithText(getContext());
-            loaderView = loadProgressBar;
-            customLoaderView = loadProgressBar;
-        }
-        loaderView.setIndeterminate(true);
         closeButton = view.findViewById(R.id.close_button);
         webViewContainer = view.findViewById(R.id.webViewContainer);
-        loaderContainer.addView(customLoaderView);
         return view;
     }
 

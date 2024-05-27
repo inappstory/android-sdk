@@ -26,18 +26,7 @@ public class GameCacheManager {
         cachedGames.clear();
     }
 
-    /* public void getGame(String gameId, GameLoadCallback callback) {
-         getGameFromGameCenter(gameId, callback);
-     }
 
-     public GameCenterData getCachedGame(String gameId) {
-         CachedGame game = cachedGames.get(gameId);
-         if (game != null) {
-             return game.data;
-         }
-         return null;
-     }
- */
     private final ExecutorService gameUseCasesThread = Executors.newFixedThreadPool(1);
 
 
@@ -87,7 +76,7 @@ public class GameCacheManager {
                     if (animFile != null) {
                         animFilePath = animFile.getAbsolutePath();
                     }
-                    downloadAnimSplashUseCase =  new DownloadSplashUseCase(
+                    downloadAnimSplashUseCase = new DownloadSplashUseCase(
                             filesDownloadManager,
                             data.splashAnimation,
                             animFilePath,
@@ -117,6 +106,10 @@ public class GameCacheManager {
                         if (localSplashFiles.isEmpty()) {
                             splashScreenCallback.onSuccess(splashFiles);
                         }
+                        KeyValueStorage.saveString(
+                                splashesKeyValueStorageKeys.get(animKey) + gameId,
+                                ""
+                        );
                     }
 
                     @Override
@@ -331,64 +324,4 @@ public class GameCacheManager {
             return null;
         }
     }
-
-  /*  private void getGameFromGameCenter(final String gameId, final GameLoadCallback callback) {
-        final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
-        if (networkClient == null) {
-            callback.onError(NC_IS_UNAVAILABLE);
-            return;
-        }
-
-        final boolean demoMode;
-        InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
-        if (inAppStoryManager != null)
-            demoMode = inAppStoryManager.isGameDemoMode();
-        else
-            demoMode = false;
-        SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
-            @Override
-            public void onSuccess(String sessionId) {
-                networkClient.enqueue(
-                        networkClient.getApi().getGameByInstanceId(
-                                gameId, new GameLaunchConfigObject(demoMode)
-                        ),
-                        new NetworkCallback<GameCenterData>() {
-                            @Override
-                            public void onSuccess(final GameCenterData response) {
-                                if (response.url == null ||
-                                        response.url.isEmpty() ||
-                                        response.initCode == null ||
-                                        response.initCode.isEmpty()
-                                ) {
-                                    callback.onError("Invalid game data");
-                                    return;
-                                }
-                                cachedGames.put(gameId, new CachedGame(response));
-                                callback.onSuccess(response);
-                            }
-
-                            @Override
-                            public Type getType() {
-                                return GameCenterData.class;
-                            }
-
-                            @Override
-                            public void errorDefault(String message) {
-                                callback.onError(message);
-                            }
-
-                            @Override
-                            public void timeoutError() {
-                                callback.onError("Game loading run out of time");
-                            }
-                        }
-                );
-            }
-
-            @Override
-            public void onError() {
-                callback.onError("Open session error");
-            }
-        });
-    }*/
 }

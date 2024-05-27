@@ -80,9 +80,16 @@ public class GameJSInterface {
     }
 
     @JavascriptInterface
-    public void gameLoaded(String data) {
-        manager.gameLoaded(data);
+    public void gameShouldForegroundCallback(String data) {
+        manager.gameShouldForegroundCallback(data);
         logMethod(data);
+    }
+
+
+    @JavascriptInterface
+    public void gameLoaded() {
+        manager.gameLoaded();
+        logMethod("");
     }
 
     private void logMethod(String payload) {

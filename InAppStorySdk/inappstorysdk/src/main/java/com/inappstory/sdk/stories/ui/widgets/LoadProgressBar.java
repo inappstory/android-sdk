@@ -1,4 +1,4 @@
-package com.inappstory.sdk.game.reader;
+package com.inappstory.sdk.stories.ui.widgets;
 
 import static android.widget.RelativeLayout.CENTER_IN_PARENT;
 
@@ -16,19 +16,19 @@ import android.view.View;
 import android.widget.RelativeLayout;
 
 import com.inappstory.sdk.R;
-import com.inappstory.sdk.stories.ui.views.IGameReaderLoaderView;
+import com.inappstory.sdk.stories.ui.views.IProgressLoaderView;
 import com.inappstory.sdk.stories.utils.Sizes;
 
 
 
-public class GameReaderLoadProgressBar extends View implements IGameReaderLoaderView {
+public class LoadProgressBar extends View implements IProgressLoaderView {
 
     private int currentFrame = 0;             // Allocate paint outside onDraw to avoid unnecessary object creation
     private boolean isIndeterminate = true;
 
     private int progress = 0;
 
-    public GameReaderLoadProgressBar(Context context) {
+    public LoadProgressBar(Context context) {
         this(context, null);
     }
 
@@ -84,11 +84,11 @@ public class GameReaderLoadProgressBar extends View implements IGameReaderLoader
         return GRADIENT_PAINT;
     }
 
-    public GameReaderLoadProgressBar(Context context, AttributeSet attrs) {
+    public LoadProgressBar(Context context, AttributeSet attrs) {
         this(context, attrs, 0);
     }
 
-    public GameReaderLoadProgressBar(Context context, AttributeSet attrs, int defStyleAttr) {
+    public LoadProgressBar(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         initSize();
     }
@@ -185,4 +185,5 @@ public class GameReaderLoadProgressBar extends View implements IGameReaderLoader
     public void setIndeterminate(boolean indeterminate) {
         this.isIndeterminate = indeterminate;
     }
+
 }

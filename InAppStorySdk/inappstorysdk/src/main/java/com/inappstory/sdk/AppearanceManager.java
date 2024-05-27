@@ -9,17 +9,15 @@ import android.widget.RelativeLayout;
 
 import androidx.annotation.NonNull;
 
-import com.inappstory.sdk.game.reader.GameReaderLoadProgressBar;
+import com.inappstory.sdk.stories.ui.widgets.LoadProgressBar;
 import com.inappstory.sdk.stories.api.models.CachedSessionData;
 import com.inappstory.sdk.stories.api.models.Image;
 import com.inappstory.sdk.stories.ui.list.StoriesList;
 import com.inappstory.sdk.stories.ui.list.StoryTouchListener;
 import com.inappstory.sdk.stories.ui.list.UGCListItemSimpleAppearance;
 import com.inappstory.sdk.stories.ui.reader.StoriesGradientObject;
-import com.inappstory.sdk.stories.ui.views.IGameLoaderView;
-import com.inappstory.sdk.stories.ui.views.IGameReaderLoaderView;
+import com.inappstory.sdk.game.ui.IGameReaderLoaderView;
 import com.inappstory.sdk.stories.ui.views.IGetFavoriteListItem;
-import com.inappstory.sdk.stories.ui.views.ILoaderView;
 import com.inappstory.sdk.stories.ui.views.IStoriesListItem;
 import com.inappstory.sdk.stories.ui.views.IStoryReaderLoaderView;
 import com.inappstory.sdk.stories.ui.views.goodswidget.ICustomGoodsItem;
@@ -101,9 +99,7 @@ public class AppearanceManager {
         this.csFavoriteListItemInterface = other.csFavoriteListItemInterface;
         this.csListItemInterface = other.csListItemInterface;
         this.csListUGCItemInterface = other.csListUGCItemInterface;
-        this.csLoaderView = other.csLoaderView;
         this.csStoryLoaderView = other.csStoryLoaderView;
-        this.csGameLoaderView = other.csGameLoaderView;
         this.csGameReaderLoaderView = other.csGameReaderLoaderView;
         this.storyTouchListener = other.storyTouchListener;
         this.csCustomGoodsWidget = other.csCustomGoodsWidget;
@@ -170,10 +166,8 @@ public class AppearanceManager {
     private IGetFavoriteListItem csFavoriteListItemInterface;
     private IStoriesListItem csListItemInterface;
     private IStoriesListUGCItem csListUGCItemInterface;
-    private ILoaderView csLoaderView;
 
     private IStoryReaderLoaderView csStoryLoaderView;
-    private IGameLoaderView csGameLoaderView;
 
     private IGameReaderLoaderView csGameReaderLoaderView;
     private StoryTouchListener storyTouchListener;
@@ -1026,11 +1020,6 @@ public class AppearanceManager {
         return AppearanceManager.this;
     }
 
-    @Deprecated
-    public AppearanceManager csLoaderView(ILoaderView csLoaderView) {
-        this.csLoaderView = csLoaderView;
-        return AppearanceManager.this;
-    }
 
 
     public AppearanceManager csStoryLoaderView(IStoryReaderLoaderView csStoryLoaderView) {
@@ -1038,17 +1027,8 @@ public class AppearanceManager {
         return AppearanceManager.this;
     }
 
-    public ILoaderView csLoaderView() {
-        return csLoaderView;
-    }
-
     public IStoryReaderLoaderView csStoryLoaderView() {
         return csStoryLoaderView;
-    }
-
-    public AppearanceManager csGameLoaderView(IGameLoaderView csGameLoaderView) {
-        this.csGameLoaderView = csGameLoaderView;
-        return AppearanceManager.this;
     }
 
     public AppearanceManager csGameReaderLoaderView(IGameReaderLoaderView csGameReaderLoaderView) {
@@ -1058,10 +1038,6 @@ public class AppearanceManager {
 
     public IGameReaderLoaderView csGameReaderLoaderView() {
         return csGameReaderLoaderView;
-    }
-
-    public IGameLoaderView csGameLoaderView() {
-        return csGameLoaderView;
     }
 
     public IStoriesListItem csListItemInterface() {
@@ -1088,8 +1064,6 @@ public class AppearanceManager {
             View v = null;
             if (commonInstance.csStoryLoaderView() != null) {
                 v = commonInstance.csStoryLoaderView().getView(context);
-            } else if (commonInstance.csLoaderView() != null) {
-                v = commonInstance.csLoaderView().getView();
             }
             if (v != null) {
                 relativeParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -1098,7 +1072,7 @@ public class AppearanceManager {
                 return v;
             }
         }
-        return new GameReaderLoadProgressBar(context);
+        return new LoadProgressBar(context);
     }
 
 }

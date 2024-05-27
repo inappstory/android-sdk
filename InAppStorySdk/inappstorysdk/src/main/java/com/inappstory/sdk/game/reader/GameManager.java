@@ -272,11 +272,14 @@ public class GameManager {
                 AudioManager.AUDIOFOCUS_GAIN);
     }
 
-
-    void gameLoaded(String data) {
+    void gameLoaded() {
         if (statusHolder.hasGameLoadStatus()) return;
         logger.gameLoaded(true);
         statusHolder.setGameLoaded();
+        host.gameShouldForeground();
+    }
+
+    void gameShouldForegroundCallback(String data) {
         GameLoadedConfig config = JsonParser.fromJson(data, GameLoadedConfig.class);
         host.gameReaderGestureBack = config.backGesture;
         host.showClose = config.showClose;

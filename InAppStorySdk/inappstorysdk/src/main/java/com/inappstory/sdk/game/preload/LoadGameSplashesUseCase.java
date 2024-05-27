@@ -94,6 +94,10 @@ public class LoadGameSplashesUseCase {
             final UseCaseCallback<File> downloadAnimSplashCallback = new UseCaseCallback<File>() {
                 @Override
                 public void onError(String message) {
+                    KeyValueStorage.saveString(
+                            GameConstants.SPLASH_ANIM_KV + gameData.id(),
+                            ""
+                    );
                     downloadSplash(
                             gamesDataIterator,
                             splashesKeyValueStorageKeys,

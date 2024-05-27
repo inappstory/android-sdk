@@ -7,14 +7,10 @@ import android.os.Looper;
 import android.os.Vibrator;
 import android.view.View;
 
-import androidx.annotation.NonNull;
-
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.UseServiceInstanceCallback;
-import com.inappstory.sdk.game.cache.SessionAssetsIsReadyCallback;
 import com.inappstory.sdk.game.reader.GameStoryData;
-import com.inappstory.sdk.game.reader.GameReaderLoadProgressBar;
+import com.inappstory.sdk.stories.ui.widgets.LoadProgressBar;
 import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.JsonParser;
@@ -337,14 +333,14 @@ public class StoriesViewManager {
     }
 
 
-    public GameReaderLoadProgressBar getProgressBar() {
+    public LoadProgressBar getProgressBar() {
         return progressBar;
     }
 
 
-    private GameReaderLoadProgressBar progressBar;
+    private LoadProgressBar progressBar;
 
-    public void setProgressBar(GameReaderLoadProgressBar progressBar) {
+    public void setProgressBar(LoadProgressBar progressBar) {
         this.progressBar = progressBar;
     }
 

@@ -49,6 +49,10 @@
                     android:elevation="2dp"
                     android:visibility="gone"
                     android:layout_height="40dp"/>
+                <com.inappstory.sdk.game.ui.GameProgressLoader
+                    android:layout_width="match_parent"
+                    android:id="@+id/gameProgressLoader"
+                    android:layout_height="match_parent"/>
             </RelativeLayout>
 
 

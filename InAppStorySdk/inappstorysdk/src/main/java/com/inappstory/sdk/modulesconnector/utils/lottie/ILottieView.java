@@ -13,6 +13,8 @@ public interface ILottieView {
 
     void restart();
 
+    boolean isLooped();
+
     void setAnimProgress(float progress);
 
     void setLoop(boolean isLooped);
