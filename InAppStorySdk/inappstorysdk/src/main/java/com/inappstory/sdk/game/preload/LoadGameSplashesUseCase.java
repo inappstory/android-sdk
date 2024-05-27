@@ -1,7 +1,7 @@
 package com.inappstory.sdk.game.preload;
 
 import com.inappstory.sdk.game.cache.DownloadSplashUseCase;
-import com.inappstory.sdk.game.cache.GetLocalSplashesUseCase;
+import com.inappstory.sdk.game.cache.GetLocalSplashUseCase;
 import com.inappstory.sdk.game.cache.UseCaseCallback;
 import com.inappstory.sdk.game.utils.GameConstants;
 import com.inappstory.sdk.network.JsonParser;
@@ -40,7 +40,6 @@ public class LoadGameSplashesUseCase {
         final Map<String, String> splashesKeyValueStorageKeys = GameConstants.getSplashesKeys(useAnimSplash);
         downloadSplash(
                 gamesData.listIterator(),
-                splashesKeyValueStorageKeys,
                 useAnimSplash,
                 callback
         );
@@ -48,7 +47,6 @@ public class LoadGameSplashesUseCase {
 
     private void downloadSplash(
             final ListIterator<IGameCenterData> gamesDataIterator,
-            final Map<String, String> splashesKeyValueStorageKeys,
             final boolean useAnimSplash,
             final IDownloadAllSplashesCallback callback
     ) {
@@ -58,20 +56,34 @@ public class LoadGameSplashesUseCase {
             final Map<String, File> localSplashFiles = new HashMap<>();
             final IGameCenterData gameData = gamesDataIterator.next();
 
-            GetLocalSplashesUseCase getLocalSplashesUseCase = new GetLocalSplashesUseCase(
+            GetLocalSplashUseCase getLocalStaticSplashUseCase = new GetLocalSplashUseCase(
                     gameData.id(),
-                    splashesKeyValueStorageKeys
+                    GameConstants.SPLASH_STATIC_KV
             );
 
-            getLocalSplashesUseCase.get(new UseCaseCallback<Map<String, File>>() {
+            GetLocalSplashUseCase getLocalAnimSplashUseCase = new GetLocalSplashUseCase(
+                    gameData.id(),
+                    GameConstants.SPLASH_STATIC_KV
+            );
+
+            getLocalStaticSplashUseCase.get(new UseCaseCallback<File>() {
                 @Override
                 public void onError(String message) {
                 }
 
                 @Override
-                public void onSuccess(Map<String, File> result) {
-                    localSplashFiles.clear();
-                    localSplashFiles.putAll(result);
+                public void onSuccess(File result) {
+                    localSplashFiles.put(GameConstants.SPLASH_STATIC, result);
+                }
+            });
+            getLocalAnimSplashUseCase.get(new UseCaseCallback<File>() {
+                @Override
+                public void onError(String message) {
+                }
+
+                @Override
+                public void onSuccess(File result) {
+                    localSplashFiles.put(GameConstants.SPLASH_ANIM, result);
                 }
             });
             File staticFile = localSplashFiles.get(GameConstants.SPLASH_STATIC);
@@ -100,7 +112,6 @@ public class LoadGameSplashesUseCase {
                     );
                     downloadSplash(
                             gamesDataIterator,
-                            splashesKeyValueStorageKeys,
                             useAnimSplash,
                             callback
                     );
@@ -124,7 +135,6 @@ public class LoadGameSplashesUseCase {
 
                     downloadSplash(
                             gamesDataIterator,
-                            splashesKeyValueStorageKeys,
                             useAnimSplash,
                             callback
                     );
@@ -139,7 +149,6 @@ public class LoadGameSplashesUseCase {
                     } else {
                         downloadSplash(
                                 gamesDataIterator,
-                                splashesKeyValueStorageKeys,
                                 false,
                                 callback
                         );
@@ -158,7 +167,6 @@ public class LoadGameSplashesUseCase {
                     } else {
                         downloadSplash(
                                 gamesDataIterator,
-                                splashesKeyValueStorageKeys,
                                 false,
                                 callback
                         );

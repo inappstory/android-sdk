@@ -36,7 +36,8 @@ public class GameCacheManager {
             final FilesDownloadManager filesDownloadManager,
             final DownloadInterruption interruption,
             final ProgressCallback progressCallback,
-            final UseCaseWarnCallback<Map<String, File>> splashScreenCallback,
+            final UseCaseWarnCallback<File> staticSplashScreenCallback,
+            final UseCaseWarnCallback<File> animSplashScreenCallback,
             final UseCaseCallback<IGameCenterData> gameModelCallback,
             final UseCaseCallback<FilePathAndContent> gameLoadCallback,
             final SetGameLoggerCallback setGameLoggerCallback
@@ -44,24 +45,46 @@ public class GameCacheManager {
         final Map<String, File> localSplashFiles = new HashMap<>();
 
         final Map<String, String> splashesKeyValueStorageKeys = GameConstants.getSplashesKeys(useAnimSplash);
-        final Map<String, File> splashFiles = new HashMap<>();
         final String animKey = GameConstants.SPLASH_ANIM;
         final String staticKey = GameConstants.SPLASH_STATIC;
-        GetLocalSplashesUseCase getLocalSplashesUseCase = new GetLocalSplashesUseCase(
+        final String animStorageKey = GameConstants.SPLASH_ANIM;
+        final String staticStorageKey = GameConstants.SPLASH_STATIC;
+        GetLocalSplashUseCase getLocalStaticSplashUseCase = new GetLocalSplashUseCase(
                 gameId,
-                splashesKeyValueStorageKeys
+                GameConstants.SPLASH_STATIC_KV
         );
-        getLocalSplashesUseCase.get(new UseCaseCallback<Map<String, File>>() {
+        GetLocalSplashUseCase getLocalAnimSplashUseCase = new GetLocalSplashUseCase(
+                gameId,
+                animStorageKey
+        );
+        getLocalStaticSplashUseCase.get(new UseCaseCallback<File>() {
             @Override
             public void onError(String message) {
-                splashScreenCallback.onWarn(message);
+                if (staticSplashScreenCallback != null)
+                    staticSplashScreenCallback.onWarn(message);
             }
 
             @Override
-            public void onSuccess(Map<String, File> result) {
-                localSplashFiles.clear();
-                localSplashFiles.putAll(result);
-                splashScreenCallback.onSuccess(localSplashFiles);
+            public void onSuccess(File result) {
+                localSplashFiles.put(staticKey, result);
+
+                if (staticSplashScreenCallback != null)
+                    staticSplashScreenCallback.onSuccess(result);
+            }
+        });
+        getLocalAnimSplashUseCase.get(new UseCaseCallback<File>() {
+            @Override
+            public void onError(String message) {
+                if (animSplashScreenCallback != null)
+                    animSplashScreenCallback.onWarn(message);
+            }
+
+            @Override
+            public void onSuccess(File result) {
+                localSplashFiles.put(animKey, result);
+
+                if (animSplashScreenCallback != null)
+                    animSplashScreenCallback.onSuccess(result);
             }
         });
         new GetGameModelUseCase().get(gameId, new GameLoadCallback() {
@@ -72,7 +95,7 @@ public class GameCacheManager {
                 final DownloadSplashUseCase downloadAnimSplashUseCase;
                 if (useAnimSplash) {
                     String animFilePath = null;
-                    File animFile = splashFiles.get(animKey);
+                    File animFile = localSplashFiles.get(animKey);
                     if (animFile != null) {
                         animFilePath = animFile.getAbsolutePath();
                     }
@@ -80,14 +103,16 @@ public class GameCacheManager {
                             filesDownloadManager,
                             data.splashAnimation,
                             animFilePath,
-                            splashesKeyValueStorageKeys.get(animKey),
+                            animStorageKey,
                             gameId
                     );
                 } else {
+                    if (animSplashScreenCallback != null)
+                        animSplashScreenCallback.onSuccess(null);
                     downloadAnimSplashUseCase = null;
                 }
                 String staticFilePath = null;
-                File staticFile = splashFiles.get(staticKey);
+                File staticFile = localSplashFiles.get(staticKey);
                 if (staticFile != null) {
                     staticFilePath = staticFile.getAbsolutePath();
                 }
@@ -96,18 +121,15 @@ public class GameCacheManager {
                         filesDownloadManager,
                         data.splashScreen,
                         staticFilePath,
-                        splashesKeyValueStorageKeys.get(staticKey),
+                        GameConstants.SPLASH_STATIC_KV,
                         gameId
                 );
                 final UseCaseCallback<File> animSplashDownloadCallback = new UseCaseCallback<File>() {
                     @Override
                     public void onError(String message) {
-                        splashScreenCallback.onWarn(message);
-                        if (localSplashFiles.isEmpty()) {
-                            splashScreenCallback.onSuccess(splashFiles);
-                        }
+                        animSplashScreenCallback.onSuccess(null);
                         KeyValueStorage.saveString(
-                                splashesKeyValueStorageKeys.get(animKey) + gameId,
+                                animStorageKey + gameId,
                                 ""
                         );
                     }
@@ -118,16 +140,15 @@ public class GameCacheManager {
                                 splashesKeyValueStorageKeys.get(animKey) + gameId,
                                 result.getAbsolutePath()
                         );
-                        splashFiles.put(animKey, result);
-                        if (localSplashFiles.isEmpty()) {
-                            splashScreenCallback.onSuccess(splashFiles);
-                        }
+                        if (animSplashScreenCallback != null)
+                            animSplashScreenCallback.onSuccess(result);
                     }
                 };
                 downloadSplashUseCase.download(new UseCaseCallback<File>() {
                     @Override
                     public void onError(String message) {
-                        splashScreenCallback.onWarn(message);
+                        if (staticSplashScreenCallback != null)
+                            staticSplashScreenCallback.onWarn(message);
                         if (downloadAnimSplashUseCase != null) {
                             downloadAnimSplashUseCase.download(animSplashDownloadCallback);
                         }
@@ -136,14 +157,14 @@ public class GameCacheManager {
                     @Override
                     public void onSuccess(File result) {
                         KeyValueStorage.saveString(
-                                splashesKeyValueStorageKeys.get(staticKey) + gameId,
+                                staticStorageKey + gameId,
                                 result.getAbsolutePath()
                         );
-                        splashFiles.put(staticKey, result);
                         if (downloadAnimSplashUseCase != null) {
                             downloadAnimSplashUseCase.download(animSplashDownloadCallback);
                         }
-
+                        if (staticSplashScreenCallback != null)
+                            staticSplashScreenCallback.onSuccess(result);
                     }
                 });
                 final long totalArchiveSize;

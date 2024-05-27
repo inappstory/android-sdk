@@ -55,14 +55,12 @@ import com.inappstory.sdk.game.cache.UseCaseCallback;
 import com.inappstory.sdk.game.cache.UseCaseWarnCallback;
 import com.inappstory.sdk.game.reader.logger.GameLoggerLvl1;
 import com.inappstory.sdk.game.ui.GameProgressLoader;
-import com.inappstory.sdk.game.ui.GameReaderLoadProgressBarWithText;
 import com.inappstory.sdk.game.utils.GameConstants;
 import com.inappstory.sdk.imageloader.ImageLoader;
 import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.inner.share.InnerShareFilesPrepare;
 import com.inappstory.sdk.inner.share.ShareFilesPrepareCallback;
 import com.inappstory.sdk.modulesconnector.utils.filepicker.OnFilesChooseCallback;
-import com.inappstory.sdk.modulesconnector.utils.lottie.ILottieView;
 import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.NetworkClient;
@@ -89,7 +87,6 @@ import com.inappstory.sdk.stories.ui.OverlapFragmentObserver;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.views.IASWebView;
 import com.inappstory.sdk.stories.ui.views.IASWebViewClient;
-import com.inappstory.sdk.stories.ui.views.IProgressLoader;
 import com.inappstory.sdk.stories.utils.AudioModes;
 import com.inappstory.sdk.stories.utils.IASBackPressHandler;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
@@ -810,7 +807,8 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
             }
         }
         if (!splashPaths.isEmpty()) {
-            setLoader(splashPaths);
+            setStaticSplashScreen(splashPaths.get(GameConstants.SPLASH_STATIC));
+            setLoader(splashPaths.get(GameConstants.SPLASH_ANIM));
         }
         downloadGame();
     }
@@ -884,7 +882,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                                     });
                             }
                         },
-                        new UseCaseWarnCallback<Map<String, File>>() {
+                        new UseCaseWarnCallback<File>() {
                             @Override
                             public void onWarn(String message) {
                                 if (manager != null && manager.logger != null) {
@@ -899,9 +897,28 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                             }
 
                             @Override
-                            public void onSuccess(Map<String, File> result) {
+                            public void onSuccess(File result) {
+                                setStaticSplashScreen(result);
+                            }
+                        },
+                        new UseCaseWarnCallback<File>() {
+                            @Override
+                            public void onWarn(String message) {
+                                if (manager != null && manager.logger != null) {
+                                    manager.logger.sendSdkWarn(message);
+                                }
+                                InAppStoryManager.showDLog("Game_Loading", message);
+                            }
 
-                                setLoader(result);
+                            @Override
+                            public void onError(String message) {
+                                progressLoader.launchLoaderAnimation(null);
+                                InAppStoryManager.showDLog("Game_Loading", message);
+                            }
+
+                            @Override
+                            public void onSuccess(File result) {
+                                progressLoader.launchLoaderAnimation(result);
                             }
                         },
                         new UseCaseCallback<IGameCenterData>() {
@@ -1158,16 +1175,15 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         return gameDataPlaceholders;
     }
 
+    private void setLoader(File splashFile) {
+        progressLoader.launchLoaderAnimation(splashFile);
+    }
 
-    private void setLoader(Map<String, File> splashFile) {
-        File staticSplashFile = splashFile.get(GameConstants.SPLASH_STATIC);
-        if (staticSplashFile == null || !staticSplashFile.exists()) {
+    private void setStaticSplashScreen(File splashFile) {
+        if (splashFile == null || !splashFile.exists()) {
             loader.setBackgroundColor(Color.BLACK);
         } else {
-            ImageLoader.getInstance().displayImage(staticSplashFile.getAbsolutePath(), -1, loader);
-        }
-        if (splashFile.containsKey(GameConstants.SPLASH_ANIM)) {
-            progressLoader.launchLoaderAnimation(splashFile.get(GameConstants.SPLASH_ANIM));
+            ImageLoader.getInstance().displayImage(splashFile.getAbsolutePath(), -1, loader);
         }
     }
 

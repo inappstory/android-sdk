@@ -11,7 +11,7 @@ public class GameSplashAnimation implements IDownloadResource {
     @SerializedName("sha1")
     public String sha1;
     @SerializedName("durationMinimalMs")
-    public boolean durationMinimalMs;
+    public Long durationMinimalMs;
 
     @Override
     public String url() {

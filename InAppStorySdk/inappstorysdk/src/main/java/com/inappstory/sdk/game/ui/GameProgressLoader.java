@@ -47,13 +47,14 @@ public class GameProgressLoader extends FrameLayout implements IGameProgressLoad
     IGameProgressLoader progressLoader;
 
     public void launchLoaderAnimation(File customFile) {
+        removeAllViewsInLayout();
         IGameReaderLoaderView gameReaderLoaderView = AppearanceManager.getCommonInstance().csGameReaderLoaderView();
         if (gameReaderLoaderView != null) {
             progressLoader = gameReaderLoaderView;
             addView(gameReaderLoaderView.getView(getContext()));
         } else if (canUseLottieAnimation && customFile != null) {
             progressLoader = new LottieLoader(getContext(), customFile);
-            addView(((LottieLoader)progressLoader).getView(getContext()));
+            addView(((LottieLoader) progressLoader).getView(getContext()));
         } else {
             GameReaderLoadProgressBarWithText loadProgressBar = new GameReaderLoadProgressBarWithText(getContext());
             progressLoader = loadProgressBar;
@@ -63,16 +64,19 @@ public class GameProgressLoader extends FrameLayout implements IGameProgressLoad
 
     @Override
     public void launchFinalAnimation() {
+        if (progressLoader == null) return;
         progressLoader.launchFinalAnimation();
     }
 
     @Override
     public void setProgress(int progress, int max) {
+        if (progressLoader == null) return;
         progressLoader.setProgress(progress, max);
     }
 
     @Override
     public void setIndeterminate(boolean indeterminate) {
+        if (progressLoader == null) return;
         progressLoader.setIndeterminate(true);
     }
 }
