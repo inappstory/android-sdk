@@ -37,10 +37,10 @@ public class LottieLoader implements IGameReaderLoaderView {
 
     private void setProgressInternal(float newProgress) {
         float oldProgress;
-        lottieView.setAnimProgress(newProgress);
-       /* synchronized (progressLock) {
+      //  lottieView.setAnimProgress(newProgress);
+   //     synchronized (progressLock) {
             oldProgress = currentProgress;
-        }
+   //     }
         if (newProgress <= oldProgress) return;
         if (valueAnimator != null && valueAnimator.isRunning()) {
             valueAnimator.cancel();
@@ -50,12 +50,13 @@ public class LottieLoader implements IGameReaderLoaderView {
         valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
-                synchronized (progressLock) {
+         //       synchronized (progressLock) {
                     currentProgress = (float) animation.getAnimatedValue();
                     lottieView.setAnimProgress(currentProgress);
-                }
+        //        }
             }
-        });*/
+        });
+        valueAnimator.start();
     }
 
     ValueAnimator valueAnimator;
