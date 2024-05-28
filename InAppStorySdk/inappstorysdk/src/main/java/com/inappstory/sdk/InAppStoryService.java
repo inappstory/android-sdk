@@ -825,11 +825,7 @@ public class InAppStoryService {
                         new Handler(Looper.getMainLooper()).post(new Runnable() {
                             @Override
                             public void run() {
-                                Toast.makeText(
-                                        context,
-                                        "Game " + result.id() + " is loaded",
-                                        Toast.LENGTH_LONG
-                                ).show();
+                                Log.d("IAS_Game_Preloading", "Game " + result.id() + " is loaded");
                             }
                         });
                     }
