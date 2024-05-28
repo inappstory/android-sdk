@@ -230,7 +230,8 @@ public interface ApiInterface {
     @POST("v2/session/close")
     Request sessionClose(
             @Body StatisticSendObject request,
-            @ReplaceHeader(HeadersKeys.USER_ID) String xUserId
+            @ReplaceHeader(HeadersKeys.USER_ID) String xUserId,
+            @ReplaceHeader(HeadersKeys.ACCEPT_LANGUAGE) String lang
     );
 
 }

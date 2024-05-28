@@ -97,7 +97,8 @@ public class CacheJournal {
 
 
     public boolean delete(String key, String mimeType, boolean withFile) throws IOException {
-        List<CacheJournalItem> items = cacheItems.remove(key);
+        List<CacheJournalItem> items = cacheItems.get(key);
+        List<CacheJournalItem> newItems = new ArrayList<>();
         boolean res = false;
         if (items != null) {
             for (CacheJournalItem item : items) {
@@ -105,8 +106,15 @@ public class CacheJournal {
                     currentSize -= item.getSize();
                     if (withFile) fileManager.delete(item.getFilePath());
                     res = true;
+                } else {
+                    newItems.add(item);
                 }
             }
+        }
+        if (newItems.isEmpty()) {
+            cacheItems.remove(key);
+        } else {
+            cacheItems.put(key, newItems);
         }
         return res;
     }

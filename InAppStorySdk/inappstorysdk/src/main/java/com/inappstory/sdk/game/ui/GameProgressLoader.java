@@ -2,6 +2,7 @@ package com.inappstory.sdk.game.ui;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -78,6 +79,7 @@ public class GameProgressLoader extends RelativeLayout implements IGameProgressL
             @Override
             public void run() {
                 if (progressLoader == null) return;
+                Log.e("SetProgress", 100 + " " + 100);
                 progressLoader.launchFinalAnimation();
             }
         });
@@ -88,6 +90,7 @@ public class GameProgressLoader extends RelativeLayout implements IGameProgressL
         post(new Runnable() {
             @Override
             public void run() {
+                Log.e("SetProgress", progress + " " + max);
                 if (progressLoader == null) return;
                 progressLoader.setProgress(progress, max);
             }

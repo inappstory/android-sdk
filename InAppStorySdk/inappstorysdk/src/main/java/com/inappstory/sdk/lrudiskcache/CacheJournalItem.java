@@ -92,7 +92,6 @@ public class CacheJournalItem implements Serializable {
     }*/
 
 
-
     public String getUniqueKey() {
         return uniqueKey;
     }
@@ -136,5 +135,11 @@ public class CacheJournalItem implements Serializable {
         result = 31 * result + getSha1().hashCode();
         result = 31 * result + (int) (time ^ (time >>> 32));
         return result;
+    }
+
+    @NonNull
+    @Override
+    public String toString() {
+        return "Key: " + getUniqueKey() + "; File: " + getFilePath();
     }
 }

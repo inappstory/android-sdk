@@ -69,6 +69,15 @@ public class DownloadSplashUseCase {
                 new GameSplashUseCase(filesDownloadManager, resource);
         DownloadFileState fileState = gameSplashUseCase.getFile();
         if (fileState != null) {
+            if (fileState.file.exists()) {
+                if (oldSplashPath != null) {
+                    oldSplash = new File(oldSplashPath);
+                    KeyValueStorage.removeString(keyValueStorageKey + gameId);
+                    if (oldSplash.exists()) {
+                        oldSplash.deleteOnExit();
+                    }
+                }
+            }
             splashScreenCallback.onSuccess(fileState.file);
         } else  {
             splashScreenCallback.onError("Can't download splash");

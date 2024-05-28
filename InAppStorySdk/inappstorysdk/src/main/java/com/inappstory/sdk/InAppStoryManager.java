@@ -88,6 +88,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -1085,6 +1086,7 @@ public class InAppStoryManager {
                 builder.apiKey() != null ? builder.apiKey() : context.getResources().getString(R.string.csApiKey),
                 builder.testKey() != null ? builder.testKey() : null,
                 builder.userId(),
+                builder.locale(),
                 builder.gameDemoMode(),
                 builder.isDeviceIdEnabled(),
                 builder.tags() != null ? builder.tags() : null,
@@ -1113,36 +1115,89 @@ public class InAppStoryManager {
         }
     }
 
-    private void setUserIdInner(String userId) {
+    private void setUserIdInner(final String userId) {
         if (userId == null || StringsUtils.getBytesLength(userId) > 255) {
             showELog(IAS_ERROR_TAG, StringsUtils.getErrorStringFromContext(context, R.string.ias_setter_user_length_error));
             return;
         }
         if (userId.equals(this.userId)) return;
-        InAppStoryService inAppStoryService = InAppStoryService.getInstance();
-        if (inAppStoryService == null) return;
+        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryService inAppStoryService) throws Exception {
+                final String sessionId = inAppStoryService.getSession().getSessionId();
 
-        final String sessionId = inAppStoryService.getSession().getSessionId();
+                clearCachedLists();
 
-        clearCachedLists();
+                localOpensKey = null;
+                final String oldUserId = InAppStoryManager.this.userId;
+                InAppStoryManager.this.userId = userId;
+                ScreensManager.getInstance().forceCloseAllReaders(
+                        new ForceCloseReaderCallback() {
+                            @Override
+                            public void onComplete() {
+                                SessionManager.getInstance().closeSession(
+                                        sendStatistic,
+                                        true,
+                                        getCurrentLocale(),
+                                        oldUserId,
+                                        sessionId
+                                );
+                            }
+                        }
+                );
+                if (inAppStoryService.getFavoriteImages() != null)
+                    inAppStoryService.getFavoriteImages().clear();
+                inAppStoryService.getStoryDownloadManager().refreshLocals(Story.StoryType.COMMON);
+                inAppStoryService.getStoryDownloadManager().refreshLocals(Story.StoryType.UGC);
+                inAppStoryService.getStoryDownloadManager().cleanTasks(false);
+                inAppStoryService.setUserId(userId);
+            }
+        });
 
-        localOpensKey = null;
-        final String oldUserId = this.userId;
-        this.userId = userId;
-        ScreensManager.getInstance().forceCloseAllReaders(
-                new ForceCloseReaderCallback() {
-                    @Override
-                    public void onComplete() {
-                        SessionManager.getInstance().closeSession(sendStatistic, true, oldUserId, sessionId);
-                    }
-                }
-        );
-        if (inAppStoryService.getFavoriteImages() != null)
-            inAppStoryService.getFavoriteImages().clear();
-        inAppStoryService.getStoryDownloadManager().refreshLocals(Story.StoryType.COMMON);
-        inAppStoryService.getStoryDownloadManager().refreshLocals(Story.StoryType.UGC);
-        inAppStoryService.getStoryDownloadManager().cleanTasks(false);
-        inAppStoryService.setUserId(userId);
+    }
+
+    private void setLocaleInner(@NonNull final Locale locale) {
+        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryService inAppStoryService) throws Exception {
+                if (currentLocale.toLanguageTag().equals(locale.toLanguageTag())) return;
+                final String sessionId = inAppStoryService.getSession().getSessionId();
+                clearCachedLists();
+                localOpensKey = null;
+                //
+                ScreensManager.getInstance().forceCloseAllReaders(
+                        new ForceCloseReaderCallback() {
+                            @Override
+                            public void onComplete() {
+                                SessionManager.getInstance().closeSession(
+                                        sendStatistic,
+                                        true,
+                                        getCurrentLocale(),
+                                        getUserId(),
+                                        sessionId
+                                );
+                                InAppStoryManager.this.currentLocale = locale;
+                            }
+                        }
+                );
+                if (inAppStoryService.getFavoriteImages() != null)
+                    inAppStoryService.getFavoriteImages().clear();
+                inAppStoryService.getStoryDownloadManager().refreshLocals(Story.StoryType.COMMON);
+                inAppStoryService.getStoryDownloadManager().refreshLocals(Story.StoryType.UGC);
+                inAppStoryService.getStoryDownloadManager().cleanTasks(false);
+            }
+        });
+
+    }
+
+    public Locale getCurrentLocale() {
+        return currentLocale;
+    }
+
+    private Locale currentLocale = Locale.getDefault();
+
+    public void setLang(@NonNull Locale lang) {
+        setLocaleInner(lang);
     }
 
 
@@ -1220,6 +1275,7 @@ public class InAppStoryManager {
             String apiKey,
             String testKey,
             String userId,
+            Locale locale,
             boolean gameDemoMode,
             boolean isDeviceIDEnabled,
             ArrayList<String> tags,
@@ -1229,6 +1285,7 @@ public class InAppStoryManager {
         this.context = context;
         soundOn = !context.getResources().getBoolean(R.bool.defaultMuted);
         this.isDeviceIDEnabled = isDeviceIDEnabled;
+        this.currentLocale = locale;
         this.gameDemoMode = gameDemoMode;
         synchronized (tagsLock) {
             this.tags = tags;
@@ -2144,6 +2201,10 @@ public class InAppStoryManager {
             return apiKey;
         }
 
+        public Locale locale() {
+            return locale;
+        }
+
         public boolean gameDemoMode() {
             return gameDemoMode;
         }
@@ -2180,6 +2241,7 @@ public class InAppStoryManager {
         String userId;
         String apiKey;
         String testKey;
+        Locale locale = Locale.getDefault();
         ArrayList<String> tags;
         Map<String, String> placeholders;
         Map<String, ImagePlaceholderValue> imagePlaceholders;
@@ -2190,6 +2252,11 @@ public class InAppStoryManager {
         @Deprecated
         public Builder sandbox(boolean sandbox) {
             Builder.this.sandbox = sandbox;
+            return Builder.this;
+        }
+
+        public Builder lang(Locale locale) {
+            Builder.this.locale = locale;
             return Builder.this;
         }
 

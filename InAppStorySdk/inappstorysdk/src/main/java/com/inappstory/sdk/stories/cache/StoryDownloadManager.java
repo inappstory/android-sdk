@@ -34,6 +34,7 @@ import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 import com.inappstory.sdk.stories.ui.list.FavoriteImage;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPageManager;
+import com.inappstory.sdk.stories.utils.KeyValueStorage;
 import com.inappstory.sdk.stories.utils.SessionManager;
 import com.inappstory.sdk.utils.ISessionHolder;
 import com.inappstory.sdk.utils.StringsUtils;
@@ -192,6 +193,7 @@ public class StoryDownloadManager {
     public void clearCache() {
         storyDownloader.cleanTasks();
         slidesDownloader.cleanTasks();
+        KeyValueStorage.clear();
         InAppStoryService.useInstance(new UseServiceInstanceCallback() {
             @Override
             public void use(@NonNull InAppStoryService inAppStoryService) throws Exception {

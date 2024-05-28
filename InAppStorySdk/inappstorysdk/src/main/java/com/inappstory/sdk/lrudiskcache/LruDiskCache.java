@@ -79,12 +79,16 @@ public class LruDiskCache {
     }
 
     public void put(CacheJournalItem item) throws IOException {
+        put(item, null);
+    }
+
+    public void put(CacheJournalItem item, String type) throws IOException {
         synchronized (journal) {
             File file = new File(item.getFilePath());
             keyIsValid(item.getUniqueKey());
             String name = file.getAbsolutePath();
             manager.put(file, name);
-            journal.delete(item.getUniqueKey(), false);
+            journal.delete(item.getUniqueKey(), type, false);
             journal.put(item, cacheSize);
             journal.writeJournal();
         }

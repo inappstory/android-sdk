@@ -540,6 +540,7 @@ class StoryDownloader {
             SessionManager.getInstance().closeSession(
                     true,
                     false,
+                    inAppStoryManager.getCurrentLocale(),
                     oldUserId,
                     sessionId
             );

@@ -197,7 +197,7 @@ public class ArchiveUseCase extends GetCacheFileUseCase<Void> {
                         cacheJournalItem.setDownloadedSize(fileState.downloadedSize);
                         cacheJournalItem.setSize(fileState.totalSize);
                         try {
-                            getCache().put(cacheJournalItem);
+                            getCache().put(cacheJournalItem, type);
                         } catch (IOException ignored) {
 
                         }

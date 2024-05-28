@@ -2,6 +2,8 @@ package com.inappstory.sdk.network.utils.headers;
 
 import android.os.Build;
 
+import com.inappstory.sdk.InAppStoryManager;
+
 import java.util.Locale;
 
 public class AcceptLanguageHeader implements Header {
@@ -12,6 +14,9 @@ public class AcceptLanguageHeader implements Header {
 
     @Override
     public String getValue() {
+        InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
+        if (inAppStoryManager != null)
+            return inAppStoryManager.getCurrentLocale().toLanguageTag();
         return Locale.getDefault().toLanguageTag();
     }
 }

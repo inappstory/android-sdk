@@ -69,7 +69,7 @@ public class GameFolderUseCase extends GetCacheFileUseCase<Void> {
         try {
             CacheJournalItem cacheJournalItem = generateCacheItem();
             cacheJournalItem.setSize(size);
-            getCache().put(cacheJournalItem);
+            getCache().put(cacheJournalItem, type);
         } catch (Exception e) {
 
         }

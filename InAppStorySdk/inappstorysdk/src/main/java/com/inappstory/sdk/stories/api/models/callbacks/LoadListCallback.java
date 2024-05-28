@@ -10,6 +10,7 @@ import com.inappstory.sdk.stories.utils.SessionManager;
 
 import java.lang.reflect.Type;
 import java.util.List;
+import java.util.Locale;
 
 public abstract class LoadListCallback extends NetworkCallback<List<Story>> {
     @Override
@@ -34,14 +35,18 @@ public abstract class LoadListCallback extends NetworkCallback<List<Story>> {
         }
 
         String oldUserId = "";
+        Locale locale = Locale.getDefault();
         InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
-        if (inAppStoryManager != null)
+        if (inAppStoryManager != null) {
             oldUserId = inAppStoryManager.getUserId();
+            locale = inAppStoryManager.getCurrentLocale();
+        }
         InAppStoryService service = InAppStoryService.getInstance();
         if (service != null) {
             SessionManager.getInstance().closeSession(
                     true,
                     false,
+                    locale,
                     oldUserId,
                     service.getSession().getSessionId()
             );

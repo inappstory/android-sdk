@@ -36,6 +36,7 @@ import com.inappstory.sdk.ugc.extinterfaces.IOpenSessionCallback;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class SessionManager {
     private static SessionManager INSTANCE;
@@ -173,12 +174,17 @@ public class SessionManager {
     private void openSessionInner() {
         InAppStoryService service = InAppStoryService.getInstance();
         if (service == null) return;
+        final InAppStoryManager manager = InAppStoryManager.getInstance();
+        if (manager == null) return;
         Context context = service.getContext();
         String platform = "android";
-        String deviceId = Settings.Secure.getString(
-                context.getContentResolver(),
-                Settings.Secure.ANDROID_ID
-        );
+        String deviceId = null;
+        if (manager.isDeviceIDEnabled()) {
+            deviceId = Settings.Secure.getString(
+                    context.getContentResolver(),
+                    Settings.Secure.ANDROID_ID
+            );
+        }
         String model = Build.MODEL;
         String manufacturer = Build.MANUFACTURER;
         String brand = Build.BRAND;
@@ -239,6 +245,7 @@ public class SessionManager {
                                 closeSession(
                                         false,
                                         true,
+                                        manager.getCurrentLocale(),
                                         null,
                                         currentSession
                                 );
@@ -250,6 +257,7 @@ public class SessionManager {
                                 closeSession(
                                         false,
                                         true,
+                                        manager.getCurrentLocale(),
                                         initialUserId,
                                         currentSession
                                 );
@@ -319,7 +327,8 @@ public class SessionManager {
 
     public void closeSession(
             final boolean sendStatistic,
-            final boolean changeUserId,
+            final boolean changeUserIdOrLocale,
+            final Locale oldLocale,
             final String oldUserId,
             final String oldSessionId
     ) {
@@ -341,7 +350,7 @@ public class SessionManager {
                         ProfilingManager.getInstance().addTask("api_session_close");
                 NetworkClient networkClient = InAppStoryManager.getNetworkClient();
                 if (networkClient == null) {
-                    if (changeUserId)
+                    if (changeUserIdOrLocale)
                         service.getListReaderConnector().userIdChanged();
                     return;
                 }
@@ -353,13 +362,14 @@ public class SessionManager {
                                         oldSessionId,
                                         stat
                                 ),
-                                oldUserId
+                                oldUserId,
+                                oldLocale.toLanguageTag()
                         ),
                         new NetworkCallback<SessionResponse>() {
                             @Override
                             public void onSuccess(SessionResponse response) {
                                 ProfilingManager.getInstance().setReady(sessionCloseUID, true);
-                                if (changeUserId)
+                                if (changeUserIdOrLocale)
                                     service.getListReaderConnector().userIdChanged();
                             }
 
@@ -371,7 +381,7 @@ public class SessionManager {
                             @Override
                             public void errorDefault(String message) {
                                 ProfilingManager.getInstance().setReady(sessionCloseUID);
-                                if (changeUserId)
+                                if (changeUserIdOrLocale)
                                     service.getListReaderConnector().userIdChanged();
                             }
                         }
