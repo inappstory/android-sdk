@@ -22,8 +22,8 @@
         <com.inappstory.sdk.stories.ui.widgets.elasticview.ElasticDragDismissFrameLayout
             android:id="@+id/draggable_frame"
             android:layout_gravity="center"
-            android:layout_width="@dimen/cs_tablet_width"
-            android:layout_height="@dimen/cs_tablet_height"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
             android:background="@android:color/transparent"
             android:fitsSystemWindows="false"
             app:dragDismissDistance="250dp"
@@ -48,8 +48,8 @@
         <FrameLayout
             android:id="@+id/ias_dialog_container"
             android:layout_gravity="center"
-            android:layout_width="@dimen/cs_tablet_width"
-            android:layout_height="@dimen/cs_tablet_height" />
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
 
         <View
             android:id="@+id/blockView"

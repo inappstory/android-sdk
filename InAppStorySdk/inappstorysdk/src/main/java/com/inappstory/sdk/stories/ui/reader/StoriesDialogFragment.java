@@ -9,6 +9,7 @@ import android.app.Activity;
 import android.content.DialogInterface;
 import android.graphics.Color;
 import android.graphics.Point;
+import android.graphics.Rect;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.os.Bundle;
@@ -40,6 +41,7 @@ import com.inappstory.sdk.stories.statistic.GetOldStatisticManagerCallback;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
+import com.inappstory.sdk.stories.ui.widgets.elasticview.ElasticDragDismissFrameLayout;
 import com.inappstory.sdk.stories.utils.IASBackPressHandler;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 import com.inappstory.sdk.stories.utils.Sizes;
@@ -57,6 +59,7 @@ public class StoriesDialogFragment extends DialogFragment implements IASBackPres
         return inflater.inflate(R.layout.cs_mainscreen_stories_draggable, container, false);
     }
 
+    ElasticDragDismissFrameLayout draggableFrame;
 
     @Override
     public void onDismiss(DialogInterface dialogInterface) {
@@ -172,14 +175,18 @@ public class StoriesDialogFragment extends DialogFragment implements IASBackPres
 
     }
 
+    ShowGoodsCallback currentGoodsCallback = null;
+
+
     @Override
     public void disableDrag(boolean disable) {
-
+        if (draggableFrame != null)
+            draggableFrame.dragIsDisabled(true);
     }
 
     @Override
     public void setShowGoodsCallback(ShowGoodsCallback callback) {
-
+        currentGoodsCallback = callback;
     }
 
     @Override
@@ -210,12 +217,14 @@ public class StoriesDialogFragment extends DialogFragment implements IASBackPres
             }
         }
         dialogHeight = Math.min(dialogHeight, size.y);
-        int dialogWidth = Math.round(dialogHeight / 1.5f);
-
+        int dialogWidth = Math.round(dialogHeight / 1.78f);
+        screenRectangle = new Rect(0, 0, dialogWidth, dialogHeight);
         getDialog().getWindow().setLayout(dialogWidth, dialogHeight);
         getDialog().getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
 
     }
+
+    Rect screenRectangle = new Rect();
 
     @Override
     public boolean onBackPressed() {
@@ -277,9 +286,11 @@ public class StoriesDialogFragment extends DialogFragment implements IASBackPres
         int color = getArguments().getInt(AppearanceManager.CS_READER_BACKGROUND_COLOR, Color.BLACK);
         view.setBackgroundColor(color);
         type = launchData.getType();
+        draggableFrame = view.findViewById(R.id.draggable_frame);
         if (savedInstanceState == null) {
             storiesContentFragment = new StoriesContentFragment();
             Bundle args = new Bundle();
+            args.putParcelable("readerContainer", screenRectangle);
             args.putSerializable(appearanceSettings.getSerializableKey(), appearanceSettings);
             args.putSerializable(launchData.getSerializableKey(), launchData);
             setAppearanceSettings(args);
