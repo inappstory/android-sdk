@@ -8,6 +8,7 @@ import androidx.annotation.WorkerThread;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.game.cache.SuccessUseCaseCallback;
 import com.inappstory.sdk.lrudiskcache.FileManager;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.network.utils.ConnectionHeadersMap;
@@ -15,6 +16,7 @@ import com.inappstory.sdk.network.utils.ResponseStringFromStream;
 import com.inappstory.sdk.stories.api.models.logs.ApiLogRequest;
 import com.inappstory.sdk.stories.api.models.logs.ApiLogRequestHeader;
 import com.inappstory.sdk.stories.api.models.logs.ApiLogResponse;
+import com.inappstory.sdk.stories.cache.usecases.CustomFileUseCase;
 import com.inappstory.sdk.stories.cache.usecases.FinishDownloadFileCallback;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
 import com.inappstory.sdk.stories.utils.RunnableCallback;
@@ -55,15 +57,11 @@ public class Downloader {
     public static void downloadFileAndSendToInterface(String url, final RunnableCallback callback) {
         InAppStoryService service = InAppStoryService.getInstance();
         if (service == null) return;
-        downloadFileBackground(url, false, service.getFastCache(), new FileLoadProgressCallback() {
+        new CustomFileUseCase(service.getFilesDownloadManager(), url,
+                new SuccessUseCaseCallback<File>() {
             @Override
-            public void onProgress(long loadedSize, long totalSize) {
-
-            }
-
-            @Override
-            public void onSuccess(File file) {
-                final String path = file.getAbsolutePath();
+            public void onSuccess(File result) {
+                final String path = result.getAbsolutePath();
                 new Handler(Looper.getMainLooper()).post(new Runnable() {
                     @Override
                     public void run() {
@@ -71,12 +69,7 @@ public class Downloader {
                     }
                 });
             }
-
-            @Override
-            public void onError(String error) {
-
-            }
-        });
+        }).getFile();
     }
 
     public static String deleteQueryArgumentsFromUrl(String url, boolean delete) {

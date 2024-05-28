@@ -71,22 +71,11 @@ public class LruDiskCache {
 
     public void put(String key, File file) throws IOException {
         throw new NoSuchMethodError();
-        /*long fileSize = manager.getFileSize(file);
-        put(key, file, fileSize, fileSize);*/
     }
 
     public void put(String key, File file, long fileSize, long downloadedSize) throws IOException {
         throw new NoSuchMethodError();
-   /*     synchronized (journal) {
-            keyIsValid(key);
-            String name = file.getAbsolutePath();
-            long time = System.currentTimeMillis();
-            CacheJournalItem item = new CacheJournalItem(key, name, time, fileSize, downloadedSize);
-            manager.put(file, name);
-            journal.delete(key, false);
-            journal.put(item, cacheSize);
-            journal.writeJournal();
-        }*/
+
     }
 
     public void put(CacheJournalItem item) throws IOException {

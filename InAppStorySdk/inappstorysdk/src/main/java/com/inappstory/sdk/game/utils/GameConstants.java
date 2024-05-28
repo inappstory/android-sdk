@@ -6,7 +6,7 @@ import java.util.Map;
 public class GameConstants {
     public static final String SPLASH_STATIC = "staticPortrait";
     public static final String SPLASH_ANIM = "anim";
-    public static final String SPLASH_STATIC_KV = "gameInstanceStaticSplash_";
+    public static final String SPLASH_STATIC_KV = "gameInstanceStaticSplashFile_";
     public static final String SPLASH_ANIM_KV = "gameInstanceAnimSplashFile_";
     public static final String SPLASH_ANIM_KV_SETTINGS = "gameInstanceAnimSplashSettings_";
 

@@ -68,10 +68,12 @@ public class GameCacheManager {
 
             @Override
             public void onSuccess(File result) {
-                localSplashFiles.put(staticKey, result);
+                if (result.exists()) {
+                    localSplashFiles.put(staticKey, result);
 
-                if (staticSplashScreenCallback != null)
-                    staticSplashScreenCallback.onSuccess(result);
+                    if (staticSplashScreenCallback != null)
+                        staticSplashScreenCallback.onSuccess(result);
+                }
             }
         });
         getLocalAnimSplashUseCase.get(new UseCaseCallback<File>() {
@@ -83,10 +85,14 @@ public class GameCacheManager {
 
             @Override
             public void onSuccess(File result) {
-                localSplashFiles.put(animKey, result);
+                if (result.exists()) {
+                    localSplashFiles.put(animKey, result);
 
-                if (animSplashScreenCallback != null)
-                    animSplashScreenCallback.onSuccess(result);
+                    if (animSplashScreenCallback != null)
+                        animSplashScreenCallback.onSuccess(result);
+                } else {
+                    Log.e("Game_Loading", result.getAbsolutePath() + " not exists");
+                }
             }
         });
         new GetGameModelUseCase().get(gameId, new GameLoadCallback() {
@@ -123,27 +129,31 @@ public class GameCacheManager {
                         filesDownloadManager,
                         data.splashScreen,
                         staticFilePath,
-                        GameConstants.SPLASH_STATIC_KV,
+                        staticStorageKey,
                         gameId
                 );
                 final UseCaseCallback<File> animSplashDownloadCallback = new UseCaseCallback<File>() {
                     @Override
                     public void onError(String message) {
-                        animSplashScreenCallback.onSuccess(null);
-                        KeyValueStorage.saveString(
-                                animStorageKey + gameId,
-                                ""
-                        );
+                        if (animSplashScreenCallback != null)
+                            animSplashScreenCallback.onSuccess(null);
                     }
 
                     @Override
                     public void onSuccess(File result) {
-                        KeyValueStorage.saveString(
-                                splashesKeyValueStorageKeys.get(animKey) + gameId,
-                                result.getAbsolutePath()
-                        );
-                        if (animSplashScreenCallback != null)
-                            animSplashScreenCallback.onSuccess(result);
+                        if (result.exists()) {
+                            KeyValueStorage.saveString(
+                                    splashesKeyValueStorageKeys.get(animKey) + gameId,
+                                    result.getAbsolutePath()
+                            );
+                            if (localSplashFiles.get(animKey) == null)
+                                if (animSplashScreenCallback != null)
+                                    animSplashScreenCallback.onSuccess(result);
+                        } else {
+                            Log.e("Game_Loading", result.getAbsolutePath() + " not exists");
+                            if (animSplashScreenCallback != null)
+                                animSplashScreenCallback.onSuccess(null);
+                        }
                     }
                 };
                 downloadSplashUseCase.download(new UseCaseCallback<File>() {
@@ -165,8 +175,9 @@ public class GameCacheManager {
                         if (downloadAnimSplashUseCase != null) {
                             downloadAnimSplashUseCase.download(animSplashDownloadCallback);
                         }
-                        if (staticSplashScreenCallback != null)
-                            staticSplashScreenCallback.onSuccess(result);
+                        if (localSplashFiles.get(staticKey) == null)
+                            if (staticSplashScreenCallback != null)
+                                staticSplashScreenCallback.onSuccess(result);
                     }
                 });
                 final long totalArchiveSize;

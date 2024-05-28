@@ -47,7 +47,7 @@ public class DownloadSplashUseCase {
                 if (oldSplash.exists()) {
                     oldSplash.deleteOnExit();
                 }
-                splashScreenCallback.onError("splash screen is not valid");
+                splashScreenCallback.onError("Splash screen is not valid");
                 return;
             }
 
@@ -57,12 +57,12 @@ public class DownloadSplashUseCase {
                     resource.sha1(),
                     false
             )) {
-                splashScreenCallback.onError("splash already downloaded");
+                splashScreenCallback.onError("Splash already downloaded");
                 return;
             }
         }
         if (resource == null || !URLUtil.isValidUrl(resource.url())) {
-            splashScreenCallback.onError("splash screen is not valid");
+            splashScreenCallback.onError("Splash screen is not valid");
             return;
         }
         GameSplashUseCase gameSplashUseCase =
