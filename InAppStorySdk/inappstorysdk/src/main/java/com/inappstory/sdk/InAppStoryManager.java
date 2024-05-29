@@ -850,19 +850,25 @@ public class InAppStoryManager {
     String TEST_KEY = null;
 
     public static void initSDK(@NonNull Context context) {
-        StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
-        boolean calledFromApplication = false;
-        boolean calledFromContentProvider = false;
-        for (StackTraceElement stackTraceElement : stackTraceElements) {
-            try {
-                if (Application.class.isAssignableFrom(Class.forName(stackTraceElement.getClassName()))) {
-                    calledFromApplication = true;
-                }
-                if (ContentProvider.class.isAssignableFrom(Class.forName(stackTraceElement.getClassName()))) {
-                    calledFromContentProvider = true;
-                }
-            } catch (ClassNotFoundException e) {
+        initSDK(context, false);
+    }
 
+    public static void initSDK(@NonNull Context context, boolean skipCheck) {
+        StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
+        boolean calledFromApplication = skipCheck;
+        boolean calledFromContentProvider = skipCheck;
+        if (!skipCheck) {
+            for (StackTraceElement stackTraceElement : stackTraceElements) {
+                try {
+                    if (Application.class.isAssignableFrom(Class.forName(stackTraceElement.getClassName()))) {
+                        calledFromApplication = true;
+                    }
+                    if (ContentProvider.class.isAssignableFrom(Class.forName(stackTraceElement.getClassName()))) {
+                        calledFromContentProvider = true;
+                    }
+                } catch (ClassNotFoundException e) {
+
+                }
             }
         }
         if (!(context instanceof Application)) {
