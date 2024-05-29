@@ -5,6 +5,7 @@ import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_5;
 
 import android.annotation.SuppressLint;
 import android.app.Application;
+import android.content.ContentProvider;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
@@ -842,12 +843,18 @@ public class InAppStoryManager {
 
 
     public static void initSDK(@NonNull Context context) {
+        long startTime = System.currentTimeMillis();
         StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
         boolean calledFromApplication = false;
         for (StackTraceElement stackTraceElement : stackTraceElements) {
             try {
                 if (Application.class.isAssignableFrom(Class.forName(stackTraceElement.getClassName()))) {
                     calledFromApplication = true;
+                    break;
+                }
+                if (ContentProvider.class.isAssignableFrom(Class.forName(stackTraceElement.getClassName()))) {
+                    calledFromApplication = true;
+                    break;
                 }
             } catch (ClassNotFoundException e) {
 
@@ -856,6 +863,7 @@ public class InAppStoryManager {
         if (!(context instanceof Application)) calledFromApplication = false;
         if (!calledFromApplication)
             showELog(IAS_ERROR_TAG, "Method must be called from Application class and context has to be an applicationContext");
+        Log.e("InitTime", "Time: " + (System.currentTimeMillis() - startTime));
         synchronized (lock) {
             if (INSTANCE == null) {
                 INSTANCE = new InAppStoryManager(context);

@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 
@@ -139,6 +140,7 @@ public class StackStoryObserver implements IStackFeedActions {
             stackStoryUpdated.onUpdate(null);
         }
         final Story currentStory = stories.get(newIndex);
+        Log.e("NewStackStoryData", newIndex + " " + currentStory.isOpened());
         Image imageObject = currentStory.getProperImage(appearanceManager.csCoverQuality());
         final String image;
         if (imageObject != null) image = imageObject.getUrl();
@@ -248,8 +250,8 @@ public class StackStoryObserver implements IStackFeedActions {
             current.saveStoryOpened(Story.StoryType.COMMON);
         }
         boolean showOnlyNewStories = !currentStoryIsOpened && showNewStories;
-        service.getListReaderConnector().changeStory(currentStory.id, listId, showOnlyNewStories);
         if (currentStory.getDeeplink() != null && !currentStory.getDeeplink().isEmpty()) {
+            service.getListReaderConnector().changeStory(currentStory.id, listId, showOnlyNewStories);
             StatisticManager.getInstance().sendDeeplinkStory(
                     currentStory.id,
                     currentStory.getDeeplink(),
@@ -297,6 +299,7 @@ public class StackStoryObserver implements IStackFeedActions {
                 }
             }
         } else if (currentStory.getGameInstanceId() != null && !currentStory.getGameInstanceId().isEmpty()) {
+            service.getListReaderConnector().changeStory(currentStory.id, listId, showOnlyNewStories);
             OldStatisticManager.useInstance(
                     sessionId,
                     new GetOldStatisticManagerCallback() {
