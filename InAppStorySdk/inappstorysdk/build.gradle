@@ -48,4 +48,5 @@ dependencies {
     androidTestImplementation 'androidx.test:runner:1.4.0'
     androidTestImplementation 'androidx.test:rules:1.4.0'
     implementation 'androidx.palette:palette:1.0.0'
+    implementation 'com.github.inappstory:android-sdk-utilsconnector:1f1a1925cb3e7f03e08040683213d5bfdfc46bcc'
 }

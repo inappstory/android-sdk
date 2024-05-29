@@ -41,6 +41,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
+import com.inappstory.iasutilsconnector.filepicker.OnFilesChooseCallback;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.BuildConfig;
 import com.inappstory.sdk.InAppStoryManager;
@@ -60,7 +61,6 @@ import com.inappstory.sdk.imageloader.ImageLoader;
 import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.inner.share.InnerShareFilesPrepare;
 import com.inappstory.sdk.inner.share.ShareFilesPrepareCallback;
-import com.inappstory.sdk.modulesconnector.utils.filepicker.OnFilesChooseCallback;
 import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.NetworkClient;
@@ -293,8 +293,8 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
             @Override
             public void use(@NonNull InAppStoryManager manager) throws Exception {
-                manager.getFilePicker().setPickerSettings(data);
-                manager.getFilePicker().show(
+                manager.getUtilModulesHolder().getFilePicker().setPickerSettings(data);
+                manager.getUtilModulesHolder().getFilePicker().show(
                         getContext(),
                         getBaseGameReader().getGameReaderFragmentManager(),
                         R.id.ias_file_picker_container,

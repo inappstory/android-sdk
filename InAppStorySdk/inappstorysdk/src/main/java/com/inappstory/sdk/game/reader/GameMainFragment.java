@@ -158,7 +158,7 @@ public class GameMainFragment extends Fragment
         InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
             @Override
             public void use(@NonNull InAppStoryManager manager) throws Exception {
-                manager.getFilePicker().permissionResult(requestCode, permissions, grantResults);
+                manager.getUtilModulesHolder().getFilePicker().permissionResult(requestCode, permissions, grantResults);
             }
         });
         useContentFragment(new FragmentAction<GameReaderContentFragment>() {
@@ -183,7 +183,7 @@ public class GameMainFragment extends Fragment
     @Override
     public boolean onBackPressed() {
         InAppStoryManager manager = InAppStoryManager.getInstance();
-        if (manager != null && manager.getFilePicker().onBackPressed()) return true;
+        if (manager != null && manager.getUtilModulesHolder().getFilePicker().onBackPressed()) return true;
         return useContentFragment(
                 new FragmentAction<GameReaderContentFragment>() {
                     @Override

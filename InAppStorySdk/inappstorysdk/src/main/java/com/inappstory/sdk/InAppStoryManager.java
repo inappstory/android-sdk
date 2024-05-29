@@ -16,15 +16,12 @@ import android.util.Log;
 import android.util.Pair;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.StringRes;
 
+import com.inappstory.iasutilsconnector.UtilModulesHolder;
+import com.inappstory.iasutilsconnector.json.IJsonParser;
 import com.inappstory.sdk.lrudiskcache.CacheSize;
-import com.inappstory.sdk.modulesconnector.utils.ModuleInitializer;
-import com.inappstory.sdk.modulesconnector.utils.filepicker.DummyFilePicker;
-import com.inappstory.sdk.modulesconnector.utils.filepicker.IFilePicker;
-import com.inappstory.sdk.modulesconnector.utils.lottie.DummyLottieViewGenerator;
-import com.inappstory.sdk.modulesconnector.utils.lottie.ILottieViewGenerator;
 import com.inappstory.sdk.network.ApiSettings;
+import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.network.models.Response;
@@ -141,41 +138,14 @@ public class InAppStoryManager {
         }
     }
 
-    public void setLottieViewGenerator(ILottieViewGenerator lottieViewGenerator) {
-        this.lottieViewGenerator = lottieViewGenerator;
+
+    public UtilModulesHolder getUtilModulesHolder() {
+        return utilModulesHolder;
     }
 
-    public ILottieViewGenerator lottieViewGenerator = new DummyLottieViewGenerator();
+    private UtilModulesHolder utilModulesHolder;
 
-    public void setFilePicker(IFilePicker filePicker) {
-        this.filePicker = filePicker;
-    }
 
-    private IFilePicker filePicker = new DummyFilePicker();
-
-    public IFilePicker getFilePicker() {
-        return filePicker;
-    }
-
-    private void initModule(String packageName, String className) {
-        try {
-            Class<?> clazz = Class.forName(packageName + "." + className);
-            Object newInstance = clazz.newInstance();
-            if (newInstance instanceof ModuleInitializer) {
-                ((ModuleInitializer) newInstance).initialize();
-                Log.e("MethodsInitialize", "Success " + className);
-            } else {
-                Log.e("MethodsInitialize", "Error " + className);
-            }
-        } catch (Exception e) {
-            Log.e("MethodsInitialize", "Error " + className);
-        }
-    }
-
-    private void initModules() {
-        initModule("com.inappstory.utils.iasfilepicker", "FilePickerCore");
-        initModule("com.inappstory.utils.iaslottie", "LottieViewCore");
-    }
 
     public static void setInstance(InAppStoryManager manager) {
         synchronized (lock) {
@@ -884,7 +854,13 @@ public class InAppStoryManager {
                 }
             }
             INSTANCE.createServiceThread(context);
-            INSTANCE.initModules();
+            INSTANCE.utilModulesHolder = UtilModulesHolder.INSTANCE;
+            INSTANCE.utilModulesHolder.setJsonParser(new IJsonParser() {
+                @Override
+                public <T> T fromJson(String json, Class<T> typeOfT) {
+                    return JsonParser.fromJson(json, typeOfT);
+                }
+            });
         }
     }
 
