@@ -815,28 +815,28 @@ public class InAppStoryManager {
 
     public UtilModulesHolder utilModulesHolder;
 
-    public static void initSDK(@NonNull Context context) {
-        long startTime = System.currentTimeMillis();
-        StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
-        boolean calledFromApplication = false;
-        for (StackTraceElement stackTraceElement : stackTraceElements) {
-            try {
-                if (Application.class.isAssignableFrom(Class.forName(stackTraceElement.getClassName()))) {
-                    calledFromApplication = true;
-                    break;
-                }
-                if (ContentProvider.class.isAssignableFrom(Class.forName(stackTraceElement.getClassName()))) {
-                    calledFromApplication = true;
-                    break;
-                }
-            } catch (ClassNotFoundException e) {
 
+    public static void initSDK(@NonNull Context context, boolean skipCheck) {
+        StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
+        boolean calledFromApplication = skipCheck;
+        if (!skipCheck)
+            for (StackTraceElement stackTraceElement : stackTraceElements) {
+                try {
+                    if (Application.class.isAssignableFrom(Class.forName(stackTraceElement.getClassName()))) {
+                        calledFromApplication = true;
+                        break;
+                    }
+                    if (ContentProvider.class.isAssignableFrom(Class.forName(stackTraceElement.getClassName()))) {
+                        calledFromApplication = true;
+                        break;
+                    }
+                } catch (ClassNotFoundException e) {
+
+                }
             }
-        }
         if (!(context instanceof Application)) calledFromApplication = false;
         if (!calledFromApplication)
             showELog(IAS_ERROR_TAG, "Method must be called from Application class and context has to be an applicationContext");
-        Log.e("InitTime", "Time: " + (System.currentTimeMillis() - startTime));
         synchronized (lock) {
             if (INSTANCE == null) {
                 INSTANCE = new InAppStoryManager(context);
@@ -850,6 +850,10 @@ public class InAppStoryManager {
                 return JsonParser.fromJson(json, typeOfT);
             }
         });
+    }
+
+    public static void initSDK(@NonNull Context context) {
+        initSDK(context, false);
     }
 
     InAppStoryService service;
