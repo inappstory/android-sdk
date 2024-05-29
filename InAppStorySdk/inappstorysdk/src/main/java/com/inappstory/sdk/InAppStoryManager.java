@@ -15,12 +15,12 @@ import android.util.Pair;
 
 import androidx.annotation.NonNull;
 
+import com.inappstory.iasutilsconnector.ModuleInitializer;
+import com.inappstory.iasutilsconnector.filepicker.DummyFilePicker;
+import com.inappstory.iasutilsconnector.filepicker.IFilePicker;
+import com.inappstory.iasutilsconnector.lottie.DummyLottieViewGenerator;
+import com.inappstory.iasutilsconnector.lottie.ILottieViewGenerator;
 import com.inappstory.sdk.lrudiskcache.CacheSize;
-import com.inappstory.sdk.modulesconnector.utils.ModuleInitializer;
-import com.inappstory.sdk.modulesconnector.utils.filepicker.DummyFilePicker;
-import com.inappstory.sdk.modulesconnector.utils.filepicker.IFilePicker;
-import com.inappstory.sdk.modulesconnector.utils.lottie.DummyLottieViewGenerator;
-import com.inappstory.sdk.modulesconnector.utils.lottie.ILottieViewGenerator;
 import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;

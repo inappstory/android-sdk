@@ -2,7 +2,7 @@ package com.inappstory.sdk.game.reader;
 
 import android.view.View;
 
-import com.inappstory.sdk.modulesconnector.utils.lottie.ILottieView;
+import com.inappstory.iasutilsconnector.lottie.ILottieView;
 import com.inappstory.sdk.stories.ui.views.IProgressLoader;
 
 public class GameProgressLoaderManager {

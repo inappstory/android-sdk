@@ -7,8 +7,8 @@ import android.view.View;
 
 import androidx.annotation.NonNull;
 
+import com.inappstory.iasutilsconnector.lottie.ILottieView;
 import com.inappstory.sdk.InAppStoryManager;
-import com.inappstory.sdk.modulesconnector.utils.lottie.ILottieView;
 import com.inappstory.sdk.utils.StringsUtils;
 
 import java.io.File;

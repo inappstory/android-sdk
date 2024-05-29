@@ -21,6 +21,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
+import com.inappstory.iasutilsconnector.lottie.DummyLottieViewGenerator;
 import com.inappstory.sdk.game.cache.GameCacheManager;
 import com.inappstory.sdk.game.cache.SuccessUseCaseCallback;
 import com.inappstory.sdk.game.cache.UseCaseCallback;
@@ -33,7 +34,6 @@ import com.inappstory.sdk.game.reader.logger.IGameLogSaver;
 import com.inappstory.sdk.game.reader.logger.IGameLogSender;
 import com.inappstory.sdk.imageloader.ImageLoader;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
-import com.inappstory.sdk.modulesconnector.utils.lottie.DummyLottieViewGenerator;
 import com.inappstory.sdk.stories.api.interfaces.IGameCenterData;
 import com.inappstory.sdk.stories.api.models.ExceptionCache;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;

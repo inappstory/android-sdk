@@ -41,6 +41,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
+import com.inappstory.iasutilsconnector.filepicker.OnFilesChooseCallback;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.BuildConfig;
 import com.inappstory.sdk.InAppStoryManager;
@@ -60,7 +61,6 @@ import com.inappstory.sdk.imageloader.ImageLoader;
 import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.inner.share.InnerShareFilesPrepare;
 import com.inappstory.sdk.inner.share.ShareFilesPrepareCallback;
-import com.inappstory.sdk.modulesconnector.utils.filepicker.OnFilesChooseCallback;
 import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.NetworkClient;
