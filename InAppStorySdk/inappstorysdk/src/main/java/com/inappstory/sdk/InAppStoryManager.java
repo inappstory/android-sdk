@@ -7,6 +7,7 @@ import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_5;
 
 import android.annotation.SuppressLint;
 import android.app.Application;
+import android.content.ContentProvider;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
@@ -851,26 +852,34 @@ public class InAppStoryManager {
     public static void initSDK(@NonNull Context context) {
         StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
         boolean calledFromApplication = false;
+        boolean calledFromContentProvider = false;
         for (StackTraceElement stackTraceElement : stackTraceElements) {
             try {
                 if (Application.class.isAssignableFrom(Class.forName(stackTraceElement.getClassName()))) {
                     calledFromApplication = true;
                 }
+                if (ContentProvider.class.isAssignableFrom(Class.forName(stackTraceElement.getClassName()))) {
+                    calledFromContentProvider = true;
+                }
             } catch (ClassNotFoundException e) {
 
             }
         }
-        if (!(context instanceof Application)) calledFromApplication = false;
-        if (!calledFromApplication)
-            showELog(IAS_ERROR_TAG, "Method must be called from Application class and context has to be an applicationContext");
-        synchronized (lock) {
-            if (INSTANCE == null) {
-                INSTANCE = new InAppStoryManager(context);
-            }
+        if (!(context instanceof Application)) {
+            calledFromContentProvider = false;
+            calledFromApplication = false;
         }
-
-        INSTANCE.createServiceThread(context);
-        INSTANCE.initModules();
+        if (!calledFromApplication && !calledFromContentProvider) {
+            showELog(IAS_ERROR_TAG, "Method must be called from Application or ContentProvider class and context has to be an applicationContext");
+        } else {
+            synchronized (lock) {
+                if (INSTANCE == null) {
+                    INSTANCE = new InAppStoryManager(context);
+                }
+            }
+            INSTANCE.createServiceThread(context);
+            INSTANCE.initModules();
+        }
     }
 
     InAppStoryService service;
