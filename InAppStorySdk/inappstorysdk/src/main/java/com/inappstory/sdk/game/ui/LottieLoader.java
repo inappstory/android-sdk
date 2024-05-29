@@ -22,7 +22,7 @@ public class LottieLoader implements IGameReaderLoaderView {
     public LottieLoader(Context context, @NonNull File source) {
         InAppStoryManager manager = InAppStoryManager.getInstance();
         if (manager != null)
-            lottieView = manager.lottieViewGenerator.getView(context);
+            lottieView = manager.utilModulesHolder.getLottieViewGenerator().getView(context);
         lottieView.setSource(new Pair<>(
                 StringsUtils.md5(source.getAbsolutePath()),
                 source

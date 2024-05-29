@@ -41,6 +41,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
+import com.inappstory.iasutilsconnector.filepicker.IFilePicker;
 import com.inappstory.iasutilsconnector.filepicker.OnFilesChooseCallback;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.BuildConfig;
@@ -285,8 +286,9 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
             @Override
             public void use(@NonNull InAppStoryManager manager) throws Exception {
-                manager.filePicker.setPickerSettings(data);
-                manager.filePicker.show(
+                IFilePicker filePicker = manager.utilModulesHolder.getFilePicker();
+                filePicker.setPickerSettings(data);
+                filePicker.show(
                         getContext(),
                         getBaseGameReader().getGameReaderFragmentManager(),
                         R.id.ias_file_picker_container,

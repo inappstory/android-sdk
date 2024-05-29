@@ -130,7 +130,7 @@ public class InAppStoryService {
     public boolean hasLottieAnimation() {
         InAppStoryManager manager = InAppStoryManager.getInstance();
         if (manager != null)
-            return !(manager.lottieViewGenerator instanceof DummyLottieViewGenerator);
+            return manager.utilModulesHolder.hasLottieModule();
         return false;
     }
 

@@ -80,7 +80,7 @@ public class GameActivity extends AppCompatActivity implements BaseGameReaderScr
     @Override
     public void onBackPressed() {
         InAppStoryManager manager = InAppStoryManager.getInstance();
-        if (manager != null && manager.filePicker.onBackPressed()) return;
+        if (manager != null && manager.utilModulesHolder.getFilePicker().onBackPressed()) return;
         if (!useContentFragment(
                 new FragmentAction<GameReaderContentFragment>() {
                     @Override
@@ -160,7 +160,7 @@ public class GameActivity extends AppCompatActivity implements BaseGameReaderScr
         InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
             @Override
             public void use(@NonNull InAppStoryManager manager) throws Exception {
-                manager.filePicker.permissionResult(requestCode, permissions, grantResults);
+                manager.utilModulesHolder.getFilePicker().permissionResult(requestCode, permissions, grantResults);
             }
         });
         useContentFragment(new FragmentAction<GameReaderContentFragment>() {
