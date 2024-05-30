@@ -363,6 +363,7 @@ public class ReaderPageManager {
         if (durations.size() <= slideIndex) return;
         durations.set(slideIndex, (int) duration);
         if (parentManager != null && parentManager.getCurrentStoryId() == storyId) {
+
             restartSlide();
         } else {
             timelineManager.setDurations(durations, false);

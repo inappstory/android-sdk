@@ -68,8 +68,10 @@ public class StoryTimelineManager implements IStoryTimelineManager {
         startedTime = resumedTime = System.currentTimeMillis();
         timelineState.setCurrentSlideIndex(index);
         restTime = timelineState.getCurrentStoryDuration();
-        if (restTime > 0)
+        if (restTime > 0) {
             timelineState.setCurrentSlideState(StoryTimelineSegmentState.ANIMATED);
+            Log.e("restartWithDur", "restartSlide " + index + "; restTime " + restTime);
+        }
     }
 
     @Override
@@ -90,11 +92,13 @@ public class StoryTimelineManager implements IStoryTimelineManager {
                                 .getCurrentStoryDuration()
         );
         handler.post(loopedTimer);
+        Log.e("restartWithDur", "loopedTimer is launched " + paused);
     }
 
     @Override
     public void pause() {
         handler.removeCallbacks(loopedTimer);
+        Log.e("restartWithDur", "loopedTimer is launched " + paused);
     }
 
     @Override

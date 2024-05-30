@@ -288,6 +288,14 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
     }
 
     @Override
+    public void unfreezeUI() {
+        touchSlider = false;
+
+        getParentForAccessibility().requestDisallowInterceptTouchEvent(false);
+        getManager().getPageManager().resumeSlide(false);
+    }
+
+    @Override
     public void screenshotShare() {
         evaluateJavascript("share_slide_screenshot();", null);
         logMethod("share_slide_screenshot");

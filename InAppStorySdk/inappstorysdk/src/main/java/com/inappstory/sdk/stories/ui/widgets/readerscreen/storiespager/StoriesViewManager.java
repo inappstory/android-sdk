@@ -571,6 +571,10 @@ public class StoriesViewManager {
         storiesView.freezeUI();
     }
 
+    public void unfreezeUI() {
+        storiesView.unfreezeUI();
+    }
+
     public void storySetLocalData(String data, boolean sendToServer) {
         InAppStoryService service = InAppStoryService.getInstance();
         if (service == null) return;

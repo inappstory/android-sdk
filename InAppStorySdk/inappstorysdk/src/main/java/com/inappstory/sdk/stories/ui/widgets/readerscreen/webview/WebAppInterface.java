@@ -205,6 +205,12 @@ public class WebAppInterface {
     }
 
     @JavascriptInterface
+    public void storyUnfreezeUI() {
+        manager.unfreezeUI();
+        logMethod("");
+    }
+
+    @JavascriptInterface
     public void storyPauseUI() {
         manager.pauseUI();
         logMethod("");
