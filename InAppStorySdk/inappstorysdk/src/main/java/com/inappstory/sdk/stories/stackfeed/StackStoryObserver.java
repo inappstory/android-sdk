@@ -206,10 +206,12 @@ public class StackStoryObserver implements IStackFeedActions {
         }
 
         int newIndex = (openedIndex + 1) % stories.size();
-        for (int i = newIndex; i < stories.size(); i++) {
-            if (!stories.get(i).isOpened()) {
-                newIndex = i;
-                break;
+        if (getNextNonOpened) {
+            for (int i = newIndex; i < stories.size(); i++) {
+                if (!stories.get(i).isOpened()) {
+                    newIndex = i;
+                    break;
+                }
             }
         }
         checkLastIndex(newIndex, stackStoryUpdated);
