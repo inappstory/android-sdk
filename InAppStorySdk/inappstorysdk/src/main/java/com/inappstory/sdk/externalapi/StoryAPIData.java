@@ -53,18 +53,4 @@ public class StoryAPIData {
         this.hasAudio = story.hasAudio();
         this.opened = story.isOpened();
     }
-
-    public StoryAPIData copy(boolean opened) {
-        return new StoryAPIData(
-                this.id,
-                this.storyData,
-                this.imageFilePath,
-                this.videoFilePath,
-                this.hasAudio,
-                this.title,
-                this.titleColor,
-                this.backgroundColor,
-                opened
-        );
-    }
 }
