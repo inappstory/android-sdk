@@ -18,6 +18,7 @@ import com.inappstory.sdk.stories.api.models.ExceptionCache;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.StoryListType;
 import com.inappstory.sdk.stories.api.models.callbacks.GetStoryByIdCallback;
+import com.inappstory.sdk.stories.api.models.callbacks.LoadFavoritesCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadStoriesCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.SimpleListCallback;
@@ -594,6 +595,7 @@ public class StoryDownloadManager {
     }
 
     public void loadStories(String feed, final LoadStoriesCallback callback,
+                            final LoadFavoritesCallback favCallback,
                             boolean isFavorite, boolean hasFavorite) {
         final boolean loadFavorite = hasFavorite;
         SimpleListCallback loadCallback = new SimpleListCallback() {
@@ -695,6 +697,9 @@ public class StoryDownloadManager {
                                     }
                                     callback.setFeedId(sFeedId);
                                     callback.storiesLoaded(ids);
+                                }
+                                if (favCallback != null) {
+                                    favCallback.success(favoriteImages);
                                 }
                             } else {
                                 if (callback != null) {

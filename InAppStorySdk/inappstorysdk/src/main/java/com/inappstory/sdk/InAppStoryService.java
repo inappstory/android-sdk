@@ -18,6 +18,7 @@ import android.webkit.URLUtil;
 
 import androidx.annotation.NonNull;
 
+import com.inappstory.sdk.externalapi.subscribers.InAppStoryAPISubscribersManager;
 import com.inappstory.sdk.game.cache.GameCacheManager;
 import com.inappstory.sdk.game.reader.GameStoryData;
 import com.inappstory.sdk.game.reader.logger.GameLogSaver;
@@ -522,6 +523,16 @@ public class InAppStoryService {
         return connector;
     }
 
+    public InAppStoryAPISubscribersManager getApiSubscribersManager() {
+        return apiSubscribersManager;
+    }
+
+    public void removeAllFavorites() {
+
+    }
+
+    private InAppStoryAPISubscribersManager apiSubscribersManager = new InAppStoryAPISubscribersManager();
+
     public class ListReaderConnector {
         public void changeStory(final int storyId, final String listID) {
             useInstance(new UseServiceInstanceCallback() {
@@ -533,6 +544,9 @@ public class InAppStoryService {
                     for (ListManager sub : service.getListSubscribers()) {
                         sub.changeStory(storyId, listID);
                     }
+                    Story story = getDownloadManager().getStoryById(storyId, Story.StoryType.COMMON);
+                    if (story != null)
+                        apiSubscribersManager.openStory(story, listID);
                 }
             });
         }
@@ -544,6 +558,8 @@ public class InAppStoryService {
                     for (ListManager sub : service.getListSubscribers()) {
                         sub.closeReader();
                     }
+
+                    apiSubscribersManager.closeReader();
                 }
             });
         }
@@ -555,6 +571,7 @@ public class InAppStoryService {
                     for (ListManager sub : service.getListSubscribers()) {
                         sub.openReader();
                     }
+                    apiSubscribersManager.openReader();
                 }
             });
 
@@ -567,6 +584,7 @@ public class InAppStoryService {
                     for (ListManager sub : service.getListSubscribers()) {
                         sub.userIdChanged();
                     }
+                    apiSubscribersManager.refreshAllLists();
                 }
             });
         }
@@ -602,8 +620,10 @@ public class InAppStoryService {
                     for (ListManager sub : service.getListSubscribers()) {
                         sub.clearAllFavorites();
                     }
+
                 }
             });
+            apiSubscribersManager.clearAllFavorites();
         }
     }
 
