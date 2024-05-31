@@ -13,9 +13,6 @@ public abstract class InAppStoryAPIStackFeedSubscriber implements IAPISubscriber
     }
 
     @Override
-    public void openStory(int storyId) {}
-
-    @Override
     public void updateStoryData(StoryAPIData story) {
 
     }
@@ -27,11 +24,11 @@ public abstract class InAppStoryAPIStackFeedSubscriber implements IAPISubscriber
     }
 
     @Override
-    public void openReader() {
+    public void readerIsOpened() {
 
     }
     @Override
-    public void closeReader() {
+    public void readerIsClosed() {
 
     }
 

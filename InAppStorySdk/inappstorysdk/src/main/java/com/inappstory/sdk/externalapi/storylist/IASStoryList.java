@@ -1,7 +1,10 @@
 package com.inappstory.sdk.externalapi.storylist;
 
+import android.content.Context;
+
 import androidx.annotation.NonNull;
 
+import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.UseServiceInstanceCallback;
 
@@ -28,6 +31,25 @@ public class IASStoryList {
                 service.getApiSubscribersManager().requestsData
                         .put(uniqueId, data);
                 service.getApiSubscribersManager().getStoryList(data);
+            }
+        });
+    }
+
+    public void openStoryReader(
+            final Context context,
+            final String uniqueKey,
+            final int storyId,
+            final AppearanceManager appearanceManager
+    ) {
+        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryService service) throws Exception {
+                service.getApiSubscribersManager().openStoryReader(
+                        context,
+                        uniqueKey,
+                        storyId,
+                        appearanceManager
+                );
             }
         });
     }

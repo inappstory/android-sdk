@@ -12,4 +12,6 @@ public interface IStoryAPIDataHolder {
     StoryAPIData updateStoryAPIData(Story data, String imagePath, String videoPath);
 
     void clear();
+
+    List<StoryAPIData> getStoryAPIData();
 }

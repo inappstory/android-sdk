@@ -7,7 +7,7 @@ import java.util.List;
 public interface IAPISubscriber<T> {
 
     @WorkerThread
-    void openStory(int storyId);
+    void storyIsOpened(int storyId);
 
     @WorkerThread
     void updateStoryData(T story);
@@ -16,10 +16,10 @@ public interface IAPISubscriber<T> {
     void updateStoriesData(List<T> stories);
 
     @WorkerThread
-    void openReader();
+    void readerIsOpened();
 
     @WorkerThread
-    void closeReader();
+    void readerIsClosed();
 
     String getUniqueId();
 }

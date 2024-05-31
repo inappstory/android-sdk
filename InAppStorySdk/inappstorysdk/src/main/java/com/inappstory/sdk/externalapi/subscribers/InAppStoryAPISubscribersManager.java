@@ -1,5 +1,9 @@
 package com.inappstory.sdk.externalapi.subscribers;
 
+import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
+
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.AppearanceManager;
@@ -7,21 +11,29 @@ import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.externalapi.StoryAPIData;
 import com.inappstory.sdk.externalapi.storylist.IASStoryListRequestData;
+import com.inappstory.sdk.game.reader.GameStoryData;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadFavoritesCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadStoriesCallback;
 import com.inappstory.sdk.stories.cache.Downloader;
 import com.inappstory.sdk.stories.cache.StoryDownloadManager;
+import com.inappstory.sdk.stories.callbacks.CallbackManager;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderLaunchData;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickAction;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
+import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.statistic.GetOldStatisticManagerCallback;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
+import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.list.FavoriteImage;
 import com.inappstory.sdk.stories.utils.RunnableCallback;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 
 public class InAppStoryAPISubscribersManager {
@@ -41,6 +53,154 @@ public class InAppStoryAPISubscribersManager {
     public void refreshAllLists() {
         for (IASStoryListRequestData requestData : requestsData.values()) {
             getStoryList(requestData);
+        }
+    }
+
+    public void openStoryReader(
+            final Context context,
+            final String uniqueKey,
+            final int storyId,
+            final AppearanceManager appearanceManager
+    ) {
+        final IAPISubscriber subscriber = inAppStoryAPISubscribers.get(uniqueKey);
+        if (subscriber instanceof IStoryAPIDataHolder) {
+            InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+                @Override
+                public void use(@NonNull InAppStoryService service) throws Exception {
+                    List<StoryAPIData> dataList = ((IStoryAPIDataHolder) subscriber).getStoryAPIData();
+                    openReader(context, storyId, uniqueKey, dataList, appearanceManager);
+                }
+            });
+        }
+    }
+
+    private void openReader(
+            Context context,
+            final int storyId,
+            final String uniqueKey,
+            List<StoryAPIData> storyAPIDataList,
+            final AppearanceManager appearanceManager
+    ) {
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service == null) return;
+        final Story currentStory = service.getDownloadManager().getStoryById(storyId, Story.StoryType.COMMON);
+        if (currentStory == null)
+            return;
+        final IASStoryListRequestData requestData = requestsData.get(uniqueKey);
+        if (requestData == null)
+            return;
+        List<Story> stories = new ArrayList<>();
+        for (StoryAPIData apiData : storyAPIDataList) {
+            Story story = service.getDownloadManager().getStoryById(apiData.id, Story.StoryType.COMMON);
+            if (story == null) return;
+            stories.add(story);
+        }
+        currentStory.isOpened = true;
+        currentStory.saveStoryOpened(Story.StoryType.COMMON);
+        String sessionId = service.getSession().getSessionId();
+        if (currentStory.getDeeplink() != null && !currentStory.getDeeplink().isEmpty()) {
+            service.getListReaderConnector().changeStory(currentStory.id, uniqueKey);
+
+            StatisticManager.getInstance().sendDeeplinkStory(
+                    currentStory.id,
+                    currentStory.getDeeplink(),
+                    requestData.feed
+            );
+            OldStatisticManager.useInstance(sessionId, new GetOldStatisticManagerCallback() {
+                @Override
+                public void get(@NonNull OldStatisticManager manager) {
+                    manager.addDeeplinkClickStatistic(currentStory.id);
+                }
+            });
+            if (CallbackManager.getInstance().getCallToActionCallback() != null) {
+                CallbackManager.getInstance().getCallToActionCallback().callToAction(
+                        context,
+                        new SlideData(
+                                new StoryData(
+                                        currentStory,
+                                        requestData.feed,
+                                        SourceType.LIST
+                                ),
+                                0,
+                                null
+                        ),
+                        currentStory.getDeeplink(),
+                        ClickAction.DEEPLINK
+                );
+            } else {
+                if (!InAppStoryService.isServiceConnected()) {
+                    if (CallbackManager.getInstance().getErrorCallback() != null) {
+                        CallbackManager.getInstance().getErrorCallback().noConnection();
+                    }
+                    return;
+                }
+                try {
+                    Intent i = new Intent(Intent.ACTION_VIEW);
+                    i.setData(Uri.parse(currentStory.getDeeplink()));
+                    i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    context.startActivity(i);
+                } catch (Exception ignored) {
+                    InAppStoryService.createExceptionLog(ignored);
+                }
+            }
+        } else if (currentStory.getGameInstanceId() != null && !currentStory.getGameInstanceId().isEmpty()) {
+            service.getListReaderConnector().changeStory(currentStory.id, uniqueKey);
+            OldStatisticManager.useInstance(
+                    sessionId,
+                    new GetOldStatisticManagerCallback() {
+                        @Override
+                        public void get(@NonNull OldStatisticManager manager) {
+                            manager.addGameClickStatistic(currentStory.id);
+                        }
+                    }
+            );
+            service.openGameReaderWithGC(
+                    context,
+                    new GameStoryData(
+                            new SlideData(
+                                    new StoryData(
+                                            currentStory,
+                                            requestData.feed,
+                                            SourceType.LIST
+                                    ),
+                                    0,
+                                    null
+                            )
+
+                    ),
+                    currentStory.getGameInstanceId(),
+                    null
+            );
+        } else if (!currentStory.isHideInReader()) {
+            List<Integer> readerStories = new ArrayList<>();
+            int j = 0;
+            int correctedIndex = 0;
+            for (Story story : stories) {
+                if (!story.isHideInReader()) {
+                    if (currentStory == story) {
+                        correctedIndex = j;
+                    }
+                    readerStories.add(story.id);
+                    j++;
+                }
+            }
+            StoriesReaderLaunchData launchData = new StoriesReaderLaunchData(
+                    uniqueKey,
+                    requestData.feed,
+                    sessionId,
+                    readerStories,
+                    correctedIndex,
+                    ShowStory.ACTION_OPEN,
+                    SourceType.LIST,
+                    0,
+                    Story.StoryType.COMMON,
+                    null
+            );
+            ScreensManager.getInstance().openStoriesReader(
+                    context,
+                    appearanceManager,
+                    launchData
+            );
         }
     }
 
@@ -193,8 +353,23 @@ public class InAppStoryAPISubscribersManager {
         }
     }
 
-    public void openStory(Story story, String uniqueId) {
-
+    public void openStory(int storyId, String uniqueId) {
+        for (IAPISubscriber subscriber: inAppStoryAPISubscribers.values()) {
+            if (subscriber instanceof InAppStoryAPIListSubscriber) {
+                List<StoryAPIData> currentData = ((InAppStoryAPIListSubscriber) subscriber).getStoryAPIData();
+                for (StoryAPIData data : currentData) {
+                    if (data.id == storyId) {
+                        data.opened = true;
+                        subscriber.updateStoryData(data);
+                        break;
+                    }
+                }
+            }
+        }
+        IAPISubscriber currentSubscriber = inAppStoryAPISubscribers.get(uniqueId);
+        if (currentSubscriber instanceof InAppStoryAPIListSubscriber) {
+            currentSubscriber.storyIsOpened(storyId);
+        }
     }
 
     public void closeReader() {
@@ -221,14 +396,67 @@ public class InAppStoryAPISubscribersManager {
     }
 
     public void clearAllFavorites() {
+        updateFavorites(new ArrayList<FavoriteImage>());
+    }
 
+    public void storyFavorite(final int id, final boolean favStatus) {
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service == null) return;
+        List<FavoriteImage> actualFavoriteImages = new ArrayList<>(service.getFavoriteImages());
+        FavoriteImage imageById = null;
+        for (FavoriteImage image : actualFavoriteImages) {
+            if (image.getId() == id) {
+                imageById = image;
+                break;
+            }
+        }
+        if (favStatus && imageById == null) {
+            Story story = service.getDownloadManager().getStoryById(id, Story.StoryType.COMMON);
+            if (story == null) return;
+            actualFavoriteImages.add(0, new FavoriteImage(id, story.getImage(), story.getBackgroundColor()));
+            updateFavorites(actualFavoriteImages);
+        } else if (!favStatus && imageById != null) {
+            actualFavoriteImages.remove(imageById);
+            updateFavorites(actualFavoriteImages);
+        }
     }
 
 
-    void updateFavorites(List<FavoriteImage> favoriteImages) {
+    private void updateFavorites(List<FavoriteImage> favoriteImages) {
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service == null) return;
         for (IAPISubscriber subscriber : inAppStoryAPISubscribers.values()) {
             if (subscriber instanceof InAppStoryAPIListSubscriber) {
                 ((InAppStoryAPIListSubscriber) subscriber).updateFavoriteItemData(favoriteImages);
+            } else if (subscriber instanceof InAppStoryAPIFavoriteListSubscriber) {
+                List<StoryAPIData> newData = new ArrayList<>();
+                List<StoryAPIData> currentData = ((InAppStoryAPIFavoriteListSubscriber) subscriber).getStoryAPIData();
+                for (FavoriteImage favoriteImage : favoriteImages) {
+                    boolean addNew = true;
+                    for (StoryAPIData storyAPIData : currentData) {
+                        if (storyAPIData.id == favoriteImage.getId()) {
+                            addNew = false;
+                            newData.add(storyAPIData);
+                            break;
+                        }
+                    }
+                    if (addNew) {
+                        Story story = service.getDownloadManager().getStoryById(favoriteImage.getId(), Story.StoryType.COMMON);
+                        if (story == null) return;
+                        newData.add(
+                                0,
+                                new StoryAPIData(
+                                        story,
+                                        new StoryData(story, null, SourceType.FAVORITE),
+                                        null,
+                                        null
+                                )
+                        );
+                    }
+
+                }
+                ((InAppStoryAPIFavoriteListSubscriber) subscriber).setStoryAPIData(newData);
+                subscriber.updateStoriesData(newData);
             }
         }
     }

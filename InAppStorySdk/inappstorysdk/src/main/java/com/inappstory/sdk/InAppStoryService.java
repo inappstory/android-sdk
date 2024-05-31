@@ -546,7 +546,7 @@ public class InAppStoryService {
                     }
                     Story story = getDownloadManager().getStoryById(storyId, Story.StoryType.COMMON);
                     if (story != null)
-                        apiSubscribersManager.openStory(story, listID);
+                        apiSubscribersManager.openStory(story.id, listID);
                 }
             });
         }
@@ -571,7 +571,7 @@ public class InAppStoryService {
                     for (ListManager sub : service.getListSubscribers()) {
                         sub.openReader();
                     }
-                    apiSubscribersManager.openReader();
+                    service.apiSubscribersManager.openReader();
                 }
             });
 
@@ -584,7 +584,7 @@ public class InAppStoryService {
                     for (ListManager sub : service.getListSubscribers()) {
                         sub.userIdChanged();
                     }
-                    apiSubscribersManager.refreshAllLists();
+                    service.apiSubscribersManager.refreshAllLists();
                 }
             });
         }
@@ -609,6 +609,7 @@ public class InAppStoryService {
                     for (ListManager sub : service.getListSubscribers()) {
                         sub.storyFavorite(id, favStatus, isEmpty);
                     }
+                    service.apiSubscribersManager.storyFavorite(id, favStatus);
                 }
             });
         }
@@ -621,9 +622,9 @@ public class InAppStoryService {
                         sub.clearAllFavorites();
                     }
 
+                    service.apiSubscribersManager.clearAllFavorites();
                 }
             });
-            apiSubscribersManager.clearAllFavorites();
         }
     }
 

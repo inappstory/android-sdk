@@ -1,6 +1,8 @@
 package com.inappstory.sdk.externalapi.subscribers;
 
 
+import androidx.annotation.WorkerThread;
+
 import com.inappstory.sdk.externalapi.StoryAPIData;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.ui.list.FavoriteImage;
@@ -12,8 +14,14 @@ public abstract class InAppStoryAPIListSubscriber implements
         IAPISubscriber<StoryAPIData>,
         IStoryAPIDataHolder {
     private final String uniqueId;
+
+    public final List<StoryAPIData> getStoryAPIData() {
+        return storyAPIData;
+    }
+
     public final List<StoryAPIData> storyAPIData = new ArrayList<>();
 
+    @WorkerThread
     public abstract void updateFavoriteItemData(List<FavoriteImage> favorites);
 
     @Override
@@ -22,7 +30,8 @@ public abstract class InAppStoryAPIListSubscriber implements
     }
 
     @Override
-    public void openStory(int storyId) {
+    @WorkerThread
+    public void storyIsOpened(int storyId) {
 
     }
 
@@ -57,12 +66,14 @@ public abstract class InAppStoryAPIListSubscriber implements
     }
 
     @Override
-    public void openReader() {
+    @WorkerThread
+    public void readerIsOpened() {
 
     }
 
     @Override
-    public void closeReader() {
+    @WorkerThread
+    public void readerIsClosed() {
 
     }
 
