@@ -145,4 +145,14 @@ public class Image implements Parcelable {
     }
 
 
+    @Override
+    public String toString() {
+        return "Image{" +
+                "url='" + url + '\'' +
+                ", width=" + width +
+                ", height=" + height +
+                ", type='" + type + '\'' +
+                ", expire=" + expire +
+                '}';
+    }
 }

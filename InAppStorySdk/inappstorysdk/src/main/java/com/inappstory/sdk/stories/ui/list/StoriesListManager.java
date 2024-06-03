@@ -126,20 +126,6 @@ public class StoriesListManager implements ListManager {
                     @Override
                     public void use(@NonNull InAppStoryService service) throws Exception {
                         List<FavoriteImage> favImages = service.getFavoriteImages();
-                        Story story = service.getDownloadManager().getStoryById(id, Story.StoryType.COMMON);
-                        if (story == null) return;
-                        if (favStatus) {
-                            FavoriteImage favoriteImage = new FavoriteImage(id, story.getImage(), story.getBackgroundColor());
-                            if (!favImages.contains(favoriteImage))
-                                favImages.add(0, favoriteImage);
-                        } else {
-                            for (FavoriteImage favoriteImage : favImages) {
-                                if (favoriteImage.getId() == id) {
-                                    favImages.remove(favoriteImage);
-                                    break;
-                                }
-                            }
-                        }
                         if (list == null) return;
                         if (list.getVisibility() != View.VISIBLE) return;
                         list.favStory(id, favStatus, favImages, isEmpty);

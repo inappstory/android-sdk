@@ -11,9 +11,9 @@ import java.util.Map;
 
 public class IASManager {
     public InAppStoryManager create(
+            String apiKey,
             String userId,
             Locale lang,
-            String apiKey,
             ArrayList<String> tags,
             Map<String, String> placeholders,
             Map<String, ImagePlaceholderValue> imagePlaceholders,

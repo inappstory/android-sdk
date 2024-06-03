@@ -36,6 +36,20 @@ public class StoryAPIData {
     public String backgroundColor;
     public boolean opened;
 
+    @Override
+    public String toString() {
+        return "StoryData{" +
+                "id=" + id +
+                ", title='" + title + '\'' +
+                ", titleColor='" + titleColor + '\'' +
+                ", backgroundColor='" + backgroundColor + '\'' +
+                ", opened='" + opened + '\'' +
+                ", hasAudio=" + hasAudio +
+                ", imageFilePath=" + imageFilePath +
+                ", videoFilePath=" + videoFilePath +
+                ", storyData=" + storyData +
+                '}';
+    }
 
     public StoryAPIData(
             Story story,

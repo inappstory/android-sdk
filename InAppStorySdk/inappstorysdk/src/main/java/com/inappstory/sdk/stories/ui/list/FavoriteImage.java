@@ -58,6 +58,16 @@ public class FavoriteImage {
 
     private List<Image> image;
 
+    @Override
+    public String toString() {
+        return "FavoriteImage{" +
+                "id=" + id +
+                ", bitmap=" + bitmap +
+                ", image=" + image +
+                ", backgroundColor='" + backgroundColor + '\'' +
+                '}';
+    }
+
     public int getBackgroundColor() {
         try {
             return Color.parseColor(backgroundColor);

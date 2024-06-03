@@ -4,10 +4,11 @@ package com.inappstory.sdk.externalapi.subscribers;
 import androidx.annotation.WorkerThread;
 
 import com.inappstory.sdk.externalapi.StoryAPIData;
+import com.inappstory.sdk.externalapi.StoryFavoriteItemAPIData;
 import com.inappstory.sdk.stories.api.models.Story;
-import com.inappstory.sdk.stories.ui.list.FavoriteImage;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 public abstract class InAppStoryAPIListSubscriber implements
@@ -19,10 +20,11 @@ public abstract class InAppStoryAPIListSubscriber implements
         return storyAPIData;
     }
 
-    public final List<StoryAPIData> storyAPIData = new ArrayList<>();
+    private final List<StoryAPIData> storyAPIData = new ArrayList<>();
+
 
     @WorkerThread
-    public abstract void updateFavoriteItemData(List<FavoriteImage> favorites);
+    public abstract void updateFavoriteItemData(List<StoryFavoriteItemAPIData> favorites);
 
     @Override
     public final String getUniqueId() {
@@ -32,6 +34,11 @@ public abstract class InAppStoryAPIListSubscriber implements
     @Override
     @WorkerThread
     public void storyIsOpened(int storyId) {
+
+    }
+
+    @Override
+    public final void clear() {
 
     }
 

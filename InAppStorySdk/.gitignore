@@ -2,6 +2,7 @@
 .gradle
 /local.properties
 /examples
+/apiexamples
 /.idea/caches
 /.idea/libraries
 /.idea/modules.xml

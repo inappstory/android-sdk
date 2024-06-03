@@ -10,6 +10,7 @@ import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.externalapi.StoryAPIData;
+import com.inappstory.sdk.externalapi.StoryFavoriteItemAPIData;
 import com.inappstory.sdk.externalapi.storylist.IASStoryListRequestData;
 import com.inappstory.sdk.game.reader.GameStoryData;
 import com.inappstory.sdk.stories.api.models.Story;
@@ -40,12 +41,20 @@ public class InAppStoryAPISubscribersManager {
 
     private HashMap<String, IAPISubscriber> inAppStoryAPISubscribers = new HashMap<>();
 
+
+    public final List<StoryFavoriteItemAPIData> getStoryFavoriteItemAPIData() {
+        return storyFavoriteItemAPIData;
+    }
+
+    private final List<StoryFavoriteItemAPIData> storyFavoriteItemAPIData = new ArrayList<>();
+
     public void addAPISubscriber(IAPISubscriber subscriber) {
         inAppStoryAPISubscribers.put(subscriber.getUniqueId(), subscriber);
     }
 
     public void clearCache() {
         shownStories.clear();
+        storyFavoriteItemAPIData.clear();
     }
 
     public HashMap<String, IASStoryListRequestData> requestsData = new HashMap<>();
@@ -249,6 +258,50 @@ public class InAppStoryAPISubscribersManager {
         });
     }
 
+    public void showFavoriteItem(
+            final String uniqueId
+    ) {
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service == null) return;
+        List<FavoriteImage> actualFavoriteImages = new ArrayList<>(service.getFavoriteImages());
+        cacheFavoriteCellImage(
+                actualFavoriteImages.iterator(),
+                new ArrayList<StoryFavoriteItemAPIData>(),
+                uniqueId
+        );
+    }
+
+    private void cacheFavoriteCellImage(
+            final Iterator<FavoriteImage> iterator,
+            final List<StoryFavoriteItemAPIData> favoriteItemAPIData,
+            final String uniqueId
+    ) {
+        if (iterator.hasNext()) {
+            final FavoriteImage favoriteImage = iterator.next();
+            String image = favoriteImage.getUrl();
+            if (image != null && !image.isEmpty())
+                Downloader.downloadFileAndSendToInterface(image, new RunnableCallback() {
+                    @Override
+                    public void run(String path) {
+                        favoriteItemAPIData.add(new StoryFavoriteItemAPIData(favoriteImage, path));
+                        cacheFavoriteCellImage(iterator, favoriteItemAPIData, uniqueId);
+                    }
+
+                    @Override
+                    public void error() {
+                        favoriteItemAPIData.add(new StoryFavoriteItemAPIData(favoriteImage, null));
+                        cacheFavoriteCellImage(iterator, favoriteItemAPIData, uniqueId);
+                    }
+                });
+            else {
+                favoriteItemAPIData.add(new StoryFavoriteItemAPIData(favoriteImage, null));
+                cacheFavoriteCellImage(iterator, favoriteItemAPIData, uniqueId);
+            }
+        } else {
+            updateStoryFavoriteItemAPIData(favoriteItemAPIData);
+        }
+    }
+
     public void updateVisiblePreviews(
             String sessionId,
             List<Integer> storyIds,
@@ -287,6 +340,45 @@ public class InAppStoryAPISubscribersManager {
         );
 
     }
+
+
+    private StoryFavoriteItemAPIData updateStoryFavoriteItemAPIDataItem(StoryFavoriteItemAPIData favoriteItemAPIData) {
+        boolean newItem = true;
+        for (StoryFavoriteItemAPIData storyFavoriteItemAPIDataItem : storyFavoriteItemAPIData) {
+            if (favoriteItemAPIData.id == storyFavoriteItemAPIDataItem.id) {
+                if (
+                        (
+                                storyFavoriteItemAPIDataItem.imageFilePath == null
+                                        && favoriteItemAPIData.imageFilePath != null
+                        )
+                                ||
+                                storyFavoriteItemAPIDataItem.imageFilePath != null
+                                        && favoriteItemAPIData.imageFilePath != null &&
+                                        !favoriteItemAPIData.imageFilePath.equals(
+                                                storyFavoriteItemAPIDataItem.imageFilePath
+                                        )
+                ) {
+                    storyFavoriteItemAPIDataItem.imageFilePath = favoriteItemAPIData.imageFilePath;
+                }
+                return storyFavoriteItemAPIDataItem;
+            }
+        }
+        storyFavoriteItemAPIData.add(favoriteItemAPIData);
+        return favoriteItemAPIData;
+    }
+
+    public final void updateStoryFavoriteItemAPIData(List<StoryFavoriteItemAPIData> favorites) {
+        List<StoryFavoriteItemAPIData> currentFavorites = new ArrayList<>();
+        for (StoryFavoriteItemAPIData favorite: favorites) {
+            currentFavorites.add(updateStoryFavoriteItemAPIDataItem(favorite));
+        }
+        for (IAPISubscriber subscriber: inAppStoryAPISubscribers.values()) {
+            if (subscriber instanceof InAppStoryAPIListSubscriber) {
+                ((InAppStoryAPIListSubscriber) subscriber).updateFavoriteItemData(currentFavorites);
+            }
+        }
+    }
+
 
     private void cacheStoryCover(final Integer storyId) {
         InAppStoryService.useInstance(new UseServiceInstanceCallback() {
@@ -353,23 +445,22 @@ public class InAppStoryAPISubscribersManager {
         }
     }
 
-    public void openStory(int storyId, String uniqueId) {
-        for (IAPISubscriber subscriber: inAppStoryAPISubscribers.values()) {
-            if (subscriber instanceof InAppStoryAPIListSubscriber) {
-                List<StoryAPIData> currentData = ((InAppStoryAPIListSubscriber) subscriber).getStoryAPIData();
-                for (StoryAPIData data : currentData) {
-                    if (data.id == storyId) {
-                        data.opened = true;
-                        subscriber.updateStoryData(data);
-                        break;
-                    }
+    public void openStory(final int storyId, final String uniqueId) {
+        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+            @Override
+            public void use(@NonNull final InAppStoryService service) throws Exception {
+                Story story = service.getDownloadManager().getStoryById(storyId, Story.StoryType.COMMON);
+                if (story != null) {
+                    story.isOpened = true;
+                    updateStory(story, null, null);
+                }
+                IAPISubscriber currentSubscriber = inAppStoryAPISubscribers.get(uniqueId);
+                if (currentSubscriber instanceof InAppStoryAPIListSubscriber) {
+                    currentSubscriber.storyIsOpened(storyId);
                 }
             }
-        }
-        IAPISubscriber currentSubscriber = inAppStoryAPISubscribers.get(uniqueId);
-        if (currentSubscriber instanceof InAppStoryAPIListSubscriber) {
-            currentSubscriber.storyIsOpened(storyId);
-        }
+        });
+
     }
 
     public void closeReader() {
@@ -399,36 +490,25 @@ public class InAppStoryAPISubscribersManager {
         updateFavorites(new ArrayList<FavoriteImage>());
     }
 
-    public void storyFavorite(final int id, final boolean favStatus) {
+    public void storyFavorite() {
         InAppStoryService service = InAppStoryService.getInstance();
         if (service == null) return;
         List<FavoriteImage> actualFavoriteImages = new ArrayList<>(service.getFavoriteImages());
-        FavoriteImage imageById = null;
-        for (FavoriteImage image : actualFavoriteImages) {
-            if (image.getId() == id) {
-                imageById = image;
-                break;
-            }
-        }
-        if (favStatus && imageById == null) {
-            Story story = service.getDownloadManager().getStoryById(id, Story.StoryType.COMMON);
-            if (story == null) return;
-            actualFavoriteImages.add(0, new FavoriteImage(id, story.getImage(), story.getBackgroundColor()));
-            updateFavorites(actualFavoriteImages);
-        } else if (!favStatus && imageById != null) {
-            actualFavoriteImages.remove(imageById);
-            updateFavorites(actualFavoriteImages);
-        }
+
+        updateFavorites(actualFavoriteImages);
     }
 
 
     private void updateFavorites(List<FavoriteImage> favoriteImages) {
         InAppStoryService service = InAppStoryService.getInstance();
         if (service == null) return;
+        List<StoryFavoriteItemAPIData> favoriteItemAPIData = new ArrayList<>();
+        for (FavoriteImage favoriteImage : favoriteImages) {
+            favoriteItemAPIData.add(new StoryFavoriteItemAPIData(favoriteImage, null));
+        }
+        updateStoryFavoriteItemAPIData(favoriteItemAPIData);
         for (IAPISubscriber subscriber : inAppStoryAPISubscribers.values()) {
-            if (subscriber instanceof InAppStoryAPIListSubscriber) {
-                ((InAppStoryAPIListSubscriber) subscriber).updateFavoriteItemData(favoriteImages);
-            } else if (subscriber instanceof InAppStoryAPIFavoriteListSubscriber) {
+            if (subscriber instanceof InAppStoryAPIFavoriteListSubscriber) {
                 List<StoryAPIData> newData = new ArrayList<>();
                 List<StoryAPIData> currentData = ((InAppStoryAPIFavoriteListSubscriber) subscriber).getStoryAPIData();
                 for (FavoriteImage favoriteImage : favoriteImages) {

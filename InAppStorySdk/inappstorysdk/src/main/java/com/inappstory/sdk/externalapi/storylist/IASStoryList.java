@@ -54,6 +54,17 @@ public class IASStoryList {
         });
     }
 
+    public void showFavoriteItem(final String uniqueId) {
+        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryService service) throws Exception {
+                service.getApiSubscribersManager().showFavoriteItem(
+                        uniqueId
+                );
+            }
+        });
+    }
+
     public void updateVisiblePreviews(final List<Integer> storyIds, final String uniqueId) {
         InAppStoryService.useInstance(new UseServiceInstanceCallback() {
             @Override

@@ -55,6 +55,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -605,11 +606,26 @@ public class InAppStoryService {
                 @Override
                 public void use(@NonNull InAppStoryService service) {
                     List<FavoriteImage> favImages = service.getFavoriteImages();
+                    Story story = service.getDownloadManager().getStoryById(id, Story.StoryType.COMMON);
+                    if (story == null) return;
+                    if (favStatus) {
+                        FavoriteImage favoriteImage = new FavoriteImage(id, story.getImage(), story.getBackgroundColor());
+                        if (!favImages.contains(favoriteImage))
+                            favImages.add(0, favoriteImage);
+                    } else {
+                        Iterator<FavoriteImage> favoriteImageIterator = favImages.iterator();
+                        while (favoriteImageIterator.hasNext()) {
+                            if (favoriteImageIterator.next().getId() == id) {
+                                favoriteImageIterator.remove();
+                                break;
+                            }
+                        }
+                    }
                     boolean isEmpty = favImages.isEmpty();
                     for (ListManager sub : service.getListSubscribers()) {
                         sub.storyFavorite(id, favStatus, isEmpty);
                     }
-                    service.apiSubscribersManager.storyFavorite(id, favStatus);
+                    service.apiSubscribersManager.storyFavorite();
                 }
             });
         }
