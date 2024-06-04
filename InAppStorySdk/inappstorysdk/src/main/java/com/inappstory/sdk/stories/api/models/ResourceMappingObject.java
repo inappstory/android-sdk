@@ -14,9 +14,19 @@ public class ResourceMappingObject {
     public String key;
     @SerializedName("type")
     public String type;
+    @SerializedName("purpose")
+    public String purpose;
+    @SerializedName("filename")
+    public String filename;
 
     @SerializedName("slide_index")
     public Integer index;
+
+    @SerializedName("range_start")
+    public Long rangeStart;
+
+    @SerializedName("range_end")
+    public Long rangeEnd;
 
     public String getType() {
         return type;
@@ -30,6 +40,21 @@ public class ResourceMappingObject {
 
     public String getKey() {
         return key;
+    }
+
+    public String getFileName() {
+        return key;
+    }
+
+    public String getPurpose() {
+        return key;
+    }
+    public String getRangeStart() {
+        return key;
+    }
+
+    public long getRangeEnd() {
+        return rangeEnd != null ? rangeEnd : -1;
     }
 
     @Override

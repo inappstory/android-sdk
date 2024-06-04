@@ -124,7 +124,6 @@ public class Story implements Parcelable {
     }
 
 
-
     /**
      * Последний открытый слайд
      */
@@ -292,6 +291,7 @@ public class Story implements Parcelable {
         ArrayList<String> res = new ArrayList<>();
         for (ResourceMappingObject object : getSrcList()) {
             String objType = object.getType();
+            if (object.getKey() == null) continue;
             if (object.getIndex() == index &&
                     (
                             (type == null && (objType == null || objType.equals("image")))
@@ -309,6 +309,7 @@ public class Story implements Parcelable {
         ArrayList<String> res = new ArrayList<>();
         for (ResourceMappingObject object : getSrcList()) {
             String objType = object.getType();
+            if (object.getKey() == null) continue;
             if (object.getIndex() == index &&
                     (
                             (type == null && (objType == null || objType.equals("image")))
