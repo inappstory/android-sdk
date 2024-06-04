@@ -1,6 +1,25 @@
 Change Log
 ==========
 
+Version *1.18.3 (863)*
+----------------------------
+* New: added unfreezeUI JS method
+* Update: change default nav bar color to black
+* Fixed: tablet stories sizes
+
+Version *1.18.2 (862)*
+----------------------------
+
+* New: added file picker support;
+* New: added setLang(locale: Locale) and Builder's lang(locale: Locale) option in InAppStoryManager
+* Removed: runtime download from webViewClient
+* Fixed: bug in isDeviceIdEnabled usage
+* Fixed: bug in stackFeed and common feed sync opened statuses
+* Fixed: pause stories reader when goods widget is opened in tablet version
+* Fixed: disable drag in tablets
+* Fixed: NPE in ReaderManager.newStoryTask
+* Fixed: ClassCastException in DefaultOpenStoriesReader.onOpen
+
 Version *1.18.1 (861)*
 ----------------------------
 
