@@ -248,8 +248,6 @@ public class StackStoryObserver implements IStackFeedActions {
         boolean currentStoryIsOpened = true;
         if (current != null) {
             currentStoryIsOpened = current.isOpened;
-            current.isOpened = true;
-            current.saveStoryOpened(Story.StoryType.COMMON);
         }
         boolean showOnlyNewStories = !currentStoryIsOpened && showNewStories;
         if (currentStory.getDeeplink() != null && !currentStory.getDeeplink().isEmpty()) {
@@ -300,6 +298,10 @@ public class StackStoryObserver implements IStackFeedActions {
                     InAppStoryService.createExceptionLog(ignored);
                 }
             }
+            if (current != null) {
+                current.isOpened = true;
+                current.saveStoryOpened(Story.StoryType.COMMON);
+            }
         } else if (currentStory.getGameInstanceId() != null && !currentStory.getGameInstanceId().isEmpty()) {
             service.getListReaderConnector().changeStory(currentStory.id, listId, showOnlyNewStories);
             OldStatisticManager.useInstance(
@@ -328,6 +330,10 @@ public class StackStoryObserver implements IStackFeedActions {
                     currentStory.getGameInstanceId(),
                     null
             );
+            if (current != null) {
+                current.isOpened = true;
+                current.saveStoryOpened(Story.StoryType.COMMON);
+            }
         } else if (!currentStory.isHideInReader()) {
             List<Integer> readerStories = new ArrayList<>();
             int j = 0;

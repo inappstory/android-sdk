@@ -552,6 +552,7 @@ public class InAppStoryService {
                 @Override
                 public void use(@NonNull InAppStoryService service) {
                     for (StackStoryObserver storyObserver : stackStoryObservers.values()) {
+                        Log.e("changeStory", storyId + " " + listID);
                         storyObserver.onUpdate(storyId, listID, shownOnlyNewStories);
                     }
                     for (ListManager sub : service.getListSubscribers()) {
