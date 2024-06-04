@@ -2,6 +2,9 @@ package com.inappstory.sdk.lrudiskcache;
 
 import android.util.Log;
 
+import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.stories.api.models.logs.ExceptionLog;
 import com.inappstory.sdk.utils.CollectionUtils;
 
 import java.io.DataInputStream;
@@ -17,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.UUID;
 
 public class CacheJournal {
     private long currentSize;
@@ -131,9 +135,27 @@ public class CacheJournal {
         }
     }
 
+    private void generateCacheOverflowLog(long newFileSize, long limitSize) {
+        ExceptionLog log = new ExceptionLog();
+        log.timestamp = System.currentTimeMillis();
+        log.id = UUID.randomUUID().toString();
+        log.message = "CacheOverflow";
+        InAppStoryService service = InAppStoryService.getInstance();
+        log.session = (service != null ? service.getSession().getSessionId() : null);
+        log.stacktrace = "Current size: "
+                + currentSize
+                + "\nNew file size: "
+                + newFileSize
+                + "\nLimit size: "
+                + limitSize;
+        log.file = "DEBUG LOG";
+        log.line = 0;
+        InAppStoryManager.sendExceptionLog(log);
+    }
 
     private void removeOld(long newFileSize, long limitSize) throws IOException {
         if (currentSize + newFileSize > limitSize) {
+            generateCacheOverflowLog(newFileSize, limitSize);
             List<CacheJournalItem> items = CollectionUtils.mapOfArraysToArrayList(cacheItems);
             Collections.sort(items, new Utils.TimeComparator());
             for (int i = items.size() - 1; i > 0; i--) {
