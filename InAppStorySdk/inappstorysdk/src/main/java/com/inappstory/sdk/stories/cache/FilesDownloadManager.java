@@ -4,6 +4,7 @@ import android.content.Context;
 
 import com.inappstory.sdk.lrudiskcache.LruCachesHolder;
 import com.inappstory.sdk.stories.cache.usecases.FinishDownloadFileCallback;
+import com.inappstory.sdk.stories.cache.vod.VODCacheJournal;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -15,6 +16,8 @@ public class FilesDownloadManager {
     public LruCachesHolder getCachesHolder() {
         return cachesHolder;
     }
+
+    public VODCacheJournal vodCacheJournal = new VODCacheJournal();
 
     private final LruCachesHolder cachesHolder;
     private final DownloadThreadsHolder downloadThreadsHolder;

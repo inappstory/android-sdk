@@ -5,6 +5,7 @@ import com.inappstory.sdk.network.utils.ConnectionHeadersMap;
 import com.inappstory.sdk.network.utils.ResponseStringFromStream;
 import com.inappstory.sdk.stories.cache.FilesDownloadManager;
 
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -15,12 +16,10 @@ public class VODDownloader {
             String url,
             long downloadOffset,
             long downloadLimit,
-            long freeSpace,
-            FilesDownloadManager manager
+            long freeSpace
     ) throws Exception {
         URL urlS = new URL(url);
         HttpURLConnection urlConnection = (HttpURLConnection) urlS.openConnection();
-        urlConnection.setRequestProperty("Accept-Encoding", "br, gzip");
         urlConnection.setConnectTimeout(300000);
         urlConnection.setReadTimeout(300000);
         urlConnection.setRequestMethod("GET");
@@ -42,19 +41,22 @@ public class VODDownloader {
         try {
             urlConnection.connect();
         } catch (Exception e) {
-            if (manager != null)
-                manager.invokeFinishCallbacks(url, null);
             return null;
         }
         int status = urlConnection.getResponseCode();
         HashMap<String, String> headers = new HashMap<>();
 
-        long sz = urlConnection.getContentLength();
+        int sz = 0;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+            sz = (int) urlConnection.getContentLengthLong();
+        } else {
+            sz = urlConnection.getContentLength();
+        }
         if (freeSpace > 0 && sz > freeSpace) {
             urlConnection.disconnect();
             return null;
         }
-        for (String headerKey : urlConnection.getHeaderFields().keySet()) {
+       /* for (String headerKey : urlConnection.getHeaderFields().keySet()) {
             if (headerKey == null) continue;
             if (urlConnection.getHeaderFields().get(headerKey).isEmpty()) continue;
             headers.put(headerKey, urlConnection.getHeaderFields().get(headerKey).get(0));
@@ -62,13 +64,13 @@ public class VODDownloader {
                 String rangeHeader = urlConnection.getHeaderFields().get(headerKey).get(0);
                 if (!rangeHeader.equalsIgnoreCase("none")) {
                     try {
-                        sz = Long.parseLong(rangeHeader.split("/")[1]);
+                        sz = Integer.parseInt(rangeHeader.split("/")[1]);
                     } catch (Exception e) {
 
                     }
                 }
             }
-        }
+        }*/
         String decompression = null;
         HashMap<String, String> responseHeaders = new ConnectionHeadersMap().get(urlConnection);
         if (responseHeaders.containsKey("Content-Encoding")) {
@@ -81,10 +83,17 @@ public class VODDownloader {
         if (status > 350) {
             return null;
         }
+        byte[] data = new byte[1024];
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
         InputStream inputStream = responseStringFromStream.getInputStream(
                 urlConnection.getInputStream(),
                 decompression
         );
-        return null;
+        int nRead;
+
+        while ((nRead = inputStream.read(data, 0, data.length)) != -1) {
+            buffer.write(data, 0, nRead);
+        }
+        return buffer.toByteArray();
     }
 }

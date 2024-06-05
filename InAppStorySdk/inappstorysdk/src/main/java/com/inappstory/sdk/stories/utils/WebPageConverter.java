@@ -18,6 +18,9 @@ import com.inappstory.sdk.stories.api.models.ResourceMappingObject;
 import com.inappstory.sdk.stories.api.models.SessionAsset;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.cache.usecases.SessionAssetLocalUseCase;
+import com.inappstory.sdk.stories.cache.vod.VODCacheItemPart;
+import com.inappstory.sdk.stories.cache.vod.VODCacheJournal;
+import com.inappstory.sdk.stories.cache.vod.VODCacheJournalItem;
 import com.inappstory.sdk.utils.StringsUtils;
 
 import java.io.File;
@@ -81,7 +84,7 @@ public class WebPageConverter {
     private String replaceStaticResources(String innerWebData, Story story, final int index, LruDiskCache cache) throws IOException {
         List<ResourceMappingObject> resources = new ArrayList<>();
         resources.addAll(story.staticResources(index));
-        for (ResourceMappingObject object: resources) {
+        for (ResourceMappingObject object : resources) {
             String resource = object.getUrl();
             String resourceKey = object.getKey();
             String key = StringsUtils.md5(resource);
@@ -94,18 +97,30 @@ public class WebPageConverter {
         return innerWebData;
     }
 
-    private String replaceVODResources(String innerWebData, Story story, final int index, LruDiskCache cache) throws IOException {
+    private String replaceVODResources(
+            String innerWebData,
+            Story story,
+            final int index,
+            VODCacheJournal vodCacheJournal
+    ) throws IOException {
         List<ResourceMappingObject> resources = new ArrayList<>();
         resources.addAll(story.vodResources(index));
-        for (ResourceMappingObject object: resources) {
-            String resource = object.getUrl();
-            String resourceKey = object.getKey();
-            String key = StringsUtils.md5(resource);
-            File file = cache.getFileFromKey(key);
-            if (file != null && file.exists() && file.length() > 0) {
-                resource = "file://" + file.getAbsolutePath();
+        for (ResourceMappingObject object : resources) {
+            VODCacheJournalItem item = vodCacheJournal.getItem(object.filename);
+            if (item == null) {
+                vodCacheJournal.putItem(new VODCacheJournalItem(
+                        "",
+                        object.filename,
+                        object.filename,
+                        "",
+                        "",
+                        new ArrayList<VODCacheItemPart>(),
+                        "",
+                        0,
+                        object.getUrl(),
+                        System.currentTimeMillis()
+                ));
             }
-            innerWebData = innerWebData.replace(resourceKey, resource);
         }
         return innerWebData;
     }
@@ -222,7 +237,12 @@ public class WebPageConverter {
         if (service != null) {
             LruDiskCache cache = service.getCommonCache();
             localData = replaceStaticResources(localData, story, index, cache);
-            localData = replaceVODResources(localData, story, index, cache);
+            localData = replaceVODResources(
+                    localData,
+                    story,
+                    index,
+                    service.getFilesDownloadManager().vodCacheJournal
+            );
             localData = replaceImagePlaceholders(localData, story, index, cache);
             newLayout = replaceLayoutAssets(layout);
             Pair<String, String> replaced = replacePlaceholders(localData, newLayout);

@@ -19,6 +19,12 @@ public class VODCacheJournalItem {
     long downloadedSize;
     String mimeType;
 
+    public String getUrl() {
+        return url;
+    }
+
+    String url;
+
     List<VODCacheItemPart> parts = new ArrayList<>();
 
     public VODCacheJournalItem(
@@ -30,6 +36,7 @@ public class VODCacheJournalItem {
             List<VODCacheItemPart> parts,
             String mimeType,
             long fullSize,
+            String url,
             long time
     ) {
         this.parts.addAll(parts);
@@ -39,6 +46,7 @@ public class VODCacheJournalItem {
         this.ext = ext;
         this.replaceKey = replaceKey;
         this.mimeType = mimeType;
+        this.url = url;
         this.fullSize = fullSize;
         this.time = time;
         combineParts();
