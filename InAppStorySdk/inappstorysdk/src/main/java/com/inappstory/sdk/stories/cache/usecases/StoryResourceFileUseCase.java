@@ -1,11 +1,9 @@
 package com.inappstory.sdk.stories.cache.usecases;
 
-import android.util.Log;
 
 import androidx.annotation.WorkerThread;
 
 import com.inappstory.sdk.lrudiskcache.CacheJournalItem;
-import com.inappstory.sdk.lrudiskcache.LruCachesHolder;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.stories.cache.DownloadFileState;
 import com.inappstory.sdk.stories.cache.Downloader;
@@ -17,14 +15,20 @@ import java.io.IOException;
 
 public class StoryResourceFileUseCase extends GetCacheFileUseCase<DownloadFileState> {
     private final String url;
+    private final long rangeStart;
+    private final long rangeEnd;
 
     public StoryResourceFileUseCase(
             FilesDownloadManager filesDownloadManager,
-            String url
+            String url,
+            long rangeStart,
+            long rangeEnd
     ) {
         super(filesDownloadManager);
         this.url = url;
         this.uniqueKey = StringsUtils.md5(url);
+        this.rangeStart = rangeStart;
+        this.rangeEnd = rangeEnd;
         this.filePath = getCache().getCacheDir().getAbsolutePath() +
                 File.separator +
                 "v2" +
@@ -50,7 +54,7 @@ public class StoryResourceFileUseCase extends GetCacheFileUseCase<DownloadFileSt
                     @Override
                     public void finish(DownloadFileState state) {
                         downloadLog.sendResponseLog();
-                        if (state == null || state.downloadedSize != state.totalSize)  {
+                        if (state == null || state.downloadedSize != state.totalSize) {
                             return;
                         }
                         CacheJournalItem cacheJournalItem = generateCacheItem();
@@ -69,7 +73,8 @@ public class StoryResourceFileUseCase extends GetCacheFileUseCase<DownloadFileSt
                         null,
                         downloadLog.responseLog,
                         null,
-                        0,
+                        rangeStart,
+                        rangeEnd,
                         filesDownloadManager,
                         callback
                 );

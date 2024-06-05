@@ -1,11 +1,14 @@
 package com.inappstory.sdk.stories.cache;
 
+import static com.inappstory.sdk.stories.api.models.Story.VOD;
+
 import android.util.Pair;
 
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderType;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
+import com.inappstory.sdk.stories.api.models.ResourceMappingObject;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.utils.LoopedExecutor;
@@ -73,16 +76,25 @@ class SlidesDownloader {
         SlideTask slideTask = pageTasks.get(key);
         if (slideTask != null) {
             if (slideTask.loadType == 2) {
-                ArrayList<String> allUrls = new ArrayList<>();
-                allUrls.addAll(slideTask.urls);
-                allUrls.addAll(slideTask.videoUrls);
-
-                for (String url : allUrls) {
-                    String uniqueKey = StringsUtils.md5(url);
+                for (ResourceMappingObject object : slideTask.staticResources) {
+                    String uniqueKey = StringsUtils.md5(object.getUrl());
                     if (!cache.hasKey(uniqueKey)) {
                         remove = true;
                     } else {
                         if (cache.getFullFile(uniqueKey) == null) {
+                            synchronized (pageTasksLock) {
+                                slideTask.loadType = 0;
+                            }
+                            return 0;
+                        }
+                    }
+                }
+                for (ResourceMappingObject object : slideTask.vodResources) {
+                    String uniqueKey = StringsUtils.md5(object.getUrl());
+                    if (!cache.hasKey(uniqueKey)) {
+                        remove = true;
+                    } else {
+                        if (cache.getFileFromKey(uniqueKey) == null) {
                             synchronized (pageTasksLock) {
                                 slideTask.loadType = 0;
                             }
@@ -184,19 +196,19 @@ class SlidesDownloader {
         }
         synchronized (pageTasksLock) {
             int key = story.id;
-            int sz;
+            int slidesCountToCache;
             if (loadType == 3) {
-                sz = story.pages.size();
+                slidesCountToCache = story.pages.size();
             } else {
-                sz = 2;
+                slidesCountToCache = 2;
             }
-            for (int i = 0; i < sz; i++) {
-                if (pageTasks.get(new SlideTaskData(key, i, type)) == null) {
+            for (int slideIndex = 0; slideIndex < slidesCountToCache; slideIndex++) {
+                if (pageTasks.get(new SlideTaskData(key, slideIndex, type)) == null) {
                     SlideTask spt = new SlideTask();
                     spt.loadType = 0;
-                    spt.urls = story.getSrcListUrls(i, null);
-                    spt.videoUrls = story.getSrcListUrls(i, VIDEO);
-                    List<String> plNames = story.getPlaceholdersListNames(i);
+                    spt.staticResources = story.staticResources(slideIndex);
+                    spt.vodResources = story.vodResources(slideIndex);
+                    List<String> plNames = story.getPlaceholdersListNames(slideIndex);
                     for (String plName : plNames) {
                         Pair<ImagePlaceholderValue, ImagePlaceholderValue> value =
                                 imgPlaceholders.get(plName);
@@ -220,7 +232,7 @@ class SlidesDownloader {
                             }
                         }
                     }
-                    pageTasks.put(new SlideTaskData(key, i, type), spt);
+                    pageTasks.put(new SlideTaskData(key, slideIndex, type), spt);
                 }
             }
         }
@@ -260,20 +272,33 @@ class SlidesDownloader {
 
     Object loadSlide(SlideTaskData slideTaskData) {
         try {
-            ArrayList<String> allUrls = new ArrayList<>();
+            ArrayList<ResourceMappingObject> allResources = new ArrayList<>();
             SlideTask slideTask = pageTasks.get(slideTaskData);
             if (slideTask == null) {
                 loopedExecutor.freeExecutor();
                 return null;
             }
             synchronized (pageTasksLock) {
-                allUrls.addAll(slideTask.videoUrls);
-                allUrls.addAll(slideTask.urls);
+                allResources.addAll(slideTask.staticResources);
+                allResources.addAll(slideTask.vodResources);
             }
             DownloadPageFileStatus status = DownloadPageFileStatus.SUCCESS;
-            for (String url : allUrls) {
+            for (ResourceMappingObject object : allResources) {
+                long rangeStart = -1;
+                long rangeEnd = -1;
+                if (Objects.equals(object.getPurpose(), VOD)) {
+                    rangeStart = object.rangeStart;
+                    rangeEnd = object.rangeEnd;
+                }
                 if (callback != null) {
-                    status = callback.downloadFile(new UrlWithAlter(url), slideTaskData);
+                    status = callback.downloadFile(
+                            new UrlWithAlter(
+                                    object.getUrl()
+                            ),
+                            slideTaskData,
+                            rangeStart,
+                            rangeEnd
+                    );
                     if (status != DownloadPageFileStatus.SUCCESS)
                         break;
                 }
@@ -284,7 +309,7 @@ class SlidesDownloader {
             }
             for (UrlWithAlter urlWithAlter : slideTask.urlsWithAlter) {
                 if (callback != null) {
-                    callback.downloadFile(urlWithAlter, slideTaskData);
+                    callback.downloadFile(urlWithAlter, slideTaskData, -1, -1);
                 }
             }
             synchronized (pageTasksLock) {

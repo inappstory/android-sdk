@@ -82,7 +82,6 @@ public class GameSplashUseCase extends GetCacheFileUseCase<DownloadFileState> {
                         null,
                         downloadLog.responseLog,
                         null,
-                        0,
                         filesDownloadManager,
                         callback
                 );

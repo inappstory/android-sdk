@@ -4,7 +4,6 @@ package com.inappstory.sdk.stories.utils;
 import android.os.Build;
 import android.text.Html;
 import android.text.Spanned;
-import android.util.Log;
 import android.util.Pair;
 
 import androidx.annotation.NonNull;
@@ -15,9 +14,9 @@ import com.inappstory.sdk.game.cache.UseCaseCallback;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderType;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
+import com.inappstory.sdk.stories.api.models.ResourceMappingObject;
 import com.inappstory.sdk.stories.api.models.SessionAsset;
 import com.inappstory.sdk.stories.api.models.Story;
-import com.inappstory.sdk.stories.cache.Downloader;
 import com.inappstory.sdk.stories.cache.usecases.SessionAssetLocalUseCase;
 import com.inappstory.sdk.utils.StringsUtils;
 
@@ -79,18 +78,30 @@ public class WebPageConverter {
       }
   */
 
-    private String replaceResources(String innerWebData, Story story, final int index, LruDiskCache cache) throws IOException {
-        List<String> resourceKeys = new ArrayList<>();
-        resourceKeys.addAll(story.getSrcListKeys(index, null));
-        resourceKeys.addAll(story.getSrcListKeys(index, "video"));
-        List<String> resourceUrls = new ArrayList<>();
-        resourceUrls.addAll(story.getSrcListUrls(index, null));
-        resourceUrls.addAll(story.getSrcListUrls(index, "video"));
-        for (int i = 0; i < resourceKeys.size(); i++) {
-            String resource = resourceUrls.get(i);
-            String resourceKey = resourceKeys.get(i);
+    private String replaceStaticResources(String innerWebData, Story story, final int index, LruDiskCache cache) throws IOException {
+        List<ResourceMappingObject> resources = new ArrayList<>();
+        resources.addAll(story.staticResources(index));
+        for (ResourceMappingObject object: resources) {
+            String resource = object.getUrl();
+            String resourceKey = object.getKey();
             String key = StringsUtils.md5(resource);
             File file = cache.getFullFile(key);
+            if (file != null && file.exists() && file.length() > 0) {
+                resource = "file://" + file.getAbsolutePath();
+            }
+            innerWebData = innerWebData.replace(resourceKey, resource);
+        }
+        return innerWebData;
+    }
+
+    private String replaceVODResources(String innerWebData, Story story, final int index, LruDiskCache cache) throws IOException {
+        List<ResourceMappingObject> resources = new ArrayList<>();
+        resources.addAll(story.vodResources(index));
+        for (ResourceMappingObject object: resources) {
+            String resource = object.getUrl();
+            String resourceKey = object.getKey();
+            String key = StringsUtils.md5(resource);
+            File file = cache.getFileFromKey(key);
             if (file != null && file.exists() && file.length() > 0) {
                 resource = "file://" + file.getAbsolutePath();
             }
@@ -210,7 +221,8 @@ public class WebPageConverter {
         InAppStoryService service = InAppStoryService.getInstance();
         if (service != null) {
             LruDiskCache cache = service.getCommonCache();
-            localData = replaceResources(localData, story, index, cache);
+            localData = replaceStaticResources(localData, story, index, cache);
+            localData = replaceVODResources(localData, story, index, cache);
             localData = replaceImagePlaceholders(localData, story, index, cache);
             newLayout = replaceLayoutAssets(layout);
             Pair<String, String> replaced = replacePlaceholders(localData, newLayout);

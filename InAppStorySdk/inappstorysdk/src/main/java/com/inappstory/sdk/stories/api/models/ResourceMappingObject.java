@@ -34,8 +34,8 @@ public class ResourceMappingObject {
     public String getUrl() {
         return url;
     }
-    public Integer getIndex() {
-        return index;
+    public int getIndex() {
+        return index != null ? index : -1;
     }
 
     public String getKey() {
@@ -47,7 +47,7 @@ public class ResourceMappingObject {
     }
 
     public String getPurpose() {
-        return key;
+        return purpose != null ? purpose : "";
     }
     public String getRangeStart() {
         return key;

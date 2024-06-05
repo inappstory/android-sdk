@@ -75,7 +75,6 @@ public class SessionAssetUseCase extends GetCacheFileUseCase<Void> {
                             null,
                             downloadLog.responseLog,
                             null,
-                            0,
                             filesDownloadManager,
                             callback
                     );

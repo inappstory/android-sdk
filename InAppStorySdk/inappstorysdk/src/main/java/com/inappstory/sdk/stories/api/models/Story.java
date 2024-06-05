@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Created by Paperrose on 08.07.2018.
@@ -286,43 +287,27 @@ public class Story implements Parcelable {
         return res;
     }
 
+    public static final String VOD = "vod";
 
-    public List<String> getSrcListKeys(int index, String type) {
-        ArrayList<String> res = new ArrayList<>();
+    public List<ResourceMappingObject> vodResources(int index) {
+        ArrayList<ResourceMappingObject> res = new ArrayList<>();
         for (ResourceMappingObject object : getSrcList()) {
-            String objType = object.getType();
-            if (object.getKey() == null) continue;
-            if (object.getIndex() == index &&
-                    (
-                            (type == null && (objType == null || objType.equals("image")))
-                                    ||
-                                    (object.getType() != null && object.getType().equals(type))
-                    )
-            )
-                res.add(object.getKey());
+            if (Objects.equals(VOD, object.purpose) && object.getIndex() == index) {
+                res.add(object);
+            }
         }
         return res;
     }
 
-
-    public List<String> getSrcListUrls(int index, String type) {
-        ArrayList<String> res = new ArrayList<>();
+    public List<ResourceMappingObject> staticResources(int index) {
+        ArrayList<ResourceMappingObject> res = new ArrayList<>();
         for (ResourceMappingObject object : getSrcList()) {
-            String objType = object.getType();
-            if (object.getKey() == null) continue;
-            if (object.getIndex() == index &&
-                    (
-                            (type == null && (objType == null || objType.equals("image")))
-                                    ||
-                                    (object.getType() != null && object.getType().equals(type))
-                    )
-            )
-                res.add(object.getUrl());
-
+            if (!Objects.equals(VOD, object.purpose) && object.getIndex() == index) {
+                res.add(object);
+            }
         }
         return res;
     }
-
 
     public int getLike() {
         return like != null ? like : 0;

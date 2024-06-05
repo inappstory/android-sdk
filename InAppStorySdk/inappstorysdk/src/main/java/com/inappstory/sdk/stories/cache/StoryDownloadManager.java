@@ -379,7 +379,8 @@ public class StoryDownloadManager {
     }
 
 
-    public StoryDownloadManager() {}
+    public StoryDownloadManager() {
+    }
 
     public StoryDownloadManager(final Context context, ExceptionCache cache) {
         this.context = context;
@@ -417,7 +418,7 @@ public class StoryDownloadManager {
 
         this.slidesDownloader = new SlidesDownloader(new DownloadPageCallback() {
             @Override
-            public DownloadPageFileStatus downloadFile(UrlWithAlter urlWithAlter, SlideTaskData slideTaskData) {
+            public DownloadPageFileStatus downloadFile(UrlWithAlter urlWithAlter, SlideTaskData slideTaskData, long rangeStart, long rangeEnd) {
                 try {
                     Log.e("StoryResources", slideTaskData.storyId + " " + slideTaskData.index + " " + urlWithAlter);
                     InAppStoryService service = InAppStoryService.getInstance();
@@ -425,21 +426,26 @@ public class StoryDownloadManager {
                     GetCacheFileUseCase<DownloadFileState> useCase =
                             new StoryResourceFileUseCase(
                                     service.getFilesDownloadManager(),
-                                    urlWithAlter.getUrl()
+                                    urlWithAlter.getUrl(),
+                                    rangeStart,
+                                    rangeEnd
                             );
                     DownloadFileState state = useCase.getFile();
                     if (urlWithAlter.getAlter() != null && (state == null || state.getFullFile() == null)) {
+                        //placeholders case, download full
                         useCase =
                                 new StoryResourceFileUseCase(
                                         service.getFilesDownloadManager(),
-                                        urlWithAlter.getAlter()
+                                        urlWithAlter.getAlter(),
+                                        -1,
+                                        -1
                                 );
                         state = useCase.getFile();
                         if (state != null && state.getFullFile() != null)
                             return DownloadPageFileStatus.SUCCESS;
                         return DownloadPageFileStatus.SKIP;
                     }
-                    if (state != null && state.getFullFile() != null)
+                    if (state != null && (rangeEnd != -1 || state.getFullFile() != null))
                         return DownloadPageFileStatus.SUCCESS;
                 } catch (Exception e) {
                     e.printStackTrace();

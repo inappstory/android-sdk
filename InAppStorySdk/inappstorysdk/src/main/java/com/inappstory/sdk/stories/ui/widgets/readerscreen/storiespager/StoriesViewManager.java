@@ -148,13 +148,6 @@ public class StoriesViewManager {
         innerLoad(story);
     }
 
-    public void storyLoaded(int oId, int oInd) {
-        storyLoaded(oId, oInd, false);
-    }
-
-    public StoriesViewManager() {
-    }
-
     Context context;
 
     public StoriesViewManager(Context context) {

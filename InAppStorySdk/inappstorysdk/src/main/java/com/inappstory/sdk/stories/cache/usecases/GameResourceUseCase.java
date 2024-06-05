@@ -184,6 +184,7 @@ public class GameResourceUseCase extends GetCacheFileUseCase<Void> {
                         downloadLog.responseLog,
                         interruption,
                         offset,
+                        -1,
                         filesDownloadManager,
                         callback
                 );

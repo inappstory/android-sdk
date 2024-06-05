@@ -76,40 +76,6 @@ public class UgcStoryListItem extends BaseStoryListItem {
         return v;
     }
 
-    interface RunnableCallback {
-        void run(String path);
-
-        void error();
-    }
-
-    private void downloadFileAndSendToInterface(String url, final RunnableCallback callback) {
-        if (InAppStoryService.isNull()) return;
-        Downloader.downloadFileBackground(url, false, InAppStoryService.getInstance().getFastCache(), new FileLoadProgressCallback() {
-            @Override
-            public void onProgress(long loadedSize, long totalSize) {
-
-            }
-
-            @Override
-            public void onSuccess(File file) {
-                final String path = file.getAbsolutePath();
-                new Handler(Looper.getMainLooper()).post(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (getListItem != null) {
-                            callback.run(path);
-                        }
-                    }
-                });
-            }
-
-            @Override
-            public void onError(String error) {
-
-            }
-        });
-    }
-
     public Integer backgroundColor;
     public ClickCallback callback;
 

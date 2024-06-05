@@ -95,7 +95,6 @@ import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.stories.utils.StoryShareBroadcastReceiver;
 import com.inappstory.sdk.utils.ProgressCallback;
 import com.inappstory.sdk.utils.StringsUtils;
-import com.inappstory.sdk.utils.ZipLoader;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -460,7 +459,6 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
 
     public void closeGame() {
         if (closing) return;
-        ZipLoader.getInstance().terminate();
         if (manager == null) {
             forceFinish();
             return;

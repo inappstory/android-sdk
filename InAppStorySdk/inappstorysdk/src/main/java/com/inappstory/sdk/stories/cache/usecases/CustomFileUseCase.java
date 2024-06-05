@@ -76,7 +76,6 @@ public class CustomFileUseCase extends GetCacheFileUseCase<Void> {
                                     null,
                                     downloadLog.responseLog,
                                     null,
-                                    0,
                                     filesDownloadManager,
                                     callback
                             );

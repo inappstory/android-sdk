@@ -78,7 +78,6 @@ public class StoryCoverUseCase extends GetCacheFileUseCase<Void> {
                                     null,
                                     downloadLog.responseLog,
                                     null,
-                                    0,
                                     filesDownloadManager,
                                     callback
                             );
