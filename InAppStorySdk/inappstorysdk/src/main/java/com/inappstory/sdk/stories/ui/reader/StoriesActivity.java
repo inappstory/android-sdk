@@ -16,6 +16,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
+import android.webkit.WebView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -343,6 +344,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
             return;
         }
 
+        WebView.setWebContentsDebuggingEnabled(true);
         appearanceSettings = (StoriesReaderAppearanceSettings) getIntent()
                 .getSerializableExtra(StoriesReaderAppearanceSettings.SERIALIZABLE_KEY);
         launchData = (StoriesReaderLaunchData) getIntent().

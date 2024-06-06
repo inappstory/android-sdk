@@ -93,44 +93,18 @@ public class IASWebViewClient extends WebViewClient {
     }
 
     private WebResourceResponse parseVODRequest(WebResourceRequest request, Context context) {
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service == null) return null;
         String url = request.getUrl().toString();
         String vodAsset = "vod-asset/";
         int indexOf = url.indexOf(vodAsset);
         if (indexOf > -1) {
             String key = url.substring(indexOf + vodAsset.length());
-            VODCacheJournalItem item = service.getFilesDownloadManager().vodCacheJournal.getItem(key);
-            if (item == null) return null;
 
-            long startRange = -1;
-            long endRange = -1;
             Map<String, String> headers = request.getRequestHeaders();
             String rangeHeader = headers.get("range");
-            if (rangeHeader != null) {
-                Pair<Long, Long> range = getRange(rangeHeader);
-                startRange = range.first;
-                endRange = range.second;
-            }
-            try {
-                byte[] bytes = VODDownloader.downloadBytes(
-                        item.getUrl(),
-                        startRange,
-                        endRange,
-                        context.getCacheDir().getFreeSpace()
-                );
-                String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(
-                        MimeTypeMap.getFileExtensionFromUrl(item.getUrl())
-                );
-                Log.e("VODTest", item.getUrl() + " " + startRange + " " + endRange);
-                return new WebResourceResponse(
-                        mimeType,
-                        "BINARY",
-                        new ByteArrayInputStream(bytes)
-                );
-            } catch (Exception e) {
-                return null;
-            }
+
+            VODDownloader vodDownloader = new VODDownloader();
+            WebResourceResponse response = vodDownloader.getWebResourceResponse(rangeHeader, key, context);
+            return response;
         }
         return null;
     }
@@ -148,21 +122,5 @@ public class IASWebViewClient extends WebViewClient {
         return super.shouldInterceptRequest(view, request);
     }
 
-    private Pair<Long, Long> getRange(String rangeHeader) {
-        String rangeReplaced = rangeHeader.replaceAll("[^0-9]+", " ").trim();
-        String[] ranges = rangeReplaced.split(" ");
-        long start = -1;
-        try {
-            start = Long.parseLong(ranges[0]);
-        } catch (Exception e) {
 
-        }
-        long end = -1;
-        try {
-            end = Long.parseLong(ranges[1]);
-        } catch (Exception e) {
-
-        }
-        return new Pair<>(start, end);
-    }
 }
