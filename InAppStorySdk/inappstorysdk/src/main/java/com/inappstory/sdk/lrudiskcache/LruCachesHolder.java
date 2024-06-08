@@ -4,6 +4,7 @@ import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_10;
 import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_100;
 import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_200;
 import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_5;
+import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_500;
 
 import android.content.Context;
 
@@ -16,6 +17,7 @@ public class LruCachesHolder {
     private LruDiskCache fastCache;
     private LruDiskCache commonCache;
     private LruDiskCache infiniteCache;
+    private LruDiskCache vodCache;
 
     public LruCachesHolder(
             Context context,
@@ -51,7 +53,13 @@ public class LruCachesHolder {
                     cacheDir,
                     prefix + "infiniteCache",
                     cacheDir.getFreeSpace(),
-                    CacheType.FAST
+                    CacheType.INFINITE
+            );
+            this.vodCache = new LruDiskCache(
+                    cacheDir,
+                    prefix + "vodCache",
+                    MB_500,
+                    CacheType.VOD
             );
         } catch (IOException e) {
             InAppStoryService.createExceptionLog(e);
@@ -66,6 +74,10 @@ public class LruCachesHolder {
         return fastCache;
     }
 
+    public LruDiskCache getVodCache() {
+        return vodCache;
+    }
+
     public LruDiskCache getInfiniteCache() {
         return infiniteCache;
     }
@@ -74,5 +86,6 @@ public class LruCachesHolder {
         fastCache.clearCache();
         commonCache.clearCache();
         infiniteCache.clearCache();
+        vodCache.clearCache();
     }
 }

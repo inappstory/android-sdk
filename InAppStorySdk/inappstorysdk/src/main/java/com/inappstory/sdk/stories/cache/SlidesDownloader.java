@@ -284,23 +284,31 @@ class SlidesDownloader {
             }
             DownloadPageFileStatus status = DownloadPageFileStatus.SUCCESS;
             for (ResourceMappingObject object : allResources) {
-                long rangeStart = -1;
-                long rangeEnd = -1;
                 if (Objects.equals(object.getPurpose(), VOD)) {
-                    rangeStart = object.rangeStart;
-                    rangeEnd = object.rangeEnd;
-                }
-                if (callback != null) {
-                    status = callback.downloadFile(
-                            new UrlWithAlter(
-                                    object.getUrl()
-                            ),
-                            slideTaskData,
-                            rangeStart,
-                            rangeEnd
-                    );
-                    if (status != DownloadPageFileStatus.SUCCESS)
-                        break;
+                    long rangeStart = object.rangeStart;
+                    long rangeEnd = object.rangeEnd;
+                    if (callback != null) {
+                        status = callback.downloadVODFile(
+                                object.getUrl(),
+                                object.getFileName(),
+                                slideTaskData,
+                                rangeStart,
+                                rangeEnd
+                        );
+                        if (status != DownloadPageFileStatus.SUCCESS)
+                            break;
+                    }
+                } else {
+                    if (callback != null) {
+                        status = callback.downloadFile(
+                                new UrlWithAlter(
+                                        object.getUrl()
+                                ),
+                                slideTaskData
+                        );
+                        if (status != DownloadPageFileStatus.SUCCESS)
+                            break;
+                    }
                 }
             }
             if (status != DownloadPageFileStatus.SUCCESS) {
@@ -309,7 +317,7 @@ class SlidesDownloader {
             }
             for (UrlWithAlter urlWithAlter : slideTask.urlsWithAlter) {
                 if (callback != null) {
-                    callback.downloadFile(urlWithAlter, slideTaskData, -1, -1);
+                    callback.downloadFile(urlWithAlter, slideTaskData);
                 }
             }
             synchronized (pageTasksLock) {

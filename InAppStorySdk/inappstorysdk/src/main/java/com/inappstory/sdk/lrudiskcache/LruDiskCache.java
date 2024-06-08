@@ -27,6 +27,7 @@ public class LruDiskCache {
     public static final long MB_50 = 50 * MB_1;
     public static final long MB_100 = 100 * MB_1;
     public static final long MB_200 = 200 * MB_1;
+    public static final long MB_500 = 500 * MB_1;
 
     public File getCacheDir() {
         return manager.getCacheDir();

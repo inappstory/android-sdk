@@ -11,83 +11,65 @@ import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.network.utils.ConnectionHeadersMap;
 import com.inappstory.sdk.network.utils.ResponseStringFromStream;
 import com.inappstory.sdk.stories.cache.FilesDownloadManager;
+import com.inappstory.sdk.stories.cache.usecases.StoryVODResourceFileUseCase;
+import com.inappstory.sdk.stories.cache.usecases.StoryVODResourceFileUseCaseResult;
+import com.inappstory.sdk.utils.StringsUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.ByteBuffer;
 import java.util.HashMap;
-import java.util.Map;
 
 public class VODDownloader {
-    public WebResourceResponse getWebResourceResponse(
-            String rangeHeader,
-            String uniqueKey,
-            Context context
+    public boolean putBytesToFile(
+            long position,
+            byte[] bytes,
+            String filePath
     ) {
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service == null) return null;
-        VODCacheJournalItem item = service.getFilesDownloadManager().vodCacheJournal.getItem(uniqueKey);
-        if (item == null) return null;
-
-        ContentRange range;
-        if (rangeHeader != null) {
-            range = getRange(rangeHeader, item.fullSize);
-        } else {
-            range = new ContentRange(0, item.fullSize, item.fullSize);
-        }
-
-        try {
-            boolean hasInCache = false;//item.hasPart(startRange, endRange);
-            byte[] bytes = null;
-            if (hasInCache) {
-                bytes = getBytesFromFile(range, item.filePath);
-            } else {
-                Pair<ContentRange, byte[]> data = downloadBytes(
-                        item.getUrl(),
-                        range.start(),
-                        range.end(),
-                        context.getCacheDir().getFreeSpace()
-                );
-                if (data == null) return null;
-                bytes = data.second;
-                range = data.first;
-                item.fullSize = range.length();
-                item.addPart(range.start(), range.end());
+        File file = new File(filePath);
+        ByteBuffer byteBuffer = ByteBuffer.wrap(bytes);
+        if (!file.exists()) {
+            try {
+                file.mkdirs();
+                file.createNewFile();
+                FileOutputStream fos = new FileOutputStream(file);
+                fos.getChannel().write(byteBuffer, position);
+                return true;
+            } catch (IOException e) {
             }
-            String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(
-                    MimeTypeMap.getFileExtensionFromUrl(item.getUrl())
-            );
-            Log.e("VODTest", item.getUrl() + " " + range.start() + " " + range.end());
-
-
-            WebResourceResponse response = new WebResourceResponse(
-                    mimeType,
-                    "BINARY",
-                    new ByteArrayInputStream(bytes)
-            );
-            response.setStatusCodeAndReasonPhrase(206, "Partial Content");
-            Map<String, String> currentHeaders = response.getResponseHeaders();
-            if (currentHeaders == null) currentHeaders = new HashMap<>();
-            HashMap<String, String> newHeaders = new HashMap<>(currentHeaders);
-            if (hasInCache)
-                newHeaders.put("X-VOD-From-Cache", "");
-            newHeaders.put("Content-Range", "bytes=" + range.start() + "-" + range.end() + "/" + range.length());
-            newHeaders.put("Content-Length", "" + (bytes.length));
-            newHeaders.put("Content-Type", mimeType);
-            response.setResponseHeaders(newHeaders);
-            return response;
-        } catch (Exception e) {
-            return null;
         }
+        return false;
     }
 
-    private byte[] getBytesFromFile(ContentRange contentRange, String filename) {
+    public Pair<ContentRange, byte[]> getBytesFromFile(ContentRange contentRange, String filePath) {
+        File file = new File(filePath);
+        if (!file.exists()) {
+            return null;
+        }
+        long bytesAmount = contentRange.end() - contentRange.start();
+        if (bytesAmount > (long) Integer.MAX_VALUE) {
+            return null;
+        }
+        ByteBuffer bytes = ByteBuffer.allocateDirect((int) bytesAmount);
+        try {
+            FileInputStream fis = new FileInputStream(file);
+            fis.getChannel().read(bytes, contentRange.start());
+            return new Pair<>(contentRange, bytes.array());
+        } catch (IOException e) {
+
+        }
         return null;
     }
 
-    private Pair<ContentRange, byte[]> downloadBytes(
+    public Pair<ContentRange, byte[]> downloadBytes(
             String url,
             long from,
             long to,
@@ -152,7 +134,7 @@ public class VODDownloader {
         }
         String rangeHeader = responseHeaders.get("Content-Range");
         if (rangeHeader != null) {
-            contentRange = getRange(rangeHeader, sz);
+            contentRange = StringsUtils.getRange(rangeHeader, sz);
         }
         ResponseStringFromStream responseStringFromStream = new ResponseStringFromStream();
         if (status > 350) {
@@ -170,38 +152,5 @@ public class VODDownloader {
             buffer.write(data, 0, nRead);
         }
         return new Pair<>(contentRange, buffer.toByteArray());
-    }
-
-
-    private ContentRange getRange(String rangeHeader, long contentLength) {
-        String[] sections = rangeHeader.split("/");
-        String rangeSection = "";
-        rangeSection = sections[0];
-
-        String rangeReplaced = rangeSection.replaceAll("[^0-9]+", " ").trim();
-        String[] ranges = rangeReplaced.split(" ");
-        long start = -1;
-        long length = 0;
-        try {
-            start = Long.parseLong(ranges[0]);
-        } catch (Exception e) {
-
-        }
-        long end = -1;
-        try {
-            end = Long.parseLong(ranges[1]);
-        } catch (Exception e) {
-
-        }
-        if (sections.length == 2) {
-            length = Long.parseLong(sections[1]);
-        } else {
-            if (end != -1) {
-                length = end;
-            } else {
-                length = contentLength;
-            }
-        }
-        return new ContentRange(start, end, length);
     }
 }

@@ -623,7 +623,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
             @Override
             public void onProgressChanged(WebView view, int newProgress) {
                 boolean canInit = false;
-                if (newProgress > 30) {
+                if (newProgress >= 100) {
                     synchronized (initLock) {
                         if (!init && !initWithEmpty) {
                             init = true;

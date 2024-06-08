@@ -15,8 +15,12 @@ import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.stories.cache.Downloader;
 import com.inappstory.sdk.stories.cache.FilesDownloadManager;
+import com.inappstory.sdk.stories.cache.usecases.StoryVODResourceFileUseCase;
+import com.inappstory.sdk.stories.cache.usecases.StoryVODResourceFileUseCaseResult;
+import com.inappstory.sdk.stories.cache.vod.ContentRange;
 import com.inappstory.sdk.stories.cache.vod.VODCacheJournalItem;
 import com.inappstory.sdk.stories.cache.vod.VODDownloader;
+import com.inappstory.sdk.utils.StringsUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -92,7 +96,7 @@ public class IASWebViewClient extends WebViewClient {
         return response;
     }
 
-    private WebResourceResponse parseVODRequest(WebResourceRequest request, Context context) {
+    private WebResourceResponse parseVODRequest(WebResourceRequest request) {
         String url = request.getUrl().toString();
         String vodAsset = "vod-asset/";
         int indexOf = url.indexOf(vodAsset);
@@ -101,18 +105,72 @@ public class IASWebViewClient extends WebViewClient {
 
             Map<String, String> headers = request.getRequestHeaders();
             String rangeHeader = headers.get("range");
-
-            VODDownloader vodDownloader = new VODDownloader();
-            WebResourceResponse response = vodDownloader.getWebResourceResponse(rangeHeader, key, context);
+            WebResourceResponse response = getWebResourceResponse(rangeHeader, key);
             return response;
         }
         return null;
     }
 
+
+    private WebResourceResponse getWebResourceResponse(
+            String rangeHeader,
+            String uniqueKey
+    ) {
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service == null) return null;
+        VODCacheJournalItem item = service.getFilesDownloadManager().vodCacheJournal.getItem(uniqueKey);
+        if (item == null) return null;
+
+        ContentRange range;
+        if (rangeHeader != null) {
+            range = StringsUtils.getRange(rangeHeader, item.getFullSize());
+        } else {
+            range = new ContentRange(0, item.getFullSize(), item.getFullSize());
+        }
+
+        try {
+            StoryVODResourceFileUseCaseResult res = new StoryVODResourceFileUseCase(
+                    service.getFilesDownloadManager(),
+                    item.getUrl(),
+                    uniqueKey,
+                    range.start(),
+                    range.end()
+            ).getFile();
+            if (res == null) return null;
+            byte[] bytes = res.bytes();
+            range = res.range();
+            String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(
+                    MimeTypeMap.getFileExtensionFromUrl(item.getUrl())
+            );
+            Log.e("VODTest", item.getUrl() + " " + range.start() + " " + range.end());
+
+
+            WebResourceResponse response = new WebResourceResponse(
+                    mimeType,
+                    "BINARY",
+                    new ByteArrayInputStream(bytes)
+            );
+            response.setStatusCodeAndReasonPhrase(206, "Partial Content");
+            Map<String, String> currentHeaders = response.getResponseHeaders();
+            if (currentHeaders == null) currentHeaders = new HashMap<>();
+            HashMap<String, String> newHeaders = new HashMap<>(currentHeaders);
+            if (res.cached())
+                newHeaders.put("X-VOD-From-Cache", "");
+            newHeaders.put("Content-Range", "bytes=" + range.start() + "-" + range.end() + "/" + range.length());
+            newHeaders.put("Content-Length", "" + (bytes.length));
+            newHeaders.put("Content-Type", mimeType);
+            response.setResponseHeaders(newHeaders);
+            return response;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+
     @Override
     public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
         try {
-            WebResourceResponse response = parseVODRequest(request, view.getContext());
+            WebResourceResponse response = parseVODRequest(request);
             if (response == null)
                 response = getChangedResponse(request.getUrl().toString());
             if (response != null) return response;

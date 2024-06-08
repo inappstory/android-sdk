@@ -25,6 +25,8 @@ import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.SimpleListCallback;
 import com.inappstory.sdk.stories.cache.usecases.GetCacheFileUseCase;
 import com.inappstory.sdk.stories.cache.usecases.StoryResourceFileUseCase;
+import com.inappstory.sdk.stories.cache.usecases.StoryVODResourceFileUseCase;
+import com.inappstory.sdk.stories.cache.usecases.StoryVODResourceFileUseCaseResult;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
@@ -418,7 +420,7 @@ public class StoryDownloadManager {
 
         this.slidesDownloader = new SlidesDownloader(new DownloadPageCallback() {
             @Override
-            public DownloadPageFileStatus downloadFile(UrlWithAlter urlWithAlter, SlideTaskData slideTaskData, long rangeStart, long rangeEnd) {
+            public DownloadPageFileStatus downloadFile(UrlWithAlter urlWithAlter, SlideTaskData slideTaskData) {
                 try {
                     Log.e("StoryResources", slideTaskData.storyId + " " + slideTaskData.index + " " + urlWithAlter);
                     InAppStoryService service = InAppStoryService.getInstance();
@@ -426,9 +428,7 @@ public class StoryDownloadManager {
                     GetCacheFileUseCase<DownloadFileState> useCase =
                             new StoryResourceFileUseCase(
                                     service.getFilesDownloadManager(),
-                                    urlWithAlter.getUrl(),
-                                    rangeStart,
-                                    rangeEnd
+                                    urlWithAlter.getUrl()
                             );
                     DownloadFileState state = useCase.getFile();
                     if (urlWithAlter.getAlter() != null && (state == null || state.getFullFile() == null)) {
@@ -436,22 +436,52 @@ public class StoryDownloadManager {
                         useCase =
                                 new StoryResourceFileUseCase(
                                         service.getFilesDownloadManager(),
-                                        urlWithAlter.getAlter(),
-                                        -1,
-                                        -1
+                                        urlWithAlter.getAlter()
                                 );
                         state = useCase.getFile();
                         if (state != null && state.getFullFile() != null)
                             return DownloadPageFileStatus.SUCCESS;
                         return DownloadPageFileStatus.SKIP;
                     }
-                    if (state != null && (rangeEnd != -1 || state.getFullFile() != null))
+                    if (state != null && state.getFullFile() != null)
                         return DownloadPageFileStatus.SUCCESS;
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
                 return DownloadPageFileStatus.ERROR;
             }
+
+            @Override
+            public DownloadPageFileStatus downloadVODFile(
+                    String url,
+                    String uniqueKey,
+                    SlideTaskData slideTaskData,
+                    long start,
+                    long end
+            ) {
+                try {
+                    Log.e("StoryResources", slideTaskData.storyId + " " + slideTaskData.index + " " + url);
+                    InAppStoryService service = InAppStoryService.getInstance();
+                    if (service == null) return DownloadPageFileStatus.ERROR;
+                    GetCacheFileUseCase<StoryVODResourceFileUseCaseResult> useCase =
+                            new StoryVODResourceFileUseCase(
+                                    service.getFilesDownloadManager(),
+                                    url,
+                                    uniqueKey,
+                                    start,
+                                    end
+                            );
+
+                    StoryVODResourceFileUseCaseResult state = useCase.getFile();
+                    if (state != null) {
+                        return DownloadPageFileStatus.SUCCESS;
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                return DownloadPageFileStatus.ERROR;
+            }
+
 
             @Override
             public void onError(StoryTaskData storyTaskData) {

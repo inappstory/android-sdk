@@ -15,20 +15,14 @@ import java.io.IOException;
 
 public class StoryResourceFileUseCase extends GetCacheFileUseCase<DownloadFileState> {
     private final String url;
-    private final long rangeStart;
-    private final long rangeEnd;
 
     public StoryResourceFileUseCase(
             FilesDownloadManager filesDownloadManager,
-            String url,
-            long rangeStart,
-            long rangeEnd
+            String url
     ) {
         super(filesDownloadManager);
         this.url = url;
         this.uniqueKey = StringsUtils.md5(url);
-        this.rangeStart = rangeStart;
-        this.rangeEnd = rangeEnd;
         this.filePath = getCache().getCacheDir().getAbsolutePath() +
                 File.separator +
                 "v2" +
@@ -73,8 +67,6 @@ public class StoryResourceFileUseCase extends GetCacheFileUseCase<DownloadFileSt
                         null,
                         downloadLog.responseLog,
                         null,
-                        rangeStart,
-                        rangeEnd,
                         filesDownloadManager,
                         callback
                 );

@@ -237,7 +237,7 @@ public class StoriesViewManager {
             showRefresh = new ShowRefresh(index);
             showLoader = new ShowLoader(index);
             showRefreshHandler.postDelayed(showLoader, 500);
-            showRefreshHandler.postDelayed(showRefresh, 5000);
+            showRefreshHandler.postDelayed(showRefresh, 15000);
         }
         ((SimpleStoriesWebView) storiesView).loadWebData(layout, webdata);
     }

@@ -37,6 +37,7 @@ import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.stories.api.interfaces.IGameCenterData;
 import com.inappstory.sdk.stories.api.models.ExceptionCache;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
+import com.inappstory.sdk.stories.api.models.ResourceMappingObject;
 import com.inappstory.sdk.stories.api.models.SessionAsset;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.StoryPlaceholder;
@@ -45,6 +46,8 @@ import com.inappstory.sdk.stories.cache.FilesDownloadManager;
 import com.inappstory.sdk.stories.cache.FakeStoryDownloadManager;
 import com.inappstory.sdk.stories.cache.StoryDownloadManager;
 import com.inappstory.sdk.stories.cache.usecases.SessionAssetUseCase;
+import com.inappstory.sdk.stories.cache.vod.VODCacheItemPart;
+import com.inappstory.sdk.stories.cache.vod.VODCacheJournalItem;
 import com.inappstory.sdk.stories.exceptions.ExceptionManager;
 import com.inappstory.sdk.stories.managers.TimerManager;
 import com.inappstory.sdk.stories.stackfeed.StackStoryObserver;
@@ -405,6 +408,26 @@ public class InAppStoryService {
         return filesDownloadManager.getCachesHolder().getInfiniteCache();
     }
 
+    public void addVODResources(Story story, int slideIndex) {
+        List<ResourceMappingObject> resources = new ArrayList<>();
+        resources.addAll(story.vodResources(slideIndex));
+        for (ResourceMappingObject object : resources) {
+            VODCacheJournalItem item = filesDownloadManager.vodCacheJournal.getItem(object.filename);
+            if (item == null) {
+                filesDownloadManager.vodCacheJournal.putItem(new VODCacheJournalItem(
+                        "",
+                        object.filename,
+                        "",
+                        "",
+                        new ArrayList<VODCacheItemPart>(),
+                        "",
+                        0,
+                        object.getUrl(),
+                        System.currentTimeMillis()
+                ));
+            }
+        }
+    }
 
     public void setCacheSizes(Context context) {
         long cacheType = MB_100;

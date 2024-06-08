@@ -11,10 +11,18 @@ public class VODCacheJournalItem {
 
     String sha1;
     String uniqueKey;
-    String filePath;
     String ext;
     String replaceKey;
     long time;
+
+    public void setFullSize(long fullSize) {
+        this.fullSize = fullSize;
+    }
+
+    public long getFullSize() {
+        return fullSize;
+    }
+
     long fullSize;
     long downloadedSize;
     String mimeType;
@@ -30,7 +38,6 @@ public class VODCacheJournalItem {
     public VODCacheJournalItem(
             String sha1,
             String uniqueKey,
-            String filePath,
             String ext,
             String replaceKey,
             List<VODCacheItemPart> parts,
@@ -42,7 +49,6 @@ public class VODCacheJournalItem {
         this.parts.addAll(parts);
         this.sha1 = sha1;
         this.uniqueKey = uniqueKey;
-        this.filePath = filePath;
         this.ext = ext;
         this.replaceKey = replaceKey;
         this.mimeType = mimeType;
@@ -59,6 +65,11 @@ public class VODCacheJournalItem {
             size += part.end - part.start + 1;
         }
         downloadedSize = size;
+    }
+
+    public long getDownloadedSize() {
+        checkSize();
+        return downloadedSize;
     }
 
     private void combineParts() {
