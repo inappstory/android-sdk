@@ -401,7 +401,7 @@ public class InAppStoryAPISubscribersManager {
                         });
                     String video = story.getVideoUrl();
                     if (video != null && !video.isEmpty()) {
-                        Downloader.downloadFileAndSendToInterface(image, new RunnableCallback() {
+                        Downloader.downloadFileAndSendToInterface(video, new RunnableCallback() {
                             @Override
                             public void run(String path) {
                                 updateStory(story, null, path);
