@@ -13,6 +13,7 @@ import com.inappstory.sdk.externalapi.StoryAPIData;
 import com.inappstory.sdk.externalapi.StoryFavoriteItemAPIData;
 import com.inappstory.sdk.externalapi.storylist.IASStoryListRequestData;
 import com.inappstory.sdk.game.reader.GameStoryData;
+import com.inappstory.sdk.stories.api.models.Image;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadFavoritesCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadStoriesCallback;
@@ -391,7 +392,12 @@ public class InAppStoryAPISubscribersManager {
             public void use(@NonNull final InAppStoryService service) throws Exception {
                 final Story story = service.getDownloadManager().getStoryById(storyId, Story.StoryType.COMMON);
                 if (story != null) {
-                    final String image = story.getProperImage(AppearanceManager.getCommonInstance().csCoverQuality()).getUrl();
+                    Image storyImage = story.getProperImage(AppearanceManager.getCommonInstance().csCoverQuality());
+                    final String image;
+                    if (storyImage != null)
+                        image = storyImage.getUrl();
+                    else
+                        image = null;
                     String localImage = null;
                     String localVideo = null;
                     if (image != null && !image.isEmpty()) {
@@ -411,14 +417,14 @@ public class InAppStoryAPISubscribersManager {
                             });
                         }
                     }
-                    String video = story.getVideoUrl();
+                    final String video = story.getVideoUrl();
                     if (video != null && !video.isEmpty()) {
                         localVideo = urlLocalPath.get(video);
                         if (localVideo == null) {
                             Downloader.downloadFileAndSendToInterface(video, new RunnableCallback() {
                                 @Override
                                 public void run(String path) {
-                                    urlLocalPath.put(image, path);
+                                    urlLocalPath.put(video, path);
                                     updateStory(story, null, path);
                                 }
 
@@ -457,7 +463,10 @@ public class InAppStoryAPISubscribersManager {
             StoryData storyData = new StoryData(story, feed, SourceType.LIST);
             String imagePath = null;
             String videoPath = null;
-            final String imageUrl = story.getProperImage(AppearanceManager.getCommonInstance().csCoverQuality()).getUrl();
+            Image storyImage = story.getProperImage(AppearanceManager.getCommonInstance().csCoverQuality());
+            String imageUrl = null;
+            if (storyImage != null)
+                imageUrl = storyImage.getUrl();
             if (imageUrl != null && !imageUrl.isEmpty()) {
                 imagePath = urlLocalPath.get(imageUrl);
             }
@@ -509,7 +518,10 @@ public class InAppStoryAPISubscribersManager {
         String imagePath = image;
         String videoPath = video;
         if (imagePath == null) {
-            final String imageUrl = story.getProperImage(AppearanceManager.getCommonInstance().csCoverQuality()).getUrl();
+            Image storyImage = story.getProperImage(AppearanceManager.getCommonInstance().csCoverQuality());
+            String imageUrl = null;
+            if (storyImage != null)
+                imageUrl = storyImage.getUrl();
             if (imageUrl != null && !imageUrl.isEmpty()) {
                 imagePath = urlLocalPath.get(imageUrl);
             }
