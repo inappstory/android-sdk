@@ -9,6 +9,7 @@ import android.telephony.TelephonyManager;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.models.Request;
 import com.inappstory.sdk.network.utils.GetUrl;
 import com.inappstory.sdk.network.utils.UserAgent;
@@ -26,6 +27,7 @@ public class ProfilingManager {
     ArrayList<ProfilingTask> tasks = new ArrayList<>();
     ArrayList<ProfilingTask> readyTasks = new ArrayList<>();
     private static ProfilingManager INSTANCE;
+
 
     Context context;
     private static final ExecutorService runnableExecutor = Executors.newFixedThreadPool(1);
@@ -177,6 +179,9 @@ public class ProfilingManager {
 
     private int sendTiming(ProfilingTask task) throws Exception {
         InAppStoryService service = InAppStoryService.getInstance();
+        NetworkClient client = InAppStoryManager.getNetworkClient();
+        String baseUrl = "";
+        if (client != null) baseUrl = client.getBaseUrl();
         Map<String, String> qParams = new HashMap<>();
         qParams.put("s", (task.sessionId != null && !task.sessionId.isEmpty()) ? task.sessionId :
                 (service != null ? service.getSession().getSessionId() : ""));
@@ -190,7 +195,7 @@ public class ProfilingManager {
         HttpURLConnection connection = (HttpURLConnection) new GetUrl()
                 .fromRequest(
                         new Request.Builder()
-                                .url("profiling/timing")
+                                .url(baseUrl + "profiling/timing")
                                 .vars(qParams)
                                 .build()
                 )
