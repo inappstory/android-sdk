@@ -36,6 +36,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 public class InAppStoryAPISubscribersManager {
 
@@ -52,10 +53,14 @@ public class InAppStoryAPISubscribersManager {
         inAppStoryAPISubscribers.put(subscriber.getUniqueId(), subscriber);
     }
 
+    public final Map<String, String> urlLocalPath = new HashMap<>();
+
     public void clearCache() {
         shownStories.clear();
         storyFavoriteItemAPIData.clear();
+        urlLocalPath.clear();
     }
+
 
     public HashMap<String, IASStoryListRequestData> requestsData = new HashMap<>();
 
@@ -77,13 +82,13 @@ public class InAppStoryAPISubscribersManager {
                 @Override
                 public void use(@NonNull InAppStoryService service) throws Exception {
                     List<StoryAPIData> dataList = ((IStoryAPIDataHolder) subscriber).getStoryAPIData();
-                    openReader(context, storyId, uniqueKey, dataList, appearanceManager);
+                    readerIsOpened(context, storyId, uniqueKey, dataList, appearanceManager);
                 }
             });
         }
     }
 
-    private void openReader(
+    private void readerIsOpened(
             Context context,
             final int storyId,
             final String uniqueKey,
@@ -369,10 +374,10 @@ public class InAppStoryAPISubscribersManager {
 
     public final void updateStoryFavoriteItemAPIData(List<StoryFavoriteItemAPIData> favorites) {
         List<StoryFavoriteItemAPIData> currentFavorites = new ArrayList<>();
-        for (StoryFavoriteItemAPIData favorite: favorites) {
+        for (StoryFavoriteItemAPIData favorite : favorites) {
             currentFavorites.add(updateStoryFavoriteItemAPIDataItem(favorite));
         }
-        for (IAPISubscriber subscriber: inAppStoryAPISubscribers.values()) {
+        for (IAPISubscriber subscriber : inAppStoryAPISubscribers.values()) {
             if (subscriber instanceof InAppStoryAPIListSubscriber) {
                 ((InAppStoryAPIListSubscriber) subscriber).updateFavoriteItemData(currentFavorites);
             }
@@ -386,32 +391,46 @@ public class InAppStoryAPISubscribersManager {
             public void use(@NonNull final InAppStoryService service) throws Exception {
                 final Story story = service.getDownloadManager().getStoryById(storyId, Story.StoryType.COMMON);
                 if (story != null) {
-                    String image = story.getProperImage(AppearanceManager.getCommonInstance().csCoverQuality()).getUrl();
-                    if (image != null && !image.isEmpty())
-                        Downloader.downloadFileAndSendToInterface(image, new RunnableCallback() {
-                            @Override
-                            public void run(String path) {
-                                updateStory(story, path, null);
-                            }
+                    final String image = story.getProperImage(AppearanceManager.getCommonInstance().csCoverQuality()).getUrl();
+                    String localImage = null;
+                    String localVideo = null;
+                    if (image != null && !image.isEmpty()) {
+                        localImage = urlLocalPath.get(image);
+                        if (localImage == null) {
+                            Downloader.downloadFileAndSendToInterface(image, new RunnableCallback() {
+                                @Override
+                                public void run(String path) {
+                                    urlLocalPath.put(image, path);
+                                    updateStory(story, path, null);
+                                }
 
-                            @Override
-                            public void error() {
+                                @Override
+                                public void error() {
 
-                            }
-                        });
+                                }
+                            });
+                        }
+                    }
                     String video = story.getVideoUrl();
                     if (video != null && !video.isEmpty()) {
-                        Downloader.downloadFileAndSendToInterface(video, new RunnableCallback() {
-                            @Override
-                            public void run(String path) {
-                                updateStory(story, null, path);
-                            }
+                        localVideo = urlLocalPath.get(video);
+                        if (localVideo == null) {
+                            Downloader.downloadFileAndSendToInterface(video, new RunnableCallback() {
+                                @Override
+                                public void run(String path) {
+                                    urlLocalPath.put(image, path);
+                                    updateStory(story, null, path);
+                                }
 
-                            @Override
-                            public void error() {
+                                @Override
+                                public void error() {
 
-                            }
-                        });
+                                }
+                            });
+                        }
+                    }
+                    if (localImage != null && localVideo != null) {
+                        updateStory(story, localImage, localVideo);
                     }
                 }
             }
@@ -463,15 +482,33 @@ public class InAppStoryAPISubscribersManager {
 
     }
 
-    public void closeReader() {
-
+    public void readerIsClosed() {
+        for (IAPISubscriber subscriber : inAppStoryAPISubscribers.values()) {
+            subscriber.readerIsClosed();
+        }
     }
 
-    public void openReader() {
-
+    public void readerIsOpened() {
+        for (IAPISubscriber subscriber : inAppStoryAPISubscribers.values()) {
+            subscriber.readerIsOpened();
+        }
     }
 
-    private void updateStory(Story story, String imagePath, String videoPath) {
+    private void updateStory(Story story, String image, String video) {
+        String imagePath = image;
+        String videoPath = video;
+        if (imagePath == null) {
+            final String imageUrl = story.getProperImage(AppearanceManager.getCommonInstance().csCoverQuality()).getUrl();
+            if (imageUrl != null && !imageUrl.isEmpty()) {
+                imagePath = urlLocalPath.get(imageUrl);
+            }
+        }
+        if (videoPath == null) {
+            String videoUrl = story.getVideoUrl();
+            if (videoUrl != null && !videoUrl.isEmpty()) {
+                videoPath = urlLocalPath.get(videoUrl);
+            }
+        }
         for (IAPISubscriber subscriber : inAppStoryAPISubscribers.values()) {
             if (subscriber instanceof IStoryAPIDataHolder) {
                 StoryAPIData data = ((IStoryAPIDataHolder) subscriber).updateStoryAPIData(

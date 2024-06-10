@@ -552,27 +552,27 @@ public class InAppStoryService {
             });
         }
 
-        public void closeReader() {
+        public void readerIsClosed() {
             useInstance(new UseServiceInstanceCallback() {
                 @Override
                 public void use(@NonNull InAppStoryService service) {
                     for (ListManager sub : service.getListSubscribers()) {
-                        sub.closeReader();
+                        sub.readerIsClosed();
                     }
 
-                    apiSubscribersManager.closeReader();
+                    apiSubscribersManager.readerIsClosed();
                 }
             });
         }
 
-        public void openReader() {
+        public void readerIsOpened() {
             useInstance(new UseServiceInstanceCallback() {
                 @Override
                 public void use(@NonNull InAppStoryService service) {
                     for (ListManager sub : service.getListSubscribers()) {
-                        sub.openReader();
+                        sub.readerIsOpened();
                     }
-                    service.apiSubscribersManager.openReader();
+                    service.apiSubscribersManager.readerIsOpened();
                 }
             });
 

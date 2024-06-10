@@ -51,7 +51,6 @@ import com.inappstory.sdk.stories.ui.widgets.elasticview.ElasticDragDismissFrame
 import com.inappstory.sdk.stories.utils.IASBackPressHandler;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 import com.inappstory.sdk.stories.utils.Sizes;
-import com.inappstory.sdk.stories.utils.StatusBarController;
 
 
 public class StoriesActivity extends AppCompatActivity implements BaseReaderScreen, ShowGoodsCallback {
@@ -424,7 +423,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
         if (inAppStoryManager != null) {
             inAppStoryManager.getOpenStoriesReader().onHideStatusBar(this);
         }
-        service.getListReaderConnector().openReader();
+        service.getListReaderConnector().readerIsOpened();
         type = launchData.getType();
         draggableFrame.type = type;
         if (android.os.Build.VERSION.SDK_INT != Build.VERSION_CODES.O) {
@@ -533,7 +532,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
                 WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
         blockView.setVisibility(View.VISIBLE);
         if (service != null) {
-            service.getListReaderConnector().closeReader();
+            service.getListReaderConnector().readerIsClosed();
             Story story = service.getDownloadManager()
                     .getStoryById(service.getCurrentId(), type);
             if (story != null) {
@@ -593,7 +592,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
                 WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
         blockView.setVisibility(View.VISIBLE);
         if (service != null) {
-            service.getListReaderConnector().closeReader();
+            service.getListReaderConnector().readerIsClosed();
             Story story = service.getDownloadManager()
                     .getStoryById(service.getCurrentId(), type);
             if (story != null) {

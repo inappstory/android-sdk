@@ -9,7 +9,6 @@ import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -434,7 +433,7 @@ public abstract class StoriesMainFragment extends Fragment implements
                 WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
         blockView.setVisibility(View.VISIBLE);
         if (service != null) {
-            service.getListReaderConnector().closeReader();
+            service.getListReaderConnector().readerIsClosed();
             Story story = service.getDownloadManager().getStoryById(
                     service.getCurrentId(),
                     launchData.getType()
