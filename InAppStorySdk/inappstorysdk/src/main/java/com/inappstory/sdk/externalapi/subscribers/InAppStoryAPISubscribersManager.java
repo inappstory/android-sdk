@@ -3,6 +3,7 @@ package com.inappstory.sdk.externalapi.subscribers;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 
@@ -540,6 +541,7 @@ public class InAppStoryAPISubscribersManager {
                         videoPath
                 );
                 if (data != null) {
+                    Log.e("IAS_SDK_API", "update: " + data);
                     subscriber.updateStoryData(data);
                 }
             }
