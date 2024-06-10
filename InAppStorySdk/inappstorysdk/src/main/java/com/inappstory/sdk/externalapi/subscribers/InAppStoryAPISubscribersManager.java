@@ -455,7 +455,18 @@ public class InAppStoryAPISubscribersManager {
         List<StoryAPIData> storyAPIData = new ArrayList<>();
         for (Story story : stories) {
             StoryData storyData = new StoryData(story, feed, SourceType.LIST);
-            storyAPIData.add(new StoryAPIData(story, storyData, null, null));
+            String imagePath = null;
+            String videoPath = null;
+            final String imageUrl = story.getProperImage(AppearanceManager.getCommonInstance().csCoverQuality()).getUrl();
+            if (imageUrl != null && !imageUrl.isEmpty()) {
+                imagePath = urlLocalPath.get(imageUrl);
+            }
+            String videoUrl = story.getVideoUrl();
+            if (videoUrl != null && !videoUrl.isEmpty()) {
+                videoPath = urlLocalPath.get(videoUrl);
+            }
+
+            storyAPIData.add(new StoryAPIData(story, storyData, imagePath, videoPath));
         }
         IAPISubscriber subscriber = inAppStoryAPISubscribers.get(uniqueId);
         if (subscriber instanceof IStoryAPIDataHolder) {
