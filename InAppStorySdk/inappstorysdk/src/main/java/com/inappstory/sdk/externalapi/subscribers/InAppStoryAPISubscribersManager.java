@@ -533,6 +533,8 @@ public class InAppStoryAPISubscribersManager {
                 videoPath = urlLocalPath.get(videoUrl);
             }
         }
+
+        Log.e("IAS_SDK_API", "update: " + story.id + " " + image + " " + video);
         for (IAPISubscriber subscriber : inAppStoryAPISubscribers.values()) {
             if (subscriber instanceof IStoryAPIDataHolder) {
                 StoryAPIData data = ((IStoryAPIDataHolder) subscriber).updateStoryAPIData(
@@ -541,7 +543,7 @@ public class InAppStoryAPISubscribersManager {
                         videoPath
                 );
                 if (data != null) {
-                    Log.e("IAS_SDK_API", "update: " + data);
+                    Log.e("IAS_SDK_API", "update data: " + data);
                     subscriber.updateStoryData(data);
                 }
             }
