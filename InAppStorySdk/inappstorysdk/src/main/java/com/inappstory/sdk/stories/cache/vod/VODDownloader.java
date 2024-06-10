@@ -38,13 +38,18 @@ public class VODDownloader {
         ByteBuffer byteBuffer = ByteBuffer.wrap(bytes);
         if (!file.exists()) {
             try {
-                file.mkdirs();
+                file.getParentFile().mkdirs();
                 file.createNewFile();
-                FileOutputStream fos = new FileOutputStream(file);
-                fos.getChannel().write(byteBuffer, position);
-                return true;
             } catch (IOException e) {
+                e.printStackTrace();
             }
+        }
+        try {
+            FileOutputStream fos = new FileOutputStream(file);
+            fos.getChannel().write(byteBuffer, position);
+            return true;
+        } catch (IOException e) {
+            e.printStackTrace();
         }
         return false;
     }

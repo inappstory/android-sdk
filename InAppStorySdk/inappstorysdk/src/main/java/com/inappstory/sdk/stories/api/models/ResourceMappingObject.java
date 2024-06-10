@@ -43,7 +43,7 @@ public class ResourceMappingObject {
     }
 
     public String getFileName() {
-        return key;
+        return filename;
     }
 
     public String getPurpose() {

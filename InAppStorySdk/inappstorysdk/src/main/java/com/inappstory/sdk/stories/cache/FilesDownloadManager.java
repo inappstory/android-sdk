@@ -6,6 +6,7 @@ import com.inappstory.sdk.lrudiskcache.LruCachesHolder;
 import com.inappstory.sdk.stories.cache.usecases.FinishDownloadFileCallback;
 import com.inappstory.sdk.stories.cache.vod.VODCacheJournal;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -17,7 +18,11 @@ public class FilesDownloadManager {
         return cachesHolder;
     }
 
-    public VODCacheJournal vodCacheJournal = new VODCacheJournal();
+    public VODCacheJournal getVodCacheJournal() {
+        return vodCacheJournal;
+    }
+
+    public final VODCacheJournal vodCacheJournal;
 
     private final LruCachesHolder cachesHolder;
     private final DownloadThreadsHolder downloadThreadsHolder;
@@ -56,7 +61,16 @@ public class FilesDownloadManager {
 
     public FilesDownloadManager(Context context, int cacheSize) {
         cachesHolder = new LruCachesHolder(context, cacheSize);
-        downloadThreadsHolder  = new DownloadThreadsHolder();
+        File file = new File(
+                context.getFilesDir() +
+                        File.separator +
+                        "ias" +
+                        File.separator +
+                        "vod",
+                "vod_journal.bin"
+        );
+        vodCacheJournal = new VODCacheJournal(file);
+        downloadThreadsHolder = new DownloadThreadsHolder();
     }
 
     public void useFastDownloader(Runnable runnable) {

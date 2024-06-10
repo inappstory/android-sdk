@@ -1,9 +1,7 @@
 package com.inappstory.sdk.stories.ui.views;
 
-import android.content.Context;
 import android.net.Uri;
 import android.util.Log;
-import android.util.Pair;
 import android.webkit.MimeTypeMap;
 import android.webkit.URLUtil;
 import android.webkit.WebResourceRequest;
@@ -14,12 +12,10 @@ import android.webkit.WebViewClient;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.stories.cache.Downloader;
-import com.inappstory.sdk.stories.cache.FilesDownloadManager;
 import com.inappstory.sdk.stories.cache.usecases.StoryVODResourceFileUseCase;
 import com.inappstory.sdk.stories.cache.usecases.StoryVODResourceFileUseCaseResult;
 import com.inappstory.sdk.stories.cache.vod.ContentRange;
 import com.inappstory.sdk.stories.cache.vod.VODCacheJournalItem;
-import com.inappstory.sdk.stories.cache.vod.VODDownloader;
 import com.inappstory.sdk.utils.StringsUtils;
 
 import java.io.ByteArrayInputStream;
@@ -28,8 +24,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 
 public class IASWebViewClient extends WebViewClient {
@@ -118,7 +112,7 @@ public class IASWebViewClient extends WebViewClient {
     ) {
         InAppStoryService service = InAppStoryService.getInstance();
         if (service == null) return null;
-        VODCacheJournalItem item = service.getFilesDownloadManager().vodCacheJournal.getItem(uniqueKey);
+        VODCacheJournalItem item = service.getFilesDownloadManager().getVodCacheJournal().getItem(uniqueKey);
         if (item == null) return null;
 
         ContentRange range;
@@ -137,7 +131,7 @@ public class IASWebViewClient extends WebViewClient {
                     range.end()
             ).getFile();
             if (res == null) return null;
-            byte[] bytes = res.bytes();
+            File file = res.file();
             range = res.range();
             String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(
                     MimeTypeMap.getFileExtensionFromUrl(item.getUrl())
@@ -148,16 +142,20 @@ public class IASWebViewClient extends WebViewClient {
             WebResourceResponse response = new WebResourceResponse(
                     mimeType,
                     "BINARY",
-                    new ByteArrayInputStream(bytes)
+                    new FileInputStream(file)
             );
             response.setStatusCodeAndReasonPhrase(206, "Partial Content");
             Map<String, String> currentHeaders = response.getResponseHeaders();
             if (currentHeaders == null) currentHeaders = new HashMap<>();
             HashMap<String, String> newHeaders = new HashMap<>(currentHeaders);
+            Log.e("VOD_Resource", item.getUrl() + " " +
+                    (range.start() + "-" + range.end() + "/" + range.length())
+                    + " Cached:" + res.cached());
             if (res.cached())
                 newHeaders.put("X-VOD-From-Cache", "");
+            newHeaders.put("Access-Control-Allow-Origin", "*");
             newHeaders.put("Content-Range", "bytes=" + range.start() + "-" + range.end() + "/" + range.length());
-            newHeaders.put("Content-Length", "" + (bytes.length));
+            newHeaders.put("Content-Length", "" + (range.length()));
             newHeaders.put("Content-Type", mimeType);
             response.setResponseHeaders(newHeaders);
             return response;

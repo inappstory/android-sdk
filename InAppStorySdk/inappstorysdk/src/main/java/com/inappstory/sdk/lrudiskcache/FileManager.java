@@ -75,16 +75,6 @@ public class FileManager {
         return file;
     }
 
-    public File getVodJournalFile() {
-        File file = new File(cacheDir, "vod_journal.bin");
-        try {
-            cacheDir.mkdirs();
-            if (!file.exists()) file.createNewFile();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return file;
-    }
 
     public void delete(String name) throws IOException {
         File file = new File(cacheDir, name);

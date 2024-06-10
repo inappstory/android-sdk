@@ -53,13 +53,14 @@ public class StoryVODResourceFileUseCase extends GetCacheFileUseCase<StoryVODRes
     public StoryVODResourceFileUseCaseResult getFile() {
         downloadLog.generateRequestLog(url);
         DownloadFileState fileState = getCache().get(uniqueKey);
-        VODCacheJournalItem vodJournalItem = filesDownloadManager.vodCacheJournal.getItem(uniqueKey);
+        VODCacheJournalItem vodJournalItem = filesDownloadManager.getVodCacheJournal().getItem(uniqueKey);
         VODDownloader vodDownloader = new VODDownloader();
         Pair<ContentRange, byte[]> result = null;
         if (fileState != null
                 && fileState.file != null
                 && fileState.file.exists()
                 && vodJournalItem != null
+                && vodJournalItem.hasPart(rangeStart, rangeEnd)
         ) {
             result = vodDownloader.getBytesFromFile(
                     new ContentRange(
@@ -69,18 +70,19 @@ public class StoryVODResourceFileUseCase extends GetCacheFileUseCase<StoryVODRes
                     ),
                     fileState.file.getAbsolutePath()
             );
-
-            downloadLog.generateResponseLog(true, filePath);
-            downloadLog.sendRequestResponseLog();
-            return new StoryVODResourceFileUseCaseResult(
-                    result.first,
-                    result.second,
-                    true
-            );
+            if (result != null) {
+                downloadLog.generateResponseLog(true, filePath);
+                downloadLog.sendRequestResponseLog();
+                return new StoryVODResourceFileUseCaseResult(
+                        result.first,
+                        fileState.file,
+                        true
+                );
+            }
         }
         if (vodJournalItem == null) {
             vodJournalItem = generateVODCacheItem();
-            filesDownloadManager.vodCacheJournal.putItem(vodJournalItem);
+            filesDownloadManager.getVodCacheJournal().putItem(vodJournalItem);
         }
         try {
             downloadLog.sendRequestLog();
@@ -94,21 +96,21 @@ public class StoryVODResourceFileUseCase extends GetCacheFileUseCase<StoryVODRes
                     );
             downloadLog.sendResponseLog();
             if (result != null) {
-                boolean putToFile = vodDownloader.putBytesToFile(rangeStart, result.second, filePath);
-                if (putToFile) {
+                if (vodDownloader.putBytesToFile(rangeStart, result.second, filePath)) {
                     vodJournalItem.addPart(rangeStart, rangeEnd);
                     vodJournalItem.setFullSize(result.first.length());
-                    filesDownloadManager.vodCacheJournal.writeJournal();
+                    filesDownloadManager.getVodCacheJournal().writeJournal();
                     long size = vodJournalItem.getDownloadedSize();
 
                     CacheJournalItem cacheJournalItem = generateCacheItem();
                     cacheJournalItem.setSize(size);
                     cacheJournalItem.setDownloadedSize(size);
+                    getCache().put(cacheJournalItem);
+                    return new StoryVODResourceFileUseCaseResult(
+                            result.first,
+                            new File(filePath),
+                            false);
                 }
-                return new StoryVODResourceFileUseCaseResult(
-                        result.first,
-                        result.second,
-                        false);
             }
         } catch (Exception e) {
             e.printStackTrace();

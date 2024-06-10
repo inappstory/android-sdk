@@ -412,9 +412,9 @@ public class InAppStoryService {
         List<ResourceMappingObject> resources = new ArrayList<>();
         resources.addAll(story.vodResources(slideIndex));
         for (ResourceMappingObject object : resources) {
-            VODCacheJournalItem item = filesDownloadManager.vodCacheJournal.getItem(object.filename);
+            VODCacheJournalItem item = filesDownloadManager.getVodCacheJournal().getItem(object.filename);
             if (item == null) {
-                filesDownloadManager.vodCacheJournal.putItem(new VODCacheJournalItem(
+                filesDownloadManager.getVodCacheJournal().putItem(new VODCacheJournalItem(
                         "",
                         object.filename,
                         "",
