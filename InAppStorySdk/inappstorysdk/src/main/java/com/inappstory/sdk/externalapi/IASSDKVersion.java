@@ -10,4 +10,13 @@ public class IASSDKVersion {
     public String apiVersion;
     public String version;
     public int build;
+
+    @Override
+    public String toString() {
+        return "IASSDKVersion{" +
+                "apiVersion='" + apiVersion + '\'' +
+                ", version='" + version + '\'' +
+                ", build=" + build +
+                '}';
+    }
 }
