@@ -583,13 +583,26 @@ public class InAppStoryAPISubscribersManager {
                     if (addNew) {
                         Story story = service.getDownloadManager().getStoryById(favoriteImage.getId(), Story.StoryType.COMMON);
                         if (story == null) return;
+                        String imagePath = null;
+                        Image storyImage = story.getProperImage(AppearanceManager.getCommonInstance().csCoverQuality());
+                        String imageUrl = null;
+                        if (storyImage != null)
+                            imageUrl = storyImage.getUrl();
+                        if (imageUrl != null && !imageUrl.isEmpty()) {
+                            imagePath = urlLocalPath.get(imageUrl);
+                        }
+                        String videoPath = null;
+                        String videoUrl = story.getVideoUrl();
+                        if (videoUrl != null && !videoUrl.isEmpty()) {
+                            videoPath = urlLocalPath.get(videoUrl);
+                        }
                         newData.add(
                                 0,
                                 new StoryAPIData(
                                         story,
                                         new StoryData(story, null, SourceType.FAVORITE),
-                                        null,
-                                        null
+                                        imagePath,
+                                        videoPath
                                 )
                         );
                     }

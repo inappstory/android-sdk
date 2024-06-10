@@ -65,7 +65,7 @@ public class InAppStoryAPI {
 
     public IASSDKVersion getVersion() {
         Pair<String, Integer> version = InAppStoryManager.getLibraryVersion();
-        return new IASSDKVersion(version.first, version.second);
+        return new IASSDKVersion(version.first, "1.0.0-rc1", version.second);
     }
 
     public void clearCache() {

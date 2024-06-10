@@ -4,28 +4,6 @@ import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 
 public class StoryAPIData {
-    private StoryAPIData(
-            int id,
-            StoryData storyData,
-            String imageFilePath,
-            String videoFilePath,
-            boolean hasAudio,
-            String title,
-            String titleColor,
-            String backgroundColor,
-            boolean opened
-    ) {
-        this.id = id;
-        this.storyData = storyData;
-        this.imageFilePath = imageFilePath;
-        this.videoFilePath = videoFilePath;
-        this.hasAudio = hasAudio;
-        this.title = title;
-        this.titleColor = titleColor;
-        this.backgroundColor = backgroundColor;
-        this.opened = opened;
-    }
-
     public int id;
     public StoryData storyData;
     public String imageFilePath;
