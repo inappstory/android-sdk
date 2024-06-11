@@ -45,21 +45,27 @@ public class GameProgressLoader extends RelativeLayout implements IGameProgressL
         setGravity(Gravity.CENTER);
     }
 
+    @Override
+    public void setVisibility(int visibility) {
+        super.setVisibility(visibility);
+        Log.e("ProgressVisibility", visibility + "");
+    }
+
     private boolean canUseLottieAnimation = false;
 
-    IGameProgressLoader progressLoader;
+    IGameProgressLoader progressLoader = null;
 
     public void launchLoaderAnimation(final File customFile) {
         post(new Runnable() {
             @Override
             public void run() {
-                removeAllViewsInLayout();
+                if (progressLoader != null) return;
                 IGameReaderLoaderView gameReaderLoaderView = AppearanceManager.getCommonInstance().csGameReaderLoaderView();
                 View v;
                 if (gameReaderLoaderView != null) {
                     progressLoader = gameReaderLoaderView;
                     v = gameReaderLoaderView.getView(getContext());
-                } else if (canUseLottieAnimation && customFile != null) {
+                } else if (canUseLottieAnimation && customFile != null && customFile.exists()) {
                     progressLoader = new LottieLoader(getContext(), customFile);
                     v = ((LottieLoader) progressLoader).getView(getContext());
                 } else {

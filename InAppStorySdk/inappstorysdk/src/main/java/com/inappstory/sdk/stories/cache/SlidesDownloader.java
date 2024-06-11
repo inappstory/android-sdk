@@ -73,6 +73,7 @@ class SlidesDownloader {
         InAppStoryService service = InAppStoryService.getInstance();
         if (service == null) return 0;
         LruDiskCache cache = service.getCommonCache();
+        LruDiskCache vodCache = service.getVodCache();
         SlideTask slideTask = pageTasks.get(key);
         if (slideTask != null) {
             if (slideTask.loadType == 2) {
@@ -90,11 +91,11 @@ class SlidesDownloader {
                     }
                 }
                 for (ResourceMappingObject object : slideTask.vodResources) {
-                    String uniqueKey = StringsUtils.md5(object.getUrl());
-                    if (!cache.hasKey(uniqueKey)) {
+                    String uniqueKey = object.getFileName();
+                    if (!vodCache.hasKey(uniqueKey)) {
                         remove = true;
                     } else {
-                        if (cache.getFileFromKey(uniqueKey) == null) {
+                        if (vodCache.getFileFromKey(uniqueKey) == null) {
                             synchronized (pageTasksLock) {
                                 slideTask.loadType = 0;
                             }

@@ -23,6 +23,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.RandomAccessFile;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.ByteBuffer;
@@ -35,21 +36,34 @@ public class VODDownloader {
             String filePath
     ) {
         File file = new File(filePath);
-        ByteBuffer byteBuffer = ByteBuffer.wrap(bytes);
-        if (!file.exists()) {
-            try {
+        FileOutputStream fos = null;
+        try {
+            if (!file.exists()) {
                 file.getParentFile().mkdirs();
                 file.createNewFile();
-            } catch (IOException e) {
-                e.printStackTrace();
             }
-        }
-        try {
-            FileOutputStream fos = new FileOutputStream(file);
-            fos.getChannel().write(byteBuffer, position);
+            final RandomAccessFile raf = new RandomAccessFile(file, "rw");
+            raf.seek(position);
+            fos = new FileOutputStream(raf.getFD()) {
+                @Override
+                public void close() throws IOException {
+                    super.close();
+                    raf.close();
+                }
+            };
+            fos.write(bytes);
             return true;
         } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            try {
+                if (fos != null) {
+                    fos.flush();
+                    fos.close();
+                }
+            } catch (IOException e) {
+
+            }
         }
         return false;
     }
@@ -63,13 +77,23 @@ public class VODDownloader {
         if (bytesAmount > (long) Integer.MAX_VALUE) {
             return null;
         }
-        ByteBuffer bytes = ByteBuffer.allocateDirect((int) bytesAmount);
+        byte[] data = new byte[Long.valueOf(bytesAmount).intValue()];
+        RandomAccessFile raf = null;
         try {
-            FileInputStream fis = new FileInputStream(file);
-            fis.getChannel().read(bytes, contentRange.start());
-            return new Pair<>(contentRange, bytes.array());
+            raf = new RandomAccessFile(file, "r");
+            raf.seek(contentRange.start());
+            raf.read(data);
+            return new Pair<>(contentRange, data);
         } catch (IOException e) {
 
+        } finally {
+            try {
+                if (raf != null) {
+                    raf.close();
+                }
+            } catch (IOException e) {
+
+            }
         }
         return null;
     }

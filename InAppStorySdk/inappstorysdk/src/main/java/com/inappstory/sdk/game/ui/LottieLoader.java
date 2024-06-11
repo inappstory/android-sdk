@@ -2,6 +2,7 @@ package com.inappstory.sdk.game.ui;
 
 import android.animation.ValueAnimator;
 import android.content.Context;
+import android.util.Log;
 import android.util.Pair;
 import android.view.View;
 
@@ -65,6 +66,7 @@ public class LottieLoader implements IGameReaderLoaderView {
 
     @Override
     public void setProgress(int progress, int max) {
+        Log.e("LottieLoader", progress + " " + max + " " + lottieView.isLooped());
         if (lottieView.isLooped()) {
             if (!launchedLoopedAnimation) {
                 launchedLoopedAnimation = true;
@@ -78,9 +80,9 @@ public class LottieLoader implements IGameReaderLoaderView {
 
     @Override
     public void setIndeterminate(boolean indeterminate) {
-        if (indeterminate) {
-            lottieView.setLoop(true);
-        }
+       // if (indeterminate) {
+            //lottieView.setLoop(true);
+       // }
     }
 
     @Override

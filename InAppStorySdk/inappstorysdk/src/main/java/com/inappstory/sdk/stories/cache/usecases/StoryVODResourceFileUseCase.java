@@ -1,6 +1,7 @@
 package com.inappstory.sdk.stories.cache.usecases;
 
 
+import android.util.Log;
 import android.util.Pair;
 
 import androidx.annotation.WorkerThread;
@@ -23,6 +24,7 @@ public class StoryVODResourceFileUseCase extends GetCacheFileUseCase<StoryVODRes
     private final String url;
     private final long rangeStart;
     private final long rangeEnd;
+
 
     public StoryVODResourceFileUseCase(
             FilesDownloadManager filesDownloadManager,
@@ -99,7 +101,7 @@ public class StoryVODResourceFileUseCase extends GetCacheFileUseCase<StoryVODRes
                 if (vodDownloader.putBytesToFile(rangeStart, result.second, filePath)) {
                     vodJournalItem.addPart(rangeStart, rangeEnd);
                     vodJournalItem.setFullSize(result.first.length());
-                    filesDownloadManager.getVodCacheJournal().writeJournal();
+                    filesDownloadManager.getVodCacheJournal().putItem(vodJournalItem);
                     long size = vodJournalItem.getDownloadedSize();
 
                     CacheJournalItem cacheJournalItem = generateCacheItem();

@@ -203,6 +203,8 @@ public class StoryDownloadManager {
                 inAppStoryService.getCommonCache().clearCache();
                 inAppStoryService.getFastCache().clearCache();
                 inAppStoryService.getInfiniteCache().clearCache();
+                inAppStoryService.getVodCache().clearCache();
+                inAppStoryService.getFilesDownloadManager().getVodCacheJournal().clear();
             }
         });
     }
@@ -471,6 +473,7 @@ public class StoryDownloadManager {
                                     start,
                                     end
                             );
+                    Log.e("UrlFile", "DownloadManager: " + start + "-" + end + " " + url);
 
                     StoryVODResourceFileUseCaseResult state = useCase.getFile();
                     if (state != null) {

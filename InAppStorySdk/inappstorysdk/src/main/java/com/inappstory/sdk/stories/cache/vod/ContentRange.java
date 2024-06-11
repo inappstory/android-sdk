@@ -1,6 +1,15 @@
 package com.inappstory.sdk.stories.cache.vod;
 
 public class ContentRange {
+    @Override
+    public String toString() {
+        return "ContentRange{" +
+                "start=" + start +
+                ", end=" + end +
+                ", length=" + length +
+                '}';
+    }
+
     public ContentRange(long start, long end, long length) {
         this.start = start;
         this.end = end;

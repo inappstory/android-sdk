@@ -57,7 +57,7 @@ public class DownloadSplashUseCase {
                     resource.sha1(),
                     false
             )) {
-                splashScreenCallback.onError("Splash already downloaded");
+                splashScreenCallback.onSuccess(oldSplash);
                 return;
             }
         }

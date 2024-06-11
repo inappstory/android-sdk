@@ -49,11 +49,11 @@ public class GameCacheManager {
         final Map<String, String> splashesKeyValueStorageKeys = GameConstants.getSplashesKeys(useAnimSplash);
         final String animKey = GameConstants.SPLASH_ANIM;
         final String staticKey = GameConstants.SPLASH_STATIC;
-        final String animStorageKey = GameConstants.SPLASH_ANIM;
-        final String staticStorageKey = GameConstants.SPLASH_STATIC;
+        final String animStorageKey = GameConstants.SPLASH_ANIM_KV;
+        final String staticStorageKey = GameConstants.SPLASH_STATIC_KV;
         GetLocalSplashUseCase getLocalStaticSplashUseCase = new GetLocalSplashUseCase(
                 gameId,
-                GameConstants.SPLASH_STATIC_KV
+                staticStorageKey
         );
         GetLocalSplashUseCase getLocalAnimSplashUseCase = new GetLocalSplashUseCase(
                 gameId,
@@ -68,6 +68,7 @@ public class GameCacheManager {
 
             @Override
             public void onSuccess(File result) {
+                if (result == null) return;
                 if (result.exists()) {
                     localSplashFiles.put(staticKey, result);
 
@@ -85,6 +86,7 @@ public class GameCacheManager {
 
             @Override
             public void onSuccess(File result) {
+                if (result == null) return;
                 if (result.exists()) {
                     localSplashFiles.put(animKey, result);
 
@@ -141,6 +143,7 @@ public class GameCacheManager {
 
                     @Override
                     public void onSuccess(File result) {
+                        if (result == null) return;
                         if (result.exists()) {
                             KeyValueStorage.saveString(
                                     splashesKeyValueStorageKeys.get(animKey) + gameId,
@@ -168,8 +171,9 @@ public class GameCacheManager {
 
                     @Override
                     public void onSuccess(File result) {
+                        if (result == null) return;
                         KeyValueStorage.saveString(
-                                staticStorageKey + gameId,
+                                splashesKeyValueStorageKeys.get(staticKey) + gameId,
                                 result.getAbsolutePath()
                         );
                         if (downloadAnimSplashUseCase != null) {

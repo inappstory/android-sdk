@@ -12,6 +12,7 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.media.AudioManager;
@@ -62,6 +63,10 @@ import com.inappstory.sdk.imageloader.ImageLoader;
 import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.inner.share.InnerShareFilesPrepare;
 import com.inappstory.sdk.inner.share.ShareFilesPrepareCallback;
+import com.inappstory.sdk.memcache.GetBitmapFromCacheWithFilePath;
+import com.inappstory.sdk.memcache.IGetBitmap;
+import com.inappstory.sdk.memcache.IGetBitmapFromMemoryCache;
+import com.inappstory.sdk.memcache.IGetBitmapFromMemoryCacheError;
 import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.NetworkClient;
@@ -235,7 +240,6 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         }
 
     }
-
 
 
     void gameShouldForeground() {
@@ -807,8 +811,12 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
             }
         }
         if (!splashPaths.isEmpty()) {
-            setStaticSplashScreen(splashPaths.get(GameConstants.SPLASH_STATIC));
-            setLoader(splashPaths.get(GameConstants.SPLASH_ANIM));
+            File staticFile = splashPaths.get(GameConstants.SPLASH_STATIC);
+            File animFile = splashPaths.get(GameConstants.SPLASH_ANIM);
+            if (staticFile != null)
+                setStaticSplashScreen(staticFile);
+            if (animFile != null)
+                setLoader(animFile);
         }
         downloadGame();
     }
@@ -913,7 +921,8 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
 
                             @Override
                             public void onSuccess(File result) {
-                                progressLoader.launchLoaderAnimation(result);
+                                setLoader(result);
+                                //progressLoader.launchLoaderAnimation(result);
                             }
                         },
                         new UseCaseCallback<IGameCenterData>() {
@@ -1176,14 +1185,26 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
     }
 
     private void setLoader(File splashFile) {
+        Log.e("LoaderFile", "Anim " + (splashFile != null ? splashFile.getAbsolutePath() : "empty"));
         progressLoader.launchLoaderAnimation(splashFile);
     }
 
     private void setStaticSplashScreen(File splashFile) {
+
         if (splashFile == null || !splashFile.exists()) {
             loader.setBackgroundColor(Color.BLACK);
         } else {
-            ImageLoader.getInstance().displayImage(splashFile.getAbsolutePath(), -1, loader);
+            Log.e("Loader", "Static " + splashFile.getAbsolutePath());
+            new GetBitmapFromCacheWithFilePath(
+                    splashFile.getAbsolutePath(),
+                    new IGetBitmapFromMemoryCache() {
+                        @Override
+                        public void get(Bitmap bitmap) {
+                            loader.setImageBitmap(bitmap);
+                        }
+                    }
+            ).get();
+       //     ImageLoader.getInstance().displayImage(splashFile.getAbsolutePath(), -1, loader);
         }
     }
 

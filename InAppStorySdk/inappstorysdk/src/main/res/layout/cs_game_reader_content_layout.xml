@@ -46,10 +46,11 @@
                     android:src="@drawable/ic_refresh"
                     android:id="@+id/gameRefresh"
                     android:alpha="0"
-                    android:elevation="2dp"
+                    android:elevation="4dp"
                     android:visibility="gone"
                     android:layout_height="40dp"/>
                 <com.inappstory.sdk.game.ui.GameProgressLoader
+                    android:elevation="8dp"
                     android:layout_width="match_parent"
                     android:id="@+id/gameProgressLoader"
                     android:layout_height="match_parent"/>

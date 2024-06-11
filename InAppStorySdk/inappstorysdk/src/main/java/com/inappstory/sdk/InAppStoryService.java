@@ -452,6 +452,10 @@ public class InAppStoryService {
         return filesDownloadManager.getCachesHolder().getCommonCache();
     }
 
+    public LruDiskCache getVodCache() {
+        return filesDownloadManager.getCachesHolder().getVodCache();
+    }
+
     boolean backPaused = false;
 
 

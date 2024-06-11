@@ -116,6 +116,8 @@ public class IASWebViewClient extends WebViewClient {
         if (item == null) return null;
 
         ContentRange range;
+        Log.e("UrlFile", "getWebResourceResponse: " + rangeHeader + " " + item.getUrl());
+
         if (rangeHeader != null) {
             range = StringsUtils.getRange(rangeHeader, item.getFullSize());
         } else {

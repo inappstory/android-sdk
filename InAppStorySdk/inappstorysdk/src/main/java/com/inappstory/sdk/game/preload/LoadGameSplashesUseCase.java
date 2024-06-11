@@ -119,6 +119,7 @@ public class LoadGameSplashesUseCase {
 
                 @Override
                 public void onSuccess(File result) {
+                    if (result == null) return;
                     KeyValueStorage.saveString(
                             GameConstants.SPLASH_ANIM_KV + gameData.id(),
                             result.getAbsolutePath()
@@ -157,6 +158,7 @@ public class LoadGameSplashesUseCase {
 
                 @Override
                 public void onSuccess(File result) {
+                    if (result == null) return;
                     KeyValueStorage.saveString(
                             GameConstants.SPLASH_STATIC_KV + gameData.id(),
                             result.getAbsolutePath()

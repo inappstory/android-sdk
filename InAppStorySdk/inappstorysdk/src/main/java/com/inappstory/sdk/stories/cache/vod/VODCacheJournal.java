@@ -23,16 +23,22 @@ public class VODCacheJournal {
     private final File journalFile;
     private final Object lock = new Object();
 
+    public void clear() {
+        vodItems.clear();
+        writeJournal();
+    }
+
     public VODCacheJournal(File journalFile) {
         if (!journalFile.exists()) {
             try {
-                journalFile.mkdirs();
+                journalFile.getParentFile().mkdirs();
                 journalFile.createNewFile();
             } catch (Exception ignored) {
 
             }
         }
         this.journalFile = journalFile;
+        readJournal();
     }
 
     public VODCacheJournalItem getItem(String key) {
