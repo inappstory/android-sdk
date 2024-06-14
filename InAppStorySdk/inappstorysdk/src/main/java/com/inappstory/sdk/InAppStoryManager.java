@@ -261,6 +261,7 @@ public class InAppStoryManager {
             @Override
             public void use(@NonNull InAppStoryService service) {
                 service.getStoryDownloadManager().clearCache();
+                service.getSession().assetsIsCleared();
             }
         });
     }

@@ -172,7 +172,12 @@ public class SessionHolder implements ISessionHolder {
         }
     }
 
-    public boolean assetsIsReady = false;
+    @Override
+    public void assetsIsCleared() {
+        this.assetsIsReady = false;
+    }
+
+    private boolean assetsIsReady = false;
 
     @Override
     public boolean checkIfSessionAssetsIsReady(FilesDownloadManager filesDownloadManager) {
