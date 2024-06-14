@@ -344,7 +344,6 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
             return;
         }
 
-        WebView.setWebContentsDebuggingEnabled(true);
         appearanceSettings = (StoriesReaderAppearanceSettings) getIntent()
                 .getSerializableExtra(StoriesReaderAppearanceSettings.SERIALIZABLE_KEY);
         launchData = (StoriesReaderLaunchData) getIntent().
