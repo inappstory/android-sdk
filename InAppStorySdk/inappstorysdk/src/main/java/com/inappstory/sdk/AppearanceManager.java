@@ -137,7 +137,6 @@ public class AppearanceManager {
         this.csListOpenedItemBorderVisibility = other.csListOpenedItemBorderVisibility;
         this.csListOpenedItemBorderColor = other.csListOpenedItemBorderColor;
         this.csListItemMargin = other.csListItemMargin;
-        this.csShowStatusBar = other.csShowStatusBar;
         this.csClosePosition = other.csClosePosition;
         this.csStoryReaderAnimation = other.csStoryReaderAnimation;
         this.csIsDraggable = other.csIsDraggable;
@@ -208,7 +207,6 @@ public class AppearanceManager {
 
 
     private int csListItemMargin = -1;
-    private boolean csShowStatusBar = false;
     private int csClosePosition = BOTTOM_RIGHT; //1 - topLeft, 2 - topRight, 3 - bottomLeft, 4 - bottomRight;
     private int csStoryReaderAnimation = ANIMATION_CUBE;
 
@@ -905,11 +903,6 @@ public class AppearanceManager {
         return AppearanceManager.this;
     }
 
-    @Deprecated
-    public AppearanceManager csShowStatusBar(boolean csShowStatusBar) {
-        this.csShowStatusBar = csShowStatusBar;
-        return AppearanceManager.this;
-    }
 
     public AppearanceManager csClosePosition(int csClosePosition) {
         this.csClosePosition = csClosePosition;
@@ -971,10 +964,6 @@ public class AppearanceManager {
     public int csListItemMargin(Context context) {
         if (csListItemMargin == -1) return Sizes.dpToPxExt(4, context);
         return csListItemMargin;
-    }
-
-    public boolean csShowStatusBar() {
-        return csShowStatusBar;
     }
 
     public int csClosePosition() {

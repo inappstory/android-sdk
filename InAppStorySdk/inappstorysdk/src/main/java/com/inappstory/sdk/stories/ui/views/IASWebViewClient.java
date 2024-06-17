@@ -116,7 +116,6 @@ public class IASWebViewClient extends WebViewClient {
         if (item == null) return null;
 
         ContentRange range;
-        Log.e("UrlFile", "getWebResourceResponse: " + rangeHeader + " " + item.getUrl());
 
         if (rangeHeader != null) {
             range = StringsUtils.getRange(rangeHeader, item.getFullSize());
@@ -124,6 +123,7 @@ public class IASWebViewClient extends WebViewClient {
             range = new ContentRange(0, item.getFullSize(), item.getFullSize());
         }
 
+        Log.e("WebProfiling", "getWebResourceResponse Req " + item.getUrl() + " " + rangeHeader + " " + System.currentTimeMillis());
         try {
             StoryVODResourceFileUseCaseResult res = new StoryVODResourceFileUseCase(
                     service.getFilesDownloadManager(),

@@ -51,6 +51,7 @@ import com.inappstory.sdk.stories.ui.reader.animations.ZoomReaderCenterAnimation
 import com.inappstory.sdk.stories.ui.reader.animations.ZoomReaderFromCellAnimation;
 import com.inappstory.sdk.stories.ui.widgets.elasticview.ElasticDragDismissFrameLayout;
 import com.inappstory.sdk.stories.utils.IASBackPressHandler;
+import com.inappstory.sdk.stories.utils.SessionManager;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 import com.inappstory.sdk.stories.utils.Sizes;
 
@@ -339,15 +340,15 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
         }
         super.onCreate(savedInstanceState1);
         setContentView(R.layout.cs_mainscreen_stories_draggable);
+        launchData = (StoriesReaderLaunchData) getIntent().
+                getSerializableExtra(StoriesReaderLaunchData.SERIALIZABLE_KEY);
+        appearanceSettings = (StoriesReaderAppearanceSettings) getIntent()
+                .getSerializableExtra(StoriesReaderAppearanceSettings.SERIALIZABLE_KEY);
         if (InAppStoryManager.isNull() || InAppStoryService.isNull()) {
             finish();
             return;
         }
 
-        appearanceSettings = (StoriesReaderAppearanceSettings) getIntent()
-                .getSerializableExtra(StoriesReaderAppearanceSettings.SERIALIZABLE_KEY);
-        launchData = (StoriesReaderLaunchData) getIntent().
-                getSerializableExtra(StoriesReaderLaunchData.SERIALIZABLE_KEY);
 
         int navColor = appearanceSettings.csNavBarColor();
         if (navColor != 0)
@@ -676,15 +677,18 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
             if (inAppStoryManager != null) {
                 inAppStoryManager.getOpenStoriesReader().onRestoreStatusBar(this);
             }
-            OldStatisticManager.useInstance(
-                    launchData.getSessionId(),
-                    new GetOldStatisticManagerCallback() {
-                        @Override
-                        public void get(@NonNull OldStatisticManager manager) {
-                            manager.sendStatistic();
+            if (launchData != null) {
+                OldStatisticManager.useInstance(
+                        launchData.getSessionId(),
+                        new GetOldStatisticManagerCallback() {
+                            @Override
+                            public void get(@NonNull OldStatisticManager manager) {
+                                manager.sendStatistic();
+                            }
                         }
-                    }
-            );
+                );
+            }
+
             cleanReader();
             System.gc();
             pauseDestroyed = true;
