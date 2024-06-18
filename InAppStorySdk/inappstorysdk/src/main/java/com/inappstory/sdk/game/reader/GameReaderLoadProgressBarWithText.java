@@ -48,7 +48,7 @@ public class GameReaderLoadProgressBarWithText extends RelativeLayout implements
 
     private void initViews() {
         RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT,
+                Sizes.dpToPxExt((int)(2.5 * sizeDP), getContext()),
                 Sizes.dpToPxExt((int)(2.5 * sizeDP), getContext())
         );
         lp.addRule(CENTER_IN_PARENT);
