@@ -22,7 +22,7 @@ allprojects {
 
 In the project `build.gradle` (app level) in the `dependencies` section add:
 ```gradle
-implementation 'com.github.inappstory:android-sdk:1.18.0'
+implementation 'com.github.inappstory:android-sdk:1.18.4'
 ```
 
 Also for correct work in `dependencies` you need to add:
