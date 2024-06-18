@@ -3,7 +3,7 @@ Change Log
 Version *1.18.4 (864)*
 ----------------------------
 * New: added external API (RN)
-* Fixed :NPE in StoriesActivity
+* Fixed: NPE in StoriesActivity
 * Fixed: game progress loader width
 
 Version *1.18.3 (863)*
