@@ -66,7 +66,7 @@ class UgcStoriesListManager implements ListManager {
     }
 
     //CloseReaderEvent
-    public void closeReader() {
+    public void readerIsClosed() {
         post(new Runnable() {
             @Override
             public void run() {
@@ -76,7 +76,7 @@ class UgcStoriesListManager implements ListManager {
         });
     }
 
-    public void openReader() {
+    public void readerIsOpened() {
         post(new Runnable() {
             @Override
             public void run() {

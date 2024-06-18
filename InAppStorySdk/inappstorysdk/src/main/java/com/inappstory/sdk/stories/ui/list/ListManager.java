@@ -5,9 +5,9 @@ public interface ListManager {
 
     void changeStory(final int storyId, final String listID);
 
-    void closeReader();
+    void readerIsClosed();
 
-    void openReader();
+    void readerIsOpened();
 
     void userIdChanged();
 

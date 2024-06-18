@@ -435,7 +435,7 @@ public abstract class StoriesMainFragment extends Fragment implements
                 WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
         blockView.setVisibility(View.VISIBLE);
         if (service != null) {
-            service.getListReaderConnector().closeReader();
+            service.getListReaderConnector().readerIsClosed();
             Story story = service.getStoryDownloadManager().getStoryById(
                     service.getCurrentId(),
                     launchData.getType()

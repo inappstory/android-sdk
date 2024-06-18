@@ -16,7 +16,6 @@ import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
-import android.webkit.WebView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -51,7 +50,6 @@ import com.inappstory.sdk.stories.ui.reader.animations.ZoomReaderCenterAnimation
 import com.inappstory.sdk.stories.ui.reader.animations.ZoomReaderFromCellAnimation;
 import com.inappstory.sdk.stories.ui.widgets.elasticview.ElasticDragDismissFrameLayout;
 import com.inappstory.sdk.stories.utils.IASBackPressHandler;
-import com.inappstory.sdk.stories.utils.SessionManager;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 import com.inappstory.sdk.stories.utils.Sizes;
 
@@ -426,7 +424,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
         if (inAppStoryManager != null) {
             inAppStoryManager.getOpenStoriesReader().onHideStatusBar(this);
         }
-        service.getListReaderConnector().openReader();
+        service.getListReaderConnector().readerIsOpened();
         type = launchData.getType();
         draggableFrame.type = type;
         draggableFrame.post(new Runnable() {
@@ -551,7 +549,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
                 WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
         blockView.setVisibility(View.VISIBLE);
         if (service != null) {
-            service.getListReaderConnector().closeReader();
+            service.getListReaderConnector().readerIsClosed();
             Story story = service.getStoryDownloadManager()
                     .getStoryById(service.getCurrentId(), type);
             if (story != null) {
@@ -611,7 +609,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
                 WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
         blockView.setVisibility(View.VISIBLE);
         if (service != null) {
-            service.getListReaderConnector().closeReader();
+            service.getListReaderConnector().readerIsClosed();
             Story story = service.getStoryDownloadManager()
                     .getStoryById(service.getCurrentId(), type);
             if (story != null) {

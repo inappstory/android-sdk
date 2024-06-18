@@ -134,7 +134,7 @@ public class StoriesDialogFragment extends DialogFragment implements IASBackPres
 
     @Override
     public void closeStoryReader(int action) {
-        InAppStoryService.getInstance().getListReaderConnector().closeReader();
+        InAppStoryService.getInstance().getListReaderConnector().readerIsClosed();
         dismissAllowingStateLoss();
     }
 

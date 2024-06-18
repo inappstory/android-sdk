@@ -17,11 +17,10 @@ import android.os.Looper;
 import android.util.Log;
 import android.util.Pair;
 import android.webkit.URLUtil;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
-import com.inappstory.iasutilsconnector.lottie.DummyLottieViewGenerator;
+import com.inappstory.sdk.externalapi.subscribers.InAppStoryAPISubscribersManager;
 import com.inappstory.sdk.game.cache.GameCacheManager;
 import com.inappstory.sdk.game.cache.SuccessUseCaseCallback;
 import com.inappstory.sdk.game.cache.UseCaseCallback;
@@ -66,6 +65,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -465,6 +465,13 @@ public class InAppStoryService {
 
     TimerManager timerManager;
 
+    public InAppStoryAPISubscribersManager getApiSubscribersManager() {
+        return apiSubscribersManager;
+    }
+
+    private InAppStoryAPISubscribersManager apiSubscribersManager = new InAppStoryAPISubscribersManager();
+
+
     public boolean isConnected() {
         Context ctx = getContext();
         if (ctx == null) return false;
@@ -585,28 +592,33 @@ public class InAppStoryService {
                     for (ListManager sub : service.getListSubscribers()) {
                         sub.changeStory(storyId, listID);
                     }
+                    Story story = getStoryDownloadManager().getStoryById(storyId, Story.StoryType.COMMON);
+                    if (story != null)
+                        apiSubscribersManager.openStory(story.id, listID);
                 }
             });
         }
 
-        public void closeReader() {
+        public void readerIsClosed() {
             useInstance(new UseServiceInstanceCallback() {
                 @Override
                 public void use(@NonNull InAppStoryService service) {
                     for (ListManager sub : service.getListSubscribers()) {
-                        sub.closeReader();
+                        sub.readerIsClosed();
                     }
+                    apiSubscribersManager.readerIsClosed();
                 }
             });
         }
 
-        public void openReader() {
+        public void readerIsOpened() {
             useInstance(new UseServiceInstanceCallback() {
                 @Override
                 public void use(@NonNull InAppStoryService service) {
                     for (ListManager sub : service.getListSubscribers()) {
-                        sub.openReader();
+                        sub.readerIsOpened();
                     }
+                    apiSubscribersManager.readerIsOpened();
                 }
             });
 
@@ -619,6 +631,7 @@ public class InAppStoryService {
                     for (ListManager sub : service.getListSubscribers()) {
                         sub.userIdChanged();
                     }
+                    service.apiSubscribersManager.refreshAllLists();
                 }
             });
         }
@@ -639,10 +652,26 @@ public class InAppStoryService {
                 @Override
                 public void use(@NonNull InAppStoryService service) {
                     List<FavoriteImage> favImages = service.getFavoriteImages();
+                    Story story = service.getStoryDownloadManager().getStoryById(id, Story.StoryType.COMMON);
+                    if (story == null) return;
+                    if (favStatus) {
+                        FavoriteImage favoriteImage = new FavoriteImage(id, story.getImage(), story.getBackgroundColor());
+                        if (!favImages.contains(favoriteImage))
+                            favImages.add(0, favoriteImage);
+                    } else {
+                        Iterator<FavoriteImage> favoriteImageIterator = favImages.iterator();
+                        while (favoriteImageIterator.hasNext()) {
+                            if (favoriteImageIterator.next().getId() == id) {
+                                favoriteImageIterator.remove();
+                                break;
+                            }
+                        }
+                    }
                     boolean isEmpty = favImages.isEmpty();
                     for (ListManager sub : service.getListSubscribers()) {
                         sub.storyFavorite(id, favStatus, isEmpty);
                     }
+                    service.apiSubscribersManager.storyFavorite();
                 }
             });
         }
@@ -654,6 +683,7 @@ public class InAppStoryService {
                     for (ListManager sub : service.getListSubscribers()) {
                         sub.clearAllFavorites();
                     }
+                    service.apiSubscribersManager.clearAllFavorites();
                 }
             });
         }
