@@ -2,7 +2,7 @@ package com.inappstory.sdk.stories.statistic;
 
 import android.text.TextUtils;
 
-import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.OldInAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.NetworkClient;
@@ -231,8 +231,8 @@ public class StatisticManager {
         task.widgetId = widgetId;
         task.feedId = feedId;
         generateBase(task);
-        addTask(task, InAppStoryManager.getInstance() != null &&
-                InAppStoryManager.getInstance().isSendStatistic());
+        addTask(task, OldInAppStoryManager.getInstance() != null &&
+                OldInAppStoryManager.getInstance().isSendStatistic());
     }
 
     public void sendGoodsClick(final int i, final int si,
@@ -246,8 +246,8 @@ public class StatisticManager {
         task.widgetId = wi;
         task.widgetValue = sku;
         generateBase(task);
-        addTask(task, InAppStoryManager.getInstance() != null &&
-                InAppStoryManager.getInstance().isSendStatistic());
+        addTask(task, OldInAppStoryManager.getInstance() != null &&
+                OldInAppStoryManager.getInstance().isSendStatistic());
     }
 
     public void sendViewStory(ArrayList<Integer> ids, final String w,
@@ -479,8 +479,8 @@ public class StatisticManager {
         task.feedId = feedId;
         task.mode = mode;
         generateBase(task);
-        addTask(task, InAppStoryManager.getInstance() != null &&
-                InAppStoryManager.getInstance().isSendStatistic());
+        addTask(task, OldInAppStoryManager.getInstance() != null &&
+                OldInAppStoryManager.getInstance().isSendStatistic());
 
     }
 
@@ -506,7 +506,7 @@ public class StatisticManager {
 
 
     private void sendTask(final StatisticTask task) {
-        final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
+        final NetworkClient networkClient = OldInAppStoryManager.getNetworkClient();
         if (networkClient == null) return;
         try {
             final Callable<Boolean> _ff = new Callable<Boolean>() {

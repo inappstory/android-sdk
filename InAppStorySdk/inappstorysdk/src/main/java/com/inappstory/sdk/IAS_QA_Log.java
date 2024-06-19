@@ -1,6 +1,6 @@
 package com.inappstory.sdk;
 
-import static com.inappstory.sdk.InAppStoryManager.DEBUG_API;
+import static com.inappstory.sdk.OldInAppStoryManager.DEBUG_API;
 
 import android.annotation.SuppressLint;
 

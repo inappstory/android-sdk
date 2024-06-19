@@ -1,6 +1,6 @@
 package com.inappstory.sdk.listwidget;
 
-import static com.inappstory.sdk.InAppStoryManager.IAS_ERROR_TAG;
+import static com.inappstory.sdk.OldInAppStoryManager.IAS_ERROR_TAG;
 
 import android.content.Context;
 import android.content.Intent;
@@ -16,7 +16,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.AppearanceManager;
-import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.OldInAppStoryManager;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.NetworkClient;
@@ -61,7 +61,7 @@ public class StoriesWidgetService extends RemoteViewsService {
 
     public static void loadData(@NonNull Context context) {
         if (AppearanceManager.csWidgetAppearance() == null || AppearanceManager.csWidgetAppearance().getWidgetClass() == null) {
-            InAppStoryManager.showELog(IAS_ERROR_TAG, "'widgetClass' must not be null");
+            OldInAppStoryManager.showELog(IAS_ERROR_TAG, "'widgetClass' must not be null");
             return;
         }
         checkApiSettings(context);
@@ -130,7 +130,7 @@ public class StoriesWidgetService extends RemoteViewsService {
     public static final String UPDATE_AUTH = "ias_w.UPDATE_AUTH";
 
     private static NetworkClient getNetworkClient(Context context) {
-        NetworkClient networkClient = InAppStoryManager.getNetworkClient();
+        NetworkClient networkClient = OldInAppStoryManager.getNetworkClient();
         if (networkClient == null) {
             checkApiSettings(context);
             networkClient = new NetworkClient(context, ApiSettings.getInstance().getHost());

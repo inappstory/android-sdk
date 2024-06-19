@@ -11,7 +11,7 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.inappstory.sdk.AppearanceManager;
-import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.OldInAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.game.reader.BaseGameReaderScreen;
@@ -317,7 +317,7 @@ public class ScreensManager {
                     data, gameId
             );
         }
-        InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
+        OldInAppStoryManager inAppStoryManager = OldInAppStoryManager.getInstance();
         if (inAppStoryManager == null) return;
         GameReaderLaunchData gameReaderLaunchData = new GameReaderLaunchData(
                 gameId,
@@ -344,7 +344,7 @@ public class ScreensManager {
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
-                InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
+                OldInAppStoryManager inAppStoryManager = OldInAppStoryManager.getInstance();
                 if (inAppStoryManager == null) return;
                 if (System.currentTimeMillis() - lastOpenTry < 1000) {
                     return;

@@ -15,7 +15,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.inappstory.sdk.AppearanceManager;
-import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.OldInAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.network.JsonParser;
@@ -146,7 +146,7 @@ public class UgcStoriesList extends RecyclerView {
         ) {
             renewCoordinates(ScreensManager.getInstance().activeStoryItem.getListIndex());
         }
-        InAppStoryManager.debugSDKCalls("StoriesList_onAttachedToWindow", ""
+        OldInAppStoryManager.debugSDKCalls("StoriesList_onAttachedToWindow", ""
                 + InAppStoryService.isNotNull());
         InAppStoryService.checkAndAddListSubscriber(manager);
         manager.checkCurrentSession();
@@ -433,10 +433,10 @@ public class UgcStoriesList extends RecyclerView {
     private void loadStoriesInner(final String payload) {
 
         lastPayload = payload;
-        InAppStoryManager manager = InAppStoryManager.getInstance();
+        OldInAppStoryManager manager = OldInAppStoryManager.getInstance();
         if (manager == null) {
-            InAppStoryManager.showELog(
-                    InAppStoryManager.IAS_ERROR_TAG,
+            OldInAppStoryManager.showELog(
+                    OldInAppStoryManager.IAS_ERROR_TAG,
                     StringsUtils.getErrorStringFromContext(
                             getContext(),
                             R.string.ias_npe_manager

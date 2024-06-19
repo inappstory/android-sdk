@@ -4,7 +4,7 @@ import android.content.Context;
 import android.util.Pair;
 
 
-import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.OldInAppStoryManager;
 import com.inappstory.sdk.network.annotations.api.Body;
 import com.inappstory.sdk.network.annotations.api.DELETE;
 import com.inappstory.sdk.network.annotations.api.ExcludeHeaders;
@@ -139,7 +139,7 @@ public final class NetworkHandler implements InvocationHandler {
             boolean isFormEncoded,
             boolean hasBody
     ) {
-        InAppStoryManager manager = InAppStoryManager.getInstance();
+        OldInAppStoryManager manager = OldInAppStoryManager.getInstance();
         boolean hasDeviceId = manager == null || manager.isDeviceIDEnabled();
         List<String> excludeList = Arrays.asList(exclude);
         List<Header> resHeaders = new ArrayList<>();

@@ -2,7 +2,7 @@ package com.inappstory.sdk.lrudiskcache;
 
 import android.util.Log;
 
-import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.OldInAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.stories.api.models.logs.ExceptionLog;
 import com.inappstory.sdk.utils.CollectionUtils;
@@ -150,7 +150,7 @@ public class CacheJournal {
                 + limitSize;
         log.file = "DEBUG LOG";
         log.line = 0;
-        InAppStoryManager.sendExceptionLog(log);
+        OldInAppStoryManager.sendExceptionLog(log);
     }
 
     private void removeOld(long newFileSize, long limitSize) throws IOException {

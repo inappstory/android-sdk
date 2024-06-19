@@ -40,7 +40,7 @@ import androidx.cardview.widget.CardView;
 import androidx.fragment.app.Fragment;
 
 import com.inappstory.sdk.AppearanceManager;
-import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.OldInAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.stories.api.models.Story;
@@ -665,7 +665,7 @@ public class ReaderPageFragment extends Fragment {
                 && InAppStoryService.getInstance().getStoryDownloadManager() != null) {
             InAppStoryService.getInstance().getStoryDownloadManager().addSubscriber(manager);
         } else {
-            InAppStoryManager.closeStoryReader();
+            OldInAppStoryManager.closeStoryReader();
         }
 
     }

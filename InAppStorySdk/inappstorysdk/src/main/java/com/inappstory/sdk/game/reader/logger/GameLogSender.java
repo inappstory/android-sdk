@@ -2,7 +2,7 @@ package com.inappstory.sdk.game.reader.logger;
 
 import androidx.annotation.NonNull;
 
-import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.OldInAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.network.NetworkClient;
@@ -64,7 +64,7 @@ public class GameLogSender implements IGameLogSender {
         InAppStoryService.useInstance(new UseServiceInstanceCallback() {
             @Override
             public void use(@NonNull InAppStoryService service) throws Exception {
-                NetworkClient networkClient = InAppStoryManager.getNetworkClient();
+                NetworkClient networkClient = OldInAppStoryManager.getNetworkClient();
                 if (networkClient == null) {
                     synchronized (GameLogSender.this) {
                         inProcess = false;

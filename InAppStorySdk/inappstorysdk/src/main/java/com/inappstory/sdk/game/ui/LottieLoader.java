@@ -9,7 +9,7 @@ import android.view.View;
 import androidx.annotation.NonNull;
 
 import com.inappstory.iasutilsconnector.lottie.ILottieView;
-import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.OldInAppStoryManager;
 import com.inappstory.sdk.utils.StringsUtils;
 
 import java.io.File;
@@ -21,7 +21,7 @@ public class LottieLoader implements IGameReaderLoaderView {
 
 
     public LottieLoader(Context context, @NonNull File source) {
-        InAppStoryManager manager = InAppStoryManager.getInstance();
+        OldInAppStoryManager manager = OldInAppStoryManager.getInstance();
         if (manager != null)
             lottieView = manager.utilModulesHolder.getLottieViewGenerator().getView(context);
         lottieView.setSource(new Pair<>(

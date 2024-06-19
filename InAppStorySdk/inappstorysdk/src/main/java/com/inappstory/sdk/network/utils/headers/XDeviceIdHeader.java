@@ -4,7 +4,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.provider.Settings;
 
-import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.OldInAppStoryManager;
 
 public class XDeviceIdHeader implements Header {
     private Context appContext;
@@ -24,7 +24,7 @@ public class XDeviceIdHeader implements Header {
     @Override
     public String getValue() {
         String deviceId = null;
-        InAppStoryManager manager = InAppStoryManager.getInstance();
+        OldInAppStoryManager manager = OldInAppStoryManager.getInstance();
         if (manager != null && manager.isDeviceIDEnabled()) {
             if (appContext != null)
                 deviceId = Settings.Secure.getString(

@@ -8,7 +8,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.WorkerThread;
 
 import com.inappstory.sdk.AppearanceManager;
-import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.OldInAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.game.cache.SessionAssetsIsReadyCallback;
@@ -29,10 +29,8 @@ import com.inappstory.sdk.stories.cache.usecases.StoryResourceFileUseCase;
 import com.inappstory.sdk.stories.cache.usecases.StoryVODResourceFileUseCase;
 import com.inappstory.sdk.stories.cache.usecases.StoryVODResourceFileUseCaseResult;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.UgcStoryData;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 import com.inappstory.sdk.stories.ui.list.FavoriteImage;
@@ -40,7 +38,6 @@ import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPag
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
 import com.inappstory.sdk.stories.utils.SessionManager;
 import com.inappstory.sdk.utils.ISessionHolder;
-import com.inappstory.sdk.utils.StringsUtils;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -77,7 +74,7 @@ public class StoryDownloadManager {
             final boolean showOnce,
             final SourceType readerSource
     ) {
-        final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
+        final NetworkClient networkClient = OldInAppStoryManager.getNetworkClient();
         final InAppStoryService service = InAppStoryService.getInstance();
         if (networkClient == null || service == null) {
             storyByIdCallback.loadError(-1);

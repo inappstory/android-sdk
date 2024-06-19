@@ -1,10 +1,9 @@
 package com.inappstory.sdk.ugc.usecases;
 
-import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.OldInAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
-import com.inappstory.sdk.stories.api.models.Session;
 import com.inappstory.sdk.stories.api.models.SessionEditor;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.utils.SessionManager;
@@ -18,7 +17,7 @@ public class GetUgcEditor implements IGetUgcEditor {
 
     @Override
     public void get(final IGetUgcEditorCallback callback) {
-        final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
+        final NetworkClient networkClient = OldInAppStoryManager.getNetworkClient();
         if (networkClient == null) {
             callback.onError();
             return;

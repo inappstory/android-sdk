@@ -1,6 +1,6 @@
 package com.inappstory.sdk.stories.api.models.callbacks;
 
-import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.OldInAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.stories.api.models.Story;
@@ -36,7 +36,7 @@ public abstract class LoadListCallback extends NetworkCallback<List<Story>> {
 
         String oldUserId = "";
         Locale locale = Locale.getDefault();
-        InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
+        OldInAppStoryManager inAppStoryManager = OldInAppStoryManager.getInstance();
         if (inAppStoryManager != null) {
             oldUserId = inAppStoryManager.getUserId();
             locale = inAppStoryManager.getCurrentLocale();

@@ -46,10 +46,10 @@ import com.inappstory.iasutilsconnector.filepicker.IFilePicker;
 import com.inappstory.iasutilsconnector.filepicker.OnFilesChooseCallback;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.BuildConfig;
-import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.OldInAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
-import com.inappstory.sdk.UseManagerInstanceCallback;
+import com.inappstory.sdk.UseOldManagerInstanceCallback;
 import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.game.cache.FilePathAndContent;
 import com.inappstory.sdk.game.cache.GameCacheManager;
@@ -59,14 +59,11 @@ import com.inappstory.sdk.game.cache.UseCaseWarnCallback;
 import com.inappstory.sdk.game.reader.logger.GameLoggerLvl1;
 import com.inappstory.sdk.game.ui.GameProgressLoader;
 import com.inappstory.sdk.game.utils.GameConstants;
-import com.inappstory.sdk.imageloader.ImageLoader;
 import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.inner.share.InnerShareFilesPrepare;
 import com.inappstory.sdk.inner.share.ShareFilesPrepareCallback;
 import com.inappstory.sdk.memcache.GetBitmapFromCacheWithFilePath;
-import com.inappstory.sdk.memcache.IGetBitmap;
 import com.inappstory.sdk.memcache.IGetBitmapFromMemoryCache;
-import com.inappstory.sdk.memcache.IGetBitmapFromMemoryCacheError;
 import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.NetworkClient;
@@ -173,7 +170,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                         gameReaderLaunchData.getGameId()
                 );
             }
-            InAppStoryManager.showDLog("Game_Loading", error);
+            OldInAppStoryManager.showDLog("Game_Loading", error);
             webView.post(new Runnable() {
                 @Override
                 public void run() {
@@ -286,9 +283,9 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
     }
 
     void openFilePicker(final String data) {
-        InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+        OldInAppStoryManager.useInstance(new UseOldManagerInstanceCallback() {
             @Override
-            public void use(@NonNull InAppStoryManager manager) throws Exception {
+            public void use(@NonNull OldInAppStoryManager manager) throws Exception {
                 IFilePicker filePicker = manager.utilModulesHolder.getFilePicker();
                 filePicker.setPickerSettings(data);
                 filePicker.show(
@@ -404,7 +401,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
     @Override
     public void onDestroyView() {
         if (isFullscreen) {
-            InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
+            OldInAppStoryManager inAppStoryManager = OldInAppStoryManager.getInstance();
             if (inAppStoryManager != null && getActivity() != null)
                 inAppStoryManager.getOpenGameReader().onRestoreScreen(getActivity());
         }
@@ -414,7 +411,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        if (InAppStoryManager.isNull()) {
+        if (OldInAppStoryManager.isNull()) {
             forceFinish();
             return;
         }
@@ -826,7 +823,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         if (forceFullscreen != null)
             isFullscreen = forceFullscreen;
         if (isFullscreen) {
-            InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
+            OldInAppStoryManager inAppStoryManager = OldInAppStoryManager.getInstance();
             if (inAppStoryManager != null && getActivity() != null)
                 inAppStoryManager.getOpenGameReader().onShowInFullscreen(getActivity());
         }
@@ -891,12 +888,12 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                                 if (manager != null && manager.logger != null) {
                                     manager.logger.sendSdkWarn(message);
                                 }
-                                InAppStoryManager.showDLog("Game_Loading", message);
+                                OldInAppStoryManager.showDLog("Game_Loading", message);
                             }
 
                             @Override
                             public void onError(String message) {
-                                InAppStoryManager.showDLog("Game_Loading", message);
+                                OldInAppStoryManager.showDLog("Game_Loading", message);
                             }
 
                             @Override
@@ -910,13 +907,13 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                                 if (manager != null && manager.logger != null) {
                                     manager.logger.sendSdkWarn(message);
                                 }
-                                InAppStoryManager.showDLog("Game_Loading", message);
+                                OldInAppStoryManager.showDLog("Game_Loading", message);
                             }
 
                             @Override
                             public void onError(String message) {
                                 progressLoader.launchLoaderAnimation(null);
-                                InAppStoryManager.showDLog("Game_Loading", message);
+                                OldInAppStoryManager.showDLog("Game_Loading", message);
                             }
 
                             @Override
@@ -1029,8 +1026,8 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         Context context = getContext();
         GameConfigOptions options = new GameConfigOptions();
         options.fullScreen = isFullscreen;
-        NetworkClient networkClient = InAppStoryManager.getNetworkClient();
-        InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
+        NetworkClient networkClient = OldInAppStoryManager.getNetworkClient();
+        OldInAppStoryManager inAppStoryManager = OldInAppStoryManager.getInstance();
         if (networkClient == null) {
             options.apiBaseUrl = new HostFromSecretKey(
                     ApiSettings.getInstance().getApiKey()
@@ -1148,9 +1145,9 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
 
     private ArrayList<GameDataPlaceholder> generatePlaceholders() {
         Map<String, String> textPlaceholders =
-                InAppStoryManager.getInstance().getPlaceholders();
+                OldInAppStoryManager.getInstance().getPlaceholders();
         Map<String, ImagePlaceholderValue> imagePlaceholders =
-                InAppStoryManager.getInstance().getImagePlaceholdersValues();
+                OldInAppStoryManager.getInstance().getImagePlaceholdersValues();
         ArrayList<GameDataPlaceholder> gameDataPlaceholders = new ArrayList<GameDataPlaceholder>();
         for (Map.Entry<String, String> entry : textPlaceholders.entrySet()) {
             if (entry.getKey() != null && entry.getValue() != null)

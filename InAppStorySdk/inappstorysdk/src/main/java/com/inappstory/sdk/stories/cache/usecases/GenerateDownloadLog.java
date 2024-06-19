@@ -1,6 +1,6 @@
 package com.inappstory.sdk.stories.cache.usecases;
 
-import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.OldInAppStoryManager;
 import com.inappstory.sdk.stories.api.models.logs.ApiLogRequest;
 import com.inappstory.sdk.stories.api.models.logs.ApiLogRequestHeader;
 import com.inappstory.sdk.stories.api.models.logs.ApiLogResponse;
@@ -22,15 +22,15 @@ public class GenerateDownloadLog {
     }
 
     public void sendRequestLog() {
-        InAppStoryManager.sendApiRequestLog(requestLog);
+        OldInAppStoryManager.sendApiRequestLog(requestLog);
     }
 
     public void sendResponseLog() {
-        InAppStoryManager.sendApiResponseLog(responseLog);
+        OldInAppStoryManager.sendApiResponseLog(responseLog);
     }
 
     public void sendRequestResponseLog() {
-        InAppStoryManager.sendApiRequestResponseLog(requestLog, responseLog);
+        OldInAppStoryManager.sendApiRequestResponseLog(requestLog, responseLog);
     }
 
     public ApiLogResponse generateResponseLog(boolean fromCache, String filePath) {

@@ -7,7 +7,7 @@ import android.os.Looper;
 import android.os.Vibrator;
 import android.view.View;
 
-import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.OldInAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.game.reader.GameStoryData;
 import com.inappstory.sdk.stories.ui.widgets.LoadProgressBar;
@@ -77,7 +77,7 @@ public class StoriesViewManager {
 
     public void vibrate(int[] vibratePattern) {
         if (context != null) {
-            InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
+            OldInAppStoryManager inAppStoryManager = OldInAppStoryManager.getInstance();
             if (inAppStoryManager != null) {
                 inAppStoryManager.getVibrateUtils().vibrate(context, vibratePattern);
             }
@@ -567,7 +567,7 @@ public class StoriesViewManager {
         if (service == null) return;
         KeyValueStorage.saveString("story" + storyId + "__" + service.getUserId(), data);
         if (service.statV1Disallowed()) return;
-        final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
+        final NetworkClient networkClient = OldInAppStoryManager.getNetworkClient();
         if (networkClient == null) {
             return;
         }
@@ -600,7 +600,7 @@ public class StoriesViewManager {
         InAppStoryService service = InAppStoryService.getInstance();
         if (service == null) return;
         if (service.statV1Disallowed()) return;
-        final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
+        final NetworkClient networkClient = OldInAppStoryManager.getNetworkClient();
         if (networkClient == null) {
             return;
         }

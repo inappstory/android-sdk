@@ -3,7 +3,7 @@ package com.inappstory.sdk.network.utils;
 
 import android.util.Pair;
 
-import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.OldInAppStoryManager;
 import com.inappstory.sdk.network.models.Request;
 import com.inappstory.sdk.network.models.Response;
 import com.inappstory.sdk.network.models.ResponseWithRawData;
@@ -21,12 +21,12 @@ public class RequestSender {
         HttpURLConnection connection = connectionWithProperties.first;
         requestLog.buildFromRequest(req, requestId);
         requestLog.setHeaders(connectionWithProperties.second);
-        InAppStoryManager.sendApiRequestLog(requestLog);
+        OldInAppStoryManager.sendApiRequestLog(requestLog);
         ResponseWithRawData responseWithRawData = new RawResponseFromConnection().get(connection, requestId);
 
         ApiLogResponse responseLog = new ApiLogResponse();
         responseLog.buildFromRawResponse(responseWithRawData, requestId);
-        InAppStoryManager.sendApiResponseLog(responseLog);
+        OldInAppStoryManager.sendApiResponseLog(responseLog);
 
         connection.disconnect();
         return responseWithRawData.response;

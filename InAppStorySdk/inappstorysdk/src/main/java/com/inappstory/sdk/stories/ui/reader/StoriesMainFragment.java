@@ -22,7 +22,7 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.inappstory.sdk.AppearanceManager;
-import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.OldInAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.UseServiceInstanceCallback;
@@ -314,14 +314,14 @@ public abstract class StoriesMainFragment extends Fragment implements
     @Override
     public void onViewCreated(@NonNull View view, @Nullable final Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
+        OldInAppStoryManager inAppStoryManager = OldInAppStoryManager.getInstance();
         if (inAppStoryManager != null) {
             inAppStoryManager.getOpenStoriesReader().onHideStatusBar(getActivity());
         }
         if (getActivity() == null) {
             return;
         }
-        if (InAppStoryManager.isNull() || InAppStoryService.isNull()) {
+        if (OldInAppStoryManager.isNull() || InAppStoryService.isNull()) {
             forceFinish();
             return;
         }
@@ -531,7 +531,7 @@ public abstract class StoriesMainFragment extends Fragment implements
 
     @Override
     public void onDestroyView() {
-        InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
+        OldInAppStoryManager inAppStoryManager = OldInAppStoryManager.getInstance();
         if (inAppStoryManager != null) {
             inAppStoryManager.getOpenStoriesReader().onRestoreStatusBar(getActivity());
         }

@@ -4,7 +4,7 @@ import static com.inappstory.sdk.utils.DebugUtils.getMethodName;
 
 import android.webkit.JavascriptInterface;
 
-import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.OldInAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
 
@@ -93,7 +93,7 @@ public class GameJSInterface {
     }
 
     private void logMethod(String payload) {
-        InAppStoryManager.showDLog("JS_game_method_test",
+        OldInAppStoryManager.showDLog("JS_game_method_test",
                 manager.gameCenterId + " " + getMethodName() + " " + payload);
     }
 

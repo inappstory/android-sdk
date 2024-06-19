@@ -1,32 +1,20 @@
 package com.inappstory.sdk.stories.cache.vod;
 
-import android.content.Context;
-import android.util.Log;
 import android.util.Pair;
-import android.webkit.MimeTypeMap;
-import android.webkit.WebResourceResponse;
 
-import com.inappstory.sdk.InAppStoryManager;
-import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.OldInAppStoryManager;
 import com.inappstory.sdk.network.utils.ConnectionHeadersMap;
 import com.inappstory.sdk.network.utils.ResponseStringFromStream;
-import com.inappstory.sdk.stories.cache.FilesDownloadManager;
-import com.inappstory.sdk.stories.cache.usecases.StoryVODResourceFileUseCase;
-import com.inappstory.sdk.stories.cache.usecases.StoryVODResourceFileUseCaseResult;
 import com.inappstory.sdk.utils.StringsUtils;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.nio.ByteBuffer;
 import java.util.HashMap;
 
 public class VODDownloader {
@@ -109,8 +97,8 @@ public class VODDownloader {
         urlConnection.setConnectTimeout(300000);
         urlConnection.setReadTimeout(300000);
         urlConnection.setRequestMethod("GET");
-        if (InAppStoryManager.getNetworkClient() != null) {
-            urlConnection.setRequestProperty("User-Agent", InAppStoryManager.getNetworkClient().userAgent);
+        if (OldInAppStoryManager.getNetworkClient() != null) {
+            urlConnection.setRequestProperty("User-Agent", OldInAppStoryManager.getNetworkClient().userAgent);
         }
         if (from > 0) {
             if (to > 0) {

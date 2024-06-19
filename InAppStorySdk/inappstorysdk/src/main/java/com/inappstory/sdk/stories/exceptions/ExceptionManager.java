@@ -1,11 +1,10 @@
 package com.inappstory.sdk.stories.exceptions;
 
-import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.OldInAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.network.JsonParser;
-import com.inappstory.sdk.stories.api.models.Session;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.api.models.logs.ExceptionLog;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
@@ -27,7 +26,7 @@ public class ExceptionManager {
         copiedLog.file = log.file;
         copiedLog.session = log.session;
         copiedLog.line = log.line;
-        final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
+        final NetworkClient networkClient = OldInAppStoryManager.getNetworkClient();
         if (networkClient == null) {
             return;
         }
@@ -112,6 +111,6 @@ public class ExceptionManager {
     }
 
     void logException(ExceptionLog log) {
-        InAppStoryManager.sendExceptionLog(log);
+        OldInAppStoryManager.sendExceptionLog(log);
     }
 }

@@ -1,6 +1,6 @@
 package com.inappstory.sdk.game.preload;
 
-import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.OldInAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
@@ -15,7 +15,7 @@ import java.util.List;
 public class GetGamePreloadModelsUseCase {
     public void get(final IGetGamePreloadModelsCallback callback) {
         InAppStoryService service = InAppStoryService.getInstance();
-        final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
+        final NetworkClient networkClient = OldInAppStoryManager.getNetworkClient();
         if (service == null || networkClient == null) {
             callback.onError(null);
             return;

@@ -1,8 +1,6 @@
 package com.inappstory.sdk.externalapi.iasmanager;
 
-import androidx.annotation.NonNull;
-
-import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.OldInAppStoryManager;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
 
 import java.util.ArrayList;
@@ -10,7 +8,7 @@ import java.util.Locale;
 import java.util.Map;
 
 public class IASManager {
-    public InAppStoryManager create(
+    public OldInAppStoryManager create(
             String apiKey,
             String userId,
             Locale lang,
@@ -23,7 +21,7 @@ public class IASManager {
             Integer cacheSize,
             Boolean sandbox
     ) {
-        InAppStoryManager.Builder builder = new InAppStoryManager.Builder();
+        OldInAppStoryManager.Builder builder = new OldInAppStoryManager.Builder();
         builder.lang(Locale.getDefault());
         builder.isDeviceIDEnabled(true);
         if (deviceIdEnabled != null) builder = builder.isDeviceIDEnabled(deviceIdEnabled);

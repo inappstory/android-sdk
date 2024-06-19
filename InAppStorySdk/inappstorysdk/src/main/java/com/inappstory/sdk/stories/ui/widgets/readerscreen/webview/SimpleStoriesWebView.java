@@ -9,17 +9,15 @@ import android.os.Looper;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
-import android.view.View;
 import android.view.ViewParent;
 import android.webkit.ConsoleMessage;
-import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 
 import androidx.annotation.Nullable;
 import androidx.core.view.ViewCompat;
 
-import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.OldInAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.stories.ui.views.IASWebView;
 import com.inappstory.sdk.stories.ui.views.IASWebViewClient;
@@ -27,8 +25,6 @@ import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPag
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.SimpleStoriesView;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.StoriesViewManager;
 import com.inappstory.sdk.stories.utils.Sizes;
-
-import java.util.Map;
 
 /**
  * Created by Paperrose on 07.06.2018.
@@ -44,7 +40,7 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
     }
 
     private void logMethod(String payload) {
-        InAppStoryManager.showDLog("JS_method_call",
+        OldInAppStoryManager.showDLog("JS_method_call",
                 manager.storyId + " " + manager.loadedIndex + " " + payload);
     }
 

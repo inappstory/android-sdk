@@ -63,6 +63,7 @@ public class NetworkClient {
 
 
     public static final String NC_IS_UNAVAILABLE = "Network client is unavailable";
+
     @WorkerThread
     public Response execute(Request request, Callback callback) {
         Response response;
@@ -120,6 +121,7 @@ public class NetworkClient {
         }
         return response;
     }
+
     public List<Header> generateHeaders(
             Context context,
             String[] exclude,
@@ -129,6 +131,7 @@ public class NetworkClient {
     ) {
         return networkHandler.generateHeaders(context, exclude, replace, isFormEncoded, hasBody);
     }
+
     public ApiInterface getApi() {
         if (getBaseUrl() == null) {
             if (ApiSettings.getInstance().getHost() == null) {

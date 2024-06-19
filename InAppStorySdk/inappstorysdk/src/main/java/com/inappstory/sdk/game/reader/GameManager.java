@@ -3,14 +3,9 @@ package com.inappstory.sdk.game.reader;
 import android.content.Context;
 import android.media.AudioManager;
 
-import androidx.annotation.NonNull;
-
-import com.inappstory.iasutilsconnector.filepicker.DummyFilePicker;
 import com.inappstory.sdk.AppearanceManager;
-import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.OldInAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.UseManagerInstanceCallback;
-import com.inappstory.sdk.game.cache.SetGameLoggerCallback;
 import com.inappstory.sdk.game.reader.logger.AbstractGameLogger;
 import com.inappstory.sdk.game.reader.logger.GameLoggerLvl0;
 import com.inappstory.sdk.game.reader.logger.GameLoggerLvl1;
@@ -77,7 +72,7 @@ public class GameManager {
         String id = gameInstanceId;
         if (id == null) id = gameCenterId;
         if (id == null) return;
-        final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
+        final NetworkClient networkClient = OldInAppStoryManager.getNetworkClient();
         if (networkClient == null) {
             return;
         }
@@ -110,7 +105,7 @@ public class GameManager {
 
     void vibrate(int[] vibratePattern) {
         if (host != null && host.getContext() != null) {
-            InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
+            OldInAppStoryManager inAppStoryManager = OldInAppStoryManager.getInstance();
             if (inAppStoryManager != null) {
                 inAppStoryManager.getVibrateUtils().vibrate(host.getContext(), vibratePattern);
             }
@@ -121,7 +116,7 @@ public class GameManager {
         InAppStoryService service = InAppStoryService.getInstance();
         if (service == null) return;
         if (dataModel == null) return;
-        final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
+        final NetworkClient networkClient = OldInAppStoryManager.getNetworkClient();
         if (networkClient == null) {
             return;
         }
@@ -200,7 +195,7 @@ public class GameManager {
         if (options.openStory != null
                 && options.openStory.id != null
                 && !options.openStory.id.isEmpty()) {
-            InAppStoryManager.getInstance().showStoryCustom(
+            OldInAppStoryManager.getInstance().showStoryCustom(
                     options.openStory.id,
                     host.getContext(),
                     AppearanceManager.getCommonInstance()
@@ -336,7 +331,7 @@ public class GameManager {
     }
 
     boolean hasFilePicker() {
-        InAppStoryManager manager = InAppStoryManager.getInstance();
+        OldInAppStoryManager manager = OldInAppStoryManager.getInstance();
         return (manager != null && manager.utilModulesHolder.hasFilePickerModule());
     }
 

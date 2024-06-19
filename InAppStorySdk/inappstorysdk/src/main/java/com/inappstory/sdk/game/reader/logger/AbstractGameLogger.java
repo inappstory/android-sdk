@@ -4,14 +4,8 @@ import android.os.Handler;
 
 import androidx.annotation.NonNull;
 
-import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.R;
 import com.inappstory.sdk.UseServiceInstanceCallback;
-import com.inappstory.sdk.network.JsonParser;
-import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
-import java.util.ArrayList;
-import java.util.List;
 
 public abstract class AbstractGameLogger {
 

@@ -10,10 +10,10 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.FragmentManager;
 
 import com.inappstory.sdk.AppearanceManager;
-import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.OldInAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
-import com.inappstory.sdk.UseManagerInstanceCallback;
+import com.inappstory.sdk.UseOldManagerInstanceCallback;
 import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.game.cache.SessionAssetsIsReadyCallback;
 import com.inappstory.sdk.inner.share.InnerShareData;
@@ -247,9 +247,9 @@ public class ReaderManager {
                         }
                     });
                 } else {
-                    InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+                    OldInAppStoryManager.useInstance(new UseOldManagerInstanceCallback() {
                         @Override
-                        public void use(@NonNull InAppStoryManager manager) throws Exception {
+                        public void use(@NonNull OldInAppStoryManager manager) throws Exception {
                             manager.showStoryWithSlide(
                                     storyId + "",
                                     parentFragment.getContext(),

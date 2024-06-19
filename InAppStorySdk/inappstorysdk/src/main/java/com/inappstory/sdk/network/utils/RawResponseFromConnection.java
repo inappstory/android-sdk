@@ -1,21 +1,17 @@
 package com.inappstory.sdk.network.utils;
 
-import android.util.Pair;
-
-import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.OldInAppStoryManager;
 import com.inappstory.sdk.network.models.Response;
 import com.inappstory.sdk.network.models.ResponseWithRawData;
 
 import java.net.HttpURLConnection;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public class RawResponseFromConnection {
     ResponseWithRawData get(HttpURLConnection connection, String requestId) throws Exception {
         ResponseWithRawData responseWithRawData = new ResponseWithRawData();
         int responseCode = connection.getResponseCode();
-        InAppStoryManager.showDLog("InAppStory_Network", requestId + " " + connection.getURL().toString() + " \nStatus Code: " + responseCode);
+        OldInAppStoryManager.showDLog("InAppStory_Network", requestId + " " + connection.getURL().toString() + " \nStatus Code: " + responseCode);
         long contentLength = 0;
         String decompression = null;
         HashMap<String, String> responseHeaders = new ConnectionHeadersMap().get(connection);
@@ -29,14 +25,14 @@ public class RawResponseFromConnection {
         responseWithRawData.responseCode = responseCode;
         if (responseCode < 400) {
             responseWithRawData.decompressedStream = stringFromStream.get(connection.getInputStream(), decompression);
-            InAppStoryManager.showDLog("InAppStory_Network",
+            OldInAppStoryManager.showDLog("InAppStory_Network",
                     requestId + " Response: " + responseWithRawData.decompressedStream);
 
             responseWithRawData.response = new Response.Builder().contentLength(contentLength).
                     headers(responseHeaders).code(responseCode).body(responseWithRawData.decompressedStream).build();
         } else {
             responseWithRawData.decompressedStream = stringFromStream.get(connection.getErrorStream(), decompression);
-            InAppStoryManager.showDLog("InAppStory_Network",
+            OldInAppStoryManager.showDLog("InAppStory_Network",
                     requestId + " Error: " + responseWithRawData.decompressedStream);
             responseWithRawData.response = new Response.Builder().contentLength(contentLength).
                     headers(responseHeaders).code(responseCode).errorBody(responseWithRawData.decompressedStream).build();

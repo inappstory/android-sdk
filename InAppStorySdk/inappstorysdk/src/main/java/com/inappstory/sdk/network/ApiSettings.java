@@ -1,7 +1,7 @@
 package com.inappstory.sdk.network;
 
 
-import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.OldInAppStoryManager;
 
 /**
  * Класс для задания и хранения настроек по доступу к бекенду.
@@ -59,7 +59,7 @@ public class ApiSettings {
 
     public ApiSettings apiKey(String cmsKey) {
         if (ApiSettings.this.apiKey != null && cmsKey != null && !ApiSettings.this.apiKey.equals(cmsKey)) {
-            NetworkClient networkClient = InAppStoryManager.getNetworkClient();
+            NetworkClient networkClient = OldInAppStoryManager.getNetworkClient();
             if (networkClient != null) networkClient.clear();
         }
         ApiSettings.this.apiKey = cmsKey;

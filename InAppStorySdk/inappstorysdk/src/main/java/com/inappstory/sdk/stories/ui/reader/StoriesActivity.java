@@ -25,7 +25,7 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.inappstory.sdk.AppearanceManager;
-import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.OldInAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.UseServiceInstanceCallback;
@@ -67,7 +67,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
         if (isFinishing()) {
             // ScreensManager.getInstance().hideGoods();
             ScreensManager.getInstance().closeGameReader();
-            InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
+            OldInAppStoryManager inAppStoryManager = OldInAppStoryManager.getInstance();
             if (inAppStoryManager != null) {
                 inAppStoryManager.getOpenStoriesReader().onRestoreStatusBar(this);
             }
@@ -127,7 +127,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
     protected void onResume() {
         super.onResume();
         subscribeClicks();
-        InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
+        OldInAppStoryManager inAppStoryManager = OldInAppStoryManager.getInstance();
         if (inAppStoryManager != null) {
             inAppStoryManager.getOpenStoriesReader().onHideStatusBar(this);
         }
@@ -342,7 +342,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
                 getSerializableExtra(StoriesReaderLaunchData.SERIALIZABLE_KEY);
         appearanceSettings = (StoriesReaderAppearanceSettings) getIntent()
                 .getSerializableExtra(StoriesReaderAppearanceSettings.SERIALIZABLE_KEY);
-        if (InAppStoryManager.isNull() || InAppStoryService.isNull()) {
+        if (OldInAppStoryManager.isNull() || InAppStoryService.isNull()) {
             finish();
             return;
         }
@@ -420,7 +420,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
             forceFinish();
             return;
         }
-        InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
+        OldInAppStoryManager inAppStoryManager = OldInAppStoryManager.getInstance();
         if (inAppStoryManager != null) {
             inAppStoryManager.getOpenStoriesReader().onHideStatusBar(this);
         }
@@ -671,7 +671,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
     public void onDestroy() {
         ScreensManager.getInstance().unsubscribeReaderScreen(this);
         if (!pauseDestroyed) {
-            InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
+            OldInAppStoryManager inAppStoryManager = OldInAppStoryManager.getInstance();
             if (inAppStoryManager != null) {
                 inAppStoryManager.getOpenStoriesReader().onRestoreStatusBar(this);
             }

@@ -3,7 +3,7 @@ package com.inappstory.sdk.stories.cache;
 import static com.inappstory.sdk.stories.cache.StoryDownloadManager.EXPAND_STRING;
 
 
-import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.OldInAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.JsonParser;
@@ -12,7 +12,6 @@ import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.network.callbacks.SimpleApiCallback;
 import com.inappstory.sdk.network.models.Response;
 import com.inappstory.sdk.stories.api.models.Feed;
-import com.inappstory.sdk.stories.api.models.Session;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.StoryListType;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadFeedCallback;
@@ -277,7 +276,7 @@ class StoryDownloader {
     void loadStory(StoryTaskData key) {
 
         try {
-            NetworkClient networkClient = InAppStoryManager.getNetworkClient();
+            NetworkClient networkClient = OldInAppStoryManager.getNetworkClient();
             String storyUID;
             Response response;
             if (key.storyType == Story.StoryType.UGC) {
@@ -310,7 +309,7 @@ class StoryDownloader {
     }
 
     void loadStoryFavoriteList(final NetworkCallback<List<Story>> callback) {
-        NetworkClient networkClient = InAppStoryManager.getNetworkClient();
+        NetworkClient networkClient = OldInAppStoryManager.getNetworkClient();
         if (networkClient == null) {
             callback.errorDefault("No network client");
             return;
@@ -336,7 +335,7 @@ class StoryDownloader {
     private static final String UGC_FEED = "UGC";
 
     void loadUgcStoryList(final SimpleApiCallback<List<Story>> callback, final String payload) {
-        final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
+        final NetworkClient networkClient = OldInAppStoryManager.getNetworkClient();
         InAppStoryService service = InAppStoryService.getInstance();
         if (service == null || networkClient == null) {
             generateCommonLoadListError(UGC_FEED);
@@ -403,7 +402,7 @@ class StoryDownloader {
     }
 
     void loadStoryListByFeed(final String feed, final SimpleApiCallback<List<Story>> callback) {
-        final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
+        final NetworkClient networkClient = OldInAppStoryManager.getNetworkClient();
         final InAppStoryService service = InAppStoryService.getInstance();
         if (service == null || networkClient == null) {
             generateCommonLoadListError(feed);
@@ -469,7 +468,7 @@ class StoryDownloader {
 
 
     void loadStoryList(final SimpleApiCallback<List<Story>> callback, final boolean isFavorite) {
-        final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
+        final NetworkClient networkClient = OldInAppStoryManager.getNetworkClient();
         final InAppStoryService service = InAppStoryService.getInstance();
         if (service == null || networkClient == null) {
             generateCommonLoadListError(null);
@@ -534,7 +533,7 @@ class StoryDownloader {
 
     private void closeSessionIf424(String sessionId) {
         String oldUserId = "";
-        InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
+        OldInAppStoryManager inAppStoryManager = OldInAppStoryManager.getInstance();
         if (inAppStoryManager != null) {
             oldUserId = inAppStoryManager.getUserId();
             SessionManager.getInstance().closeSession(

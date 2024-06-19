@@ -15,7 +15,7 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
-import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.OldInAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.network.ApiSettings;
@@ -174,7 +174,7 @@ public class SessionManager {
     private void openSessionInner() {
         InAppStoryService service = InAppStoryService.getInstance();
         if (service == null) return;
-        final InAppStoryManager manager = InAppStoryManager.getInstance();
+        final OldInAppStoryManager manager = OldInAppStoryManager.getInstance();
         if (manager == null) return;
         Context context = service.getContext();
         String platform = "android";
@@ -203,7 +203,7 @@ public class SessionManager {
         }
         String appVersion = (pInfo != null ? pInfo.versionName : "");
         String appBuild = (pInfo != null ? Integer.toString(pInfo.versionCode) : "");
-        NetworkClient networkClient = InAppStoryManager.getNetworkClient();
+        NetworkClient networkClient = OldInAppStoryManager.getNetworkClient();
         if (!InAppStoryService.isServiceConnected() || networkClient == null) {
             synchronized (openProcessLock) {
                 openProcess = false;
@@ -348,7 +348,7 @@ public class SessionManager {
 
                 final String sessionCloseUID =
                         ProfilingManager.getInstance().addTask("api_session_close");
-                NetworkClient networkClient = InAppStoryManager.getNetworkClient();
+                NetworkClient networkClient = OldInAppStoryManager.getNetworkClient();
                 if (networkClient == null) {
                     if (changeUserIdOrLocale)
                         service.getListReaderConnector().userIdChanged();

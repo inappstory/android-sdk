@@ -5,9 +5,9 @@ import android.util.Pair;
 
 import androidx.annotation.NonNull;
 
-import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.OldInAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.UseManagerInstanceCallback;
+import com.inappstory.sdk.UseOldManagerInstanceCallback;
 import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.externalapi.callbacks.IASCallbacks;
 import com.inappstory.sdk.externalapi.favorites.IASFavorites;
@@ -60,18 +60,18 @@ public class InAppStoryAPI {
     }
 
     public void init(Context context) {
-        InAppStoryManager.initSDK(context);
+        OldInAppStoryManager.initSDK(context);
     }
 
     public IASSDKVersion getVersion() {
-        Pair<String, Integer> version = InAppStoryManager.getLibraryVersion();
+        Pair<String, Integer> version = OldInAppStoryManager.getLibraryVersion();
         return new IASSDKVersion(version.first, "1.0.0-rc2", version.second);
     }
 
     public void clearCache() {
-        InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+        OldInAppStoryManager.useInstance(new UseOldManagerInstanceCallback() {
             @Override
-            public void use(@NonNull InAppStoryManager manager) throws Exception {
+            public void use(@NonNull OldInAppStoryManager manager) throws Exception {
                 manager.clearCache();
             }
         });

@@ -1,6 +1,6 @@
 package com.inappstory.sdk.stories.ui.widgets.readerscreen.buttonspanel;
 
-import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.OldInAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.network.NetworkClient;
@@ -56,7 +56,7 @@ public class ButtonsPanelManager {
     private void likeDislikeClick(final ButtonClickCallback callback, boolean like) {
         InAppStoryService inAppStoryService = InAppStoryService.getInstance();
         if (inAppStoryService == null) return;
-        NetworkClient networkClient = InAppStoryManager.getNetworkClient();
+        NetworkClient networkClient = OldInAppStoryManager.getNetworkClient();
         if (networkClient == null) {
             return;
         }
@@ -146,7 +146,7 @@ public class ButtonsPanelManager {
     public void favoriteClick(final ButtonClickCallback callback) {
         final InAppStoryService inAppStoryService = InAppStoryService.getInstance();
         if (inAppStoryService == null) return;
-        NetworkClient networkClient = InAppStoryManager.getNetworkClient();
+        NetworkClient networkClient = OldInAppStoryManager.getNetworkClient();
         if (networkClient == null) {
             return;
         }
@@ -215,7 +215,7 @@ public class ButtonsPanelManager {
 
     public void shareClick(final ShareButtonClickCallback callback) {
         InAppStoryService inAppStoryService = InAppStoryService.getInstance();
-        NetworkClient networkClient = InAppStoryManager.getNetworkClient();
+        NetworkClient networkClient = OldInAppStoryManager.getNetworkClient();
         if (networkClient == null) {
             return;
         }

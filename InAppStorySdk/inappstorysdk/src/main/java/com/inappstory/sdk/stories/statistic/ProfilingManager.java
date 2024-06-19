@@ -7,12 +7,11 @@ import android.content.Context;
 import android.os.Build;
 import android.telephony.TelephonyManager;
 
-import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.OldInAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.network.models.Request;
 import com.inappstory.sdk.network.utils.GetUrl;
 import com.inappstory.sdk.network.utils.UserAgent;
-import com.inappstory.sdk.stories.api.models.Session;
 import com.inappstory.sdk.stories.utils.LoopedExecutor;
 
 import java.net.HttpURLConnection;
@@ -122,7 +121,7 @@ public class ProfilingManager {
 
 
     public void init() {
-        context = InAppStoryManager.getInstance().getContext();
+        context = OldInAppStoryManager.getInstance().getContext();
         loopedExecutor.init(queueTasksRunnable);
     }
 
@@ -200,7 +199,7 @@ public class ProfilingManager {
         connection.setReadTimeout(30000);
         connection.setRequestMethod("POST");
         int statusCode = connection.getResponseCode();
-        InAppStoryManager.showDLog("InAppStory_Network", connection.getURL().toString() + " \nStatus Code: " + statusCode);
+        OldInAppStoryManager.showDLog("InAppStory_Network", connection.getURL().toString() + " \nStatus Code: " + statusCode);
         connection.disconnect();
         return statusCode;
 

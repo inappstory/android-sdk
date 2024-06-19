@@ -18,7 +18,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.inappstory.sdk.AppearanceManager;
-import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.OldInAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.UseServiceInstanceCallback;
@@ -76,7 +76,7 @@ public class StoriesList extends RecyclerView {
         synchronized (feedLock) {
             if (!isFavoriteList && feed != null && !feed.isEmpty()) {
                 if (this.feed != null && !this.feed.isEmpty() && !this.feed.equals(feed)) {
-                    InAppStoryManager manager = InAppStoryManager.getInstance();
+                    OldInAppStoryManager manager = OldInAppStoryManager.getInstance();
                     if (manager != null && cacheId != null)
                         manager.clearCachedList(cacheId);
                     reloadStories = true;
@@ -233,7 +233,7 @@ public class StoriesList extends RecyclerView {
         ) {
             renewCoordinates(ScreensManager.getInstance().activeStoryItem.getListIndex());
         }
-        InAppStoryManager.debugSDKCalls("StoriesList_onAttachedToWindow", ""
+        OldInAppStoryManager.debugSDKCalls("StoriesList_onAttachedToWindow", ""
                 + InAppStoryService.isNotNull());
         InAppStoryService.checkAndAddListSubscriber(manager);
         manager.checkCurrentSession();
@@ -607,7 +607,7 @@ public class StoriesList extends RecyclerView {
     LoadStoriesCallback lcallback;
 
     public void loadStories() {
-        InAppStoryManager.debugSDKCalls("StoriesList_loadStories", "");
+        OldInAppStoryManager.debugSDKCalls("StoriesList_loadStories", "");
         loadStoriesLocal();
     }
 
@@ -725,10 +725,10 @@ public class StoriesList extends RecyclerView {
 
     private void loadStoriesInner() {
 
-        InAppStoryManager manager = InAppStoryManager.getInstance();
+        OldInAppStoryManager manager = OldInAppStoryManager.getInstance();
         if (manager == null) {
-            InAppStoryManager.showELog(
-                    InAppStoryManager.IAS_ERROR_TAG,
+            OldInAppStoryManager.showELog(
+                    OldInAppStoryManager.IAS_ERROR_TAG,
                     StringsUtils.getErrorStringFromContext(
                             getContext(),
                             R.string.ias_npe_manager
@@ -739,7 +739,7 @@ public class StoriesList extends RecyclerView {
         if (manager.noCorrectUserIdOrDevice()) return;
 
         checkAppearanceManager();
-        InAppStoryManager.debugSDKCalls("StoriesList_loadStoriesInner", "");
+        OldInAppStoryManager.debugSDKCalls("StoriesList_loadStoriesInner", "");
         final String listUid = ProfilingManager.getInstance().addTask("widget_init");
         final boolean hasFavorite = (appearanceManager != null && !isFavoriteList && appearanceManager.csHasFavorite());
 

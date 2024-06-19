@@ -13,7 +13,7 @@ import android.webkit.WebView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.OldInAppStoryManager;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.stories.api.models.logs.WebConsoleLog;
 
@@ -76,7 +76,7 @@ public class IASWebView extends WebView {
         log.lineNumber = consoleMessage.lineNumber();
         log.storyId = storyId;
         log.slideIndex = slideIndex;
-        InAppStoryManager.sendWebConsoleLog(log);
+        OldInAppStoryManager.sendWebConsoleLog(log);
     }
 
     protected String injectUnselectableStyle(String html) {

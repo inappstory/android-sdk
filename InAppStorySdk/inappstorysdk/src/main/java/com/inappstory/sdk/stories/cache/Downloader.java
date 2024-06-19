@@ -6,7 +6,7 @@ import android.os.Looper;
 import androidx.annotation.NonNull;
 import androidx.annotation.WorkerThread;
 
-import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.OldInAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.game.cache.SuccessUseCaseCallback;
 import com.inappstory.sdk.lrudiskcache.FileManager;
@@ -123,13 +123,13 @@ public class Downloader {
                         callback.onSuccess(fileState.file);
                     headers.put("From Cache", "true");
                     responseLog.generateFile(200, fileState.file.getAbsolutePath(), headers);
-                    InAppStoryManager.sendApiRequestResponseLog(requestLog, responseLog);
+                    OldInAppStoryManager.sendApiRequestResponseLog(requestLog, responseLog);
                     return fileState;
                 }
             }
         }
 
-        InAppStoryManager.sendApiRequestLog(requestLog);
+        OldInAppStoryManager.sendApiRequestLog(requestLog);
 
         if (img == null) {
             img = cache.getFileFromKey(key);
@@ -156,7 +156,7 @@ public class Downloader {
                 callback.onError("File haven't downloaded");
         }
         responseLog.responseHeaders.add(new ApiLogRequestHeader("From Cache", "false"));
-        InAppStoryManager.sendApiResponseLog(responseLog);
+        OldInAppStoryManager.sendApiResponseLog(responseLog);
         return fileState;
 
     }
@@ -298,7 +298,7 @@ public class Downloader {
         DownloadFileState state = null;
         if (manager != null && !manager.addFinishCallback(url, finishCallback))
             return null;
-        InAppStoryManager.showDLog("InAppStory_File", url);
+        OldInAppStoryManager.showDLog("InAppStory_File", url);
         outputFile.getParentFile().mkdirs();
         if (!outputFile.exists())
             outputFile.createNewFile();
@@ -309,8 +309,8 @@ public class Downloader {
         urlConnection.setConnectTimeout(300000);
         urlConnection.setReadTimeout(300000);
         urlConnection.setRequestMethod("GET");
-        if (InAppStoryManager.getNetworkClient() != null) {
-            urlConnection.setRequestProperty("User-Agent", InAppStoryManager.getNetworkClient().userAgent);
+        if (OldInAppStoryManager.getNetworkClient() != null) {
+            urlConnection.setRequestProperty("User-Agent", OldInAppStoryManager.getNetworkClient().userAgent);
         }
         if (downloadOffset > 0) {
             if (downloadLimit > 0) {

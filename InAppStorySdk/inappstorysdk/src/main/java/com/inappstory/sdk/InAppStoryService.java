@@ -77,7 +77,7 @@ public class InAppStoryService {
 
     public static InAppStoryService getInstance() {
         synchronized (lock) {
-            if (InAppStoryManager.getInstance() == null) return null;
+            if (OldInAppStoryManager.getInstance() == null) return null;
             return INSTANCE;
         }
     }
@@ -131,7 +131,7 @@ public class InAppStoryService {
     }
 
     public boolean hasLottieAnimation() {
-        InAppStoryManager manager = InAppStoryManager.getInstance();
+        OldInAppStoryManager manager = OldInAppStoryManager.getInstance();
         if (manager != null)
             return manager.utilModulesHolder.hasLottieModule();
         return false;
@@ -183,7 +183,7 @@ public class InAppStoryService {
 
     public String getUserId() {
         if (userId == null) {
-            InAppStoryManager manager = InAppStoryManager.getInstance();
+            OldInAppStoryManager manager = OldInAppStoryManager.getInstance();
             if (manager != null) return manager.getUserId();
         }
         return userId;
@@ -196,7 +196,7 @@ public class InAppStoryService {
     private String userId;
 
     public String getTagsString() {
-        InAppStoryManager manager = InAppStoryManager.getInstance();
+        OldInAppStoryManager manager = OldInAppStoryManager.getInstance();
         return manager != null ? manager.getTagsString() : null;
     }
 
@@ -227,9 +227,9 @@ public class InAppStoryService {
     };
 
     public void saveStoriesOpened(final List<Story> stories, final Story.StoryType type) {
-        InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+        OldInAppStoryManager.useInstance(new UseOldManagerInstanceCallback() {
             @Override
-            public void use(@NonNull InAppStoryManager manager) {
+            public void use(@NonNull OldInAppStoryManager manager) {
                 Set<String> opens = SharedPreferencesAPI.getStringSet(manager.getLocalOpensKey(type));
                 if (opens == null) opens = new HashSet<>();
                 for (Story story : stories) {
@@ -245,9 +245,9 @@ public class InAppStoryService {
     }
 
     public void saveStoryOpened(final int id, final Story.StoryType type) {
-        InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+        OldInAppStoryManager.useInstance(new UseOldManagerInstanceCallback() {
             @Override
-            public void use(@NonNull InAppStoryManager manager) {
+            public void use(@NonNull OldInAppStoryManager manager) {
                 Set<String> opens = SharedPreferencesAPI.getStringSet(manager.getLocalOpensKey(type));
                 if (opens == null) opens = new HashSet<>();
                 opens.add(Integer.toString(id));
@@ -257,25 +257,25 @@ public class InAppStoryService {
     }
 
     public boolean isSoundOn() {
-        InAppStoryManager manager = InAppStoryManager.getInstance();
+        OldInAppStoryManager manager = OldInAppStoryManager.getInstance();
         return manager == null || manager.soundOn();
     }
 
     public void changeSoundStatus() {
-        InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+        OldInAppStoryManager.useInstance(new UseOldManagerInstanceCallback() {
             @Override
-            public void use(@NonNull InAppStoryManager manager) {
+            public void use(@NonNull OldInAppStoryManager manager) {
                 manager.soundOn(!manager.soundOn());
             }
         });
     }
 
     public boolean statV2Disallowed() {
-        return !sessionHolder.allowStatV2() || !InAppStoryManager.getInstance().isSendStatistic();
+        return !sessionHolder.allowStatV2() || !OldInAppStoryManager.getInstance().isSendStatistic();
     }
 
     public boolean statV1Disallowed() {
-        return !sessionHolder.allowStatV1() || !InAppStoryManager.getInstance().isSendStatistic();
+        return !sessionHolder.allowStatV1() || !OldInAppStoryManager.getInstance().isSendStatistic();
     }
 
     public InAppStoryService(String userId) {
@@ -321,9 +321,9 @@ public class InAppStoryService {
                 manager.closeStatisticEvent(null, true);
             }
         });
-        InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+        OldInAppStoryManager.useInstance(new UseOldManagerInstanceCallback() {
             @Override
-            public void use(@NonNull InAppStoryManager manager) throws Exception {
+            public void use(@NonNull OldInAppStoryManager manager) throws Exception {
                 SessionManager.getInstance().closeSession(
                         true,
                         false,
@@ -505,7 +505,7 @@ public class InAppStoryService {
 
 
     public Map<String, String> getPlaceholders() {
-        InAppStoryManager manager = InAppStoryManager.getInstance();
+        OldInAppStoryManager manager = OldInAppStoryManager.getInstance();
         if (manager != null)
             return manager.getPlaceholdersCopy();
         return new HashMap<>();
@@ -513,14 +513,14 @@ public class InAppStoryService {
 
 
     public Map<String, ImagePlaceholderValue> getImagePlaceholdersValues() {
-        InAppStoryManager manager = InAppStoryManager.getInstance();
+        OldInAppStoryManager manager = OldInAppStoryManager.getInstance();
         if (manager != null)
             return manager.getImagePlaceholdersValues();
         return new HashMap<>();
     }
 
     public Map<String, Pair<ImagePlaceholderValue, ImagePlaceholderValue>> getImagePlaceholdersValuesWithDefaults() {
-        InAppStoryManager manager = InAppStoryManager.getInstance();
+        OldInAppStoryManager manager = OldInAppStoryManager.getInstance();
         if (manager != null)
             return manager.getImagePlaceholdersValuesWithDefaults();
         return new HashMap<>();
@@ -528,16 +528,16 @@ public class InAppStoryService {
 
     public void saveSessionPlaceholders(List<StoryPlaceholder> placeholders) {
         if (placeholders == null) return;
-        InAppStoryManager manager = InAppStoryManager.getInstance();
+        OldInAppStoryManager manager = OldInAppStoryManager.getInstance();
         if (manager == null) return;
         manager.setDefaultPlaceholders(placeholders);
     }
 
     public void saveSessionImagePlaceholders(final List<StoryPlaceholder> placeholders) {
         if (placeholders == null) return;
-        InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+        OldInAppStoryManager.useInstance(new UseOldManagerInstanceCallback() {
             @Override
-            public void use(@NonNull InAppStoryManager manager) {
+            public void use(@NonNull OldInAppStoryManager manager) {
                 for (StoryPlaceholder placeholder : placeholders) {
                     if (!URLUtil.isNetworkUrl(placeholder.defaultVal))
                         continue;
@@ -774,9 +774,9 @@ public class InAppStoryService {
             useInstance(new UseServiceInstanceCallback() {
                 @Override
                 public void use(@NonNull final InAppStoryService service) {
-                    InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+                    OldInAppStoryManager.useInstance(new UseOldManagerInstanceCallback() {
                         @Override
-                        public void use(@NonNull InAppStoryManager manager) {
+                        public void use(@NonNull OldInAppStoryManager manager) {
                             if (thread != manager.serviceThread) {
                                 if (oldHandler != null)
                                     oldHandler.uncaughtException(thread, throwable);
@@ -858,7 +858,7 @@ public class InAppStoryService {
         timerManager = new TimerManager();
         if (tempListSubscribers != null) {
             if (listSubscribers == null) listSubscribers = new HashSet<>();
-            InAppStoryManager.debugSDKCalls("IASService_subscribers", "temp size:" + tempListSubscribers.size() + " / size:" + listSubscribers.size());
+            OldInAppStoryManager.debugSDKCalls("IASService_subscribers", "temp size:" + tempListSubscribers.size() + " / size:" + listSubscribers.size());
             listSubscribers.addAll(tempListSubscribers);
             tempListSubscribers.clear();
         }

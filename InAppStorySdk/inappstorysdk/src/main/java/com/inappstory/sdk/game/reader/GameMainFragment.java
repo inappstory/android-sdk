@@ -11,10 +11,10 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
-import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.OldInAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
-import com.inappstory.sdk.UseManagerInstanceCallback;
+import com.inappstory.sdk.UseOldManagerInstanceCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.GameReaderLaunchData;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.utils.FragmentAction;
@@ -155,9 +155,9 @@ public class GameMainFragment extends Fragment
             @NonNull final String[] permissions,
             @NonNull final int[] grantResults
     ) {
-        InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+        OldInAppStoryManager.useInstance(new UseOldManagerInstanceCallback() {
             @Override
-            public void use(@NonNull InAppStoryManager manager) throws Exception {
+            public void use(@NonNull OldInAppStoryManager manager) throws Exception {
                 manager.utilModulesHolder.getFilePicker().permissionResult(requestCode, permissions, grantResults);
             }
         });

@@ -5,8 +5,8 @@ import android.content.Context;
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.AppearanceManager;
-import com.inappstory.sdk.InAppStoryManager;
-import com.inappstory.sdk.UseManagerInstanceCallback;
+import com.inappstory.sdk.OldInAppStoryManager;
+import com.inappstory.sdk.UseOldManagerInstanceCallback;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.outercallbacks.common.onboarding.OnboardingLoadCallback;
 
@@ -20,9 +20,9 @@ public class IASOnboardings {
             final List<String> tags,
             final int limit
     ) {
-        InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+        OldInAppStoryManager.useInstance(new UseOldManagerInstanceCallback() {
             @Override
-            public void use(@NonNull InAppStoryManager manager) throws Exception {
+            public void use(@NonNull OldInAppStoryManager manager) throws Exception {
                 manager.showOnboardingStories(limit, feed, tags, context, appearanceManager);
             }
         });

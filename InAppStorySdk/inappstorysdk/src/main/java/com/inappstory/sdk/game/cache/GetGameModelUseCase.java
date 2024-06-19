@@ -2,7 +2,7 @@ package com.inappstory.sdk.game.cache;
 
 import static com.inappstory.sdk.network.NetworkClient.NC_IS_UNAVAILABLE;
 
-import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.OldInAppStoryManager;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.stories.api.models.GameCenterData;
@@ -14,14 +14,14 @@ import java.lang.reflect.Type;
 
 public class GetGameModelUseCase {
     void get(final String gameId, final GameLoadCallback callback) {
-        final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
+        final NetworkClient networkClient = OldInAppStoryManager.getNetworkClient();
         if (networkClient == null) {
             callback.onError(NC_IS_UNAVAILABLE);
             return;
         }
 
         final boolean demoMode;
-        InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
+        OldInAppStoryManager inAppStoryManager = OldInAppStoryManager.getInstance();
         if (inAppStoryManager != null)
             demoMode = inAppStoryManager.isGameDemoMode();
         else

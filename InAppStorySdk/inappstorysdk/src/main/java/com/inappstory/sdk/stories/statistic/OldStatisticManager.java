@@ -1,6 +1,6 @@
 package com.inappstory.sdk.stories.statistic;
 
-import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.OldInAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
@@ -139,7 +139,7 @@ public class OldStatisticManager {
     }
 
     public boolean sendStatistic() {
-        NetworkClient networkClient = InAppStoryManager.getNetworkClient();
+        NetworkClient networkClient = OldInAppStoryManager.getNetworkClient();
         if (networkClient == null) {
             return true;
         }
