@@ -58,9 +58,7 @@ public class Story implements Parcelable {
     }
 
     public boolean checkIfEmpty() {
-        boolean res = (getLayout() == null || pages == null || pages.isEmpty());
-        res = res && (slidesStructure == null || slidesStructure.isEmpty());
-        return res;
+        return (getLayout() == null || pages == null || pages.isEmpty());
     }
 
     public List<Image> getImage() {

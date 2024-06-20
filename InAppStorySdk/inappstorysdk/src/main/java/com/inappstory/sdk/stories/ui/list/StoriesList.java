@@ -801,7 +801,12 @@ public class StoriesList extends RecyclerView {
                     callback.loadError(StringsUtils.getNonNull(getFeed()));
             }
         };
-        service.getStoryDownloadManager().loadStories(getFeed(),
-                lcallback, isFavoriteList, hasFavorite);
+        service.getStoryDownloadManager().loadStories(
+                getFeed(),
+                lcallback,
+                null,
+                isFavoriteList,
+                hasFavorite
+        );
     }
 }

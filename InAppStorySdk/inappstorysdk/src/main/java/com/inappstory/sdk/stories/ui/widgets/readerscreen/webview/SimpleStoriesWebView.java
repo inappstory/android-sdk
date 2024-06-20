@@ -288,8 +288,8 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
     }
 
     @Override
-    public void screenshotShare() {
-        evaluateJavascript("share_slide_screenshot();", null);
+    public void screenshotShare(String shareId) {
+        evaluateJavascript("share_slide_screenshot(\"" + shareId + "\");", null);
         logMethod("share_slide_screenshot");
     }
 

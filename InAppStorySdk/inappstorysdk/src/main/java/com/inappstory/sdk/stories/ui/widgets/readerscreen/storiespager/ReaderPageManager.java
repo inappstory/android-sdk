@@ -31,6 +31,7 @@ import com.inappstory.sdk.utils.StringsUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class ReaderPageManager {
 
@@ -59,7 +60,13 @@ public class ReaderPageManager {
 
     public void screenshotShare() {
         if (checkIfManagersIsNull()) return;
-        webViewManager.screenshotShare();
+        webViewManager.screenshotShare(storyId + "");
+    }
+
+    public void screenshotShareCallback(String shareId) {
+        if (Objects.equals(Integer.toString(storyId), shareId)) {
+            unlockShareButton();
+        }
     }
 
     public void swipeUp() {

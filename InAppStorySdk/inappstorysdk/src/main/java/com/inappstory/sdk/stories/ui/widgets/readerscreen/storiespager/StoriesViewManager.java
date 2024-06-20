@@ -68,11 +68,13 @@ public class StoriesViewManager {
             pageManager.widgetEvent(name, eventData);
     }
 
-    void screenshotShare() {
+    void screenshotShare(String shareId) {
         if (storiesView != null)
-            storiesView.screenshotShare();
+            storiesView.screenshotShare(shareId);
+    }
 
-
+    public void screenshotShareCallback(String shareId) {
+        pageManager.screenshotShareCallback(shareId);
     }
 
     public void vibrate(int[] vibratePattern) {

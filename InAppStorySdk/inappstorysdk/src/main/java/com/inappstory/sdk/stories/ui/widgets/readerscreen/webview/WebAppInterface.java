@@ -242,6 +242,11 @@ public class WebAppInterface {
         }
     }
 
+    @JavascriptInterface
+    public void shareSlideScreenshotCb(String shareId, boolean result) {
+        manager.screenshotShareCallback(shareId);
+    }
+
 
     @JavascriptInterface
     public void defaultTap(String val) {
