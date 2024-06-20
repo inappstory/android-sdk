@@ -544,11 +544,8 @@ public class StoryDownloadManager {
             stories.add(story);
             return;
         }
-        cur.loadedPages = new ArrayList<>();
         cur.pages = new ArrayList<>(story.pages);
-        for (int i = 0; i < cur.pages.size(); i++) {
-            cur.loadedPages.add(false);
-        }
+
         cur.id = id;
         cur.layout = story.layout;
         cur.hasAudio = story.hasAudio;

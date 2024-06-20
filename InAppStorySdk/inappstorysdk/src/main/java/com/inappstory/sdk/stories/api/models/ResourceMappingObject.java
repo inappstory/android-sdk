@@ -28,9 +28,6 @@ public class ResourceMappingObject {
     @SerializedName("range_end")
     public Long rangeEnd;
 
-    public String getType() {
-        return type;
-    }
     public String getUrl() {
         return url;
     }
@@ -48,13 +45,6 @@ public class ResourceMappingObject {
 
     public String getPurpose() {
         return purpose != null ? purpose : "";
-    }
-    public String getRangeStart() {
-        return key;
-    }
-
-    public long getRangeEnd() {
-        return rangeEnd != null ? rangeEnd : -1;
     }
 
     @Override

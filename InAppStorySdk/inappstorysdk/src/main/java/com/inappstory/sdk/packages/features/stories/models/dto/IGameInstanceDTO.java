@@ -1,4 +1,5 @@
 package com.inappstory.sdk.packages.features.stories.models.dto;
 
-public interface IStoryDTO {
+public interface IGameInstanceDTO {
+    String id();
 }

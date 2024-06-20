@@ -58,9 +58,7 @@ public class Story implements Parcelable {
     }
 
     public boolean checkIfEmpty() {
-        boolean res = (getLayout() == null || pages == null || pages.isEmpty());
-        res = res && (slidesStructure == null || slidesStructure.isEmpty());
-        return res;
+        return (getLayout() == null || pages == null || pages.isEmpty());
     }
 
     public List<Image> getImage() {
@@ -370,42 +368,10 @@ public class Story implements Parcelable {
     @SerializedName("slides_html")
     public List<String> pages;
 
-    @SerializedName("slides_structure")
-    public List<SlideStructure> slidesStructure;
-
-    public List<Boolean> loadedPages = new ArrayList<>();
-
     @SerializedName("layout")
     public String layout;
 
     public Story() {
-    }
-
-    public Story getSimpleCopy() {
-        Story story = new Story();
-        story.id = id;
-        story.lastIndex = lastIndex;
-        story.title = title;
-        story.statTitle = statTitle;
-        story.source = source;
-        story.backgroundColor = backgroundColor;
-        story.image = image;
-        story.like = like;
-        story.hasAudio = hasAudio;
-        story.slidesCount = slidesCount;
-        story.titleColor = titleColor;
-        story.isOpened = isOpened;
-        story.durations = new ArrayList<>();
-        if (durations != null) {
-            story.durations.addAll(durations);
-            story.slidesCount = durations.size();
-        }
-        if (slidesShare != null) {
-            story.slidesShare.addAll(slidesShare);
-        }
-        story.favorite = favorite;
-        //nar.pages = pages;
-        return story;
     }
 
     public Story(Parcel in) {
