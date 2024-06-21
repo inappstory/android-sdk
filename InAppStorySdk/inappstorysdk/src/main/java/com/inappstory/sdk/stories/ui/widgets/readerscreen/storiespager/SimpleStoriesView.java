@@ -3,15 +3,15 @@ package com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager;
 import android.content.Context;
 
 public interface SimpleStoriesView {
-    void slidePause();
-    void slideStart();
-    void restartVideo();
-    void stopVideo();
+    void pauseSlide();
+    void startSlide();
+    void restartSlide();
+    void stopSlide();
     void swipeUp();
 
     void clearSlide(int index);
     void loadJsApiResponse(String result, String cb);
-    void resumeVideo();
+    void resumeSlide();
     Context getActivityContext();
     void changeSoundStatus();
     void cancelDialog(String id);

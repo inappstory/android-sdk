@@ -10,6 +10,7 @@ import android.view.View;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.game.reader.GameStoryData;
+import com.inappstory.sdk.stories.api.models.UpdateTimelineData;
 import com.inappstory.sdk.stories.ui.widgets.LoadProgressBar;
 import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.network.ApiSettings;
@@ -437,7 +438,7 @@ public class StoriesViewManager {
     }
 
     public void storyStartedEvent() {
-        pageManager.startStoryTimers();
+        //pageManager.startStoryTimers();
 
         final StoriesContentFragment storiesContentFragment =
                 (StoriesContentFragment) pageManager.host.getParentFragment();
@@ -446,10 +447,6 @@ public class StoriesViewManager {
         ProfilingManager.getInstance().setReady(storyId + "_" + index);
     }
 
-    public void storyResumedEvent(double startTime) {
-        if (pageManager != null)
-            pageManager.moveTimerToPosition(startTime);
-    }
 
     public void setAudioManagerMode(String mode) {
         if (context == null) return;
@@ -627,36 +624,27 @@ public class StoriesViewManager {
     }
 
     public void stopStory() {
-        storiesView.stopVideo();
+        storiesView.stopSlide();
     }
 
     public void restartStory() {
-        storiesView.restartVideo();
-    }
-
-    public void restartSlide() {
-        pageManager.restartCurrentWithoutDuration();
-        ((SimpleStoriesWebView) storiesView).reloadPage();
+        storiesView.restartSlide();
     }
 
     public void playStory() {
         if (storyIsLoaded) {
             sendShowStoryEvents();
             sendShowSlideEvents();
-            storiesView.slideStart();
+            storiesView.startSlide();
         }
     }
 
-    public void pauseByClick() {
-
-    }
-
     public void pauseStory() {
-        storiesView.slidePause();
+        storiesView.pauseSlide();
     }
 
     public void resumeStory() {
-        storiesView.resumeVideo();
+        storiesView.resumeSlide();
     }
 
     public void changeIndex(int index) {
@@ -668,6 +656,18 @@ public class StoriesViewManager {
         clearShowLoader();
         setLatestVisibleIndex(-1);
         pageManager.slideLoadError(index);
+    }
+
+    public void updateTimeline(UpdateTimelineData data) {
+        if (data.showError) {
+
+        } else if (data.showLoader) {
+
+        } else if (data.action.equals("start")) {
+            getPageManager().startSlideTimerFromJS(data.duration, data.currentTime);
+        } else if (data.action.equals("pause")) {
+            getPageManager().pauseSlideTimerFromJS();
+        }
     }
 
     private final Object latestIndexLock = new Object();
@@ -689,11 +689,4 @@ public class StoriesViewManager {
         pageManager.showSingleStory(storyId, slideIndex);
     }
 
-    public void restartStoryWithDuration(long duration) {
-        pageManager.restartCurrentWithDuration(duration);
-    }
-
-    public void resetTimers() {
-        pageManager.resetCurrentDuration();
-    }
 }

@@ -38,9 +38,14 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
 
     boolean clientIsSet = false;
 
-    public void restartVideo() {
-        stopVideo();
-        slideStart();
+    public void restartSlide() {
+        loadUrl("javascript:(function(){" +
+                "if ('story_slide_restart' in window) " +
+                "{" +
+                " window.story_slide_restart();" +
+                "}" +
+                "})()");
+        logMethod("story_slide_restart");
     }
 
     private void logMethod(String payload) {
@@ -104,7 +109,7 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
     }
 
 
-    public void slidePause() {
+    public void pauseSlide() {
         loadUrl("javascript:(function(){" +
                 "if ('story_slide_pause' in window) " +
                 "{" +
@@ -115,7 +120,7 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
         logMethod("story_slide_pause");
     }
 
-    public void slideStart() {
+    public void startSlide() {
         String funAfterCheck =
                 (InAppStoryService.getInstance() != null
                         && InAppStoryService.getInstance().isSoundOn()) ?
@@ -130,7 +135,7 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
         logMethod("story_slide_start");
     }
 
-    public void stopVideo() {
+    public void stopSlide() {
         loadUrl("javascript:(function(){" +
                 "if ('story_slide_stop' in window) " +
                 "{" +
@@ -153,7 +158,7 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
         evaluateJavascript(cb + "('" + result + "');", null);
     }
 
-    public void resumeVideo() {
+    public void resumeSlide() {
         loadUrl("javascript:(function() {" +
                 "if ('story_slide_resume' in window) " +
                 "{" +

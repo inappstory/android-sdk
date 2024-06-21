@@ -19,25 +19,33 @@ import java.util.concurrent.TimeUnit;
 public class TimerManager {
     private long timerStart;
 
-    public void setTimerDuration(long timerDuration) {
-        this.timerDuration = timerDuration;
-    }
-
     private long timerDuration;
-    private long totalTimerDuration;
-    private long pauseShift;
+
+    ScheduledFuture scheduledFuture;
+
+    public long startPauseTime;
+
+
+    public long pauseTime = 0;
+
+    ReaderPageManager pageManager;
+
+    private ScheduledExecutorService executorService = new ScheduledThreadPoolExecutor(1);
 
     public void setPageManager(ReaderPageManager pageManager) {
         this.pageManager = pageManager;
     }
 
-    ReaderPageManager pageManager;
+
+
+    public void setTimerDuration(long timerDuration) {
+        this.timerDuration = timerDuration;
+    }
 
     Runnable timerTask = new Runnable() {
         @Override
         public void run() {
             if (timerDuration > 0 && System.currentTimeMillis() - timerStart >= timerDuration) {
-                pauseShift = 0;
                 if (pageManager != null)
                     pageManager.nextSlide(ShowStory.ACTION_AUTO);
                 cancelTask();
@@ -52,59 +60,25 @@ public class TimerManager {
         executorService.shutdown();
     }
 
-    ScheduledFuture scheduledFuture;
-
-    public long startPauseTime;
-
-
-    public long pauseTime = 0;
 
 
     public void stopTimer() {
         cancelTask();
     }
 
-    public void resumeTimer(int timer) {
-        StatisticManager.getInstance().cleanFakeEvents();
-        startTimer(timer, false);
-        if (pageManager == null) return;
-        OldStatisticManager.useInstance(
-                pageManager.getParentManager().getSessionId(),
-                new GetOldStatisticManagerCallback() {
-                    @Override
-                    public void get(@NonNull OldStatisticManager manager) {
-                        if (manager.currentEvent == null) return;
-                        manager.currentEvent.eventType = 1;
-                        manager.currentEvent.timer = System.currentTimeMillis();
-                    }
-                }
-        );
-
-
-        pauseTime += System.currentTimeMillis() - startPauseTime;
-        StatisticManager.getInstance().currentState.storyPause = pauseTime;
-        startPauseTime = 0;
-    }
-
-
-    public void startTimer(long timerDuration, boolean clearDuration) {
-        if (timerDuration == 0) {
+    public void startTimer(long timerDuration, long totalTimerDuration) {
+        if (totalTimerDuration == 0) {
             try {
                 cancelTask();
-                this.timerDuration = timerDuration;
-                if (clearDuration)
-                    this.currentDuration = 0;
+                this.timerDuration = totalTimerDuration;
             } catch (Exception e) {
 
             }
             return;
         }
-        if (timerDuration < 0) {
+        if (totalTimerDuration <= 0) {
             return;
         }
-        if (clearDuration)
-            this.currentDuration = timerDuration;
-        pauseShift = 0;
         timerStart = System.currentTimeMillis();
         this.timerDuration = timerDuration;
         if (executorService.isShutdown()) {
@@ -119,36 +93,19 @@ public class TimerManager {
 
     }
 
-    private ScheduledExecutorService executorService = new ScheduledThreadPoolExecutor(1);
-
-    public void restartTimer(long duration) {
-        startTimer(duration, true);
-    }
-
-    public void setCurrentDuration(Integer currentDuration) {
-        if (currentDuration != null)
-            this.currentDuration = currentDuration;
-    }
 
     long currentDuration;
 
-    public void startCurrentTimer() {
-        if (currentDuration != 0)
-            startTimer(currentDuration, false);
+    public void startSlideTimer(long newDuration, long currentTime) {
+        startTimer(newDuration - currentTime, newDuration);
     }
 
-    public void resumeLocalTimer() {
-        startTimer(timerDuration - pauseShift, false);
-    }
-
-    public void pauseLocalTimer() {
+    public void pauseSlideTimer() {
         cancelTask();
-        pauseShift = (System.currentTimeMillis() - timerStart);
     }
 
-    public void resumeTimer() {
+    public void resumeTimerAndRefreshStat() {
         StatisticManager.getInstance().cleanFakeEvents();
-        // resumeLocalTimer();
         if (pageManager == null) return;
         OldStatisticManager.useInstance(
                 pageManager.getParentManager().getSessionId(),
@@ -174,7 +131,7 @@ public class TimerManager {
         }
     }
 
-    public void pauseTimer() {
+    public void pauseTimerAndRefreshStat() {
         if (pageManager == null) return;
         OldStatisticManager.useInstance(
                 pageManager.getParentManager().getSessionId(),

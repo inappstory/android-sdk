@@ -1,6 +1,5 @@
 package com.inappstory.sdk.stories.ui.widgets.readerscreen.progresstimeline;
 
-import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -9,13 +8,11 @@ import android.graphics.RectF;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.stories.utils.Sizes;
 
 import java.util.Random;

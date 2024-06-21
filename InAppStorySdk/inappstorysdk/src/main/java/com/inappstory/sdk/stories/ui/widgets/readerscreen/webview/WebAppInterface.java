@@ -8,6 +8,7 @@ import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.StoryLoadedData;
+import com.inappstory.sdk.stories.api.models.UpdateTimelineData;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.StoriesViewManager;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
 
@@ -37,6 +38,15 @@ public class WebAppInterface {
     }
 
     @JavascriptInterface
+    public void updateTimeline(String data) {
+        if (data != null) {
+            UpdateTimelineData updateTimelineData = JsonParser.fromJson(data, UpdateTimelineData.class);
+            manager.updateTimeline(updateTimelineData);
+        }
+        logMethod("");
+    }
+
+    @JavascriptInterface
     public void storyLoadingFailed(String data) {
         if (data != null) {
             StoryLoadedData loadedData = JsonParser.fromJson(data, StoryLoadedData.class);
@@ -49,8 +59,6 @@ public class WebAppInterface {
     public void storyShowSlide(int index) {
         if (manager.index != index) {
             manager.changeIndex(index);
-        } else {
-            manager.restartSlide();
         }
         logMethod("" + index);
     }
@@ -102,20 +110,17 @@ public class WebAppInterface {
     }
 
     @JavascriptInterface
-    public void resetTimers() {
-        manager.resetTimers();
-        logMethod("");
-    }
-
-    @JavascriptInterface
     public void storyShowNextSlide(long delay) {
-        if (delay != 0) {
-            InAppStoryManager.showDLog("jsDuration", delay + " showNext");
-            manager.restartStoryWithDuration(delay);
-        } else {
+        if (delay == 0) {
             manager.changeIndex(manager.index + 1);
         }
         logMethod("" + delay);
+    }
+
+    @JavascriptInterface
+    public void storyShowNextSlide() {
+        manager.changeIndex(manager.index + 1);
+        logMethod("");
     }
 
     @JavascriptInterface
@@ -136,18 +141,6 @@ public class WebAppInterface {
         manager.storyStartedEvent();
         manager.pageFinished();
         logMethod("" + startTime);
-    }
-
-    @JavascriptInterface
-    public void storyResumed(String startTime) {
-        logMethod(startTime);
-        if (startTime != null) {
-            try {
-                manager.storyResumedEvent(Double.parseDouble(startTime));
-            } catch (NumberFormatException e) {
-
-            }
-        }
     }
 
     @JavascriptInterface
@@ -204,18 +197,6 @@ public class WebAppInterface {
         logMethod("");
     }
 
-    @JavascriptInterface
-    public void storyPauseUI() {
-        manager.pauseUI();
-        logMethod("");
-    }
-
-    @JavascriptInterface
-    public void storyResumeUI() {
-        manager.resumeUI();
-        logMethod("");
-    }
-
 
     @JavascriptInterface
     public void storySendData(String data) {
@@ -250,8 +231,6 @@ public class WebAppInterface {
 
     @JavascriptInterface
     public void defaultTap(String val) {
-
-
         logMethod(val);
     }
 }
