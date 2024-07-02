@@ -23,20 +23,18 @@ import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.reader.ReaderManager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.buttonspanel.ButtonsPanelManager;
-import com.inappstory.sdk.stories.ui.widgets.readerscreen.timeline.StoryTimelineManager;
+import com.inappstory.sdk.stories.ui.widgets.readerscreen.progresstimeline.ComplexTimelineManager;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.utils.StringsUtils;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
 public class ReaderPageManager {
 
 
-    StoryTimelineManager timelineManager;
+    ComplexTimelineManager timelineManager;
     ButtonsPanelManager buttonsPanelManager;
     StoriesViewManager webViewManager;
     TimerManager timerManager;
@@ -118,9 +116,8 @@ public class ReaderPageManager {
         if (this.slideIndex == slideIndex) return;
         if (checkIfManagersIsNull()) return;
         this.slideIndex = slideIndex;
-        Story story = InAppStoryService.getInstance().getStoryDownloadManager()
-                .getStoryById(storyId, getStoryType());
         timerManager.stopTimer();
+        timelineManager.stopTimer();
 
     }
 
@@ -242,7 +239,6 @@ public class ReaderPageManager {
             pauseTimers();
             webViewManager.stopStory();
         } else {
-            timelineManager.active(true);
             webViewManager.playStory();
             webViewManager.resumeStory();
         }
@@ -289,8 +285,9 @@ public class ReaderPageManager {
         webViewManager.resumeStory();
     }
 
-    public void startSlideTimerFromJS(long newDuration, long currentTime) {
+    public void startSlideTimerFromJS(long newDuration, long currentTime, int slideIndex) {
         timerManager.startSlideTimer(newDuration, currentTime);
+        timelineManager.startTimer(currentTime, slideIndex, newDuration);
     }
 
     public void restartSlide() {
@@ -303,7 +300,6 @@ public class ReaderPageManager {
         if (checkIfManagersIsNull()) return;
         timelineManager.setSlidesCount(story.getSlidesCount());
         webViewManager.loadStory(story, story.lastIndex);
-
     }
 
     public void loadStoryAndSlide(Story story, int slideIndex) {
@@ -362,12 +358,14 @@ public class ReaderPageManager {
     public void nextStory(int action) {
         if (checkIfManagersIsNull()) return;
         timerManager.setTimerDuration(0);
+        timelineManager.stopTimer();
         parentManager.nextStory(action);
     }
 
     public void prevStory(int action) {
         if (checkIfManagersIsNull()) return;
         timerManager.setTimerDuration(0);
+        timelineManager.stopTimer();
         parentManager.prevStory(action);
     }
 
@@ -393,7 +391,7 @@ public class ReaderPageManager {
 
     private void pauseTimers() {
         timerManager.pauseSlideTimer();
-        timelineManager.pause();
+        timelineManager.stopTimer();
     }
 
     public void changeCurrentSlide(int slideIndex) {
@@ -503,12 +501,7 @@ public class ReaderPageManager {
     boolean currentSlideIsLoaded = false;
 
 
-    void storyInfoLoaded() {
-        this.timelineManager.setDurations(InAppStoryService.getInstance().getStoryDownloadManager()
-                .getStoryById(storyId, getStoryType()).durations, false);
-    }
-
-    public void setTimelineManager(StoryTimelineManager timelineManager, int storyId) {
+    public void setTimelineManager(ComplexTimelineManager timelineManager) {
         this.timelineManager = timelineManager;
     }
 

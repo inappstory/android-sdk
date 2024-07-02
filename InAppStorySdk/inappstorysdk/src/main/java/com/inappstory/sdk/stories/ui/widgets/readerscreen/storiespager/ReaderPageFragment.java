@@ -52,6 +52,7 @@ import com.inappstory.sdk.stories.ui.reader.ReaderManager;
 import com.inappstory.sdk.stories.ui.reader.StoriesContentFragment;
 import com.inappstory.sdk.stories.ui.reader.StoriesGradientObject;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.buttonspanel.ButtonsPanel;
+import com.inappstory.sdk.stories.ui.widgets.readerscreen.progresstimeline.ComplexTimeline;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.timeline.StoryTimeline;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.webview.SimpleStoriesWebView;
 import com.inappstory.sdk.stories.utils.Sizes;
@@ -60,7 +61,7 @@ import java.util.List;
 
 public class ReaderPageFragment extends Fragment {
     ReaderPageManager manager;
-    StoryTimeline timeline;
+    ComplexTimeline timeline;
     SimpleStoriesView storiesView;
     ButtonsPanel buttonsPanel;
     View aboveButtonsPanel;
@@ -78,7 +79,7 @@ public class ReaderPageFragment extends Fragment {
         else
             readerInitSuccess = false;
         if (timeline != null)
-            manager.setTimelineManager(timeline.getTimelineManager(), storyId);
+            manager.setTimelineManager(timeline.getTimelineManager());
         else
             readerInitSuccess = false;
         if (storiesView != null)
@@ -623,7 +624,7 @@ public class ReaderPageFragment extends Fragment {
         timelineContainer.setId(R.id.ias_timeline_container);
         timelineContainer.setMinimumHeight(Sizes.dpToPxExt(30, getContext()));
         timelineContainer.setElevation(20);
-        timeline = new StoryTimeline(context);
+        timeline = new ComplexTimeline(context);
         timeline.setId(R.id.ias_timeline);
         timeline.setLayoutParams(new RelativeLayout.LayoutParams(MATCH_PARENT,
                 Sizes.dpToPxExt(3, getContext())));

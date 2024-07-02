@@ -9,6 +9,8 @@ import android.view.View;
 
 import androidx.annotation.Nullable;
 
+import com.inappstory.sdk.stories.ui.widgets.readerscreen.timeline.StoryTimelineManager;
+
 public class ComplexTimeline extends View {
     public ComplexTimeline(Context context) {
         super(context);
@@ -27,6 +29,13 @@ public class ComplexTimeline extends View {
     private Paint fillPaint = null;
     private Paint backgroundPaint = null;
     private int timelineWidth = getWidth();
+
+
+    public ComplexTimelineManager getTimelineManager() {
+        return timelineManager;
+    }
+
+    ComplexTimelineManager timelineManager = new ComplexTimelineManager();
 
     @Override
     protected void onAttachedToWindow() {

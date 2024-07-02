@@ -17,7 +17,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 public class TimerManager {
-    private long timerStart;
+    private long timerStartTimestamp;
 
     private long timerDuration;
 
@@ -45,7 +45,7 @@ public class TimerManager {
     Runnable timerTask = new Runnable() {
         @Override
         public void run() {
-            if (timerDuration > 0 && System.currentTimeMillis() - timerStart >= timerDuration) {
+            if (timerDuration > 0 && System.currentTimeMillis() - timerStartTimestamp >= timerDuration) {
                 if (pageManager != null)
                     pageManager.nextSlide(ShowStory.ACTION_AUTO);
                 cancelTask();
@@ -79,7 +79,7 @@ public class TimerManager {
         if (totalTimerDuration <= 0) {
             return;
         }
-        timerStart = System.currentTimeMillis();
+        timerStartTimestamp = System.currentTimeMillis();
         this.timerDuration = timerDuration;
         if (executorService.isShutdown()) {
             executorService = new ScheduledThreadPoolExecutor(1);
@@ -127,7 +127,7 @@ public class TimerManager {
     public void moveTimerToPosition(double position) {
         if (currentDuration >= 0 && currentDuration - position > 0 && position >= 0) {
             timerDuration = (long) (currentDuration - position);
-            timerStart = System.currentTimeMillis();
+            timerStartTimestamp = System.currentTimeMillis();
         }
     }
 

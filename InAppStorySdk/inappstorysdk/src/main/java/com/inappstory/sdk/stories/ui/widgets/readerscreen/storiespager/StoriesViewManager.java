@@ -664,7 +664,7 @@ public class StoriesViewManager {
         } else if (data.showLoader) {
 
         } else if (data.action.equals("start")) {
-            getPageManager().startSlideTimerFromJS(data.duration, data.currentTime);
+            getPageManager().startSlideTimerFromJS(data.duration, data.currentTime, data.slideIndex);
         } else if (data.action.equals("pause")) {
             getPageManager().pauseSlideTimerFromJS();
         }

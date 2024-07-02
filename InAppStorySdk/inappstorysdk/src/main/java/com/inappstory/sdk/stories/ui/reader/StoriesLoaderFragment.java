@@ -37,12 +37,9 @@ import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderLau
 import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.buttonspanel.ButtonsPanel;
-import com.inappstory.sdk.stories.ui.widgets.readerscreen.timeline.StoryTimeline;
-import com.inappstory.sdk.stories.ui.widgets.readerscreen.timeline.StoryTimelineManager;
+import com.inappstory.sdk.stories.ui.widgets.readerscreen.progresstimeline.ComplexTimeline;
+import com.inappstory.sdk.stories.ui.widgets.readerscreen.progresstimeline.ComplexTimelineState;
 import com.inappstory.sdk.stories.utils.Sizes;
-
-import java.util.ArrayList;
-import java.util.List;
 
 
 public class StoriesLoaderFragment extends Fragment {
@@ -65,15 +62,15 @@ public class StoriesLoaderFragment extends Fragment {
             buttonsPanel.setButtonsStatus(story.getLike(), story.favorite ? 1 : 0);
             aboveButtonsPanel.setVisibility(buttonsPanel.getVisibility());
         }
-        StoryTimeline timeline = view.findViewById(R.id.ias_timeline);
+        ComplexTimeline timeline = view.findViewById(R.id.ias_timeline);
         if (timeline != null) {
-            StoryTimelineManager timelineManager = timeline.getTimelineManager();
-            timelineManager.setSlidesCount(story.getSlidesCount());
-            List<Integer> durations = new ArrayList<>();
-            for (int i = 0; i < story.getSlidesCount(); i++) {
-                durations.add(0);
-            }
-            timelineManager.setDurations(durations, true);
+            timeline.setState(
+                    new ComplexTimelineState(
+                            story.getSlidesCount(),
+                            0,
+                            0
+                    )
+            );
         }
         setOffsets(view);
     }
@@ -278,7 +275,7 @@ public class StoriesLoaderFragment extends Fragment {
         timelineContainer.setId(R.id.ias_timeline_container);
         timelineContainer.setMinimumHeight(Sizes.dpToPxExt(30, getContext()));
         timelineContainer.setElevation(20);
-        StoryTimeline timeline = new StoryTimeline(context);
+        ComplexTimeline timeline = new ComplexTimeline(context);
         timeline.setId(R.id.ias_timeline);
         timeline.setLayoutParams(new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,
                 Sizes.dpToPxExt(3, getContext())));
@@ -308,7 +305,7 @@ public class StoriesLoaderFragment extends Fragment {
                 RelativeLayout.LayoutParams.MATCH_PARENT, Sizes.dpToPxExt(60, context)
         );
         buttonsPanelParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);
-   //     buttonsPanel.setVisibility(View.GONE);
+        //     buttonsPanel.setVisibility(View.GONE);
         buttonsPanel.setId(R.id.ias_buttons_panel);
         buttonsPanel.setOrientation(LinearLayout.HORIZONTAL);
         buttonsPanel.setBackgroundColor(Color.BLACK);
