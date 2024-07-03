@@ -10,18 +10,35 @@ import android.view.View;
 import androidx.annotation.Nullable;
 
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.timeline.StoryTimelineManager;
+import com.inappstory.sdk.stories.utils.Sizes;
 
 public class ComplexTimeline extends View {
     public ComplexTimeline(Context context) {
         super(context);
+        init(context);
     }
 
     public ComplexTimeline(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
+        init(context);
     }
 
     public ComplexTimeline(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
+        init(context);
+    }
+
+    private void init(Context context) {
+        float height = 3f;
+        float gapWidth = 4f;
+        float cornerRadius = 1.5f;
+        setParameters(
+                new ComplexTimelineParameters(
+                        Sizes.dpFloatToPxExt(gapWidth, context),
+                        Sizes.dpFloatToPxExt(height, context),
+                        Sizes.dpFloatToPxExt(cornerRadius, context)
+                )
+        );
     }
 
     private ComplexTimelineParameters parameters = null;
@@ -40,8 +57,15 @@ public class ComplexTimeline extends View {
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
-        timelineWidth = getWidth();
+        timelineManager.setHost(this);
+        post(new Runnable() {
+            @Override
+            public void run() {
+                timelineWidth = getWidth();
+            }
+        });
     }
+
 
     public void setParameters(ComplexTimelineParameters parameters) {
         this.parameters = parameters;
@@ -79,7 +103,7 @@ public class ComplexTimeline extends View {
                 new RectF(
                         offset,
                         0,
-                        segmentWidth,
+                        offset + segmentWidth,
                         parameters.lineHeight
                 ),
                 parameters.lineRadius,
@@ -91,7 +115,7 @@ public class ComplexTimeline extends View {
                     new RectF(
                             offset,
                             0,
-                            segmentWidth,
+                            offset + segmentWidth,
                             parameters.lineHeight
                     ),
                     parameters.lineRadius,
@@ -103,7 +127,7 @@ public class ComplexTimeline extends View {
                     new RectF(
                             offset,
                             0,
-                            segmentWidth * state.currentProgress,
+                            offset + segmentWidth * state.currentProgress,
                             parameters.lineHeight
                     ),
                     parameters.lineRadius,

@@ -40,6 +40,7 @@ public class ComplexTimelineManager {
 
     public void setSlidesCount(int slidesCount) {
         this.slidesCount = slidesCount;
+        setProgress(0);
     }
 
     private int slidesCount;
