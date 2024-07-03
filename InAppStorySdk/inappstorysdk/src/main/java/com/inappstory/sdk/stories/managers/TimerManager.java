@@ -97,7 +97,7 @@ public class TimerManager {
     long currentDuration;
 
     public void startSlideTimer(long newDuration, long currentTime) {
-        startTimer(newDuration - currentTime, newDuration);
+        startTimer(newDuration, newDuration + currentTime);
     }
 
     public void pauseSlideTimer() {

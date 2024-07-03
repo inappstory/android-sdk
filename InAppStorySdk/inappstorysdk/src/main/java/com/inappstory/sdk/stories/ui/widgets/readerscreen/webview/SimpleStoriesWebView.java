@@ -165,6 +165,12 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
                 " window.story_slide_resume(); " +
                 "}" +
                 "})()");
+        /*  postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                loadUrl("javascript:(function() {window._updateTimeline(0,\"start\",0, 10000, false, false);})()");
+            }
+        },5000);*/
         logMethod("story_slide_resume");
     }
 

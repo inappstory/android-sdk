@@ -195,7 +195,7 @@ public class ReaderPageFragment extends Fragment {
 
     void setViews(View view) {
         if (InAppStoryService.getInstance() == null) return;
-
+        Log.e("setViews", story.id + " " + story.slidesCount);
         if (timeline != null) {
             timeline.getTimelineManager().setSlidesCount(story.getSlidesCount());
         }
