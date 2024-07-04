@@ -9,6 +9,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -472,6 +473,14 @@ public class StoriesContentFragment extends Fragment
         super.onResume();
     }
 
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (readerManager != null) {
+            readerManager.pauseCurrent(false);
+        }
+    }
 
     private int getCurIndexById(int id) {
         if (InAppStoryService.getInstance().getStoryDownloadManager() == null) return 0;

@@ -583,14 +583,18 @@ public class ReaderManager {
     }
 
     public void pauseCurrent(boolean withBackground) {
-        if (getCurrentSubscriber() != null)
-            getCurrentSubscriber().pauseSlide(withBackground);
+        ReaderPageManager currentSubscriber = getCurrentSubscriber();
+        if (currentSubscriber != null) {
+            currentSubscriber.pauseSlide(withBackground);
+            Log.e("JS_method", "pauseCurrent " + currentSubscriber.getStoryId());
+        }
         StatisticManager.getInstance().pauseStoryEvent(withBackground);
     }
 
     public void resumeCurrent(boolean withBackground) {
-        if (getCurrentSubscriber() != null)
-            getCurrentSubscriber().resumeSlide(withBackground);
+        ReaderPageManager currentSubscriber = getCurrentSubscriber();
+        if (currentSubscriber != null)
+            currentSubscriber.resumeSlide(withBackground);
         if (withBackground) {
             OldStatisticManager.useInstance(getSessionId(), new GetOldStatisticManagerCallback() {
                 @Override

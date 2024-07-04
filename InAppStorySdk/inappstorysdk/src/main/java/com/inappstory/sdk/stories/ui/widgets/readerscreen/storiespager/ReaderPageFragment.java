@@ -706,8 +706,10 @@ public class ReaderPageFragment extends Fragment {
         if (storiesView != null)
             storiesView.destroyView();
         if (manager != null) {
-            if (parentManager != null)
+            manager.timerManager.pauseSlideTimer();
+            if (parentManager != null) {
                 parentManager.removeSubscriber(manager);
+            }
             if (InAppStoryService.getInstance() != null)
                 InAppStoryService.getInstance().getStoryDownloadManager().removeSubscriber(manager);
         }

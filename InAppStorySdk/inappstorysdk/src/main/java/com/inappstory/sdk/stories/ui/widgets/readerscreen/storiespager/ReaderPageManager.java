@@ -287,7 +287,7 @@ public class ReaderPageManager {
 
     public void startSlideTimerFromJS(long newDuration, long currentTime, int slideIndex) {
         timerManager.startSlideTimer(newDuration, currentTime);
-        timelineManager.startTimer(currentTime, slideIndex, newDuration + currentTime);
+        timelineManager.startTimer(currentTime, slideIndex, newDuration);
     }
 
     public void restartSlide() {
