@@ -5,6 +5,7 @@ import android.media.AudioManager;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Vibrator;
+import android.util.Log;
 import android.view.View;
 
 import com.inappstory.sdk.InAppStoryManager;
@@ -314,6 +315,8 @@ public class StoriesViewManager {
         } else {
             isVideo = false;
         }
+
+        Log.e("JS_method_call", "setWebViewSettings " + story.id + " " + index);
         converter.replaceDataAndLoad(innerWebData, story, index, layout, callback);
     }
 
@@ -648,6 +651,7 @@ public class StoriesViewManager {
     }
 
     public void changeIndex(int index) {
+        Log.e("changeIndex", index + "");
         pageManager.openSlideByIndex(index);
     }
 

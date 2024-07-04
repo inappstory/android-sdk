@@ -136,6 +136,7 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
     }
 
     public void stopSlide() {
+        if (manager.loadedIndex < 0) return;
         loadUrl("javascript:(function(){" +
                 "if ('story_slide_stop' in window) " +
                 "{" +
