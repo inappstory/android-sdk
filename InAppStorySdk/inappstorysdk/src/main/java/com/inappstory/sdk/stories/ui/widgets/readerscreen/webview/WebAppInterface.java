@@ -43,7 +43,7 @@ public class WebAppInterface {
             UpdateTimelineData updateTimelineData = JsonParser.fromJson(data, UpdateTimelineData.class);
             manager.updateTimeline(updateTimelineData);
         }
-        logMethod("");
+        logMethod(data);
     }
 
     @JavascriptInterface

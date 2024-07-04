@@ -9,7 +9,6 @@ import android.view.View;
 
 import androidx.annotation.Nullable;
 
-import com.inappstory.sdk.stories.ui.widgets.readerscreen.timeline.StoryTimelineManager;
 import com.inappstory.sdk.stories.utils.Sizes;
 
 public class ComplexTimeline extends View {

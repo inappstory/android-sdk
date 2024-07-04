@@ -39,10 +39,15 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
     boolean clientIsSet = false;
 
     public void restartSlide() {
+        String funAfterCheck =
+                (InAppStoryService.getInstance() != null
+                        && InAppStoryService.getInstance().isSoundOn()) ?
+                        "story_slide_restart('{\"muted\": false}');" :
+                        "story_slide_restart('{\"muted\": true}');";
         loadUrl("javascript:(function(){" +
                 "if ('story_slide_restart' in window) " +
                 "{" +
-                " window.story_slide_restart();" +
+                " window." + funAfterCheck +
                 "}" +
                 "})()");
         logMethod("story_slide_restart");

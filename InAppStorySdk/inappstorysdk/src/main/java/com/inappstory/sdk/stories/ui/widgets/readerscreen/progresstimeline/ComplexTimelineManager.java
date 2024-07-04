@@ -1,5 +1,7 @@
 package com.inappstory.sdk.stories.ui.widgets.readerscreen.progresstimeline;
 
+import android.util.Log;
+
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
