@@ -58,12 +58,6 @@ public class ComplexTimeline extends View {
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
         timelineManager.setHost(this);
-        post(new Runnable() {
-            @Override
-            public void run() {
-                timelineWidth = getWidth();
-            }
-        });
     }
 
 
@@ -81,7 +75,7 @@ public class ComplexTimeline extends View {
 
     @Override
     protected void onDraw(Canvas canvas) {
-        if (parameters == null || state == null) {
+        if (parameters == null || state == null || getWidth() == 0) {
             super.onDraw(canvas);
         } else {
             drawSegments(canvas);
@@ -90,7 +84,7 @@ public class ComplexTimeline extends View {
     }
 
     private void drawSegments(Canvas canvas) {
-        float segmentWidth = (timelineWidth - parameters.gapWidth * (state.slidesCount - 1)) / state.slidesCount;
+        float segmentWidth = (getWidth() - parameters.gapWidth * (state.slidesCount - 1)) / state.slidesCount;
         for (int i = 0; i < state.slidesCount; i++) {
             drawSegment(canvas, i, segmentWidth);
         }
