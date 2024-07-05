@@ -83,10 +83,6 @@ public class Story implements Parcelable {
         return isOpened;
     }
 
-    public List<Integer> getDurations() {
-        return durations;
-    }
-
     public List<String> getPages() {
         return pages;
     }
@@ -202,8 +198,7 @@ public class Story implements Parcelable {
     }
 
     public int getSlidesCount() {
-        if (slidesCount == 0 && durations != null) return durations.size();
-        return slidesCount;
+        return Math.max(slidesCount, 0);
     }
 
     public void setSlidesCount(int slidesCount) {
@@ -362,9 +357,6 @@ public class Story implements Parcelable {
     @SerializedName("share_functional")
     public Boolean hasShare;
 
-    @SerializedName("slides_duration")
-    public List<Integer> durations;
-
     @SerializedName("slides_html")
     public List<String> pages;
 
@@ -393,11 +385,6 @@ public class Story implements Parcelable {
         story.slidesCount = slidesCount;
         story.titleColor = titleColor;
         story.isOpened = isOpened;
-        story.durations = new ArrayList<>();
-        if (durations != null) {
-            story.durations.addAll(durations);
-            story.slidesCount = durations.size();
-        }
         if (slidesShare != null) {
             story.slidesShare.addAll(slidesShare);
         }
@@ -412,7 +399,6 @@ public class Story implements Parcelable {
     }
 
     public void readFromParcel(Parcel in) {
-        if (durations == null) durations = new ArrayList<>();
         if (slidesShare == null) slidesShare = new ArrayList<>();
         if (pages == null) pages = new ArrayList<>();
         id = in.readInt();
@@ -425,10 +411,6 @@ public class Story implements Parcelable {
         slidesCount = in.readInt();
         titleColor = in.readString();
         isOpened = (in.readInt() == 1);
-        in.readList(durations, Integer.class.getClassLoader());
-        if (durations != null || !durations.isEmpty()) {
-            slidesCount = durations.size();
-        }
         in.readList(pages, String.class.getClassLoader());
         favorite = (in.readInt() == 1);
         layout = in.readString();
@@ -437,7 +419,6 @@ public class Story implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        if (durations == null) durations = new ArrayList<>();
         if (slidesShare == null) slidesShare = new ArrayList<>();
         if (pages == null) pages = new ArrayList<>();
         dest.writeInt(id);
@@ -448,10 +429,9 @@ public class Story implements Parcelable {
         dest.writeString(backgroundColor);
         dest.writeTypedList(image);
         dest.writeInt(like);
-        dest.writeInt((durations != null && !durations.isEmpty()) ? durations.size() : slidesCount);
+        dest.writeInt(slidesCount);
         dest.writeString(titleColor);
         dest.writeInt(isOpened ? 1 : 0);
-        dest.writeList(durations);
         dest.writeList(pages);
         dest.writeInt(favorite ? 1 : 0);
         dest.writeString(layout);
