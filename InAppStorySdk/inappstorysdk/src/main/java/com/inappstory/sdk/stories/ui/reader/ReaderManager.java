@@ -194,7 +194,6 @@ public class ReaderManager {
 
 
     public void removeAllStoriesFromFavorite() {
-        if (subscribers == null) return;
         for (ReaderPageManager subscriber : subscribers) {
             subscriber.removeStoryFromFavorite();
         }
@@ -385,6 +384,17 @@ public class ReaderManager {
 
     public void storyClick() {
         parentFragment.showGuardMask(300);
+    }
+
+    public void clearInactiveTimers() {
+        synchronized (subscribers) {
+            ReaderPageManager currentSubscriber = getCurrentSubscriber();
+            for (ReaderPageManager subscriber : subscribers) {
+                if (subscriber != currentSubscriber) {
+                    subscriber.clearTimer();
+                }
+            }
+        }
     }
 
     void changeStory() {
@@ -586,7 +596,6 @@ public class ReaderManager {
         ReaderPageManager currentSubscriber = getCurrentSubscriber();
         if (currentSubscriber != null) {
             currentSubscriber.pauseSlide(withBackground);
-            Log.e("JS_method", "pauseCurrent " + currentSubscriber.getStoryId());
         }
         StatisticManager.getInstance().pauseStoryEvent(withBackground);
     }

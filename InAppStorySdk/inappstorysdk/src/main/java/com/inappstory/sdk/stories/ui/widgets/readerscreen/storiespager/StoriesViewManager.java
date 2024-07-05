@@ -168,18 +168,29 @@ public class StoriesViewManager {
 
     public class ShowLoader implements Runnable {
         int slideIndex = -1;
+        boolean clearSlide = true;
+        boolean showBackground = true;
 
         public ShowLoader(int slideIndex) {
             this.slideIndex = slideIndex;
         }
 
+        public ShowLoader(int slideIndex, boolean clearSlide, boolean showBackground) {
+            this.slideIndex = slideIndex;
+            this.clearSlide = clearSlide;
+            this.showBackground = showBackground;
+        }
+
         @Override
         public void run() {
             clearShowLoader();
-            if (this.slideIndex == index)
-                pageManager.showLoader(index);
-            if (storiesView != null) storiesView.clearSlide(getLatestVisibleIndex());
-            setLatestVisibleIndex(-1);
+            if (this.slideIndex == index) {
+                pageManager.showLoader(showBackground);
+                if (clearSlide) {
+                    if (storiesView != null) storiesView.clearSlide(getLatestVisibleIndex());
+                    setLatestVisibleIndex(-1);
+                }
+            }
         }
     }
 
@@ -662,14 +673,24 @@ public class StoriesViewManager {
         pageManager.slideLoadError(index);
     }
 
-    public void updateTimeline(UpdateTimelineData data) {
+    public void updateTimeline(final UpdateTimelineData data) {
         if (data.showError) {
-
+            slideLoadError(data.slideIndex);
+            getPageManager().clearSlideTimerFromJS();
         } else if (data.showLoader) {
-
-        } else if (data.action.equals("start")) {
+            synchronized (latestIndexLock) {
+                showLoader = new ShowLoader(index, false, false);
+                showRefreshHandler.post(showLoader);
+            }
+        } else {
+            clearShowLoader();
+            pageManager.host.storyLoadedSuccess();
+        }
+        if (data.action.equals("start")) {
             getPageManager().startSlideTimerFromJS(data.duration, data.currentTime, data.slideIndex);
         } else if (data.action.equals("pause")) {
+            getPageManager().pauseSlideTimerFromJS();
+        } else if (data.action.equals("stop")) {
             getPageManager().pauseSlideTimerFromJS();
         }
     }

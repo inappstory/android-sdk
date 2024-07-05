@@ -7,4 +7,16 @@ public class UpdateTimelineData {
     public int slideIndex;
     public boolean showLoader;
     public boolean showError;
+
+    @Override
+    public String toString() {
+        return "UpdateTimelineData{" +
+                "action='" + action + '\'' +
+                ", currentTime=" + currentTime +
+                ", duration=" + duration +
+                ", slideIndex=" + slideIndex +
+                ", showLoader=" + showLoader +
+                ", showError=" + showError +
+                '}';
+    }
 }

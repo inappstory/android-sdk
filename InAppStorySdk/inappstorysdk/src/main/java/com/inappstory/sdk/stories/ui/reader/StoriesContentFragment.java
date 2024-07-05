@@ -498,7 +498,7 @@ public class StoriesContentFragment extends Fragment
                     readerManager.getCurrentSlideIndex()) {
                 readerManager.resumeCurrent(false);
             }
-
+            readerManager.clearInactiveTimers();
         }
         readerManager.setCurrentSlideIndex(getCurIndexById(readerManager.getCurrentStoryId()));
 

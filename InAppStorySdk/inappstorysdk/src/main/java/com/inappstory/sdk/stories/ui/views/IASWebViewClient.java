@@ -96,7 +96,7 @@ public class IASWebViewClient extends WebViewClient {
         int indexOf = url.indexOf(vodAsset);
         if (indexOf > -1) {
             String key = url.substring(indexOf + vodAsset.length());
-
+            Log.e("VOD_req", key);
             Map<String, String> headers = request.getRequestHeaders();
             String rangeHeader = headers.get("range");
             WebResourceResponse response = getWebResourceResponse(rangeHeader, key);

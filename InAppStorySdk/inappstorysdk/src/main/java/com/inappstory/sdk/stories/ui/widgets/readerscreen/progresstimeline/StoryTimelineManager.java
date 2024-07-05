@@ -1,13 +1,11 @@
 package com.inappstory.sdk.stories.ui.widgets.readerscreen.progresstimeline;
 
-import android.util.Log;
-
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-public class ComplexTimelineManager {
+public class StoryTimelineManager {
     private ScheduledExecutorService executorService = new ScheduledThreadPoolExecutor(1);
 
     private long timerStart;
@@ -28,7 +26,7 @@ public class ComplexTimelineManager {
         scheduledFuture = executorService.scheduleAtFixedRate(
                 timerTask,
                 1L,
-                50L,
+                17L,
                 TimeUnit.MILLISECONDS
         );
     }
@@ -36,6 +34,10 @@ public class ComplexTimelineManager {
     public void stopTimer() {
         cancelTask();
         isActive = false;
+    }
+
+    public void clearTimer() {
+        setProgress(0);
     }
 
     private int currentIndex;
@@ -47,11 +49,11 @@ public class ComplexTimelineManager {
 
     private int slidesCount;
 
-    public void setHost(ComplexTimeline host) {
+    public void setHost(StoryTimeline host) {
         this.host = host;
     }
 
-    ComplexTimeline host;
+    StoryTimeline host;
 
     ScheduledFuture scheduledFuture;
 
@@ -64,7 +66,7 @@ public class ComplexTimelineManager {
 
     private void setProgress(float progress) {
         if (host != null) {
-            host.setState(new ComplexTimelineState(slidesCount, currentIndex, progress));
+            host.setState(new StoryTimelineState(slidesCount, currentIndex, progress));
         }
     }
 

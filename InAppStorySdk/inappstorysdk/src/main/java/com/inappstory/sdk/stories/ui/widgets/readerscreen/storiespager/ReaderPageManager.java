@@ -23,7 +23,7 @@ import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.reader.ReaderManager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.buttonspanel.ButtonsPanelManager;
-import com.inappstory.sdk.stories.ui.widgets.readerscreen.progresstimeline.ComplexTimelineManager;
+import com.inappstory.sdk.stories.ui.widgets.readerscreen.progresstimeline.StoryTimelineManager;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.utils.StringsUtils;
@@ -34,7 +34,7 @@ import java.util.Objects;
 public class ReaderPageManager {
 
 
-    ComplexTimelineManager timelineManager;
+    StoryTimelineManager timelineManager;
     ButtonsPanelManager buttonsPanelManager;
     StoriesViewManager webViewManager;
     TimerManager timerManager;
@@ -50,9 +50,12 @@ public class ReaderPageManager {
         buttonsPanelManager.removeStoryFromFavorite();
     }
 
-    public void showLoader(int index) {
-
-        host.showLoaderContainer();
+    public void showLoader(boolean showBackground) {
+        if (showBackground) {
+            host.showLoaderContainer();
+        } else {
+            host.showLoaderOnly();
+        }
     }
 
 
@@ -263,6 +266,11 @@ public class ReaderPageManager {
         pauseTimers();
     }
 
+    public void clearSlideTimerFromJS() {
+        pauseTimers();
+        clearTimer();
+    }
+
     public void pauseSlide(boolean withBackground) {
         if (checkIfManagersIsNull()) return;
         if (!withBackground && isPaused) return;
@@ -394,6 +402,10 @@ public class ReaderPageManager {
         timelineManager.stopTimer();
     }
 
+    public void clearTimer() {
+        timelineManager.clearTimer();
+    }
+
     public void changeCurrentSlide(int slideIndex) {
         if (checkIfManagersIsNull()) return;
         InAppStoryService service = InAppStoryService.getInstance();
@@ -501,7 +513,7 @@ public class ReaderPageManager {
     boolean currentSlideIsLoaded = false;
 
 
-    public void setTimelineManager(ComplexTimelineManager timelineManager) {
+    public void setTimelineManager(StoryTimelineManager timelineManager) {
         this.timelineManager = timelineManager;
     }
 

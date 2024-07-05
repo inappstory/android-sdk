@@ -11,18 +11,18 @@ import androidx.annotation.Nullable;
 
 import com.inappstory.sdk.stories.utils.Sizes;
 
-public class ComplexTimeline extends View {
-    public ComplexTimeline(Context context) {
+public class StoryTimeline extends View {
+    public StoryTimeline(Context context) {
         super(context);
         init(context);
     }
 
-    public ComplexTimeline(Context context, @Nullable AttributeSet attrs) {
+    public StoryTimeline(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
         init(context);
     }
 
-    public ComplexTimeline(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+    public StoryTimeline(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         init(context);
     }
@@ -32,7 +32,7 @@ public class ComplexTimeline extends View {
         float gapWidth = 4f;
         float cornerRadius = 1.5f;
         setParameters(
-                new ComplexTimelineParameters(
+                new StoryTimelineParameters(
                         Sizes.dpFloatToPxExt(gapWidth, context),
                         Sizes.dpFloatToPxExt(height, context),
                         Sizes.dpFloatToPxExt(cornerRadius, context)
@@ -40,18 +40,18 @@ public class ComplexTimeline extends View {
         );
     }
 
-    private ComplexTimelineParameters parameters = null;
-    private ComplexTimelineState state = null;
+    private StoryTimelineParameters parameters = null;
+    private StoryTimelineState state = null;
     private Paint fillPaint = null;
     private Paint backgroundPaint = null;
     private int timelineWidth = getWidth();
 
 
-    public ComplexTimelineManager getTimelineManager() {
+    public StoryTimelineManager getTimelineManager() {
         return timelineManager;
     }
 
-    ComplexTimelineManager timelineManager = new ComplexTimelineManager();
+    StoryTimelineManager timelineManager = new StoryTimelineManager();
 
     @Override
     protected void onAttachedToWindow() {
@@ -60,7 +60,7 @@ public class ComplexTimeline extends View {
     }
 
 
-    public void setParameters(ComplexTimelineParameters parameters) {
+    public void setParameters(StoryTimelineParameters parameters) {
         this.parameters = parameters;
         fillPaint = new Paint();
         fillPaint.setColor(parameters.fillColor);
@@ -68,7 +68,7 @@ public class ComplexTimeline extends View {
         backgroundPaint.setColor(parameters.backgroundColor);
     }
 
-    public void setState(ComplexTimelineState state) {
+    public void setState(StoryTimelineState state) {
         this.state = state;
     }
 
@@ -92,17 +92,6 @@ public class ComplexTimeline extends View {
 
     private void drawSegment(Canvas canvas, int index, float segmentWidth) {
         float offset = index * (parameters.gapWidth + segmentWidth);
-        canvas.drawRoundRect(
-                new RectF(
-                        offset,
-                        0,
-                        offset + segmentWidth,
-                        parameters.lineHeight
-                ),
-                parameters.lineRadius,
-                parameters.lineRadius,
-                backgroundPaint
-        );
         if (state.currentIndex > index) {
             canvas.drawRoundRect(
                     new RectF(
@@ -120,12 +109,35 @@ public class ComplexTimeline extends View {
                     new RectF(
                             offset,
                             0,
+                            offset + segmentWidth,
+                            parameters.lineHeight
+                    ),
+                    parameters.lineRadius,
+                    parameters.lineRadius,
+                    backgroundPaint
+            );
+            canvas.drawRoundRect(
+                    new RectF(
+                            offset,
+                            0,
                             offset + segmentWidth * state.currentProgress,
                             parameters.lineHeight
                     ),
                     parameters.lineRadius,
                     parameters.lineRadius,
                     fillPaint
+            );
+        } else {
+            canvas.drawRoundRect(
+                    new RectF(
+                            offset,
+                            0,
+                            offset + segmentWidth,
+                            parameters.lineHeight
+                    ),
+                    parameters.lineRadius,
+                    parameters.lineRadius,
+                    backgroundPaint
             );
         }
     }

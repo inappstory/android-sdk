@@ -52,7 +52,7 @@ import com.inappstory.sdk.stories.ui.reader.ReaderManager;
 import com.inappstory.sdk.stories.ui.reader.StoriesContentFragment;
 import com.inappstory.sdk.stories.ui.reader.StoriesGradientObject;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.buttonspanel.ButtonsPanel;
-import com.inappstory.sdk.stories.ui.widgets.readerscreen.progresstimeline.ComplexTimeline;
+import com.inappstory.sdk.stories.ui.widgets.readerscreen.progresstimeline.StoryTimeline;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.webview.SimpleStoriesWebView;
 import com.inappstory.sdk.stories.utils.Sizes;
 
@@ -60,7 +60,7 @@ import java.util.List;
 
 public class ReaderPageFragment extends Fragment {
     ReaderPageManager manager;
-    ComplexTimeline timeline;
+    StoryTimeline timeline;
     SimpleStoriesView storiesView;
     ButtonsPanel buttonsPanel;
     View aboveButtonsPanel;
@@ -332,6 +332,15 @@ public class ReaderPageFragment extends Fragment {
                 showLoaderContainerAnimated();
             }
         });
+    }
+
+    public void showLoaderOnly() {
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                loader.setVisibility(View.VISIBLE);
+            }
+        });
 
     }
 
@@ -372,11 +381,13 @@ public class ReaderPageFragment extends Fragment {
     }
 
     private void showLoaderContainerAnimated() {
+        Log.e("hideLoader", "showLoaderContainerAnimated");
         loaderContainer.clearAnimation();
         loaderContainer.animate().alpha(1f).setStartDelay(300).setDuration(300).start();
     }
 
     private void hideLoaderContainerAnimated() {
+        Log.e("hideLoader", "hideLoaderContainerAnimated");
         loaderContainer.clearAnimation();
         loaderContainer.animate().alpha(0f).setDuration(300).start();
     }
@@ -490,7 +501,8 @@ public class ReaderPageFragment extends Fragment {
         createRefreshButton(context);
         loaderContainer = new RelativeLayout(context);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            loaderContainer.setElevation(28);
+            loaderContainer.setElevation(10);
+            loader.setElevation(11);
         }
         loaderContainer.setAlpha(0.99f);
         loaderContainer.setLayoutParams(
@@ -500,9 +512,10 @@ public class ReaderPageFragment extends Fragment {
                 )
         );
         loaderContainer.setBackgroundColor(Color.BLACK);
-        loaderContainer.addView(loader);
+        //   loaderContainer.addView(loader);
         loaderContainer.addView(refresh);
         readerContainer.addView(loaderContainer);
+        readerContainer.addView(loader);
         return readerContainer;
     }
 
@@ -623,7 +636,7 @@ public class ReaderPageFragment extends Fragment {
         timelineContainer.setId(R.id.ias_timeline_container);
         timelineContainer.setMinimumHeight(Sizes.dpToPxExt(30, getContext()));
         timelineContainer.setElevation(20);
-        timeline = new ComplexTimeline(context);
+        timeline = new StoryTimeline(context);
         timeline.setId(R.id.ias_timeline);
         timeline.setLayoutParams(new RelativeLayout.LayoutParams(MATCH_PARENT,
                 Sizes.dpToPxExt(3, getContext())));

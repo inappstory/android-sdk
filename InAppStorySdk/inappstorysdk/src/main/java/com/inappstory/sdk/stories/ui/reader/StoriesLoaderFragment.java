@@ -37,8 +37,8 @@ import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderLau
 import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.buttonspanel.ButtonsPanel;
-import com.inappstory.sdk.stories.ui.widgets.readerscreen.progresstimeline.ComplexTimeline;
-import com.inappstory.sdk.stories.ui.widgets.readerscreen.progresstimeline.ComplexTimelineState;
+import com.inappstory.sdk.stories.ui.widgets.readerscreen.progresstimeline.StoryTimeline;
+import com.inappstory.sdk.stories.ui.widgets.readerscreen.progresstimeline.StoryTimelineState;
 import com.inappstory.sdk.stories.utils.Sizes;
 
 
@@ -62,10 +62,10 @@ public class StoriesLoaderFragment extends Fragment {
             buttonsPanel.setButtonsStatus(story.getLike(), story.favorite ? 1 : 0);
             aboveButtonsPanel.setVisibility(buttonsPanel.getVisibility());
         }
-        ComplexTimeline timeline = view.findViewById(R.id.ias_timeline);
+        StoryTimeline timeline = view.findViewById(R.id.ias_timeline);
         if (timeline != null) {
             timeline.setState(
-                    new ComplexTimelineState(
+                    new StoryTimelineState(
                             story.getSlidesCount(),
                             0,
                             0
@@ -275,7 +275,7 @@ public class StoriesLoaderFragment extends Fragment {
         timelineContainer.setId(R.id.ias_timeline_container);
         timelineContainer.setMinimumHeight(Sizes.dpToPxExt(30, getContext()));
         timelineContainer.setElevation(20);
-        ComplexTimeline timeline = new ComplexTimeline(context);
+        StoryTimeline timeline = new StoryTimeline(context);
         timeline.setId(R.id.ias_timeline);
         timeline.setLayoutParams(new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,
                 Sizes.dpToPxExt(3, getContext())));
