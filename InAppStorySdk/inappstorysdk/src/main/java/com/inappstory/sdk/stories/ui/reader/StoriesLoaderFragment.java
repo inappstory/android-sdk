@@ -66,10 +66,7 @@ public class StoriesLoaderFragment extends Fragment {
         if (timeline != null) {
             timeline.setState(
                     new StoryTimelineState(
-                            story.getSlidesCount(),
-                            0,
-                            0,
-                            0
+                            story.getSlidesCount(), 0, 0, 0
                     )
             );
         }
