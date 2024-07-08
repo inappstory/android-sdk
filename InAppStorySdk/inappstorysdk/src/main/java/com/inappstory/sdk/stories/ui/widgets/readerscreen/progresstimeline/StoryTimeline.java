@@ -70,6 +70,8 @@ public class StoryTimeline extends View {
 
     public void setState(StoryTimelineState state) {
         this.state = state;
+        if (state.slidesCount == 1 && state.timerDuration == 0) setVisibility(INVISIBLE);
+        else setVisibility(VISIBLE);
     }
 
     @Override

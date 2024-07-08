@@ -1,5 +1,7 @@
 package com.inappstory.sdk.stories.ui.widgets.readerscreen.progresstimeline;
 
+import android.view.View;
+
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -18,6 +20,10 @@ public class StoryTimelineManager {
         this.currentIndex = currentIndex;
         this.timerStart = timerStart;
         this.timerDuration = timerDuration;
+        if (slidesCount <= 1 && timerDuration == 0)
+            host.setVisibility(View.INVISIBLE);
+        else
+            host.setVisibility(View.VISIBLE);
         this.timerStartTimestamp = System.currentTimeMillis();
         this.isActive = true;
         if (executorService.isShutdown()) {
@@ -44,6 +50,8 @@ public class StoryTimelineManager {
 
     public void setSlidesCount(int slidesCount) {
         this.slidesCount = slidesCount;
+        if (slidesCount <= 1) host.setVisibility(View.INVISIBLE);
+        else host.setVisibility(View.VISIBLE);
         setProgress(0);
     }
 
@@ -66,7 +74,7 @@ public class StoryTimelineManager {
 
     private void setProgress(float progress) {
         if (host != null) {
-            host.setState(new StoryTimelineState(slidesCount, currentIndex, progress));
+            host.setState(new StoryTimelineState(slidesCount, currentIndex, progress, timerDuration));
         }
     }
 
