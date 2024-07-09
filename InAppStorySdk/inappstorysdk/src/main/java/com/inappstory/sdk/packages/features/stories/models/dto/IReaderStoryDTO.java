@@ -6,7 +6,6 @@ import java.util.List;
 
 public interface IReaderStoryDTO {
     int id();
-    int[] durations();
     String page(int index);
     int slidesCount();
     String layout();

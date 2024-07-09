@@ -78,9 +78,6 @@ public class Story {
     @SerializedName("share_functional")
     public Boolean hasShare;
 
-    @SerializedName("slides_duration")
-    public List<Integer> durations;
-
     @SerializedName("slides_html")
     public List<String> pages;
 
