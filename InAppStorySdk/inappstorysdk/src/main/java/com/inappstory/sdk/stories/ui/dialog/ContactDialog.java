@@ -460,9 +460,9 @@ public class ContactDialog {
             }
         };
         if (focused != null) {
-            focused.postDelayed(focusedRunnable, 200);
+            focused.postDelayed(focusedRunnable, 100);
         } else {
-            new Handler().postDelayed(focusedRunnable, 500);
+            new Handler().postDelayed(focusedRunnable, 300);
         }
     }
 
