@@ -1,5 +1,9 @@
 Change Log
 ==========
+Version *1.18.5 (865)*
+----------------------------
+* Update: launch and closing animation of dialogs in stories
+  
 Version *1.18.4 (864)*
 ----------------------------
 * New: added external API (RN)
