@@ -148,7 +148,6 @@ public class ContactDialogFragment extends Fragment implements IASBackPressHandl
                             return;
                         }
                         alreadyOpen = isShown;
-
                         if (isShown) {
                             newCenterStructure = new CenterStructure(
                                     50f,
@@ -156,17 +155,14 @@ public class ContactDialogFragment extends Fragment implements IASBackPressHandl
                                             Sizes.getScreenSize(getActivity()).y);
 
                         } else {
-                            newCenterStructure = new CenterStructure(50, 50);
-                            // if (editText != null) editText.clearFocus();
+                            if (cancelListener != null) {
+                                cancelListener.onCancel(dialogId);
+                                hideDialog();
+                            }
                         }
                         keyboardIsShown = isShown;
-                        if (!isAnimated && (newCenterStructure.y != currentCenterStructure.y)) {
-                            new Handler(Looper.getMainLooper()).post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    animateDialogArea();
-                                }
-                            });
+                        if (newCenterStructure.y != currentCenterStructure.y) {
+                            animateDialogArea();
                         }
                     }
                 }
@@ -176,7 +172,7 @@ public class ContactDialogFragment extends Fragment implements IASBackPressHandl
             @Override
             public void onGlobalLayout() {
                 keyboardHandler.removeCallbacks(checkRunnable);
-                keyboardHandler.postDelayed(checkRunnable, 500);
+                keyboardHandler.post(checkRunnable);
             }
         };
     }
@@ -188,7 +184,7 @@ public class ContactDialogFragment extends Fragment implements IASBackPressHandl
     private void animateDialogArea() {
         animator = ValueAnimator.ofFloat(currentCenterStructure.y, newCenterStructure.y);
         final FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) dialogArea.getLayoutParams();
-        animator.setDuration(500);
+        animator.setDuration(300);
         animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
@@ -196,6 +192,7 @@ public class ContactDialogFragment extends Fragment implements IASBackPressHandl
                 layoutParams.topMargin =
                         (int) (fullHeight * value / 100 - dialogHeight / 2);
                 dialogArea.requestLayout();
+                currentCenterStructure.y = value;
             }
         });
         animator.addListener(new AnimatorListenerAdapter() {
@@ -207,14 +204,13 @@ public class ContactDialogFragment extends Fragment implements IASBackPressHandl
 
             @Override
             public void onAnimationEnd(Animator animation) {
-                currentCenterStructure = newCenterStructure;
                 isAnimated = false;
                 animator = null;
+                currentCenterStructure = newCenterStructure;
                 super.onAnimationEnd(animation);
             }
         });
         animator.start();
-        //  dialogAreaParams.topMargin(leftMargin, topMargin, rightMargin, bottomMargin);
     }
 
     boolean isAnimated = true;
@@ -420,7 +416,7 @@ public class ContactDialogFragment extends Fragment implements IASBackPressHandl
         startedCenterStructure = dialogStructure.size.center;
         currentCenterStructure = dialogStructure.size.center;
         if (startedCenterStructure == null) startedCenterStructure = new CenterStructure(50, 50);
-        newCenterStructure = new CenterStructure(50, 50);
+        newCenterStructure = new CenterStructure(startedCenterStructure.x, startedCenterStructure.y);
         FrameLayout.LayoutParams dialogAreaParams = new FrameLayout.LayoutParams(dialogWidth, WRAP_CONTENT);
         int topMargin = (int) (fullHeight * startedCenterStructure.y / 100 - dialogHeight / 2);
         int leftMargin = (int) (fullWidth * startedCenterStructure.x / 100 - dialogWidth / 2);
@@ -591,12 +587,12 @@ public class ContactDialogFragment extends Fragment implements IASBackPressHandl
                 }
             }
         });
-        new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
                 editText.requestFocusField();
             }
-        }, 200);
+        });
         animateDialogArea();
         dialog.findViewById(R.id.emptyArea).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -612,10 +608,8 @@ public class ContactDialogFragment extends Fragment implements IASBackPressHandl
     private boolean hideKeyboard() {
         if (keyboardIsShown) {
             if (editText != null) editText.clearFocus();
-            return false;
-        } else {
-            return true;
         }
+        return true;
     }
 
     private void hideDialog() {
