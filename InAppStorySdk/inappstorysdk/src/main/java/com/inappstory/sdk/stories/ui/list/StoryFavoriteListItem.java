@@ -134,6 +134,15 @@ public class StoryFavoriteListItem extends BaseStoryListItem {
     private void downloadFileAndSendToInterface(String url, final RunnableCallback callback) {
         InAppStoryService service = InAppStoryService.getInstance();
         if (service == null) return;
+        if (url == null || url.isEmpty()) {
+            new Handler(Looper.getMainLooper()).post(new Runnable() {
+                @Override
+                public void run() {
+                    callback.error();
+                }
+            });
+            return;
+        }
         new StoryCoverUseCase(
                 service.getFilesDownloadManager(),
                 url,

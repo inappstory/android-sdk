@@ -588,14 +588,15 @@ public class StoriesList extends RecyclerView {
             }
             adapter.notifyDataSetChanged();
             updateVisibleArea(true);
-        } else if (isEmpty && !favImages.isEmpty()) {
-            adapter.hasFavItem = (appearanceManager != null && appearanceManager.csHasFavorite());
-            // adapter.refresh();
-            adapter.notifyDataSetChanged();
-        } else if ((!isEmpty && favImages.isEmpty()) || (adapter.hasFavItem && favImages.isEmpty())) {
+        } else if (!adapter.hasFavItem) {
+            if (!favImages.isEmpty()) {
+                adapter.hasFavItem = (appearanceManager != null && appearanceManager.csHasFavorite());
+                // adapter.refresh();
+                adapter.notifyDataSetChanged();
+            }
+        } else if (isEmpty || favImages.isEmpty()) {
             adapter.hasFavItem = false;
             adapter.notifyDataSetChanged();
-            // adapter.refresh();
         } else {
             adapter.notifyItemChanged(getAdapter().getItemCount() - 1);
         }
