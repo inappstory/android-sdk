@@ -56,6 +56,9 @@ public class StoriesLoaderFragment extends Fragment {
         storyId = story.id;
         ButtonsPanel buttonsPanel = view.findViewById(R.id.ias_buttons_panel);
         View aboveButtonsPanel = view.findViewById(R.id.ias_above_buttons_panel);
+        View closeButton = view.findViewById(R.id.ias_close_button);
+        if (story.disableClose)
+            closeButton.setVisibility(View.GONE);
         if (buttonsPanel != null && aboveButtonsPanel != null) {
             buttonsPanel.setButtonsVisibility(appearanceSettings,
                     story.hasLike(), story.hasFavorite(), story.hasShare(), story.hasAudio());
