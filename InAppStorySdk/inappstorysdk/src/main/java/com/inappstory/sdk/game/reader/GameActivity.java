@@ -1,10 +1,13 @@
 package com.inappstory.sdk.game.reader;
 
+import android.content.res.Configuration;
 import android.graphics.Color;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
@@ -29,12 +32,13 @@ public class GameActivity extends AppCompatActivity implements BaseGameReaderScr
         setTheme(theme);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.cs_game_reader_layout);
-        GameReaderAppearanceSettings appearanceSettings =  (GameReaderAppearanceSettings) getIntent()
+        GameReaderAppearanceSettings appearanceSettings = (GameReaderAppearanceSettings) getIntent()
                 .getSerializableExtra(GameReaderAppearanceSettings.SERIALIZABLE_KEY);
         if (appearanceSettings != null) {
             setNavBarColor(appearanceSettings.navBarColor);
             setStatusBarColor(appearanceSettings.statusBarColor);
         }
+
         ScreensManager.getInstance().subscribeGameScreen(this);
         createGameContentFragment(
                 savedInstanceState,
@@ -45,9 +49,23 @@ public class GameActivity extends AppCompatActivity implements BaseGameReaderScr
     }
 
     private void setStatusBarColor(String color) {
-        if (color == null) return;
-        getWindow().setStatusBarColor(Color.parseColor(color));
+        if (color != null)
+            getWindow().setStatusBarColor(Color.parseColor(color));
+        WindowInsetsControllerCompat windowInsetsController =
+                WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
+        int rgb = getWindow().getStatusBarColor();   // convert rrggbb to decimal
+        int r = (rgb >> 16) & 0xff;  // extract red
+        int g = (rgb >>  8) & 0xff;  // extract green
+        int b = (rgb) & 0xff;  // extract blue
+
+        float bright = 0.2126f * r + 0.7152f * g + 0.0722f * b;
+        windowInsetsController.setAppearanceLightStatusBars(bright < 40);
+        /*if ((getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_NO)
+            windowInsetsController.setAppearanceLightStatusBars(true);
+        else
+            windowInsetsController.setAppearanceLightStatusBars(false);*/
     }
+
 
     private void setNavBarColor(String color) {
         if (color == null) return;

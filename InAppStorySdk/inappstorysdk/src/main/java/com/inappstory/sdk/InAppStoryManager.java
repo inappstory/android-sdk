@@ -1620,6 +1620,7 @@ public class InAppStoryManager {
             showELog(IAS_ERROR_TAG, StringsUtils.getErrorStringFromContext(context, R.string.ias_setter_tags_length_error));
             return;
         }
+
         SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
             @Override
             public void onSuccess(final String sessionId) {

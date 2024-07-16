@@ -327,6 +327,10 @@ public class ScreensManager {
                 data != null ? data.slideData : null
         );
         Bundle bundle = new Bundle();
+        /*GameReaderAppearanceSettings gameReaderAppearanceSettings = new GameReaderAppearanceSettings(
+                openedFromStoriesReader ? "#303030" : null,
+                openedFromStoriesReader ? "#303030" : null
+        );*/
         GameReaderAppearanceSettings gameReaderAppearanceSettings = new GameReaderAppearanceSettings(
                 openedFromStoriesReader ? "#303030" : null,
                 openedFromStoriesReader ? "#303030" : null
