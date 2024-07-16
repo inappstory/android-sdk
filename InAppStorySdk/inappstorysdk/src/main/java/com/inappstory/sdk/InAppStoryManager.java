@@ -304,7 +304,7 @@ public class InAppStoryManager {
     public void openGame(String gameId) {
         InAppStoryService service = InAppStoryService.getInstance();
         if (service != null && context != null) {
-            service.openGameReaderWithGC(context, null, gameId, null);
+            service.openGameReaderWithGC(context, null, gameId, null, false);
         }
     }
 
@@ -325,7 +325,7 @@ public class InAppStoryManager {
             return;
         }
         if (service != null) {
-            service.openGameReaderWithGC(context, null, gameId, null);
+            service.openGameReaderWithGC(context, null, gameId, null, false);
         }
     }
 
@@ -1638,6 +1638,7 @@ public class InAppStoryManager {
                 networkClient.enqueue(
                         networkClient.getApi().getOnboardingFeed(
                                 localFeed,
+                                ApiSettings.getInstance().getTestKey(),
                                 limit,
                                 localTags == null ? getTagsString() : localTags
                         ),

@@ -72,17 +72,16 @@ public interface ApiInterface {
     @GET("v2/feed/{feed}/onboarding")
     Request getOnboardingFeed(
             @Path("feed") String feed,
+            @Query("test") String test,
             @Query("limit") Integer limit,
             @Query("tags") String tags
     );
 
-    @GET("v2/story-onboarding")
-    Request onboardingStories(
-            @Query("tags") String tags);
 
     @GET("v2/story/{id}")
     Request getStoryById(
             @Path("id") String id,
+            @Query("test") String test,
             @Query("once") Integer once,
             @Query("src_list") Integer srcList,
             @Query("expand") String expand

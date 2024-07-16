@@ -1,11 +1,8 @@
 package com.inappstory.sdk.stories.outercallbacks.common.objects;
 
 
-import com.inappstory.sdk.game.reader.GameScreenOptions;
-import com.inappstory.sdk.stories.api.models.WebResource;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 
-import java.util.List;
 
 public class GameReaderLaunchData implements SerializableWithKey {
     public static String SERIALIZABLE_KEY = "gameReaderLaunchData";

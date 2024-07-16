@@ -194,7 +194,8 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
                                 )
                         ),
                         gameInstanceId,
-                        null
+                        null,
+                        false
                 );
                 return;
             }

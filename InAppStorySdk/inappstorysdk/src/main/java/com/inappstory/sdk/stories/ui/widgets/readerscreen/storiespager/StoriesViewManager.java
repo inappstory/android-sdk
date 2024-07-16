@@ -494,7 +494,8 @@ public class StoriesViewManager {
                     context,
                     getGameStoryData(),
                     gameId,
-                    uniqueId
+                    uniqueId,
+                    true
             );
         }
     }

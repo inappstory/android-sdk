@@ -32,11 +32,11 @@ public class DefaultOpenGameReader implements IOpenGameReader {
         if (context instanceof Activity) {
 
             Window window = ((Activity) context).getWindow();
-            Integer gameThemeId = ActivityUtils.getThemeResId((Activity) context);
+            Integer themeId = ActivityUtils.getThemeResId((Activity) context);
             bundle.putInt("themeId",
                     ((Activity) context).getIntent().getIntExtra(
                             "themeId",
-                            gameThemeId != null ? gameThemeId : R.style.StoriesSDKAppTheme_GameActivity
+                            themeId != null ? themeId : R.style.StoriesSDKAppTheme_GameActivity
                     )
             );
             bundle.putInt("parentSystemUIVisibility",

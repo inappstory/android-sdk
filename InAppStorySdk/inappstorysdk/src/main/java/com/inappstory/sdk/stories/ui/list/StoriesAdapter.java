@@ -244,7 +244,8 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
 
                         ),
                         gameInstanceId,
-                        null
+                        null,
+                        false
                 );
 
                 current.isOpened = true;

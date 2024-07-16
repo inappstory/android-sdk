@@ -328,7 +328,8 @@ public class StackStoryObserver implements IStackFeedActions {
 
                     ),
                     currentStory.getGameInstanceId(),
-                    null
+                    null,
+                    false
             );
             if (current != null) {
                 current.isOpened = true;

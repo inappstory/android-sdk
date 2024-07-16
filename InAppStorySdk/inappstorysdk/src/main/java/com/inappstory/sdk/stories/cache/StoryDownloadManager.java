@@ -13,6 +13,7 @@ import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.game.cache.SessionAssetsIsReadyCallback;
 import com.inappstory.sdk.listwidget.StoriesWidgetService;
+import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
@@ -90,6 +91,7 @@ public class StoryDownloadManager {
                 networkClient.enqueue(
                         networkClient.getApi().getStoryById(
                                 id,
+                                ApiSettings.getInstance().getTestKey(),
                                 showOnce ? 1 : 0,
                                 1,
                                 EXPAND_STRING

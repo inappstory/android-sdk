@@ -554,13 +554,15 @@ public class InAppStoryService {
             Context context,
             GameStoryData data,
             String gameId,
-            String observableId
+            String observableId,
+            final boolean openedFromStoriesReader
     ) {
         ScreensManager.getInstance().openGameReader(
                 context,
                 data,
                 gameId,
-                observableId
+                observableId,
+                openedFromStoriesReader
         );
     }
 

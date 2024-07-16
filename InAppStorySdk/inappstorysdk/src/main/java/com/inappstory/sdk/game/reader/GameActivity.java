@@ -1,5 +1,6 @@
 package com.inappstory.sdk.game.reader;
 
+import android.graphics.Color;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -12,6 +13,7 @@ import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.UseManagerInstanceCallback;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.GameReaderAppearanceSettings;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.GameReaderLaunchData;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.utils.FragmentAction;
@@ -27,11 +29,29 @@ public class GameActivity extends AppCompatActivity implements BaseGameReaderScr
         setTheme(theme);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.cs_game_reader_layout);
+        GameReaderAppearanceSettings appearanceSettings =  (GameReaderAppearanceSettings) getIntent()
+                .getSerializableExtra(GameReaderAppearanceSettings.SERIALIZABLE_KEY);
+        if (appearanceSettings != null) {
+            setNavBarColor(appearanceSettings.navBarColor);
+            setStatusBarColor(appearanceSettings.statusBarColor);
+        }
         ScreensManager.getInstance().subscribeGameScreen(this);
         createGameContentFragment(
                 savedInstanceState,
-                (GameReaderLaunchData) getIntent().getSerializableExtra(GameReaderLaunchData.SERIALIZABLE_KEY)
+                (GameReaderLaunchData) getIntent()
+                        .getSerializableExtra(GameReaderLaunchData.SERIALIZABLE_KEY)
+
         );
+    }
+
+    private void setStatusBarColor(String color) {
+        if (color == null) return;
+        getWindow().setStatusBarColor(Color.parseColor(color));
+    }
+
+    private void setNavBarColor(String color) {
+        if (color == null) return;
+        getWindow().setNavigationBarColor(Color.parseColor(color));
     }
 
     private void createGameContentFragment(

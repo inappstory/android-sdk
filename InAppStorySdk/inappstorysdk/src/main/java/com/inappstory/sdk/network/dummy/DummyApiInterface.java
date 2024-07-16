@@ -33,17 +33,12 @@ public class DummyApiInterface implements ApiInterface {
     }
 
     @Override
-    public Request getOnboardingFeed(String feed, Integer limit, String tags) {
+    public Request getOnboardingFeed(String feed, String test, Integer limit, String tags) {
         return new DummyRequest();
     }
 
     @Override
-    public Request onboardingStories(String tags) {
-        return new DummyRequest();
-    }
-
-    @Override
-    public Request getStoryById(String id, Integer once, Integer srcList, String expand) {
+    public Request getStoryById(String id, String test, Integer once, Integer srcList, String expand) {
         return new DummyRequest();
     }
 

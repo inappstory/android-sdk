@@ -21,6 +21,7 @@ import com.inappstory.sdk.share.IShareCompleteListener;
 import com.inappstory.sdk.share.ShareListener;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.events.GameCompleteEventObserver;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.GameReaderAppearanceSettings;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.GameReaderLaunchData;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderAppearanceSettings;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderLaunchData;
@@ -51,7 +52,6 @@ public class ScreensManager {
             return INSTANCE;
         }
     }
-
 
 
     public void forceCloseAllReaders(final ForceCloseReaderCallback callback) {
@@ -292,7 +292,8 @@ public class ScreensManager {
     public void openGameReader(final Context context,
                                final GameStoryData data,
                                final String gameId,
-                               final String observableId) {
+                               final String observableId,
+                               final boolean openedFromStoriesReader) {
         InAppStoryService service = InAppStoryService.getInstance();
         if (service == null) return;
         synchronized (gameReaderScreenLock) {
@@ -305,7 +306,8 @@ public class ScreensManager {
                                 context,
                                 data,
                                 gameId,
-                                observableId
+                                observableId,
+                                openedFromStoriesReader
                         );
                     }
                 }, 500);
@@ -325,7 +327,12 @@ public class ScreensManager {
                 data != null ? data.slideData : null
         );
         Bundle bundle = new Bundle();
+        GameReaderAppearanceSettings gameReaderAppearanceSettings = new GameReaderAppearanceSettings(
+                openedFromStoriesReader ? "#303030" : null,
+                openedFromStoriesReader ? "#303030" : null
+        );
         bundle.putSerializable(gameReaderLaunchData.getSerializableKey(), gameReaderLaunchData);
+        bundle.putSerializable(gameReaderAppearanceSettings.getSerializableKey(), gameReaderAppearanceSettings);
         inAppStoryManager.getOpenGameReader().onOpen(
                 context,
                 bundle

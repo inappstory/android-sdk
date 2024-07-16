@@ -32,8 +32,8 @@ public class DefaultOpenStoriesReader implements IOpenStoriesReader {
         if (context == null) return;
         if (context instanceof Activity) {
             Window window = ((Activity) context).getWindow();
-            Integer gameThemeId = ActivityUtils.getThemeResId((Activity) context);
-            bundle.putInt("themeId", gameThemeId != null ? gameThemeId : R.style.StoriesSDKAppTheme_GameActivity);
+            Integer themeId = ActivityUtils.getThemeResId((Activity) context);
+            bundle.putInt("themeId", themeId != null ? themeId : R.style.StoriesSDKAppTheme_Transparent);
             bundle.putInt("parentSystemUIVisibility",
                     window.getDecorView().getSystemUiVisibility()
             );

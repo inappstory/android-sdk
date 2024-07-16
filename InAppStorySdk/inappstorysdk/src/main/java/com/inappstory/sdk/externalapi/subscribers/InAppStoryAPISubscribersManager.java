@@ -185,7 +185,8 @@ public class InAppStoryAPISubscribersManager {
 
                     ),
                     currentStory.getGameInstanceId(),
-                    null
+                    null,
+                    false
             );
         } else if (!currentStory.isHideInReader()) {
             List<Integer> readerStories = new ArrayList<>();
