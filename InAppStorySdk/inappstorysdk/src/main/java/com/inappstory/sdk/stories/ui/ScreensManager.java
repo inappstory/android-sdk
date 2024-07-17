@@ -332,8 +332,8 @@ public class ScreensManager {
                 openedFromStoriesReader ? "#303030" : null
         );*/
         GameReaderAppearanceSettings gameReaderAppearanceSettings = new GameReaderAppearanceSettings(
-                openedFromStoriesReader ? "#303030" : null,
-                openedFromStoriesReader ? "#303030" : null
+                openedFromStoriesReader ? "#000000" : null,
+                openedFromStoriesReader ? "#000000" : null
         );
         bundle.putSerializable(gameReaderLaunchData.getSerializableKey(), gameReaderLaunchData);
         bundle.putSerializable(gameReaderAppearanceSettings.getSerializableKey(), gameReaderAppearanceSettings);
