@@ -59,7 +59,7 @@ public class GameActivity extends AppCompatActivity implements BaseGameReaderScr
         int b = (rgb) & 0xff;  // extract blue
 
         float bright = 0.2126f * r + 0.7152f * g + 0.0722f * b;
-        windowInsetsController.setAppearanceLightStatusBars(bright < 40);
+        //windowInsetsController.setAppearanceLightStatusBars(bright < 40);
         /*if ((getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_NO)
             windowInsetsController.setAppearanceLightStatusBars(true);
         else
