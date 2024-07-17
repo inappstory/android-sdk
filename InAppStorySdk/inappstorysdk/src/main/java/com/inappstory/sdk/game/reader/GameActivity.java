@@ -49,13 +49,13 @@ public class GameActivity extends AppCompatActivity implements BaseGameReaderScr
     }
 
     private void setStatusBarColor(String color) {
-        if (color != null)
-            getWindow().setStatusBarColor(Color.parseColor(color));
+        if (color == null) return;
+        getWindow().setStatusBarColor(Color.parseColor(color));
         WindowInsetsControllerCompat windowInsetsController =
                 WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
         int rgb = getWindow().getStatusBarColor();   // convert rrggbb to decimal
         int r = (rgb >> 16) & 0xff;  // extract red
-        int g = (rgb >>  8) & 0xff;  // extract green
+        int g = (rgb >> 8) & 0xff;  // extract green
         int b = (rgb) & 0xff;  // extract blue
 
         float bright = 0.2126f * r + 0.7152f * g + 0.0722f * b;
