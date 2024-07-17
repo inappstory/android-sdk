@@ -6,6 +6,7 @@ import android.content.res.TypedArray;
 import android.graphics.Rect;
 import android.os.Handler;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
@@ -300,11 +301,28 @@ public class StoriesList extends RecyclerView {
         final ArrayList<Integer> indexes = new ArrayList<>();
         if (layoutManager instanceof LinearLayoutManager) {
             LinearLayoutManager linearLayoutManager = (LinearLayoutManager) layoutManager;
+            Log.e("listAddIndexes", "total " + linearLayoutManager.findFirstVisibleItemPosition() + " " + linearLayoutManager.findLastVisibleItemPosition());
             for (int i = linearLayoutManager.findFirstVisibleItemPosition();
                  i <= linearLayoutManager.findLastVisibleItemPosition(); i++) {
                 int ind = i - hasUgc;
                 if (adapter != null && adapter.getStoriesIds().size() > ind && ind >= 0) {
-                    indexes.add(adapter.getStoriesIds().get(ind));
+                    View holder = linearLayoutManager.getChildAt(
+                            i - linearLayoutManager.findFirstVisibleItemPosition()
+                    );
+                    if (holder != null) {
+                        Rect rect = new Rect();
+                        holder.getGlobalVisibleRect(rect);
+                        Rect rect2 = new Rect();
+                        getGlobalVisibleRect(rect2);
+                        int rectLeft = Math.max(rect.left, rect2.left);
+                        int rectRight = Math.min(rect.right, rect2.right);
+                        int rectWidth = Math.max(0, rectRight - rectLeft);
+                        if (rectWidth > 0) {
+
+                            Log.e("listAddIndexes", rectWidth + " " + ind);
+                            indexes.add(adapter.getStoriesIds().get(ind));
+                        }
+                    }
                 }
             }
         }
