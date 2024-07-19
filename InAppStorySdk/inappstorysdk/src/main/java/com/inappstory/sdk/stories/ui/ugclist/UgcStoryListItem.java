@@ -45,8 +45,8 @@ public class UgcStoryListItem extends BaseStoryListItem {
     public boolean isOpened;
     public boolean hasVideo;
 
-    public UgcStoryListItem(@NonNull View itemView, AppearanceManager manager, boolean isOpened, boolean hasVideo) {
-        super(itemView, manager, false, false);
+    public UgcStoryListItem(@NonNull View itemView, ViewGroup parent, AppearanceManager manager, boolean isOpened, boolean hasVideo) {
+        super(itemView, parent, manager, false, false);
         this.isOpened = isOpened;
         this.hasVideo = hasVideo;
         ViewGroup vg = itemView.findViewById(R.id.baseLayout);
@@ -110,7 +110,7 @@ public class UgcStoryListItem extends BaseStoryListItem {
         final IStoriesListItem getListItem = this.getListItem;
         if (getListItem != null) {
             this.backgroundColor = backgroundColor;
-            if (viewCanBeUsed(itemView)) {
+            if (viewCanBeUsed(itemView, getParent())) {
                 getListItem.setId(itemView, id);
                 getListItem.setTitle(itemView, titleText, titleColor);
                 getListItem.setHasAudio(itemView, hasAudio);
@@ -129,7 +129,7 @@ public class UgcStoryListItem extends BaseStoryListItem {
                         new IGetStoryCoverCallback() {
                             @Override
                             public void success(String file) {
-                                if (viewCanBeUsed(itemView)) {
+                                if (viewCanBeUsed(itemView, getParent())) {
                                     getListItem.setImage(itemView, file,
                                             UgcStoryListItem.this.backgroundColor);
                                 }
@@ -137,7 +137,7 @@ public class UgcStoryListItem extends BaseStoryListItem {
 
                             @Override
                             public void error() {
-                                if (viewCanBeUsed(itemView)) {
+                                if (viewCanBeUsed(itemView, getParent())) {
                                     getListItem.setImage(itemView, null,
                                             UgcStoryListItem.this.backgroundColor);
                                 }
@@ -145,7 +145,7 @@ public class UgcStoryListItem extends BaseStoryListItem {
                         }
                 ).getFile();
             } else {
-                if (viewCanBeUsed(itemView)) {
+                if (viewCanBeUsed(itemView, getParent())) {
                     getListItem.setImage(itemView, null,
                             UgcStoryListItem.this.backgroundColor);
                 }
@@ -158,7 +158,7 @@ public class UgcStoryListItem extends BaseStoryListItem {
                         new IGetStoryCoverCallback() {
                             @Override
                             public void success(String file) {
-                                if (viewCanBeUsed(itemView)) {
+                                if (viewCanBeUsed(itemView, getParent())) {
                                     getListItem.setVideo(itemView, file);
                                 }
                             }

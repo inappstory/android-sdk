@@ -20,8 +20,8 @@ import java.util.List;
 
 public class StoryFavoriteListItem extends BaseStoryListItem {
 
-    public StoryFavoriteListItem(@NonNull View itemView, AppearanceManager manager) {
-        super(itemView, manager, true, false);
+    public StoryFavoriteListItem(@NonNull View itemView, ViewGroup parent, AppearanceManager manager) {
+        super(itemView, parent, manager, true, false);
         ViewGroup vg = itemView.findViewById(R.id.baseLayout);
         vg.removeAllViews();
         vg.addView(getDefaultFavoriteCell());
@@ -112,13 +112,13 @@ public class StoryFavoriteListItem extends BaseStoryListItem {
             for (int j = 0; j < count; j++) {
                 backgroundColors.add(service.getFavoriteImages().get(j).getBackgroundColor());
             }
-            if (viewCanBeUsed(itemView)) {
+            if (viewCanBeUsed(itemView, getParent())) {
                 getFavoriteListItem.bindFavoriteItem(itemView, backgroundColors, count);
             }
             loadFavoriteImages(new LoadFavoriteImagesCallback() {
                 @Override
                 public void onLoad(List<String> downloadImages) {
-                    if (viewCanBeUsed(itemView)) {
+                    if (viewCanBeUsed(itemView, getParent())) {
                         if (getFavoriteListItem != null
                                 && getFavoriteListItem.getFavoriteItem() != null) {
                             getFavoriteListItem.setImages(itemView, downloadImages, backgroundColors,

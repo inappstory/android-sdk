@@ -132,11 +132,11 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
         int vType = viewType % 10;
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.cs_story_list_custom_item, parent, false);
         if (vType == -1) {
-            return new StoryFavoriteListItem(v, manager);
+            return new StoryFavoriteListItem(v, parent, manager);
         } else if (vType == -2) {
-            return new UGCListItem(v, manager);
+            return new UGCListItem(v, parent, manager);
         } else {
-            return new StoryListItem(v, manager, (vType % 5) == 2, vType > 5);
+            return new StoryListItem(v, parent, manager, (vType % 5) == 2, vType > 5);
         }
     }
 

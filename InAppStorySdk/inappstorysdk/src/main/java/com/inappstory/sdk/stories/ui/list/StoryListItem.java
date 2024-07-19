@@ -25,8 +25,8 @@ public class StoryListItem extends BaseStoryListItem {
     public boolean isOpened;
     public boolean hasVideo;
 
-    public StoryListItem(@NonNull View itemView, AppearanceManager manager, boolean isOpened, boolean hasVideo) {
-        super(itemView, manager, false, false);
+    public StoryListItem(@NonNull View itemView, ViewGroup parent, AppearanceManager manager, boolean isOpened, boolean hasVideo) {
+        super(itemView, parent, manager, false, false);
         this.isOpened = isOpened;
         this.hasVideo = hasVideo;
         ViewGroup vg = itemView.findViewById(R.id.baseLayout);
@@ -88,7 +88,7 @@ public class StoryListItem extends BaseStoryListItem {
         final IStoriesListItem getListItem = this.getListItem;
         if (getListItem != null) {
             this.backgroundColor = backgroundColor;
-            if (viewCanBeUsed(itemView)) {
+            if (viewCanBeUsed(itemView, getParent())) {
                 getListItem.setId(itemView, id);
                 getListItem.setTitle(itemView, titleText, titleColor);
                 getListItem.setHasAudio(itemView, hasAudio);
@@ -108,7 +108,7 @@ public class StoryListItem extends BaseStoryListItem {
                         new IGetStoryCoverCallback() {
                             @Override
                             public void success(String file) {
-                                if (viewCanBeUsed(itemView)) {
+                                if (viewCanBeUsed(itemView, getParent())) {
                                     getListItem.setImage(itemView, file,
                                             StoryListItem.this.backgroundColor);
                                 }
@@ -116,7 +116,7 @@ public class StoryListItem extends BaseStoryListItem {
 
                             @Override
                             public void error() {
-                                if (viewCanBeUsed(itemView)) {
+                                if (viewCanBeUsed(itemView, getParent())) {
                                     getListItem.setImage(itemView, null,
                                             StoryListItem.this.backgroundColor);
                                 }
@@ -124,7 +124,7 @@ public class StoryListItem extends BaseStoryListItem {
                         }
                 ).getFile();
             } else {
-                if (viewCanBeUsed(itemView)) {
+                if (viewCanBeUsed(itemView, getParent())) {
                     getListItem.setImage(itemView, null,
                             StoryListItem.this.backgroundColor);
                 }
@@ -137,7 +137,7 @@ public class StoryListItem extends BaseStoryListItem {
                         new IGetStoryCoverCallback() {
                             @Override
                             public void success(String file) {
-                                if (viewCanBeUsed(itemView)) {
+                                if (viewCanBeUsed(itemView, getParent())) {
                                     getListItem.setVideo(itemView, file);
                                 }
                             }
