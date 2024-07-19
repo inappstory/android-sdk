@@ -403,7 +403,7 @@ class StoryDownloader {
         }
     }
 
-    void loadStoryListByFeed(final String feed, final SimpleApiCallback<List<Story>> callback) {
+    void loadStoryListByFeed(final String feed, final SimpleApiCallback<List<Story>> callback, final boolean retry) {
         final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
         final InAppStoryService service = InAppStoryService.getInstance();
         if (service == null || networkClient == null) {
@@ -451,7 +451,8 @@ class StoryDownloader {
                                     generateCommonLoadListError(null);
                                     callback.onError(message);
                                     closeSessionIf424(sessionId);
-                                    loadStoryListByFeed(feed, callback);
+                                    if (retry)
+                                        loadStoryListByFeed(feed, callback, false);
                                 }
                             });
                 }
@@ -469,7 +470,7 @@ class StoryDownloader {
     }
 
 
-    void loadStoryList(final SimpleApiCallback<List<Story>> callback, final boolean isFavorite) {
+    void loadStoryList(final SimpleApiCallback<List<Story>> callback, final boolean isFavorite, final boolean retry) {
         final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
         final InAppStoryService service = InAppStoryService.getInstance();
         if (service == null || networkClient == null) {
@@ -516,7 +517,8 @@ class StoryDownloader {
                                     generateCommonLoadListError(null);
                                     callback.onError(message);
                                     closeSessionIf424(sessionId);
-                                    loadStoryList(callback, isFavorite);
+                                    if (retry)
+                                        loadStoryList(callback, isFavorite, false);
                                 }
                             });
                 }

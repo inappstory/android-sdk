@@ -67,6 +67,8 @@ public class GameActivity extends AppCompatActivity implements BaseGameReaderScr
     }
 
 
+
+
     private void setNavBarColor(String color) {
         if (color == null) return;
         getWindow().setNavigationBarColor(Color.parseColor(color));

@@ -47,13 +47,19 @@ public class JsApiNetwork {
                 && !method.equals(HttpMethods.HEAD)
                 && body != null
                 && !body.isEmpty();
-        List<Header> defaultHeaders = networkClient.generateHeaders(
-                context,
-                new String[]{},
-                new ArrayList<Pair<String, String>>(),
-                false,
-                hasBody
-        );
+        List<Header> defaultHeaders;
+        try {
+            defaultHeaders = networkClient.generateHeaders(
+                    context,
+                    new String[]{},
+                    new ArrayList<Pair<String, String>>(),
+                    false,
+                    hasBody
+            );
+        } catch (Exception e) {
+            jsResponse.status = 12163;
+            return jsResponse;
+        }
         if (headers != null)
             for (Map.Entry<String, String> header : headers.entrySet()) {
                 if (header.getValue() != null) {

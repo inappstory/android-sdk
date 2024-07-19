@@ -203,7 +203,7 @@ public class SessionManager {
         }
         String appVersion = (pInfo != null ? pInfo.versionName : "");
         String appBuild = (pInfo != null ? Integer.toString(pInfo.versionCode) : "");
-        NetworkClient networkClient = InAppStoryManager.getNetworkClient();
+        final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
         if (!InAppStoryService.isServiceConnected() || networkClient == null) {
             synchronized (openProcessLock) {
                 openProcess = false;
@@ -265,6 +265,7 @@ public class SessionManager {
                                 return;
                             }
                         }
+                        networkClient.setSessionId(currentSession);
                         service.getListReaderConnector().sessionIsOpened(currentSession);
                         ProfilingManager.getInstance().setReady(sessionOpenUID);
                         openStatisticSuccess(response);
@@ -336,6 +337,7 @@ public class SessionManager {
         clearCaches();
         final InAppStoryService service = InAppStoryService.getInstance();
         if (service == null) return;
+        final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
         OldStatisticManager.useInstance(oldSessionId, new GetOldStatisticManagerCallback() {
             @Override
             public void get(@NonNull OldStatisticManager manager) {
@@ -348,7 +350,6 @@ public class SessionManager {
 
                 final String sessionCloseUID =
                         ProfilingManager.getInstance().addTask("api_session_close");
-                NetworkClient networkClient = InAppStoryManager.getNetworkClient();
                 if (networkClient == null) {
                     if (changeUserIdOrLocale)
                         service.getListReaderConnector().userIdChanged();
@@ -388,6 +389,8 @@ public class SessionManager {
                 );
             }
         });
+        if (networkClient != null)
+            networkClient.setSessionId(null);
         service.getSession().clear(oldSessionId);
     }
 

@@ -1,8 +1,15 @@
 package com.inappstory.sdk.network.utils.headers;
 
-import com.inappstory.sdk.InAppStoryService;
+
+import androidx.annotation.NonNull;
 
 public class AuthSessionIdHeader implements Header {
+    public AuthSessionIdHeader(@NonNull String sessionId) {
+        this.sessionId = sessionId;
+    }
+
+    private final @NonNull String sessionId;
+
     @Override
     public String getKey() {
         return HeadersKeys.AUTH_SESSION_ID;
@@ -10,7 +17,6 @@ public class AuthSessionIdHeader implements Header {
 
     @Override
     public String getValue() {
-        InAppStoryService service = InAppStoryService.getInstance();
-        return (service != null ? service.getSession().getSessionId() : null);
+        return sessionId;
     }
 }

@@ -48,6 +48,14 @@ public final class NetworkHandler implements InvocationHandler {
 
     Context appContext;
     String baseUrl;
+    String sessionId;
+    private final Object sessionLock = new Object();
+
+    public void setSessionId(String sessionId) {
+        synchronized (sessionLock) {
+            this.sessionId = sessionId;
+        }
+    }
 
     public String getBaseUrl() {
         return baseUrl;
@@ -65,7 +73,7 @@ public final class NetworkHandler implements InvocationHandler {
             Object[] args,
             Request.Builder builder,
             boolean isFormEncoded
-    ) {
+    ) throws Exception {
         HashMap<String, String> vars = new HashMap<>();
         ArrayList<Pair<String, String>> varList = new ArrayList<>();
         String bodyRaw = "";
@@ -111,25 +119,29 @@ public final class NetworkHandler implements InvocationHandler {
             body += "\n";
         }
         body += bodyRaw;
-        Request request = builder
-                .isFormEncoded(isFormEncoded)
-                .headers(
-                        generateHeaders(
-                                appContext,
-                                exclude,
-                                replacedHeaders,
-                                isFormEncoded,
-                                !body.isEmpty()
-                        )
-                )
-                .url(baseUrl != null ?
-                        baseUrl + path : path)
-                .vars(vars)
-                .varList(varList)
-                .bodyRaw(bodyRaw)
-                .bodyEncoded(bodyEncoded)
-                .body(body).build();
-        return request;
+        try {
+            Request request = builder
+                    .isFormEncoded(isFormEncoded)
+                    .headers(
+                            generateHeaders(
+                                    appContext,
+                                    exclude,
+                                    replacedHeaders,
+                                    isFormEncoded,
+                                    !body.isEmpty()
+                            )
+                    )
+                    .url(baseUrl != null ?
+                            baseUrl + path : path)
+                    .vars(vars)
+                    .varList(varList)
+                    .bodyRaw(bodyRaw)
+                    .bodyEncoded(bodyEncoded)
+                    .body(body).build();
+            return request;
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     List<Header> generateHeaders(
@@ -153,8 +165,13 @@ public final class NetworkHandler implements InvocationHandler {
             resHeaders.add(new AuthorizationHeader());
         if (!excludeList.contains(HeadersKeys.APP_PACKAGE_ID))
             resHeaders.add(new XAppPackageIdHeader(context));
-        if (!excludeList.contains(HeadersKeys.AUTH_SESSION_ID))
-            resHeaders.add(new AuthSessionIdHeader());
+        if (!excludeList.contains(HeadersKeys.AUTH_SESSION_ID)) {
+            synchronized (sessionLock) {
+                if (sessionId != null && !sessionId.isEmpty()) {
+                    resHeaders.add(new AuthSessionIdHeader(sessionId));
+                } else throw new RuntimeException("Wrong session");
+            }
+        }
         if (!excludeList.contains(HeadersKeys.CONTENT_TYPE))
             resHeaders.add(new ContentTypeHeader(isFormEncoded, hasBody));
         if (!excludeList.contains(HeadersKeys.DEVICE_ID) && hasDeviceId)
@@ -178,7 +195,7 @@ public final class NetworkHandler implements InvocationHandler {
     }
 
     @Override
-    public Request invoke(Object proxy, Method method, Object[] args) throws Throwable {
+    public Request invoke(Object proxy, Method method, Object[] args) throws Exception {
         GET get = method.getAnnotation(GET.class);
         POST post = method.getAnnotation(POST.class);
         DELETE delete = method.getAnnotation(DELETE.class);
@@ -188,8 +205,9 @@ public final class NetworkHandler implements InvocationHandler {
         if (excludeHeaders != null) {
             exclude = excludeHeaders.value();
         }
+        Request generatedRequest;
         if (delete != null) {
-            return generateRequest(
+            generatedRequest = generateRequest(
                     delete.value(),
                     method.getParameterAnnotations(),
                     exclude,
@@ -198,7 +216,7 @@ public final class NetworkHandler implements InvocationHandler {
                     false
             );
         } else if (get != null) {
-            return generateRequest(
+            generatedRequest = generateRequest(
                     get.value(),
                     method.getParameterAnnotations(),
                     exclude,
@@ -209,7 +227,7 @@ public final class NetworkHandler implements InvocationHandler {
         } else {
             boolean encoded = (method.getAnnotation(FormUrlEncoded.class) != null);
             if (post != null) {
-                return generateRequest(
+                generatedRequest = generateRequest(
                         post.value(),
                         method.getParameterAnnotations(),
                         exclude,
@@ -218,7 +236,7 @@ public final class NetworkHandler implements InvocationHandler {
                         encoded
                 );
             } else if (put != null) {
-                return generateRequest(
+                generatedRequest = generateRequest(
                         put.value(),
                         method.getParameterAnnotations(),
                         exclude,
@@ -230,6 +248,10 @@ public final class NetworkHandler implements InvocationHandler {
                 throw new IllegalStateException("Don't know what to do.");
             }
         }
+        if (generatedRequest != null) {
+            return generatedRequest;
+        }
+        return null;
     }
 
 

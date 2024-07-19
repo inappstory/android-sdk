@@ -16,6 +16,7 @@ import com.inappstory.sdk.network.utils.headers.Header;
 import java.lang.reflect.ParameterizedType;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Callable;
@@ -25,7 +26,7 @@ import java.util.concurrent.Executors;
 
 public class NetworkClient {
     private ApiInterface apiInterface;
-    NetworkHandler networkHandler;
+    private final NetworkHandler networkHandler;
 
     private final String baseUrl;
     public String userAgent;
@@ -120,6 +121,11 @@ public class NetworkClient {
         }
         return response;
     }
+
+    public void setSessionId(String sessionId) {
+        networkHandler.setSessionId(sessionId);
+    }
+
     public List<Header> generateHeaders(
             Context context,
             String[] exclude,
@@ -129,6 +135,7 @@ public class NetworkClient {
     ) {
         return networkHandler.generateHeaders(context, exclude, replace, isFormEncoded, hasBody);
     }
+
     public ApiInterface getApi() {
         if (getBaseUrl() == null) {
             if (ApiSettings.getInstance().getHost() == null) {
