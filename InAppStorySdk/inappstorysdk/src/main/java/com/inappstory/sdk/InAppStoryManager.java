@@ -1319,7 +1319,7 @@ public class InAppStoryManager {
                         new ForceCloseReaderCallback() {
                             @Override
                             public void onComplete() {
-
+                                //
                                 inAppStoryService.logout();
                             }
                         });
