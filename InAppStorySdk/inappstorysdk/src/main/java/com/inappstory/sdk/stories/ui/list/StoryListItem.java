@@ -1,5 +1,7 @@
 package com.inappstory.sdk.stories.ui.list;
 
+import android.app.Activity;
+import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -86,12 +88,15 @@ public class StoryListItem extends BaseStoryListItem {
         final IStoriesListItem getListItem = this.getListItem;
         if (getListItem != null) {
             this.backgroundColor = backgroundColor;
-            getListItem.setId(itemView, id);
-            getListItem.setTitle(itemView, titleText, titleColor);
-            getListItem.setHasAudio(itemView, hasAudio);
-            getListItem.setOpened(itemView, isOpened);
-            if (getListItem instanceof IStoriesListItemWithStoryData) {
-                ((IStoriesListItemWithStoryData) getListItem).setCustomData(itemView, storyData);
+            if (viewCanBeUsed(itemView)) {
+                getListItem.setId(itemView, id);
+                getListItem.setTitle(itemView, titleText, titleColor);
+                getListItem.setHasAudio(itemView, hasAudio);
+                getListItem.setOpened(itemView, isOpened);
+
+                if (getListItem instanceof IStoriesListItemWithStoryData) {
+                    ((IStoriesListItemWithStoryData) getListItem).setCustomData(itemView, storyData);
+                }
             }
             InAppStoryService service = InAppStoryService.getInstance();
             if (service == null) return;
@@ -103,20 +108,26 @@ public class StoryListItem extends BaseStoryListItem {
                         new IGetStoryCoverCallback() {
                             @Override
                             public void success(String file) {
-                                getListItem.setImage(itemView, file,
-                                        StoryListItem.this.backgroundColor);
+                                if (viewCanBeUsed(itemView)) {
+                                    getListItem.setImage(itemView, file,
+                                            StoryListItem.this.backgroundColor);
+                                }
                             }
 
                             @Override
                             public void error() {
-                                getListItem.setImage(itemView, null,
-                                        StoryListItem.this.backgroundColor);
+                                if (viewCanBeUsed(itemView)) {
+                                    getListItem.setImage(itemView, null,
+                                            StoryListItem.this.backgroundColor);
+                                }
                             }
                         }
                 ).getFile();
             } else {
-                getListItem.setImage(itemView, null,
-                        StoryListItem.this.backgroundColor);
+                if (viewCanBeUsed(itemView)) {
+                    getListItem.setImage(itemView, null,
+                            StoryListItem.this.backgroundColor);
+                }
             }
 
             if (videoUrl != null) {
@@ -126,7 +137,9 @@ public class StoryListItem extends BaseStoryListItem {
                         new IGetStoryCoverCallback() {
                             @Override
                             public void success(String file) {
-                                getListItem.setVideo(itemView, file);
+                                if (viewCanBeUsed(itemView)) {
+                                    getListItem.setVideo(itemView, file);
+                                }
                             }
 
                             @Override
@@ -138,6 +151,8 @@ public class StoryListItem extends BaseStoryListItem {
             }
         }
     }
+
+
 
     @Override
     public void bindFavorite() {

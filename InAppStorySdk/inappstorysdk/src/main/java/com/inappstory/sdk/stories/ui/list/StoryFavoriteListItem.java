@@ -4,6 +4,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
 import android.view.ViewGroup;
+
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.AppearanceManager;
@@ -29,7 +30,7 @@ public class StoryFavoriteListItem extends BaseStoryListItem {
     protected View getDefaultFavoriteCell() {
         View v = null;
         if (getFavoriteListItem != null && getFavoriteListItem.getFavoriteItem() != null) {
-            v =  getFavoriteListItem.getFavoriteItem();
+            v = getFavoriteListItem.getFavoriteItem();
         }
         return v;
     }
@@ -111,14 +112,18 @@ public class StoryFavoriteListItem extends BaseStoryListItem {
             for (int j = 0; j < count; j++) {
                 backgroundColors.add(service.getFavoriteImages().get(j).getBackgroundColor());
             }
-            getFavoriteListItem.bindFavoriteItem(itemView, backgroundColors, count);
+            if (viewCanBeUsed(itemView)) {
+                getFavoriteListItem.bindFavoriteItem(itemView, backgroundColors, count);
+            }
             loadFavoriteImages(new LoadFavoriteImagesCallback() {
                 @Override
                 public void onLoad(List<String> downloadImages) {
-                    if (getFavoriteListItem != null
-                            && getFavoriteListItem.getFavoriteItem() != null) {
-                        getFavoriteListItem.setImages(itemView, downloadImages, backgroundColors,
-                                downloadImages.size());
+                    if (viewCanBeUsed(itemView)) {
+                        if (getFavoriteListItem != null
+                                && getFavoriteListItem.getFavoriteItem() != null) {
+                            getFavoriteListItem.setImages(itemView, downloadImages, backgroundColors,
+                                    downloadImages.size());
+                        }
                     }
                 }
             }, count);

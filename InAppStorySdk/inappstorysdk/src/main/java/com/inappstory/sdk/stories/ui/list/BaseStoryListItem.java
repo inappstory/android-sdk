@@ -1,5 +1,6 @@
 package com.inappstory.sdk.stories.ui.list;
 
+import android.app.Activity;
 import android.content.Context;
 import android.view.View;
 
@@ -60,6 +61,18 @@ public abstract class BaseStoryListItem extends RecyclerView.ViewHolder {
 
     public Integer backgroundColor;
     public ClickCallback callback;
+
+    protected boolean viewCanBeUsed(View view) {
+        if (view == null) return false;
+        if (!view.isAttachedToWindow()) return false;
+        Context context = view.getContext();
+        if (context == null)
+            return false;
+        if (context instanceof Activity) {
+            return !((Activity) context).isFinishing() && !((Activity) context).isDestroyed();
+        }
+        return true;
+    }
 
     public abstract void bind(Integer id,
                               String titleText,

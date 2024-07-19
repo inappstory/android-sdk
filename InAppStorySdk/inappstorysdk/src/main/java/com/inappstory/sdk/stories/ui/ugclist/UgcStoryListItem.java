@@ -110,12 +110,14 @@ public class UgcStoryListItem extends BaseStoryListItem {
         final IStoriesListItem getListItem = this.getListItem;
         if (getListItem != null) {
             this.backgroundColor = backgroundColor;
-            getListItem.setId(itemView, id);
-            getListItem.setTitle(itemView, titleText, titleColor);
-            getListItem.setHasAudio(itemView, hasAudio);
-            getListItem.setOpened(itemView, isOpened);
-            if (getListItem instanceof IStoriesListItemWithStoryData) {
-                ((IStoriesListItemWithStoryData) getListItem).setCustomData(itemView, storyData);
+            if (viewCanBeUsed(itemView)) {
+                getListItem.setId(itemView, id);
+                getListItem.setTitle(itemView, titleText, titleColor);
+                getListItem.setHasAudio(itemView, hasAudio);
+                getListItem.setOpened(itemView, isOpened);
+                if (getListItem instanceof IStoriesListItemWithStoryData) {
+                    ((IStoriesListItemWithStoryData) getListItem).setCustomData(itemView, storyData);
+                }
             }
             InAppStoryService service = InAppStoryService.getInstance();
             if (service == null) return;
@@ -127,20 +129,26 @@ public class UgcStoryListItem extends BaseStoryListItem {
                         new IGetStoryCoverCallback() {
                             @Override
                             public void success(String file) {
-                                getListItem.setImage(itemView, file,
-                                        UgcStoryListItem.this.backgroundColor);
+                                if (viewCanBeUsed(itemView)) {
+                                    getListItem.setImage(itemView, file,
+                                            UgcStoryListItem.this.backgroundColor);
+                                }
                             }
 
                             @Override
                             public void error() {
-                                getListItem.setImage(itemView, null,
-                                        UgcStoryListItem.this.backgroundColor);
+                                if (viewCanBeUsed(itemView)) {
+                                    getListItem.setImage(itemView, null,
+                                            UgcStoryListItem.this.backgroundColor);
+                                }
                             }
                         }
                 ).getFile();
             } else {
-                getListItem.setImage(itemView, null,
-                        UgcStoryListItem.this.backgroundColor);
+                if (viewCanBeUsed(itemView)) {
+                    getListItem.setImage(itemView, null,
+                            UgcStoryListItem.this.backgroundColor);
+                }
             }
 
             if (videoUrl != null) {
@@ -150,7 +158,9 @@ public class UgcStoryListItem extends BaseStoryListItem {
                         new IGetStoryCoverCallback() {
                             @Override
                             public void success(String file) {
-                                getListItem.setVideo(itemView, file);
+                                if (viewCanBeUsed(itemView)) {
+                                    getListItem.setVideo(itemView, file);
+                                }
                             }
 
                             @Override
