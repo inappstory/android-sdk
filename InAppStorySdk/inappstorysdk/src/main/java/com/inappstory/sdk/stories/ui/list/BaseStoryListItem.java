@@ -1,5 +1,6 @@
 package com.inappstory.sdk.stories.ui.list;
 
+import android.app.Activity;
 import android.content.Context;
 import android.view.View;
 
@@ -14,6 +15,7 @@ import com.inappstory.sdk.stories.ui.views.IStoriesListItem;
 import com.inappstory.sdk.stories.utils.Sizes;
 
 import android.view.View.MeasureSpec;
+import android.view.ViewGroup;
 
 import com.inappstory.sdk.ugc.list.IStoriesListUGCItem;
 
@@ -31,11 +33,19 @@ public abstract class BaseStoryListItem extends RecyclerView.ViewHolder {
     public boolean isUGC;
     protected IStoriesListUGCItem getUGCListItem;
 
+    public ViewGroup getParent() {
+        return parent;
+    }
 
-    public BaseStoryListItem(@NonNull View itemView, AppearanceManager manager,
+    ViewGroup parent = null;
+
+    public BaseStoryListItem(@NonNull View itemView,
+                             ViewGroup parent,
+                             AppearanceManager manager,
                              boolean isFavorite,
                              boolean isUGC) {
         super(itemView);
+        this.parent = parent;
         this.manager = manager;
         this.isFavorite = isFavorite;
         this.isUGC = isUGC;
@@ -54,6 +64,19 @@ public abstract class BaseStoryListItem extends RecyclerView.ViewHolder {
 
     public Integer backgroundColor;
     public ClickCallback callback;
+
+    protected boolean viewCanBeUsed(View view, ViewGroup parent) {
+        if (view == null) return false;
+        if (parent == null) return false;
+        if (!parent.isAttachedToWindow()) return false;
+        Context context = view.getContext();
+        if (context == null)
+            return false;
+        if (context instanceof Activity) {
+            return !((Activity) context).isFinishing() && !((Activity) context).isDestroyed();
+        }
+        return true;
+    }
 
     public abstract void bind(Integer id,
                               String titleText,

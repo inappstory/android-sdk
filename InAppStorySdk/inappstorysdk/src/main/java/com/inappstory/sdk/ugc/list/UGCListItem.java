@@ -20,10 +20,14 @@ import com.inappstory.sdk.stories.utils.Sizes;
 
 public class UGCListItem extends BaseStoryListItem {
 
-    public UGCListItem(@NonNull View itemView, AppearanceManager manager) {
-        super(itemView, manager,
+    public UGCListItem(@NonNull View itemView, ViewGroup parent, AppearanceManager manager) {
+        super(
+                itemView,
+                parent,
+                manager,
                 false,
-                true);
+                true
+        );
         ViewGroup vg = itemView.findViewById(R.id.baseLayout);
         vg.removeAllViews();
         vg.addView(getDefaultUGCCell());

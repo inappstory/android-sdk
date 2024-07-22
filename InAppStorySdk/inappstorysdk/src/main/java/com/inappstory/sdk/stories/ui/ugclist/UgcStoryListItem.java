@@ -41,8 +41,8 @@ public class UgcStoryListItem extends BaseStoryListItem {
     public boolean isOpened;
     public boolean hasVideo;
 
-    public UgcStoryListItem(@NonNull View itemView, AppearanceManager manager, boolean isOpened, boolean hasVideo) {
-        super(itemView, manager, false, false);
+    public UgcStoryListItem(@NonNull View itemView, ViewGroup parent, AppearanceManager manager, boolean isOpened, boolean hasVideo) {
+        super(itemView, parent, manager, false, false);
         this.isOpened = isOpened;
         this.hasVideo = hasVideo;
         ViewGroup vg = itemView.findViewById(R.id.baseLayout);
@@ -188,51 +188,70 @@ public class UgcStoryListItem extends BaseStoryListItem {
         });
         if (getListItem != null) {
             this.backgroundColor = backgroundColor;
-            getListItem.setId(itemView, id);
-            getListItem.setTitle(itemView, titleText, titleColor);
-            getListItem.setHasAudio(itemView, hasAudio);
+            if (viewCanBeUsed(itemView, getParent())) {
+
+                getListItem.setId(itemView, id);
+                getListItem.setTitle(itemView, titleText, titleColor);
+                getListItem.setHasAudio(itemView, hasAudio);
+            }
             String fileLink = ImageLoader.getInstance().getFileLink(imageUrl);
             if (fileLink != null) {
-                getListItem.setImage(itemView, fileLink,
-                        UgcStoryListItem.this.backgroundColor);
+                if (viewCanBeUsed(itemView, getParent())) {
+                    getListItem.setImage(itemView, fileLink,
+                            UgcStoryListItem.this.backgroundColor);
+                }
             } else {
                 if (imageUrl != null) {
                     downloadFileAndSendToInterface(imageUrl, new RunnableCallback() {
                         @Override
                         public void run(String path) {
                             ImageLoader.getInstance().addLink(imageUrl, path);
-                            getListItem.setImage(itemView, path,
-                                    UgcStoryListItem.this.backgroundColor);
+                            if (viewCanBeUsed(itemView, getParent())) {
+                                getListItem.setImage(itemView, path,
+                                        UgcStoryListItem.this.backgroundColor);
+                            }
                         }
 
                         @Override
                         public void error() {
-                            getListItem.setImage(itemView, null,
-                                    UgcStoryListItem.this.backgroundColor);
+                            if (viewCanBeUsed(itemView, getParent())) {
+                                getListItem.setImage(itemView, null,
+                                        UgcStoryListItem.this.backgroundColor);
+                            }
                         }
                     });
                 } else {
-                    getListItem.setImage(itemView, null,
-                            UgcStoryListItem.this.backgroundColor);
+                    if (viewCanBeUsed(itemView, getParent())) {
+                        getListItem.setImage(itemView, null,
+                                UgcStoryListItem.this.backgroundColor);
+                    }
                 }
             }
-
-            getListItem.setOpened(itemView, isOpened);
+            if (viewCanBeUsed(itemView, getParent())) {
+                getListItem.setOpened(itemView, isOpened);
+            }
             if (videoUrl != null) {
                 downloadFileAndSendToInterface(videoUrl, new RunnableCallback() {
                     @Override
                     public void run(String path) {
-                        getListItem.setVideo(itemView, path);
+
+                        if (viewCanBeUsed(itemView, getParent())) {
+                            getListItem.setVideo(itemView, path);
+                        }
                     }
 
                     @Override
                     public void error() {
-                        getListItem.setVideo(itemView, null);
+                        if (viewCanBeUsed(itemView, getParent())) {
+                            getListItem.setVideo(itemView, null);
+                        }
                     }
                 });
             }
             if (getListItem instanceof IStoriesListItemWithStoryData) {
-                ((IStoriesListItemWithStoryData) getListItem).setCustomData(itemView, storyData);
+                if (viewCanBeUsed(itemView, getParent())) {
+                    ((IStoriesListItemWithStoryData) getListItem).setCustomData(itemView, storyData);
+                }
             }
             return;
         }

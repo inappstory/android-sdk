@@ -41,8 +41,13 @@ public class StoryListItem extends BaseStoryListItem {
     public boolean isOpened;
     public boolean hasVideo;
 
-    public StoryListItem(@NonNull View itemView, AppearanceManager manager, boolean isOpened, boolean hasVideo) {
-        super(itemView, manager, false, false);
+    public StoryListItem(@NonNull View itemView,
+                         ViewGroup parent,
+                         AppearanceManager manager,
+                         boolean isOpened,
+                         boolean hasVideo
+    ) {
+        super(itemView, parent, manager, false, false);
         this.isOpened = isOpened;
         this.hasVideo = hasVideo;
         ViewGroup vg = itemView.findViewById(R.id.baseLayout);
@@ -158,55 +163,72 @@ public class StoryListItem extends BaseStoryListItem {
         });
         if (getListItem != null) {
             this.backgroundColor = backgroundColor;
-            getListItem.setId(itemView, id);
-            getListItem.setTitle(itemView, titleText, titleColor);
-            getListItem.setHasAudio(itemView, hasAudio);
+            if (viewCanBeUsed(itemView, getParent())) {
+                getListItem.setId(itemView, id);
+                getListItem.setTitle(itemView, titleText, titleColor);
+                getListItem.setHasAudio(itemView, hasAudio);
+            }
             String fileLink = ImageLoader.getInstance().getFileLink(imageUrl);
             if (fileLink != null) {
-                getListItem.setImage(itemView, fileLink,
-                        StoryListItem.this.backgroundColor);
+                if (viewCanBeUsed(itemView, getParent())) {
+                    getListItem.setImage(itemView, fileLink,
+                            StoryListItem.this.backgroundColor);
+                }
             } else {
                 if (imageUrl != null) {
                     Downloader.downloadFileAndSendToInterface(imageUrl, new RunnableCallback() {
                         @Override
                         public void run(String path) {
                             ImageLoader.getInstance().addLink(imageUrl, path);
-                            if (getListItem != null)
-                                getListItem.setImage(itemView, path,
-                                        StoryListItem.this.backgroundColor);
+                            if (viewCanBeUsed(itemView, getParent())) {
+                                if (getListItem != null)
+                                    getListItem.setImage(itemView, path,
+                                            StoryListItem.this.backgroundColor);
+                            }
                         }
 
                         @Override
                         public void error() {
                             if (getListItem != null)
-                                getListItem.setImage(itemView, null,
-                                        StoryListItem.this.backgroundColor);
+                                if (viewCanBeUsed(itemView, getParent())) {
+                                    getListItem.setImage(itemView, null,
+                                            StoryListItem.this.backgroundColor);
+                                }
                         }
                     });
                 } else {
-                    getListItem.setImage(itemView, null,
-                            StoryListItem.this.backgroundColor);
+                    if (viewCanBeUsed(itemView, getParent())) {
+                        getListItem.setImage(itemView, null,
+                                StoryListItem.this.backgroundColor);
+                    }
                 }
             }
-
-            getListItem.setOpened(itemView, isOpened);
+            if (viewCanBeUsed(itemView, getParent())) {
+                getListItem.setOpened(itemView, isOpened);
+            }
             if (videoUrl != null) {
                 Downloader.downloadFileAndSendToInterface(videoUrl, new RunnableCallback() {
                     @Override
                     public void run(String path) {
                         if (getListItem != null)
-                            getListItem.setVideo(itemView, path);
+                            if (viewCanBeUsed(itemView, getParent())) {
+                                getListItem.setVideo(itemView, path);
+                            }
                     }
 
                     @Override
                     public void error() {
                         if (getListItem != null)
-                            getListItem.setVideo(itemView, null);
+                            if (viewCanBeUsed(itemView, getParent())) {
+                                getListItem.setVideo(itemView, null);
+                            }
                     }
                 });
             }
-            if (getListItem instanceof IStoriesListItemWithStoryData) {
-                ((IStoriesListItemWithStoryData) getListItem).setCustomData(itemView, storyData);
+            if (viewCanBeUsed(itemView, getParent())) {
+                if (getListItem instanceof IStoriesListItemWithStoryData) {
+                    ((IStoriesListItemWithStoryData) getListItem).setCustomData(itemView, storyData);
+                }
             }
             return;
         }
