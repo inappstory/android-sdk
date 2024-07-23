@@ -120,7 +120,9 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
 
     public int getIndexById(int id) {
         if (storiesIds == null) return -1;
-        return storiesIds.indexOf(id) + (useUGC ? 1 : 0);
+        int indInList = storiesIds.indexOf(id);
+        if (indInList == -1) return -1;
+        return indInList + (useUGC ? 1 : 0);
     }
 
 
