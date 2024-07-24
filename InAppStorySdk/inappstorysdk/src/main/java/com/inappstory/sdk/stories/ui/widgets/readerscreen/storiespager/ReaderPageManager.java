@@ -314,22 +314,6 @@ public class ReaderPageManager {
 
     List<Integer> durations = new ArrayList<>();
 
-    public void setStoryInfo(Story story) {
-        if (checkIfManagersIsNull()) return;
-        timelineManager.setSlidesCount(story.getSlidesCount());
-        this.durations = new ArrayList<>();
-        if (story.durations == null) {
-            for (int i = 0; i < story.slidesCount; i++) {
-                this.durations.add(0);
-            }
-        } else {
-            this.durations.addAll(story.durations);
-        }
-        timelineManager.setDurations(this.durations, true);
-        webViewManager.loadStory(story, story.lastIndex);
-
-    }
-
     public void loadStoryAndSlide(Story story, int slideIndex) {
         if (checkIfManagersIsNull()) return;
         webViewManager.loadStory(story, slideIndex);
@@ -610,19 +594,31 @@ public class ReaderPageManager {
     public void storyLoadedInCache(Story story) {
         if (checkIfManagersIsNull()) return;
         host.story = story;
+
+        List<Integer> oldDurations = new ArrayList<>();
+        if (this.durations == null)
+            this.durations = new ArrayList<>();
+        else
+            oldDurations.addAll(this.durations);
+        this.durations.clear();
         if (story.durations != null && !story.durations.isEmpty()) {
-            if (this.durations == null)
-                this.durations = new ArrayList<>();
-            this.durations.clear();
             this.durations.addAll(story.durations);
             story.setSlidesCount(story.durations.size());
-            if (slideIndex < story.durations.size()) {
-                timerManager.setCurrentDuration(story.durations.get(slideIndex));
+            if (slideIndex < this.durations.size()) {
+                timerManager.setCurrentDuration(this.durations.get(slideIndex));
+            }
+        } else {
+            for (int i = 0; i < story.slidesCount; i++) {
+                this.durations.add(0);
             }
         }
-
-
-        setStoryInfo(story);
+        int size = Math.min(this.durations.size(), oldDurations.size());
+        for (int i = 0; i < size; i++) {
+            this.durations.set(i, oldDurations.get(i));
+        }
+        timelineManager.setSlidesCount(story.getSlidesCount());
+        timelineManager.setDurations(this.durations, true);
+        webViewManager.loadStory(story, story.lastIndex);
     }
 
 }
