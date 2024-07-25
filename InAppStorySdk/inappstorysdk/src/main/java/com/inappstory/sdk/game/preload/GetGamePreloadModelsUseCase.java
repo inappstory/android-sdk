@@ -20,7 +20,7 @@ public class GetGamePreloadModelsUseCase {
             callback.onError(null);
             return;
         }
-        networkClient.enqueue(networkClient.getApi().getPreloadGames(),
+        networkClient.enqueue(networkClient.getApi().getPreloadGames(true),
                 new NetworkCallback<List<PreloadGameCenterData>>() {
                     @Override
                     public void onSuccess(List<PreloadGameCenterData> response) {

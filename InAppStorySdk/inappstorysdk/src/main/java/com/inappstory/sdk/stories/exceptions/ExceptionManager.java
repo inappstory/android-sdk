@@ -72,7 +72,7 @@ public class ExceptionManager {
     public void sendSavedException() {
         ExceptionLog log = getSavedException();
         if (log == null) return;
-        sendException(log);
+   //     sendException(log);
     }
 
 

@@ -195,7 +195,12 @@ public interface ApiInterface {
 
 
     @GET("v2/game/preload")
-    Request getPreloadGames();
+    @ExcludeHeaders({
+            HeadersKeys.AUTH_SESSION_ID
+    })
+    Request getPreloadGames(
+            @Query("hasFeatureWebp") boolean hasFeatureWebp
+    );
 
     @FormUrlEncoded
     @POST("v2/session/open")
