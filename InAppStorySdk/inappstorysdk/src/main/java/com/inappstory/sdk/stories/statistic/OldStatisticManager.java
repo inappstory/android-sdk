@@ -291,11 +291,13 @@ public class OldStatisticManager {
     public int articleEventCount = 0;
     public long articleTimer = 0;
 
-    public void addLinkOpenStatistic() {
+    public void addLinkOpenStatistic(int storyId, int slideIndex) {
         synchronized (eventLock) {
             if (currentEvent != null)
-                currentEvent.eventType = 2;
+                if (currentEvent.storyId == storyId && currentEvent.index == slideIndex)
+                    currentEvent.eventType = 2;
         }
+
     }
 
     public void addDeeplinkClickStatistic(int id) {
