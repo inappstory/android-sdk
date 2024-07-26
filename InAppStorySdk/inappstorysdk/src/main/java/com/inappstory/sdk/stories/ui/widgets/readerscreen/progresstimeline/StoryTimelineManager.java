@@ -1,6 +1,7 @@
 package com.inappstory.sdk.stories.ui.widgets.readerscreen.progresstimeline;
 
 import android.os.Handler;
+import android.os.Looper;
 import android.view.View;
 
 import java.util.concurrent.ScheduledExecutorService;
@@ -21,7 +22,7 @@ public class StoryTimelineManager {
         this.currentIndex = currentIndex;
         this.timerStart = timerStart;
         this.timerDuration = timerDuration;
-        host.post(new Runnable() {
+        Runnable hostVisibility = new Runnable() {
             @Override
             public void run() {
                 if (slidesCount <= 1 && StoryTimelineManager.this.timerDuration == 0)
@@ -29,7 +30,12 @@ public class StoryTimelineManager {
                 else
                     host.setVisibility(View.VISIBLE);
             }
-        });
+        };
+        if(Looper.myLooper() == Looper.getMainLooper()) {
+            hostVisibility.run();
+        } else {
+            host.post(hostVisibility);
+        }
 
         this.timerStartTimestamp = System.currentTimeMillis();
         this.isActive = true;

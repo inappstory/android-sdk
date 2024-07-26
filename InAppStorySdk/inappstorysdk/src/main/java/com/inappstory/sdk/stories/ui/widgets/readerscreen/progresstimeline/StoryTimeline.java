@@ -5,11 +5,16 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.RectF;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 
+import androidx.annotation.MainThread;
 import androidx.annotation.Nullable;
 
 import com.inappstory.sdk.stories.utils.Sizes;
+
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class StoryTimeline extends View {
     public StoryTimeline(Context context) {
@@ -59,7 +64,6 @@ public class StoryTimeline extends View {
         timelineManager.setHost(this);
     }
 
-
     public void setParameters(StoryTimelineParameters parameters) {
         this.parameters = parameters;
         fillPaint = new Paint();
@@ -68,10 +72,14 @@ public class StoryTimeline extends View {
         backgroundPaint.setColor(parameters.backgroundColor);
     }
 
+    @MainThread
     public void setState(StoryTimelineState state) {
         this.state = state;
-        if (state.slidesCount == 1 && state.timerDuration == 0) setVisibility(INVISIBLE);
-        else setVisibility(VISIBLE);
+        int localVisibility = !(state.slidesCount == 1 && state.timerDuration == 0) ? 1 : -1;
+        if (oldVisibility.get() != localVisibility) {
+            oldVisibility.set(localVisibility);
+            visibilityChanged.set(true);
+        }
     }
 
     @Override
@@ -84,7 +92,14 @@ public class StoryTimeline extends View {
         invalidate();
     }
 
+    private final AtomicInteger oldVisibility = new AtomicInteger(0);
+    private final AtomicBoolean visibilityChanged = new AtomicBoolean(false);
+
     private void drawSegments(Canvas canvas) {
+        Log.e("oldVisibility", oldVisibility.get() + "");
+        if (visibilityChanged.compareAndSet(true, false)) {
+            setVisibility(oldVisibility.get() == -1 ? INVISIBLE : VISIBLE);
+        }
         float segmentWidth = (getWidth() - parameters.gapWidth * (state.slidesCount - 1)) / state.slidesCount;
         for (int i = 0; i < state.slidesCount; i++) {
             drawSegment(canvas, i, segmentWidth);
