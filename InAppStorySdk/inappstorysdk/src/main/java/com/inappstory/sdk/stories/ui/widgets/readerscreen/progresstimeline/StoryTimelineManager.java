@@ -79,9 +79,14 @@ public class StoryTimelineManager {
         executorService.shutdown();
     }
 
-    private void setProgress(float progress) {
+    private void setProgress(final float progress) {
         if (host != null) {
-            host.setState(new StoryTimelineState(slidesCount, currentIndex, progress, timerDuration));
+            host.post(new Runnable() {
+                @Override
+                public void run() {
+                    host.setState(new StoryTimelineState(slidesCount, currentIndex, progress, timerDuration));
+                }
+            });
         }
     }
 
