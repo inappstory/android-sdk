@@ -1,6 +1,6 @@
 package com.inappstory.sdk;
 
-import static com.inappstory.sdk.OldInAppStoryManager.DEBUG_API;
+import static com.inappstory.sdk.InAppStoryManager.IAS_DEBUG_API;
 
 import android.annotation.SuppressLint;
 
@@ -9,7 +9,7 @@ import com.inappstory.sdk.stories.api.models.logs.ApiLogResponse;
 import com.inappstory.sdk.stories.api.models.logs.ExceptionLog;
 import com.inappstory.sdk.stories.api.models.logs.WebConsoleLog;
 
-@SuppressLint(DEBUG_API)
+@SuppressLint(IAS_DEBUG_API)
 public interface IAS_QA_Log {
     void getApiRequestLog(ApiLogRequest request);
 

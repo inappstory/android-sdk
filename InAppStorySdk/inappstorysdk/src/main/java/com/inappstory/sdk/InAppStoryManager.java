@@ -1,10 +1,14 @@
 package com.inappstory.sdk;
 
+import android.app.Application;
+import android.content.ContentProvider;
 import android.content.Context;
 import android.util.Pair;
 
 import androidx.annotation.NonNull;
 
+import com.inappstory.iasutilsconnector.UtilModulesHolder;
+import com.inappstory.iasutilsconnector.json.IJsonParser;
 import com.inappstory.sdk.iasapimodules.IInAppStoryManager;
 import com.inappstory.sdk.iasapimodules.cached.CachedListsApi;
 import com.inappstory.sdk.iasapimodules.cached.ICachedListsApi;
@@ -14,8 +18,6 @@ import com.inappstory.sdk.iasapimodules.games.GamesApi;
 import com.inappstory.sdk.iasapimodules.games.IGamesApi;
 import com.inappstory.sdk.iasapimodules.onboardings.IOnboardingStoriesApi;
 import com.inappstory.sdk.iasapimodules.onboardings.OnboardingStoriesApi;
-import com.inappstory.sdk.iasapimodules.settings.ISettingsApi;
-import com.inappstory.sdk.iasapimodules.settings.ISettingsProviderApi;
 import com.inappstory.sdk.iasapimodules.settings.SettingsApi;
 import com.inappstory.sdk.iasapimodules.single.ISingleStoryApi;
 import com.inappstory.sdk.iasapimodules.single.SingleStoryApi;
@@ -23,6 +25,9 @@ import com.inappstory.sdk.iasapimodules.stack.IStackFeedApi;
 import com.inappstory.sdk.iasapimodules.stack.StackFeedApi;
 import com.inappstory.sdk.iasapimodules.utils.IUtilsApi;
 import com.inappstory.sdk.iasapimodules.utils.UtilsApi;
+import com.inappstory.sdk.network.JsonParser;
+import com.inappstory.sdk.packages.core.IASCore;
+import com.inappstory.sdk.packages.core.IIASCore;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
 import com.inappstory.sdk.stories.callbacks.IShowStoryCallback;
 import com.inappstory.sdk.stories.callbacks.IShowStoryOnceCallback;
@@ -34,6 +39,9 @@ import java.util.Locale;
 import java.util.Map;
 
 public class InAppStoryManager implements IInAppStoryManager {
+
+    public static final String IAS_DEBUG_API = "IAS debug api";
+    public final static String IAS_ERROR_TAG = "InAppStory_SDK_error";
 
     private static InAppStoryManager INSTANCE;
 
@@ -56,6 +64,10 @@ public class InAppStoryManager implements IInAppStoryManager {
         }
     }
 
+    private InAppStoryManager(Context context) {
+
+    }
+
     public static Pair<String, Integer> getLibraryVersion() {
         return new Pair<>(BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE);
     }
@@ -71,6 +83,59 @@ public class InAppStoryManager implements IInAppStoryManager {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public static void initSDK(@NonNull Context context) {
+        initSDK(context, false);
+    }
+
+    public static void initSDK(@NonNull Context context, boolean skipCheck) {
+        StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
+        boolean calledFromApplication = skipCheck;
+        if (!skipCheck)
+            for (StackTraceElement stackTraceElement : stackTraceElements) {
+                try {
+                    if (Application.class.isAssignableFrom(Class.forName(stackTraceElement.getClassName()))) {
+                        calledFromApplication = true;
+                        break;
+                    }
+                    if (ContentProvider.class.isAssignableFrom(Class.forName(stackTraceElement.getClassName()))) {
+                        calledFromApplication = true;
+                        break;
+                    }
+                } catch (ClassNotFoundException e) {
+
+                }
+            }
+        if (!(context instanceof Application)) calledFromApplication = false;
+        if (!calledFromApplication) {
+            IASCore.getInstance()
+                    .getLogger()
+                    .showELog(
+                            IAS_ERROR_TAG,
+                            "Method must be called from Application class and context has to be an applicationContext"
+                    );
+            return;
+        }
+        synchronized (lock) {
+            if (INSTANCE == null) {
+                INSTANCE = new InAppStoryManager(context);
+            }
+        }
+        INSTANCE.createServiceThread(context);
+        INSTANCE.utilModulesHolder = UtilModulesHolder.INSTANCE;
+        INSTANCE.utilModulesHolder.setJsonParser(new IJsonParser() {
+            @Override
+            public <T> T fromJson(String json, Class<T> typeOfT) {
+                return JsonParser.fromJson(json, typeOfT);
+            }
+        });
+    }
+
+    IIASCore core;
+
+    public void setLogger(IASLogger logger) {
+        IASCore.getInstance().setLogger(logger);
     }
 
     @Override
