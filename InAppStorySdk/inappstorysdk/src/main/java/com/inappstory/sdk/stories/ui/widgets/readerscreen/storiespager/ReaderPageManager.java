@@ -192,7 +192,7 @@ public class ReaderPageManager {
                                 new GetOldStatisticManagerCallback() {
                                     @Override
                                     public void get(@NonNull OldStatisticManager manager) {
-                                        manager.addLinkOpenStatistic();
+                                        manager.addLinkOpenStatistic(storyId, slideIndex);
                                     }
                                 }
                         );

@@ -224,7 +224,7 @@ public class ReaderManager {
                     OldStatisticManager.useInstance(getSessionId(), new GetOldStatisticManagerCallback() {
                         @Override
                         public void get(@NonNull OldStatisticManager manager) {
-                            manager.addLinkOpenStatistic();
+                            manager.addLinkOpenStatistic(storyId, slideIndex);
                         }
                     });
                 if (storiesIds.contains(storyId)) {
