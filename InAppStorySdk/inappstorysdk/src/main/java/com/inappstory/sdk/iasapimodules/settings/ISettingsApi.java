@@ -1,6 +1,8 @@
 package com.inappstory.sdk.iasapimodules.settings;
 
 
+import android.content.Context;
+
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
@@ -11,6 +13,8 @@ import java.util.Locale;
 import java.util.Map;
 
 public interface ISettingsApi {
+    void updateContextDependentSettings(@NonNull Context context);
+
     void setLang(@NonNull Locale lang);
 
     void setUserId(@NonNull String userId);

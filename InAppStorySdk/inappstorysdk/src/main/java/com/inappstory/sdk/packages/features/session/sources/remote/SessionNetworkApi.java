@@ -39,7 +39,8 @@ public interface SessionNetworkApi {
 
     @POST("v2/session/update")
     Request sessionUpdate(
-            @Body StatisticSendObject request);
+            @Body StatisticSendObject request
+    );
 
     @POST("v2/session/close")
     Request sessionClose(

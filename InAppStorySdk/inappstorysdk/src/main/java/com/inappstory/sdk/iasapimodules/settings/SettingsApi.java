@@ -1,8 +1,11 @@
 package com.inappstory.sdk.iasapimodules.settings;
 
+import android.content.Context;
+
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.iasapimodules.NotImplementedYetException;
+import com.inappstory.sdk.packages.core.base.network.IContextDependentSettings;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
 
 import java.util.ArrayList;
@@ -11,6 +14,18 @@ import java.util.Locale;
 import java.util.Map;
 
 public class SettingsApi implements ISettingsApi, ISettingsProviderApi {
+    private IContextDependentSettings contextDependentSettings;
+    private boolean isUserIdEnabled;
+
+    public SettingsApi(boolean isUserIdEnabled) {
+        this.isUserIdEnabled = isUserIdEnabled;
+    }
+
+    @Override
+    public void updateContextDependentSettings(@NonNull Context context) {
+
+    }
+
     @Override
     public void setLang(@NonNull Locale lang) {
         throw new NotImplementedYetException();

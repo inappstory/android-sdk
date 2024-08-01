@@ -20,10 +20,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class NetworkClient {
-    public NetworkHandler getNetworkHandler() {
-        return networkHandler;
-    }
+public class NetworkClient implements INetworkClient {
 
     private final NetworkHandler networkHandler;
 
@@ -31,6 +28,7 @@ public class NetworkClient {
         return networkSettings;
     }
 
+    @Override
     public void updateNetworkSettings(NetworkSettings networkSettings) {
         this.networkSettings = networkSettings;
         networkHandler.updateNetworkSettings(networkSettings);
@@ -46,6 +44,7 @@ public class NetworkClient {
 
     ExecutorService netExecutor = Executors.newFixedThreadPool(10);
 
+    @Override
     public void enqueue(final Request request, final Callback callback) {
         netExecutor.submit(new Callable<Response>() {
             @Override
@@ -54,6 +53,7 @@ public class NetworkClient {
             }
         });
     }
+
     @WorkerThread
     public Response execute(Request request) {
         return execute(request, null);
@@ -62,6 +62,7 @@ public class NetworkClient {
 
     public static final String NC_IS_UNAVAILABLE = "Network client is unavailable";
 
+    @Override
     @WorkerThread
     public Response execute(Request request, Callback callback) {
         Response response;
@@ -128,5 +129,4 @@ public class NetworkClient {
     ) {
         return networkHandler.generateHeaders(exclude, replace, isFormEncoded, hasBody);
     }
-
 }

@@ -1,6 +1,5 @@
 package com.inappstory.sdk.packages.core.base.network;
 
-import java.util.Locale;
 
 public class NetworkSettings {
 
@@ -40,48 +39,56 @@ public class NetworkSettings {
         return deviceId;
     }
 
+    public boolean isDeviceIdEnabled() {
+        return isDeviceIdEnabled;
+    }
 
-    public NetworkSettings setApiKey(String apiKey) {
+    public NetworkSettings apiKey(String apiKey) {
         this.apiKey = apiKey;
         return this;
     }
 
-    public NetworkSettings setTestKey(String testKey) {
+    public NetworkSettings isDeviceIdEnabled(boolean isDeviceIdEnabled) {
+        this.isDeviceIdEnabled = isDeviceIdEnabled;
+        return this;
+    }
+
+    public NetworkSettings testKey(String testKey) {
         this.testKey = testKey;
         return this;
     }
 
-    public NetworkSettings setHost(String host) {
+    public NetworkSettings host(String host) {
         this.host = host;
         return this;
     }
 
-    public NetworkSettings setUserId(String userId) {
+    public NetworkSettings userId(String userId) {
         this.userId = userId;
         return this;
     }
 
-    public NetworkSettings setSessionId(String sessionId) {
+    public NetworkSettings sessionId(String sessionId) {
         this.sessionId = sessionId;
         return this;
     }
 
-    public NetworkSettings setUserAgent(String userAgent) {
+    public NetworkSettings userAgent(String userAgent) {
         this.userAgent = userAgent;
         return this;
     }
 
-    public NetworkSettings setLanguageTag(String languageTag) {
+    public NetworkSettings languageTag(String languageTag) {
         this.languageTag = languageTag;
         return this;
     }
 
-    public NetworkSettings setAppPackageId(String appPackageId) {
+    public NetworkSettings appPackageId(String appPackageId) {
         this.appPackageId = appPackageId;
         return this;
     }
 
-    public NetworkSettings setDeviceId(String deviceId) {
+    public NetworkSettings deviceId(String deviceId) {
         this.deviceId = deviceId;
         return this;
     }
@@ -95,6 +102,7 @@ public class NetworkSettings {
 
     private String languageTag;
     private String appPackageId;
+    private boolean isDeviceIdEnabled;
 
     private String deviceId;
 }
