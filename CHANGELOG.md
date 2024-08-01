@@ -1,5 +1,35 @@
 Change Log
 ==========
+
+Version *1.19.0 (910)*
+----------------------------
+* check story id and index in statistic click events
+* Fixed: timeline visibility fixed
+* Fixed: preload games request (exclude session id, add hasFeatureWebp)
+* Fixed: fix StoriesAdapter.getIndexById (if UGC cell used)
+
+Version *1.18.6 (866)*
+----------------------------
+* Fixed: check story id and slide index in statistic click events
+* Fixed: offset for stories reader timeline in case of background pause
+* Fixed: durations restore in case of background pause
+* Fixed: StoriesAdapter.getIndexById (if UGC cell used)
+* Fixed: check stories list cell before triggers cell interface (csListItemInterface, etc.) methods
+  
+Version *1.19.0-rc1 (900)*
+----------------------------
+* New: games preloading after session opening and inAppStoryManager.preloadGames();
+* New: lottie animations in games feature support;
+* New: bundle resources preloading for stories;
+* New: VOD feature support;
+* New: test-key usage in single story requests
+* Update: changed bar colors for game reader (depends of opening spot);
+* Update: changed stories timers logic (depends of JS code now);
+* Update: new stack feed logic;
+* Update: changed offsets (top and bottom) for stories
+* Fixed: disableClose usage in stories loader fragment;
+* Fixed: added screenshot sharing callback in case of any error;
+
 Version *1.18.5 (865)*
 ----------------------------
 * Update: launch and closing animation of dialogs in stories
