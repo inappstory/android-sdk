@@ -149,7 +149,7 @@ public class StoriesContentFragment extends Fragment
                                       IASShareData shareObject,
                                       int storyId,
                                       int slideIndex) {
-        InAppStoryService service = InAppStoryService.getInstance();
+        final InAppStoryService service = InAppStoryService.getInstance();
         if (service != null)
             service.isShareProcess(false);
         Context context = getContext();
@@ -161,6 +161,7 @@ public class StoriesContentFragment extends Fragment
                         @Override
                         public void onSuccess(boolean shared) {
                             getStoriesReader().timerIsUnlocked();
+                            readerManager.resumeCurrent(false);
                         }
 
                         @Override
