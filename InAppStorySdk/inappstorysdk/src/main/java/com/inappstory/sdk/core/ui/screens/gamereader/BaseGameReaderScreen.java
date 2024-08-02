@@ -1,4 +1,4 @@
-package com.inappstory.sdk.game.reader;
+package com.inappstory.sdk.core.ui.screens.gamereader;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.FragmentManager;

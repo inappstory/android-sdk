@@ -29,6 +29,7 @@ import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.UseServiceInstanceCallback;
+import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryReaderScreen;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
@@ -46,7 +47,7 @@ import com.inappstory.sdk.stories.utils.IASBackPressHandler;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 import com.inappstory.sdk.stories.utils.Sizes;
 
-public class StoriesDialogFragment extends DialogFragment implements IASBackPressHandler, BaseReaderScreen {
+public class StoriesDialogFragment extends DialogFragment implements IASBackPressHandler, BaseStoryReaderScreen {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -103,7 +104,7 @@ public class StoriesDialogFragment extends DialogFragment implements IASBackPres
         }
         cleanReader();
         super.onDismiss(dialogInterface);
-        ScreensManager.getInstance().unsubscribeReaderScreen(this);
+        ScreensManager.getInstance().unsubscribeStoryReaderScreen(this);
     }
 
     boolean cleaned = false;

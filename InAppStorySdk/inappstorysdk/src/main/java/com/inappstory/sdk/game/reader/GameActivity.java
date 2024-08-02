@@ -1,6 +1,5 @@
 package com.inappstory.sdk.game.reader;
 
-import android.content.res.Configuration;
 import android.graphics.Color;
 import android.os.Bundle;
 
@@ -16,6 +15,7 @@ import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.UseManagerInstanceCallback;
+import com.inappstory.sdk.core.ui.screens.gamereader.BaseGameReaderScreen;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.GameReaderAppearanceSettings;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.GameReaderLaunchData;
 import com.inappstory.sdk.stories.ui.ScreensManager;

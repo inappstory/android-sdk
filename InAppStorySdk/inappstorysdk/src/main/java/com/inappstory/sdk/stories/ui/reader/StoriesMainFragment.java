@@ -26,6 +26,7 @@ import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.UseServiceInstanceCallback;
+import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryReaderScreen;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderAppearanceSettings;
@@ -53,7 +54,7 @@ import com.inappstory.sdk.stories.utils.Sizes;
 
 
 public abstract class StoriesMainFragment extends Fragment implements
-        BaseReaderScreen,
+        BaseStoryReaderScreen,
         IASBackPressHandler,
         ShowGoodsCallback {
 
@@ -307,7 +308,7 @@ public abstract class StoriesMainFragment extends Fragment implements
         } else {
             reInitUI();
         }
-        ScreensManager.getInstance().subscribeReaderScreen(this);
+        ScreensManager.getInstance().subscribeStoryReaderScreen(this);
         return view;
     }
 
@@ -508,7 +509,7 @@ public abstract class StoriesMainFragment extends Fragment implements
             oldOrientation = getActivity().getRequestedOrientation();
             getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         }
-        ScreensManager.getInstance().subscribeReaderScreen(this);
+        ScreensManager.getInstance().subscribeStoryReaderScreen(this);
     }
 
     boolean orientationChangeIsLocked() {
@@ -521,7 +522,7 @@ public abstract class StoriesMainFragment extends Fragment implements
         if (orientationChangeIsLocked()) {
             getActivity().setRequestedOrientation(oldOrientation);
         }
-        ScreensManager.getInstance().unsubscribeReaderScreen(this);
+        ScreensManager.getInstance().unsubscribeStoryReaderScreen(this);
     }
 
     @Override

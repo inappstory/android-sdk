@@ -6,9 +6,7 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.Window;
-import android.view.WindowManager;
 
-import androidx.appcompat.view.ContextThemeWrapper;
 import androidx.fragment.app.FragmentActivity;
 
 import com.inappstory.sdk.R;
@@ -18,8 +16,6 @@ import com.inappstory.sdk.stories.ui.reader.StoriesDialogFragment;
 import com.inappstory.sdk.stories.utils.ActivityUtils;
 import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.stories.utils.StatusBarController;
-
-import java.lang.reflect.Method;
 
 
 public class DefaultOpenStoriesReader implements IOpenStoriesReader {
@@ -48,7 +44,7 @@ public class DefaultOpenStoriesReader implements IOpenStoriesReader {
                 storiesDialogFragment.show(
                         ((FragmentActivity) context).getSupportFragmentManager(),
                         "DialogFragment");
-                ScreensManager.getInstance().subscribeReaderScreen(storiesDialogFragment);
+                ScreensManager.getInstance().subscribeStoryReaderScreen(storiesDialogFragment);
             } catch (IllegalStateException ignored) {
 
             }

@@ -29,6 +29,7 @@ import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.UseServiceInstanceCallback;
+import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryReaderScreen;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderAppearanceSettings;
@@ -54,7 +55,7 @@ import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 import com.inappstory.sdk.stories.utils.Sizes;
 
 
-public class StoriesActivity extends AppCompatActivity implements BaseReaderScreen, ShowGoodsCallback {
+public class StoriesActivity extends AppCompatActivity implements BaseStoryReaderScreen, ShowGoodsCallback {
 
     public boolean pauseDestroyed = false;
 
@@ -352,7 +353,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
         if (navColor != 0)
             getWindow().setNavigationBarColor(navColor);
 
-        ScreensManager.getInstance().subscribeReaderScreen(this);
+        ScreensManager.getInstance().subscribeStoryReaderScreen(this);
         View view = getCurrentFocus();
         if (view != null) {
             InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -669,7 +670,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
 
     @Override
     public void onDestroy() {
-        ScreensManager.getInstance().unsubscribeReaderScreen(this);
+        ScreensManager.getInstance().unsubscribeStoryReaderScreen(this);
         if (!pauseDestroyed) {
             InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
             if (inAppStoryManager != null) {

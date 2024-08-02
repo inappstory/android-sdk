@@ -48,8 +48,10 @@ import com.inappstory.sdk.stories.exceptions.ExceptionManager;
 import com.inappstory.sdk.stories.outercallbacks.common.errors.ErrorCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.gamereader.GameReaderCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.DefaultOpenGameReader;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.DefaultOpenInAppMessageReader;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.DefaultOpenStoriesReader;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenGameReader;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenInAppMessageReader;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenStoriesReader;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderAppearanceSettings;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderLaunchData;
@@ -75,7 +77,7 @@ import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 import com.inappstory.sdk.stories.ui.GetBaseReaderScreenCallback;
 import com.inappstory.sdk.stories.ui.ScreensManager;
-import com.inappstory.sdk.stories.ui.reader.BaseReaderScreen;
+import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryReaderScreen;
 import com.inappstory.sdk.stories.ui.reader.ForceCloseReaderCallback;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
 import com.inappstory.sdk.stories.utils.SessionManager;
@@ -945,7 +947,7 @@ public class InAppStoryManager {
                                 ScreensManager.getInstance().useCurrentStoriesReaderScreen(
                                         new GetBaseReaderScreenCallback() {
                                             @Override
-                                            public void get(BaseReaderScreen readerScreen) {
+                                            public void get(BaseStoryReaderScreen readerScreen) {
                                                 readerScreen.removeAllStoriesFromFavorite();
                                             }
                                         }
@@ -995,7 +997,7 @@ public class InAppStoryManager {
                                 ScreensManager.getInstance().useCurrentStoriesReaderScreen(
                                         new GetBaseReaderScreenCallback() {
                                             @Override
-                                            public void get(BaseReaderScreen readerScreen) {
+                                            public void get(BaseStoryReaderScreen readerScreen) {
                                                 readerScreen.removeStoryFromFavorite(storyId);
                                             }
                                         }
@@ -1215,11 +1217,22 @@ public class InAppStoryManager {
         return openStoriesReader;
     }
 
+
+    public IOpenInAppMessageReader getOpenInAppMessageReader() {
+        return openInAppMessageReader;
+    }
+
     public void setOpenStoriesReader(IOpenStoriesReader openStoriesReader) {
         this.openStoriesReader = openStoriesReader;
     }
 
     private IOpenStoriesReader openStoriesReader = new DefaultOpenStoriesReader();
+
+    public void setOpenInAppMessageReader(IOpenInAppMessageReader openInAppMessageReader) {
+        this.openInAppMessageReader = openInAppMessageReader;
+    }
+
+    private IOpenInAppMessageReader openInAppMessageReader = new DefaultOpenInAppMessageReader();
 
     public IOpenGameReader getOpenGameReader() {
         return openGameReader;

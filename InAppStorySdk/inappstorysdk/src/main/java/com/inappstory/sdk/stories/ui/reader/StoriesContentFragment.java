@@ -9,7 +9,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,7 +21,7 @@ import androidx.viewpager.widget.ViewPager;
 
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
-import com.inappstory.sdk.UseServiceInstanceCallback;
+import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryReaderScreen;
 import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.inner.share.InnerShareFilesPrepare;
 import com.inappstory.sdk.inner.share.ShareFilesPrepareCallback;
@@ -74,12 +73,12 @@ public class StoriesContentFragment extends Fragment
 
     }
 
-    public BaseReaderScreen getStoriesReader() {
-        BaseReaderScreen screen = null;
-        if (getActivity() instanceof BaseReaderScreen) {
-            screen = (BaseReaderScreen) getActivity();
-        } else if (getParentFragment() instanceof BaseReaderScreen) {
-            screen = (BaseReaderScreen) getParentFragment();
+    public BaseStoryReaderScreen getStoriesReader() {
+        BaseStoryReaderScreen screen = null;
+        if (getActivity() instanceof BaseStoryReaderScreen) {
+            screen = (BaseStoryReaderScreen) getActivity();
+        } else if (getParentFragment() instanceof BaseStoryReaderScreen) {
+            screen = (BaseStoryReaderScreen) getParentFragment();
         }
         return screen;
     }
@@ -219,7 +218,7 @@ public class StoriesContentFragment extends Fragment
                 type
         );
         if (st == null) return;
-        BaseReaderScreen screen = getStoriesReader();
+        BaseStoryReaderScreen screen = getStoriesReader();
         if (screen != null) screen.disableDrag(st.disableClose || st.hasSwipeUp());
     }
 
@@ -237,7 +236,7 @@ public class StoriesContentFragment extends Fragment
     private StoriesReaderLaunchData launchData;
 
     public void forceFinish() {
-        BaseReaderScreen readerScreen = getStoriesReader();
+        BaseStoryReaderScreen readerScreen = getStoriesReader();
         if (readerScreen != null)
             readerScreen.forceFinish();
     }

@@ -15,6 +15,7 @@ import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.UseManagerInstanceCallback;
 import com.inappstory.sdk.UseServiceInstanceCallback;
+import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryReaderScreen;
 import com.inappstory.sdk.game.cache.SessionAssetsIsReadyCallback;
 import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.stories.api.models.Story;
@@ -148,7 +149,7 @@ public class ReaderManager {
             final ShowGoodsCallback showGoodsCallback,
             SlideData slideData
     ) {
-        BaseReaderScreen screen = getReaderScreen();
+        BaseStoryReaderScreen screen = getReaderScreen();
         if (screen == null) {
             showGoodsCallback.goodsIsCanceled(widgetId);
             Log.d("InAppStory_SDK_error", "Something wrong");
@@ -520,7 +521,7 @@ public class ReaderManager {
         firstStoryId = -1;
     }
 
-    public BaseReaderScreen getReaderScreen() {
+    public BaseStoryReaderScreen getReaderScreen() {
         return parentFragment.getStoriesReader();
     }
 

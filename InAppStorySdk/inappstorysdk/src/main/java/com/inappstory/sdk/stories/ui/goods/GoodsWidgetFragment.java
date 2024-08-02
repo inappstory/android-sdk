@@ -19,7 +19,7 @@ import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryWidgetCallback;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
-import com.inappstory.sdk.stories.ui.reader.BaseReaderScreen;
+import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryReaderScreen;
 import com.inappstory.sdk.stories.ui.views.goodswidget.GetGoodsDataCallback;
 import com.inappstory.sdk.stories.ui.views.goodswidget.GoodsItemData;
 import com.inappstory.sdk.stories.ui.views.goodswidget.GoodsWidget;
@@ -33,12 +33,12 @@ import java.util.Map;
 public class GoodsWidgetFragment extends Fragment implements IASBackPressHandler {
     GetGoodsDataCallback getGoodsDataCallback;
 
-    public BaseReaderScreen getStoriesReader() {
-        BaseReaderScreen screen = null;
-        if (getActivity() instanceof BaseReaderScreen) {
-            screen = (BaseReaderScreen) getActivity();
-        } else if (getParentFragment() instanceof BaseReaderScreen) {
-            screen = (BaseReaderScreen) getParentFragment();
+    public BaseStoryReaderScreen getStoriesReader() {
+        BaseStoryReaderScreen screen = null;
+        if (getActivity() instanceof BaseStoryReaderScreen) {
+            screen = (BaseStoryReaderScreen) getActivity();
+        } else if (getParentFragment() instanceof BaseStoryReaderScreen) {
+            screen = (BaseStoryReaderScreen) getParentFragment();
         }
         return screen;
     }
@@ -119,7 +119,7 @@ public class GoodsWidgetFragment extends Fragment implements IASBackPressHandler
     }
 
     public void hideGoods() {
-        BaseReaderScreen readerScreen = getStoriesReader();
+        BaseStoryReaderScreen readerScreen = getStoriesReader();
         if (readerScreen instanceof ShowGoodsCallback) {
             ((ShowGoodsCallback) readerScreen).goodsIsClosed(
                     getArguments().getString("widgetId")

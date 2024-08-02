@@ -1,7 +1,7 @@
 package com.inappstory.sdk.stories.ui;
 
-import com.inappstory.sdk.stories.ui.reader.BaseReaderScreen;
+import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryReaderScreen;
 
 public interface GetBaseReaderScreenCallback {
-    void get(BaseReaderScreen readerScreen);
+    void get(BaseStoryReaderScreen readerScreen);
 }

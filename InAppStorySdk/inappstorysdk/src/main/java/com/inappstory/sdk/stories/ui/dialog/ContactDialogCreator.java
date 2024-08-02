@@ -11,7 +11,7 @@ import androidx.fragment.app.FragmentTransaction;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.dialogstructure.DialogStructure;
-import com.inappstory.sdk.stories.ui.reader.BaseReaderScreen;
+import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryReaderScreen;
 
 public class ContactDialogCreator {
 
@@ -41,7 +41,7 @@ public class ContactDialogCreator {
         this.cancelListener = cancelListener;
     }
 
-    public void showDialog(final BaseReaderScreen readerScreen) {
+    public void showDialog(final BaseStoryReaderScreen readerScreen) {
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
@@ -50,7 +50,7 @@ public class ContactDialogCreator {
         });
     }
 
-    private void showDialogInner(BaseReaderScreen readerScreen) {
+    private void showDialogInner(BaseStoryReaderScreen readerScreen) {
         if (readerScreen == null) {
             this.cancelListener.onCancel(dialogId);
             return;

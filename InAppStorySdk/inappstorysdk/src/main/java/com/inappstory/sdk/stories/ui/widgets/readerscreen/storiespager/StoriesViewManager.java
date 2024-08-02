@@ -34,7 +34,7 @@ import com.inappstory.sdk.stories.ui.dialog.CancelListener;
 import com.inappstory.sdk.stories.ui.dialog.ContactDialogCreator;
 import com.inappstory.sdk.stories.ui.dialog.SendListener;
 import com.inappstory.sdk.stories.ui.dialog.ShowListener;
-import com.inappstory.sdk.stories.ui.reader.BaseReaderScreen;
+import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryReaderScreen;
 import com.inappstory.sdk.stories.ui.reader.StoriesContentFragment;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.webview.SimpleStoriesWebView;
 import com.inappstory.sdk.stories.utils.AudioModes;
@@ -359,7 +359,7 @@ public class StoriesViewManager {
     public void storyShowTextInput(String id, String data) {
         final StoriesContentFragment storiesContentFragment =
                 (StoriesContentFragment) pageManager.host.getParentFragment();
-        final BaseReaderScreen readerScreen =
+        final BaseStoryReaderScreen readerScreen =
                 storiesContentFragment != null ? storiesContentFragment.getStoriesReader() : null;
         if (readerScreen != null) {
             ContactDialogCreator contactDialogCreator = new ContactDialogCreator(storyId, id, data,

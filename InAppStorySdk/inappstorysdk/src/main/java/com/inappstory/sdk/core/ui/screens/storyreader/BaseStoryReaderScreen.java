@@ -1,11 +1,11 @@
-package com.inappstory.sdk.stories.ui.reader;
+package com.inappstory.sdk.core.ui.screens.storyreader;
 
 
 import androidx.fragment.app.FragmentManager;
 
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 
-public interface BaseReaderScreen {
+public interface BaseStoryReaderScreen {
     void closeStoryReader(int action);
     void forceFinish();
     void removeStoryFromFavorite(int id);
