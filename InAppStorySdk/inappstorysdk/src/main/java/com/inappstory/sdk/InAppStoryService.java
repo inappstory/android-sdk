@@ -20,6 +20,7 @@ import android.webkit.URLUtil;
 
 import androidx.annotation.NonNull;
 
+import com.inappstory.iasutilsconnector.UtilModulesHolder;
 import com.inappstory.sdk.externalapi.subscribers.InAppStoryAPISubscribersManager;
 import com.inappstory.sdk.game.cache.GameCacheManager;
 import com.inappstory.sdk.game.cache.SuccessUseCaseCallback;
@@ -132,8 +133,11 @@ public class InAppStoryService {
 
     public boolean hasLottieAnimation() {
         InAppStoryManager manager = InAppStoryManager.getInstance();
-        if (manager != null)
-            return manager.utilModulesHolder.hasLottieModule();
+        if (manager != null) {
+            UtilModulesHolder modulesHolder = manager.utilModulesHolder;
+            if (modulesHolder != null)
+                return modulesHolder.hasLottieModule();
+        }
         return false;
     }
 

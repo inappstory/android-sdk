@@ -838,8 +838,8 @@ public class InAppStoryManager {
                 INSTANCE = new InAppStoryManager(context);
             }
         }
-        INSTANCE.createServiceThread(context);
         INSTANCE.utilModulesHolder = UtilModulesHolder.INSTANCE;
+        INSTANCE.createServiceThread(context);
         INSTANCE.utilModulesHolder.setJsonParser(new IJsonParser() {
             @Override
             public <T> T fromJson(String json, Class<T> typeOfT) {
