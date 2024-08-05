@@ -270,7 +270,8 @@ public class StoriesContentFragment extends Fragment
         if (!created && readerManager != null) {
             readerManager.resumeCurrent(true);
             if (ScreensManager.getInstance().shareCompleteListener() != null) {
-                readerManager.shareComplete(ScreensManager.getInstance().getTempShareStatus());
+                Boolean shareStatus = ScreensManager.getInstance().getTempShareStatus();
+                readerManager.shareComplete(shareStatus != null ? shareStatus : false);
             }
         }
         created = false;
