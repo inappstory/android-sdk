@@ -142,7 +142,10 @@ public class InAppStoryService {
     }
 
     public IGamePreloader getGamePreloader() {
-        return gamePreloader;
+        synchronized (preloaderLock) {
+            createGamePreloader();
+            return gamePreloader;
+        }
     }
 
     private IGamePreloader gamePreloader;
@@ -880,25 +883,31 @@ public class InAppStoryService {
 
         logSaver = new GameLogSaver();
         logSender = new GameLogSender(this, logSaver);
-        gamePreloader = new GamePreloader(
-                filesDownloadManager,
-                hasLottieAnimation(),
-                new SuccessUseCaseCallback<IGameCenterData>() {
-                    @Override
-                    public void onSuccess(final IGameCenterData result) {
-                        new Handler(Looper.getMainLooper()).post(new Runnable() {
-                            @Override
-                            public void run() {
-                                Log.d("IAS_Game_Preloading", "Game " + result.id() + " is loaded");
-                            }
-                        });
-                    }
-                }
-        );
+
 
     }
 
+    public void createGamePreloader() {
+        if (gamePreloader == null)
+            gamePreloader = new GamePreloader(
+                    filesDownloadManager,
+                    hasLottieAnimation(),
+                    new SuccessUseCaseCallback<IGameCenterData>() {
+                        @Override
+                        public void onSuccess(final IGameCenterData result) {
+                            new Handler(Looper.getMainLooper()).post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Log.d("IAS_Game_Preloading", "Game " + result.id() + " is loaded");
+                                }
+                            });
+                        }
+                    }
+            );
+    }
+
     private static final Object lock = new Object();
+    private final Object preloaderLock = new Object();
 
     public int getCurrentId() {
         return currentId;
