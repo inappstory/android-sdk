@@ -226,6 +226,7 @@ public class WebAppInterface {
     @JavascriptInterface
     public void shareSlideScreenshotCb(String shareId, boolean result) {
         manager.screenshotShareCallback(shareId);
+        logMethod(shareId + " " + result);
     }
 
 

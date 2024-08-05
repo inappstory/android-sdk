@@ -199,7 +199,7 @@ public interface ApiInterface {
             HeadersKeys.AUTH_SESSION_ID
     })
     Request getPreloadGames(
-            @Query("hasFeatureWebp") boolean hasFeatureWebp
+            @Query("hasFeatureWebp") Integer hasFeatureWebp
     );
 
     @FormUrlEncoded

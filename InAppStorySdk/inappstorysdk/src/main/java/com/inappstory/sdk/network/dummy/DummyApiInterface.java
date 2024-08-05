@@ -119,7 +119,7 @@ public class DummyApiInterface implements ApiInterface {
     }
 
     @Override
-    public Request getPreloadGames(boolean hasFeatureWebp) {
+    public Request getPreloadGames(Integer hasFeatureWebp) {
         return new DummyRequest();
     }
 

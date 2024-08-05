@@ -350,6 +350,7 @@ public class GameManager {
                 new IShareCompleteListener(id, -1) {
                     @Override
                     public void complete(String shareId, boolean shared) {
+                        ScreensManager.getInstance().shareCompleteListener(null);
                         if (host != null && host.isAdded())
                             host.shareComplete(shareId, shared);
                     }

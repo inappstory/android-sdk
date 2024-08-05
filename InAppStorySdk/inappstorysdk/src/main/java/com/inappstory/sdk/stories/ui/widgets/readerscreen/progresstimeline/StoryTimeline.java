@@ -96,8 +96,7 @@ public class StoryTimeline extends View {
     private final AtomicBoolean visibilityChanged = new AtomicBoolean(false);
 
     private void drawSegments(Canvas canvas) {
-        Log.e("oldVisibility", oldVisibility.get() + "");
-        if (visibilityChanged.compareAndSet(true, false)) {
+         if (visibilityChanged.compareAndSet(true, false)) {
             setVisibility(oldVisibility.get() == -1 ? INVISIBLE : VISIBLE);
         }
         float segmentWidth = (getWidth() - parameters.gapWidth * (state.slidesCount - 1)) / state.slidesCount;

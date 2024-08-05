@@ -260,6 +260,7 @@ public class ButtonsPanelManager {
                         ) {
                             @Override
                             public void complete(String shareId, boolean shared) {
+                                ScreensManager.getInstance().shareCompleteListener(null);
                                 pageManager.shareComplete(shareId, shared);
                             }
                         });

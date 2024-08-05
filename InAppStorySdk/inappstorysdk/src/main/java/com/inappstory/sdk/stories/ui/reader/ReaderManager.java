@@ -464,14 +464,14 @@ public class ReaderManager {
         StatisticManager.getInstance().createCurrentState(story2.id, story2.lastIndex, feedId);
     }
 
-    void shareComplete() {
+    void shareComplete(boolean result) {
         synchronized (subscribers) {
             for (ReaderPageManager pageManager : subscribers) {
                 pageManager.unlockShareButton();
             }
         }
 
-        ScreensManager.getInstance().shareCompleteListener().complete(true);
+        ScreensManager.getInstance().shareCompleteListener().complete(result);
 
         ScreensManager.getInstance().clearShareIds();
     }

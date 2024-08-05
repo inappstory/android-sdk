@@ -162,12 +162,14 @@ public class StoriesContentFragment extends Fragment
                         public void onSuccess(boolean shared) {
                             getStoriesReader().timerIsUnlocked();
                             readerManager.resumeCurrent(false);
+                            readerManager.shareComplete(shared);
                         }
 
                         @Override
                         public void onCancel() {
                             getStoriesReader().timerIsUnlocked();
                             readerManager.resumeCurrent(false);
+                            readerManager.shareComplete(false);
                         }
 
                     },
@@ -268,7 +270,7 @@ public class StoriesContentFragment extends Fragment
         if (!created && readerManager != null) {
             readerManager.resumeCurrent(true);
             if (ScreensManager.getInstance().shareCompleteListener() != null) {
-                readerManager.shareComplete();
+                readerManager.shareComplete(ScreensManager.getInstance().getTempShareStatus());
             }
         }
         created = false;

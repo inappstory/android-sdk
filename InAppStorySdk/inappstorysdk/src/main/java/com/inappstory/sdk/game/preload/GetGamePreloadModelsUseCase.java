@@ -11,6 +11,7 @@ import com.inappstory.sdk.stories.api.models.PreloadGameCenterDataListType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 public class GetGamePreloadModelsUseCase {
     public void get(final IGetGamePreloadModelsCallback callback) {
@@ -20,7 +21,9 @@ public class GetGamePreloadModelsUseCase {
             callback.onError(null);
             return;
         }
-        networkClient.enqueue(networkClient.getApi().getPreloadGames(true),
+
+
+        networkClient.enqueue(networkClient.getApi().getPreloadGames(1),
                 new NetworkCallback<List<PreloadGameCenterData>>() {
                     @Override
                     public void onSuccess(List<PreloadGameCenterData> response) {
