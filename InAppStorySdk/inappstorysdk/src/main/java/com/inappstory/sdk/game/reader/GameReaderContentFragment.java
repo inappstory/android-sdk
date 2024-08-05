@@ -289,6 +289,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
             @Override
             public void use(@NonNull InAppStoryManager manager) throws Exception {
+                if (manager.utilModulesHolder == null) return;
                 IFilePicker filePicker = manager.utilModulesHolder.getFilePicker();
                 filePicker.setPickerSettings(data);
                 filePicker.show(

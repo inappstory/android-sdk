@@ -158,7 +158,8 @@ public class GameMainFragment extends Fragment
         InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
             @Override
             public void use(@NonNull InAppStoryManager manager) throws Exception {
-                manager.utilModulesHolder.getFilePicker().permissionResult(requestCode, permissions, grantResults);
+                if (manager.utilModulesHolder != null)
+                    manager.utilModulesHolder.getFilePicker().permissionResult(requestCode, permissions, grantResults);
             }
         });
         useContentFragment(new FragmentAction<GameReaderContentFragment>() {

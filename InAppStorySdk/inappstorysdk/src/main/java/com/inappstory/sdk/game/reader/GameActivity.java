@@ -67,8 +67,6 @@ public class GameActivity extends AppCompatActivity implements BaseGameReaderScr
     }
 
 
-
-
     private void setNavBarColor(String color) {
         if (color == null) return;
         getWindow().setNavigationBarColor(Color.parseColor(color));
@@ -120,7 +118,8 @@ public class GameActivity extends AppCompatActivity implements BaseGameReaderScr
     @Override
     public void onBackPressed() {
         InAppStoryManager manager = InAppStoryManager.getInstance();
-        if (manager != null && manager.utilModulesHolder.getFilePicker().onBackPressed()) return;
+        if (manager != null && manager.utilModulesHolder != null && manager.utilModulesHolder.getFilePicker().onBackPressed())
+            return;
         if (!useContentFragment(
                 new FragmentAction<GameReaderContentFragment>() {
                     @Override
@@ -200,7 +199,8 @@ public class GameActivity extends AppCompatActivity implements BaseGameReaderScr
         InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
             @Override
             public void use(@NonNull InAppStoryManager manager) throws Exception {
-                manager.utilModulesHolder.getFilePicker().permissionResult(requestCode, permissions, grantResults);
+                if (manager.utilModulesHolder != null)
+                    manager.utilModulesHolder.getFilePicker().permissionResult(requestCode, permissions, grantResults);
             }
         });
         useContentFragment(new FragmentAction<GameReaderContentFragment>() {

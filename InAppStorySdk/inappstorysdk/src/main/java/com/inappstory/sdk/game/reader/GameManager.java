@@ -337,7 +337,7 @@ public class GameManager {
 
     boolean hasFilePicker() {
         InAppStoryManager manager = InAppStoryManager.getInstance();
-        return (manager != null && manager.utilModulesHolder.hasFilePickerModule());
+        return (manager != null && manager.utilModulesHolder != null && manager.utilModulesHolder.hasFilePickerModule());
     }
 
     void shareData(String id, String data) {

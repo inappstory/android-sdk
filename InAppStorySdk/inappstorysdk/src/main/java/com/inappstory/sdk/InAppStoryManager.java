@@ -838,14 +838,17 @@ public class InAppStoryManager {
                 INSTANCE = new InAppStoryManager(context);
             }
         }
-        INSTANCE.utilModulesHolder = UtilModulesHolder.INSTANCE;
+        UtilModulesHolder localHolder = UtilModulesHolder.INSTANCE;
+        if (localHolder != null) {
+            localHolder.setJsonParser(new IJsonParser() {
+                @Override
+                public <T> T fromJson(String json, Class<T> typeOfT) {
+                    return JsonParser.fromJson(json, typeOfT);
+                }
+            });
+            INSTANCE.utilModulesHolder = localHolder;
+        }
         INSTANCE.createServiceThread(context);
-        INSTANCE.utilModulesHolder.setJsonParser(new IJsonParser() {
-            @Override
-            public <T> T fromJson(String json, Class<T> typeOfT) {
-                return JsonParser.fromJson(json, typeOfT);
-            }
-        });
     }
 
     public static void initSDK(@NonNull Context context) {

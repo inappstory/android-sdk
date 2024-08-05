@@ -22,16 +22,18 @@ public class LottieLoader implements IGameReaderLoaderView {
 
     public LottieLoader(Context context, @NonNull File source) {
         InAppStoryManager manager = InAppStoryManager.getInstance();
-        if (manager != null)
+        if (manager != null && manager.utilModulesHolder != null) {
             lottieView = manager.utilModulesHolder.getLottieViewGenerator().getView(context);
-        lottieView.setSource(new Pair<>(
-                StringsUtils.md5(source.getAbsolutePath()),
-                source
-        ));
+            lottieView.setSource(new Pair<>(
+                    StringsUtils.md5(source.getAbsolutePath()),
+                    source
+            ));
+        }
     }
 
     @Override
     public void launchFinalAnimation() {
+        if (lottieView == null) return;
         if (lottieView.isLooped()) return;
         setProgressInternal(1f);
     }
@@ -67,6 +69,7 @@ public class LottieLoader implements IGameReaderLoaderView {
     @Override
     public void setProgress(int progress, int max) {
         Log.e("LottieLoader", progress + " " + max + " " + lottieView.isLooped());
+        if (lottieView == null) return;
         if (lottieView.isLooped()) {
             if (!launchedLoopedAnimation) {
                 launchedLoopedAnimation = true;
