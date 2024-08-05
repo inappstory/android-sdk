@@ -680,12 +680,10 @@ public class ReaderPageFragment extends Fragment {
         } else {
             InAppStoryManager.closeStoryReader();
         }
-
+        viewCreated();
     }
 
-    @Override
-    public void onStart() {
-        super.onStart();
+    private void viewCreated() {
         boolean storyIsEmpty = (story == null);
         InAppStoryService service = InAppStoryService.getInstance();
         if (service != null && service.getStoryDownloadManager() != null && storyIsEmpty) {
@@ -697,6 +695,12 @@ public class ReaderPageFragment extends Fragment {
         if (story != null) {
             loadIfStoryIsNotNull();
         }
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+
     }
 
     @Override
