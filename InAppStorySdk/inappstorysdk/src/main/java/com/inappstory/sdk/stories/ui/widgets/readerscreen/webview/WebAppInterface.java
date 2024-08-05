@@ -199,6 +199,13 @@ public class WebAppInterface {
 
 
     @JavascriptInterface
+    public void storyUnfreezeUI() {
+        manager.unfreezeUI();
+        logMethod("");
+    }
+
+
+    @JavascriptInterface
     public void storySendData(String data) {
         manager.storySendData(data);
         logMethod(data);

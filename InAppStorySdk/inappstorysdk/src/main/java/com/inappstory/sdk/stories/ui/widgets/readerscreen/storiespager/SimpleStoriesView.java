@@ -20,6 +20,7 @@ public interface SimpleStoriesView {
     float getCoordinate();
     void shareComplete(String stId, boolean success);
     void freezeUI();
+    void unfreezeUI();
     void setStoriesView(SimpleStoriesView storiesView);
     void checkIfClientIsSet();
     void screenshotShare(String id);
