@@ -7,3 +7,7 @@
 -keep class com.inappstory.sdk.** {
  *;
 }
+
+-keep class com.inappstory.iasutilsconnector.** {
+ *;
+}
