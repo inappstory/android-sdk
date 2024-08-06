@@ -838,8 +838,8 @@ public class InAppStoryManager {
                 INSTANCE = new InAppStoryManager(context);
             }
         }
-        UtilModulesHolder localHolder = UtilModulesHolder.INSTANCE;
-        if (localHolder != null) {
+        try {
+            UtilModulesHolder localHolder = UtilModulesHolder.INSTANCE;
             localHolder.setJsonParser(new IJsonParser() {
                 @Override
                 public <T> T fromJson(String json, Class<T> typeOfT) {
@@ -847,6 +847,8 @@ public class InAppStoryManager {
                 }
             });
             INSTANCE.utilModulesHolder = localHolder;
+        } catch (Exception e) {
+            showDLog("IAS_Utils", "internal dependency problem: " + e.getMessage());
         }
         INSTANCE.createServiceThread(context);
     }
