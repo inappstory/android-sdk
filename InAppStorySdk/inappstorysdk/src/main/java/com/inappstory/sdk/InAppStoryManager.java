@@ -848,7 +848,7 @@ public class InAppStoryManager {
             });
             INSTANCE.utilModulesHolder = localHolder;
         } catch (Exception e) {
-            showDLog("IAS_Utils", "internal dependency problem: " + e.getMessage());
+            showDLog("IAS_Utils", "Internal dependency problem: " + e.getMessage());
         }
         INSTANCE.createServiceThread(context);
     }
