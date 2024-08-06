@@ -1,6 +1,16 @@
 Change Log
 ==========
 
+Version *1.19.1 (911)*
+----------------------------
+* Added: logs for utils repository
+* Fixed: sharing bugs
+* Fixed: additional check utils repository
+* Fixed: unfreezeUI
+* Fixed: move reader page creation
+* Fixed: additional check utils repository
+* Updated: extends consumer-rules.pro
+
 Version *1.19.0 (910)*
 ----------------------------
 * check story id and index in statistic click events
