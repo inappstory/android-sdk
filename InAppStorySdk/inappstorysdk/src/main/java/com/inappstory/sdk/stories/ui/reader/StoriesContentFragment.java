@@ -21,7 +21,7 @@ import androidx.viewpager.widget.ViewPager;
 
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
-import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryReaderScreen;
+import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryScreen;
 import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.inner.share.InnerShareFilesPrepare;
 import com.inappstory.sdk.inner.share.ShareFilesPrepareCallback;
@@ -41,7 +41,7 @@ import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.statistic.GetOldStatisticManagerCallback;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.ui.OverlapFragmentObserver;
-import com.inappstory.sdk.stories.ui.ScreensManager;
+import com.inappstory.sdk.core.ui.screens.ScreensManager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPagerAdapter;
 import com.inappstory.sdk.stories.utils.IASBackPressHandler;
@@ -73,12 +73,12 @@ public class StoriesContentFragment extends Fragment
 
     }
 
-    public BaseStoryReaderScreen getStoriesReader() {
-        BaseStoryReaderScreen screen = null;
-        if (getActivity() instanceof BaseStoryReaderScreen) {
-            screen = (BaseStoryReaderScreen) getActivity();
-        } else if (getParentFragment() instanceof BaseStoryReaderScreen) {
-            screen = (BaseStoryReaderScreen) getParentFragment();
+    public BaseStoryScreen getStoriesReader() {
+        BaseStoryScreen screen = null;
+        if (getActivity() instanceof BaseStoryScreen) {
+            screen = (BaseStoryScreen) getActivity();
+        } else if (getParentFragment() instanceof BaseStoryScreen) {
+            screen = (BaseStoryScreen) getParentFragment();
         }
         return screen;
     }
@@ -169,7 +169,7 @@ public class StoriesContentFragment extends Fragment
                         }
 
                     },
-                    getStoriesReader().getStoriesReaderFragmentManager(),
+                    getStoriesReader().getScreenFragmentManager(),
                     this,
                     slidePayload,
                     storyId,
@@ -218,7 +218,7 @@ public class StoriesContentFragment extends Fragment
                 type
         );
         if (st == null) return;
-        BaseStoryReaderScreen screen = getStoriesReader();
+        BaseStoryScreen screen = getStoriesReader();
         if (screen != null) screen.disableDrag(st.disableClose || st.hasSwipeUp());
     }
 
@@ -236,7 +236,7 @@ public class StoriesContentFragment extends Fragment
     private StoriesReaderLaunchData launchData;
 
     public void forceFinish() {
-        BaseStoryReaderScreen readerScreen = getStoriesReader();
+        BaseStoryScreen readerScreen = getStoriesReader();
         if (readerScreen != null)
             readerScreen.forceFinish();
     }

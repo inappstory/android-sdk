@@ -15,7 +15,7 @@ import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.UseManagerInstanceCallback;
 import com.inappstory.sdk.UseServiceInstanceCallback;
-import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryReaderScreen;
+import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryScreen;
 import com.inappstory.sdk.game.cache.SessionAssetsIsReadyCallback;
 import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.stories.api.models.Story;
@@ -28,7 +28,7 @@ import com.inappstory.sdk.stories.statistic.GetOldStatisticManagerCallback;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
-import com.inappstory.sdk.stories.ui.ScreensManager;
+import com.inappstory.sdk.core.ui.screens.ScreensManager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPageManager;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 
@@ -149,7 +149,7 @@ public class ReaderManager {
             final ShowGoodsCallback showGoodsCallback,
             SlideData slideData
     ) {
-        BaseStoryReaderScreen screen = getReaderScreen();
+        BaseStoryScreen screen = getReaderScreen();
         if (screen == null) {
             showGoodsCallback.goodsIsCanceled(widgetId);
             Log.d("InAppStory_SDK_error", "Something wrong");
@@ -160,7 +160,7 @@ public class ReaderManager {
             Log.d("InAppStory_SDK_error", "Empty goods widget");
             return;
         }
-        FragmentManager fragmentManager = screen.getStoriesReaderFragmentManager();
+        FragmentManager fragmentManager = screen.getScreenFragmentManager();
         if (fragmentManager.findFragmentById(R.id.ias_outer_top_container) != null) {
             showGoodsCallback.goodsIsCanceled(widgetId);
             Log.d("InAppStory_SDK_error", "Top container is busy");
@@ -521,7 +521,7 @@ public class ReaderManager {
         firstStoryId = -1;
     }
 
-    public BaseStoryReaderScreen getReaderScreen() {
+    public BaseStoryScreen getReaderScreen() {
         return parentFragment.getStoriesReader();
     }
 

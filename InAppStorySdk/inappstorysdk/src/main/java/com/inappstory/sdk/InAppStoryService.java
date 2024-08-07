@@ -49,12 +49,13 @@ import com.inappstory.sdk.stories.cache.vod.VODCacheItemPart;
 import com.inappstory.sdk.stories.cache.vod.VODCacheJournalItem;
 import com.inappstory.sdk.stories.exceptions.ExceptionManager;
 import com.inappstory.sdk.stories.managers.TimerManager;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.GameReaderLaunchData;
 import com.inappstory.sdk.stories.stackfeed.StackStoryObserver;
 import com.inappstory.sdk.stories.statistic.GetOldStatisticManagerCallback;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
-import com.inappstory.sdk.stories.ui.ScreensManager;
+import com.inappstory.sdk.core.ui.screens.ScreensManager;
 import com.inappstory.sdk.stories.ui.list.FavoriteImage;
 import com.inappstory.sdk.stories.ui.list.ListManager;
 import com.inappstory.sdk.stories.utils.SessionHolder;
@@ -557,6 +558,11 @@ public class InAppStoryService {
             String observableId,
             final boolean openedFromStoriesReader
     ) {
+        GameReaderLaunchData gameReaderLaunchData = new GameReaderLaunchData(
+                gameId,
+                observableId,
+                data != null ? data.slideData : null
+        );
         ScreensManager.getInstance().openGameReader(
                 context,
                 data,

@@ -51,7 +51,7 @@ import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.UseManagerInstanceCallback;
 import com.inappstory.sdk.UseServiceInstanceCallback;
-import com.inappstory.sdk.core.ui.screens.gamereader.BaseGameReaderScreen;
+import com.inappstory.sdk.core.ui.screens.gamereader.BaseGameScreen;
 import com.inappstory.sdk.game.cache.FilePathAndContent;
 import com.inappstory.sdk.game.cache.GameCacheManager;
 import com.inappstory.sdk.game.cache.SetGameLoggerCallback;
@@ -88,7 +88,7 @@ import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.game.GameLoadedError;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.ui.OverlapFragmentObserver;
-import com.inappstory.sdk.stories.ui.ScreensManager;
+import com.inappstory.sdk.core.ui.screens.ScreensManager;
 import com.inappstory.sdk.stories.ui.views.IASWebView;
 import com.inappstory.sdk.stories.ui.views.IASWebViewClient;
 import com.inappstory.sdk.stories.utils.AudioModes;
@@ -139,12 +139,12 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
 
     GameManager manager;
 
-    public BaseGameReaderScreen getBaseGameReader() {
-        BaseGameReaderScreen screen = null;
-        if (getActivity() instanceof BaseGameReaderScreen) {
-            screen = (BaseGameReaderScreen) getActivity();
-        } else if (getParentFragment() instanceof BaseGameReaderScreen) {
-            screen = (BaseGameReaderScreen) getParentFragment();
+    public BaseGameScreen getBaseGameReader() {
+        BaseGameScreen screen = null;
+        if (getActivity() instanceof BaseGameScreen) {
+            screen = (BaseGameScreen) getActivity();
+        } else if (getParentFragment() instanceof BaseGameScreen) {
+            screen = (BaseGameScreen) getParentFragment();
         }
         return screen;
     }
@@ -291,7 +291,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                 filePicker.setPickerSettings(data);
                 filePicker.show(
                         getContext(),
-                        getBaseGameReader().getGameReaderFragmentManager(),
+                        getBaseGameReader().getScreenFragmentManager(),
                         R.id.ias_file_picker_container,
                         new OnFilesChooseCallback() {
                             @Override
@@ -370,7 +370,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
 
                         }
                     },
-                    getBaseGameReader().getGameReaderFragmentManager(),
+                    getBaseGameReader().getScreenFragmentManager(),
                     this,
                     null,
                     storyId,

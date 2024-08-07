@@ -26,7 +26,7 @@ import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.UseServiceInstanceCallback;
-import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryReaderScreen;
+import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryScreen;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderAppearanceSettings;
@@ -38,7 +38,7 @@ import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.statistic.GetOldStatisticManagerCallback;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
-import com.inappstory.sdk.stories.ui.ScreensManager;
+import com.inappstory.sdk.core.ui.screens.ScreensManager;
 import com.inappstory.sdk.stories.ui.reader.animations.DisabledReaderAnimation;
 import com.inappstory.sdk.stories.ui.reader.animations.FadeReaderAnimation;
 import com.inappstory.sdk.stories.ui.reader.animations.HandlerAnimatorListenerAdapter;
@@ -54,7 +54,7 @@ import com.inappstory.sdk.stories.utils.Sizes;
 
 
 public abstract class StoriesMainFragment extends Fragment implements
-        BaseStoryReaderScreen,
+        BaseStoryScreen,
         IASBackPressHandler,
         ShowGoodsCallback {
 
@@ -79,7 +79,7 @@ public abstract class StoriesMainFragment extends Fragment implements
     private ElasticDragDismissFrameLayout.SystemChromeFader chromeFader;
 
     @Override
-    public void resumeReader() {
+    public void resumeScreen() {
         useContentFragment(new StoriesContentFragmentAction() {
             @Override
             public void invoke(StoriesContentFragment fragment) {
@@ -90,7 +90,7 @@ public abstract class StoriesMainFragment extends Fragment implements
     }
 
     @Override
-    public void pauseReader() {
+    public void pauseScreen() {
         useContentFragment(new StoriesContentFragmentAction() {
             @Override
             public void invoke(StoriesContentFragment fragment) {
@@ -223,7 +223,7 @@ public abstract class StoriesMainFragment extends Fragment implements
     }
 
     private void clearDialog() {
-        FragmentManager parentFragmentManager = getStoriesReaderFragmentManager();
+        FragmentManager parentFragmentManager = getScreenFragmentManager();
         Fragment oldFragment =
                 parentFragmentManager.findFragmentById(R.id.ias_dialog_container);
         if (oldFragment != null) {
@@ -233,7 +233,7 @@ public abstract class StoriesMainFragment extends Fragment implements
     }
 
     private void clearOverlap() {
-        FragmentManager parentFragmentManager = getStoriesReaderFragmentManager();
+        FragmentManager parentFragmentManager = getScreenFragmentManager();
         Fragment oldFragment =
                 parentFragmentManager.findFragmentById(R.id.ias_outer_top_container);
         if (oldFragment != null) {
@@ -428,7 +428,7 @@ public abstract class StoriesMainFragment extends Fragment implements
     boolean isAnimation = false;
 
     @Override
-    public void closeStoryReader(int action) {
+    public void closeWithAction(int action) {
         if (closing) return;
         closing = true;
         InAppStoryService service = InAppStoryService.getInstance();
@@ -680,7 +680,7 @@ public abstract class StoriesMainFragment extends Fragment implements
     }
 
     @Override
-    public FragmentManager getStoriesReaderFragmentManager() {
+    public FragmentManager getScreenFragmentManager() {
         return getChildFragmentManager();
     }
 
@@ -697,7 +697,7 @@ public abstract class StoriesMainFragment extends Fragment implements
                 return true;
             }
         }
-        closeStoryReader(-1);
+        closeWithAction(-1);
         return true;
     }
 

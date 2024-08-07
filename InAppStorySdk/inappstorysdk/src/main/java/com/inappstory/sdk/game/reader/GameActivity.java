@@ -15,15 +15,15 @@ import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.UseManagerInstanceCallback;
-import com.inappstory.sdk.core.ui.screens.gamereader.BaseGameReaderScreen;
+import com.inappstory.sdk.core.ui.screens.gamereader.BaseGameScreen;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.GameReaderAppearanceSettings;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.GameReaderLaunchData;
-import com.inappstory.sdk.stories.ui.ScreensManager;
+import com.inappstory.sdk.core.ui.screens.ScreensManager;
 import com.inappstory.sdk.stories.ui.utils.FragmentAction;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 
 
-public class GameActivity extends AppCompatActivity implements BaseGameReaderScreen {
+public class GameActivity extends AppCompatActivity implements BaseGameScreen {
 
 
     @Override
@@ -87,7 +87,7 @@ public class GameActivity extends AppCompatActivity implements BaseGameReaderScr
                         gameReaderLaunchData
                 );
                 fragment.setArguments(args);
-                FragmentManager fragmentManager = getGameReaderFragmentManager();
+                FragmentManager fragmentManager = getScreenFragmentManager();
                 FragmentTransaction t = fragmentManager.beginTransaction()
                         .replace(R.id.stories_fragments_layout, fragment, fragmentTag);
                 t.addToBackStack(fragmentTag);
@@ -104,7 +104,7 @@ public class GameActivity extends AppCompatActivity implements BaseGameReaderScr
     private boolean useContentFragment(FragmentAction<GameReaderContentFragment> action) {
         if (action != null) {
             try {
-                Fragment fragmentById = getGameReaderFragmentManager().findFragmentByTag(fragmentTag);
+                Fragment fragmentById = getScreenFragmentManager().findFragmentByTag(fragmentTag);
                 if (fragmentById instanceof GameReaderContentFragment) {
                     action.invoke((GameReaderContentFragment) fragmentById);
                     return true;
@@ -170,7 +170,7 @@ public class GameActivity extends AppCompatActivity implements BaseGameReaderScr
 
 
     @Override
-    public void pause() {
+    public void pauseScreen() {
 
     }
 
@@ -217,7 +217,7 @@ public class GameActivity extends AppCompatActivity implements BaseGameReaderScr
     }
 
     @Override
-    public FragmentManager getGameReaderFragmentManager() {
+    public FragmentManager getScreenFragmentManager() {
         return getSupportFragmentManager();
     }
 }

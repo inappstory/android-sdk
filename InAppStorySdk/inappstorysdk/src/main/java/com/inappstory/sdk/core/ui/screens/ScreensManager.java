@@ -1,4 +1,4 @@
-package com.inappstory.sdk.stories.ui;
+package com.inappstory.sdk.core.ui.screens;
 
 import static java.util.UUID.randomUUID;
 
@@ -14,9 +14,12 @@ import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
-import com.inappstory.sdk.core.ui.screens.gamereader.BaseGameReaderScreen;
+import com.inappstory.sdk.core.ui.screens.gamereader.BaseGameScreen;
+import com.inappstory.sdk.core.ui.screens.gamereader.GameScreenHolder;
+import com.inappstory.sdk.core.ui.screens.inappmessagereader.IAMScreenHolder;
+import com.inappstory.sdk.core.ui.screens.outsideapi.CloseUgcReaderCallback;
+import com.inappstory.sdk.core.ui.screens.storyreader.StoryScreenHolder;
 import com.inappstory.sdk.game.reader.GameStoryData;
-import com.inappstory.sdk.core.ui.screens.inappmessagereader.BaseIAMReaderScreen;
 import com.inappstory.sdk.share.IASShareData;
 import com.inappstory.sdk.share.IShareCompleteListener;
 import com.inappstory.sdk.share.ShareListener;
@@ -30,9 +33,11 @@ import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderLau
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoryItemCoordinates;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
+import com.inappstory.sdk.stories.ui.GetBaseReaderScreenCallback;
+import com.inappstory.sdk.stories.ui.OverlapFragmentObserver;
 import com.inappstory.sdk.stories.ui.goods.GoodsWidgetFragment;
 import com.inappstory.sdk.stories.ui.reader.ActiveStoryItem;
-import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryReaderScreen;
+import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryScreen;
 import com.inappstory.sdk.stories.ui.reader.ForceCloseReaderCallback;
 import com.inappstory.sdk.stories.ui.reader.OverlapFragment;
 
@@ -44,17 +49,22 @@ public class ScreensManager {
 
     }
 
-    private static ScreensManager INSTANCE;
-    private static final Object lock = new Object();
+    private final static ScreensManager INSTANCE = new ScreensManager();
 
     public static ScreensManager getInstance() {
-        synchronized (lock) {
-            if (INSTANCE == null)
-                INSTANCE = new ScreensManager();
-            return INSTANCE;
-        }
+        return INSTANCE;
     }
 
+    private final ScreensHolder holder = new ScreensHolder();
+    private final ScreensLauncher launcher = new ScreensLauncher(holder);
+
+    public ScreensLauncher getLauncher() {
+        return launcher;
+    }
+
+    public ScreensHolder getHolder() {
+        return holder;
+    }
 
     public void forceCloseAllReaders(final ForceCloseReaderCallback callback) {
         new Handler(Looper.getMainLooper()).post(new Runnable() {
@@ -67,7 +77,7 @@ public class ScreensManager {
         });
     }
 
-    public void subscribeGameScreen(BaseGameReaderScreen screen) {
+    public void subscribeGameScreen(BaseGameScreen screen) {
         synchronized (gameReaderScreenLock) {
             if (currentGameScreen != null && currentGameScreen != screen) {
                 currentGameScreen.forceFinish();
@@ -79,18 +89,18 @@ public class ScreensManager {
     public void resumeStoriesReader() {
         synchronized (storiesReaderScreenLock) {
             if (currentStoriesReaderScreen != null)
-                currentStoriesReaderScreen.resumeReader();
+                currentStoriesReaderScreen.resumeScreen();
         }
     }
 
     public void pauseStoriesReader() {
         synchronized (storiesReaderScreenLock) {
             if (currentStoriesReaderScreen != null)
-                currentStoriesReaderScreen.pauseReader();
+                currentStoriesReaderScreen.pauseScreen();
         }
     }
 
-    public void unsubscribeGameScreen(BaseGameReaderScreen screen) {
+    public void unsubscribeGameScreen(BaseGameScreen screen) {
         synchronized (gameReaderScreenLock) {
             if (screen == currentGameScreen) {
                 currentGameScreen = null;
@@ -106,16 +116,16 @@ public class ScreensManager {
         this.tempShareStatus = tempShareStatus;
     }
 
-    private BaseStoryReaderScreen currentStoriesReaderScreen;
+    private BaseStoryScreen currentStoriesReaderScreen;
     private final Object storiesReaderScreenLock = new Object();
 
-    public void subscribeStoryReaderScreen(BaseStoryReaderScreen readerScreen) {
+    public void subscribeStoryReaderScreen(BaseStoryScreen readerScreen) {
         synchronized (storiesReaderScreenLock) {
             currentStoriesReaderScreen = readerScreen;
         }
     }
 
-    public void unsubscribeStoryReaderScreen(BaseStoryReaderScreen readerScreen) {
+    public void unsubscribeStoryReaderScreen(BaseStoryScreen readerScreen) {
         synchronized (storiesReaderScreenLock) {
             if (currentStoriesReaderScreen == readerScreen) {
                 currentStoriesReaderScreen = null;
@@ -123,20 +133,16 @@ public class ScreensManager {
         }
     }
 
-    public BaseStoryReaderScreen getCurrentStoriesReaderScreen() {
+    public BaseStoryScreen getCurrentStoriesReaderScreen() {
         synchronized (storiesReaderScreenLock) {
             return currentStoriesReaderScreen;
         }
     }
 
     public void useCurrentStoriesReaderScreen(GetBaseReaderScreenCallback callback) {
-        BaseStoryReaderScreen readerScreen = getCurrentStoriesReaderScreen();
+        BaseStoryScreen readerScreen = getCurrentStoriesReaderScreen();
         if (readerScreen != null) callback.get(readerScreen);
     }
-
-    private BaseIAMReaderScreen currentInAppMessageReaderScreen;
-
-
 
 
     private final Object gameReaderScreenLock = new Object();
@@ -147,9 +153,9 @@ public class ScreensManager {
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
-                BaseStoryReaderScreen readerScreen = getCurrentStoriesReaderScreen();
+                BaseStoryScreen readerScreen = getCurrentStoriesReaderScreen();
                 if (readerScreen != null)
-                    readerScreen.closeStoryReader(action);
+                    readerScreen.closeWithAction(action);
             }
         });
     }
@@ -158,7 +164,7 @@ public class ScreensManager {
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
-                BaseStoryReaderScreen readerScreen = getCurrentStoriesReaderScreen();
+                BaseStoryScreen readerScreen = getCurrentStoriesReaderScreen();
                 if (readerScreen != null) {
                     readerScreen.forceFinish();
                 }
@@ -178,7 +184,7 @@ public class ScreensManager {
         }
     }
 
-    private BaseGameReaderScreen currentGameScreen;
+    private BaseGameScreen currentGameScreen;
 
 
     public Boolean getTempShareStatus() {
@@ -213,9 +219,6 @@ public class ScreensManager {
         activeStoryItem = null;
     }
 
-    public interface CloseUgcReaderCallback {
-        void onClose();
-    }
 
     public CloseUgcReaderCallback ugcCloseCallback;
 
@@ -449,14 +452,14 @@ public class ScreensManager {
 
     public void showGoods(
             String skusString,
-            final BaseStoryReaderScreen readerScreen,
+            final BaseStoryScreen readerScreen,
             final String widgetId,
             final SlideData slideData
     ) {
         final String localTaskId;
         if (widgetId != null) localTaskId = widgetId;
         else localTaskId = randomUUID().toString();
-        final FragmentManager fragmentManager = readerScreen.getStoriesReaderFragmentManager();
+        final FragmentManager fragmentManager = readerScreen.getScreenFragmentManager();
         if (StatisticManager.getInstance() != null && slideData != null) {
             StatisticManager.getInstance().sendGoodsOpen(slideData.story.id,
                     slideData.index, widgetId, slideData.story.feed);

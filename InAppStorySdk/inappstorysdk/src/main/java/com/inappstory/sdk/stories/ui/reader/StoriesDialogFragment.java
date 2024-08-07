@@ -29,7 +29,7 @@ import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.UseServiceInstanceCallback;
-import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryReaderScreen;
+import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryScreen;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
@@ -41,13 +41,13 @@ import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.statistic.GetOldStatisticManagerCallback;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
-import com.inappstory.sdk.stories.ui.ScreensManager;
+import com.inappstory.sdk.core.ui.screens.ScreensManager;
 import com.inappstory.sdk.stories.ui.widgets.elasticview.ElasticDragDismissFrameLayout;
 import com.inappstory.sdk.stories.utils.IASBackPressHandler;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 import com.inappstory.sdk.stories.utils.Sizes;
 
-public class StoriesDialogFragment extends DialogFragment implements IASBackPressHandler, BaseStoryReaderScreen {
+public class StoriesDialogFragment extends DialogFragment implements IASBackPressHandler, BaseStoryScreen {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -134,7 +134,7 @@ public class StoriesDialogFragment extends DialogFragment implements IASBackPres
     }
 
     @Override
-    public void closeStoryReader(int action) {
+    public void closeWithAction(int action) {
         InAppStoryService.getInstance().getListReaderConnector().readerIsClosed();
         dismissAllowingStateLoss();
     }
@@ -167,12 +167,12 @@ public class StoriesDialogFragment extends DialogFragment implements IASBackPres
     }
 
     @Override
-    public void pauseReader() {
+    public void pauseScreen() {
 
     }
 
     @Override
-    public void resumeReader() {
+    public void resumeScreen() {
 
     }
 
@@ -191,7 +191,7 @@ public class StoriesDialogFragment extends DialogFragment implements IASBackPres
     }
 
     @Override
-    public FragmentManager getStoriesReaderFragmentManager() {
+    public FragmentManager getScreenFragmentManager() {
         return getChildFragmentManager();
     }
 

@@ -32,6 +32,6 @@ public class StoriesMainTabletFragment extends StoriesMainFragment {
 
     @Override
     void outsideClick() {
-        closeStoryReader(-1);
+        closeWithAction(-1);
     }
 }

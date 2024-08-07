@@ -1,19 +1,18 @@
-package com.inappstory.sdk.core.ui.screens.gamereader;
+package com.inappstory.sdk.core.ui.screens;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.FragmentManager;
 
-import com.inappstory.sdk.share.IShareCompleteListener;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 
-public interface BaseGameReaderScreen {
+public interface BaseScreen {
     void forceFinish();
 
     void close();
 
-    void pause();
+    void pauseScreen();
 
-    void resume();
+    void resumeScreen();
 
     void setShowGoodsCallback(ShowGoodsCallback callback);
 
@@ -23,5 +22,5 @@ public interface BaseGameReaderScreen {
             @NonNull int[] grantResults
     );
 
-    FragmentManager getGameReaderFragmentManager();
+    FragmentManager getScreenFragmentManager();
 }

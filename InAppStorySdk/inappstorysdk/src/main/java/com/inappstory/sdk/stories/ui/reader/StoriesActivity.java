@@ -29,7 +29,7 @@ import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.UseServiceInstanceCallback;
-import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryReaderScreen;
+import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryScreen;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderAppearanceSettings;
@@ -41,7 +41,7 @@ import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.statistic.GetOldStatisticManagerCallback;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
-import com.inappstory.sdk.stories.ui.ScreensManager;
+import com.inappstory.sdk.core.ui.screens.ScreensManager;
 import com.inappstory.sdk.stories.ui.reader.animations.DisabledReaderAnimation;
 import com.inappstory.sdk.stories.ui.reader.animations.FadeReaderAnimation;
 import com.inappstory.sdk.stories.ui.reader.animations.HandlerAnimatorListenerAdapter;
@@ -55,7 +55,7 @@ import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 import com.inappstory.sdk.stories.utils.Sizes;
 
 
-public class StoriesActivity extends AppCompatActivity implements BaseStoryReaderScreen, ShowGoodsCallback {
+public class StoriesActivity extends AppCompatActivity implements BaseStoryScreen, ShowGoodsCallback {
 
     public boolean pauseDestroyed = false;
 
@@ -304,12 +304,12 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryReade
     }
 
     @Override
-    public void pauseReader() {
+    public void pauseScreen() {
 
     }
 
     @Override
-    public void resumeReader() {
+    public void resumeScreen() {
 
     }
 
@@ -326,7 +326,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryReade
     }
 
     @Override
-    public FragmentManager getStoriesReaderFragmentManager() {
+    public FragmentManager getScreenFragmentManager() {
         return getSupportFragmentManager();
     }
 
@@ -530,19 +530,19 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryReade
 
     @Override
     public void onBackPressed() {
-        Fragment fragmentById = getStoriesReaderFragmentManager().findFragmentById(R.id.ias_outer_top_container);
+        Fragment fragmentById = getScreenFragmentManager().findFragmentById(R.id.ias_outer_top_container);
         if (fragmentById instanceof IASBackPressHandler && ((IASBackPressHandler) fragmentById).onBackPressed()) {
             return;
         }
-        fragmentById = getStoriesReaderFragmentManager().findFragmentById(R.id.ias_dialog_container);
+        fragmentById = getScreenFragmentManager().findFragmentById(R.id.ias_dialog_container);
         if (fragmentById instanceof IASBackPressHandler && ((IASBackPressHandler) fragmentById).onBackPressed()) {
             return;
         }
-        closeStoryReader(-1);
+        closeWithAction(-1);
     }
 
     @Override
-    public void closeStoryReader(int action) {
+    public void closeWithAction(int action) {
         if (closing) return;
         closing = true;
         InAppStoryService service = InAppStoryService.getInstance();

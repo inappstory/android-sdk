@@ -5,7 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 
 import com.inappstory.sdk.share.IShareCompleteListener;
-import com.inappstory.sdk.stories.ui.ScreensManager;
+import com.inappstory.sdk.core.ui.screens.ScreensManager;
 
 public class StoryShareBroadcastReceiver extends BroadcastReceiver {
     @Override

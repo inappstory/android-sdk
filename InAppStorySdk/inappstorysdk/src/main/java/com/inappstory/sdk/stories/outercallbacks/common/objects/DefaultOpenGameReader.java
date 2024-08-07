@@ -7,17 +7,9 @@ import android.os.Build;
 import android.os.Bundle;
 import android.view.Window;
 
-import androidx.fragment.app.FragmentActivity;
-import androidx.lifecycle.MutableLiveData;
-
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.game.reader.GameActivity;
-import com.inappstory.sdk.stories.events.GameCompleteEvent;
-import com.inappstory.sdk.stories.ui.ScreensManager;
-import com.inappstory.sdk.stories.ui.reader.StoriesActivity;
-import com.inappstory.sdk.stories.ui.reader.StoriesDialogFragment;
 import com.inappstory.sdk.stories.utils.ActivityUtils;
-import com.inappstory.sdk.stories.utils.Sizes;
 
 
 public class DefaultOpenGameReader implements IOpenGameReader {

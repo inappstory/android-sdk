@@ -76,8 +76,8 @@ import com.inappstory.sdk.stories.stackfeed.StackStoryUpdatedCallback;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 import com.inappstory.sdk.stories.ui.GetBaseReaderScreenCallback;
-import com.inappstory.sdk.stories.ui.ScreensManager;
-import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryReaderScreen;
+import com.inappstory.sdk.core.ui.screens.ScreensManager;
+import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryScreen;
 import com.inappstory.sdk.stories.ui.reader.ForceCloseReaderCallback;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
 import com.inappstory.sdk.stories.utils.SessionManager;
@@ -947,7 +947,7 @@ public class InAppStoryManager {
                                 ScreensManager.getInstance().useCurrentStoriesReaderScreen(
                                         new GetBaseReaderScreenCallback() {
                                             @Override
-                                            public void get(BaseStoryReaderScreen readerScreen) {
+                                            public void get(BaseStoryScreen readerScreen) {
                                                 readerScreen.removeAllStoriesFromFavorite();
                                             }
                                         }
@@ -997,7 +997,7 @@ public class InAppStoryManager {
                                 ScreensManager.getInstance().useCurrentStoriesReaderScreen(
                                         new GetBaseReaderScreenCallback() {
                                             @Override
-                                            public void get(BaseStoryReaderScreen readerScreen) {
+                                            public void get(BaseStoryScreen readerScreen) {
                                                 readerScreen.removeStoryFromFavorite(storyId);
                                             }
                                         }
