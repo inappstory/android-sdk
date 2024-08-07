@@ -188,16 +188,22 @@ public class InAppStoryService {
 
     public HashMap<String, List<Integer>> listStoriesIds = new HashMap<>();
 
+    private final Object userIdLock = new Object();
+
     public String getUserId() {
-        if (userId == null) {
-            InAppStoryManager manager = InAppStoryManager.getInstance();
-            if (manager != null) return manager.getUserId();
+        synchronized (userIdLock) {
+            if (userId == null) {
+                InAppStoryManager manager = InAppStoryManager.getInstance();
+                if (manager != null) return manager.getUserId();
+            }
+            return userId;
         }
-        return userId;
     }
 
     public void setUserId(String userId) {
-        this.userId = userId;
+        synchronized (userIdLock) {
+            this.userId = userId;
+        }
     }
 
     private String userId;
@@ -284,11 +290,6 @@ public class InAppStoryService {
     public boolean statV1Disallowed() {
         return !sessionHolder.allowStatV1() || !InAppStoryManager.getInstance().isSendStatistic();
     }
-
-    public InAppStoryService(String userId) {
-        this.userId = userId;
-    }
-
 
     public StoryDownloadManager getStoryDownloadManager() {
         if (storyDownloadManager == null) return fakeStoryDownloadManager;
