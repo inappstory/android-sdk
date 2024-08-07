@@ -5,6 +5,7 @@ import android.util.Pair;
 
 import androidx.annotation.WorkerThread;
 
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.network.callbacks.Callback;
 import com.inappstory.sdk.network.dummy.DummyApiInterface;
 import com.inappstory.sdk.network.models.Request;
@@ -71,6 +72,9 @@ public class NetworkClient {
     public static final String NC_IS_UNAVAILABLE = "Network client is unavailable";
     @WorkerThread
     public Response execute(Request request, Callback callback) {
+        if (request != null) {
+            InAppStoryManager.showDLog("AdditionalLog", request.toString());
+        }
         Response response;
         String requestId = UUID.randomUUID().toString();
         try {
@@ -118,6 +122,8 @@ public class NetworkClient {
                 callback.onFailure(response);
             }
         } catch (Exception e) {
+            e.printStackTrace();
+            InAppStoryManager.showDLog("AdditionalLog", e.getMessage());
             response = new Response.Builder().code(-4).errorBody(e.getMessage()).build();
             response.logId = requestId;
             if (callback != null) {

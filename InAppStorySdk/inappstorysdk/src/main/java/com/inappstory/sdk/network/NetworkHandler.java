@@ -54,6 +54,7 @@ public final class NetworkHandler implements InvocationHandler {
     public void setSessionId(String sessionId) {
         synchronized (sessionLock) {
             this.sessionId = sessionId;
+            InAppStoryManager.showDLog("AdditionalLog", "Session is set");
         }
     }
 
@@ -74,6 +75,7 @@ public final class NetworkHandler implements InvocationHandler {
             Request.Builder builder,
             boolean isFormEncoded
     ) throws Exception {
+        InAppStoryManager.showDLog("AdditionalLog", "Generate request, path: " + path);
         HashMap<String, String> vars = new HashMap<>();
         ArrayList<Pair<String, String>> varList = new ArrayList<>();
         String bodyRaw = "";
@@ -140,6 +142,7 @@ public final class NetworkHandler implements InvocationHandler {
                     .body(body).build();
             return request;
         } catch (Exception e) {
+            InAppStoryManager.showDLog("AdditionalLog", "Request is null, reason: " + e.getMessage());
             return null;
         }
     }
@@ -169,7 +172,10 @@ public final class NetworkHandler implements InvocationHandler {
             synchronized (sessionLock) {
                 if (sessionId != null && !sessionId.isEmpty()) {
                     resHeaders.add(new AuthSessionIdHeader(sessionId));
-                } else throw new RuntimeException("Wrong session");
+                } else {
+                    InAppStoryManager.showDLog("AdditionalLog", "Session not set");
+                    throw new RuntimeException("Wrong session");
+                }
             }
         }
         if (!excludeList.contains(HeadersKeys.CONTENT_TYPE))

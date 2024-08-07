@@ -169,4 +169,11 @@ public class Request<T> {
             return new Request(this);
         }
     }
+
+    @Override
+    public String toString() {
+        return "Request{" +
+                "url='" + url + '\'' +
+                '}';
+    }
 }
