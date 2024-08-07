@@ -160,8 +160,6 @@ public class SessionManager {
                     callbacks.add(callback);
                 return;
             }
-        }
-        synchronized (openProcessLock) {
             callbacks.clear();
             openProcess = true;
             if (callback != null)
@@ -237,11 +235,17 @@ public class SessionManager {
                     public void onSuccess(SessionResponse response) {
                         InAppStoryService service = InAppStoryService.getInstance();
                         if (service == null) return;
-                        saveSession(response);
+                        if (response == null ||
+                                response.session == null ||
+                                response.session.id == null ||
+                                response.session.id.isEmpty()
+                        )
+                            return;
                         String serviceUserId = service.getUserId();
-                        String currentSession = service.getSession().getSessionId();
+                        String currentSession = response.session.id;
                         if (initialUserId == null) {
                             if (serviceUserId != null) {
+                                InAppStoryManager.showDLog("AdditionalLog", "closeSession: initial user is null, new user not null");
                                 closeSession(
                                         false,
                                         true,
@@ -254,6 +258,7 @@ public class SessionManager {
                             }
                         } else {
                             if (!initialUserId.equals(serviceUserId)) {
+                                InAppStoryManager.showDLog("AdditionalLog", "closeSession: initial user " + initialUserId + ", new user " + serviceUserId);
                                 closeSession(
                                         false,
                                         true,
@@ -265,6 +270,7 @@ public class SessionManager {
                                 return;
                             }
                         }
+                        saveSession(response);
                         networkClient.setSessionId(currentSession);
                         service.getListReaderConnector().sessionIsOpened(currentSession);
                         ProfilingManager.getInstance().setReady(sessionOpenUID);

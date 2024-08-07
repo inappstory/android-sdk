@@ -331,6 +331,7 @@ public class InAppStoryService {
         InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
             @Override
             public void use(@NonNull InAppStoryManager manager) throws Exception {
+                InAppStoryManager.showDLog("AdditionalLog", "closeSession: logout");
                 SessionManager.getInstance().closeSession(
                         true,
                         false,

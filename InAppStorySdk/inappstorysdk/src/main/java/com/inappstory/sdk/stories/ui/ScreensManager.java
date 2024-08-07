@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 
+import androidx.annotation.MainThread;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
@@ -149,18 +150,14 @@ public class ScreensManager {
         });
     }
 
+    @MainThread
     public void forceCloseStoryReader(final ForceCloseReaderCallback callback) {
-        new Handler(Looper.getMainLooper()).post(new Runnable() {
-            @Override
-            public void run() {
-                BaseReaderScreen readerScreen = getCurrentStoriesReaderScreen();
-                if (readerScreen != null) {
-                    readerScreen.forceFinish();
-                }
-                if (callback != null)
-                    callback.onComplete();
-            }
-        });
+        BaseReaderScreen readerScreen = getCurrentStoriesReaderScreen();
+        if (readerScreen != null) {
+            readerScreen.forceFinish();
+        }
+        if (callback != null)
+            callback.onComplete();
     }
 
     public boolean isStoryReaderOpened() {
@@ -214,6 +211,7 @@ public class ScreensManager {
 
     public CloseUgcReaderCallback ugcCloseCallback;
 
+    @MainThread
     public void closeUGCEditor() {
         if (ugcCloseCallback != null) ugcCloseCallback.onClose();
     }
@@ -229,9 +227,9 @@ public class ScreensManager {
                 }
             }
         });
-
     }
 
+    @MainThread
     public void forceFinishGameReader() {
         synchronized (gameReaderScreenLock) {
             if (currentGameScreen != null) {

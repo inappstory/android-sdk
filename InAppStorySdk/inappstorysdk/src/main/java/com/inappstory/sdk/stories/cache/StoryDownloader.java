@@ -540,6 +540,7 @@ class StoryDownloader {
         InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
         if (inAppStoryManager != null) {
             oldUserId = inAppStoryManager.getUserId();
+            InAppStoryManager.showDLog("AdditionalLog", "closeSession: StoryDownloader error424");
             SessionManager.getInstance().closeSession(
                     true,
                     false,

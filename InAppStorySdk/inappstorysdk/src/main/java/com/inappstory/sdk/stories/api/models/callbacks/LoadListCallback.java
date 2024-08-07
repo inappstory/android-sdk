@@ -43,6 +43,7 @@ public abstract class LoadListCallback extends NetworkCallback<List<Story>> {
         }
         InAppStoryService service = InAppStoryService.getInstance();
         if (service != null) {
+            InAppStoryManager.showDLog("AdditionalLog", "closeSession: LoadList error424");
             SessionManager.getInstance().closeSession(
                     true,
                     false,

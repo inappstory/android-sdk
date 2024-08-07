@@ -1127,6 +1127,7 @@ public class InAppStoryManager {
                         new ForceCloseReaderCallback() {
                             @Override
                             public void onComplete() {
+                                showDLog("AdditionalLog", "closeSession: setUserId");
                                 SessionManager.getInstance().closeSession(
                                         sendStatistic,
                                         true,
@@ -1161,6 +1162,7 @@ public class InAppStoryManager {
                         new ForceCloseReaderCallback() {
                             @Override
                             public void onComplete() {
+                                showDLog("AdditionalLog", "closeSession: setLocale");
                                 SessionManager.getInstance().closeSession(
                                         sendStatistic,
                                         true,
