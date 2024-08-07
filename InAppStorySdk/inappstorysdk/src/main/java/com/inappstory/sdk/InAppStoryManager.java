@@ -135,6 +135,20 @@ public class InAppStoryManager {
         }
     }
 
+    private static boolean isInitialized() {
+        synchronized (initLock) {
+            return initialized;
+        }
+    }
+
+    private static void changeInitialize(boolean initStatus) {
+        synchronized (initLock) {
+            initialized = initStatus;
+        }
+    }
+
+    private static boolean initialized = false;
+
     public static void setInstance(InAppStoryManager manager) {
         synchronized (lock) {
             INSTANCE = manager;
@@ -1291,11 +1305,12 @@ public class InAppStoryManager {
         this.API_KEY = apiKey;
         this.TEST_KEY = testKey;
         this.userId = userId;
-        if (!isNull()) {
+        boolean isInitialized = isInitialized();
+        if (isInitialized) {
             localHandler.removeCallbacksAndMessages(null);
             localDestroy();
         }
-        setInstance(this);
+        changeInitialize(true);
         if (ApiSettings.getInstance().hostIsDifferent(cmsUrl)) {
             if (networkClient != null) {
                 networkClient.clear();
@@ -1314,8 +1329,10 @@ public class InAppStoryManager {
 
 
     private static final Object lock = new Object();
+    private static final Object initLock = new Object();
 
     public static void logout() {
+        InAppStoryManager.showDLog("AdditionalLog", "closeSession: logout");
         InAppStoryService.useInstance(new UseServiceInstanceCallback() {
             @Override
             public void use(@NonNull final InAppStoryService inAppStoryService) throws Exception {
