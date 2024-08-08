@@ -3,11 +3,24 @@ package com.inappstory.sdk.core.ui.screens;
 import android.os.Handler;
 import android.os.Looper;
 
+import androidx.annotation.NonNull;
+
 import com.inappstory.sdk.stories.ui.reader.ForceCloseReaderCallback;
 
-public abstract class AbstractScreenHolder<T extends BaseScreen> implements IScreenHolder<T> {
+public abstract class AbstractScreenHolder<T extends BaseScreen, K> implements IScreenHolder<T, K> {
     T currentScreen;
+    K lastOpenedData;
     protected final Object screenLock = new Object();
+
+    @Override
+    public boolean isOpened(@NonNull K data) {
+        return lastOpenedData != null && lastOpenedData.equals(data);
+    }
+
+    @Override
+    public void lastOpenedData(K data) {
+        this.lastOpenedData = data;
+    }
 
     @Override
     public boolean isOpened() {

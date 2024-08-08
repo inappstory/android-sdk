@@ -306,19 +306,6 @@ public class ScreensManager {
         if (service == null) return;
         synchronized (gameReaderScreenLock) {
             if (currentGameScreen != null) {
-                closeGameReader();
-                new Handler().postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        openGameReader(
-                                context,
-                                data,
-                                gameId,
-                                observableId,
-                                openedFromStoriesReader
-                        );
-                    }
-                }, 500);
                 return;
             }
         }

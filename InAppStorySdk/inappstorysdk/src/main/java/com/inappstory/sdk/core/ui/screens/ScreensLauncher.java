@@ -37,22 +37,16 @@ public class ScreensLauncher implements IScreensLauncher {
 
     @Override
     public void openScreen(Context context, LaunchScreenStrategy strategy) {
-        final IOpenReader openReader;
-        final IScreenHolder screenHolder;
         switch (strategy.getType()) {
             case GAME:
-                openReader = openGameReader;
-                screenHolder = holder.gameScreenHolder;
+                strategy.launch(context, openGameReader, holder.gameScreenHolder);
                 break;
             case IN_APP_MESSAGE:
-                openReader = openInAppMessageReader;
-                screenHolder = holder.IAMScreenHolder;
+                strategy.launch(context, openInAppMessageReader, holder.IAMScreenHolder);
                 break;
             default:
-                openReader = openStoriesReader;
-                screenHolder = holder.storyScreenHolder;
+                strategy.launch(context, openStoriesReader, holder.storyScreenHolder);
                 break;
         }
-        strategy.launch(context, openReader, screenHolder);
     }
 }

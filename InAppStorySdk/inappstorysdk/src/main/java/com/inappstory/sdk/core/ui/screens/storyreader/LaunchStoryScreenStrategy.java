@@ -10,12 +10,19 @@ import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenReader;
 
 
 public class LaunchStoryScreenStrategy implements LaunchScreenStrategy {
+    LaunchStoryScreenData launchStoryScreenData;
 
+    public LaunchStoryScreenStrategy(LaunchStoryScreenData launchStoryScreenData) {
+        this.launchStoryScreenData = launchStoryScreenData;
+    }
 
     @Override
     public void launch(Context context, IOpenReader openReader, IScreenHolder screenHolder) {
         InAppStoryService service = InAppStoryService.getInstance();
         if (service == null || service.getSession().getSessionId().isEmpty()) return;
+        if (screenHolder.isOpened(launchStoryScreenData)) return;
+
+
     }
 
     @Override
