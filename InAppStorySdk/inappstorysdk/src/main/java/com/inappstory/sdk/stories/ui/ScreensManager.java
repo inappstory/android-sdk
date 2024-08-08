@@ -73,6 +73,9 @@ public class ScreensManager {
             }
             currentGameScreen = screen;
         }
+        synchronized (gameReaderScreenLock) {
+            gameOpenProcessLaunched = false;
+        }
     }
 
     public void resumeStoriesReader() {
@@ -286,29 +289,23 @@ public class ScreensManager {
         }
     }
 
+    private final Object gameOpenProcessLock = new Object();
+    private boolean gameOpenProcessLaunched = false;
 
     public void openGameReader(final Context context,
                                final GameStoryData data,
                                final String gameId,
                                final String observableId,
                                final boolean openedFromStoriesReader) {
+        synchronized (gameReaderScreenLock) {
+            if (gameOpenProcessLaunched) return;
+            gameOpenProcessLaunched = true;
+        }
         InAppStoryService service = InAppStoryService.getInstance();
         if (service == null) return;
         synchronized (gameReaderScreenLock) {
             if (currentGameScreen != null) {
-                closeGameReader();
-                new Handler().postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        openGameReader(
-                                context,
-                                data,
-                                gameId,
-                                observableId,
-                                openedFromStoriesReader
-                        );
-                    }
-                }, 500);
+                InAppStoryManager.showELog("GameReader", "Game reader already opened");
                 return;
             }
         }
