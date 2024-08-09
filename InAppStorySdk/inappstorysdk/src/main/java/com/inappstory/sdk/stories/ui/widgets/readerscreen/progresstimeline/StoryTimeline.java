@@ -64,6 +64,12 @@ public class StoryTimeline extends View {
         timelineManager.setHost(this);
     }
 
+    @Override
+    protected void onDetachedFromWindow() {
+        timelineManager.setHost(null);
+        super.onDetachedFromWindow();
+    }
+
     public void setParameters(StoryTimelineParameters parameters) {
         this.parameters = parameters;
         fillPaint = new Paint();

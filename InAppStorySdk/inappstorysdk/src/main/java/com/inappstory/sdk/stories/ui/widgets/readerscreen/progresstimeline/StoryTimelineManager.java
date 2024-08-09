@@ -22,6 +22,7 @@ public class StoryTimelineManager {
         this.currentIndex = currentIndex;
         this.timerStart = timerStart;
         this.timerDuration = timerDuration;
+        final StoryTimeline host = getHost();
         Runnable hostVisibility = new Runnable() {
             @Override
             public void run() {
@@ -63,16 +64,29 @@ public class StoryTimelineManager {
 
     public void setSlidesCount(int slidesCount) {
         this.slidesCount = slidesCount;
-        if (slidesCount <= 1) host.setVisibility(View.INVISIBLE);
-        else host.setVisibility(View.VISIBLE);
+        StoryTimeline host = getHost();
+        if (host != null) {
+            if (slidesCount <= 1) host.setVisibility(View.INVISIBLE);
+            else host.setVisibility(View.VISIBLE);
+        }
         setProgress(0);
     }
 
     private int slidesCount;
 
     public void setHost(StoryTimeline host) {
-        this.host = host;
+        synchronized (hostLock) {
+            this.host = host;
+        }
     }
+
+    private StoryTimeline getHost() {
+        synchronized (hostLock) {
+            return host;
+        }
+    }
+
+    private final Object hostLock = new Object();
 
     StoryTimeline host;
 
@@ -86,6 +100,7 @@ public class StoryTimelineManager {
     }
 
     private void setProgress(final float progress) {
+        final StoryTimeline host = getHost();
         if (host != null) {
             host.post(new Runnable() {
                 @Override
