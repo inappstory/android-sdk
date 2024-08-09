@@ -61,13 +61,15 @@ public class StoryTimeline extends View {
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
+        Log.e("StoryTimeline", "Attach " + this);
         timelineManager.setHost(this);
     }
 
     @Override
     protected void onDetachedFromWindow() {
-        timelineManager.setHost(null);
         super.onDetachedFromWindow();
+        Log.e("StoryTimeline", "Detach " + this);
+        timelineManager.setHost(null);
     }
 
     public void setParameters(StoryTimelineParameters parameters) {

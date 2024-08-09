@@ -46,7 +46,7 @@ import com.inappstory.sdk.stories.utils.IASBackPressHandler;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 import com.inappstory.sdk.stories.utils.Sizes;
 
-public class StoriesDialogFragment extends DialogFragment implements IASBackPressHandler, BaseReaderScreen {
+public class StoriesDialogFragment extends DialogFragment implements IASBackPressHandler, BaseReaderScreen, ShowGoodsCallback {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -330,4 +330,29 @@ public class StoriesDialogFragment extends DialogFragment implements IASBackPres
     }
 
 
+    @Override
+    public void goodsIsOpened() {
+        timerIsLocked();
+        if (currentGoodsCallback != null) {
+            currentGoodsCallback.goodsIsOpened();
+        }
+    }
+
+    @Override
+    public void goodsIsClosed(String widgetId) {
+        timerIsUnlocked();
+        if (currentGoodsCallback != null) {
+            currentGoodsCallback.goodsIsClosed(widgetId);
+        }
+        currentGoodsCallback = null;
+    }
+
+    @Override
+    public void goodsIsCanceled(String widgetId) {
+        timerIsUnlocked();
+        if (currentGoodsCallback != null) {
+            currentGoodsCallback.goodsIsCanceled(widgetId);
+        }
+        currentGoodsCallback = null;
+    }
 }
