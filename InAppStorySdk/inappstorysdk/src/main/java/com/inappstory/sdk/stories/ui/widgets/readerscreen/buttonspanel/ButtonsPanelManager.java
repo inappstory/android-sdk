@@ -261,7 +261,11 @@ public class ButtonsPanelManager {
                             @Override
                             public void complete(String shareId, boolean shared) {
                                 ScreensManager.getInstance().shareCompleteListener(null);
-                                pageManager.shareComplete(shareId, shared);
+                                if (shareId == null && shared) {
+                                    pageManager.unlockShareButton();
+                                } else {
+                                    pageManager.shareComplete(shareId, shared);
+                                }
                             }
                         });
                         InnerShareData shareData = new InnerShareData();
