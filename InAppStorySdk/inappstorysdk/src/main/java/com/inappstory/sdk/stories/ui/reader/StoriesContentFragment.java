@@ -279,9 +279,8 @@ public class StoriesContentFragment extends Fragment
 
     @Override
     public void onPause() {
-        if (!timerIsLocked)
-            pause();
         super.onPause();
+        pause();
     }
 
     @Override

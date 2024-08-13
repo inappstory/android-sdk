@@ -54,6 +54,7 @@
                     android:maxLines="4"
                     android:elevation="9dp"
                     android:textSize="14sp"
+                    android:breakStrategy="simple"
                     android:layout_alignParentStart="true"
                     android:layout_alignParentBottom="true"
                     android:layout_margin="8dp"

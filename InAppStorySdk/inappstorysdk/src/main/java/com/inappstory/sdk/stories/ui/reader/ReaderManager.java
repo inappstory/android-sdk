@@ -596,6 +596,7 @@ public class ReaderManager {
         parentFragment.defaultUrlClick(url);
     }
 
+
     public void pauseCurrent(boolean withBackground) {
         ReaderPageManager currentSubscriber = getCurrentSubscriber();
         if (currentSubscriber != null) {

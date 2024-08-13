@@ -2,6 +2,7 @@ package com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager;
 
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 
@@ -272,11 +273,19 @@ public class ReaderPageManager {
         clearTimer();
     }
 
+    boolean backgroundPause = false;
+
+    public void setCurrentPauseToBackground() {
+        backgroundPause = true;
+    }
+
     public void pauseSlide(boolean withBackground) {
+        Log.e("PauseResume", "pauseSlide " +storyId + " " + slideIndex + " " + withBackground + " " + isPaused + " " + backgroundPause);
         if (checkIfManagersIsNull()) return;
         if (!withBackground && isPaused) return;
         isPaused = true;
         if (withBackground) {
+            backgroundPause = true;
             timerManager.pauseTimerAndRefreshStat();
         }
         webViewManager.pauseStory();
@@ -285,10 +294,13 @@ public class ReaderPageManager {
     boolean isPaused;
 
     public void resumeSlide(boolean withBackground) {
+        Log.e("PauseResume", "resumeSlide " +storyId + " " + slideIndex + " " + withBackground + " " + isPaused + " " + backgroundPause);
         if (checkIfManagersIsNull()) return;
         if (!isPaused) return;
+        if (!withBackground && backgroundPause) return;
         isPaused = false;
         if (withBackground) {
+            backgroundPause = false;
             timerManager.resumeTimerAndRefreshStat();
         }
         webViewManager.resumeStory();
