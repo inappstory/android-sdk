@@ -670,7 +670,13 @@ public class StoriesViewManager {
 
     public void changeIndex(int index) {
         Log.e("changeIndex", index + "");
-        pageManager.openSlideByIndex(index);
+        pageManager.openSlideByIndex(index, false);
+    }
+
+
+    public void changeIndexWithStoryNavigation(int index) {
+        Log.e("changeIndex", index + "");
+        pageManager.openSlideByIndex(index, true);
     }
 
     public void slideLoadError(int index) {

@@ -69,7 +69,7 @@ public class WebAppInterface {
         if (manager.storyId != id) {
             manager.showSingleStory(id, index);
         } else if (manager.index != index) {
-            manager.changeIndex(index);
+            manager.changeIndexWithStoryNavigation(index);
         }
     }
 

@@ -216,23 +216,27 @@ public class ReaderManager {
         if (pageManager != null) pageManager.removeStoryFromFavorite();
     }
 
+    public void addLinkOpenStatistic(final int storyId, final int slideIndex) {
+        if (storyType == Story.StoryType.COMMON)
+            OldStatisticManager.useInstance(getSessionId(), new GetOldStatisticManagerCallback() {
+                @Override
+                public void get(@NonNull OldStatisticManager manager) {
+                    manager.addLinkOpenStatistic(storyId, slideIndex);
+                }
+            });
+    }
+
     public void showSingleStory(final int storyId, final int slideIndex) {
         InAppStoryService.useInstance(new UseServiceInstanceCallback() {
             @Override
             public void use(@NonNull final InAppStoryService service) throws Exception {
-                if (storyType == Story.StoryType.COMMON)
-                    OldStatisticManager.useInstance(getSessionId(), new GetOldStatisticManagerCallback() {
-                        @Override
-                        public void get(@NonNull OldStatisticManager manager) {
-                            manager.addLinkOpenStatistic(storyId, slideIndex);
-                        }
-                    });
+                addLinkOpenStatistic(ReaderManager.this.currentStoryId, ReaderManager.this.currentSlideIndex);
                 if (storiesIds.contains(storyId)) {
                     new Handler(Looper.getMainLooper()).post(new Runnable() {
                         @Override
                         public void run() {
                             Story.StoryType type = Story.StoryType.COMMON;
-                            Story st = service.getStoryDownloadManager()
+                            final Story st = service.getStoryDownloadManager()
                                     .getStoryById(storyId, type);
                             if (st != null) {
                                 if (st.getSlidesCount() <= slideIndex) {

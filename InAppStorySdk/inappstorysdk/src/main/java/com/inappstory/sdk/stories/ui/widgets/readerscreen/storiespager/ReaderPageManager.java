@@ -43,6 +43,7 @@ public class ReaderPageManager {
 
     public void unlockShareButton() {
         buttonsPanelManager.unlockShareButton();
+
     }
 
     public void removeStoryFromFavorite() {
@@ -315,12 +316,15 @@ public class ReaderPageManager {
         webViewManager.loadStory(story, slideIndex);
     }
 
-    public void openSlideByIndex(int index) {
+    public void openSlideByIndex(int index, boolean withStoryNavigation) {
         Story story = InAppStoryService.getInstance().getStoryDownloadManager()
                 .getStoryById(storyId, getStoryType());
         if (index < 0) index = 0;
         if (story == null) return;
         if (story.getSlidesCount() <= index) index = 0;
+        if (slideIndex != index && withStoryNavigation) {
+            parentManager.addLinkOpenStatistic(storyId, slideIndex);
+        }
         story.lastIndex = index;
         if (slideIndex != index) {
             slideIndex = index;
