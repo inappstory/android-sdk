@@ -41,7 +41,7 @@ public class UGCListItem extends BaseStoryListItem {
         RoundedCornerLayout cv = v.findViewById(R.id.inner_cv);
         cv.setRadius(Math.max(manager.csListItemRadius(itemView.getContext()) - Sizes.dpToPxExt(4, itemView.getContext()), 0));
         cv.setBackgroundColor(Color.TRANSPARENT);
-        View outerLayout = v.findViewById(R.id.outerLayout);
+        View outerLayout = v.findViewById(R.id.container);
         if (manager.getRealHeight(itemView.getContext()) != null) {
             outerLayout.getLayoutParams().height = manager.getRealHeight(itemView.getContext());
         }

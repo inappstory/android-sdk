@@ -6,7 +6,7 @@
 
     <RelativeLayout
         android:layout_width="120dp"
-        android:id="@+id/outerLayout"
+        android:id="@+id/container"
         android:layout_height="120dp">
         <com.inappstory.sdk.imageloader.RoundedCornerLayout
             android:layout_width="match_parent"
