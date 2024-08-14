@@ -1,6 +1,19 @@
 Change Log
 ==========
-
+  
+Version *1.19.2 (912)*
+----------------------------
+* Updated: forbid to open new game reader if another was opened
+* Updated: userId change with synchronization
+* Updated: default story cell text break strategy
+* Fixed: sharing bugs
+* Fixed: check InAppStoryManager initialization status
+* Fixed: goods widget for tablets
+* Fixed: memory leak from timeline
+* Fixed: statistic for story navigation
+* Fixed: memory leak from timeline
+* Fixed: UGC cell ratio
+  
 Version *1.19.1 (911)*
 ----------------------------
 * Added: logs for utils repository
