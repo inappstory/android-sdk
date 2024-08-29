@@ -42,57 +42,63 @@ public class StoryCoverUseCase extends GetCacheFileUseCase<Void> {
     public Void getFile() {
         downloadLog.generateRequestLog(url);
         Log.e("ScenarioDownload", "UniqueKey: " + uniqueKey);
-        DownloadFileState fileState = getCache().get(uniqueKey);
-        if (fileState == null || fileState.downloadedSize != fileState.totalSize) {
-                Log.e("ScenarioDownload", "Download: " + uniqueKey + " Url: " + url);
-                downloadLog.sendRequestLog();
-                downloadLog.generateResponseLog(false, filePath);
-                filesDownloadManager.useFastDownloader(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            FinishDownloadFileCallback callback = new FinishDownloadFileCallback() {
-                                @Override
-                                public void finish(DownloadFileState fileState) {
-                                    downloadLog.sendResponseLog();
-                                    if (fileState == null || fileState.downloadedSize != fileState.totalSize) {
-                                        getStoryCoverCallback.error();
-                                        return;
-                                    }
-                                    Log.e("ScenarioDownload", "Downloaded: " + uniqueKey + " Url: " + url);
-                                    CacheJournalItem cacheJournalItem = generateCacheItem();
-                                    cacheJournalItem.setSize(fileState.totalSize);
-                                    cacheJournalItem.setDownloadedSize(fileState.totalSize);
-                                    try {
-                                        getCache().put(cacheJournalItem);
-                                    } catch (IOException e) {
+        filesDownloadManager.useLocalFilesThread(new Runnable() {
+            @Override
+            public void run() {
+                DownloadFileState fileState = getCache().get(uniqueKey);
+                if (fileState == null || fileState.downloadedSize != fileState.totalSize) {
+                    Log.e("ScenarioDownload", "Download: " + uniqueKey + " Url: " + url);
+                    downloadLog.sendRequestLog();
+                    downloadLog.generateResponseLog(false, filePath);
+                    filesDownloadManager.useFastDownloader(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                FinishDownloadFileCallback callback = new FinishDownloadFileCallback() {
+                                    @Override
+                                    public void finish(DownloadFileState fileState) {
+                                        downloadLog.sendResponseLog();
+                                        if (fileState == null || fileState.downloadedSize != fileState.totalSize) {
+                                            getStoryCoverCallback.error();
+                                            return;
+                                        }
+                                        Log.e("ScenarioDownload", "Downloaded: " + uniqueKey + " Url: " + url);
+                                        CacheJournalItem cacheJournalItem = generateCacheItem();
+                                        cacheJournalItem.setSize(fileState.totalSize);
+                                        cacheJournalItem.setDownloadedSize(fileState.totalSize);
+                                        try {
+                                            getCache().put(cacheJournalItem);
+                                        } catch (IOException e) {
 
-                                        getStoryCoverCallback.error();
+                                            getStoryCoverCallback.error();
+                                        }
+                                        getStoryCoverCallback.success(filePath);
                                     }
-                                    getStoryCoverCallback.success(filePath);
-                                }
-                            };
-                            Downloader.downloadFile(
-                                    url,
-                                    new File(filePath),
-                                    null,
-                                    downloadLog.responseLog,
-                                    null,
-                                    filesDownloadManager,
-                                    callback
-                            );
+                                };
+                                Downloader.downloadFile(
+                                        url,
+                                        new File(filePath),
+                                        null,
+                                        downloadLog.responseLog,
+                                        null,
+                                        filesDownloadManager,
+                                        callback
+                                );
 
-                        } catch (Exception e) {
-                            getStoryCoverCallback.error();
+                            } catch (Exception e) {
+                                getStoryCoverCallback.error();
+                            }
                         }
-                    }
-                });
-        } else {
-            Log.e("ScenarioDownload", "Cached: " + uniqueKey);
-            downloadLog.generateResponseLog(true, filePath);
-            downloadLog.sendRequestResponseLog();
-            getStoryCoverCallback.success(filePath);
-        }
+                    });
+                } else {
+                    Log.e("ScenarioDownload", "Cached: " + uniqueKey);
+                    downloadLog.generateResponseLog(true, filePath);
+                    downloadLog.sendRequestResponseLog();
+                    getStoryCoverCallback.success(filePath);
+                }
+            }
+        });
+
         return null;
     }
 

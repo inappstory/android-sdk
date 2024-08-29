@@ -31,6 +31,7 @@ public class SessionHolder implements ISessionHolder {
     private final HashMap<String, SessionAsset> allObjects = new HashMap<>();
 
     private final Object cacheLock = new Object();
+    private final Object sessionAssetIsReadyLock = new Object();
 
     private HashSet<SessionAssetsIsReadyCallback> assetsIsReadyCallbacks = new HashSet<>();
 
@@ -90,7 +91,9 @@ public class SessionHolder implements ISessionHolder {
 
     @Override
     public List<SessionAsset> getSessionAssets() {
-        return new ArrayList<>(allObjects.values());
+        synchronized (cacheLock) {
+            return new ArrayList<>(allObjects.values());
+        }
     }
 
     @Override
@@ -153,28 +156,30 @@ public class SessionHolder implements ISessionHolder {
 
     @Override
     public void addSessionAssetsIsReadyCallback(SessionAssetsIsReadyCallback callback) {
-        synchronized (cacheLock) {
+        synchronized (sessionAssetIsReadyLock) {
             assetsIsReadyCallbacks.add(callback);
         }
     }
 
     @Override
     public void removeSessionAssetsIsReadyCallback(SessionAssetsIsReadyCallback callback) {
-        synchronized (cacheLock) {
+        synchronized (sessionAssetIsReadyLock) {
             assetsIsReadyCallbacks.remove(callback);
         }
     }
 
     @Override
     public boolean checkIfSessionAssetsIsReady() {
-        synchronized (cacheLock) {
+        synchronized (sessionAssetIsReadyLock) {
             return assetsIsReady;
         }
     }
 
     @Override
     public void assetsIsCleared() {
-        this.assetsIsReady = false;
+        synchronized (sessionAssetIsReadyLock) {
+            this.assetsIsReady = false;
+        }
     }
 
     private boolean assetsIsReady = false;
@@ -182,31 +187,32 @@ public class SessionHolder implements ISessionHolder {
     @Override
     public boolean checkIfSessionAssetsIsReady(FilesDownloadManager filesDownloadManager) {
         final boolean[] cachesIsReady = {true};
+        HashMap<String, SessionAsset> localCacheObjects = new HashMap<>();
         synchronized (cacheLock) {
-            for (String key : cacheObjects.keySet()) {
-                if (!cachesIsReady[0]) return false;
-                SessionAsset asset = cacheObjects.get(key);
-                if (asset == null) return false;
-                new SessionAssetLocalUseCase(
-                        filesDownloadManager,
-                        new UseCaseCallback<File>() {
-                            @Override
-                            public void onError(String message) {
-                                cachesIsReady[0] = false;
-                            }
+            localCacheObjects.putAll(cacheObjects);
+        }
+        for (String key : localCacheObjects.keySet()) {
+            if (!cachesIsReady[0]) return false;
+            SessionAsset asset = localCacheObjects.get(key);
+            if (asset == null) return false;
+            new SessionAssetLocalUseCase(
+                    filesDownloadManager,
+                    new UseCaseCallback<File>() {
+                        @Override
+                        public void onError(String message) {
+                            cachesIsReady[0] = false;
+                        }
 
-                            @Override
-                            public void onSuccess(File result) {
-                            }
-                        },
-                        asset
-                ).getFile();
-            }
-
+                        @Override
+                        public void onSuccess(File result) {
+                        }
+                    },
+                    asset
+            ).getFile();
         }
         if (cachesIsReady[0]) {
             Set<SessionAssetsIsReadyCallback> temp = new HashSet<>();
-            synchronized (cacheLock) {
+            synchronized (sessionAssetIsReadyLock) {
                 temp.addAll(assetsIsReadyCallbacks);
                 assetsIsReadyCallbacks.clear();
             }
@@ -214,7 +220,7 @@ public class SessionHolder implements ISessionHolder {
                 callback.isReady();
             }
         }
-        synchronized (cacheLock) {
+        synchronized (sessionAssetIsReadyLock) {
             assetsIsReady = cachesIsReady[0];
         }
         return cachesIsReady[0];

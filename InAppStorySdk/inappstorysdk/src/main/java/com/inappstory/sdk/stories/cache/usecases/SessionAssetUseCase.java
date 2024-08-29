@@ -89,34 +89,43 @@ public class SessionAssetUseCase extends GetCacheFileUseCase<Void> {
 
     @Override
     public Void getFile() {
-        if (!getLocalFile())
-            downloadFile();
+        getLocalFile(new Runnable() {
+            @Override
+            public void run() {
+                downloadFile();
+            }
+        });
         return null;
     }
 
-    private boolean getLocalFile() {
-        downloadLog.generateRequestLog(cacheObject.url);
-        CacheJournalItem cached = getCache().getJournalItem(uniqueKey);
-        DownloadFileState fileState = null;
-        if (cached != null) {
-            if (Objects.equals(cached.getSha1(), cacheObject.sha1)) {
-                fileState = getCache().get(uniqueKey);
-            } else {
-                deleteCacheKey();
+    private void getLocalFile(final Runnable error) {
+        filesDownloadManager.useLocalFilesThread(new Runnable() {
+            @Override
+            public void run() {
+                downloadLog.generateRequestLog(cacheObject.url);
+                CacheJournalItem cached = getCache().getJournalItem(uniqueKey);
+                DownloadFileState fileState = null;
+                if (cached != null) {
+                    if (Objects.equals(cached.getSha1(), cacheObject.sha1)) {
+                        fileState = getCache().get(uniqueKey);
+                    } else {
+                        deleteCacheKey();
+                    }
+                }
+                if (fileState != null) {
+                    File file = fileState.getFullFile();
+                    if (file != null) {
+                        downloadLog.generateResponseLog(true, filePath);
+                        downloadLog.sendRequestResponseLog();
+                        useCaseCallback.onSuccess(file);
+                        return;
+                    } else {
+                        deleteCacheKey();
+                    }
+                }
+                error.run();
             }
-        }
-        if (fileState != null) {
-            File file = fileState.getFullFile();
-            if (file != null) {
-                downloadLog.generateResponseLog(true, filePath);
-                downloadLog.sendRequestResponseLog();
-                useCaseCallback.onSuccess(file);
-                return true;
-            } else {
-                deleteCacheKey();
-            }
-        }
-        return false;
+        });
     }
 
     @Override

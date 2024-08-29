@@ -80,4 +80,8 @@ public class FilesDownloadManager {
     public void useBundleDownloader(Runnable runnable) {
         downloadThreadsHolder.useBundleDownloader(runnable);
     }
+
+    public void useLocalFilesThread(Runnable runnable) {
+        downloadThreadsHolder.useLocalFilesThread(runnable);
+    }
 }
