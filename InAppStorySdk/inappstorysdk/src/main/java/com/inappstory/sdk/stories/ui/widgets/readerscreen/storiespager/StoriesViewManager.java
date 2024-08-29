@@ -10,6 +10,7 @@ import android.view.View;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.core.ui.screens.ShareProcessHandler;
 import com.inappstory.sdk.game.reader.GameStoryData;
 import com.inappstory.sdk.stories.api.models.UpdateTimelineData;
 import com.inappstory.sdk.stories.ui.widgets.LoadProgressBar;
@@ -425,11 +426,12 @@ public class StoriesViewManager {
 
     public void share(String id, String data) {
         InAppStoryService service = InAppStoryService.getInstance();
-        if (service == null || service.isShareProcess())
+        ShareProcessHandler shareProcessHandler = ShareProcessHandler.getInstance();
+        if (shareProcessHandler == null || service == null || shareProcessHandler.isShareProcess())
             return;
-        service.isShareProcess(true);
+        shareProcessHandler.isShareProcess(true);
         InnerShareData shareData = JsonParser.fromJson(data, InnerShareData.class);
-        ScreensManager.getInstance().shareCompleteListener(
+        shareProcessHandler.shareCompleteListener(
                 new IShareCompleteListener(id, storyId) {
                     @Override
                     public void complete(String shareId, boolean shared) {
@@ -446,7 +448,7 @@ public class StoriesViewManager {
                     shareData, storyId, index
             );
         } else {
-            service.isShareProcess(false);
+            shareProcessHandler.isShareProcess(false);
         }
 
     }

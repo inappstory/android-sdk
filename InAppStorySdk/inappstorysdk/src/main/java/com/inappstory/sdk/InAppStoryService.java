@@ -164,22 +164,6 @@ public class InAppStoryService {
         }
     }
 
-    private boolean sharingProcess = false;
-    private static final Object shareLock = new Object();
-
-    public boolean isShareProcess() {
-        synchronized (shareLock) {
-            return sharingProcess;
-        }
-    }
-
-    public void isShareProcess(boolean sharingProcess) {
-        synchronized (shareLock) {
-            this.sharingProcess = sharingProcess;
-        }
-    }
-
-
     public HashMap<String, List<Integer>> listStoriesIds = new HashMap<>();
 
     public String getUserId() {

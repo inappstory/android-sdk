@@ -17,6 +17,11 @@ import androidx.annotation.NonNull;
 
 import com.inappstory.iasutilsconnector.UtilModulesHolder;
 import com.inappstory.iasutilsconnector.json.IJsonParser;
+import com.inappstory.sdk.core.ui.screens.ScreensHolder;
+import com.inappstory.sdk.core.ui.screens.ScreensLauncher;
+import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenAppearance;
+import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenData;
+import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenStrategy;
 import com.inappstory.sdk.lrudiskcache.CacheSize;
 import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.JsonParser;
@@ -54,7 +59,6 @@ import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenGameReader;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenInAppMessageReader;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenStoriesReader;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderAppearanceSettings;
-import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderLaunchData;
 import com.inappstory.sdk.stories.outercallbacks.common.onboarding.OnboardingLoadCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.CallToActionCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickOnShareStoryCallback;
@@ -104,6 +108,19 @@ import java.util.Set;
 public class InAppStoryManager {
 
     private static InAppStoryManager INSTANCE;
+
+
+    private final ScreensHolder holder = new ScreensHolder();
+
+    public ScreensHolder getScreensHolder() {
+        return holder;
+    }
+
+    private final ScreensLauncher launcher = new ScreensLauncher(holder);
+
+    public ScreensLauncher getScreensLauncher() {
+        return launcher;
+    }
 
     public static NetworkClient getNetworkClient() {
         synchronized (lock) {
@@ -280,7 +297,12 @@ public class InAppStoryManager {
      * use to close story reader
      */
     public static void closeStoryReader() {
-        ScreensManager.getInstance().closeStoryReader(CloseStory.CUSTOM);
+        InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryManager manager) throws Exception {
+                manager.holder.getStoryScreenHolder().closeScreenWithAction(CloseStory.CUSTOM);
+            }
+        });
     }
 
     /**
@@ -289,19 +311,20 @@ public class InAppStoryManager {
      * @param forceClose               (forceClose) - close reader immediately without animation
      * @param forceCloseReaderCallback (forceCloseReaderCallback) - triggers after reader is closed and only if {@code forceClose == true}
      */
-    public static void closeStoryReader(boolean forceClose, ForceCloseReaderCallback forceCloseReaderCallback) {
-        if (forceClose) {
-            ScreensManager.getInstance().forceCloseAllReaders(forceCloseReaderCallback);
-        } else {
-            ScreensManager.getInstance().closeStoryReader(CloseStory.CUSTOM);
-        }
+    public static void closeStoryReader(final boolean forceClose, final ForceCloseReaderCallback forceCloseReaderCallback) {
+        InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryManager manager) throws Exception {
+                manager.closeStoryReaderInternal(forceClose, forceCloseReaderCallback);
+            }
+        });
     }
 
-    @Deprecated
-    public void openGame(String gameId) {
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service != null && context != null) {
-            service.openGameReaderWithGC(context, null, gameId, null, false);
+    private void closeStoryReaderInternal(boolean forceClose, ForceCloseReaderCallback forceCloseReaderCallback) {
+        if (forceClose) {
+            holder.forceCloseAllReaders(forceCloseReaderCallback);
+        } else {
+            holder.getStoryScreenHolder().closeScreenWithAction(CloseStory.CUSTOM);
         }
     }
 
@@ -609,10 +632,6 @@ public class InAppStoryManager {
         }
     }
 
-    private void forceCloseAndClearCache() {
-        clearCachedLists();
-        ScreensManager.getInstance().forceCloseAllReaders(null);
-    }
 
     private boolean setNewPlaceholder(String key, String value) {
         if (Objects.equals(placeholders.get(key), value)) return false;
@@ -1120,20 +1139,19 @@ public class InAppStoryManager {
                 localOpensKey = null;
                 final String oldUserId = InAppStoryManager.this.userId;
                 InAppStoryManager.this.userId = userId;
-                ScreensManager.getInstance().forceCloseAllReaders(
-                        new ForceCloseReaderCallback() {
-                            @Override
-                            public void onComplete() {
-                                SessionManager.getInstance().closeSession(
-                                        sendStatistic,
-                                        true,
-                                        getCurrentLocale(),
-                                        oldUserId,
-                                        sessionId
-                                );
-                            }
-                        }
-                );
+                holder.forceCloseAllReaders(new ForceCloseReaderCallback() {
+                    @Override
+                    public void onComplete() {
+                        SessionManager.getInstance().closeSession(
+                                sendStatistic,
+                                true,
+                                getCurrentLocale(),
+                                oldUserId,
+                                sessionId
+                        );
+                    }
+                });
+
                 if (inAppStoryService.getFavoriteImages() != null)
                     inAppStoryService.getFavoriteImages().clear();
                 inAppStoryService.getStoryDownloadManager().refreshLocals(Story.StoryType.COMMON);
@@ -1154,21 +1172,20 @@ public class InAppStoryManager {
                 clearCachedLists();
                 localOpensKey = null;
                 //
-                ScreensManager.getInstance().forceCloseAllReaders(
-                        new ForceCloseReaderCallback() {
-                            @Override
-                            public void onComplete() {
-                                SessionManager.getInstance().closeSession(
-                                        sendStatistic,
-                                        true,
-                                        getCurrentLocale(),
-                                        getUserId(),
-                                        sessionId
-                                );
-                                InAppStoryManager.this.currentLocale = locale;
-                            }
-                        }
-                );
+                holder.forceCloseAllReaders(new ForceCloseReaderCallback() {
+                    @Override
+                    public void onComplete() {
+                        SessionManager.getInstance().closeSession(
+                                sendStatistic,
+                                true,
+                                getCurrentLocale(),
+                                getUserId(),
+                                sessionId
+                        );
+                        InAppStoryManager.this.currentLocale = locale;
+                    }
+                });
+
                 if (inAppStoryService.getFavoriteImages() != null)
                     inAppStoryService.getFavoriteImages().clear();
                 inAppStoryService.getStoryDownloadManager().refreshLocals(Story.StoryType.COMMON);
@@ -1328,14 +1345,19 @@ public class InAppStoryManager {
                 inAppStoryService.listStoriesIds.clear();
                 inAppStoryService.getListSubscribers().clear();
                 inAppStoryService.getStoryDownloadManager().cleanTasks();
-                ScreensManager.getInstance().forceCloseAllReaders(
-                        new ForceCloseReaderCallback() {
-                            @Override
-                            public void onComplete() {
-                                //
-                                inAppStoryService.logout();
-                            }
-                        });
+                InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+                    @Override
+                    public void use(@NonNull InAppStoryManager manager) throws Exception {
+                        manager.holder.forceCloseAllReaders(
+                                new ForceCloseReaderCallback() {
+                                    @Override
+                                    public void onComplete() {
+                                        inAppStoryService.logout();
+                                    }
+                                }
+                        );
+                    }
+                });
             }
         });
     }
@@ -1427,7 +1449,7 @@ public class InAppStoryManager {
             storiesIds.add(story.id);
         }
         inAppStoryService.getStoryDownloadManager().uploadingAdditional(stories, storyType);
-        StoriesReaderLaunchData launchData = new StoriesReaderLaunchData(
+        LaunchStoryScreenData launchData = new LaunchStoryScreenData(
                 null,
                 feed,
                 sessionId,
@@ -1440,10 +1462,16 @@ public class InAppStoryManager {
                 Story.StoryType.COMMON,
                 null
         );
-        ScreensManager.getInstance().openStoriesReader(
+        launcher.openScreen(
                 outerContext,
-                manager,
-                launchData
+                new LaunchStoryScreenStrategy().
+                        launchStoryScreenData(launchData).
+                        readerAppearanceSettings(
+                                new LaunchStoryScreenAppearance(
+                                        AppearanceManager.checkOrCreateAppearanceManager(manager),
+                                        outerContext
+                                )
+                        )
         );
         if (CallbackManager.getInstance().getOnboardingLoadCallback() != null) {
             CallbackManager.getInstance().getOnboardingLoadCallback().onboardingLoad(response.size(), StringsUtils.getNonNull(feed));
@@ -1836,7 +1864,7 @@ public class InAppStoryManager {
 
         ArrayList<Integer> stIds = new ArrayList<>();
         stIds.add(story.id);
-        StoriesReaderLaunchData launchData = new StoriesReaderLaunchData(
+        LaunchStoryScreenData launchData = new LaunchStoryScreenData(
                 null,
                 null,
                 sessionId,
@@ -1849,10 +1877,16 @@ public class InAppStoryManager {
                 type,
                 null
         );
-        ScreensManager.getInstance().openStoriesReader(
+        launcher.openScreen(
                 context,
-                manager,
-                launchData
+                new LaunchStoryScreenStrategy().
+                        launchStoryScreenData(launchData).
+                        readerAppearanceSettings(
+                                new LaunchStoryScreenAppearance(
+                                        AppearanceManager.checkOrCreateAppearanceManager(manager),
+                                        context
+                                )
+                        )
         );
         localHandler.postDelayed(new Runnable() {
             @Override

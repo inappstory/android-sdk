@@ -12,8 +12,12 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.inappstory.sdk.AppearanceManager;
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenAppearance;
+import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenData;
+import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenStrategy;
 import com.inappstory.sdk.game.reader.GameStoryData;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
@@ -198,7 +202,9 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
     public void onItemClick(int ind, StoryItemCoordinates coordinates) {
 
         InAppStoryService service = InAppStoryService.getInstance();
+        InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
         if (service == null) return;
+        if (inAppStoryManager == null) return;
 
         if (System.currentTimeMillis() - clickTimestamp < 1500) {
             return;
@@ -253,7 +259,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
                 current.isOpened = true;
                 current.saveStoryOpened(Story.StoryType.COMMON);
                 service.getListReaderConnector().changeStory(current.id, listID, false);
-               // notifyItemChanged(ind);
+                // notifyItemChanged(ind);
                 return;
             } else if (current.deeplink != null) {
                 StatisticManager.getInstance().sendDeeplinkStory(current.id, current.deeplink, feedID);
@@ -319,7 +325,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
             if (story == null || !story.isHideInReader())
                 tempStories.add(storyId);
         }
-        StoriesReaderLaunchData launchData = new StoriesReaderLaunchData(
+        LaunchStoryScreenData launchData = new LaunchStoryScreenData(
                 listID,
                 feed,
                 sessionId,
@@ -332,10 +338,16 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
                 Story.StoryType.COMMON,
                 coordinates
         );
-        ScreensManager.getInstance().openStoriesReader(
+        inAppStoryManager.getScreensLauncher().openScreen(
                 context,
-                manager,
-                launchData
+                new LaunchStoryScreenStrategy().
+                        launchStoryScreenData(launchData).
+                        readerAppearanceSettings(
+                                new LaunchStoryScreenAppearance(
+                                        AppearanceManager.checkOrCreateAppearanceManager(manager),
+                                        context
+                                )
+                        )
         );
     }
 

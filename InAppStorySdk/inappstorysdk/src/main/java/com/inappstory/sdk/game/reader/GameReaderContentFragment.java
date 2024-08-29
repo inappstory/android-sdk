@@ -51,7 +51,9 @@ import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.UseManagerInstanceCallback;
 import com.inappstory.sdk.UseServiceInstanceCallback;
+import com.inappstory.sdk.core.ui.screens.ShareProcessHandler;
 import com.inappstory.sdk.core.ui.screens.gamereader.BaseGameScreen;
+import com.inappstory.sdk.core.ui.screens.gamereader.GameReaderOverlapContainerDataForShare;
 import com.inappstory.sdk.game.cache.FilePathAndContent;
 import com.inappstory.sdk.game.cache.GameCacheManager;
 import com.inappstory.sdk.game.cache.SetGameLoggerCallback;
@@ -88,7 +90,6 @@ import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.game.GameLoadedError;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.ui.OverlapFragmentObserver;
-import com.inappstory.sdk.core.ui.screens.ScreensManager;
 import com.inappstory.sdk.stories.ui.views.IASWebView;
 import com.inappstory.sdk.stories.ui.views.IASWebViewClient;
 import com.inappstory.sdk.stories.utils.AudioModes;
@@ -347,9 +348,12 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
     }
 
     private void shareCustomOrDefault(IASShareData shareObject) {
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service != null)
-            service.isShareProcess(false);
+        InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
+        if (inAppStoryManager == null) return;
+        ShareProcessHandler shareProcessHandler = inAppStoryManager
+                .getScreensHolder()
+                .getShareProcessHandler();
+        shareProcessHandler.isShareProcess(false);
         if (CallbackManager.getInstance().getShareCallback() != null) {
             int storyId = -1;
             int slideIndex = 0;
@@ -358,25 +362,31 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                 storyId = dataModel.slideData.story.id;
                 slideIndex = dataModel.slideData.index;
             }
-            ScreensManager.getInstance().openOverlapContainerForShare(
-                    new ShareListener() {
-                        @Override
-                        public void onSuccess(boolean shared) {
+            inAppStoryManager
+                    .getScreensHolder()
+                    .getStoryScreenHolder()
+                    .openOverlapContainer(
+                            new GameReaderOverlapContainerDataForShare()
+                                    .shareData(shareObject)
+                                    .slideIndex(slideIndex)
+                                    .storyId(storyId)
+                                    .shareListener(
+                                            new ShareListener() {
+                                                @Override
+                                                public void onSuccess(boolean shared) {
 
-                        }
+                                                }
 
-                        @Override
-                        public void onCancel() {
+                                                @Override
+                                                public void onCancel() {
 
-                        }
-                    },
-                    getBaseGameReader().getScreenFragmentManager(),
-                    this,
-                    null,
-                    storyId,
-                    slideIndex,
-                    shareObject
-            );
+                                                }
+                                            }
+                                    ),
+                            getBaseGameReader()
+                                    .getScreenFragmentManager(),
+                            this
+                    );
         } else {
             new IASShareManager().shareDefault(
                     StoryShareBroadcastReceiver.class,
@@ -567,6 +577,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
 
     void gameCompleted(String gameState, String link) {
         try {
+            InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
             if (manager != null && link != null)
                 manager.tapOnLink(link, getContext());
             GameStoryData dataModel = getStoryDataModel();
@@ -575,7 +586,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                 String observableUID = gameReaderLaunchData.getObservableUID();
                 if (observableUID != null) {
                     GameCompleteEventObserver observer =
-                            ScreensManager.getInstance().getGameObserver(observableUID);
+                            inAppStoryManager.getScreensHolder().getGameScreenHolder().getGameObserver(observableUID);
                     if (observer != null) {
                         observer.gameComplete(
                                 new GameCompleteEvent(
@@ -1202,7 +1213,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                         }
                     }
             ).get();
-       //     ImageLoader.getInstance().displayImage(splashFile.getAbsolutePath(), -1, loader);
+            //     ImageLoader.getInstance().displayImage(splashFile.getAbsolutePath(), -1, loader);
         }
     }
 
@@ -1248,10 +1259,12 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
+                ShareProcessHandler shareProcessHandler = ShareProcessHandler.getInstance();
+                if (shareProcessHandler == null) return;
                 boolean shared = false;
                 if (data.containsKey("shared")) shared = (boolean) data.get("shared");
                 IShareCompleteListener shareCompleteListener =
-                        ScreensManager.getInstance().shareCompleteListener();
+                        shareProcessHandler.shareCompleteListener();
                 if (shareCompleteListener != null) {
                     shareCompleteListener.complete(shared);
                 }
@@ -1259,7 +1272,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                     resumeGame();
                 shareViewIsShown = false;
 
-                ScreensManager.getInstance().clearShareIds();
+                shareProcessHandler.clearShareIds();
 
             }
         });

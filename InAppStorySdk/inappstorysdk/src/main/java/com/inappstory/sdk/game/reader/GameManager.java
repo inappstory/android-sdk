@@ -6,6 +6,7 @@ import android.media.AudioManager;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.core.ui.screens.ShareProcessHandler;
 import com.inappstory.sdk.game.reader.logger.AbstractGameLogger;
 import com.inappstory.sdk.game.reader.logger.GameLoggerLvl0;
 import com.inappstory.sdk.game.reader.logger.GameLoggerLvl1;
@@ -336,12 +337,12 @@ public class GameManager {
     }
 
     void shareData(String id, String data) {
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service == null || service.isShareProcess())
+        ShareProcessHandler shareProcessHandler = ShareProcessHandler.getInstance();
+        if (shareProcessHandler == null || shareProcessHandler.isShareProcess())
             return;
-        service.isShareProcess(true);
+        shareProcessHandler.isShareProcess(true);
         InnerShareData shareObj = JsonParser.fromJson(data, InnerShareData.class);
-        ScreensManager.getInstance().shareCompleteListener(
+        shareProcessHandler.shareCompleteListener(
                 new IShareCompleteListener(id, -1) {
                     @Override
                     public void complete(String shareId, boolean shared) {

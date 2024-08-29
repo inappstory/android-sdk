@@ -2,6 +2,7 @@ package com.inappstory.sdk.stories.ui.widgets.readerscreen.buttonspanel;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.core.ui.screens.ShareProcessHandler;
 import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
@@ -224,8 +225,10 @@ public class ButtonsPanelManager {
         if (networkClient == null) {
             return;
         }
-        if (inAppStoryService == null || inAppStoryService.isShareProcess())
+        if (inAppStoryService == null)
             return;
+        final ShareProcessHandler shareProcessHandler = ShareProcessHandler.getInstance();
+        if (shareProcessHandler == null || shareProcessHandler.isShareProcess()) return;
         final Story story = inAppStoryService.getStoryDownloadManager().getStoryById(storyId, pageManager.getStoryType());
         if (story == null) return;
         final int slideIndex = story.lastIndex;
@@ -242,7 +245,7 @@ public class ButtonsPanelManager {
             pageManager.screenshotShare();
             return;
         }
-        inAppStoryService.isShareProcess(true);
+        shareProcessHandler.isShareProcess(true);
         if (callback != null)
             callback.onClick();
         final String shareUID = ProfilingManager.getInstance().addTask("api_share");
@@ -255,7 +258,7 @@ public class ButtonsPanelManager {
                     @Override
                     public void onSuccess(ShareObject response) {
                         ProfilingManager.getInstance().setReady(shareUID);
-                        ScreensManager.getInstance().shareCompleteListener(new IShareCompleteListener(
+                        shareProcessHandler.shareCompleteListener(new IShareCompleteListener(
                                 null, storyId
                         ) {
                             @Override
@@ -275,8 +278,7 @@ public class ButtonsPanelManager {
                     public void errorDefault(String message) {
                         if (callback != null)
                             callback.onError();
-                        InAppStoryService service = InAppStoryService.getInstance();
-                        if (service != null) service.isShareProcess(false);
+                        shareProcessHandler.isShareProcess(false);
                     }
 
                     @Override

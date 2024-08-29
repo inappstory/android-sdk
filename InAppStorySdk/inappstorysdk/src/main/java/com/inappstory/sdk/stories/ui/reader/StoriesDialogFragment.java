@@ -26,8 +26,10 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.inappstory.sdk.AppearanceManager;
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.UseManagerInstanceCallback;
 import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryScreen;
 import com.inappstory.sdk.network.JsonParser;
@@ -104,7 +106,15 @@ public class StoriesDialogFragment extends DialogFragment implements IASBackPres
         }
         cleanReader();
         super.onDismiss(dialogInterface);
-        ScreensManager.getInstance().unsubscribeStoryReaderScreen(this);
+        InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryManager manager) throws Exception {
+                manager
+                        .getScreensHolder()
+                        .getStoryScreenHolder()
+                        .unsubscribeScreen(StoriesDialogFragment.this);
+            }
+        });
     }
 
     boolean cleaned = false;
@@ -271,7 +281,7 @@ public class StoriesDialogFragment extends DialogFragment implements IASBackPres
 
 
     public void changeStory(int index) {
-       // getArguments().putInt("index", index);
+        // getArguments().putInt("index", index);
     }
 
     Story.StoryType type = Story.StoryType.COMMON;

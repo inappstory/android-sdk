@@ -8,8 +8,12 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.AppearanceManager;
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.UseServiceInstanceCallback;
+import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenAppearance;
+import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenData;
+import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenStrategy;
 import com.inappstory.sdk.externalapi.StoryAPIData;
 import com.inappstory.sdk.externalapi.StoryFavoriteItemAPIData;
 import com.inappstory.sdk.externalapi.storylist.IASStoryListRequestData;
@@ -21,7 +25,6 @@ import com.inappstory.sdk.stories.api.models.callbacks.LoadStoriesCallback;
 import com.inappstory.sdk.stories.cache.Downloader;
 import com.inappstory.sdk.stories.cache.StoryDownloadManager;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
-import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderLaunchData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickAction;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
@@ -30,7 +33,6 @@ import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.statistic.GetOldStatisticManagerCallback;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
-import com.inappstory.sdk.core.ui.screens.ScreensManager;
 import com.inappstory.sdk.stories.ui.list.FavoriteImage;
 import com.inappstory.sdk.stories.utils.RunnableCallback;
 
@@ -98,6 +100,8 @@ public class InAppStoryAPISubscribersManager {
             final AppearanceManager appearanceManager
     ) {
         InAppStoryService service = InAppStoryService.getInstance();
+        InAppStoryManager manager = InAppStoryManager.getInstance();
+        if (manager == null) return;
         if (service == null) return;
         final Story currentStory = service.getStoryDownloadManager().getStoryById(storyId, Story.StoryType.COMMON);
         if (currentStory == null)
@@ -201,7 +205,7 @@ public class InAppStoryAPISubscribersManager {
                     j++;
                 }
             }
-            StoriesReaderLaunchData launchData = new StoriesReaderLaunchData(
+            LaunchStoryScreenData launchData = new LaunchStoryScreenData(
                     uniqueKey,
                     requestData.feed,
                     sessionId,
@@ -214,10 +218,15 @@ public class InAppStoryAPISubscribersManager {
                     Story.StoryType.COMMON,
                     null
             );
-            ScreensManager.getInstance().openStoriesReader(
-                    context,
-                    appearanceManager,
-                    launchData
+            manager.getScreensLauncher().openScreen(context,
+                    new LaunchStoryScreenStrategy().
+                            launchStoryScreenData(launchData).
+                            readerAppearanceSettings(
+                                    new LaunchStoryScreenAppearance(
+                                            AppearanceManager.checkOrCreateAppearanceManager(appearanceManager),
+                                            context
+                                    )
+                            )
             );
         }
     }

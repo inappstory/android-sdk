@@ -9,6 +9,8 @@ public interface IScreenHolder<T, K> {
     boolean isOpened(@NonNull K data);
     void lastOpenedData(K data);
     T getScreen();
+    void startLaunchProcess();
+    boolean isLaunchProcessStarted();
     void subscribeScreen(T screen);
     void unsubscribeScreen(T screen);
     void useCurrentReader(GetScreenCallback<T> callback);

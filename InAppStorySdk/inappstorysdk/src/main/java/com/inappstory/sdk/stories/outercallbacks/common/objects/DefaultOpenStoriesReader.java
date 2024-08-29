@@ -7,9 +7,12 @@ import android.os.Build;
 import android.os.Bundle;
 import android.view.Window;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.FragmentActivity;
 
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.UseManagerInstanceCallback;
 import com.inappstory.sdk.core.ui.screens.ScreensManager;
 import com.inappstory.sdk.stories.ui.reader.StoriesActivity;
 import com.inappstory.sdk.stories.ui.reader.StoriesDialogFragment;
@@ -38,13 +41,18 @@ public class DefaultOpenStoriesReader implements IOpenStoriesReader {
             }
         }
         if (Sizes.isTablet(context) && context instanceof FragmentActivity) {
-            StoriesDialogFragment storiesDialogFragment = new StoriesDialogFragment();
+            final StoriesDialogFragment storiesDialogFragment = new StoriesDialogFragment();
             storiesDialogFragment.setArguments(bundle);
             try {
                 storiesDialogFragment.show(
                         ((FragmentActivity) context).getSupportFragmentManager(),
                         "DialogFragment");
-                ScreensManager.getInstance().subscribeStoryReaderScreen(storiesDialogFragment);
+                InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+                    @Override
+                    public void use(@NonNull InAppStoryManager manager) throws Exception {
+                        manager.getScreensHolder().getStoryScreenHolder().subscribeScreen(storiesDialogFragment);
+                    }
+                });
             } catch (IllegalStateException ignored) {
 
             }

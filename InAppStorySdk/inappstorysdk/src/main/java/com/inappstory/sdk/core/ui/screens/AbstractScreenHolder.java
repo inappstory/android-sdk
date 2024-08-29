@@ -11,6 +11,21 @@ public abstract class AbstractScreenHolder<T extends BaseScreen, K> implements I
     T currentScreen;
     K lastOpenedData;
     protected final Object screenLock = new Object();
+    private boolean inLaunchProcess;
+
+    @Override
+    public void startLaunchProcess() {
+        synchronized (screenLock) {
+            inLaunchProcess = true;
+        }
+    }
+
+    @Override
+    public boolean isLaunchProcessStarted() {
+        synchronized (screenLock) {
+            return inLaunchProcess;
+        }
+    }
 
     @Override
     public boolean isOpened(@NonNull K data) {
@@ -39,6 +54,7 @@ public abstract class AbstractScreenHolder<T extends BaseScreen, K> implements I
     @Override
     public void subscribeScreen(T screen) {
         synchronized (screenLock) {
+            inLaunchProcess = false;
             currentScreen = screen;
         }
     }
@@ -46,7 +62,10 @@ public abstract class AbstractScreenHolder<T extends BaseScreen, K> implements I
     @Override
     public void unsubscribeScreen(T screen) {
         synchronized (screenLock) {
-            if (currentScreen == screen) currentScreen = null;
+            inLaunchProcess = false;
+            if (currentScreen == screen) {
+                currentScreen = null;
+            }
         }
     }
 

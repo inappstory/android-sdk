@@ -11,14 +11,15 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.core.ui.screens.ShareProcessHandler;
 import com.inappstory.sdk.share.IASShareData;
 import com.inappstory.sdk.share.ShareListener;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.callbacks.OverlappingContainerActions;
 import com.inappstory.sdk.stories.callbacks.ShareCallback;
 import com.inappstory.sdk.stories.ui.OverlapFragmentObserver;
-import com.inappstory.sdk.core.ui.screens.ScreensManager;
 import com.inappstory.sdk.stories.utils.IASBackPressHandler;
 
 import java.util.HashMap;
@@ -37,17 +38,20 @@ public class OverlapFragment extends Fragment implements IASBackPressHandler {
     OverlappingContainerActions shareActions = new OverlappingContainerActions() {
         @Override
         public void closeView(HashMap<String, Object> data) {
+            ShareProcessHandler shareProcessHandler =
+                    ShareProcessHandler.getInstance();
+            if (shareProcessHandler == null) return;
             boolean shared = false;
             if (data.containsKey("shared")) shared = (boolean) data.get("shared");
-
-            OverlapFragmentObserver observer = ScreensManager.getInstance().overlapFragmentObserver;
+            OverlapFragmentObserver observer = shareProcessHandler.overlapFragmentObserver();
             if (observer != null) observer.closeView(data);
-            ScreensManager.getInstance().cleanOverlapFragmentObserver();
+            shareProcessHandler.overlapFragmentObserver(null);
             try {
                 getParentFragmentManager().popBackStack();
             } catch (IllegalStateException e) {
-                ScreensManager.getInstance().setTempShareStatus(shared);
+                shareProcessHandler.setTempShareStatus(shared);
             }
+            ShareListener shareListener = shareProcessHandler.shareListener();
             if (shareListener != null) {
                 if (shared)
                     shareListener.onSuccess(true);
@@ -62,7 +66,13 @@ public class OverlapFragment extends Fragment implements IASBackPressHandler {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        OverlapFragmentObserver observer = ScreensManager.getInstance().overlapFragmentObserver;
+        InAppStoryManager manager = InAppStoryManager.getInstance();
+        if (manager == null) return;
+        OverlapFragmentObserver observer =
+                manager
+                        .getScreensHolder()
+                        .getShareProcessHandler()
+                        .overlapFragmentObserver();
         if (observer != null) observer.viewIsOpened();
     }
 
@@ -70,7 +80,12 @@ public class OverlapFragment extends Fragment implements IASBackPressHandler {
     @Override
     public void onResume() {
         super.onResume();
-        Boolean shared = ScreensManager.getInstance().getTempShareStatus();
+        InAppStoryManager manager = InAppStoryManager.getInstance();
+        if (manager == null) return;
+        Boolean shared = manager
+                .getScreensHolder()
+                .getShareProcessHandler()
+                .getTempShareStatus();
         if (shared != null) {
             getParentFragmentManager().popBackStack();
         }
@@ -104,7 +119,7 @@ public class OverlapFragment extends Fragment implements IASBackPressHandler {
         }
     }
 
-    public ShareListener shareListener;
+    //public ShareListener shareListener;
 
     @Override
     public boolean onBackPressed() {

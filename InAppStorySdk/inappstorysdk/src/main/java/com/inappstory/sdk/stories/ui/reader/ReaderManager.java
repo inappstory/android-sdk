@@ -15,6 +15,7 @@ import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.UseManagerInstanceCallback;
 import com.inappstory.sdk.UseServiceInstanceCallback;
+import com.inappstory.sdk.core.ui.screens.ShareProcessHandler;
 import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryScreen;
 import com.inappstory.sdk.game.cache.SessionAssetsIsReadyCallback;
 import com.inappstory.sdk.inner.share.InnerShareData;
@@ -206,9 +207,9 @@ public class ReaderManager {
         if (parentFragment != null) {
             parentFragment.showShareView(shareData, storyId, slideIndex);
         } else {
-            InAppStoryService service = InAppStoryService.getInstance();
-            if (service != null)
-                service.isShareProcess(false);
+            ShareProcessHandler shareProcessHandler = ShareProcessHandler.getInstance();
+            if (shareProcessHandler != null)
+                shareProcessHandler.isShareProcess(false);
         }
     }
 
@@ -471,10 +472,11 @@ public class ReaderManager {
                 pageManager.unlockShareButton();
             }
         }
-
-        ScreensManager.getInstance().shareCompleteListener().complete(true);
-
-        ScreensManager.getInstance().clearShareIds();
+        ShareProcessHandler shareProcessHandler =
+                ShareProcessHandler.getInstance();
+        if (shareProcessHandler == null) return;
+        shareProcessHandler.shareCompleteListener().complete(true);
+        shareProcessHandler.clearShareIds();
     }
 
     public int getCurrentStoryId() {

@@ -1,8 +1,53 @@
 package com.inappstory.sdk.core.ui.screens.storyreader;
 
+import android.os.Bundle;
+
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
+
+import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.ui.screens.AbstractScreenHolder;
+import com.inappstory.sdk.core.ui.screens.IOverlapContainerData;
+import com.inappstory.sdk.core.ui.screens.IOverlapContainerHolder;
+import com.inappstory.sdk.core.ui.screens.ShareProcessHandler;
+import com.inappstory.sdk.stories.ui.OverlapFragmentObserver;
+import com.inappstory.sdk.stories.ui.reader.OverlapFragment;
 
-public class StoryScreenHolder extends AbstractScreenHolder<BaseStoryScreen, LaunchStoryScreenData> {
+public class StoryScreenHolder extends AbstractScreenHolder<BaseStoryScreen, LaunchStoryScreenData> implements IOverlapContainerHolder {
+    private final ShareProcessHandler shareProcessHandler;
 
+    public StoryScreenHolder(ShareProcessHandler shareProcessHandler) {
+        this.shareProcessHandler = shareProcessHandler;
+    }
 
+    public void closeScreenWithAction(int action) {
+        BaseStoryScreen screen = getScreen();
+        if (screen != null)
+            screen.closeWithAction(action);
+    }
+
+    @Override
+    public void openOverlapContainer(IOverlapContainerData data, FragmentManager fragmentManager, OverlapFragmentObserver observer) {
+        if (data instanceof StoryReaderOverlapContainerDataForShare) {
+            StoryReaderOverlapContainerDataForShare storyReaderShareData = (StoryReaderOverlapContainerDataForShare) data;
+            try {
+                shareProcessHandler.overlapFragmentObserver(observer);
+                shareProcessHandler.shareListener(storyReaderShareData.shareListener);
+                OverlapFragment overlapFragment = new OverlapFragment();
+                Bundle bundle = new Bundle();
+                bundle.putString("slidePayload", storyReaderShareData.slidePayload);
+                bundle.putInt("storyId", storyReaderShareData.storyId);
+                bundle.putInt("slideIndex", storyReaderShareData.slideIndex);
+                bundle.putSerializable("shareData", storyReaderShareData.shareData);
+                overlapFragment.setArguments(bundle);
+                FragmentTransaction t = fragmentManager.beginTransaction()
+                        .replace(R.id.ias_outer_top_container, overlapFragment);
+                t.addToBackStack("OverlapFragment");
+                t.commit();
+            } catch (IllegalStateException e) {
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
 }

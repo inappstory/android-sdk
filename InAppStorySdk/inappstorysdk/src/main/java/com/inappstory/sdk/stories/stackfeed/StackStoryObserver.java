@@ -9,8 +9,12 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.AppearanceManager;
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.UseServiceInstanceCallback;
+import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenAppearance;
+import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenData;
+import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenStrategy;
 import com.inappstory.sdk.game.reader.GameStoryData;
 import com.inappstory.sdk.stories.api.models.Image;
 import com.inappstory.sdk.stories.api.models.Story;
@@ -242,6 +246,8 @@ public class StackStoryObserver implements IStackFeedActions {
 
     private void openReader(Context context, boolean showNewStories) {
         InAppStoryService service = InAppStoryService.getInstance();
+        InAppStoryManager manager = InAppStoryManager.getInstance();
+        if (manager == null) return;
         if (service == null) return;
         final Story currentStory = stories.get(oldIndex);
         Story current = service.getStoryDownloadManager().getStoryById(currentStory.id, Story.StoryType.COMMON);
@@ -349,7 +355,7 @@ public class StackStoryObserver implements IStackFeedActions {
                     j++;
                 }
             }
-            StoriesReaderLaunchData launchData = new StoriesReaderLaunchData(
+            LaunchStoryScreenData launchData = new LaunchStoryScreenData(
                     listId,
                     feed,
                     sessionId,
@@ -362,12 +368,16 @@ public class StackStoryObserver implements IStackFeedActions {
                     Story.StoryType.COMMON,
                     null
             );
-            ScreensManager.getInstance().openStoriesReader(
-                    context,
-                    appearanceManager,
-                    launchData
+            manager.getScreensLauncher().openScreen(context,
+                    new LaunchStoryScreenStrategy().
+                            launchStoryScreenData(launchData).
+                            readerAppearanceSettings(
+                                    new LaunchStoryScreenAppearance(
+                                            AppearanceManager.checkOrCreateAppearanceManager(appearanceManager),
+                                            context
+                                    )
+                            )
             );
-            return;
         }
     }
 

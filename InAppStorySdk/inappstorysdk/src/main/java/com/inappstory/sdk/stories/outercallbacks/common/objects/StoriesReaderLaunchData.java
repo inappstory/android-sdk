@@ -5,10 +5,31 @@ import com.inappstory.sdk.stories.api.models.Story.StoryType;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 public class StoriesReaderLaunchData implements SerializableWithKey {
     public static String SERIALIZABLE_KEY = "storiesReaderLaunchData";
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        StoriesReaderLaunchData that = (StoriesReaderLaunchData) o;
+        return listIndex == that.listIndex &&
+                shownOnlyNewStories == that.shownOnlyNewStories &&
+                Objects.equals(sessionId, that.sessionId) &&
+                Objects.equals(storiesIds, that.storiesIds) &&
+                sourceType == that.sourceType &&
+                Objects.equals(slideIndex, that.slideIndex) &&
+                Objects.equals(feed, that.feed) &&
+                type == that.type;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(sessionId, storiesIds, listIndex, sourceType, slideIndex, feed, type, shownOnlyNewStories);
+    }
 
     public StoriesReaderLaunchData(
             String listUniqueId,

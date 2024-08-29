@@ -19,9 +19,13 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager.widget.ViewPager;
 
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.core.ui.screens.ShareProcessHandler;
+import com.inappstory.sdk.core.ui.screens.gamereader.GameReaderOverlapContainerDataForShare;
 import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryScreen;
+import com.inappstory.sdk.core.ui.screens.storyreader.StoryReaderOverlapContainerDataForShare;
 import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.inner.share.InnerShareFilesPrepare;
 import com.inappstory.sdk.inner.share.ShareFilesPrepareCallback;
@@ -148,34 +152,44 @@ public class StoriesContentFragment extends Fragment
                                       IASShareData shareObject,
                                       int storyId,
                                       int slideIndex) {
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service != null)
-            service.isShareProcess(false);
+        InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
+        if (inAppStoryManager == null) return;
+        ShareProcessHandler shareProcessHandler = inAppStoryManager
+                .getScreensHolder()
+                .getShareProcessHandler();
+        shareProcessHandler.isShareProcess(false);
         Context context = getContext();
         ShareCallback callback = CallbackManager.getInstance().getShareCallback();
         if (context == null) return;
         if (callback != null) {
-            ScreensManager.getInstance().openOverlapContainerForShare(
-                    new ShareListener() {
-                        @Override
-                        public void onSuccess(boolean shared) {
-                            getStoriesReader().timerIsUnlocked();
-                        }
+            inAppStoryManager
+                    .getScreensHolder()
+                    .getStoryScreenHolder()
+                    .openOverlapContainer(
+                            new StoryReaderOverlapContainerDataForShare()
+                                    .shareData(shareObject)
+                                    .slideIndex(slideIndex)
+                                    .storyId(storyId)
+                                    .slidePayload(slidePayload)
+                                    .shareListener(
+                                            new ShareListener() {
+                                                @Override
+                                                public void onSuccess(boolean shared) {
+                                                    getStoriesReader().timerIsUnlocked();
+                                                }
 
-                        @Override
-                        public void onCancel() {
-                            getStoriesReader().timerIsUnlocked();
-                            readerManager.resumeCurrent(false);
-                        }
+                                                @Override
+                                                public void onCancel() {
+                                                    getStoriesReader().timerIsUnlocked();
+                                                    readerManager.resumeCurrent(false);
+                                                }
 
-                    },
-                    getStoriesReader().getScreenFragmentManager(),
-                    this,
-                    slidePayload,
-                    storyId,
-                    slideIndex,
-                    shareObject
-            );
+                                            }
+                                    ),
+                            getStoriesReader()
+                                    .getScreenFragmentManager(),
+                            this
+                    );
             getStoriesReader().timerIsLocked();
             readerManager.pauseCurrent(false);
         } else {
@@ -265,7 +279,8 @@ public class StoriesContentFragment extends Fragment
     public void resume() {
         if (!created && readerManager != null) {
             readerManager.resumeCurrent(true);
-            if (ScreensManager.getInstance().shareCompleteListener() != null) {
+            ShareProcessHandler shareProcessHandler = ShareProcessHandler.getInstance();
+            if (shareProcessHandler != null && shareProcessHandler.shareCompleteListener() != null) {
                 readerManager.shareComplete();
             }
         }

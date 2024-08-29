@@ -28,6 +28,7 @@ import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.UseManagerInstanceCallback;
 import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryScreen;
 import com.inappstory.sdk.stories.api.models.Story;
@@ -352,8 +353,12 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryScree
         int navColor = appearanceSettings.csNavBarColor();
         if (navColor != 0)
             getWindow().setNavigationBarColor(navColor);
-
-        ScreensManager.getInstance().subscribeStoryReaderScreen(this);
+        InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryManager manager) throws Exception {
+                manager.getScreensHolder().getStoryScreenHolder().subscribeScreen(StoriesActivity.this);
+            }
+        });
         View view = getCurrentFocus();
         if (view != null) {
             InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -670,9 +675,11 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryScree
 
     @Override
     public void onDestroy() {
-        ScreensManager.getInstance().unsubscribeStoryReaderScreen(this);
+        InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
+        if (inAppStoryManager != null) {
+            inAppStoryManager.getScreensHolder().getStoryScreenHolder().unsubscribeScreen(this);
+        }
         if (!pauseDestroyed) {
-            InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
             if (inAppStoryManager != null) {
                 inAppStoryManager.getOpenStoriesReader().onRestoreStatusBar(this);
             }

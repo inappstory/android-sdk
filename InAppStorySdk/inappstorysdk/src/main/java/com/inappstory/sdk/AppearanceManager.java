@@ -84,6 +84,14 @@ public class AppearanceManager {
         return new AppearanceManager(this);
     }
 
+    @NonNull
+    public static AppearanceManager checkOrCreateAppearanceManager(AppearanceManager manager) {
+        AppearanceManager result = manager;
+        if (result == null) result = AppearanceManager.getCommonInstance();
+        if (result == null) result = new AppearanceManager();
+        return result;
+    }
+
     public AppearanceManager() {
     }
 

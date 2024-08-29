@@ -12,8 +12,12 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.inappstory.sdk.AppearanceManager;
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenAppearance;
+import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenData;
+import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenStrategy;
 import com.inappstory.sdk.game.reader.GameStoryData;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
@@ -149,6 +153,8 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
     @Override
     public void onItemClick(int ind, StoryItemCoordinates coordinates) {
         InAppStoryService service = InAppStoryService.getInstance();
+        InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
+        if (inAppStoryManager == null) return;
         if (service == null) return;
         if (System.currentTimeMillis() - clickTimestamp < 1500) {
             return;
@@ -251,7 +257,7 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
             if (story == null || !story.isHideInReader())
                 tempStories.add(storyId);
         }
-        StoriesReaderLaunchData launchData = new StoriesReaderLaunchData(
+        LaunchStoryScreenData launchData = new LaunchStoryScreenData(
                 listID,
                 null,
                 sessionId,
@@ -264,10 +270,15 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
                 Story.StoryType.UGC,
                 coordinates
         );
-        ScreensManager.getInstance().openStoriesReader(
-                context,
-                manager,
-                launchData
+        inAppStoryManager.getScreensLauncher().openScreen(context,
+                new LaunchStoryScreenStrategy().
+                        launchStoryScreenData(launchData).
+                        readerAppearanceSettings(
+                                new LaunchStoryScreenAppearance(
+                                        AppearanceManager.checkOrCreateAppearanceManager(manager),
+                                        context
+                                )
+                        )
         );
     }
 

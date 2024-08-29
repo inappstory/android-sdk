@@ -10,8 +10,13 @@ import com.inappstory.sdk.core.ui.screens.storyreader.StoryScreenHolder;
 import com.inappstory.sdk.stories.ui.reader.ForceCloseReaderCallback;
 
 public class ScreensHolder implements IScreensHolder {
-    GameScreenHolder gameScreenHolder = new GameScreenHolder();
-    StoryScreenHolder storyScreenHolder = new StoryScreenHolder();
+    public ShareProcessHandler getShareProcessHandler() {
+        return shareProcessHandler;
+    }
+
+    private final ShareProcessHandler shareProcessHandler = new ShareProcessHandler();
+    GameScreenHolder gameScreenHolder = new GameScreenHolder(shareProcessHandler);
+    StoryScreenHolder storyScreenHolder = new StoryScreenHolder(shareProcessHandler);
     IAMScreenHolder IAMScreenHolder = new IAMScreenHolder();
 
     public void setUgcCloseCallback(CloseUgcReaderCallback ugcCloseCallback) {
@@ -20,9 +25,10 @@ public class ScreensHolder implements IScreensHolder {
 
     private CloseUgcReaderCallback ugcCloseCallback;
 
-    private void closeUGCEditor() {
+    void closeUGCEditor() {
         if (ugcCloseCallback != null) ugcCloseCallback.onClose();
     }
+
 
     public void forceCloseAllReaders(final ForceCloseReaderCallback callback) {
         new Handler(Looper.getMainLooper()).post(new Runnable() {
