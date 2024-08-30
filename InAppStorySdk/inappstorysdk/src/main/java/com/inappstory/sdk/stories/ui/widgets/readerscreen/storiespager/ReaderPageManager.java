@@ -53,6 +53,7 @@ public class ReaderPageManager {
     }
 
     public void showLoader(boolean showBackground) {
+        if (host == null) return;
         if (showBackground) {
             host.showLoaderContainer();
         } else {
@@ -135,6 +136,7 @@ public class ReaderPageManager {
 
     public void storyClick(String payload, int coordinate, boolean isForbidden) {
         if (checkIfManagersIsNull()) return;
+        if (host == null) return;
         parentManager.storyClick();
         if (payload == null || payload.isEmpty()) {
             int sz = (!Sizes.isTablet(host.getContext()) ?
@@ -280,7 +282,7 @@ public class ReaderPageManager {
     }
 
     public void pauseSlide(boolean withBackground) {
-        Log.e("PauseResume", "pauseSlide " +storyId + " " + slideIndex + " " + withBackground + " " + isPaused + " " + backgroundPause);
+        Log.e("PauseResume", "pauseSlide " + storyId + " " + slideIndex + " " + withBackground + " " + isPaused + " " + backgroundPause);
         if (checkIfManagersIsNull()) return;
         if (!withBackground && isPaused) return;
         isPaused = true;
@@ -294,7 +296,7 @@ public class ReaderPageManager {
     boolean isPaused;
 
     public void resumeSlide(boolean withBackground) {
-        Log.e("PauseResume", "resumeSlide " +storyId + " " + slideIndex + " " + withBackground + " " + isPaused + " " + backgroundPause);
+        Log.e("PauseResume", "resumeSlide " + storyId + " " + slideIndex + " " + withBackground + " " + isPaused + " " + backgroundPause);
         if (checkIfManagersIsNull()) return;
         if (!isPaused) return;
         if (!withBackground && backgroundPause) return;
@@ -426,6 +428,7 @@ public class ReaderPageManager {
         if (checkIfManagersIsNull()) return;
         InAppStoryService service = InAppStoryService.getInstance();
         if (service == null) return;
+        if (host == null) return;
         host.showLoader();
         currentSlideIsLoaded = false;
         ProfilingManager.getInstance().addTask("slide_show",
@@ -570,7 +573,8 @@ public class ReaderPageManager {
 
     public void storyLoadedInCache(Story story) {
         if (checkIfManagersIsNull()) return;
-        host.story = story;
+        if (host != null)
+            host.story = story;
         setStoryInfo(story);
     }
 
