@@ -658,6 +658,7 @@ public class ReaderPageFragment extends Fragment {
 
     StoriesReaderAppearanceSettings appearanceSettings = null;
 
+
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -729,6 +730,7 @@ public class ReaderPageFragment extends Fragment {
             }
             if (InAppStoryService.getInstance() != null)
                 InAppStoryService.getInstance().getStoryDownloadManager().removeSubscriber(manager);
+            manager.host = null;
         }
         super.onDestroyView();
     }

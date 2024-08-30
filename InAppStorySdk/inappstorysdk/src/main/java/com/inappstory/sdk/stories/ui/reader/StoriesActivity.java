@@ -342,7 +342,13 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
                 getSerializableExtra(StoriesReaderLaunchData.SERIALIZABLE_KEY);
         appearanceSettings = (StoriesReaderAppearanceSettings) getIntent()
                 .getSerializableExtra(StoriesReaderAppearanceSettings.SERIALIZABLE_KEY);
-        if (InAppStoryManager.isNull() || InAppStoryService.isNull()) {
+        if (
+                InAppStoryManager.isNull()
+                || !InAppStoryManager.isInitialized()
+                || InAppStoryService.isNull()
+                || launchData == null
+                || appearanceSettings == null
+        ) {
             finish();
             return;
         }

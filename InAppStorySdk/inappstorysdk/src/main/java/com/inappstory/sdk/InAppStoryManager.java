@@ -135,7 +135,7 @@ public class InAppStoryManager {
         }
     }
 
-    private static boolean isInitialized() {
+    public static boolean isInitialized() {
         synchronized (initLock) {
             return initialized;
         }

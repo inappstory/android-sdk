@@ -54,10 +54,10 @@ public class DefaultOpenStoriesReader implements IOpenStoriesReader {
             }
         } else {
             Intent intent2 = new Intent(context, StoriesActivity.class);
+            intent2.putExtras(bundle);
             if (!(context instanceof Activity)) {
                 intent2.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             }
-            intent2.putExtras(bundle);
             context.startActivity(intent2);
             if (context instanceof Activity) {
                 ((Activity) context).overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
