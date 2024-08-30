@@ -89,6 +89,17 @@ public final class StoriesListDefaultFavoriteItem implements IGetFavoriteListIte
                 setImage(3, favoriteImages.get(3), getColorOrTransparent(backgroundColors, 3));
                 break;
         }
+        switch (count) {
+            case 0:
+                clearImage(getImageByIndex(0));
+            case 1:
+                clearImage(getImageByIndex(1));
+            case 2:
+                clearImage(getImageByIndex(2));
+            case 3:
+                clearImage(getImageByIndex(3));
+                break;
+        }
     }
 
     private void bindViews(View parent) {
