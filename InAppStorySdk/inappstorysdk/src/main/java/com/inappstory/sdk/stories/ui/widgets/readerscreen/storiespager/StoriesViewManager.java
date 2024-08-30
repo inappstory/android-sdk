@@ -357,6 +357,7 @@ public class StoriesViewManager {
     SimpleStoriesView storiesView;
 
     public void storyShowTextInput(String id, String data) {
+        if (pageManager.host == null) return;
         final StoriesContentFragment storiesContentFragment =
                 (StoriesContentFragment) pageManager.host.getParentFragment();
         final BaseReaderScreen readerScreen =
