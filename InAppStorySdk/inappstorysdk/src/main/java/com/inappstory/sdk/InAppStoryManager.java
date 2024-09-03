@@ -17,6 +17,7 @@ import androidx.annotation.NonNull;
 
 import com.inappstory.iasutilsconnector.UtilModulesHolder;
 import com.inappstory.iasutilsconnector.json.IJsonParser;
+import com.inappstory.sdk.core.ui.screens.GetScreenCallback;
 import com.inappstory.sdk.core.ui.screens.ScreensHolder;
 import com.inappstory.sdk.core.ui.screens.ScreensLauncher;
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenAppearance;
@@ -79,7 +80,7 @@ import com.inappstory.sdk.stories.stackfeed.StackStoryObserver;
 import com.inappstory.sdk.stories.stackfeed.StackStoryUpdatedCallback;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
-import com.inappstory.sdk.stories.ui.GetBaseReaderScreenCallback;
+import com.inappstory.sdk.stories.ui.GetBaseReaderScreen;
 import com.inappstory.sdk.core.ui.screens.ScreensManager;
 import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryScreen;
 import com.inappstory.sdk.stories.ui.reader.ForceCloseReaderCallback;
@@ -349,16 +350,32 @@ public class InAppStoryManager {
         }
     }
 
+    private boolean isStoryReaderOpenedLocal() {
+        return holder.getStoryScreenHolder().getScreen() != null;
+    }
+
+    private boolean isGameReaderOpenedLocal() {
+        return holder.getGameScreenHolder().getScreen() != null;
+    }
+
+    private boolean isIAMReaderOpenedLocal() {
+        return holder.getIAMScreenHolder().getScreen() != null;
+    }
+
     public static boolean isStoryReaderOpened() {
-        return ScreensManager.getInstance().isStoryReaderOpened();
+        return getInstance() != null && getInstance().isStoryReaderOpenedLocal();
     }
 
     public static boolean isGameReaderOpened() {
-        return ScreensManager.getInstance().isGameReaderOpened();
+        return getInstance() != null && getInstance().isGameReaderOpenedLocal();
+    }
+
+    public static boolean isIAMReaderOpened() {
+        return getInstance() != null && getInstance().isIAMReaderOpenedLocal();
     }
 
     public void closeGame() {
-        ScreensManager.getInstance().closeGameReader();
+        holder.getGameScreenHolder().closeScreen();
     }
 
     /**
@@ -962,15 +979,12 @@ public class InAppStoryManager {
                                         .clearAllFavoriteStatus(Story.StoryType.UGC);
                                 service.getFavoriteImages().clear();
                                 service.getListReaderConnector().clearAllFavorites();
-
-                                ScreensManager.getInstance().useCurrentStoriesReaderScreen(
-                                        new GetBaseReaderScreenCallback() {
-                                            @Override
-                                            public void get(BaseStoryScreen readerScreen) {
-                                                readerScreen.removeAllStoriesFromFavorite();
-                                            }
-                                        }
-                                );
+                                holder.getStoryScreenHolder().useCurrentReader(new GetScreenCallback<BaseStoryScreen>() {
+                                    @Override
+                                    public void get(BaseStoryScreen screen) {
+                                        screen.removeAllStoriesFromFavorite();
+                                    }
+                                });
                             }
 
                             @Override
@@ -1013,14 +1027,12 @@ public class InAppStoryManager {
                                 if (story != null)
                                     story.favorite = favorite;
                                 service.getListReaderConnector().storyFavorite(storyId, favorite);
-                                ScreensManager.getInstance().useCurrentStoriesReaderScreen(
-                                        new GetBaseReaderScreenCallback() {
-                                            @Override
-                                            public void get(BaseStoryScreen readerScreen) {
-                                                readerScreen.removeStoryFromFavorite(storyId);
-                                            }
-                                        }
-                                );
+                                holder.getStoryScreenHolder().useCurrentReader(new GetScreenCallback<BaseStoryScreen>() {
+                                    @Override
+                                    public void get(BaseStoryScreen screen) {
+                                        screen.removeStoryFromFavorite(storyId);
+                                    }
+                                });
                             }
 
                             @Override
@@ -1431,8 +1443,8 @@ public class InAppStoryManager {
 
         InAppStoryService inAppStoryService = InAppStoryService.getInstance();
         if (inAppStoryService == null) return;
-        if (isStoryReaderOpened()) {
-            ScreensManager.getInstance().closeStoryReader(CloseStory.AUTO);
+        if (isStoryReaderOpenedLocal()) {
+            holder.getStoryScreenHolder().closeScreenWithAction(CloseStory.AUTO);
             localHandler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
@@ -1943,8 +1955,8 @@ public class InAppStoryManager {
                         if (story != null) {
                             service.getStoryDownloadManager().addCompletedStoryTask(story,
                                     Story.StoryType.COMMON);
-                            if (isStoryReaderOpened()) {
-                                ScreensManager.getInstance().closeStoryReader(CloseStory.AUTO);
+                            if (isStoryReaderOpenedLocal()) {
+                                holder.getStoryScreenHolder().closeScreenWithAction(CloseStory.AUTO);
                                 localHandler.postDelayed(new Runnable() {
                                     @Override
                                     public void run() {
@@ -2040,8 +2052,8 @@ public class InAppStoryManager {
                         if (story != null) {
                             service.getStoryDownloadManager().addCompletedStoryTask(story,
                                     Story.StoryType.COMMON);
-                            if (isStoryReaderOpened()) {
-                                ScreensManager.getInstance().closeStoryReader(CloseStory.AUTO);
+                            if (isStoryReaderOpenedLocal()) {
+                                holder.getStoryScreenHolder().closeScreenWithAction(CloseStory.AUTO);
                                 localHandler.postDelayed(new Runnable() {
                                     @Override
                                     public void run() {

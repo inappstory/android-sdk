@@ -19,6 +19,22 @@ public class ScreensHolder implements IScreensHolder {
     StoryScreenHolder storyScreenHolder = new StoryScreenHolder(shareProcessHandler);
     IAMScreenHolder IAMScreenHolder = new IAMScreenHolder();
 
+    public boolean hasActiveScreen(IScreenHolder activeHolder) {
+        return checkHolderForScreen(storyScreenHolder, activeHolder) ||
+                checkHolderForScreen(gameScreenHolder, activeHolder) ||
+                checkHolderForScreen(IAMScreenHolder, activeHolder);
+    }
+
+    private boolean checkHolderForScreen(IScreenHolder holderToCheck, IScreenHolder holderToCompare) {
+        return holderToCheck != holderToCompare && (holderToCheck.isOpened() || holderToCheck.isLaunchProcessStarted());
+    }
+
+    public boolean hasActiveScreen() {
+        return storyScreenHolder.isOpened() || storyScreenHolder.isLaunchProcessStarted() ||
+                gameScreenHolder.isOpened() || gameScreenHolder.isLaunchProcessStarted() ||
+                IAMScreenHolder.isOpened() || IAMScreenHolder.isLaunchProcessStarted();
+    }
+
     public void setUgcCloseCallback(CloseUgcReaderCallback ugcCloseCallback) {
         this.ugcCloseCallback = ugcCloseCallback;
     }

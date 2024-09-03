@@ -38,8 +38,12 @@ public class GameActivity extends AppCompatActivity implements BaseGameScreen {
             setNavBarColor(appearanceSettings.navBarColor);
             setStatusBarColor(appearanceSettings.statusBarColor);
         }
-
-        ScreensManager.getInstance().subscribeGameScreen(this);
+        InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryManager manager) throws Exception {
+                manager.getScreensHolder().getGameScreenHolder().subscribeScreen(GameActivity.this);
+            }
+        });
         createGameContentFragment(
                 savedInstanceState,
                 (GameReaderLaunchData) getIntent()
@@ -142,7 +146,12 @@ public class GameActivity extends AppCompatActivity implements BaseGameScreen {
     @Override
     protected void onDestroy() {
 
-        ScreensManager.getInstance().unsubscribeGameScreen(this);
+        InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryManager manager) throws Exception {
+                manager.getScreensHolder().getGameScreenHolder().unsubscribeScreen(GameActivity.this);
+            }
+        });
         super.onDestroy();
     }
 
@@ -175,7 +184,7 @@ public class GameActivity extends AppCompatActivity implements BaseGameScreen {
     }
 
     @Override
-    public void resume() {
+    public void resumeScreen() {
 
     }
 

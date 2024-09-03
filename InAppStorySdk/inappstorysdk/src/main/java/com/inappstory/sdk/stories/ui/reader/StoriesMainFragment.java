@@ -343,7 +343,7 @@ public abstract class StoriesMainFragment extends Fragment implements
             @Override
             public void onDragDismissed() {
                 animateFirst = true;
-                ScreensManager.getInstance().closeStoryReader(CloseStory.SWIPE);
+                closeWithAction(CloseStory.SWIPE);
             }
 
             @Override

@@ -37,22 +37,13 @@ public class LaunchStoryScreenStrategy implements LaunchScreenStrategy {
             ScreensHolder screensHolder
     ) {
         StoryScreenHolder currentScreenHolder = screensHolder.getStoryScreenHolder();
-        IScreenHolder gameScreenHolder = screensHolder.getGameScreenHolder();
-        IScreenHolder iamScreenHolder = screensHolder.getIAMScreenHolder();
-
-        if (
-                currentScreenHolder.isLaunchProcessStarted() ||
-                        gameScreenHolder.isLaunchProcessStarted() ||
-                        iamScreenHolder.isLaunchProcessStarted()
-        )
+        if (currentScreenHolder.isOpened(launchStoryScreenData)) return;
+        if (screensHolder.hasActiveScreen(currentScreenHolder)) {
             return;
+        }
         InAppStoryService service = InAppStoryService.getInstance();
         if (service == null || service.getSession().getSessionId().isEmpty()) return;
-        if (currentScreenHolder.isOpened(launchStoryScreenData)) return;
 
-        currentScreenHolder.forceCloseScreen(null);
-        gameScreenHolder.forceCloseScreen(null);
-        iamScreenHolder.forceCloseScreen(null);
         Bundle bundle = new Bundle();
         bundle.putSerializable(
                 launchStoryScreenData.getSerializableKey(),

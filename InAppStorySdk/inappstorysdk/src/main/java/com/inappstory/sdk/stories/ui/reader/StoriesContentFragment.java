@@ -22,6 +22,8 @@ import androidx.viewpager.widget.ViewPager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.UseManagerInstanceCallback;
+import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.core.ui.screens.ShareProcessHandler;
 import com.inappstory.sdk.core.ui.screens.gamereader.GameReaderOverlapContainerDataForShare;
 import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryScreen;
@@ -388,14 +390,35 @@ public class StoriesContentFragment extends Fragment
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         if (readerManager != null) readerManager.setHost(this);
-        ScreensManager.getInstance().putGameObserver(getReaderUniqueId(), this);
+        InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryManager manager) throws Exception {
+                manager
+                        .getScreensHolder()
+                        .getGameScreenHolder()
+                        .putGameObserver(
+                                getReaderUniqueId(),
+                                StoriesContentFragment.this
+                        );
+            }
+        });
     }
 
     @Override
     public void onDetach() {
         if (readerManager != null && readerManager.hostIsEqual(this))
             readerManager.setHost(null);
-        ScreensManager.getInstance().removeGameObserver(getReaderUniqueId());
+        InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryManager manager) throws Exception {
+                manager
+                        .getScreensHolder()
+                        .getGameScreenHolder()
+                        .removeGameObserver(
+                                getReaderUniqueId()
+                        );
+            }
+        });
         super.onDetach();
     }
 
@@ -461,12 +484,20 @@ public class StoriesContentFragment extends Fragment
         swipeCloseEvent(position, closeOnOverscroll);
     }
 
-    public void swipeCloseEvent(int position, boolean check) {
+    public void swipeCloseEvent(final int position, boolean check) {
         if (check) {
-            Story story = InAppStoryService.getInstance().getStoryDownloadManager()
-                    .getStoryById(currentIds.get(position), readerManager.storyType);
-            if (story == null || story.disableClose) return;
-            ScreensManager.getInstance().closeStoryReader(CloseStory.SWIPE);
+            InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+                @Override
+                public void use(@NonNull InAppStoryService service) throws Exception {
+                    Story story = service.getStoryDownloadManager()
+                            .getStoryById(currentIds.get(position), readerManager.storyType);
+                    if (story == null || story.disableClose) return;
+                    BaseStoryScreen screen = getStoriesReader();
+                    if (screen != null)
+                        screen.closeWithAction(CloseStory.SWIPE);
+                }
+            });
+
         }
     }
 
@@ -569,7 +600,9 @@ public class StoriesContentFragment extends Fragment
                     storiesViewPager.cubeAnimation = true;
                     storiesViewPager.setCurrentItem(storiesViewPager.getCurrentItem() + 1);
                 } else {
-                    ScreensManager.getInstance().closeStoryReader(CloseStory.AUTO);
+                    BaseStoryScreen screen = getStoriesReader();
+                    if (screen != null)
+                        screen.closeWithAction(CloseStory.AUTO);
                 }
             }
         });

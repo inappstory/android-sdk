@@ -12,7 +12,12 @@ import com.inappstory.sdk.core.ui.screens.ScreensManager;
 
 public class IASGames {
     public void close() {
-        ScreensManager.getInstance().closeGameReader();
+        InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryManager manager) throws Exception {
+                manager.getScreensHolder().getGameScreenHolder().closeScreen();
+            }
+        });
     }
 
     public void open(@NonNull final Context context, final String gameId) {

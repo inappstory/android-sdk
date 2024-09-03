@@ -20,6 +20,10 @@ import android.webkit.URLUtil;
 
 import androidx.annotation.NonNull;
 
+import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenData;
+import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenStrategy;
+import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenAppearance;
+import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenStrategy;
 import com.inappstory.sdk.externalapi.subscribers.InAppStoryAPISubscribersManager;
 import com.inappstory.sdk.game.cache.GameCacheManager;
 import com.inappstory.sdk.game.cache.SuccessUseCaseCallback;
@@ -536,24 +540,27 @@ public class InAppStoryService {
     }
 
     public void openGameReaderWithGC(
-            Context context,
-            GameStoryData data,
-            String gameId,
-            String observableId,
+            final Context context,
+            final GameStoryData data,
+            final String gameId,
+            final String observableId,
             final boolean openedFromStoriesReader
     ) {
-        GameReaderLaunchData gameReaderLaunchData = new GameReaderLaunchData(
-                gameId,
-                observableId,
-                data != null ? data.slideData : null
-        );
-        ScreensManager.getInstance().openGameReader(
-                context,
-                data,
-                gameId,
-                observableId,
-                openedFromStoriesReader
-        );
+        InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryManager manager) throws Exception {
+                manager.getScreensLauncher().openScreen(context,
+                        new LaunchGameScreenStrategy()
+                                .data(new LaunchGameScreenData(
+                                        observableId,
+                                        data,
+                                        gameId,
+                                        openedFromStoriesReader
+                                ))
+                );
+            }
+        });
+
     }
 
     public void runStatisticThread() {

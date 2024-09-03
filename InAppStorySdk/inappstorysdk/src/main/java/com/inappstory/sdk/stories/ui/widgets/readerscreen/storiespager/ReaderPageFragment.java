@@ -43,6 +43,7 @@ import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryScreen;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.managers.TimerManager;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderAppearanceSettings;
@@ -295,7 +296,12 @@ public class ReaderPageFragment extends Fragment {
             close.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    ScreensManager.getInstance().closeStoryReader(CloseStory.CLICK);
+                    if (parentManager != null) {
+                        BaseStoryScreen screen = parentManager.getHost().getStoriesReader();
+                        if (screen != null) {
+                            screen.closeWithAction(CloseStory.CLICK);
+                        }
+                    }
                 }
             });
         if (refresh != null)

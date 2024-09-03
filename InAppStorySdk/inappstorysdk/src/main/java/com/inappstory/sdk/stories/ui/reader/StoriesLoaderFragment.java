@@ -31,6 +31,7 @@ import androidx.fragment.app.Fragment;
 
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryScreen;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderAppearanceSettings;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderLaunchData;
@@ -266,6 +267,16 @@ public class StoriesLoaderFragment extends Fragment {
         linearLayout.addView(content);
     }
 
+    private BaseStoryScreen getStoriesReader() {
+        BaseStoryScreen screen = null;
+        if (getActivity() instanceof BaseStoryScreen) {
+            screen = (BaseStoryScreen) getActivity();
+        } else if (getParentFragment() instanceof BaseStoryScreen) {
+            screen = (BaseStoryScreen) getParentFragment();
+        }
+        return screen;
+    }
+
     private RelativeLayout createTimelineContainer(Context context) {
         RelativeLayout timelineContainer = new RelativeLayout(context);
         RelativeLayout.LayoutParams tclp = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,
@@ -292,7 +303,9 @@ public class StoriesLoaderFragment extends Fragment {
         close.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                ScreensManager.getInstance().closeStoryReader(CloseStory.CLICK);
+                BaseStoryScreen screen = getStoriesReader();
+                if (screen != null)
+                    screen.closeWithAction(CloseStory.CLICK);
             }
         });
         timelineContainer.addView(timeline);

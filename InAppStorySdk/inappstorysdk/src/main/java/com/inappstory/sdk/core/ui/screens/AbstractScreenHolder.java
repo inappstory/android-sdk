@@ -13,6 +13,7 @@ public abstract class AbstractScreenHolder<T extends BaseScreen, K> implements I
     protected final Object screenLock = new Object();
     private boolean inLaunchProcess;
 
+
     @Override
     public void startLaunchProcess() {
         synchronized (screenLock) {

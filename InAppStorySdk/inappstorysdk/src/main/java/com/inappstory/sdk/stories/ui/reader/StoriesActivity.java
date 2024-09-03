@@ -64,15 +64,15 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryScree
     @Override
     public void onPause() {
         super.onPause();
-
         unsubscribeClicks();
         if (isFinishing()) {
-            // ScreensManager.getInstance().hideGoods();
-            ScreensManager.getInstance().closeGameReader();
-            InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
-            if (inAppStoryManager != null) {
-                inAppStoryManager.getOpenStoriesReader().onRestoreStatusBar(this);
-            }
+            InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+                @Override
+                public void use(@NonNull InAppStoryManager manager) throws Exception {
+                    manager.getOpenStoriesReader().onRestoreStatusBar(StoriesActivity.this);
+                    manager.getScreensHolder().getGameScreenHolder().forceCloseScreen(null);
+                }
+            });
             OldStatisticManager.useInstance(
                     launchData.getSessionId(),
                     new GetOldStatisticManagerCallback() {
@@ -108,8 +108,12 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryScree
 
     @Override
     public void finish() {
-
-        ScreensManager.getInstance().closeGameReader();
+        InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryManager manager) throws Exception {
+                manager.getScreensHolder().getGameScreenHolder().forceCloseScreen(null);
+            }
+        });
         if (animateFirst &&
                 android.os.Build.VERSION.SDK_INT != Build.VERSION_CODES.O) {
             animateFirst = false;
@@ -327,6 +331,11 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryScree
     }
 
     @Override
+    public void permissionResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+
+    }
+
+    @Override
     public FragmentManager getScreenFragmentManager() {
         return getSupportFragmentManager();
     }
@@ -388,7 +397,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryScree
             @Override
             public void onDragDismissed() {
                 animateFirst = true;
-                ScreensManager.getInstance().closeStoryReader(CloseStory.SWIPE);
+                closeWithAction(CloseStory.SWIPE);
             }
 
             @Override
@@ -645,6 +654,11 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryScree
         }
         cleanReader();
         finishWithoutAnimation();
+    }
+
+    @Override
+    public void close() {
+
     }
 
     boolean cleaned = false;

@@ -15,9 +15,10 @@ import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.UseManagerInstanceCallback;
+import com.inappstory.sdk.core.ui.screens.GetScreenCallback;
 import com.inappstory.sdk.core.ui.screens.gamereader.BaseGameScreen;
+import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryScreen;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.GameReaderLaunchData;
-import com.inappstory.sdk.core.ui.screens.ScreensManager;
 import com.inappstory.sdk.stories.ui.utils.FragmentAction;
 import com.inappstory.sdk.stories.utils.IASBackPressHandler;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
@@ -63,12 +64,37 @@ public class GameMainFragment extends Fragment
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        ScreensManager.getInstance().pauseStoriesReader();
+
+        InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryManager manager) throws Exception {
+                manager.getScreensHolder().getStoryScreenHolder()
+                        .useCurrentReader(new GetScreenCallback<BaseStoryScreen>() {
+                            @Override
+                            public void get(BaseStoryScreen screen) {
+                                screen.pauseScreen();
+                            }
+                        });
+            }
+        });
     }
 
     @Override
     public void onDestroy() {
-        ScreensManager.getInstance().resumeStoriesReader();
+        InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryManager manager) throws Exception {
+                manager.getScreensHolder().getStoryScreenHolder()
+                        .useCurrentReader(
+                                new GetScreenCallback<BaseStoryScreen>() {
+                                    @Override
+                                    public void get(BaseStoryScreen screen) {
+                                        screen.resumeScreen();
+                                    }
+                                }
+                        );
+            }
+        });
         super.onDestroy();
     }
 
@@ -80,7 +106,13 @@ public class GameMainFragment extends Fragment
             forceFinish();
             return;
         }
-        ScreensManager.getInstance().subscribeGameScreen(this);
+
+        InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryManager manager) throws Exception {
+                manager.getScreensHolder().getGameScreenHolder().subscribeScreen(GameMainFragment.this);
+            }
+        });
         createGameContentFragment(
                 savedInstanceState,
                 (GameReaderLaunchData) getArguments().getSerializable(GameReaderLaunchData.SERIALIZABLE_KEY)
@@ -89,7 +121,14 @@ public class GameMainFragment extends Fragment
 
     @Override
     public void onDestroyView() {
-        ScreensManager.getInstance().unsubscribeGameScreen(this);
+        InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryManager manager) throws Exception {
+                manager.getScreensHolder().getGameScreenHolder().unsubscribeScreen(
+                        GameMainFragment.this
+                );
+            }
+        });
         super.onDestroyView();
     }
 
@@ -123,9 +162,10 @@ public class GameMainFragment extends Fragment
     }
 
     @Override
-    public void resume() {
+    public void resumeScreen() {
 
     }
+
 
     @Override
     public void setShowGoodsCallback(ShowGoodsCallback callback) {
