@@ -1,5 +1,12 @@
 Change Log
 ==========
+
+Version *1.19.3 (913)*
+----------------------------
+* Fixed: remove long synchronization
+* Fixed: additional extras check in StoriesActivity
+* Fixed: unsubscribe ReaderPageFragment to prevent memory leaks
+* Fixed: clear unused items in favorite cell
   
 Version *1.19.2 (912)*
 ----------------------------
