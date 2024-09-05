@@ -18,6 +18,7 @@ import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.UseManagerInstanceCallback;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadStoriesCallback;
@@ -34,6 +35,7 @@ import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.core.ui.screens.ScreensManager;
 import com.inappstory.sdk.stories.ui.list.StoryTouchListener;
 import com.inappstory.sdk.stories.ui.reader.ActiveStoryItem;
+import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.ugc.list.OnUGCItemClick;
 import com.inappstory.sdk.utils.StringsUtils;
 
@@ -137,15 +139,19 @@ public class UgcStoriesList extends RecyclerView {
     public void onAttachedToWindow() {
         super.onAttachedToWindow();
         manager.list = this;
-        if (
-                ScreensManager.getInstance().activeStoryItem != null
-                        && uniqueID != null
-                        && uniqueID.equals(
-                        ScreensManager.getInstance().activeStoryItem.getUniqueListId()
-                )
-        ) {
-            renewCoordinates(ScreensManager.getInstance().activeStoryItem.getListIndex());
-        }
+        InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryManager manager) throws Exception {
+                ActiveStoryItem activeStoryItem = manager.getScreensHolder().getStoryScreenHolder().activeStoryItem();
+                if (
+                        activeStoryItem != null
+                                && uniqueID != null
+                                && uniqueID.equals(activeStoryItem.getUniqueListId())
+                ) {
+                    renewCoordinates(activeStoryItem.getListIndex());
+                }
+            }
+        });
         InAppStoryManager.debugSDKCalls("StoriesList_onAttachedToWindow", ""
                 + InAppStoryService.isNotNull());
         InAppStoryService.checkAndAddListSubscriber(manager);
@@ -162,8 +168,19 @@ public class UgcStoriesList extends RecyclerView {
                 v.getLocationOnScreen(location);
                 int x = location[0];
                 int y = location[1];
-                ScreensManager.getInstance().coordinates = new StoryItemCoordinates(x + v.getWidth() / 2,
-                        y + v.getHeight() / 2);
+                final StoryItemCoordinates coordinates = new StoryItemCoordinates(
+                        x + v.getWidth() / 2,
+                        y + v.getHeight() / 2
+                );
+                InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+                    @Override
+                    public void use(@NonNull InAppStoryManager manager) throws Exception {
+                        manager
+                                .getScreensHolder()
+                                .getStoryScreenHolder()
+                                .coordinates(coordinates);
+                    }
+                });
 
             }
         }, 950);
@@ -305,7 +322,7 @@ public class UgcStoriesList extends RecyclerView {
     }
 
 
-    public void changeStoryEvent(int storyId, String listID) {
+    public void changeStoryEvent(int storyId, final String listID) {
         if (adapter == null || adapter.getStoriesIds() == null) return;
         for (int i = 0; i < adapter.getStoriesIds().size(); i++) {
             if (adapter.getStoriesIds().get(i) == storyId) {
@@ -320,7 +337,14 @@ public class UgcStoriesList extends RecyclerView {
             ((LinearLayoutManager) layoutManager).scrollToPositionWithOffset(ind > 0 ? ind : 0, 0);
         }
         if (ind >= 0 && this.uniqueID != null && this.uniqueID.equals(listID)) {
-            ScreensManager.getInstance().activeStoryItem = new ActiveStoryItem(ind, listID);
+            InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+                @Override
+                public void use(@NonNull InAppStoryManager manager) throws Exception {
+                    manager.getScreensHolder().getStoryScreenHolder().activeStoryItem(
+                            new ActiveStoryItem(ind, listID)
+                    );
+                }
+            });
             renewCoordinates(ind);
         }
     }

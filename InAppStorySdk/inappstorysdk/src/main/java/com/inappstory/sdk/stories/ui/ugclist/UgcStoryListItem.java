@@ -7,8 +7,10 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.widget.AppCompatImageView;
 
 import com.inappstory.sdk.AppearanceManager;
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.UseManagerInstanceCallback;
 import com.inappstory.sdk.stories.cache.usecases.IGetStoryCoverCallback;
 import com.inappstory.sdk.stories.cache.usecases.StoryCoverUseCase;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoryItemCoordinates;
@@ -82,13 +84,21 @@ public class UgcStoryListItem extends BaseStoryListItem {
                 v.getLocationOnScreen(location);
                 int x = location[0];
                 int y = location[1];
-                ScreensManager.getInstance().coordinates =
-                        new StoryItemCoordinates(x + v.getWidth() / 2 - Sizes.dpToPxExt(8, itemView.getContext()),
-                                y + v.getHeight() / 2);
+                final StoryItemCoordinates coordinates = new StoryItemCoordinates(
+                        x + v.getWidth() / 2 - Sizes.dpToPxExt(8, itemView.getContext()),
+                        y + v.getHeight() / 2
+                );
+                InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+                    @Override
+                    public void use(@NonNull InAppStoryManager manager) throws Exception {
+                        manager.getScreensHolder().getStoryScreenHolder().coordinates(coordinates);
+                    }
+                });
+
                 if (UgcStoryListItem.this.callback != null)
                     UgcStoryListItem.this.callback.onItemClick(
                             getAbsoluteAdapterPosition(),
-                            ScreensManager.getInstance().coordinates
+                            coordinates
                     );
             }
         });

@@ -21,7 +21,9 @@ import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.UseManagerInstanceCallback;
 import com.inappstory.sdk.UseServiceInstanceCallback;
+import com.inappstory.sdk.core.ui.screens.storyreader.StoryScreenHolder;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadStoriesCallback;
 import com.inappstory.sdk.stories.callbacks.OnFavoriteItemClick;
@@ -224,15 +226,21 @@ public class StoriesList extends RecyclerView {
     public void onAttachedToWindow() {
         super.onAttachedToWindow();
         manager.list = this;
-        if (
-                ScreensManager.getInstance().activeStoryItem != null
-                        && uniqueID != null
-                        && uniqueID.equals(
-                        ScreensManager.getInstance().activeStoryItem.getUniqueListId()
-                )
-        ) {
-            renewCoordinates(ScreensManager.getInstance().activeStoryItem.getListIndex());
-        }
+        InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryManager manager) throws Exception {
+                StoryScreenHolder storyScreenHolder = manager.getScreensHolder().getStoryScreenHolder();
+                ActiveStoryItem activeStoryItem = storyScreenHolder.activeStoryItem();
+                if (
+                        activeStoryItem != null
+                                && uniqueID != null
+                                && uniqueID.equals(activeStoryItem.getUniqueListId())
+                ) {
+                    renewCoordinates(activeStoryItem.getListIndex(), storyScreenHolder);
+                }
+            }
+        });
+
         InAppStoryManager.debugSDKCalls("StoriesList_onAttachedToWindow", ""
                 + InAppStoryService.isNotNull());
         InAppStoryService.checkAndAddListSubscriber(manager);
@@ -520,7 +528,7 @@ public class StoriesList extends RecyclerView {
     }
 
 
-    public void changeStoryEvent(int storyId, String listID) {
+    public void changeStoryEvent(int storyId, final String listID) {
         if (adapter == null || adapter.getStoriesIds() == null) return;
         for (int i = 0; i < adapter.getStoriesIds().size(); i++) {
             if (adapter.getStoriesIds().get(i) == storyId) {
@@ -536,12 +544,20 @@ public class StoriesList extends RecyclerView {
             ((LinearLayoutManager) layoutManager).scrollToPositionWithOffset(Math.max(ind, 0), 0);
         }
         if (ind >= 0) {
-            ScreensManager.getInstance().activeStoryItem = new ActiveStoryItem(ind, listID);
-            renewCoordinates(ind);
+            InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+                @Override
+                public void use(@NonNull InAppStoryManager manager) throws Exception {
+                    StoryScreenHolder storyScreenHolder = manager.getScreensHolder().getStoryScreenHolder();
+                    storyScreenHolder.activeStoryItem(
+                            new ActiveStoryItem(ind, listID)
+                    );
+                    renewCoordinates(ind, storyScreenHolder);
+                }
+            });
         }
     }
 
-    private void renewCoordinates(final int index) {
+    private void renewCoordinates(final int index, @NonNull final StoryScreenHolder screenHolder) {
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
@@ -551,8 +567,12 @@ public class StoriesList extends RecyclerView {
                 v.getLocationOnScreen(location);
                 int x = location[0];
                 int y = location[1];
-                ScreensManager.getInstance().coordinates = new StoryItemCoordinates(x + v.getWidth() / 2,
-                        y + v.getHeight() / 2);
+                screenHolder.coordinates(
+                        new StoryItemCoordinates(
+                                x + v.getWidth() / 2,
+                                y + v.getHeight() / 2
+                        )
+                );
 
             }
         }, 950);

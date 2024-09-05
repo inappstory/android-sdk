@@ -209,8 +209,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
         if (System.currentTimeMillis() - clickTimestamp < 1500) {
             return;
         }
-
-        ScreensManager.getInstance().activeStoryItem = new ActiveStoryItem(ind, listID);
+        inAppStoryManager.getScreensHolder().getStoryScreenHolder().activeStoryItem(new ActiveStoryItem(ind, listID));
         int hasUGC = useUGC ? 1 : 0;
         int index = ind - hasUGC;
         clickTimestamp = System.currentTimeMillis();

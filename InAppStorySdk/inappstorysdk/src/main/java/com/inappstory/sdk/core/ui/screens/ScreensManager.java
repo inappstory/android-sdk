@@ -44,24 +44,6 @@ public class ScreensManager {
         return INSTANCE;
     }
 
-    private final Object gameReaderScreenLock = new Object();
-
-    private BaseGameScreen currentGameScreen;
-
-    public ActiveStoryItem activeStoryItem = null;
-    public StoryItemCoordinates coordinates = null;
-
-    public void clearCoordinates() {
-        coordinates = null;
-        activeStoryItem = null;
-    }
-
-
-    public CloseUgcReaderCallback ugcCloseCallback;
-
-    public void closeUGCEditor() {
-        if (ugcCloseCallback != null) ugcCloseCallback.onClose();
-    }
 
 
     public void showGoods(

@@ -18,4 +18,5 @@ public class StoryItemCoordinates implements Serializable {
         this.x = x;
         this.y = y;
     }
+
 }

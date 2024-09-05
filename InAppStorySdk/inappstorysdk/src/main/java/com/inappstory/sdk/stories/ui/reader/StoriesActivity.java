@@ -170,7 +170,11 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryScree
             case AppearanceManager.POPUP:
                 return new PopupReaderAnimation(animatedContainer, screenSize.y, 0f).setAnimations(true);
             default:
-                StoryItemCoordinates coordinates = ScreensManager.getInstance().coordinates;
+                StoryItemCoordinates coordinates = null;
+                InAppStoryManager manager = InAppStoryManager.getInstance();
+                if (manager != null) {
+                    coordinates = manager.getScreensHolder().getStoryScreenHolder().coordinates();
+                }
                 float pivotX = -screenSize.x / 2f;
                 float pivotY = -screenSize.y / 2f;
                 if (coordinates != null) {
@@ -203,7 +207,11 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryScree
                         screenSize.y
                 ).setAnimations(false);
             default:
-                StoryItemCoordinates coordinates = ScreensManager.getInstance().coordinates;
+                StoryItemCoordinates coordinates = null;
+                InAppStoryManager manager = InAppStoryManager.getInstance();
+                if (manager != null) {
+                    coordinates = manager.getScreensHolder().getStoryScreenHolder().coordinates();
+                }
                 float pivotX = -screenSize.x / 2f;
                 float pivotY = -screenSize.y / 2f;
                 if (coordinates != null) {
@@ -236,7 +244,12 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryScree
                         }
                     })
                     .start();
-            ScreensManager.getInstance().clearCoordinates();
+            InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+                @Override
+                public void use(@NonNull InAppStoryManager manager) throws Exception {
+                    manager.getScreensHolder().getStoryScreenHolder().clearCoordinates();
+                }
+            });
         } catch (Exception e) {
             finishWithoutAnimation();
         }

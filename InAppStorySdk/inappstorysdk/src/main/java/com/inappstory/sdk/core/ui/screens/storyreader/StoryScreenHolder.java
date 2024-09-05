@@ -10,7 +10,9 @@ import com.inappstory.sdk.core.ui.screens.AbstractScreenHolder;
 import com.inappstory.sdk.core.ui.screens.IOverlapContainerData;
 import com.inappstory.sdk.core.ui.screens.IOverlapContainerHolder;
 import com.inappstory.sdk.core.ui.screens.ShareProcessHandler;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.StoryItemCoordinates;
 import com.inappstory.sdk.stories.ui.OverlapFragmentObserver;
+import com.inappstory.sdk.stories.ui.reader.ActiveStoryItem;
 import com.inappstory.sdk.stories.ui.reader.OverlapFragment;
 
 public class StoryScreenHolder extends AbstractScreenHolder<BaseStoryScreen, LaunchStoryScreenData> implements IOverlapContainerHolder {
@@ -25,6 +27,31 @@ public class StoryScreenHolder extends AbstractScreenHolder<BaseStoryScreen, Lau
         if (screen != null)
             screen.closeWithAction(action);
     }
+
+
+    public ActiveStoryItem activeStoryItem() {
+        return activeStoryItem;
+    }
+
+    public void activeStoryItem(ActiveStoryItem activeStoryItem) {
+        this.activeStoryItem = activeStoryItem;
+    }
+
+    public StoryItemCoordinates coordinates() {
+        return coordinates;
+    }
+
+    public void coordinates(StoryItemCoordinates coordinates) {
+        this.coordinates = coordinates;
+    }
+
+    public void clearCoordinates() {
+        coordinates = null;
+        activeStoryItem = null;
+    }
+
+    private ActiveStoryItem activeStoryItem = null;
+    private StoryItemCoordinates coordinates = null;
 
     @Override
     public void openOverlapContainer(IOverlapContainerData data, FragmentManager fragmentManager, OverlapFragmentObserver observer) {
