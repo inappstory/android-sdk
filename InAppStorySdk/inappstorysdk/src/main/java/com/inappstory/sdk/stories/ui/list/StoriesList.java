@@ -21,6 +21,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.InitializedCallback;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.stories.api.models.Story;
@@ -740,8 +741,7 @@ public class StoriesList extends RecyclerView {
 
 
     private void loadStoriesInner() {
-
-        InAppStoryManager manager = InAppStoryManager.getInstance();
+        final InAppStoryManager manager = InAppStoryManager.getInstance();
         if (manager == null) {
             InAppStoryManager.showELog(
                     InAppStoryManager.IAS_ERROR_TAG,
@@ -752,34 +752,41 @@ public class StoriesList extends RecyclerView {
             );
             return;
         }
-        if (manager.noCorrectUserIdOrDevice()) return;
-
-        checkAppearanceManager();
-        InAppStoryManager.debugSDKCalls("StoriesList_loadStoriesInner", "");
-        final String listUid = ProfilingManager.getInstance().addTask("widget_init");
-        final boolean hasFavorite = (appearanceManager != null && !isFavoriteList && appearanceManager.csHasFavorite());
-
-        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+        manager.useIfInitialized(new InitializedCallback() {
             @Override
-            public void use(@NonNull final InAppStoryService service) throws Exception {
-                loadStoriesLocal(service, listUid, hasFavorite);
-            }
+            public void onCreated() {
+                if (manager.noCorrectUserIdOrDevice()) return;
 
-            @Override
-            public void error() throws Exception {
-                new Handler().postDelayed(new Runnable() {
+                checkAppearanceManager();
+                InAppStoryManager.debugSDKCalls("StoriesList_loadStoriesInner", "");
+                final String listUid = ProfilingManager.getInstance().addTask("widget_init");
+                final boolean hasFavorite = (appearanceManager != null && !isFavoriteList && appearanceManager.csHasFavorite());
+
+                InAppStoryService.useInstance(new UseServiceInstanceCallback() {
                     @Override
-                    public void run() {
-                        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
-                            @Override
-                            public void use(@NonNull InAppStoryService service) throws Exception {
-                                loadStoriesLocal(service, listUid, hasFavorite);
-                            }
-                        });
+                    public void use(@NonNull final InAppStoryService service) throws Exception {
+                        loadStoriesLocal(service, listUid, hasFavorite);
                     }
-                }, 1000);
+
+                    @Override
+                    public void error() throws Exception {
+                        new Handler().postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+                                    @Override
+                                    public void use(@NonNull InAppStoryService service) throws Exception {
+                                        loadStoriesLocal(service, listUid, hasFavorite);
+                                    }
+                                });
+                            }
+                        }, 1000);
+                    }
+                });
             }
         });
+
+
     }
 
 

@@ -879,14 +879,36 @@ public class InAppStoryService {
         if (checkSpaceThread.isShutdown()) {
             checkSpaceThread = new ScheduledThreadPoolExecutor(1);
         }
+        filesDownloadManager = new FilesDownloadManager(context, cacheSize);
         checkSpaceThread.scheduleAtFixedRate(checkFreeSpace, 1L, 60000L, TimeUnit.MILLISECONDS);
         getStoryDownloadManager().initDownloaders();
-        filesDownloadManager = new FilesDownloadManager(context, cacheSize);
 
         logSaver = new GameLogSaver();
         logSender = new GameLogSender(this, logSaver);
+        List<InitializedCallback> externalCallbacks = new ArrayList<>();
+        synchronized (initializedLock) {
+            initialized = true;
+            externalCallbacks.addAll(initializedCallbacks);
+            initializedCallbacks.clear();
+        }
+        for (InitializedCallback callback: externalCallbacks) {
+            callback.onCreated();
+        }
+    }
 
+    private boolean initialized = false;
+    private final Object initializedLock = new Object();
 
+    List<InitializedCallback> initializedCallbacks = new ArrayList<>();
+
+    public void useServiceIfInitialized(InitializedCallback callback) {
+        synchronized (initializedLock) {
+            if (initialized) {
+                callback.onCreated();
+            } else {
+                initializedCallbacks.add(callback);
+            }
+        }
     }
 
     public void createGamePreloader() {

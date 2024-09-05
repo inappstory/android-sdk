@@ -135,19 +135,27 @@ public class InAppStoryManager {
         }
     }
 
-    public static boolean isInitialized() {
+    public boolean isInitialized() {
         synchronized (initLock) {
             return initialized;
         }
     }
 
-    private static void changeInitialize(boolean initStatus) {
+    private void changeInitialize(boolean initStatus) {
+        List<InitializedCallback> localCallbacks = new ArrayList<>();
         synchronized (initLock) {
+            if (initStatus && (initialized != initStatus)) {
+                localCallbacks.addAll(initializedCallbacks);
+                initializedCallbacks.clear();
+            }
             initialized = initStatus;
+        }
+        for (InitializedCallback callback: localCallbacks) {
+            callback.onCreated();
         }
     }
 
-    private static boolean initialized = false;
+    private boolean initialized = false;
 
     public static void setInstance(InAppStoryManager manager) {
         synchronized (lock) {
@@ -1049,7 +1057,7 @@ public class InAppStoryManager {
 
 
     private void build(final Builder builder) {
-        Context context = this.context;
+        final Context context = this.context;
         Integer errorStringId = null;
         if (context == null) {
             errorStringId = R.string.ias_context_is_null;
@@ -1076,10 +1084,15 @@ public class InAppStoryManager {
                     R.string.ias_min_free_space_error));
             return;
         }
-        InAppStoryService inAppStoryService = InAppStoryService.getInstance();
+        final InAppStoryService inAppStoryService = InAppStoryService.getInstance();
         if (inAppStoryService != null) {
             inAppStoryService.setUserId(builder.userId);
-            inAppStoryService.setCacheSizes(context);
+            service.useServiceIfInitialized(new InitializedCallback() {
+                @Override
+                public void onCreated() {
+                    inAppStoryService.setCacheSizes(context);
+                }
+            });
         }
         String domain = new HostFromSecretKey(
                 builder.apiKey
@@ -1305,12 +1318,14 @@ public class InAppStoryManager {
         this.API_KEY = apiKey;
         this.TEST_KEY = testKey;
         this.userId = userId;
-        boolean isInitialized = isInitialized();
+        boolean isInitialized = false;
+        synchronized (initLock) {
+            isInitialized = initialized;
+        }
         if (isInitialized) {
             localHandler.removeCallbacksAndMessages(null);
             localDestroy();
         }
-        changeInitialize(true);
         if (ApiSettings.getInstance().hostIsDifferent(cmsUrl)) {
             if (networkClient != null) {
                 networkClient.clear();
@@ -1325,11 +1340,13 @@ public class InAppStoryManager {
                 .host(cmsUrl);
 
         networkClient = new NetworkClient(context, cmsUrl);
+
+        changeInitialize(true);
     }
 
 
     private static final Object lock = new Object();
-    private static final Object initLock = new Object();
+    private final Object initLock = new Object();
 
     public static void logout() {
         InAppStoryManager.showDLog("AdditionalLog", "closeSession: logout");
@@ -1503,92 +1520,95 @@ public class InAppStoryManager {
             }, 1000);
             return;
         }
-        if (networkClient == null) {
-            stackFeedResult.error();
-            return;
-        }
-        SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
+        useIfInitialized(new InitializedCallback() {
             @Override
-            public void onSuccess(final String sessionId) {
-                String localTags = null;
-                if (tags != null) {
-                    localTags = TextUtils.join(",", tags);
-                } else if (getTags() != null) {
-                    localTags = TextUtils.join(",", getTags());
+            public void onCreated() {
+                if (networkClient == null) {
+                    stackFeedResult.error();
+                    return;
                 }
-                networkClient.enqueue(
-                        networkClient.getApi().getFeed(
-                                localFeed,
-                                ApiSettings.getInstance().getTestKey(),
-                                0,
-                                localTags == null ? getTagsString() : localTags,
-                                null,
-                                null//"feed_info"
-                        ),
-                        new LoadFeedCallback() {
-                            @Override
-                            public void onSuccess(final Feed response) {
-                                if (response == null || response.stories == null) {
-                                    stackFeedResult.error();
-                                } else {
-                                    InAppStoryService.useInstance(new UseServiceInstanceCallback() {
-                                        @Override
-                                        public void use(@NonNull InAppStoryService service) throws Exception {
-                                            service.saveStoriesOpened(response.stories, Story.StoryType.COMMON);
-                                            service.getStoryDownloadManager().uploadingAdditional(
-                                                    response.stories,
-                                                    Story.StoryType.COMMON
-                                            );
-                                        }
-                                    });
-                                    final StackStoryObserver observer = new StackStoryObserver(
-                                            response.stories,
-                                            sessionId,
-                                            localAppearanceManager,
-                                            localUniqueStackId,
-                                            localFeed,
-                                            new StackStoryUpdatedCallback() {
+                SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
+                    @Override
+                    public void onSuccess(final String sessionId) {
+                        String localTags = null;
+                        if (tags != null) {
+                            localTags = TextUtils.join(",", tags);
+                        } else if (getTags() != null) {
+                            localTags = TextUtils.join(",", getTags());
+                        }
+                        networkClient.enqueue(
+                                networkClient.getApi().getFeed(
+                                        localFeed,
+                                        ApiSettings.getInstance().getTestKey(),
+                                        0,
+                                        localTags == null ? getTagsString() : localTags,
+                                        null,
+                                        null//"feed_info"
+                                ),
+                                new LoadFeedCallback() {
+                                    @Override
+                                    public void onSuccess(final Feed response) {
+                                        if (response == null || response.stories == null) {
+                                            stackFeedResult.error();
+                                        } else {
+                                            InAppStoryService.useInstance(new UseServiceInstanceCallback() {
                                                 @Override
-                                                public void onUpdate(IStackStoryData newStackStoryData) {
-                                                    stackFeedResult.update(newStackStoryData);
-                                                }
-                                            }
-                                    );
-
-                                    final IStackFeedActions stackFeedActions = new IStackFeedActions() {
-                                        @Override
-                                        public void openReader(Context context) {
-                                            observer.openReader(context);
-                                        }
-
-                                        @Override
-                                        public void unsubscribe() {
-                                            observer.unsubscribe();
-                                        }
-                                    };
-                                    if (response.stories.size() == 0) {
-                                        stackFeedResult.success(null, stackFeedActions);
-                                        return;
-                                    }
-                                    final Runnable loadObserver = new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            observer.subscribe();
-                                            observer.onLoad(new StackStoryUpdatedCallback() {
-                                                @Override
-                                                public void onUpdate(IStackStoryData newStackStoryData) {
-                                                    stackFeedResult.success(
-                                                            newStackStoryData,
-                                                            stackFeedActions
+                                                public void use(@NonNull InAppStoryService service) throws Exception {
+                                                    service.saveStoriesOpened(response.stories, Story.StoryType.COMMON);
+                                                    service.getStoryDownloadManager().uploadingAdditional(
+                                                            response.stories,
+                                                            Story.StoryType.COMMON
                                                     );
                                                 }
                                             });
-                                        }
-                                    };
-                                    Image feedCover = response.getProperCover(localAppearanceManager.csCoverQuality());
-                                    if (feedCover != null) {
-                                        observer.feedCover = feedCover.getUrl();
-                                        loadObserver.run();
+                                            final StackStoryObserver observer = new StackStoryObserver(
+                                                    response.stories,
+                                                    sessionId,
+                                                    localAppearanceManager,
+                                                    localUniqueStackId,
+                                                    localFeed,
+                                                    new StackStoryUpdatedCallback() {
+                                                        @Override
+                                                        public void onUpdate(IStackStoryData newStackStoryData) {
+                                                            stackFeedResult.update(newStackStoryData);
+                                                        }
+                                                    }
+                                            );
+
+                                            final IStackFeedActions stackFeedActions = new IStackFeedActions() {
+                                                @Override
+                                                public void openReader(Context context) {
+                                                    observer.openReader(context);
+                                                }
+
+                                                @Override
+                                                public void unsubscribe() {
+                                                    observer.unsubscribe();
+                                                }
+                                            };
+                                            if (response.stories.size() == 0) {
+                                                stackFeedResult.success(null, stackFeedActions);
+                                                return;
+                                            }
+                                            final Runnable loadObserver = new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    observer.subscribe();
+                                                    observer.onLoad(new StackStoryUpdatedCallback() {
+                                                        @Override
+                                                        public void onUpdate(IStackStoryData newStackStoryData) {
+                                                            stackFeedResult.success(
+                                                                    newStackStoryData,
+                                                                    stackFeedActions
+                                                            );
+                                                        }
+                                                    });
+                                                }
+                                            };
+                                            Image feedCover = response.getProperCover(localAppearanceManager.csCoverQuality());
+                                            if (feedCover != null) {
+                                                observer.feedCover = feedCover.getUrl();
+                                                loadObserver.run();
                                       /*  Downloader.downloadFileAndSendToInterface(feedCover.getUrl(), new RunnableCallback() {
                                             @Override
                                             public void run(String coverPath) {
@@ -1601,25 +1621,28 @@ public class InAppStoryManager {
                                                 loadObserver.run();
                                             }
                                         });*/
-                                    } else {
-                                        loadObserver.run();
+                                            } else {
+                                                loadObserver.run();
+                                            }
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onError(int code, String message) {
+                                        stackFeedResult.error();
                                     }
                                 }
-                            }
+                        );
+                    }
 
-                            @Override
-                            public void onError(int code, String message) {
-                                stackFeedResult.error();
-                            }
-                        }
-                );
-            }
-
-            @Override
-            public void onError() {
-                stackFeedResult.error();
+                    @Override
+                    public void onError() {
+                        stackFeedResult.error();
+                    }
+                });
             }
         });
+
     }
 
     private void showOnboardingStoriesInner(final Integer limit, final String feed, final List<String> tags, final Context outerContext, final AppearanceManager manager) {
@@ -1633,80 +1656,85 @@ public class InAppStoryManager {
             }, 1000);
             return;
         }
-
-        if (noCorrectUserIdOrDevice()) return;
-        if (tags != null && StringsUtils.getBytesLength(TextUtils.join(",", tags)) > TAG_LIMIT) {
-            showELog(IAS_ERROR_TAG, StringsUtils.getErrorStringFromContext(context, R.string.ias_setter_tags_length_error));
-            return;
-        }
-
-        SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
+        useIfInitialized(new InitializedCallback() {
             @Override
-            public void onSuccess(final String sessionId) {
-                String localTags = null;
-                if (tags != null) {
-                    localTags = TextUtils.join(",", tags);
-                } else if (getTags() != null) {
-                    localTags = TextUtils.join(",", getTags());
+            public void onCreated() {
+                if (noCorrectUserIdOrDevice()) return;
+                if (tags != null && StringsUtils.getBytesLength(TextUtils.join(",", tags)) > TAG_LIMIT) {
+                    showELog(IAS_ERROR_TAG, StringsUtils.getErrorStringFromContext(context, R.string.ias_setter_tags_length_error));
+                    return;
                 }
 
-                final String onboardUID =
-                        ProfilingManager.getInstance().addTask("api_onboarding");
-                final String localFeed;
-                if (feed != null) localFeed = feed;
-                else localFeed = ONBOARDING_FEED;
-                networkClient.enqueue(
-                        networkClient.getApi().getOnboardingFeed(
-                                localFeed,
-                                ApiSettings.getInstance().getTestKey(),
-                                limit,
-                                localTags == null ? getTagsString() : localTags
-                        ),
-                        new LoadFeedCallback() {
-                            @Override
-                            public void onSuccess(Feed response) {
-                                InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
-                                if (inAppStoryManager == null) return;
-                                ProfilingManager.getInstance().setReady(onboardUID);
-                                List<Story> notOpened = new ArrayList<>();
-                                Set<String> opens = SharedPreferencesAPI.getStringSet(
-                                        inAppStoryManager.getLocalOpensKey()
-                                );
-                                if (opens == null) opens = new HashSet<>();
-                                if (response.stories != null) {
-                                    for (Story story : response.stories) {
-                                        boolean add = true;
-                                        for (String opened : opens) {
-                                            if (Integer.toString(story.id).equals(opened)) {
-                                                add = false;
+                SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
+                    @Override
+                    public void onSuccess(final String sessionId) {
+                        String localTags = null;
+                        if (tags != null) {
+                            localTags = TextUtils.join(",", tags);
+                        } else if (getTags() != null) {
+                            localTags = TextUtils.join(",", getTags());
+                        }
+
+                        final String onboardUID =
+                                ProfilingManager.getInstance().addTask("api_onboarding");
+                        final String localFeed;
+                        if (feed != null) localFeed = feed;
+                        else localFeed = ONBOARDING_FEED;
+                        networkClient.enqueue(
+                                networkClient.getApi().getOnboardingFeed(
+                                        localFeed,
+                                        ApiSettings.getInstance().getTestKey(),
+                                        limit,
+                                        localTags == null ? getTagsString() : localTags
+                                ),
+                                new LoadFeedCallback() {
+                                    @Override
+                                    public void onSuccess(Feed response) {
+                                        InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
+                                        if (inAppStoryManager == null) return;
+                                        ProfilingManager.getInstance().setReady(onboardUID);
+                                        List<Story> notOpened = new ArrayList<>();
+                                        Set<String> opens = SharedPreferencesAPI.getStringSet(
+                                                inAppStoryManager.getLocalOpensKey()
+                                        );
+                                        if (opens == null) opens = new HashSet<>();
+                                        if (response.stories != null) {
+                                            for (Story story : response.stories) {
+                                                boolean add = true;
+                                                for (String opened : opens) {
+                                                    if (Integer.toString(story.id).equals(opened)) {
+                                                        add = false;
+                                                    }
+                                                }
+                                                if (add) notOpened.add(story);
                                             }
                                         }
-                                        if (add) notOpened.add(story);
+                                        showLoadedOnboardings(notOpened, outerContext, manager, sessionId, localFeed);
                                     }
-                                }
-                                showLoadedOnboardings(notOpened, outerContext, manager, sessionId, localFeed);
-                            }
 
-                            @Override
-                            public void onError(int code, String message) {
-                                ProfilingManager.getInstance().setReady(onboardUID);
-                                loadOnboardingError(localFeed);
-                            }
+                                    @Override
+                                    public void onError(int code, String message) {
+                                        ProfilingManager.getInstance().setReady(onboardUID);
+                                        loadOnboardingError(localFeed);
+                                    }
 
-                            @Override
-                            public void timeoutError() {
-                                ProfilingManager.getInstance().setReady(onboardUID);
-                                loadOnboardingError(localFeed);
-                            }
-                        });
+                                    @Override
+                                    public void timeoutError() {
+                                        ProfilingManager.getInstance().setReady(onboardUID);
+                                        loadOnboardingError(localFeed);
+                                    }
+                                });
+                    }
+
+                    @Override
+                    public void onError() {
+                        loadOnboardingError(feed);
+                    }
+
+                });
             }
-
-            @Override
-            public void onError() {
-                loadOnboardingError(feed);
-            }
-
         });
+
     }
 
     private void loadOnboardingError(String feed) {
@@ -1902,81 +1930,98 @@ public class InAppStoryManager {
             }, 1000);
             return;
         }
-        if (noCorrectUserIdOrDevice()) return;
-        if (lastSingleOpen != null &&
-                lastSingleOpen.equals(storyId)) return;
-        Set<String> opens = SharedPreferencesAPI.getStringSet(
-                getLocalOpensKey()
-        );
-        if (opens != null && opens.contains(storyId) && callback != null) {
-            callback.alreadyShown();
-            return;
-        }
-        lastSingleOpen = storyId;
-        service.getStoryDownloadManager().getFullStoryByStringId(
-                new GetStoryByIdCallback() {
-                    @Override
-                    public void getStory(final Story story, final String sessionId) {
-                        if (story != null) {
-                            service.getStoryDownloadManager().addCompletedStoryTask(story,
-                                    Story.StoryType.COMMON);
-                            if (isStoryReaderOpened()) {
-                                ScreensManager.getInstance().closeStoryReader(CloseStory.AUTO);
-                                localHandler.postDelayed(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        openStoryInReader(
-                                                story,
-                                                sessionId,
-                                                context,
-                                                manager,
-                                                callback,
-                                                slide,
-                                                type,
-                                                readerSource,
-                                                readerAction
-                                        );
+        useIfInitialized(new InitializedCallback() {
+            @Override
+            public void onCreated() {
+                if (noCorrectUserIdOrDevice()) return;
+                if (lastSingleOpen != null &&
+                        lastSingleOpen.equals(storyId)) return;
+                Set<String> opens = SharedPreferencesAPI.getStringSet(
+                        getLocalOpensKey()
+                );
+                if (opens != null && opens.contains(storyId) && callback != null) {
+                    callback.alreadyShown();
+                    return;
+                }
+                lastSingleOpen = storyId;
+                service.getStoryDownloadManager().getFullStoryByStringId(
+                        new GetStoryByIdCallback() {
+                            @Override
+                            public void getStory(final Story story, final String sessionId) {
+                                if (story != null) {
+                                    service.getStoryDownloadManager().addCompletedStoryTask(story,
+                                            Story.StoryType.COMMON);
+                                    if (isStoryReaderOpened()) {
+                                        ScreensManager.getInstance().closeStoryReader(CloseStory.AUTO);
+                                        localHandler.postDelayed(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                openStoryInReader(
+                                                        story,
+                                                        sessionId,
+                                                        context,
+                                                        manager,
+                                                        callback,
+                                                        slide,
+                                                        type,
+                                                        readerSource,
+                                                        readerAction
+                                                );
+                                            }
+                                        }, 500);
+                                        return;
                                     }
-                                }, 500);
-                                return;
+                                    openStoryInReader(
+                                            story,
+                                            sessionId,
+                                            context,
+                                            manager,
+                                            callback,
+                                            slide,
+                                            type,
+                                            readerSource,
+                                            readerAction
+                                    );
+                                } else {
+                                    if (callback != null)
+                                        callback.onError();
+                                    lastSingleOpen = null;
+                                    return;
+                                }
                             }
-                            openStoryInReader(
-                                    story,
-                                    sessionId,
-                                    context,
-                                    manager,
-                                    callback,
-                                    slide,
-                                    type,
-                                    readerSource,
-                                    readerAction
-                            );
-                        } else {
-                            if (callback != null)
-                                callback.onError();
-                            lastSingleOpen = null;
-                            return;
-                        }
-                    }
 
-                    @Override
-                    public void loadError(int type) {
-                        if (type == -2) {
-                            if (callback != null)
-                                callback.alreadyShown();
-                        } else {
-                            if (callback != null)
-                                callback.onError();
-                        }
-                        lastSingleOpen = null;
-                    }
+                            @Override
+                            public void loadError(int type) {
+                                if (type == -2) {
+                                    if (callback != null)
+                                        callback.alreadyShown();
+                                } else {
+                                    if (callback != null)
+                                        callback.onError();
+                                }
+                                lastSingleOpen = null;
+                            }
 
-                },
-                storyId,
-                type,
-                true,
-                readerSource
-        );
+                        },
+                        storyId,
+                        type,
+                        true,
+                        readerSource
+                );
+            }
+        });
+
+    }
+
+    List<InitializedCallback> initializedCallbacks = new ArrayList<>();
+
+    public void useIfInitialized(InitializedCallback callback) {
+        boolean inited = false;
+        synchronized (initLock) {
+            if (initialized) inited = true;
+            else initializedCallbacks.add(callback);
+        }
+        if (inited) callback.onCreated();
     }
 
     private void showStoryInner(final String storyId,
@@ -2006,69 +2051,75 @@ public class InAppStoryManager {
             }, 1000);
             return;
         }
-        if (noCorrectUserIdOrDevice()) return;
-        if (lastSingleOpen != null &&
-                lastSingleOpen.equals(storyId)) return;
-        lastSingleOpen = storyId;
-        service.getStoryDownloadManager().getFullStoryByStringId(
-                new GetStoryByIdCallback() {
-                    @Override
-                    public void getStory(final Story story, final String sessionId) {
-                        if (story != null) {
-                            service.getStoryDownloadManager().addCompletedStoryTask(story,
-                                    Story.StoryType.COMMON);
-                            if (isStoryReaderOpened()) {
-                                ScreensManager.getInstance().closeStoryReader(CloseStory.AUTO);
-                                localHandler.postDelayed(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        openStoryInReader(
-                                                story,
-                                                sessionId,
-                                                context,
-                                                manager,
-                                                callback,
-                                                slide,
-                                                type,
-                                                readerSource,
-                                                readerAction
-                                        );
+        useIfInitialized(new InitializedCallback() {
+            @Override
+            public void onCreated() {
+                if (noCorrectUserIdOrDevice()) return;
+                if (lastSingleOpen != null &&
+                        lastSingleOpen.equals(storyId)) return;
+                lastSingleOpen = storyId;
+                service.getStoryDownloadManager().getFullStoryByStringId(
+                        new GetStoryByIdCallback() {
+                            @Override
+                            public void getStory(final Story story, final String sessionId) {
+                                if (story != null) {
+                                    service.getStoryDownloadManager().addCompletedStoryTask(story,
+                                            Story.StoryType.COMMON);
+                                    if (isStoryReaderOpened()) {
+                                        ScreensManager.getInstance().closeStoryReader(CloseStory.AUTO);
+                                        localHandler.postDelayed(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                openStoryInReader(
+                                                        story,
+                                                        sessionId,
+                                                        context,
+                                                        manager,
+                                                        callback,
+                                                        slide,
+                                                        type,
+                                                        readerSource,
+                                                        readerAction
+                                                );
+                                            }
+                                        }, 500);
+                                        return;
                                     }
-                                }, 500);
-                                return;
+                                    openStoryInReader(
+                                            story,
+                                            sessionId,
+                                            context,
+                                            manager,
+                                            callback,
+                                            slide,
+                                            type,
+                                            readerSource,
+                                            readerAction
+                                    );
+                                } else {
+                                    if (callback != null)
+                                        callback.onError();
+                                    lastSingleOpen = null;
+                                    return;
+                                }
                             }
-                            openStoryInReader(
-                                    story,
-                                    sessionId,
-                                    context,
-                                    manager,
-                                    callback,
-                                    slide,
-                                    type,
-                                    readerSource,
-                                    readerAction
-                            );
-                        } else {
-                            if (callback != null)
-                                callback.onError();
-                            lastSingleOpen = null;
-                            return;
-                        }
-                    }
 
-                    @Override
-                    public void loadError(int type) {
-                        if (callback != null)
-                            callback.onError();
-                        lastSingleOpen = null;
-                    }
+                            @Override
+                            public void loadError(int type) {
+                                if (callback != null)
+                                    callback.onError();
+                                lastSingleOpen = null;
+                            }
 
-                },
-                storyId,
-                type,
-                false,
-                readerSource
-        );
+                        },
+                        storyId,
+                        type,
+                        false,
+                        readerSource
+                );
+            }
+        });
+
     }
 
     private void showStoryInner(
