@@ -1,7 +1,7 @@
 package com.inappstory.sdk.stories.ui.reader;
 
 
-
+import androidx.annotation.NonNull;
 
 public class StoriesMainPhoneFragment extends StoriesMainFragment {
     @Override
@@ -33,6 +33,16 @@ public class StoriesMainPhoneFragment extends StoriesMainFragment {
 
     @Override
     void outsideClick() {
+
+    }
+
+    @Override
+    public void close() {
+
+    }
+
+    @Override
+    public void permissionResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
 
     }
 }

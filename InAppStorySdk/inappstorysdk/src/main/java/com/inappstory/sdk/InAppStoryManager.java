@@ -59,7 +59,6 @@ import com.inappstory.sdk.stories.outercallbacks.common.objects.DefaultOpenStori
 import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenGameReader;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenInAppMessageReader;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenStoriesReader;
-import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderAppearanceSettings;
 import com.inappstory.sdk.stories.outercallbacks.common.onboarding.OnboardingLoadCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.CallToActionCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickOnShareStoryCallback;
@@ -80,8 +79,6 @@ import com.inappstory.sdk.stories.stackfeed.StackStoryObserver;
 import com.inappstory.sdk.stories.stackfeed.StackStoryUpdatedCallback;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
-import com.inappstory.sdk.stories.ui.GetBaseReaderScreen;
-import com.inappstory.sdk.core.ui.screens.ScreensManager;
 import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryScreen;
 import com.inappstory.sdk.stories.ui.reader.ForceCloseReaderCallback;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
@@ -2204,7 +2201,7 @@ public class InAppStoryManager {
             String storyId,
             Context context,
             Integer slide,
-            StoriesReaderAppearanceSettings settings,
+            LaunchStoryScreenAppearance settings,
             Story.StoryType type,
             final SourceType readerSource,
             final int readerAction

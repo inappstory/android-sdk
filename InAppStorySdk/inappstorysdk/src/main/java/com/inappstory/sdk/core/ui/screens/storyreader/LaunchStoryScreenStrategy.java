@@ -9,9 +9,7 @@ import com.inappstory.sdk.core.ui.screens.IScreenHolder;
 import com.inappstory.sdk.core.ui.screens.LaunchScreenStrategy;
 import com.inappstory.sdk.core.ui.screens.LaunchScreenStrategyType;
 import com.inappstory.sdk.core.ui.screens.ScreensHolder;
-import com.inappstory.sdk.core.ui.screens.inappmessagereader.IAMScreenType;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenReader;
-import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderAppearanceSettings;
 
 import java.util.List;
 

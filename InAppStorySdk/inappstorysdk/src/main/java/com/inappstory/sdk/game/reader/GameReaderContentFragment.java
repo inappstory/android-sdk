@@ -364,8 +364,8 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
             }
             inAppStoryManager
                     .getScreensHolder()
-                    .getStoryScreenHolder()
-                    .openOverlapContainer(
+                    .getGameScreenHolder()
+                    .openShareOverlapContainer(
                             new GameReaderOverlapContainerDataForShare()
                                     .shareData(shareObject)
                                     .slideIndex(slideIndex)

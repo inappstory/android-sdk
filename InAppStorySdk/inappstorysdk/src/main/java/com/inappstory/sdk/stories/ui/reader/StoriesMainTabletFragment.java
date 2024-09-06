@@ -1,5 +1,7 @@
 package com.inappstory.sdk.stories.ui.reader;
 
+import androidx.annotation.NonNull;
+
 public class StoriesMainTabletFragment extends StoriesMainFragment {
     @Override
     void openAnimationProgress(float progress) {
@@ -33,5 +35,15 @@ public class StoriesMainTabletFragment extends StoriesMainFragment {
     @Override
     void outsideClick() {
         closeWithAction(-1);
+    }
+
+    @Override
+    public void close() {
+
+    }
+
+    @Override
+    public void permissionResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+
     }
 }

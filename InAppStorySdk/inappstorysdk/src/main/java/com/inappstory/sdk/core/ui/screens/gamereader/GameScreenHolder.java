@@ -12,6 +12,7 @@ import com.inappstory.sdk.core.ui.screens.IOverlapContainerData;
 import com.inappstory.sdk.core.ui.screens.IOverlapContainerHolder;
 import com.inappstory.sdk.core.ui.screens.ShareProcessHandler;
 import com.inappstory.sdk.stories.events.GameCompleteEventObserver;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.ui.OverlapFragmentObserver;
 import com.inappstory.sdk.stories.ui.reader.OverlapFragment;
 
@@ -39,7 +40,7 @@ public class GameScreenHolder extends AbstractScreenHolder<BaseGameScreen, Launc
     }
 
     @Override
-    public void openOverlapContainer(IOverlapContainerData data, FragmentManager fragmentManager, OverlapFragmentObserver observer) {
+    public void openShareOverlapContainer(IOverlapContainerData data, FragmentManager fragmentManager, OverlapFragmentObserver observer) {
         if (data instanceof GameReaderOverlapContainerDataForShare) {
             GameReaderOverlapContainerDataForShare storyReaderShareData = (GameReaderOverlapContainerDataForShare) data;
             try {
@@ -60,5 +61,10 @@ public class GameScreenHolder extends AbstractScreenHolder<BaseGameScreen, Launc
                 e.printStackTrace();
             }
         }
+    }
+
+    @Override
+    public void openGoodsOverlapContainer(String skusString, String widgetId, SlideData slideData) {
+
     }
 }

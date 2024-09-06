@@ -175,7 +175,10 @@ public class ReaderPager extends BothSideViewPager {
 
     @Override
     public boolean onTouchEvent(MotionEvent motionEvent) {
-
-        return super.onTouchEvent(motionEvent);
+        try {
+            return super.onTouchEvent(motionEvent);
+        } catch (Exception e) {
+            return false;
+        }
     }
 }

@@ -32,18 +32,17 @@ import com.inappstory.sdk.R;
 import com.inappstory.sdk.UseManagerInstanceCallback;
 import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryScreen;
+import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenAppearance;
+import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenData;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
-import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderAppearanceSettings;
-import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderLaunchData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.CloseReader;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.statistic.GetOldStatisticManagerCallback;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
-import com.inappstory.sdk.core.ui.screens.ScreensManager;
 import com.inappstory.sdk.stories.ui.widgets.elasticview.ElasticDragDismissFrameLayout;
 import com.inappstory.sdk.stories.utils.IASBackPressHandler;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
@@ -55,10 +54,10 @@ public class StoriesDialogFragment extends DialogFragment implements IASBackPres
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        appearanceSettings = (StoriesReaderAppearanceSettings) getArguments()
-                .getSerializable(StoriesReaderAppearanceSettings.SERIALIZABLE_KEY);
-        launchData = (StoriesReaderLaunchData) getArguments().
-                getSerializable(StoriesReaderLaunchData.SERIALIZABLE_KEY);
+        appearanceSettings = (LaunchStoryScreenAppearance) getArguments()
+                .getSerializable(LaunchStoryScreenAppearance.SERIALIZABLE_KEY);
+        launchData = (LaunchStoryScreenData) getArguments().
+                getSerializable(LaunchStoryScreenData.SERIALIZABLE_KEY);
         return inflater.inflate(R.layout.cs_mainscreen_stories_draggable, container, false);
     }
 
@@ -160,6 +159,11 @@ public class StoriesDialogFragment extends DialogFragment implements IASBackPres
     }
 
     @Override
+    public void close() {
+
+    }
+
+    @Override
     public void removeStoryFromFavorite(int id) {
         if (storiesContentFragment != null)
             storiesContentFragment.removeStoryFromFavorite(id);
@@ -203,6 +207,11 @@ public class StoriesDialogFragment extends DialogFragment implements IASBackPres
     @Override
     public void setShowGoodsCallback(ShowGoodsCallback callback) {
         currentGoodsCallback = callback;
+    }
+
+    @Override
+    public void permissionResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+
     }
 
     @Override
@@ -292,8 +301,8 @@ public class StoriesDialogFragment extends DialogFragment implements IASBackPres
     Story.StoryType type = Story.StoryType.COMMON;
 
 
-    StoriesReaderAppearanceSettings appearanceSettings;
-    StoriesReaderLaunchData launchData;
+    LaunchStoryScreenAppearance appearanceSettings;
+    LaunchStoryScreenData launchData;
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {

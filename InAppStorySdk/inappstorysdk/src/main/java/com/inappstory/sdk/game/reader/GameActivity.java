@@ -18,7 +18,6 @@ import com.inappstory.sdk.UseManagerInstanceCallback;
 import com.inappstory.sdk.core.ui.screens.gamereader.BaseGameScreen;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.GameReaderAppearanceSettings;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.GameReaderLaunchData;
-import com.inappstory.sdk.core.ui.screens.ScreensManager;
 import com.inappstory.sdk.stories.ui.utils.FragmentAction;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 

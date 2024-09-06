@@ -1,5 +1,7 @@
 package com.inappstory.sdk.core.ui.screens.storyreader;
 
+import static java.util.UUID.randomUUID;
+
 import android.os.Bundle;
 
 import androidx.fragment.app.FragmentManager;
@@ -11,7 +13,10 @@ import com.inappstory.sdk.core.ui.screens.IOverlapContainerData;
 import com.inappstory.sdk.core.ui.screens.IOverlapContainerHolder;
 import com.inappstory.sdk.core.ui.screens.ShareProcessHandler;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoryItemCoordinates;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
+import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.OverlapFragmentObserver;
+import com.inappstory.sdk.stories.ui.goods.GoodsWidgetFragment;
 import com.inappstory.sdk.stories.ui.reader.ActiveStoryItem;
 import com.inappstory.sdk.stories.ui.reader.OverlapFragment;
 
@@ -54,7 +59,7 @@ public class StoryScreenHolder extends AbstractScreenHolder<BaseStoryScreen, Lau
     private StoryItemCoordinates coordinates = null;
 
     @Override
-    public void openOverlapContainer(IOverlapContainerData data, FragmentManager fragmentManager, OverlapFragmentObserver observer) {
+    public void openShareOverlapContainer(IOverlapContainerData data, FragmentManager fragmentManager, OverlapFragmentObserver observer) {
         if (data instanceof StoryReaderOverlapContainerDataForShare) {
             StoryReaderOverlapContainerDataForShare storyReaderShareData = (StoryReaderOverlapContainerDataForShare) data;
             try {
@@ -75,6 +80,33 @@ public class StoryScreenHolder extends AbstractScreenHolder<BaseStoryScreen, Lau
             } catch (Exception e) {
                 e.printStackTrace();
             }
+        }
+    }
+
+    @Override
+    public void openGoodsOverlapContainer(String skusString, String widgetId, SlideData slideData) {
+        final String localTaskId;
+        if (widgetId != null) localTaskId = widgetId;
+        else localTaskId = randomUUID().toString();
+        final FragmentManager fragmentManager = getScreen().getScreenFragmentManager();
+        if (StatisticManager.getInstance() != null && slideData != null) {
+            StatisticManager.getInstance().sendGoodsOpen(slideData.story.id,
+                    slideData.index, widgetId, slideData.story.feed);
+        }
+        try {
+            GoodsWidgetFragment fragment = new GoodsWidgetFragment();
+            Bundle args = new Bundle();
+            args.putString("localTaskId", localTaskId);
+            args.putSerializable("slideData", slideData);
+            args.putString("widgetId", widgetId);
+            args.putString("skusString", skusString);
+            fragment.setArguments(args);
+            FragmentTransaction t = fragmentManager.beginTransaction()
+                    .replace(R.id.ias_outer_top_container, fragment);
+            t.addToBackStack("GoodsWidgetFragment");
+            t.commit();
+        } catch (Exception e) {
+
         }
     }
 }

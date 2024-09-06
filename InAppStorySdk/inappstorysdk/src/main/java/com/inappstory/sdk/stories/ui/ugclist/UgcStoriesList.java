@@ -32,10 +32,8 @@ import com.inappstory.sdk.stories.outercallbacks.storieslist.ListScrollCallback;
 import com.inappstory.sdk.stories.statistic.GetOldStatisticManagerCallback;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
-import com.inappstory.sdk.core.ui.screens.ScreensManager;
 import com.inappstory.sdk.stories.ui.list.StoryTouchListener;
 import com.inappstory.sdk.stories.ui.reader.ActiveStoryItem;
-import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.ugc.list.OnUGCItemClick;
 import com.inappstory.sdk.utils.StringsUtils;
 

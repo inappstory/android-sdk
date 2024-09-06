@@ -14,7 +14,6 @@ import com.inappstory.sdk.stories.cache.usecases.IGetStoryCoverCallback;
 import com.inappstory.sdk.stories.cache.usecases.StoryCoverUseCase;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoryItemCoordinates;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
-import com.inappstory.sdk.core.ui.screens.ScreensManager;
 import com.inappstory.sdk.stories.ui.views.IStoriesListItem;
 import com.inappstory.sdk.stories.ui.views.IStoriesListItemWithStoryData;
 import com.inappstory.sdk.stories.utils.Sizes;

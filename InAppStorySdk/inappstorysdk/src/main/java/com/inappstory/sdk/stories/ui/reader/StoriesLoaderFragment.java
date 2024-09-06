@@ -32,11 +32,10 @@ import androidx.fragment.app.Fragment;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryScreen;
+import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenAppearance;
+import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenData;
 import com.inappstory.sdk.stories.api.models.Story;
-import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderAppearanceSettings;
-import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderLaunchData;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
-import com.inappstory.sdk.core.ui.screens.ScreensManager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.buttonspanel.ButtonsPanel;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.progresstimeline.StoryTimeline;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.progresstimeline.StoryTimelineState;
@@ -328,8 +327,8 @@ public class StoriesLoaderFragment extends Fragment {
         return buttonsPanel;
     }
 
-    StoriesReaderAppearanceSettings appearanceSettings;
-    StoriesReaderLaunchData launchData;
+    LaunchStoryScreenAppearance appearanceSettings;
+    LaunchStoryScreenData launchData;
 
     @Override
     public View onCreateView(
@@ -338,11 +337,11 @@ public class StoriesLoaderFragment extends Fragment {
             @Nullable Bundle savedInstanceState
     ) {
         Bundle arguments = requireArguments();
-        appearanceSettings = (StoriesReaderAppearanceSettings) arguments.getSerializable(
-                StoriesReaderAppearanceSettings.SERIALIZABLE_KEY
+        appearanceSettings = (LaunchStoryScreenAppearance) arguments.getSerializable(
+                LaunchStoryScreenAppearance.SERIALIZABLE_KEY
         );
-        launchData = (StoriesReaderLaunchData) arguments.getSerializable(
-                StoriesReaderLaunchData.SERIALIZABLE_KEY
+        launchData = (LaunchStoryScreenData) arguments.getSerializable(
+                LaunchStoryScreenData.SERIALIZABLE_KEY
         );
         View view = new View(getContext());
         try {

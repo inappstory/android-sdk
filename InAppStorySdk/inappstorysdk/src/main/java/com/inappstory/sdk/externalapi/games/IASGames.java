@@ -8,7 +8,6 @@ import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.UseManagerInstanceCallback;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.outercallbacks.common.gamereader.GameReaderCallback;
-import com.inappstory.sdk.core.ui.screens.ScreensManager;
 
 public class IASGames {
     public void close() {

@@ -25,8 +25,9 @@ import com.inappstory.sdk.R;
 import com.inappstory.sdk.UseManagerInstanceCallback;
 import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.core.ui.screens.ShareProcessHandler;
-import com.inappstory.sdk.core.ui.screens.gamereader.GameReaderOverlapContainerDataForShare;
 import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryScreen;
+import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenAppearance;
+import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenData;
 import com.inappstory.sdk.core.ui.screens.storyreader.StoryReaderOverlapContainerDataForShare;
 import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.inner.share.InnerShareFilesPrepare;
@@ -39,15 +40,12 @@ import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.callbacks.ShareCallback;
 import com.inappstory.sdk.stories.events.GameCompleteEvent;
 import com.inappstory.sdk.stories.events.GameCompleteEventObserver;
-import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderAppearanceSettings;
-import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderLaunchData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.statistic.GetOldStatisticManagerCallback;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.ui.OverlapFragmentObserver;
-import com.inappstory.sdk.core.ui.screens.ScreensManager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPagerAdapter;
 import com.inappstory.sdk.stories.utils.IASBackPressHandler;
@@ -167,7 +165,7 @@ public class StoriesContentFragment extends Fragment
             inAppStoryManager
                     .getScreensHolder()
                     .getStoryScreenHolder()
-                    .openOverlapContainer(
+                    .openShareOverlapContainer(
                             new StoryReaderOverlapContainerDataForShare()
                                     .shareData(shareObject)
                                     .slideIndex(slideIndex)
@@ -210,7 +208,7 @@ public class StoriesContentFragment extends Fragment
         if (getArguments() != null) {
             getArguments().putInt("index", position);
         }
-        StoriesReaderLaunchData launchData = getLaunchData();
+        LaunchStoryScreenData launchData = getLaunchData();
         if (launchData == null
                 || launchData.getStoriesIds() == null
                 || launchData.getStoriesIds().size() <= position) {
@@ -220,7 +218,7 @@ public class StoriesContentFragment extends Fragment
     }
 
     public void disableDrag(int storyId, Story.StoryType type) {
-        StoriesReaderLaunchData launchData = getLaunchData();
+        LaunchStoryScreenData launchData = getLaunchData();
         if (storiesViewPager == null || launchData == null) return;
         if (launchData.getStoriesIds().get(
                 storiesViewPager.getCurrentItem()
@@ -248,8 +246,8 @@ public class StoriesContentFragment extends Fragment
     boolean closeOnSwipe = true;
     boolean closeOnOverscroll = true;
 
-    private StoriesReaderAppearanceSettings appearanceSettings;
-    private StoriesReaderLaunchData launchData;
+    private LaunchStoryScreenAppearance appearanceSettings;
+    private LaunchStoryScreenData launchData;
 
     public void forceFinish() {
         BaseStoryScreen readerScreen = getStoriesReader();
@@ -308,20 +306,20 @@ public class StoriesContentFragment extends Fragment
     ReaderPager storiesViewPager;
 
 
-    private StoriesReaderLaunchData getLaunchData() {
+    private LaunchStoryScreenData getLaunchData() {
         if (launchData == null) {
             Bundle arguments = requireArguments();
-            launchData = (StoriesReaderLaunchData) arguments
-                    .getSerializable(StoriesReaderLaunchData.SERIALIZABLE_KEY);
+            launchData = (LaunchStoryScreenData) arguments
+                    .getSerializable(LaunchStoryScreenData.SERIALIZABLE_KEY);
         }
         return launchData;
     }
 
-    public StoriesReaderAppearanceSettings getAppearanceSettings() {
+    public LaunchStoryScreenAppearance getAppearanceSettings() {
         if (appearanceSettings == null) {
             Bundle arguments = requireArguments();
-            appearanceSettings = (StoriesReaderAppearanceSettings) arguments
-                    .getSerializable(StoriesReaderAppearanceSettings.SERIALIZABLE_KEY);
+            appearanceSettings = (LaunchStoryScreenAppearance) arguments
+                    .getSerializable(LaunchStoryScreenAppearance.SERIALIZABLE_KEY);
         }
         return appearanceSettings;
     }
@@ -332,8 +330,8 @@ public class StoriesContentFragment extends Fragment
         Context context = requireContext();
         try {
             Bundle arguments = requireArguments();
-            StoriesReaderAppearanceSettings appearanceSettings = getAppearanceSettings();
-            StoriesReaderLaunchData launchData = getLaunchData();
+            LaunchStoryScreenAppearance appearanceSettings = getAppearanceSettings();
+            LaunchStoryScreenData launchData = getLaunchData();
             currentIds = launchData.getStoriesIds();
             readerAnimation = appearanceSettings.csStoryReaderAnimation();
             ind = launchData.getListIndex();

@@ -6,6 +6,7 @@ import android.view.ViewGroup;
 import com.inappstory.sdk.core.ui.screens.IScreenHolder;
 import com.inappstory.sdk.core.ui.screens.LaunchScreenStrategy;
 import com.inappstory.sdk.core.ui.screens.LaunchScreenStrategyType;
+import com.inappstory.sdk.core.ui.screens.ScreensHolder;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenReader;
 
 public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
@@ -22,8 +23,9 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
         return this;
     }
 
+
     @Override
-    public void launch(Context context, IOpenReader openReader, IScreenHolder screenHolder) {
+    public void launch(Context context, IOpenReader openReader, ScreensHolder screensHolders) {
 
     }
 

@@ -29,7 +29,6 @@ import com.inappstory.sdk.stories.statistic.GetOldStatisticManagerCallback;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
-import com.inappstory.sdk.core.ui.screens.ScreensManager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPageManager;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 
@@ -50,12 +49,12 @@ public class ReaderManager {
             this.host = host;
         }
     }
+
     public boolean hostIsEqual(StoriesContentFragment host) {
         synchronized (hostLock) {
             return this.host == host;
         }
     }
-
 
 
     public StoriesContentFragment getHost() {
@@ -68,7 +67,6 @@ public class ReaderManager {
 
     public ReaderManager() {
     }
-
 
 
     public ReaderManager(
@@ -145,37 +143,46 @@ public class ReaderManager {
     }
 
     public void showGoods(
-            String skusString,
-            String widgetId,
+            final String skusString,
+            final String widgetId,
             final ShowGoodsCallback showGoodsCallback,
-            SlideData slideData
+            final SlideData slideData
     ) {
-        BaseStoryScreen screen = getReaderScreen();
-        if (screen == null) {
-            showGoodsCallback.goodsIsCanceled(widgetId);
-            Log.d("InAppStory_SDK_error", "Something wrong");
-            return;
-        }
-        if (AppearanceManager.getCommonInstance().csCustomGoodsWidget() == null) {
-            showGoodsCallback.goodsIsCanceled(widgetId);
-            Log.d("InAppStory_SDK_error", "Empty goods widget");
-            return;
-        }
-        FragmentManager fragmentManager = screen.getScreenFragmentManager();
-        if (fragmentManager.findFragmentById(R.id.ias_outer_top_container) != null) {
-            showGoodsCallback.goodsIsCanceled(widgetId);
-            Log.d("InAppStory_SDK_error", "Top container is busy");
-            return;
-        }
-        if (screen instanceof ShowGoodsCallback) {
-            screen.setShowGoodsCallback(showGoodsCallback);
-            ((ShowGoodsCallback) screen).goodsIsOpened();
-        }
-        ScreensManager.getInstance().showGoods(
-                skusString,
-                screen,
-                widgetId,
-                slideData
+        InAppStoryManager.useInstance(
+                new UseManagerInstanceCallback() {
+                    @Override
+                    public void use(@NonNull InAppStoryManager manager) throws Exception {
+                        BaseStoryScreen screen = getReaderScreen();
+                        if (screen == null) {
+                            showGoodsCallback.goodsIsCanceled(widgetId);
+                            Log.d("InAppStory_SDK_error", "Something wrong");
+                            return;
+                        }
+                        if (AppearanceManager.getCommonInstance().csCustomGoodsWidget() == null) {
+                            showGoodsCallback.goodsIsCanceled(widgetId);
+                            Log.d("InAppStory_SDK_error", "Empty goods widget");
+                            return;
+                        }
+                        FragmentManager fragmentManager = screen.getScreenFragmentManager();
+                        if (fragmentManager.findFragmentById(R.id.ias_outer_top_container) != null) {
+                            showGoodsCallback.goodsIsCanceled(widgetId);
+                            Log.d("InAppStory_SDK_error", "Top container is busy");
+                            return;
+                        }
+                        if (screen instanceof ShowGoodsCallback) {
+                            screen.setShowGoodsCallback(showGoodsCallback);
+                            ((ShowGoodsCallback) screen).goodsIsOpened();
+                        }
+                        manager
+                                .getScreensHolder()
+                                .getStoryScreenHolder()
+                                .openGoodsOverlapContainer(
+                                        skusString,
+                                        widgetId,
+                                        slideData
+                                );
+                    }
+                }
         );
     }
 

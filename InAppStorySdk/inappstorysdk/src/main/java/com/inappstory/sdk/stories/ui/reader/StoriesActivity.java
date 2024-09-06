@@ -31,10 +31,10 @@ import com.inappstory.sdk.R;
 import com.inappstory.sdk.UseManagerInstanceCallback;
 import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryScreen;
+import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenAppearance;
+import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenData;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
-import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderAppearanceSettings;
-import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderLaunchData;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoryItemCoordinates;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
@@ -42,7 +42,6 @@ import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.statistic.GetOldStatisticManagerCallback;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
-import com.inappstory.sdk.core.ui.screens.ScreensManager;
 import com.inappstory.sdk.stories.ui.reader.animations.DisabledReaderAnimation;
 import com.inappstory.sdk.stories.ui.reader.animations.FadeReaderAnimation;
 import com.inappstory.sdk.stories.ui.reader.animations.HandlerAnimatorListenerAdapter;
@@ -362,10 +361,10 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryScree
         }
         super.onCreate(savedInstanceState1);
         setContentView(R.layout.cs_mainscreen_stories_draggable);
-        launchData = (StoriesReaderLaunchData) getIntent().
-                getSerializableExtra(StoriesReaderLaunchData.SERIALIZABLE_KEY);
-        appearanceSettings = (StoriesReaderAppearanceSettings) getIntent()
-                .getSerializableExtra(StoriesReaderAppearanceSettings.SERIALIZABLE_KEY);
+        launchData = (LaunchStoryScreenData) getIntent().
+                getSerializableExtra(LaunchStoryScreenData.SERIALIZABLE_KEY);
+        appearanceSettings = (LaunchStoryScreenAppearance) getIntent()
+                .getSerializableExtra(LaunchStoryScreenAppearance.SERIALIZABLE_KEY);
         if (InAppStoryManager.isNull() || InAppStoryService.isNull()) {
             finish();
             return;
@@ -540,8 +539,8 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryScree
     }
 
     StoriesContentFragment storiesContentFragment;
-    StoriesReaderAppearanceSettings appearanceSettings;
-    StoriesReaderLaunchData launchData;
+    LaunchStoryScreenAppearance appearanceSettings;
+    LaunchStoryScreenData launchData;
 
     private void setAppearanceSettings(Bundle bundle) {
         backTintView.setBackgroundColor(appearanceSettings.csReaderBackgroundColor());

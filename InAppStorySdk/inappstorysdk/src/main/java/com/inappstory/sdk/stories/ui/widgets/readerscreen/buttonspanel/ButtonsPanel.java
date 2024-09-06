@@ -3,7 +3,6 @@ package com.inappstory.sdk.stories.ui.widgets.readerscreen.buttonspanel;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.View;
 import android.widget.LinearLayout;
 
@@ -12,8 +11,7 @@ import androidx.appcompat.widget.AppCompatImageView;
 
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
-import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderAppearanceSettings;
-import com.inappstory.sdk.stories.ui.reader.StoriesReaderSettings;
+import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenAppearance;
 
 public class ButtonsPanel extends LinearLayout {
 
@@ -53,7 +51,7 @@ public class ButtonsPanel extends LinearLayout {
     public boolean isVisible = true;
 
     public void setButtonsVisibility(
-            StoriesReaderAppearanceSettings readerSettings,
+            LaunchStoryScreenAppearance readerSettings,
             boolean hasLike,
             boolean hasFavorite,
             boolean hasShare,
@@ -137,7 +135,7 @@ public class ButtonsPanel extends LinearLayout {
     }
 
     @SuppressLint("UseCompatLoadingForDrawables")
-    public void setIcons(StoriesReaderAppearanceSettings readerSettings) {
+    public void setIcons(LaunchStoryScreenAppearance readerSettings) {
         like.setImageDrawable(getResources().getDrawable(readerSettings.csLikeIcon()));
         dislike.setImageDrawable(getResources().getDrawable(readerSettings.csDislikeIcon()));
         favorite.setImageDrawable(getResources().getDrawable(readerSettings.csFavoriteIcon()));

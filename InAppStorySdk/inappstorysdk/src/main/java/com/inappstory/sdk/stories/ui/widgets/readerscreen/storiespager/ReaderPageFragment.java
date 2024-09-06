@@ -44,11 +44,10 @@ import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryScreen;
+import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenAppearance;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.managers.TimerManager;
-import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderAppearanceSettings;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
-import com.inappstory.sdk.core.ui.screens.ScreensManager;
 import com.inappstory.sdk.stories.ui.reader.ReaderManager;
 import com.inappstory.sdk.stories.ui.reader.StoriesContentFragment;
 import com.inappstory.sdk.stories.ui.reader.StoriesGradientObject;
@@ -401,8 +400,8 @@ public class ReaderPageFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        appearanceSettings = (StoriesReaderAppearanceSettings)
-                requireArguments().getSerializable(StoriesReaderAppearanceSettings.SERIALIZABLE_KEY);
+        appearanceSettings = (LaunchStoryScreenAppearance)
+                requireArguments().getSerializable(LaunchStoryScreenAppearance.SERIALIZABLE_KEY);
         try {
             return createFragmentView(container);
         } catch (Exception e) {
@@ -662,7 +661,7 @@ public class ReaderPageFragment extends Fragment {
     }
 
 
-    StoriesReaderAppearanceSettings appearanceSettings = null;
+    LaunchStoryScreenAppearance appearanceSettings = null;
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {

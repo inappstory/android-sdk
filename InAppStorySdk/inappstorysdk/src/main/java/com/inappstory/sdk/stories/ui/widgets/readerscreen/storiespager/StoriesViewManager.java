@@ -30,7 +30,6 @@ import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
-import com.inappstory.sdk.core.ui.screens.ScreensManager;
 import com.inappstory.sdk.stories.ui.dialog.CancelListener;
 import com.inappstory.sdk.stories.ui.dialog.ContactDialogCreator;
 import com.inappstory.sdk.stories.ui.dialog.SendListener;

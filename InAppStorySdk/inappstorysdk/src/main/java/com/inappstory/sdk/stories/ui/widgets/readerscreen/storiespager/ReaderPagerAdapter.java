@@ -3,7 +3,6 @@ package com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Parcelable;
-import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -11,7 +10,7 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentStatePagerAdapter;
 
 import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderAppearanceSettings;
+import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenAppearance;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.ui.reader.ReaderManager;
 
@@ -31,7 +30,7 @@ public class ReaderPagerAdapter extends FragmentStatePagerAdapter {
         super(fm, behavior);
     }
 
-    StoriesReaderAppearanceSettings appearanceSettings;
+    LaunchStoryScreenAppearance appearanceSettings;
 
     ReaderManager manager;
     SourceType source = SourceType.SINGLE;
@@ -39,7 +38,7 @@ public class ReaderPagerAdapter extends FragmentStatePagerAdapter {
 
     public ReaderPagerAdapter(@NonNull FragmentManager fm,
                               SourceType source,
-                              StoriesReaderAppearanceSettings appearanceSettings,
+                              LaunchStoryScreenAppearance appearanceSettings,
                               Rect readerContainer,
                               List<Integer> ids,
                               ReaderManager manager) {
@@ -86,7 +85,7 @@ public class ReaderPagerAdapter extends FragmentStatePagerAdapter {
         a.putInt("story_id", storiesIds.get(position));
         a.putSerializable("source", source);
         a.putParcelable("readerContainer", readerContainer);
-        a.putSerializable(StoriesReaderAppearanceSettings.SERIALIZABLE_KEY, appearanceSettings);
+        a.putSerializable(LaunchStoryScreenAppearance.SERIALIZABLE_KEY, appearanceSettings);
         frag.setArguments(a);
         frag.parentManager = manager;
         return frag;

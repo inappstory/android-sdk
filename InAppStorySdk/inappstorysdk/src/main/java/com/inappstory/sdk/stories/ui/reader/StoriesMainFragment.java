@@ -28,10 +28,10 @@ import com.inappstory.sdk.R;
 import com.inappstory.sdk.UseManagerInstanceCallback;
 import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryScreen;
+import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenAppearance;
+import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenData;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
-import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderAppearanceSettings;
-import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderLaunchData;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoryItemCoordinates;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
@@ -39,7 +39,6 @@ import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.statistic.GetOldStatisticManagerCallback;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
-import com.inappstory.sdk.core.ui.screens.ScreensManager;
 import com.inappstory.sdk.stories.ui.reader.animations.DisabledReaderAnimation;
 import com.inappstory.sdk.stories.ui.reader.animations.FadeReaderAnimation;
 import com.inappstory.sdk.stories.ui.reader.animations.HandlerAnimatorListenerAdapter;
@@ -296,11 +295,11 @@ public abstract class StoriesMainFragment extends Fragment implements
             @Nullable Bundle savedInstanceState
     ) {
         Bundle arguments = requireArguments();
-        appearanceSettings = (StoriesReaderAppearanceSettings) arguments.getSerializable(
-                StoriesReaderAppearanceSettings.SERIALIZABLE_KEY
+        appearanceSettings = (LaunchStoryScreenAppearance) arguments.getSerializable(
+                LaunchStoryScreenAppearance.SERIALIZABLE_KEY
         );
-        launchData = (StoriesReaderLaunchData) arguments.getSerializable(
-                StoriesReaderLaunchData.SERIALIZABLE_KEY
+        launchData = (LaunchStoryScreenData) arguments.getSerializable(
+                LaunchStoryScreenData.SERIALIZABLE_KEY
         );
         View view = inflater.inflate(R.layout.cs_mainscreen_stories_draggable, container, false);
         draggableFrame = view.findViewById(R.id.draggable_frame);
@@ -734,8 +733,8 @@ public abstract class StoriesMainFragment extends Fragment implements
     }
 
 
-    StoriesReaderAppearanceSettings appearanceSettings;
-    StoriesReaderLaunchData launchData;
+    LaunchStoryScreenAppearance appearanceSettings;
+    LaunchStoryScreenData launchData;
 
 
     private void setLoaderFragment(Bundle savedInstanceState, Rect readerContainer) {
