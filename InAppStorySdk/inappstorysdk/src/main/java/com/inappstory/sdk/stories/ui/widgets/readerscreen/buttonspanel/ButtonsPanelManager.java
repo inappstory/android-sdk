@@ -44,8 +44,16 @@ public class ButtonsPanelManager {
         }
     }
 
-    public ButtonsPanelManager(ButtonsPanel panel) {
+    public ButtonsPanelManager() {
+    }
+
+    public void subscribe(ButtonsPanel panel) {
         this.panel = panel;
+    }
+
+    public void unsubscribe(ButtonsPanel panel) {
+        if (this.panel == panel)
+            this.panel = null;
     }
 
     ReaderPageManager pageManager;

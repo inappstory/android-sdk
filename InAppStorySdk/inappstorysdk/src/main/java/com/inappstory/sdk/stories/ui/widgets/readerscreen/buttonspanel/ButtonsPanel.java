@@ -89,9 +89,23 @@ public class ButtonsPanel extends LinearLayout {
 
     ButtonsPanelManager manager;
 
+    @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        if (manager != null)
+            manager.unsubscribe(this);
+    }
+
+    @Override
+    protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        if (manager == null) manager = new ButtonsPanelManager();
+        manager.subscribe(this);
+    }
+
     public void init() {
         inflate(getContext(), R.layout.cs_buttons_panel, this);
-        manager = new ButtonsPanelManager(this);
+        manager = new ButtonsPanelManager();
         like = findViewById(R.id.likeButton);
         dislike = findViewById(R.id.dislikeButton);
         favorite = findViewById(R.id.favoriteButton);

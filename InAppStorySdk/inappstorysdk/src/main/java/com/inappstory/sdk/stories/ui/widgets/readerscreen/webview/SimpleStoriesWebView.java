@@ -219,6 +219,20 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
         manager.setStoriesView(this);
     }
 
+    @Override
+    protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        if (manager == null)
+            manager = new StoriesViewManager(context);
+        manager.setStoriesView(this);
+    }
+
+    @Override
+    protected void onDetachedFromWindow() {
+        if (manager != null)
+            manager.clearStoriesView();
+        super.onDetachedFromWindow();
+    }
 
     private Context context;
 
@@ -317,11 +331,6 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
     public void screenshotShare(String shareId) {
         evaluateJavascript("share_slide_screenshot(\"" + shareId + "\");", null);
         logMethod("share_slide_screenshot");
-    }
-
-    @Override
-    public void setStoriesView(SimpleStoriesView storiesView) {
-
     }
 
     @Override

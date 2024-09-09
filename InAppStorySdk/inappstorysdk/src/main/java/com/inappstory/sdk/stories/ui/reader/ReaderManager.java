@@ -48,12 +48,13 @@ public class ReaderManager {
             this.host = host;
         }
     }
-    public boolean hostIsEqual(StoriesContentFragment host) {
+
+    public void clearHost(StoriesContentFragment host) {
         synchronized (hostLock) {
-            return this.host == host;
+            if (this.host == host)
+                this.host = null;
         }
     }
-
 
 
     public StoriesContentFragment getHost() {
@@ -66,7 +67,6 @@ public class ReaderManager {
 
     public ReaderManager() {
     }
-
 
 
     public ReaderManager(
@@ -114,21 +114,27 @@ public class ReaderManager {
     }
 
     public void close() {
-        Activity activity = parentFragment.getActivity();
+        StoriesContentFragment host = getHost();
+        if (host == null) return;
+        Activity activity = host.getActivity();
         if (activity != null) {
             activity.finish();
         }
     }
 
     public void unsubscribeClicks() {
-        Activity activity = parentFragment.getActivity();
+        StoriesContentFragment host = getHost();
+        if (host == null) return;
+        Activity activity = host.getActivity();
         if (activity instanceof StoriesActivity) {
             ((StoriesActivity) activity).unsubscribeClicks();
         }
     }
 
     public void subscribeClicks() {
-        Activity activity = parentFragment.getActivity();
+        StoriesContentFragment host = getHost();
+        if (host == null) return;
+        Activity activity = host.getActivity();
         if (activity instanceof StoriesActivity) {
             ((StoriesActivity) activity).subscribeClicks();
         }
@@ -177,16 +183,6 @@ public class ReaderManager {
         );
     }
 
-    /*public void pause() {
-        if (parentFragment != null)
-            parentFragment.pause();
-    }
-
-    public void resume() {
-        if (parentFragment != null)
-            parentFragment.resume();
-    }*/
-
     public void gameComplete(String data, int storyId, int slideIndex) {
         ReaderPageManager pageManager = getSubscriberByStoryId(storyId);
         if (pageManager != null) pageManager.gameComplete(data);
@@ -202,8 +198,9 @@ public class ReaderManager {
     public void showShareView(InnerShareData shareData,
                               int storyId, int slideIndex) {
         //pause();
-        if (parentFragment != null) {
-            parentFragment.showShareView(shareData, storyId, slideIndex);
+        StoriesContentFragment host = getHost();
+        if (host != null) {
+            host.showShareView(shareData, storyId, slideIndex);
         } else {
             InAppStoryService service = InAppStoryService.getInstance();
             if (service != null)
@@ -246,18 +243,22 @@ public class ReaderManager {
                                 }
                             }
                             latestShowStoryAction = ShowStory.ACTION_CUSTOM;
-                            parentFragment.setCurrentItem(storiesIds.indexOf(storyId));
+                            StoriesContentFragment host = getHost();
+                            if (host == null) return;
+                            host.setCurrentItem(storiesIds.indexOf(storyId));
                         }
                     });
                 } else {
                     InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
                         @Override
                         public void use(@NonNull InAppStoryManager manager) throws Exception {
+                            StoriesContentFragment host = getHost();
+                            if (host == null) return;
                             manager.showStoryWithSlide(
                                     storyId + "",
-                                    parentFragment.getContext(),
+                                    host.getContext(),
                                     slideIndex,
-                                    parentFragment.getAppearanceSettings(),
+                                    host.getAppearanceSettings(),
                                     storyType,
                                     SourceType.SINGLE,
                                     ShowStory.ACTION_CUSTOM
@@ -366,7 +367,10 @@ public class ReaderManager {
         if (story != null) {
             currentSlideIndex = story.lastIndex;
         }
-        parentFragment.showGuardMask(600);
+        StoriesContentFragment host = getHost();
+        if (host != null) {
+            host.showGuardMask(600);
+        }
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -387,7 +391,9 @@ public class ReaderManager {
     }
 
     public void storyClick() {
-        parentFragment.showGuardMask(300);
+        StoriesContentFragment host = getHost();
+        if (host == null) return;
+        host.showGuardMask(300);
     }
 
     public void clearInactiveTimers() {
@@ -508,27 +514,29 @@ public class ReaderManager {
     private int currentSlideIndex;
     private List<Integer> storiesIds;
 
-    public void setParentFragment(StoriesContentFragment parentFragment) {
-        this.parentFragment = parentFragment;
-    }
-
 
     public int startedSlideInd;
     public int firstStoryId = -1;
 
     public void cleanFirst() {
-        Bundle bundle = parentFragment.getArguments();
-        bundle.remove("slideIndex");
-        parentFragment.setArguments(bundle);
+        StoriesContentFragment host = getHost();
+        if (host != null) {
+            Bundle bundle = host.getArguments();
+            bundle.remove("slideIndex");
+            host.setArguments(bundle);
+        }
         startedSlideInd = 0;
         firstStoryId = -1;
     }
 
     public BaseReaderScreen getReaderScreen() {
-        return parentFragment.getStoriesReader();
+        StoriesContentFragment host = getHost();
+        if (host != null) {
+            return host.getStoriesReader();
+        }
+        return null;
     }
 
-    private StoriesContentFragment parentFragment;
     private final HashSet<ReaderPageManager> subscribers = new HashSet<>();
 
     private final SessionAssetsIsReadyCallback assetsIsReadyCallback = new SessionAssetsIsReadyCallback() {
@@ -584,16 +592,22 @@ public class ReaderManager {
     }
 
     public void nextStory(int action) {
-        parentFragment.nextStory(action);
+        StoriesContentFragment host = getHost();
+        if (host == null) return;
+        host.nextStory(action);
     }
 
     public void prevStory(int action) {
-        parentFragment.prevStory(action);
+        StoriesContentFragment host = getHost();
+        if (host == null) return;
+        host.prevStory(action);
     }
 
 
     public void defaultTapOnLink(String url) {
-        parentFragment.defaultUrlClick(url);
+        StoriesContentFragment host = getHost();
+        if (host == null) return;
+        host.defaultUrlClick(url);
     }
 
 

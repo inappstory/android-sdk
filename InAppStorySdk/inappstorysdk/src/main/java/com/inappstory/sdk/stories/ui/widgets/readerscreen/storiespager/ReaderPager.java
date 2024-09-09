@@ -170,12 +170,21 @@ public class ReaderPager extends BothSideViewPager {
                 return false;
             }
         }
-        return super.onInterceptTouchEvent(motionEvent);
+        try {
+
+            return super.onInterceptTouchEvent(motionEvent);
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     @Override
     public boolean onTouchEvent(MotionEvent motionEvent) {
+        try {
 
-        return super.onTouchEvent(motionEvent);
+            return super.onTouchEvent(motionEvent);
+        } catch (Exception e) {
+            return false;
+        }
     }
 }

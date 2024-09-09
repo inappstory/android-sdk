@@ -21,7 +21,6 @@ public interface SimpleStoriesView {
     void shareComplete(String stId, boolean success);
     void freezeUI();
     void unfreezeUI();
-    void setStoriesView(SimpleStoriesView storiesView);
     void checkIfClientIsSet();
     void screenshotShare(String id);
     void goodsWidgetComplete(String widgetId);

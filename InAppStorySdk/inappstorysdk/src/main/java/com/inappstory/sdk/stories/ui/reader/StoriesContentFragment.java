@@ -382,8 +382,8 @@ public class StoriesContentFragment extends Fragment
 
     @Override
     public void onDetach() {
-        if (readerManager != null && readerManager.hostIsEqual(this))
-            readerManager.setHost(null);
+        if (readerManager != null)
+            readerManager.clearHost(this);
         ScreensManager.getInstance().removeGameObserver(getReaderUniqueId());
         super.onDetach();
     }
@@ -398,7 +398,7 @@ public class StoriesContentFragment extends Fragment
         }
         if (readerManager == null) return;
         readerManager.subscribeToAssets();
-        readerManager.setParentFragment(this);
+        readerManager.setHost(this);
         getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         storiesViewPager.setParameters(readerAnimation);

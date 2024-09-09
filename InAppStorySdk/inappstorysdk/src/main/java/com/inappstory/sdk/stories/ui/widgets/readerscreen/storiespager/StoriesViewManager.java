@@ -106,19 +106,23 @@ public class StoriesViewManager {
     }
 
     public void sendApiRequest(String data) {
-        new JsApiClient(
-                storiesView.getActivityContext(),
-                ApiSettings.getInstance().getHost()
-        ).sendApiRequest(data, new JsApiResponseCallback() {
-            @Override
-            public void onJsApiResponse(String result, String cb) {
-                storiesView.loadJsApiResponse(result, cb);
-            }
-        });
+        if (storiesView != null)
+            new JsApiClient(
+                    storiesView.getActivityContext(),
+                    ApiSettings.getInstance().getHost()
+            ).sendApiRequest(data, new JsApiResponseCallback() {
+                        @Override
+                        public void onJsApiResponse(String result, String cb) {
+                            if (storiesView != null)
+                                storiesView.loadJsApiResponse(result, cb);
+                        }
+                    }
+            );
     }
 
     public void changeSoundStatus() {
-        storiesView.changeSoundStatus();
+        if (storiesView != null)
+            storiesView.changeSoundStatus();
     }
 
     public int storyId;
@@ -135,7 +139,9 @@ public class StoriesViewManager {
     ReaderPageManager pageManager;
 
     public float getClickCoordinate() {
-        return storiesView.getCoordinate();//storiesWebView.coordinate1;
+        if (storiesView != null)
+            return storiesView.getCoordinate();
+        return 0f;//storiesWebView.coordinate1;
     }
 
 
@@ -187,7 +193,8 @@ public class StoriesViewManager {
             if (this.slideIndex == index) {
                 pageManager.showLoader(showBackground);
                 if (clearSlide) {
-                    if (storiesView != null) storiesView.clearSlide(getLatestVisibleIndex());
+                    if (storiesView != null)
+                        storiesView.clearSlide(getLatestVisibleIndex());
                     setLatestVisibleIndex(-1);
                 }
             }
@@ -233,7 +240,8 @@ public class StoriesViewManager {
             clearShowRefresh();
             if (this.slideIndex == index)
                 pageManager.slideLoadError(index);
-            if (storiesView != null) storiesView.clearSlide(getLatestVisibleIndex());
+            if (storiesView != null)
+                storiesView.clearSlide(getLatestVisibleIndex());
             setLatestVisibleIndex(-1);
         }
     }
@@ -342,6 +350,27 @@ public class StoriesViewManager {
         storiesWebView.checkIfClientIsSet();
     }
 
+    public void clearStoriesView() {
+        Log.e("clearStoriesView", "clearStoriesView " + (showLoader != null) + " " + (showRefresh != null));
+        this.storiesView = null;
+        synchronized (latestIndexLock) {
+            if (showLoader != null) {
+                try {
+                    showRefreshHandler.removeCallbacks(showLoader);
+                } catch (Exception e) {
+                }
+            }
+            showLoader = null;
+            if (showRefresh != null) {
+                try {
+                    showRefreshHandler.removeCallbacks(showRefresh);
+                } catch (Exception e) {
+                }
+            }
+            showRefresh = null;
+        }
+    }
+
 
     public LoadProgressBar getProgressBar() {
         return progressBar;
@@ -379,7 +408,8 @@ public class StoriesViewManager {
                             new Handler(Looper.getMainLooper()).post(new Runnable() {
                                 @Override
                                 public void run() {
-                                    storiesView.sendDialog(id, data);
+                                    if (storiesView != null)
+                                        storiesView.sendDialog(id, data);
                                 }
                             });
                         }
@@ -392,7 +422,8 @@ public class StoriesViewManager {
                             new Handler(Looper.getMainLooper()).post(new Runnable() {
                                 @Override
                                 public void run() {
-                                    storiesView.cancelDialog(id);
+                                    if (storiesView != null)
+                                        storiesView.cancelDialog(id);
                                 }
                             });
                         }
@@ -417,7 +448,8 @@ public class StoriesViewManager {
 
 
     public void shareComplete(String stId, boolean success) {
-        storiesView.shareComplete(stId, success);
+        if (storiesView != null)
+            storiesView.shareComplete(stId, success);
     }
 
 
@@ -575,12 +607,14 @@ public class StoriesViewManager {
     }
 
     public void freezeUI() {
-        storiesView.freezeUI();
+        if (storiesView != null)
+            storiesView.freezeUI();
     }
 
 
     public void unfreezeUI() {
-        storiesView.unfreezeUI();
+        if (storiesView != null)
+            storiesView.unfreezeUI();
     }
 
     public void storySetLocalData(String data, boolean sendToServer) {
@@ -646,27 +680,32 @@ public class StoriesViewManager {
     }
 
     public void stopStory() {
-        storiesView.stopSlide();
+        if (storiesView != null)
+            storiesView.stopSlide();
     }
 
     public void restartStory() {
-        storiesView.restartSlide();
+        if (storiesView != null)
+            storiesView.restartSlide();
     }
 
     public void playStory() {
         if (storyIsLoaded) {
             sendShowStoryEvents();
             sendShowSlideEvents();
-            storiesView.startSlide();
+            if (storiesView != null)
+                storiesView.startSlide();
         }
     }
 
     public void pauseStory() {
-        storiesView.pauseSlide();
+        if (storiesView != null)
+            storiesView.pauseSlide();
     }
 
     public void resumeStory() {
-        storiesView.resumeSlide();
+        if (storiesView != null)
+            storiesView.resumeSlide();
     }
 
     public void changeIndex(int index) {
