@@ -94,7 +94,7 @@ public abstract class StoriesMainFragment extends Fragment implements
             @Override
             public void invoke(StoriesContentFragment fragment) {
                 if (fragment.readerManager != null)
-                    fragment.readerManager.pauseCurrent(true);
+                    fragment.readerManager.pauseCurrentForced(true);
             }
         });
     }
@@ -349,7 +349,7 @@ public abstract class StoriesMainFragment extends Fragment implements
                     @Override
                     public void invoke(StoriesContentFragment fragment) {
                         if (fragment.readerManager != null)
-                            fragment.readerManager.pauseCurrent(false);
+                            fragment.readerManager.pauseCurrentForced(false);
                     }
                 });
             }

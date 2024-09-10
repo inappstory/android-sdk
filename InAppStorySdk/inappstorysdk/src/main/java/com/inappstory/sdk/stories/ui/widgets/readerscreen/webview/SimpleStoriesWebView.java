@@ -9,10 +9,8 @@ import android.os.Looper;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
-import android.view.View;
 import android.view.ViewParent;
 import android.webkit.ConsoleMessage;
-import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 
@@ -27,8 +25,6 @@ import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPag
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.SimpleStoriesView;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.StoriesViewManager;
 import com.inappstory.sdk.stories.utils.Sizes;
-
-import java.util.Map;
 
 /**
  * Created by Paperrose on 07.06.2018.
@@ -392,17 +388,17 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
         logMethod("goods_widget_complete " + widgetId);
     }
 
-    private boolean checkIfParentsHasCubeAnimation(ViewParent view) {
+    private boolean checkIfParentsClicksDisabled(ViewParent view) {
         if (view == null) return false;
         if (view instanceof ReaderPager) {
-            return ((ReaderPager) view).cubeAnimation;
+            return ((ReaderPager) view).clicksDisabled();
         }
-        return checkIfParentsHasCubeAnimation(view.getParentForAccessibility());
+        return checkIfParentsClicksDisabled(view.getParentForAccessibility());
     }
 
     @Override
     public boolean dispatchTouchEvent(MotionEvent motionEvent) {
-        if (checkIfParentsHasCubeAnimation(getParentForAccessibility())) return false;
+        if (checkIfParentsClicksDisabled(getParentForAccessibility())) return false;
 
         switch (motionEvent.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
@@ -426,7 +422,7 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
 
     @Override
     public boolean onTouchEvent(MotionEvent motionEvent) {
-        if (checkIfParentsHasCubeAnimation(getParentForAccessibility())) return false;
+        if (checkIfParentsClicksDisabled(getParentForAccessibility())) return false;
         boolean c = super.onTouchEvent(motionEvent);
         if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
             if (System.currentTimeMillis() - lastTap < 1500) {
@@ -443,13 +439,13 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent motionEvent) {
-        if (checkIfParentsHasCubeAnimation(getParentForAccessibility())) return false;
+        if (checkIfParentsClicksDisabled(getParentForAccessibility())) return false;
         boolean c = super.onInterceptTouchEvent(motionEvent);
         if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
             if (System.currentTimeMillis() - lastTap < 1500) {
                 return false;
             }
-            getManager().getPageManager().pauseSlide(false);
+            getManager().getPageManager().pauseSlide(false, false);
 
             lastTap = System.currentTimeMillis();
         } else if (motionEvent.getAction() == MotionEvent.ACTION_UP || motionEvent.getAction() == MotionEvent.ACTION_CANCEL) {

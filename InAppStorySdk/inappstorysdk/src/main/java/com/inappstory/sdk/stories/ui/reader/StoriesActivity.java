@@ -399,7 +399,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
             @Override
             public void touchPause() {
                 if (storiesContentFragment != null && storiesContentFragment.readerManager != null)
-                    storiesContentFragment.readerManager.pauseCurrent(false);
+                    storiesContentFragment.readerManager.pauseCurrentForced(false);
             }
 
             @Override
@@ -609,6 +609,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
         });
     }
 
+
     @Override
     public void forceFinish() {
         InAppStoryService service = InAppStoryService.getInstance();
@@ -707,6 +708,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
         if (currentGoodsCallback != null)
             currentGoodsCallback.goodsIsOpened();
     }
+
 
     @Override
     public void goodsIsClosed(String widgetId) {

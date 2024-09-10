@@ -288,7 +288,7 @@ public class ButtonsPanel extends LinearLayout {
         manager.shareClick(new ButtonsPanelManager.ShareButtonClickCallback() {
             @Override
             void onClick() {
-                manager.getPageManager().pauseSlide(false);
+                manager.getPageManager().pauseSlide(false, true);
             }
 
             @Override

@@ -610,11 +610,18 @@ public class ReaderManager {
         host.defaultUrlClick(url);
     }
 
+    public void pauseCurrentForced(boolean withBackground) {
+        ReaderPageManager currentSubscriber = getCurrentSubscriber();
+        if (currentSubscriber != null) {
+            currentSubscriber.pauseSlide(withBackground, true);
+        }
+        StatisticManager.getInstance().pauseStoryEvent(withBackground);
+    }
 
     public void pauseCurrent(boolean withBackground) {
         ReaderPageManager currentSubscriber = getCurrentSubscriber();
         if (currentSubscriber != null) {
-            currentSubscriber.pauseSlide(withBackground);
+            currentSubscriber.pauseSlide(withBackground, false);
         }
         StatisticManager.getInstance().pauseStoryEvent(withBackground);
     }

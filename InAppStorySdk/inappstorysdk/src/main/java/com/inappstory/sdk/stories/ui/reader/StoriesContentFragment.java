@@ -9,7 +9,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,7 +21,6 @@ import androidx.viewpager.widget.ViewPager;
 
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
-import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.inner.share.InnerShareFilesPrepare;
 import com.inappstory.sdk.inner.share.ShareFilesPrepareCallback;
@@ -181,7 +179,7 @@ public class StoriesContentFragment extends Fragment
                     shareObject
             );
             getStoriesReader().timerIsLocked();
-            readerManager.pauseCurrent(false);
+            readerManager.pauseCurrentForced(false);
         } else {
             new IASShareManager().shareDefault(
                     StoryShareBroadcastReceiver.class,
@@ -263,7 +261,19 @@ public class StoriesContentFragment extends Fragment
 
     public void pause() {
         if (readerManager != null)
-            readerManager.pauseCurrent(true);
+            readerManager.pauseCurrentForced(true);
+    }
+
+    public void disableClicksSlideChange() {
+        storiesViewPager.clicksDisabledSlideChange = true;
+    }
+
+    public boolean clicksIsDisabled() {
+        return storiesViewPager.clicksDisabled();
+    }
+
+    public void enableClicksSlideChange() {
+        storiesViewPager.clicksDisabledSlideChange = false;
     }
 
     public void resume() {
@@ -481,7 +491,7 @@ public class StoriesContentFragment extends Fragment
     public void onDestroy() {
         super.onDestroy();
         if (readerManager != null) {
-            readerManager.pauseCurrent(false);
+            readerManager.pauseCurrentForced(false);
         }
     }
 
@@ -555,7 +565,7 @@ public class StoriesContentFragment extends Fragment
             public void run() {
                 if (storiesViewPager.getAdapter() != null &&
                         storiesViewPager.getCurrentItem() < storiesViewPager.getAdapter().getCount() - 1) {
-                    storiesViewPager.cubeAnimation = true;
+                    storiesViewPager.clicksDisabledAnimation = true;
                     storiesViewPager.setCurrentItem(storiesViewPager.getCurrentItem() + 1);
                 } else {
                     ScreensManager.getInstance().closeStoryReader(CloseStory.AUTO);
@@ -572,7 +582,7 @@ public class StoriesContentFragment extends Fragment
 
                 if (storiesViewPager.getCurrentItem() > 0) {
                     storiesViewPager.setCurrentItem(storiesViewPager.getCurrentItem() - 1);
-                    storiesViewPager.cubeAnimation = true;
+                    storiesViewPager.clicksDisabledAnimation = true;
                 } else {
                     readerManager.restartCurrentStory();
                 }

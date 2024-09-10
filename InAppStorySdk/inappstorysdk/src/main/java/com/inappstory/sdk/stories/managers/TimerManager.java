@@ -1,5 +1,7 @@
 package com.inappstory.sdk.stories.managers;
 
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.InAppStoryService;
@@ -54,6 +56,7 @@ public class TimerManager {
     };
 
     private void cancelTask() {
+        Log.e("GoodsTimerCheck", "cancelTimers");
         if (scheduledFuture != null)
             scheduledFuture.cancel(false);
         scheduledFuture = null;
@@ -98,6 +101,10 @@ public class TimerManager {
 
     public void startSlideTimer(long newDuration, long currentTime) {
         startTimer(newDuration - currentTime, newDuration);
+        if ((newDuration == currentTime) && newDuration > 0) {
+            if (pageManager != null)
+                pageManager.nextSlide(ShowStory.ACTION_AUTO);
+        }
     }
 
     public void pauseSlideTimer() {

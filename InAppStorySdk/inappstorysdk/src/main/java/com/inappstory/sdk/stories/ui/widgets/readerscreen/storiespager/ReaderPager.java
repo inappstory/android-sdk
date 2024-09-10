@@ -93,20 +93,25 @@ public class ReaderPager extends BothSideViewPager {
 
     public void pageScrolled(float positionOffset) {
         if (positionOffset == 0f) {
-            cubeAnimation = false;
+            clicksDisabledAnimation = false;
             requestDisallowInterceptTouchEvent(false);
         } else {
-            cubeAnimation = true;
+            clicksDisabledAnimation = true;
             requestDisallowInterceptTouchEvent(true);
         }
     }
 
-    public boolean cubeAnimation = false;
+    public boolean clicksDisabledAnimation = false;
+    public boolean clicksDisabledSlideChange = false;
+
+    public boolean clicksDisabled() {
+        return clicksDisabledSlideChange || clicksDisabledAnimation;
+    }
 
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent motionEvent) {
-        if (cubeAnimation) {
+        if (clicksDisabled()) {
             return true;
         }
         float pressedEndX = 0f;

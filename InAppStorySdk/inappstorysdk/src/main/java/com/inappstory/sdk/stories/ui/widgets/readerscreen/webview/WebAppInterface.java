@@ -2,6 +2,7 @@ package com.inappstory.sdk.stories.ui.widgets.readerscreen.webview;
 
 import static com.inappstory.sdk.utils.DebugUtils.getMethodName;
 
+import android.util.Log;
 import android.webkit.JavascriptInterface;
 
 import com.inappstory.sdk.InAppStoryManager;
@@ -40,6 +41,7 @@ public class WebAppInterface {
     @JavascriptInterface
     public void updateTimeline(String data) {
         if (data != null) {
+            Log.e("GoodsTimerCheck", "updateTimeline");
             UpdateTimelineData updateTimelineData = JsonParser.fromJson(data, UpdateTimelineData.class);
             manager.updateTimeline(updateTimelineData);
         }

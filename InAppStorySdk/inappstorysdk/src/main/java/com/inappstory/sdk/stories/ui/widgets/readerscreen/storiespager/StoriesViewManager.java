@@ -397,7 +397,7 @@ public class StoriesViewManager {
                         @Override
                         public void onShow() {
                             readerScreen.timerIsLocked();
-                            pageManager.getParentManager().pauseCurrent(false);
+                            pageManager.getParentManager().pauseCurrentForced(false);
                         }
                     },
                     new SendListener() {
@@ -490,8 +490,10 @@ public class StoriesViewManager {
 
         final StoriesContentFragment storiesContentFragment =
                 (StoriesContentFragment) pageManager.host.getParentFragment();
-        if (storiesContentFragment != null)
+        if (storiesContentFragment != null) {
             storiesContentFragment.disableDrag(storyId, pageManager.getStoryType());
+            storiesContentFragment.enableClicksSlideChange();
+        }
         ProfilingManager.getInstance().setReady(storyId + "_" + index);
     }
 
@@ -593,17 +595,6 @@ public class StoriesViewManager {
                 showSlideCallback.showSlide(pageManager.getSlideData(story));
             }
         }
-    }
-
-    public void pauseUI() {
-        if (pageManager != null)
-            pageManager.pauseSlide(false);
-
-    }
-
-    public void resumeUI() {
-        if (pageManager != null)
-            pageManager.resumeSlide(false);
     }
 
     public void freezeUI() {

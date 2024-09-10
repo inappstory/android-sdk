@@ -23,6 +23,7 @@ import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.reader.ReaderManager;
+import com.inappstory.sdk.stories.ui.reader.StoriesContentFragment;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.buttonspanel.ButtonsPanelManager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.progresstimeline.StoryTimelineManager;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
@@ -137,6 +138,9 @@ public class ReaderPageManager {
     public void storyClick(String payload, int coordinate, boolean isForbidden) {
         if (checkIfManagersIsNull()) return;
         if (host == null) return;
+        StoriesContentFragment storiesContentFragment = parentManager.getHost();
+        if (storiesContentFragment != null && storiesContentFragment.clicksIsDisabled())
+            return;
         parentManager.storyClick();
         if (payload == null || payload.isEmpty()) {
             int sz = (!Sizes.isTablet(host.getContext()) ?
@@ -220,6 +224,7 @@ public class ReaderPageManager {
                 case "json":
                     if (object.getType() != null && !object.getType().isEmpty()) {
                         if ("swipeUpItems".equals(object.getType())) {
+                            Log.e("GoodsTimerCheck", "openGoodsFromJS");
                             if (story != null)
                                 showGoods(object.getLink().getTarget(), object.getElementId(),
                                         getSlideData(story)
@@ -281,8 +286,7 @@ public class ReaderPageManager {
         backgroundPause = true;
     }
 
-    public void pauseSlide(boolean withBackground) {
-        Log.e("PauseResume", "pauseSlide " + storyId + " " + slideIndex + " " + withBackground + " " + isPaused + " " + backgroundPause);
+    public void pauseSlide(boolean withBackground, boolean forcePause) {
         if (checkIfManagersIsNull()) return;
         if (!withBackground && isPaused) return;
         isPaused = true;
@@ -290,13 +294,17 @@ public class ReaderPageManager {
             backgroundPause = true;
             timerManager.pauseTimerAndRefreshStat();
         }
+        if (forcePause) {
+            timerManager.pauseSlideTimer();
+            timelineManager.stopTimer();
+        }
+        Log.e("GoodsTimerCheck", "call slide pause");
         webViewManager.pauseStory();
     }
 
     boolean isPaused;
 
     public void resumeSlide(boolean withBackground) {
-        Log.e("PauseResume", "resumeSlide " + storyId + " " + slideIndex + " " + withBackground + " " + isPaused + " " + backgroundPause);
         if (checkIfManagersIsNull()) return;
         if (!isPaused) return;
         if (!withBackground && backgroundPause) return;
@@ -355,11 +363,13 @@ public class ReaderPageManager {
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
+                parentManager.pauseCurrentForced(true);
+                parentManager.unsubscribeClicks();
                 parentManager.showGoods(skus, widgetId, new ShowGoodsCallback() {
                     @Override
                     public void goodsIsOpened() {
                         if (checkIfManagersIsNull()) return;
-                        parentManager.pauseCurrent(true);
+                       // parentManager.pauseCurrent(true);
                         parentManager.unsubscribeClicks();
                     }
 
@@ -374,6 +384,8 @@ public class ReaderPageManager {
                     @Override
                     public void goodsIsCanceled(String widgetId) {
                         if (checkIfManagersIsNull()) return;
+                        parentManager.resumeCurrent(true);
+                        parentManager.subscribeClicks();
                         webViewManager.goodsWidgetComplete(widgetId);
                     }
                 }, slideData);
@@ -430,6 +442,9 @@ public class ReaderPageManager {
         if (service == null) return;
         if (host == null) return;
         host.showLoader();
+        StoriesContentFragment storiesContentFragment = parentManager.getHost();
+        if (storiesContentFragment != null)
+            storiesContentFragment.disableClicksSlideChange();
         currentSlideIsLoaded = false;
         ProfilingManager.getInstance().addTask("slide_show",
                 storyId + "_" + slideIndex);
