@@ -399,7 +399,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
             @Override
             public void touchPause() {
                 if (storiesContentFragment != null && storiesContentFragment.readerManager != null)
-                    storiesContentFragment.readerManager.pauseCurrentForced(false);
+                    storiesContentFragment.readerManager.pauseCurrent(false);
             }
 
             @Override
