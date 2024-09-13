@@ -1,6 +1,13 @@
 Change Log
 ==========
 
+Version *1.19.4 (914)*
+----------------------------
+* Fixed: changed story pause logic (added local pauses)
+* Fixed: prevent clicks and click handlers in slide-change time
+* Fixed: tablets memory leaks
+* Fixed: InAppStoryManager and InAppStoryService NPEs (Added initialized callbacks)
+
 Version *1.19.3 (913)*
 ----------------------------
 * Fixed: remove long synchronization
