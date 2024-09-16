@@ -1,6 +1,5 @@
 package com.inappstory.sdk.externalapi.iasmanager;
 
-import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;

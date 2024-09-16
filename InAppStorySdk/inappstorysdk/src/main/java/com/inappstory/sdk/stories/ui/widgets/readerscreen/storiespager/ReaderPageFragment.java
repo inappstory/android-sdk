@@ -53,6 +53,7 @@ import com.inappstory.sdk.stories.ui.reader.StoriesContentFragment;
 import com.inappstory.sdk.stories.ui.reader.StoriesGradientObject;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.buttonspanel.ButtonsPanel;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.progresstimeline.StoryTimeline;
+import com.inappstory.sdk.stories.ui.widgets.readerscreen.progresstimeline.StoryTimelineState;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.webview.SimpleStoriesWebView;
 import com.inappstory.sdk.stories.utils.Sizes;
 
@@ -197,7 +198,7 @@ public class ReaderPageFragment extends Fragment {
         if (InAppStoryService.getInstance() == null) return;
         Log.e("setViews", story.id + " " + story.slidesCount);
         if (timeline != null) {
-            timeline.getTimelineManager().setSlidesCount(story.getSlidesCount());
+            timeline.getTimelineManager().setSlidesCount(story.getSlidesCount(), true);
         }
         if (story.disableClose)
             close.setVisibility(View.GONE);

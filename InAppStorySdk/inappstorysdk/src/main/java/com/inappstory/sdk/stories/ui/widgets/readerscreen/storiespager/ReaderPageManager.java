@@ -329,7 +329,7 @@ public class ReaderPageManager {
 
     public void setStoryInfo(Story story) {
         if (checkIfManagersIsNull()) return;
-        timelineManager.setSlidesCount(story.getSlidesCount());
+        timelineManager.setSlidesCount(story.getSlidesCount(), false);
         webViewManager.loadStory(story, story.lastIndex);
     }
 

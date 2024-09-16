@@ -62,14 +62,18 @@ public class StoryTimelineManager {
 
     private int currentIndex;
 
-    public void setSlidesCount(int slidesCount) {
+    public void setSlidesCount(int slidesCount, boolean isSetViews) {
         this.slidesCount = slidesCount;
         StoryTimeline host = getHost();
         if (host != null) {
             if (slidesCount <= 1) host.setVisibility(View.INVISIBLE);
             else host.setVisibility(View.VISIBLE);
         }
-        setProgress(0);
+        if (isSetViews) {
+            setProgressSync();
+        } else {
+            setProgress(0);
+        }
     }
 
     private int slidesCount;
@@ -108,6 +112,13 @@ public class StoryTimelineManager {
                     host.setState(new StoryTimelineState(slidesCount, currentIndex, progress, timerDuration));
                 }
             });
+        }
+    }
+
+    private void setProgressSync() {
+        final StoryTimeline host = getHost();
+        if (host != null) {
+            host.setState(new StoryTimelineState(slidesCount, currentIndex, 0, timerDuration));
         }
     }
 
