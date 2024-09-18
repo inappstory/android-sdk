@@ -44,6 +44,7 @@ import com.inappstory.sdk.stories.utils.WebPageConverter;
 import com.inappstory.sdk.utils.ISessionHolder;
 
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.lang.reflect.Type;
 import java.util.regex.Pattern;
 
@@ -172,30 +173,36 @@ public class StoriesViewManager {
         }
     }
 
-    public class ShowLoader implements Runnable {
+    public static class ShowLoader implements Runnable {
         int slideIndex = -1;
         boolean clearSlide = true;
         boolean showBackground = true;
+        private final WeakReference<StoriesViewManager> viewManagerWeakReference;
 
-        public ShowLoader(int slideIndex) {
+        public ShowLoader(int slideIndex, StoriesViewManager viewManager) {
             this.slideIndex = slideIndex;
+            this.viewManagerWeakReference = new WeakReference<>(viewManager);
         }
 
-        public ShowLoader(int slideIndex, boolean clearSlide, boolean showBackground) {
+        public ShowLoader(int slideIndex, boolean clearSlide, boolean showBackground, StoriesViewManager viewManager) {
             this.slideIndex = slideIndex;
             this.clearSlide = clearSlide;
             this.showBackground = showBackground;
+            this.viewManagerWeakReference = new WeakReference<>(viewManager);
         }
 
         @Override
         public void run() {
-            clearShowLoader();
-            if (this.slideIndex == index) {
-                pageManager.showLoader(showBackground);
-                if (clearSlide) {
-                    if (storiesView != null)
-                        storiesView.clearSlide(getLatestVisibleIndex());
-                    setLatestVisibleIndex(-1);
+            StoriesViewManager viewManager = viewManagerWeakReference.get();
+            if (viewManager != null) {
+                viewManager.clearShowLoader();
+                if (this.slideIndex == viewManager.index) {
+                    viewManager.pageManager.showLoader(showBackground);
+                    if (clearSlide) {
+                        if (viewManager.storiesView != null)
+                            viewManager.storiesView.clearSlide(viewManager.getLatestVisibleIndex());
+                        viewManager.setLatestVisibleIndex(-1);
+                    }
                 }
             }
         }
@@ -227,22 +234,32 @@ public class StoriesViewManager {
 
     private int latestVisibleIndex = -1;
 
-    public class ShowRefresh implements Runnable {
+    public static class ShowRefresh implements Runnable {
         int slideIndex = -1;
 
-        public ShowRefresh(int slideIndex) {
+        private final WeakReference<StoriesViewManager> viewManagerWeakReference;
+
+        public ShowRefresh(int slideIndex, StoriesViewManager viewManager) {
             this.slideIndex = slideIndex;
+            this.viewManagerWeakReference = new WeakReference<>(viewManager);
         }
+
+
 
         @Override
         public void run() {
-            clearShowLoader();
-            clearShowRefresh();
-            if (this.slideIndex == index)
-                pageManager.slideLoadError(index);
-            if (storiesView != null)
-                storiesView.clearSlide(getLatestVisibleIndex());
-            setLatestVisibleIndex(-1);
+            StoriesViewManager viewManager = viewManagerWeakReference.get();
+            if (viewManager != null) {
+                viewManager.clearShowLoader();
+                viewManager.clearShowRefresh();
+                int index = viewManager.index;
+                if (this.slideIndex == index)
+                    viewManager.pageManager.slideLoadError(index);
+                SimpleStoriesView simpleStoriesView = viewManager.storiesView;
+                if (simpleStoriesView != null)
+                    simpleStoriesView.clearSlide(viewManager.getLatestVisibleIndex());
+                viewManager.setLatestVisibleIndex(-1);
+            }
         }
     }
 
@@ -257,8 +274,8 @@ public class StoriesViewManager {
         clearShowLoader();
         clearShowRefresh();
         synchronized (latestIndexLock) {
-            showRefresh = new ShowRefresh(index);
-            showLoader = new ShowLoader(index);
+            showRefresh = new ShowRefresh(index, StoriesViewManager.this);
+            showLoader = new ShowLoader(index, StoriesViewManager.this);
             showRefreshHandler.postDelayed(showLoader, 500);
             showRefreshHandler.postDelayed(showRefresh, 15000);
         }
@@ -723,7 +740,7 @@ public class StoriesViewManager {
             getPageManager().clearSlideTimerFromJS();
         } else if (data.showLoader) {
             synchronized (latestIndexLock) {
-                showLoader = new ShowLoader(index, false, false);
+                showLoader = new ShowLoader(index, false, false, StoriesViewManager.this);
                 showRefreshHandler.post(showLoader);
             }
         } else {

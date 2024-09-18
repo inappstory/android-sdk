@@ -313,7 +313,7 @@ public class ReaderPageFragment extends Fragment {
     }
 
     public void showLoader() {
-        new Handler(Looper.getMainLooper()).post(new Runnable() {
+        viewsHandler.post(new Runnable() {
             @Override
             public void run() {
                 if (loaderContainer == null) return;
@@ -324,7 +324,7 @@ public class ReaderPageFragment extends Fragment {
     }
 
     public void showLoaderContainer() {
-        new Handler(Looper.getMainLooper()).post(new Runnable() {
+        viewsHandler.post(new Runnable() {
             @Override
             public void run() {
                 if (loaderContainer == null) return;
@@ -336,7 +336,7 @@ public class ReaderPageFragment extends Fragment {
     }
 
     public void showLoaderOnly() {
-        new Handler(Looper.getMainLooper()).post(new Runnable() {
+        viewsHandler.post(new Runnable() {
             @Override
             public void run() {
                 loader.setVisibility(View.VISIBLE);
@@ -345,8 +345,10 @@ public class ReaderPageFragment extends Fragment {
 
     }
 
+    private Handler viewsHandler = new Handler(Looper.getMainLooper());
+
     private void hideLoaderContainer() {
-        new Handler(Looper.getMainLooper()).post(new Runnable() {
+        viewsHandler.post(new Runnable() {
             @Override
             public void run() {
                 hideLoaderContainerAnimated();
@@ -358,7 +360,7 @@ public class ReaderPageFragment extends Fragment {
     }
 
     public void storyLoadError() {
-        new Handler(Looper.getMainLooper()).post(new Runnable() {
+        viewsHandler.post(new Runnable() {
             @Override
             public void run() {
                 loader.setVisibility(View.GONE);
@@ -370,7 +372,7 @@ public class ReaderPageFragment extends Fragment {
     }
 
     public void slideLoadError() {
-        new Handler(Looper.getMainLooper()).post(new Runnable() {
+        viewsHandler.post(new Runnable() {
             @Override
             public void run() {
                 loader.setVisibility(View.GONE);
@@ -718,6 +720,12 @@ public class ReaderPageFragment extends Fragment {
         manager.setSlideIndex(story.lastIndex);
         setViews(getView());
         manager.storyLoadedInCache(story);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        viewsHandler.removeCallbacksAndMessages(null);
     }
 
     @Override
