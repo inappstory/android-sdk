@@ -224,7 +224,7 @@ public class StoriesDialogFragment extends DialogFragment implements IASBackPres
 
     }
 
-    Rect screenRectangle = new Rect();
+    public Rect screenRectangle = new Rect();
 
     @Override
     public boolean onBackPressed() {

@@ -3,6 +3,7 @@ package com.inappstory.sdk.stories.ui.dialog;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.SizeF;
 
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -12,6 +13,7 @@ import com.inappstory.sdk.R;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.dialogstructure.DialogStructure;
 import com.inappstory.sdk.stories.ui.reader.BaseReaderScreen;
+import com.inappstory.sdk.utils.Size;
 
 public class ContactDialogCreator {
 
@@ -19,7 +21,7 @@ public class ContactDialogCreator {
     public DialogStructure dialogStructure;
     String dialogId;
     int storyId;
-
+    Size screenSize;
 
     ShowListener showListener;
     SendListener sendListener;
@@ -29,6 +31,7 @@ public class ContactDialogCreator {
             int storyId,
             String dialogId,
             String data,
+            Size screenSize,
             ShowListener showListener,
             SendListener sendListener,
             CancelListener cancelListener
@@ -36,6 +39,7 @@ public class ContactDialogCreator {
         this.dialogStructure = JsonParser.fromJson(data, DialogStructure.class);
         this.dialogId = dialogId;
         this.storyId = storyId;
+        this.screenSize = screenSize;
         this.sendListener = sendListener;
         this.showListener = showListener;
         this.cancelListener = cancelListener;
@@ -67,6 +71,8 @@ public class ContactDialogCreator {
         arguments.putSerializable(dialogStructure.getSerializableKey(), dialogStructure);
         arguments.putInt("storyId", storyId);
         arguments.putString("dialogId", dialogId);
+        if (screenSize != null)
+            arguments.putSerializable("screenSize", screenSize);
         fragment.setArguments(arguments);
         FragmentTransaction t = parentFragmentManager.beginTransaction()
                 .replace(R.id.ias_dialog_container, fragment);

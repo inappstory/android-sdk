@@ -1,6 +1,7 @@
 package com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager;
 
 import android.content.Context;
+import android.graphics.Rect;
 import android.media.AudioManager;
 import android.os.Handler;
 import android.os.Looper;
@@ -12,6 +13,7 @@ import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.game.reader.GameStoryData;
 import com.inappstory.sdk.stories.api.models.UpdateTimelineData;
+import com.inappstory.sdk.stories.ui.reader.StoriesDialogFragment;
 import com.inappstory.sdk.stories.ui.widgets.LoadProgressBar;
 import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.network.ApiSettings;
@@ -42,6 +44,7 @@ import com.inappstory.sdk.stories.utils.KeyValueStorage;
 import com.inappstory.sdk.stories.utils.WebPageConvertCallback;
 import com.inappstory.sdk.stories.utils.WebPageConverter;
 import com.inappstory.sdk.utils.ISessionHolder;
+import com.inappstory.sdk.utils.Size;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
@@ -409,7 +412,16 @@ public class StoriesViewManager {
         final BaseReaderScreen readerScreen =
                 storiesContentFragment != null ? storiesContentFragment.getStoriesReader() : null;
         if (readerScreen != null) {
-            ContactDialogCreator contactDialogCreator = new ContactDialogCreator(storyId, id, data,
+            Size size = null;
+            if (readerScreen instanceof StoriesDialogFragment) {
+                Rect rect = ((StoriesDialogFragment)readerScreen).screenRectangle;
+                size = new Size(rect.width(), rect.height());
+            }
+            ContactDialogCreator contactDialogCreator = new ContactDialogCreator(
+                    storyId,
+                    id,
+                    data,
+                    size,
                     new ShowListener() {
                         @Override
                         public void onShow() {
