@@ -572,100 +572,93 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryScree
         if (closing) return;
         closing = true;
         InAppStoryService service = InAppStoryService.getInstance();
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
-                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
-        blockView.setVisibility(View.VISIBLE);
+        Story story = null;
         if (service != null) {
             service.getListReaderConnector().readerIsClosed();
-            Story story = service.getStoryDownloadManager()
+            story = service.getStoryDownloadManager()
                     .getStoryById(service.getCurrentId(), type);
-            if (story != null) {
-                if (CallbackManager.getInstance().getCloseStoryCallback() != null) {
-                    CallbackManager.getInstance().getCloseStoryCallback().closeStory(
-                            new SlideData(
-                                    StoryData.getStoryData(
-                                            story,
-                                            launchData.getFeed(),
-                                            launchData.getSourceType(),
-                                            type
-                                    ),
-                                    story.lastIndex,
-                                    story.getSlideEventPayload(story.lastIndex)
-                            ),
-                            CallbackManager.getInstance().getCloseTypeFromInt(action)
-                    );
-                }
-                String cause = StatisticManager.AUTO;
-                switch (action) {
-                    case CloseStory.CLICK:
-                        cause = StatisticManager.CLICK;
-                        break;
-                    case CloseStory.CUSTOM:
-                        cause = StatisticManager.CUSTOM;
-                        break;
-                    case -1:
-                        cause = StatisticManager.BACK;
-                        break;
-                    case CloseStory.SWIPE:
-                        cause = StatisticManager.SWIPE;
-                        break;
-                }
-                StatisticManager.getInstance().sendCloseStory(
-                        story.id,
-                        cause,
-                        story.lastIndex,
-                        story.getSlidesCount(),
-                        launchData.getFeed()
-                );
-            }
+
         }
         cleanReader();
         animateFirst = true;
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
+                getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+                        WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+                blockView.setVisibility(View.VISIBLE);
                 finishAfterTransition();
             }
         });
+        if (story != null) {
+            sendCloseStatistic(story, action);
+        }
+    }
+
+    private void sendCloseStatistic(@NonNull Story story, int action) {
+        if (CallbackManager.getInstance().getCloseStoryCallback() != null) {
+            CallbackManager.getInstance().getCloseStoryCallback().closeStory(
+                    new SlideData(
+                            StoryData.getStoryData(
+                                    story,
+                                    launchData.getFeed(),
+                                    launchData.getSourceType(),
+                                    type
+                            ),
+                            story.lastIndex,
+                            story.getSlideEventPayload(story.lastIndex)
+                    ),
+                    CallbackManager.getInstance().getCloseTypeFromInt(action)
+            );
+        }
+        String cause = StatisticManager.AUTO;
+        switch (action) {
+            case CloseStory.CLICK:
+                cause = StatisticManager.CLICK;
+                break;
+            case CloseStory.CUSTOM:
+                cause = StatisticManager.CUSTOM;
+                break;
+            case -1:
+                cause = StatisticManager.BACK;
+                break;
+            case CloseStory.SWIPE:
+                cause = StatisticManager.SWIPE;
+                break;
+        }
+        StatisticManager.getInstance().sendCloseStory(
+                story.id,
+                cause,
+                story.lastIndex,
+                story.getSlidesCount(),
+                launchData.getFeed()
+        );
     }
 
     @Override
     public void forceFinish() {
         InAppStoryService service = InAppStoryService.getInstance();
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
-                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
-        blockView.setVisibility(View.VISIBLE);
+
+        Story story = null;
         if (service != null) {
             service.getListReaderConnector().readerIsClosed();
-            Story story = service.getStoryDownloadManager()
+            story = service.getStoryDownloadManager()
                     .getStoryById(service.getCurrentId(), type);
-            if (story != null) {
-                if (CallbackManager.getInstance().getCloseStoryCallback() != null) {
-                    CallbackManager.getInstance().getCloseStoryCallback().closeStory(
-                            new SlideData(
-                                    StoryData.getStoryData(
-                                            story,
-                                            launchData.getFeed(),
-                                            launchData.getSourceType(),
-                                            type
-                                    ),
-                                    story.lastIndex,
-                                    story.getSlideEventPayload(story.lastIndex)
-                            ),
-                            CallbackManager.getInstance().getCloseTypeFromInt(CloseStory.CUSTOM)
-                    );
-                }
-                StatisticManager.getInstance().sendCloseStory(
-                        story.id,
-                        StatisticManager.CUSTOM,
-                        story.lastIndex,
-                        story.getSlidesCount(),
-                        launchData.getFeed()
-                );
-            }
+
         }
         cleanReader();
-        finishWithoutAnimation();
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+                        WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+                blockView.setVisibility(View.VISIBLE);
+                finishWithoutAnimation();
+            }
+        });
+        if (story != null) {
+            sendCloseStatistic(story, CloseStory.CUSTOM);
+        }
     }
 
     @Override

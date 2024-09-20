@@ -29,6 +29,7 @@ import com.inappstory.sdk.stories.statistic.GetOldStatisticManagerCallback;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
+import com.inappstory.sdk.stories.ui.utils.FragmentAction;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPageManager;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 
@@ -114,24 +115,42 @@ public class ReaderManager {
     }
 
     public void close() {
-        Activity activity = parentFragment.getActivity();
-        if (activity != null) {
-            activity.finish();
-        }
+        useContentFragment(new StoriesContentFragmentAction() {
+            @Override
+            public void invoke(StoriesContentFragment host) {
+                Activity activity = host.getActivity();
+                if (activity != null) {
+                    activity.finish();
+                }
+            }
+        });
+
     }
 
     public void unsubscribeClicks() {
-        Activity activity = parentFragment.getActivity();
-        if (activity instanceof StoriesActivity) {
-            ((StoriesActivity) activity).unsubscribeClicks();
-        }
+        useContentFragment(new StoriesContentFragmentAction() {
+            @Override
+            public void invoke(StoriesContentFragment host) {
+                Activity activity = host.getActivity();
+                if (activity instanceof StoriesActivity) {
+                    ((StoriesActivity) activity).unsubscribeClicks();
+                }
+            }
+        });
+
     }
 
     public void subscribeClicks() {
-        Activity activity = parentFragment.getActivity();
-        if (activity instanceof StoriesActivity) {
-            ((StoriesActivity) activity).subscribeClicks();
-        }
+        useContentFragment(new StoriesContentFragmentAction() {
+            @Override
+            public void invoke(StoriesContentFragment host) {
+                Activity activity = host.getActivity();
+                if (activity instanceof StoriesActivity) {
+                    ((StoriesActivity) activity).subscribeClicks();
+                }
+            }
+        });
+
     }
 
 
@@ -208,16 +227,23 @@ public class ReaderManager {
         }
     }
 
-    public void showShareView(InnerShareData shareData,
-                              int storyId, int slideIndex) {
+    public void showShareView(final InnerShareData shareData,
+                              final int storyId, final int slideIndex) {
         //pause();
-        if (parentFragment != null) {
-            parentFragment.showShareView(shareData, storyId, slideIndex);
-        } else {
-            ShareProcessHandler shareProcessHandler = ShareProcessHandler.getInstance();
-            if (shareProcessHandler != null)
-                shareProcessHandler.isShareProcess(false);
-        }
+        useContentFragment(new StoriesContentFragmentAction() {
+            @Override
+            public void invoke(StoriesContentFragment host) {
+                host.showShareView(shareData, storyId, slideIndex);
+            }
+
+            @Override
+            public void error() {
+                ShareProcessHandler shareProcessHandler = ShareProcessHandler.getInstance();
+                if (shareProcessHandler != null)
+                    shareProcessHandler.isShareProcess(false);
+            }
+        });
+
     }
 
     public void removeStoryFromFavorite(int storyId) {
@@ -229,6 +255,8 @@ public class ReaderManager {
         InAppStoryService.useInstance(new UseServiceInstanceCallback() {
             @Override
             public void use(@NonNull final InAppStoryService service) throws Exception {
+                final StoriesContentFragment host = getHost();
+                if (host == null) return;
                 if (storyType == Story.StoryType.COMMON)
                     OldStatisticManager.useInstance(getSessionId(), new GetOldStatisticManagerCallback() {
                         @Override
@@ -251,7 +279,7 @@ public class ReaderManager {
                                 }
                             }
                             latestShowStoryAction = ShowStory.ACTION_CUSTOM;
-                            parentFragment.setCurrentItem(storiesIds.indexOf(storyId));
+                            host.setCurrentItem(storiesIds.indexOf(storyId));
                         }
                     });
                 } else {
@@ -260,9 +288,9 @@ public class ReaderManager {
                         public void use(@NonNull InAppStoryManager manager) throws Exception {
                             manager.showStoryWithSlide(
                                     storyId + "",
-                                    parentFragment.getContext(),
+                                    host.getContext(),
                                     slideIndex,
-                                    parentFragment.getAppearanceSettings(),
+                                    host.getAppearanceSettings(),
                                     storyType,
                                     SourceType.SINGLE,
                                     ShowStory.ACTION_CUSTOM
@@ -318,9 +346,12 @@ public class ReaderManager {
                 adds,
                 storyType
         )) {
-            StoriesContentFragment host = getHost();
-            if (host != null)
-                host.forceFinish();
+            useContentFragment(new StoriesContentFragmentAction() {
+                @Override
+                public void invoke(StoriesContentFragment host) {
+                    host.forceFinish();
+                }
+            });
             return;
         }
         service.getStoryDownloadManager().addStoryTask(
@@ -371,7 +402,13 @@ public class ReaderManager {
         if (story != null) {
             currentSlideIndex = story.lastIndex;
         }
-        parentFragment.showGuardMask(600);
+        useContentFragment(new StoriesContentFragmentAction() {
+            @Override
+            public void invoke(StoriesContentFragment host) {
+                host.showGuardMask(600);
+            }
+
+        });
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -392,7 +429,13 @@ public class ReaderManager {
     }
 
     public void storyClick() {
-        parentFragment.showGuardMask(300);
+        useContentFragment(new StoriesContentFragmentAction() {
+            @Override
+            public void invoke(StoriesContentFragment host) {
+                host.showGuardMask(300);
+            }
+
+        });
     }
 
     public void clearInactiveTimers() {
@@ -514,27 +557,27 @@ public class ReaderManager {
     private int currentSlideIndex;
     private List<Integer> storiesIds;
 
-    public void setParentFragment(StoriesContentFragment parentFragment) {
-        this.parentFragment = parentFragment;
-    }
-
 
     public int startedSlideInd;
     public int firstStoryId = -1;
 
     public void cleanFirst() {
-        Bundle bundle = parentFragment.getArguments();
-        bundle.remove("slideIndex");
-        parentFragment.setArguments(bundle);
+        useContentFragment(new StoriesContentFragmentAction() {
+            @Override
+            public void invoke(StoriesContentFragment host) {
+                Bundle bundle = host.getArguments();
+                bundle.remove("slideIndex");
+                host.setArguments(bundle);
+            }
+        });
         startedSlideInd = 0;
         firstStoryId = -1;
     }
 
     public BaseStoryScreen getReaderScreen() {
-        return parentFragment.getStoriesReader();
+        return getHost().getStoriesReader();
     }
 
-    private StoriesContentFragment parentFragment;
     private final HashSet<ReaderPageManager> subscribers = new HashSet<>();
 
     private final SessionAssetsIsReadyCallback assetsIsReadyCallback = new SessionAssetsIsReadyCallback() {
@@ -589,17 +632,43 @@ public class ReaderManager {
         return getSubscriberByStoryId(currentStoryId);
     }
 
-    public void nextStory(int action) {
-        parentFragment.nextStory(action);
+    private void useContentFragment(FragmentAction<StoriesContentFragment> action) {
+        StoriesContentFragment host = getHost();
+        if (host != null) {
+            action.invoke(host);
+        } else {
+            action.error();
+        }
     }
 
-    public void prevStory(int action) {
-        parentFragment.prevStory(action);
+
+    public void nextStory(final int action) {
+        useContentFragment(new StoriesContentFragmentAction() {
+            @Override
+            public void invoke(StoriesContentFragment host) {
+                host.nextStory(action);
+            }
+        });
+
+    }
+
+    public void prevStory(final int action) {
+        useContentFragment(new StoriesContentFragmentAction() {
+            @Override
+            public void invoke(StoriesContentFragment host) {
+                host.prevStory(action);
+            }
+        });
     }
 
 
-    public void defaultTapOnLink(String url) {
-        parentFragment.defaultUrlClick(url);
+    public void defaultTapOnLink(final String url) {
+        useContentFragment(new StoriesContentFragmentAction() {
+            @Override
+            public void invoke(StoriesContentFragment host) {
+                host.defaultUrlClick(url);
+            }
+        });
     }
 
     public void pauseCurrent(boolean withBackground) {

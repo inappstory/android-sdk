@@ -296,10 +296,14 @@ public class ReaderPageFragment extends Fragment {
                 @Override
                 public void onClick(View view) {
                     if (parentManager != null) {
-                        BaseStoryScreen screen = parentManager.getHost().getStoriesReader();
-                        if (screen != null) {
-                            screen.closeWithAction(CloseStory.CLICK);
+                        StoriesContentFragment contentFragment = parentManager.getHost();
+                        if (contentFragment != null) {
+                            BaseStoryScreen screen = contentFragment.getStoriesReader();
+                            if (screen != null) {
+                                screen.closeWithAction(CloseStory.CLICK);
+                            }
                         }
+
                     }
                 }
             });

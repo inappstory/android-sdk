@@ -5,18 +5,26 @@ import android.os.Bundle;
 
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.core.ui.screens.ILaunchScreenCallback;
 import com.inappstory.sdk.core.ui.screens.IScreenHolder;
 import com.inappstory.sdk.core.ui.screens.LaunchScreenStrategy;
 import com.inappstory.sdk.core.ui.screens.LaunchScreenStrategyType;
 import com.inappstory.sdk.core.ui.screens.ScreensHolder;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenReader;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
 public class LaunchStoryScreenStrategy implements LaunchScreenStrategy {
     private LaunchStoryScreenData launchStoryScreenData;
     private LaunchStoryScreenAppearance readerAppearanceSettings;
+    private List<ILaunchScreenCallback> launchScreenCallbacks = new ArrayList<>();
+    private final boolean closeIfOpened;
+
+    public LaunchStoryScreenStrategy(boolean closeIfOpened) {
+        this.closeIfOpened = closeIfOpened;
+    }
 
     public LaunchStoryScreenStrategy readerAppearanceSettings(LaunchStoryScreenAppearance readerAppearanceSettings) {
         this.readerAppearanceSettings = readerAppearanceSettings;
@@ -28,6 +36,11 @@ public class LaunchStoryScreenStrategy implements LaunchScreenStrategy {
         return this;
     }
 
+    public LaunchStoryScreenStrategy addLaunchScreenCallback(ILaunchScreenCallback callback) {
+        this.launchScreenCallbacks.add(callback);
+        return this;
+    }
+
     @Override
     public void launch(
             Context context,
@@ -35,13 +48,27 @@ public class LaunchStoryScreenStrategy implements LaunchScreenStrategy {
             ScreensHolder screensHolder
     ) {
         StoryScreenHolder currentScreenHolder = screensHolder.getStoryScreenHolder();
-        if (currentScreenHolder.isOpened(launchStoryScreenData)) return;
+        boolean cantBeOpened = false;
+        String message = "";
+        if (currentScreenHolder.isOpened(launchStoryScreenData)) {
+            cantBeOpened = true;
+        }
         if (screensHolder.hasActiveScreen(currentScreenHolder)) {
-            return;
+            cantBeOpened = true;
         }
         InAppStoryService service = InAppStoryService.getInstance();
-        if (service == null || service.getSession().getSessionId().isEmpty()) return;
-
+        if (service == null || service.getSession().getSessionId().isEmpty()) {
+            cantBeOpened = true;
+        }
+        if (cantBeOpened) {
+            for (ILaunchScreenCallback callback: launchScreenCallbacks) {
+                if (callback != null) callback.onError(getType(), message);
+            }
+            return;
+        }
+        for (ILaunchScreenCallback callback: launchScreenCallbacks) {
+            if (callback != null) callback.onSuccess(getType());
+        }
         Bundle bundle = new Bundle();
         bundle.putSerializable(
                 launchStoryScreenData.getSerializableKey(),
