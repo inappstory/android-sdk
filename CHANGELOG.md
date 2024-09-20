@@ -1,6 +1,12 @@
 Change Log
 ==========
 
+Version *1.19.5 (915)*
+----------------------------
+* Fixed: dialog proportions and animation for tablets
+* Fixed: memory leak for tablets (inner classes)
+* Fixed: timeline blink
+
 Version *1.19.4 (914)*
 ----------------------------
 * Fixed: changed story pause logic (added local pauses)
