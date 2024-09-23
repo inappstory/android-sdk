@@ -1,15 +1,15 @@
 package com.inappstory.sdk.externalapi.iasmanager;
 
-import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.core.api.IASManager;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
 
 import java.util.ArrayList;
 import java.util.Locale;
 import java.util.Map;
 
-public class IASManager {
+public class IASManagerExternalAPIImpl implements IASManager {
     public InAppStoryManager create(
             String apiKey,
             String userId,

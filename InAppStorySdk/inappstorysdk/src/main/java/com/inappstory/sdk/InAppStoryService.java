@@ -22,8 +22,6 @@ import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenData;
 import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenStrategy;
-import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenAppearance;
-import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenStrategy;
 import com.inappstory.sdk.externalapi.subscribers.InAppStoryAPISubscribersManager;
 import com.inappstory.sdk.game.cache.GameCacheManager;
 import com.inappstory.sdk.game.cache.SuccessUseCaseCallback;
@@ -548,12 +546,11 @@ public class InAppStoryService {
             @Override
             public void use(@NonNull InAppStoryManager manager) throws Exception {
                 manager.getScreensLauncher().openScreen(context,
-                        new LaunchGameScreenStrategy()
+                        new LaunchGameScreenStrategy(openedFromStoriesReader)
                                 .data(new LaunchGameScreenData(
                                         observableId,
                                         data,
-                                        gameId,
-                                        openedFromStoriesReader
+                                        gameId
                                 ))
                 );
             }

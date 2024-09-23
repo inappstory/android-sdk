@@ -338,7 +338,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
         );
         inAppStoryManager.getScreensLauncher().openScreen(
                 context,
-                new LaunchStoryScreenStrategy().
+                new LaunchStoryScreenStrategy(false).
                         launchStoryScreenData(launchData).
                         readerAppearanceSettings(
                                 new LaunchStoryScreenAppearance(

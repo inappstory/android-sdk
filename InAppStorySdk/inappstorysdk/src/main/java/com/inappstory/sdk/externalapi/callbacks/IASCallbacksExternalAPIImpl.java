@@ -1,5 +1,6 @@
 package com.inappstory.sdk.externalapi.callbacks;
 
+import com.inappstory.sdk.core.api.IASCallbacks;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.outercallbacks.common.errors.ErrorCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.CallToActionCallback;
@@ -11,7 +12,7 @@ import com.inappstory.sdk.stories.outercallbacks.common.reader.ShowSlideCallback
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ShowStoryCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryWidgetCallback;
 
-public class IASCallbacks {
+public class IASCallbacksExternalAPIImpl implements IASCallbacks {
 
     public void error(ErrorCallback errorCallback) {
         CallbackManager.getInstance().setErrorCallback(errorCallback);

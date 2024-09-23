@@ -17,6 +17,7 @@ import androidx.annotation.NonNull;
 
 import com.inappstory.iasutilsconnector.UtilModulesHolder;
 import com.inappstory.iasutilsconnector.json.IJsonParser;
+import com.inappstory.sdk.core.api.IASCore;
 import com.inappstory.sdk.core.ui.screens.GetScreenCallback;
 import com.inappstory.sdk.core.ui.screens.ILaunchScreenCallback;
 import com.inappstory.sdk.core.ui.screens.LaunchScreenStrategyType;
@@ -109,6 +110,7 @@ public class InAppStoryManager {
 
     private static InAppStoryManager INSTANCE;
 
+    private IASCore core = new IASCore();
 
     private final ScreensHolder holder = new ScreensHolder();
 
@@ -1435,7 +1437,13 @@ public class InAppStoryManager {
         Story.StoryType storyType = Story.StoryType.COMMON;
         if (response == null || response.size() == 0) {
             if (CallbackManager.getInstance().getOnboardingLoadCallback() != null) {
-                CallbackManager.getInstance().getOnboardingLoadCallback().onboardingLoad(0, StringsUtils.getNonNull(feed));
+                CallbackManager
+                        .getInstance()
+                        .getOnboardingLoadCallback()
+                        .onboardingLoadSuccess(
+                                0,
+                                StringsUtils.getNonNull(feed)
+                        );
             }
             return;
         }
@@ -1477,13 +1485,25 @@ public class InAppStoryManager {
                             public void onSuccess(LaunchScreenStrategyType type) {
 
                                 if (CallbackManager.getInstance().getOnboardingLoadCallback() != null) {
-                                    CallbackManager.getInstance().getOnboardingLoadCallback().onboardingLoad(response.size(), StringsUtils.getNonNull(feed));
+                                    CallbackManager
+                                            .getInstance()
+                                            .getOnboardingLoadCallback()
+                                            .onboardingLoadSuccess(
+                                                    response.size(),
+                                                    StringsUtils.getNonNull(feed)
+                                            );
                                 }
                             }
 
                             @Override
                             public void onError(LaunchScreenStrategyType type, String message) {
-
+                                CallbackManager
+                                        .getInstance()
+                                        .getOnboardingLoadCallback()
+                                        .onboardingLoadError(
+                                                StringsUtils.getNonNull(feed),
+                                                message
+                                        );
                             }
                         })
         );
@@ -1854,7 +1874,7 @@ public class InAppStoryManager {
             final Story.StoryType type,
             final SourceType readerSource,
             final int readerAction,
-            final boolean closeReaderIfOpened) {
+            final boolean openedFromReader) {
 
         InAppStoryService.useInstance(new UseServiceInstanceCallback() {
             @Override
@@ -1883,9 +1903,9 @@ public class InAppStoryManager {
         );
         launcher.openScreen(
                 context,
-                new LaunchStoryScreenStrategy(closeReaderIfOpened).
-                        launchStoryScreenData(launchData).
-                        readerAppearanceSettings(
+                new LaunchStoryScreenStrategy(openedFromReader)
+                        .launchStoryScreenData(launchData)
+                        .readerAppearanceSettings(
                                 new LaunchStoryScreenAppearance(
                                         AppearanceManager.checkOrCreateAppearanceManager(manager),
                                         context
@@ -1900,7 +1920,8 @@ public class InAppStoryManager {
 
                             @Override
                             public void onError(LaunchScreenStrategyType type, String message) {
-
+                                if (callback != null)
+                                    callback.onError();
                             }
                         })
         );
@@ -1995,7 +2016,7 @@ public class InAppStoryManager {
                                 final Story.StoryType type,
                                 final SourceType readerSource,
                                 final int readerAction,
-                                final boolean closeReaderIfOpened) {
+                                final boolean openedFromReader) {
         final InAppStoryService service = InAppStoryService.getInstance();
         if (service == null) {
             localHandler.postDelayed(new Runnable() {
@@ -2010,7 +2031,7 @@ public class InAppStoryManager {
                             type,
                             readerSource,
                             readerAction,
-                            closeReaderIfOpened
+                            openedFromReader
                     );
                 }
             }, 1000);
@@ -2034,7 +2055,7 @@ public class InAppStoryManager {
                                     type,
                                     readerSource,
                                     readerAction,
-                                    closeReaderIfOpened
+                                    openedFromReader
                             );
                         } else {
                             if (callback != null)
@@ -2057,18 +2078,6 @@ public class InAppStoryManager {
         );
     }
 
-    private void showStoryInner(
-            final String storyId,
-            final Context context,
-            final AppearanceManager manager,
-            final IShowStoryCallback callback,
-            Story.StoryType type,
-            final SourceType readerSource,
-            final int readerAction
-    ) {
-        showStoryInner(storyId, context, manager, callback, null, type, readerSource, readerAction);
-    }
-
     /**
      * use to show single story in reader by id
      *
@@ -2083,9 +2092,11 @@ public class InAppStoryManager {
                 context,
                 manager,
                 callback,
+                0,
                 Story.StoryType.COMMON,
                 SourceType.SINGLE,
-                ShowStory.ACTION_OPEN
+                ShowStory.ACTION_OPEN,
+                false
         );
     }
 
@@ -2098,7 +2109,8 @@ public class InAppStoryManager {
                 slide,
                 Story.StoryType.COMMON,
                 SourceType.SINGLE,
-                ShowStory.ACTION_OPEN
+                ShowStory.ACTION_OPEN,
+                false
         );
     }
 
@@ -2133,57 +2145,34 @@ public class InAppStoryManager {
                 context,
                 manager,
                 null,
+                0,
                 Story.StoryType.COMMON,
                 SourceType.SINGLE,
-                ShowStory.ACTION_OPEN
+                ShowStory.ACTION_OPEN,
+                false
         );
     }
 
-    public void showStoryCustom(String storyId, Context context, AppearanceManager manager) {
-        showStoryInner(
-                storyId,
-                context,
-                manager,
-                null,
-                Story.StoryType.COMMON,
-                SourceType.SINGLE,
-                ShowStory.ACTION_CUSTOM
-        );
-    }
-
-    public void showStoryWithSlide(
+    public void showStoryFromReader(
             String storyId,
             Context context,
             Integer slide,
-            LaunchStoryScreenAppearance settings,
+            AppearanceManager appearanceManager,
             Story.StoryType type,
             final SourceType readerSource,
             final int readerAction
     ) {
-        AppearanceManager appearanceManager = new AppearanceManager();
-        if (settings != null) {
-            appearanceManager.csHasLike(settings.csHasLike());
-            appearanceManager.csHasFavorite(settings.csHasFavorite());
-            appearanceManager.csHasShare(settings.csHasShare());
-            appearanceManager.csClosePosition(settings.csClosePosition());
-            appearanceManager.csCloseOnOverscroll(settings.csCloseOnOverscroll());
-            appearanceManager.csCloseOnSwipe(settings.csCloseOnSwipe());
-            appearanceManager.csIsDraggable(settings.csIsDraggable());
-            appearanceManager.csTimerGradientEnable(settings.csTimerGradientEnable());
-            appearanceManager.csStoryReaderAnimation(settings.csStoryReaderAnimation());
-            appearanceManager.csCloseIcon(settings.csCloseIcon());
-            appearanceManager.csDislikeIcon(settings.csDislikeIcon());
-            appearanceManager.csLikeIcon(settings.csLikeIcon());
-            appearanceManager.csRefreshIcon(settings.csRefreshIcon());
-            appearanceManager.csFavoriteIcon(settings.csFavoriteIcon());
-            appearanceManager.csShareIcon(settings.csShareIcon());
-            appearanceManager.csSoundIcon(settings.csSoundIcon());
-            appearanceManager.csStoryReaderPresentationStyle(
-                    settings.csStoryReaderPresentationStyle()
-            );
-        }
-        showStoryInner(storyId, context, appearanceManager,
-                null, slide, type, readerSource, readerAction);
+        showStoryInner(
+                storyId,
+                context,
+                appearanceManager,
+                null,
+                slide,
+                type,
+                readerSource,
+                readerAction,
+                true
+        );
     }
 
     public static class Builder {

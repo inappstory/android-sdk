@@ -18,21 +18,27 @@ public class LaunchGameScreenStrategy implements LaunchScreenStrategy {
         return this;
     }
 
+    public LaunchGameScreenStrategy(boolean openedFromReader) {
+        this.openedFromReader = openedFromReader;
+    }
+
+    private final boolean openedFromReader;
+
     private LaunchGameScreenData data;
 
     @Override
     public void launch(Context context, IOpenReader openReader, ScreensHolder screensHolder) {
         InAppStoryService service = InAppStoryService.getInstance();
         if (service == null || service.getSession().getSessionId().isEmpty()) return;
-        if ((!data.openedFromStoryReader && screensHolder.hasActiveScreen()) ||
-                screensHolder.hasActiveScreen(screensHolder.getStoryScreenHolder())
+        if ((!openedFromReader && screensHolder.hasActiveScreen()) ||
+                screensHolder.hasActiveScreen(screensHolder.getGameScreenHolder())
         ) {
             return;
         }
         Bundle bundle = new Bundle();
         GameReaderAppearanceSettings gameReaderAppearanceSettings = new GameReaderAppearanceSettings(
-                data.openedFromStoryReader ? "#000000" : null,
-                data.openedFromStoryReader ? "#000000" : null
+                openedFromReader ? "#000000" : null,
+                openedFromReader ? "#000000" : null
         );
         bundle.putSerializable(data.launchData.getSerializableKey(), data.launchData);
         bundle.putSerializable(gameReaderAppearanceSettings.getSerializableKey(), gameReaderAppearanceSettings);

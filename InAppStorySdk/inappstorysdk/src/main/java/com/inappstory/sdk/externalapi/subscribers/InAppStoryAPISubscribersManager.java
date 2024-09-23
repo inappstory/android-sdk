@@ -219,7 +219,7 @@ public class InAppStoryAPISubscribersManager {
                     null
             );
             manager.getScreensLauncher().openScreen(context,
-                    new LaunchStoryScreenStrategy().
+                    new LaunchStoryScreenStrategy(false).
                             launchStoryScreenData(launchData).
                             readerAppearanceSettings(
                                     new LaunchStoryScreenAppearance(

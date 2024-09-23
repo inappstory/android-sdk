@@ -30,10 +30,9 @@ import com.inappstory.sdk.stories.cache.usecases.StoryResourceFileUseCase;
 import com.inappstory.sdk.stories.cache.usecases.StoryVODResourceFileUseCase;
 import com.inappstory.sdk.stories.cache.usecases.StoryVODResourceFileUseCaseResult;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.UgcStoryData;
+import com.inappstory.sdk.stories.outercallbacks.common.single.SingleLoadCallback;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 import com.inappstory.sdk.stories.ui.list.FavoriteImage;
@@ -41,7 +40,6 @@ import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPag
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
 import com.inappstory.sdk.stories.utils.SessionManager;
 import com.inappstory.sdk.utils.ISessionHolder;
-import com.inappstory.sdk.utils.StringsUtils;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -84,6 +82,7 @@ public class StoryDownloadManager {
             storyByIdCallback.loadError(-1);
             return;
         }
+        final SingleLoadCallback externalLoadCallback = CallbackManager.getInstance().getSingleLoadCallback();
         SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
             @Override
             public void onSuccess(final String sessionId) {
@@ -100,8 +99,8 @@ public class StoryDownloadManager {
                             @Override
                             public void onSuccess(final Story response) {
                                 ProfilingManager.getInstance().setReady(storyUID);
-                                if (CallbackManager.getInstance().getSingleLoadCallback() != null) {
-                                    CallbackManager.getInstance().getSingleLoadCallback().singleLoad(
+                                if (externalLoadCallback != null) {
+                                    externalLoadCallback.singleLoadSuccess(
                                             StoryData.getStoryData(
                                                     response,
                                                     null,
@@ -133,8 +132,8 @@ public class StoryDownloadManager {
                             public void errorDefault(String message) {
 
                                 ProfilingManager.getInstance().setReady(storyUID);
-                                if (CallbackManager.getInstance().getErrorCallback() != null) {
-                                    CallbackManager.getInstance().getErrorCallback().loadSingleError();
+                                if (externalLoadCallback != null) {
+                                    externalLoadCallback.singleLoadError(id, "Can't load story");
                                 }
                                 if (storyByIdCallback != null)
                                     storyByIdCallback.loadError(-1);
@@ -144,9 +143,8 @@ public class StoryDownloadManager {
 
             @Override
             public void onError() {
-
-                if (CallbackManager.getInstance().getErrorCallback() != null) {
-                    CallbackManager.getInstance().getErrorCallback().loadSingleError();
+                if (externalLoadCallback != null) {
+                    externalLoadCallback.singleLoadError(id, "Can't open session");
                 }
                 if (storyByIdCallback != null)
                     storyByIdCallback.loadError(-1);

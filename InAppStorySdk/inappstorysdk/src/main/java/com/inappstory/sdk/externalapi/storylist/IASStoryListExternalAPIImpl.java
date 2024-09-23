@@ -7,10 +7,11 @@ import androidx.annotation.NonNull;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.UseServiceInstanceCallback;
+import com.inappstory.sdk.core.api.IASStoryList;
 
 import java.util.List;
 
-public class IASStoryList {
+public class IASStoryListExternalAPIImpl implements IASStoryList {
     public void load(
             final String feed,
             final String uniqueId,

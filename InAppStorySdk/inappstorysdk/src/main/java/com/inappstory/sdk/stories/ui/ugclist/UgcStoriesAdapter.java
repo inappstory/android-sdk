@@ -273,7 +273,7 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
                 coordinates
         );
         inAppStoryManager.getScreensLauncher().openScreen(context,
-                new LaunchStoryScreenStrategy().
+                new LaunchStoryScreenStrategy(false).
                         launchStoryScreenData(launchData).
                         readerAppearanceSettings(
                                 new LaunchStoryScreenAppearance(

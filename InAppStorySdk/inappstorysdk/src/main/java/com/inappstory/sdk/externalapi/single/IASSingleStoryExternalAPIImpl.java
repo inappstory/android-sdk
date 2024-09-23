@@ -7,12 +7,13 @@ import androidx.annotation.NonNull;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.UseManagerInstanceCallback;
+import com.inappstory.sdk.core.api.IASSingleStory;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.callbacks.IShowStoryCallback;
 import com.inappstory.sdk.stories.callbacks.IShowStoryOnceCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.single.SingleLoadCallback;
 
-public class IASSingleStory {
+public class IASSingleStoryExternalAPIImpl implements IASSingleStory {
     public void showOnce(
             final Context context,
             final String storyId,

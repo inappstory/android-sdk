@@ -26,7 +26,7 @@ public class ScreensHolder implements IScreensHolder {
     }
 
     private boolean checkHolderForScreen(IScreenHolder holderToCheck, IScreenHolder holderToCompare) {
-        return holderToCheck != holderToCompare && (holderToCheck.isOpened() || holderToCheck.isLaunchProcessStarted());
+        return (holderToCheck == holderToCompare) && (holderToCheck.isOpened() || holderToCheck.isLaunchProcessStarted());
     }
 
     public boolean hasActiveScreen() {

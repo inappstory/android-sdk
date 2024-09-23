@@ -5,13 +5,15 @@ import androidx.annotation.NonNull;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.UseManagerInstanceCallback;
+import com.inappstory.sdk.core.api.IASSettings;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-public class IASSettings {
+public class IASSettingsExternalAPIImpl implements IASSettings {
     public void setUserId(final String userId) {
         InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
             @Override
@@ -52,11 +54,11 @@ public class IASSettings {
         AppearanceManager.setCommonInstance(appearanceManager);
     }
 
-    public void setTags(final ArrayList<String> tags) {
+    public void setTags(final List<String> tags) {
         InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
             @Override
             public void use(@NonNull InAppStoryManager manager) throws Exception {
-                manager.setTags(tags);
+                manager.setTags(new ArrayList<>(tags));
             }
         });
     }

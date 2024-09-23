@@ -663,7 +663,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryScree
 
     @Override
     public void close() {
-
+        closeWithAction(CloseStory.CUSTOM);
     }
 
     boolean cleaned = false;

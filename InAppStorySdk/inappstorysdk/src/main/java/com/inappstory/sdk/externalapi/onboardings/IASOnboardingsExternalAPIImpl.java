@@ -7,12 +7,13 @@ import androidx.annotation.NonNull;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.UseManagerInstanceCallback;
+import com.inappstory.sdk.core.api.IASOnboardings;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.outercallbacks.common.onboarding.OnboardingLoadCallback;
 
 import java.util.List;
 
-public class IASOnboardings {
+public class IASOnboardingsExternalAPIImpl implements IASOnboardings {
     public void show(
             final Context context,
             final String feed,

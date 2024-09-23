@@ -368,7 +368,7 @@ public class StackStoryObserver implements IStackFeedActions {
                     null
             );
             manager.getScreensLauncher().openScreen(context,
-                    new LaunchStoryScreenStrategy().
+                    new LaunchStoryScreenStrategy(false).
                             launchStoryScreenData(launchData).
                             readerAppearanceSettings(
                                     new LaunchStoryScreenAppearance(

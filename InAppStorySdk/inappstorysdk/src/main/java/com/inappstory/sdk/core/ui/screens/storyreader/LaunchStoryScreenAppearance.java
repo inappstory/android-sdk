@@ -124,28 +124,55 @@ public class LaunchStoryScreenAppearance implements SerializableWithKey {
     private final boolean csIsDraggable;
     private final int csNavBarColor;
 
+    public AppearanceManager toAppearanceManager() {
+        AppearanceManager appearanceManager = new AppearanceManager();
+        appearanceManager.csHasLike(csHasLike());
+        appearanceManager.csHasFavorite(csHasFavorite());
+        appearanceManager.csHasShare(csHasShare());
+        appearanceManager.csClosePosition(csClosePosition());
+        appearanceManager.csCloseOnOverscroll(csCloseOnOverscroll());
+        appearanceManager.csCloseOnSwipe(csCloseOnSwipe());
+        appearanceManager.csIsDraggable(csIsDraggable());
+        appearanceManager.csTimerGradientEnable(csTimerGradientEnable());
+        appearanceManager.csStoryReaderAnimation(csStoryReaderAnimation());
+        appearanceManager.csCloseIcon(csCloseIcon());
+        appearanceManager.csDislikeIcon(csDislikeIcon());
+        appearanceManager.csLikeIcon(csLikeIcon());
+        appearanceManager.csRefreshIcon(csRefreshIcon());
+        appearanceManager.csFavoriteIcon(csFavoriteIcon());
+        appearanceManager.csShareIcon(csShareIcon());
+        appearanceManager.csSoundIcon(csSoundIcon());
+        appearanceManager.csStoryReaderPresentationStyle(
+                csStoryReaderPresentationStyle()
+        );
+        appearanceManager.csTimerGradient(csTimerGradient());
+        appearanceManager.csReaderRadius(csReaderRadius());
+        appearanceManager.csReaderBackgroundColor(csReaderBackgroundColor());
+        return appearanceManager;
+    }
+
     public LaunchStoryScreenAppearance(
             AppearanceManager manager,
             Context context
     ) {
-        csClosePosition = manager.csClosePosition();
-        csStoryReaderAnimation = manager.csStoryReaderAnimation();
-        csStoryReaderPresentationStyle = manager.csStoryReaderPresentationStyle();
-        csCloseOnOverscroll = manager.csCloseOnOverscroll();
-        csCloseOnSwipe = manager.csCloseOnSwipe();
-        csHasLike = manager.csHasLike();
-        csIsDraggable = manager.csIsDraggable();
-        csHasFavorite = manager.csHasFavorite();
-        csHasShare = manager.csHasShare();
-        csCloseIcon = manager.csCloseIcon();
-        csRefreshIcon = manager.csRefreshIcon();
-        csSoundIcon = manager.csSoundIcon();
-        csFavoriteIcon = manager.csFavoriteIcon();
-        csLikeIcon = manager.csLikeIcon();
-        csDislikeIcon = manager.csDislikeIcon();
-        csShareIcon = manager.csShareIcon();
+        csClosePosition = manager.csClosePosition();//
+        csStoryReaderAnimation = manager.csStoryReaderAnimation();//
+        csStoryReaderPresentationStyle = manager.csStoryReaderPresentationStyle();//
+        csCloseOnOverscroll = manager.csCloseOnOverscroll();//
+        csCloseOnSwipe = manager.csCloseOnSwipe();//
+        csHasLike = manager.csHasLike();//
+        csIsDraggable = manager.csIsDraggable();//
+        csHasFavorite = manager.csHasFavorite();//
+        csHasShare = manager.csHasShare();//
+        csCloseIcon = manager.csCloseIcon();//
+        csRefreshIcon = manager.csRefreshIcon();//
+        csSoundIcon = manager.csSoundIcon();//
+        csFavoriteIcon = manager.csFavoriteIcon();//
+        csLikeIcon = manager.csLikeIcon();//
+        csDislikeIcon = manager.csDislikeIcon();//
+        csShareIcon = manager.csShareIcon();//
         csReaderRadius = manager.csReaderRadius(context);
-        csTimerGradientEnable = manager.csTimerGradientEnable();
+        csTimerGradientEnable = manager.csTimerGradientEnable();//
         csReaderBackgroundColor = manager.csReaderBackgroundColor();
         int nightModeFlags =
                 context.getResources().getConfiguration().uiMode &
@@ -153,7 +180,7 @@ public class LaunchStoryScreenAppearance implements SerializableWithKey {
         csNavBarColor = nightModeFlags == Configuration.UI_MODE_NIGHT_YES ?
                 manager.csNightNavBarColor() : manager.csNavBarColor();
         if (manager.csTimerGradient() != null) {
-            csTimerGradient = manager.csTimerGradient();
+            csTimerGradient = manager.csTimerGradient();//
         } else {
             csTimerGradient = new StoriesGradientObject()
                     .csGradientHeight(Sizes.getScreenSize(context).y);

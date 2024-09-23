@@ -17,6 +17,7 @@ import com.inappstory.sdk.UseManagerInstanceCallback;
 import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.core.ui.screens.ShareProcessHandler;
 import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryScreen;
+import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenAppearance;
 import com.inappstory.sdk.game.cache.SessionAssetsIsReadyCallback;
 import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.stories.api.models.Story;
@@ -283,14 +284,21 @@ public class ReaderManager {
                         }
                     });
                 } else {
+                    LaunchStoryScreenAppearance appearance = host.getAppearanceSettings();
+                    final AppearanceManager appearanceManager;
+                    if (appearance != null) {
+                        appearanceManager = appearance.toAppearanceManager();
+                    } else {
+                        appearanceManager = new AppearanceManager();
+                    }
                     InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
                         @Override
                         public void use(@NonNull InAppStoryManager manager) throws Exception {
-                            manager.showStoryWithSlide(
+                            manager.showStoryFromReader(
                                     storyId + "",
                                     host.getContext(),
                                     slideIndex,
-                                    host.getAppearanceSettings(),
+                                    appearanceManager,
                                     storyType,
                                     SourceType.SINGLE,
                                     ShowStory.ACTION_CUSTOM

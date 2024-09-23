@@ -22,11 +22,14 @@ import com.inappstory.sdk.network.jsapiclient.JsApiClient;
 import com.inappstory.sdk.network.jsapiclient.JsApiResponseCallback;
 import com.inappstory.sdk.network.models.Response;
 import com.inappstory.sdk.share.IShareCompleteListener;
+import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.UrlObject;
 import com.inappstory.sdk.stories.api.models.WebResource;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickAction;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
+import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
 import com.inappstory.sdk.utils.StringsUtils;
@@ -195,10 +198,14 @@ public class GameManager {
         if (options.openStory != null
                 && options.openStory.id != null
                 && !options.openStory.id.isEmpty()) {
-            InAppStoryManager.getInstance().showStoryCustom(
+            InAppStoryManager.getInstance().showStoryFromReader(
                     options.openStory.id,
                     host.getContext(),
-                    AppearanceManager.getCommonInstance()
+                    0,
+                    AppearanceManager.getCommonInstance(),
+                    Story.StoryType.COMMON,
+                    SourceType.SINGLE,
+                    ShowStory.ACTION_CUSTOM
             );
 
         }

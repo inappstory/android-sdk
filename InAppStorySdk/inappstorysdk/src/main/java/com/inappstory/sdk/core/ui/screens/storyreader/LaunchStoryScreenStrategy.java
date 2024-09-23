@@ -3,10 +3,8 @@ package com.inappstory.sdk.core.ui.screens.storyreader;
 import android.content.Context;
 import android.os.Bundle;
 
-import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.core.ui.screens.ILaunchScreenCallback;
-import com.inappstory.sdk.core.ui.screens.IScreenHolder;
 import com.inappstory.sdk.core.ui.screens.LaunchScreenStrategy;
 import com.inappstory.sdk.core.ui.screens.LaunchScreenStrategyType;
 import com.inappstory.sdk.core.ui.screens.ScreensHolder;
@@ -20,10 +18,10 @@ public class LaunchStoryScreenStrategy implements LaunchScreenStrategy {
     private LaunchStoryScreenData launchStoryScreenData;
     private LaunchStoryScreenAppearance readerAppearanceSettings;
     private List<ILaunchScreenCallback> launchScreenCallbacks = new ArrayList<>();
-    private final boolean closeIfOpened;
+    private final boolean openedFromReader;
 
-    public LaunchStoryScreenStrategy(boolean closeIfOpened) {
-        this.closeIfOpened = closeIfOpened;
+    public LaunchStoryScreenStrategy(boolean openedFromReader) {
+        this.openedFromReader = openedFromReader;
     }
 
     public LaunchStoryScreenStrategy readerAppearanceSettings(LaunchStoryScreenAppearance readerAppearanceSettings) {
@@ -50,10 +48,10 @@ public class LaunchStoryScreenStrategy implements LaunchScreenStrategy {
         StoryScreenHolder currentScreenHolder = screensHolder.getStoryScreenHolder();
         boolean cantBeOpened = false;
         String message = "";
-        if (currentScreenHolder.isOpened(launchStoryScreenData)) {
-            cantBeOpened = true;
-        }
         if (screensHolder.hasActiveScreen(currentScreenHolder)) {
+            cantBeOpened = !openedFromReader;
+        }
+        if (currentScreenHolder.isOpened(launchStoryScreenData)) {
             cantBeOpened = true;
         }
         InAppStoryService service = InAppStoryService.getInstance();
@@ -61,12 +59,15 @@ public class LaunchStoryScreenStrategy implements LaunchScreenStrategy {
             cantBeOpened = true;
         }
         if (cantBeOpened) {
-            for (ILaunchScreenCallback callback: launchScreenCallbacks) {
+            for (ILaunchScreenCallback callback : launchScreenCallbacks) {
                 if (callback != null) callback.onError(getType(), message);
             }
             return;
         }
-        for (ILaunchScreenCallback callback: launchScreenCallbacks) {
+        if (openedFromReader) {
+            currentScreenHolder.closeScreen();
+        }
+        for (ILaunchScreenCallback callback : launchScreenCallbacks) {
             if (callback != null) callback.onSuccess(getType());
         }
         Bundle bundle = new Bundle();

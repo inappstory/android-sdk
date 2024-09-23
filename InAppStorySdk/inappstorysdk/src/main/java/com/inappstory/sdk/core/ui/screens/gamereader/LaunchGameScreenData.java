@@ -7,8 +7,7 @@ public class LaunchGameScreenData {
     public LaunchGameScreenData(
             String observableId,
             GameStoryData gameStoryData,
-            String gameId,
-            boolean openedFromStoryReader
+            String gameId
     ) {
         this.launchData = new GameReaderLaunchData(
                 gameId,
@@ -16,12 +15,10 @@ public class LaunchGameScreenData {
                 gameStoryData != null ? gameStoryData.slideData : null
         );
         this.gameStoryData = gameStoryData;
-        this.openedFromStoryReader = openedFromStoryReader;
         this.gameId = gameId;
     }
 
 
-    boolean openedFromStoryReader;
     GameReaderLaunchData launchData;
     GameStoryData gameStoryData;
     String gameId;

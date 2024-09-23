@@ -5,11 +5,12 @@ import androidx.annotation.NonNull;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.UseManagerInstanceCallback;
+import com.inappstory.sdk.core.api.IASStackFeed;
 import com.inappstory.sdk.stories.stackfeed.IStackFeedResult;
 
 import java.util.List;
 
-public class IASStackFeed {
+public class IASStackFeedExternalAPIImpl implements IASStackFeed {
     public void get(
             final String feed,
             final String uniqueStackId,

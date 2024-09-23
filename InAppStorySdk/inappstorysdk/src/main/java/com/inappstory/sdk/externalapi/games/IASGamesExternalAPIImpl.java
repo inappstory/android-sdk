@@ -6,10 +6,11 @@ import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.UseManagerInstanceCallback;
+import com.inappstory.sdk.core.api.IASGames;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.outercallbacks.common.gamereader.GameReaderCallback;
 
-public class IASGames {
+public class IASGamesExternalAPIImpl implements IASGames {
     public void close() {
         InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
             @Override
