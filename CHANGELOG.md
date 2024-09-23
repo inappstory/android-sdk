@@ -1,7 +1,7 @@
 Change Log
 ==========
 
-Version *1.19.5 (915)*
+Version *1.19.6 (916)*
 ----------------------------
 * Fixed: dialog proportions and animation for tablets
 * Fixed: memory leak for tablets (inner classes)
