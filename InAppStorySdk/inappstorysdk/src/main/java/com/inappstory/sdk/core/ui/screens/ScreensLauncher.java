@@ -2,6 +2,8 @@ package com.inappstory.sdk.core.ui.screens;
 
 import android.content.Context;
 
+import androidx.annotation.NonNull;
+
 import com.inappstory.sdk.stories.outercallbacks.common.objects.DefaultOpenGameReader;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.DefaultOpenInAppMessageReader;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.DefaultOpenStoriesReader;
@@ -20,17 +22,20 @@ public class ScreensLauncher implements IScreensLauncher {
     }
 
     private IOpenGameReader openGameReader = new DefaultOpenGameReader();
-    public void setOpenGameReader(IOpenGameReader openGameReader) {
+
+    public void setOpenGameReader(@NonNull IOpenGameReader openGameReader) {
         this.openGameReader = openGameReader;
     }
 
     private IOpenStoriesReader openStoriesReader = new DefaultOpenStoriesReader();
-    public void setOpenStoriesReader(IOpenStoriesReader openStoriesReader) {
+
+    public void setOpenStoriesReader(@NonNull IOpenStoriesReader openStoriesReader) {
         this.openStoriesReader = openStoriesReader;
     }
 
     private IOpenInAppMessageReader openInAppMessageReader = new DefaultOpenInAppMessageReader();
-    public void setOpenInAppMessageReader(IOpenInAppMessageReader openInAppMessageReader) {
+
+    public void setOpenInAppMessageReader(@NonNull IOpenInAppMessageReader openInAppMessageReader) {
         this.openInAppMessageReader = openInAppMessageReader;
     }
 
@@ -47,6 +52,21 @@ public class ScreensLauncher implements IScreensLauncher {
             default:
                 strategy.launch(context, openStoriesReader, holder);
                 break;
+        }
+    }
+
+    @Override
+    @NonNull
+    public IOpenReader getOpenReader(ScreenType screenType) {
+        switch (screenType) {
+            case STORY:
+                return openStoriesReader;
+            case GAME:
+                return openGameReader;
+            case IN_APP_MESSAGE:
+                return openInAppMessageReader;
+            default:
+                throw new RuntimeException("Wrong screen type");
         }
     }
 }

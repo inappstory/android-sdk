@@ -4,8 +4,6 @@ import android.content.Context;
 
 import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenReader;
 
-import java.util.List;
-
 public interface LaunchScreenStrategy {
     void launch(
             Context context,
@@ -13,5 +11,5 @@ public interface LaunchScreenStrategy {
             ScreensHolder screensHolders
     );
 
-    LaunchScreenStrategyType getType();
+    ScreenType getType();
 }

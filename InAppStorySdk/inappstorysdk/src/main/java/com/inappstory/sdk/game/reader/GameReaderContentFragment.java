@@ -51,6 +51,7 @@ import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.UseManagerInstanceCallback;
 import com.inappstory.sdk.UseServiceInstanceCallback;
+import com.inappstory.sdk.core.ui.screens.ScreenType;
 import com.inappstory.sdk.core.ui.screens.ShareProcessHandler;
 import com.inappstory.sdk.core.ui.screens.gamereader.BaseGameScreen;
 import com.inappstory.sdk.core.ui.screens.gamereader.GameReaderOverlapContainerDataForShare;
@@ -413,8 +414,12 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
     public void onDestroyView() {
         if (isFullscreen) {
             InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
-            if (inAppStoryManager != null && getActivity() != null)
-                inAppStoryManager.getOpenGameReader().onRestoreScreen(getActivity());
+            if (inAppStoryManager != null && getActivity() != null) {
+                inAppStoryManager
+                        .getScreensLauncher()
+                        .getOpenReader(ScreenType.GAME)
+                        .onRestoreScreen(getActivity());
+            }
         }
         super.onDestroyView();
     }
@@ -836,8 +841,12 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
             isFullscreen = forceFullscreen;
         if (isFullscreen) {
             InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
-            if (inAppStoryManager != null && getActivity() != null)
-                inAppStoryManager.getOpenGameReader().onShowInFullscreen(getActivity());
+            if (inAppStoryManager != null && getActivity() != null) {
+                inAppStoryManager
+                        .getScreensLauncher()
+                        .getOpenReader(ScreenType.GAME)
+                        .onShowInFullscreen(getActivity());
+            }
         }
     }
 

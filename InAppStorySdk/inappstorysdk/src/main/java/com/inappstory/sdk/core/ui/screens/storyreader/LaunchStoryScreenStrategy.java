@@ -6,7 +6,7 @@ import android.os.Bundle;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.core.ui.screens.ILaunchScreenCallback;
 import com.inappstory.sdk.core.ui.screens.LaunchScreenStrategy;
-import com.inappstory.sdk.core.ui.screens.LaunchScreenStrategyType;
+import com.inappstory.sdk.core.ui.screens.ScreenType;
 import com.inappstory.sdk.core.ui.screens.ScreensHolder;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenReader;
 
@@ -87,7 +87,7 @@ public class LaunchStoryScreenStrategy implements LaunchScreenStrategy {
 
 
     @Override
-    public LaunchScreenStrategyType getType() {
-        return LaunchScreenStrategyType.STORY;
+    public ScreenType getType() {
+        return ScreenType.STORY;
     }
 }

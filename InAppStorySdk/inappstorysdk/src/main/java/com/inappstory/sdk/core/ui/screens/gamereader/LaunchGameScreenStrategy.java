@@ -3,10 +3,9 @@ package com.inappstory.sdk.core.ui.screens.gamereader;
 import android.content.Context;
 import android.os.Bundle;
 
-import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.core.ui.screens.LaunchScreenStrategy;
-import com.inappstory.sdk.core.ui.screens.LaunchScreenStrategyType;
+import com.inappstory.sdk.core.ui.screens.ScreenType;
 import com.inappstory.sdk.core.ui.screens.ScreensHolder;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.GameReaderAppearanceSettings;
@@ -54,7 +53,7 @@ public class LaunchGameScreenStrategy implements LaunchScreenStrategy {
     }
 
     @Override
-    public LaunchScreenStrategyType getType() {
-        return LaunchScreenStrategyType.GAME;
+    public ScreenType getType() {
+        return ScreenType.GAME;
     }
 }

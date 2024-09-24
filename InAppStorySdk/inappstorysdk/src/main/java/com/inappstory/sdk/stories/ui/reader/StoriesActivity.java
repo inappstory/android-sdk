@@ -30,6 +30,7 @@ import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.UseManagerInstanceCallback;
 import com.inappstory.sdk.UseServiceInstanceCallback;
+import com.inappstory.sdk.core.ui.screens.ScreenType;
 import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryScreen;
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenAppearance;
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenData;
@@ -68,8 +69,14 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryScree
             InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
                 @Override
                 public void use(@NonNull InAppStoryManager manager) throws Exception {
-                    manager.getOpenStoriesReader().onRestoreStatusBar(StoriesActivity.this);
-                    manager.getScreensHolder().getGameScreenHolder().forceCloseScreen(null);
+                    manager
+                            .getScreensLauncher()
+                            .getOpenReader(ScreenType.STORY)
+                            .onRestoreStatusBar(StoriesActivity.this);
+                    manager
+                            .getScreensHolder()
+                            .getGameScreenHolder()
+                            .forceCloseScreen(null);
                 }
             });
             OldStatisticManager.useInstance(
@@ -132,10 +139,15 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryScree
     protected void onResume() {
         super.onResume();
         subscribeClicks();
-        InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
-        if (inAppStoryManager != null) {
-            inAppStoryManager.getOpenStoriesReader().onHideStatusBar(this);
-        }
+        InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryManager manager) throws Exception {
+                manager
+                        .getScreensLauncher()
+                        .getOpenReader(ScreenType.STORY)
+                        .onHideStatusBar(StoriesActivity.this);
+            }
+        });
     }
 
     public void startAnim(final Bundle savedInstanceState, final Rect readerContainer) {
@@ -447,10 +459,15 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryScree
             forceFinish();
             return;
         }
-        InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
-        if (inAppStoryManager != null) {
-            inAppStoryManager.getOpenStoriesReader().onHideStatusBar(this);
-        }
+        InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryManager manager) throws Exception {
+                manager
+                        .getScreensLauncher()
+                        .getOpenReader(ScreenType.STORY)
+                        .onHideStatusBar(StoriesActivity.this);
+            }
+        });
         service.getListReaderConnector().readerIsOpened();
         type = launchData.getType();
         draggableFrame.type = type;
@@ -699,9 +716,15 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryScree
             inAppStoryManager.getScreensHolder().getStoryScreenHolder().unsubscribeScreen(this);
         }
         if (!pauseDestroyed) {
-            if (inAppStoryManager != null) {
-                inAppStoryManager.getOpenStoriesReader().onRestoreStatusBar(this);
-            }
+            InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+                @Override
+                public void use(@NonNull InAppStoryManager manager) throws Exception {
+                    manager
+                            .getScreensLauncher()
+                            .getOpenReader(ScreenType.STORY)
+                            .onRestoreStatusBar(StoriesActivity.this);
+                }
+            });
             if (launchData != null) {
                 OldStatisticManager.useInstance(
                         launchData.getSessionId(),

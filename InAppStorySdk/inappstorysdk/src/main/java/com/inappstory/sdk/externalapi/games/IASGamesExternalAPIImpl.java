@@ -32,4 +32,14 @@ public class IASGamesExternalAPIImpl implements IASGames {
     public void callback(GameReaderCallback gameReaderCallback) {
         CallbackManager.getInstance().setGameReaderCallback(gameReaderCallback);
     }
+
+    @Override
+    public void preloadGames() {
+        InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryManager manager) throws Exception {
+                manager.preloadGames();
+            }
+        });
+    }
 }

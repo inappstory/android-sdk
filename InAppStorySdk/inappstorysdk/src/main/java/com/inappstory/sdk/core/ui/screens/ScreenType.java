@@ -1,5 +1,5 @@
 package com.inappstory.sdk.core.ui.screens;
 
-public enum LaunchScreenStrategyType {
+public enum ScreenType {
     STORY, GAME, IN_APP_MESSAGE
 }

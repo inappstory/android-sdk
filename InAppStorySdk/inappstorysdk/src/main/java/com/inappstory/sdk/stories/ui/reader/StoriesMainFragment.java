@@ -27,6 +27,7 @@ import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.UseManagerInstanceCallback;
 import com.inappstory.sdk.UseServiceInstanceCallback;
+import com.inappstory.sdk.core.ui.screens.ScreenType;
 import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryScreen;
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenAppearance;
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenData;
@@ -324,10 +325,16 @@ public abstract class StoriesMainFragment extends Fragment implements
     @Override
     public void onViewCreated(@NonNull View view, @Nullable final Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
-        if (inAppStoryManager != null) {
-            inAppStoryManager.getOpenStoriesReader().onHideStatusBar(getActivity());
-        }
+
+        InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryManager manager) throws Exception {
+                manager
+                        .getScreensLauncher()
+                        .getOpenReader(ScreenType.STORY)
+                        .onHideStatusBar(getActivity());
+            }
+        });
         if (getActivity() == null) {
             return;
         }
@@ -554,10 +561,15 @@ public abstract class StoriesMainFragment extends Fragment implements
 
     @Override
     public void onDestroyView() {
-        InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
-        if (inAppStoryManager != null) {
-            inAppStoryManager.getOpenStoriesReader().onRestoreStatusBar(getActivity());
-        }
+        InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryManager manager) throws Exception {
+                manager
+                        .getScreensLauncher()
+                        .getOpenReader(ScreenType.STORY)
+                        .onRestoreStatusBar(getActivity());
+            }
+        });
         super.onDestroyView();
     }
 

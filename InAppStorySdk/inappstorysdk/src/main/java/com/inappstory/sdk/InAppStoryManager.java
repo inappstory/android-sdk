@@ -17,10 +17,10 @@ import androidx.annotation.NonNull;
 
 import com.inappstory.iasutilsconnector.UtilModulesHolder;
 import com.inappstory.iasutilsconnector.json.IJsonParser;
-import com.inappstory.sdk.core.api.IASCore;
+import com.inappstory.sdk.core.api.IASCoreImpl;
 import com.inappstory.sdk.core.ui.screens.GetScreenCallback;
 import com.inappstory.sdk.core.ui.screens.ILaunchScreenCallback;
-import com.inappstory.sdk.core.ui.screens.LaunchScreenStrategyType;
+import com.inappstory.sdk.core.ui.screens.ScreenType;
 import com.inappstory.sdk.core.ui.screens.ScreensHolder;
 import com.inappstory.sdk.core.ui.screens.ScreensLauncher;
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenAppearance;
@@ -110,7 +110,7 @@ public class InAppStoryManager {
 
     private static InAppStoryManager INSTANCE;
 
-    private IASCore core = new IASCore();
+    private IASCoreImpl core = new IASCoreImpl();
 
     private final ScreensHolder holder = new ScreensHolder();
 
@@ -1243,36 +1243,17 @@ public class InAppStoryManager {
         }
     }
 
-    public IOpenStoriesReader getOpenStoriesReader() {
-        return openStoriesReader;
+    public void setOpenStoriesReader(@NonNull IOpenStoriesReader openStoriesReader) {
+        this.getScreensLauncher().setOpenStoriesReader(openStoriesReader);
     }
 
-
-    public IOpenInAppMessageReader getOpenInAppMessageReader() {
-        return openInAppMessageReader;
+    public void setOpenInAppMessageReader(@NonNull IOpenInAppMessageReader openInAppMessageReader) {
+        this.getScreensLauncher().setOpenInAppMessageReader(openInAppMessageReader);
     }
 
-    public void setOpenStoriesReader(IOpenStoriesReader openStoriesReader) {
-        this.openStoriesReader = openStoriesReader;
+    public void setOpenGameReader(@NonNull IOpenGameReader openGameReader) {
+        this.getScreensLauncher().setOpenGameReader(openGameReader);
     }
-
-    private IOpenStoriesReader openStoriesReader = new DefaultOpenStoriesReader();
-
-    public void setOpenInAppMessageReader(IOpenInAppMessageReader openInAppMessageReader) {
-        this.openInAppMessageReader = openInAppMessageReader;
-    }
-
-    private IOpenInAppMessageReader openInAppMessageReader = new DefaultOpenInAppMessageReader();
-
-    public IOpenGameReader getOpenGameReader() {
-        return openGameReader;
-    }
-
-    public void setOpenGameReader(IOpenGameReader openGameReader) {
-        this.openGameReader = openGameReader;
-    }
-
-    private IOpenGameReader openGameReader = new DefaultOpenGameReader();
 
     public void clearCachedLists() {
         InAppStoryService inAppStoryService = InAppStoryService.getInstance();
@@ -1482,7 +1463,7 @@ public class InAppStoryManager {
                         )
                         .addLaunchScreenCallback(new ILaunchScreenCallback() {
                             @Override
-                            public void onSuccess(LaunchScreenStrategyType type) {
+                            public void onSuccess(ScreenType type) {
 
                                 if (CallbackManager.getInstance().getOnboardingLoadCallback() != null) {
                                     CallbackManager
@@ -1496,7 +1477,7 @@ public class InAppStoryManager {
                             }
 
                             @Override
-                            public void onError(LaunchScreenStrategyType type, String message) {
+                            public void onError(ScreenType type, String message) {
                                 CallbackManager
                                         .getInstance()
                                         .getOnboardingLoadCallback()
@@ -1913,13 +1894,13 @@ public class InAppStoryManager {
                         )
                         .addLaunchScreenCallback(new ILaunchScreenCallback() {
                             @Override
-                            public void onSuccess(LaunchScreenStrategyType type) {
+                            public void onSuccess(ScreenType type) {
                                 if (callback != null)
                                     callback.onShow();
                             }
 
                             @Override
-                            public void onError(LaunchScreenStrategyType type, String message) {
+                            public void onError(ScreenType type, String message) {
                                 if (callback != null)
                                     callback.onError();
                             }
