@@ -146,6 +146,12 @@ public class WebAppInterface {
     }
 
     @JavascriptInterface
+    public void closeStory(String reason) {
+        manager.closeStory(reason.toLowerCase());
+        logMethod(reason);
+    }
+
+    @JavascriptInterface
     public void storyLoaded() {
         manager.storyLoaded(-1);
         logMethod("");

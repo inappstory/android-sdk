@@ -13,6 +13,7 @@ import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.game.reader.GameStoryData;
 import com.inappstory.sdk.stories.api.models.UpdateTimelineData;
+import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.ui.reader.StoriesDialogFragment;
 import com.inappstory.sdk.stories.ui.widgets.LoadProgressBar;
 import com.inappstory.sdk.inner.share.InnerShareData;
@@ -512,6 +513,22 @@ public class StoriesViewManager {
             service.isShareProcess(false);
         }
 
+    }
+
+    public void closeStory(String reason) {
+        int closeStoryAction = CloseStory.CLICK;
+        switch (reason) {
+            case "custom":
+                closeStoryAction = CloseStory.CUSTOM;
+                break;
+            case "swipe":
+                closeStoryAction = CloseStory.SWIPE;
+                break;
+            case "auto":
+                closeStoryAction = CloseStory.AUTO;
+                break;
+        }
+        ScreensManager.getInstance().closeStoryReader(closeStoryAction);
     }
 
     public void storyStartedEvent() {
