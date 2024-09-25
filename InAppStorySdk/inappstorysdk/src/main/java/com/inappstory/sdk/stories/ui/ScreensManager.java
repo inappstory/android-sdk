@@ -277,7 +277,7 @@ public class ScreensManager {
             bundle.putInt("slideIndex", slideIndex);
             bundle.putSerializable("shareData", shareData);
             overlapFragment.setArguments(bundle);
-            overlapFragment.shareListener = shareListener;
+            overlapFragment.setShareListener(shareListener);
             FragmentTransaction t = fragmentManager.beginTransaction()
                     .replace(R.id.ias_outer_top_container, overlapFragment);
             t.addToBackStack("OverlapFragment");

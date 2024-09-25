@@ -21,6 +21,7 @@ import com.inappstory.sdk.stories.ui.OverlapFragmentObserver;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.utils.IASBackPressHandler;
 
+import java.lang.ref.WeakReference;
 import java.util.HashMap;
 
 public class OverlapFragment extends Fragment implements IASBackPressHandler {
@@ -34,28 +35,7 @@ public class OverlapFragment extends Fragment implements IASBackPressHandler {
     ShareCallback callback = CallbackManager.getInstance().getShareCallback();
 
 
-    OverlappingContainerActions shareActions = new OverlappingContainerActions() {
-        @Override
-        public void closeView(HashMap<String, Object> data) {
-            boolean shared = false;
-            if (data.containsKey("shared")) shared = (boolean) data.get("shared");
-
-            OverlapFragmentObserver observer = ScreensManager.getInstance().overlapFragmentObserver;
-            if (observer != null) observer.closeView(data);
-            ScreensManager.getInstance().cleanOverlapFragmentObserver();
-            try {
-                getParentFragmentManager().popBackStack();
-            } catch (IllegalStateException e) {
-                ScreensManager.getInstance().setTempShareStatus(shared);
-            }
-            if (shareListener != null) {
-                if (shared)
-                    shareListener.onSuccess(true);
-                else
-                    shareListener.onCancel();
-            }
-        }
-    };
+    OverlappingContainerActions shareActions = new OverlappingFragmentContainerActions(this);
 
     private boolean closed = false;
 
@@ -104,7 +84,11 @@ public class OverlapFragment extends Fragment implements IASBackPressHandler {
         }
     }
 
-    public ShareListener shareListener;
+    public WeakReference<ShareListener> shareListenerWeakReference;
+
+    public void setShareListener(ShareListener shareListener) {
+        shareListenerWeakReference = new WeakReference<>(shareListener);
+    }
 
     @Override
     public boolean onBackPressed() {
