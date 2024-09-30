@@ -22,6 +22,7 @@ import com.inappstory.sdk.stories.callbacks.ShareCallback;
 import com.inappstory.sdk.stories.ui.OverlapFragmentObserver;
 import com.inappstory.sdk.stories.utils.IASBackPressHandler;
 
+import java.lang.ref.WeakReference;
 import java.util.HashMap;
 
 public class OverlapFragment extends Fragment implements IASBackPressHandler {
@@ -107,6 +108,7 @@ public class OverlapFragment extends Fragment implements IASBackPressHandler {
             );
             readerTopContainer.removeAllViews();
             View shareView = callback.getView(context, content, shareActions);
+            shareViewRef = new WeakReference<>(shareView);
             shareView.setLayoutParams(
                     new FrameLayout.LayoutParams(
                             ViewGroup.LayoutParams.MATCH_PARENT,
@@ -119,10 +121,17 @@ public class OverlapFragment extends Fragment implements IASBackPressHandler {
         }
     }
 
-    //public ShareListener shareListener;
+    private WeakReference<View> shareViewRef;
 
     @Override
     public boolean onBackPressed() {
-        return callback.onBackPress(shareActions);
+        if (shareViewRef != null) {
+            View shareView = shareViewRef.get();
+            if (shareView != null) {
+                return callback.onBackPress(shareView, shareActions);
+            }
+        }
+        getParentFragmentManager().popBackStack();
+        return true;
     }
 }

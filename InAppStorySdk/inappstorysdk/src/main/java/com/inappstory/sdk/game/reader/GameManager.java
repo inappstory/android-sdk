@@ -258,10 +258,6 @@ public class GameManager {
                     StringsUtils.getNonNull(link),
                     ClickAction.GAME
             );
-        } else if (CallbackManager.getInstance().getUrlClickCallback() != null) {
-            CallbackManager.getInstance().getUrlClickCallback().onUrlClick(
-                    StringsUtils.getNonNull(link)
-            );
         } else {
             host.tapOnLinkDefault(StringsUtils.getNonNull(link));
         }

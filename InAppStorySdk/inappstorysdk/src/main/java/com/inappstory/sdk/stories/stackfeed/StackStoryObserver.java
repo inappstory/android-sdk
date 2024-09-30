@@ -283,10 +283,6 @@ public class StackStoryObserver implements IStackFeedActions {
                         currentStory.getDeeplink(),
                         ClickAction.DEEPLINK
                 );
-            } else if (CallbackManager.getInstance().getUrlClickCallback() != null) {
-                CallbackManager.getInstance().getUrlClickCallback().onUrlClick(
-                        currentStory.getDeeplink()
-                );
             } else {
                 if (!InAppStoryService.isServiceConnected()) {
                     if (CallbackManager.getInstance().getErrorCallback() != null) {

@@ -17,12 +17,14 @@ import androidx.annotation.NonNull;
 
 import com.inappstory.iasutilsconnector.UtilModulesHolder;
 import com.inappstory.iasutilsconnector.json.IJsonParser;
-import com.inappstory.sdk.core.api.IASCoreImpl;
-import com.inappstory.sdk.core.ui.screens.GetScreenCallback;
-import com.inappstory.sdk.core.ui.screens.ILaunchScreenCallback;
+import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.IASCoreImpl;
+import com.inappstory.sdk.core.UseIASCoreCallback;
+import com.inappstory.sdk.core.ui.screens.holder.GetScreenCallback;
+import com.inappstory.sdk.core.ui.screens.launcher.ILaunchScreenCallback;
 import com.inappstory.sdk.core.ui.screens.ScreenType;
-import com.inappstory.sdk.core.ui.screens.ScreensHolder;
-import com.inappstory.sdk.core.ui.screens.ScreensLauncher;
+import com.inappstory.sdk.core.ui.screens.holder.ScreensHolder;
+import com.inappstory.sdk.core.ui.screens.launcher.ScreensLauncher;
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenAppearance;
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenData;
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenStrategy;
@@ -46,7 +48,6 @@ import com.inappstory.sdk.stories.api.models.logs.ApiLogRequest;
 import com.inappstory.sdk.stories.api.models.logs.ApiLogResponse;
 import com.inappstory.sdk.stories.api.models.logs.ExceptionLog;
 import com.inappstory.sdk.stories.api.models.logs.WebConsoleLog;
-import com.inappstory.sdk.stories.callbacks.AppClickCallback;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.callbacks.ExceptionCallback;
 import com.inappstory.sdk.stories.callbacks.IShowStoryCallback;
@@ -56,9 +57,6 @@ import com.inappstory.sdk.stories.callbacks.UrlClickCallback;
 import com.inappstory.sdk.stories.exceptions.ExceptionManager;
 import com.inappstory.sdk.stories.outercallbacks.common.errors.ErrorCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.gamereader.GameReaderCallback;
-import com.inappstory.sdk.stories.outercallbacks.common.objects.DefaultOpenGameReader;
-import com.inappstory.sdk.stories.outercallbacks.common.objects.DefaultOpenInAppMessageReader;
-import com.inappstory.sdk.stories.outercallbacks.common.objects.DefaultOpenStoriesReader;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenGameReader;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenInAppMessageReader;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenStoriesReader;
@@ -110,7 +108,21 @@ public class InAppStoryManager {
 
     private static InAppStoryManager INSTANCE;
 
-    private IASCoreImpl core = new IASCoreImpl();
+    private IASCore core = new IASCoreImpl();
+
+    public IASCore iasCore() {
+        return core;
+    }
+
+    public static void useCore(UseIASCoreCallback callback) {
+        synchronized (lock) {
+            if (INSTANCE == null) {
+                callback.error();
+            } else {
+                callback.use(INSTANCE.iasCore());
+            }
+        }
+    }
 
     private final ScreensHolder holder = new ScreensHolder();
 
@@ -483,13 +495,6 @@ public class InAppStoryManager {
      */
     public void setShareCallback(ShareCallback shareCallback) {
         CallbackManager.getInstance().setShareCallback(shareCallback);
-    }
-
-    /**
-     * use to customize click on non-url buttons in reader
-     */
-    public void setAppClickCallback(AppClickCallback appClickCallback) {
-        CallbackManager.getInstance().setAppClickCallback(appClickCallback);
     }
 
     //Test

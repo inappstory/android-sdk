@@ -26,6 +26,7 @@ import com.inappstory.sdk.stories.ui.views.goodswidget.GoodsWidget;
 import com.inappstory.sdk.stories.utils.IASBackPressHandler;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -50,72 +51,7 @@ public class GoodsWidgetFragment extends Fragment implements IASBackPressHandler
             @Nullable ViewGroup container,
             @Nullable Bundle savedInstanceState
     ) {
-        View fragmentView = inflater.inflate(R.layout.cs_goods_custom, null);
-        FrameLayout layout = fragmentView.findViewById(R.id.cs_widget_container);
-        Context context = getContext();
-        View appearanceView =
-                AppearanceManager.getCommonInstance().csCustomGoodsWidget().getWidgetView(context);
-        if (appearanceView != null) {
-            layout.addView(appearanceView);
-            getGoodsDataCallback = new GoodsDataCallbackImpl(
-                    (SlideData) getArguments().getSerializable("slideData"),
-                    getArguments().getString("widgetId")
-            ) {
-                @Override
-                public void onClose() {
-                    hideGoods();
-                }
-            };
-        } else {
-            final GoodsRecyclerView goodsRecyclerView = createRecyclerView(context);
-            getGoodsDataCallback = new GetGoodsDataCallback() {
-                @Override
-                public void onSuccess(ArrayList<GoodsItemData> data) {
-                    ProfilingManager.getInstance().setReady(
-                            getArguments().getString("localTaskId")
-                    );
-                    goodsRecyclerView.onSuccess(data);
-
-                }
-
-                @Override
-                public void onError() {
-                    ProfilingManager.getInstance().setReady(
-                            getArguments().getString("localTaskId")
-                    );
-                    goodsRecyclerView.onError();
-                }
-
-                @Override
-                public void onClose() {
-                    hideGoods();
-                }
-
-                @Override
-                public void itemClick(String sku) {
-                    SlideData slideData =
-                            (SlideData) getArguments().getSerializable("slideData");
-                    String widgetId = getArguments().getString("widgetId");
-                    if (slideData == null) return;
-                    StoryWidgetCallback callback = CallbackManager.getInstance().getStoryWidgetCallback();
-                    if (callback != null) {
-                        Map<String, String> widgetData = new HashMap<>();
-                        widgetData.put("story_id", "" + slideData.story.id);
-                        widgetData.put("feed_id", slideData.story.feed);
-                        widgetData.put("slide_index", "" + slideData.index);
-                        widgetData.put("widget_id", widgetId);
-                        widgetData.put("widget_value", sku);
-                        callback.widgetEvent(slideData, "w-goods-click", widgetData);
-                    }
-                    if (StatisticManager.getInstance() != null) {
-                        StatisticManager.getInstance().sendGoodsClick(slideData.story.id,
-                                slideData.index, widgetId, sku, slideData.story.feed);
-                    }
-                }
-            };
-            layout.addView(goodsRecyclerView);
-        }
-        return fragmentView;
+        return inflater.inflate(R.layout.cs_goods_custom, null);
     }
 
     public void hideGoods() {
@@ -149,7 +85,11 @@ public class GoodsWidgetFragment extends Fragment implements IASBackPressHandler
                         getArguments().getString("skusString"),
                         String.class
                 );
-                AppearanceManager.getCommonInstance().csCustomGoodsWidget().getSkus(skus, getGoodsDataCallback);
+                AppearanceManager.getCommonInstance().csCustomGoodsWidget().getSkus(
+                        widgetView,
+                        skus,
+                        getGoodsDataCallback
+                );
             }
         });
         return widgetView;
@@ -158,15 +98,80 @@ public class GoodsWidgetFragment extends Fragment implements IASBackPressHandler
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        final ArrayList<String> skus = JsonParser.listFromJson(
-                getArguments().getString("skusString"),
-                String.class
-        );
         ProfilingManager.getInstance().addTask(
                 "goods_resources",
                 getArguments().getString("localTaskId")
         );
-        AppearanceManager.getCommonInstance().csCustomGoodsWidget().getSkus(skus, getGoodsDataCallback);
+
+        final ArrayList<String> skus = JsonParser.listFromJson(
+                getArguments().getString("skusString"),
+                String.class
+        );
+        FrameLayout layout = view.findViewById(R.id.cs_widget_container);
+        Context context = getContext();
+        View widgetView =
+                AppearanceManager.getCommonInstance().csCustomGoodsWidget().getWidgetView(context);
+        if (widgetView != null) {
+            getGoodsDataCallback = new GoodsDataCallbackImpl(
+                    (SlideData) getArguments().getSerializable("slideData"),
+                    getArguments().getString("widgetId")
+            ) {
+                @Override
+                public void onClose() {
+                    hideGoods();
+                }
+            };
+        } else {
+            widgetView = createRecyclerView(context);
+            final View finalWidgetView = widgetView;
+            getGoodsDataCallback = new GetGoodsDataCallback() {
+                @Override
+                public void onSuccess(ArrayList<GoodsItemData> data) {
+                    ProfilingManager.getInstance().setReady(
+                            getArguments().getString("localTaskId")
+                    );
+                    ((GoodsRecyclerView)finalWidgetView).onSuccess(data);
+
+                }
+
+                @Override
+                public void onError() {
+                    ProfilingManager.getInstance().setReady(
+                            getArguments().getString("localTaskId")
+                    );
+                    ((GoodsRecyclerView)finalWidgetView).onError();
+                }
+
+                @Override
+                public void onClose() {
+                    hideGoods();
+                }
+
+                @Override
+                public void itemClick(String sku) {
+                    SlideData slideData =
+                            (SlideData) getArguments().getSerializable("slideData");
+                    String widgetId = getArguments().getString("widgetId");
+                    if (slideData == null) return;
+                    StoryWidgetCallback callback = CallbackManager.getInstance().getStoryWidgetCallback();
+                    if (callback != null) {
+                        Map<String, String> widgetData = new HashMap<>();
+                        widgetData.put("story_id", "" + slideData.story.id);
+                        widgetData.put("feed_id", slideData.story.feed);
+                        widgetData.put("slide_index", "" + slideData.index);
+                        widgetData.put("widget_id", widgetId);
+                        widgetData.put("widget_value", sku);
+                        callback.widgetEvent(slideData, "w-goods-click", widgetData);
+                    }
+                    if (StatisticManager.getInstance() != null) {
+                        StatisticManager.getInstance().sendGoodsClick(slideData.story.id,
+                                slideData.index, widgetId, sku, slideData.story.feed);
+                    }
+                }
+            };
+        }
+        layout.addView(widgetView);
+        AppearanceManager.getCommonInstance().csCustomGoodsWidget().getSkus(widgetView, skus, getGoodsDataCallback);
     }
 
     @Override

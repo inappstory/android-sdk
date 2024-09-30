@@ -7,6 +7,8 @@ import androidx.annotation.NonNull;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.UseManagerInstanceCallback;
+import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASOnboardings;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.outercallbacks.common.onboarding.OnboardingLoadCallback;
@@ -21,15 +23,26 @@ public class IASOnboardingsExternalAPIImpl implements IASOnboardings {
             final List<String> tags,
             final int limit
     ) {
-        InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
-            public void use(@NonNull InAppStoryManager manager) throws Exception {
-                manager.showOnboardingStories(limit, feed, tags, context, appearanceManager);
+            public void use(@NonNull IASCore core) {
+                core.onboardingsAPI().show(
+                        context,
+                        feed,
+                        appearanceManager,
+                        tags,
+                        limit
+                );
             }
         });
     }
 
-    public void loadCallback(OnboardingLoadCallback onboardingLoadCallback) {
-        CallbackManager.getInstance().setOnboardingLoadCallback(onboardingLoadCallback);
+    public void loadCallback(final OnboardingLoadCallback onboardingLoadCallback) {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.onboardingsAPI().loadCallback(onboardingLoadCallback);
+            }
+        });
     }
 }

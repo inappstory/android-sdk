@@ -205,10 +205,6 @@ public class ReaderPageManager {
                                     action
                             );
                         }
-                    } else if (CallbackManager.getInstance().getUrlClickCallback() != null) {
-                        CallbackManager.getInstance().getUrlClickCallback().onUrlClick(
-                                object.getLink().getTarget()
-                        );
                     } else {
                         parentManager.defaultTapOnLink(object.getLink().getTarget());
                     }
@@ -224,12 +220,6 @@ public class ReaderPageManager {
                     }
                     break;
                 default:
-                    if (CallbackManager.getInstance().getAppClickCallback() != null) {
-                        CallbackManager.getInstance().getAppClickCallback().onAppClick(
-                                object.getLink().getType(),
-                                object.getLink().getTarget()
-                        );
-                    }
                     break;
             }
         }

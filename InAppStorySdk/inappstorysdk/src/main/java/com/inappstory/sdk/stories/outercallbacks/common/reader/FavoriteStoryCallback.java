@@ -1,6 +1,8 @@
 package com.inappstory.sdk.stories.outercallbacks.common.reader;
 
-public interface FavoriteStoryCallback {
+import com.inappstory.sdk.core.api.IASCallback;
+
+public interface FavoriteStoryCallback extends IASCallback {
     void favoriteStory(
             SlideData slideData,
             boolean value

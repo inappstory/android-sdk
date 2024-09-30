@@ -7,9 +7,9 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.inappstory.sdk.R;
-import com.inappstory.sdk.core.ui.screens.AbstractScreenHolder;
-import com.inappstory.sdk.core.ui.screens.IOverlapContainerData;
-import com.inappstory.sdk.core.ui.screens.IOverlapContainerHolder;
+import com.inappstory.sdk.core.ui.screens.holder.AbstractScreenHolder;
+import com.inappstory.sdk.core.ui.screens.holder.IOverlapContainerData;
+import com.inappstory.sdk.core.ui.screens.holder.IOverlapContainerHolder;
 import com.inappstory.sdk.core.ui.screens.ShareProcessHandler;
 import com.inappstory.sdk.stories.events.GameCompleteEventObserver;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;

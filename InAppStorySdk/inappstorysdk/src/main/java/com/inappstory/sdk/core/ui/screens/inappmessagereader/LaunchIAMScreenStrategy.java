@@ -3,9 +3,9 @@ package com.inappstory.sdk.core.ui.screens.inappmessagereader;
 import android.content.Context;
 import android.view.ViewGroup;
 
-import com.inappstory.sdk.core.ui.screens.LaunchScreenStrategy;
+import com.inappstory.sdk.core.ui.screens.launcher.LaunchScreenStrategy;
 import com.inappstory.sdk.core.ui.screens.ScreenType;
-import com.inappstory.sdk.core.ui.screens.ScreensHolder;
+import com.inappstory.sdk.core.ui.screens.holder.ScreensHolder;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenReader;
 
 public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {

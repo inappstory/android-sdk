@@ -31,8 +31,6 @@ public class CallbackManager {
     private ShowSlideCallback showSlideCallback;
     private ShowStoryCallback showStoryCallback;
     private SingleLoadCallback singleLoadCallback;
-    private UrlClickCallback urlClickCallback;
-    private AppClickCallback appClickCallback;
     private ShareCallback shareCallback;
 
     public ErrorCallback getErrorCallback() {
@@ -184,32 +182,12 @@ public class CallbackManager {
         this.singleLoadCallback = singleLoadCallback;
     }
 
-    @Deprecated
-    public void setUrlClickCallback(UrlClickCallback urlClickCallback) {
-        this.urlClickCallback = urlClickCallback;
-    }
-
-    public void setAppClickCallback(AppClickCallback appClickCallback) {
-        this.appClickCallback = appClickCallback;
-    }
-
     public void setShareCallback(ShareCallback readerTopContainerCallback) {
         this.shareCallback = readerTopContainerCallback;
     }
 
     public ShareCallback getShareCallback() {
         return shareCallback;
-    }
-
-
-
-    @Deprecated
-    public UrlClickCallback getUrlClickCallback() {
-        return urlClickCallback;
-    }
-
-    public AppClickCallback getAppClickCallback() {
-        return appClickCallback;
     }
 
     private CallbackManager() {

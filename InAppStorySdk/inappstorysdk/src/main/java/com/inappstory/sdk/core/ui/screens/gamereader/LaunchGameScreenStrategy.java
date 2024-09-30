@@ -4,9 +4,10 @@ import android.content.Context;
 import android.os.Bundle;
 
 import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.core.ui.screens.LaunchScreenStrategy;
+import com.inappstory.sdk.core.ui.screens.holder.IScreensHolder;
+import com.inappstory.sdk.core.ui.screens.launcher.LaunchScreenStrategy;
 import com.inappstory.sdk.core.ui.screens.ScreenType;
-import com.inappstory.sdk.core.ui.screens.ScreensHolder;
+import com.inappstory.sdk.core.ui.screens.holder.ScreensHolder;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.GameReaderAppearanceSettings;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenReader;
@@ -26,7 +27,7 @@ public class LaunchGameScreenStrategy implements LaunchScreenStrategy {
     private LaunchGameScreenData data;
 
     @Override
-    public void launch(Context context, IOpenReader openReader, ScreensHolder screensHolder) {
+    public void launch(Context context, IOpenReader openReader, IScreensHolder screensHolder) {
         InAppStoryService service = InAppStoryService.getInstance();
         if (service == null || service.getSession().getSessionId().isEmpty()) return;
         if ((!openedFromReader && screensHolder.hasActiveScreen()) ||

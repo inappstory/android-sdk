@@ -1,8 +1,9 @@
-package com.inappstory.sdk.core.ui.screens;
+package com.inappstory.sdk.core.ui.screens.holder;
 
 import android.os.Handler;
 import android.os.Looper;
 
+import com.inappstory.sdk.core.ui.screens.ShareProcessHandler;
 import com.inappstory.sdk.core.ui.screens.gamereader.GameScreenHolder;
 import com.inappstory.sdk.core.ui.screens.inappmessagereader.IAMScreenHolder;
 import com.inappstory.sdk.core.ui.screens.outsideapi.CloseUgcReaderCallback;
@@ -41,7 +42,7 @@ public class ScreensHolder implements IScreensHolder {
 
     private CloseUgcReaderCallback ugcCloseCallback;
 
-    void closeUGCEditor() {
+    public void closeUGCEditor() {
         if (ugcCloseCallback != null) ugcCloseCallback.onClose();
     }
 
@@ -72,5 +73,10 @@ public class ScreensHolder implements IScreensHolder {
     @Override
     public IAMScreenHolder getIAMScreenHolder() {
         return IAMScreenHolder;
+    }
+
+    @Override
+    public void launchScreenActions() {
+        closeUGCEditor();
     }
 }

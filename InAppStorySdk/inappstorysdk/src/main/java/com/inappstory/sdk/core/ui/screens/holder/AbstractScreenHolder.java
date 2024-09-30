@@ -1,10 +1,11 @@
-package com.inappstory.sdk.core.ui.screens;
+package com.inappstory.sdk.core.ui.screens.holder;
 
 import android.os.Handler;
 import android.os.Looper;
 
 import androidx.annotation.NonNull;
 
+import com.inappstory.sdk.core.ui.screens.BaseScreen;
 import com.inappstory.sdk.stories.ui.reader.ForceCloseReaderCallback;
 
 public abstract class AbstractScreenHolder<T extends BaseScreen, K> implements IScreenHolder<T, K> {

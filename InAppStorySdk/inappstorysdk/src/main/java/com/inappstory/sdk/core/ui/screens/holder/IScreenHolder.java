@@ -1,4 +1,4 @@
-package com.inappstory.sdk.core.ui.screens;
+package com.inappstory.sdk.core.ui.screens.holder;
 
 import androidx.annotation.NonNull;
 

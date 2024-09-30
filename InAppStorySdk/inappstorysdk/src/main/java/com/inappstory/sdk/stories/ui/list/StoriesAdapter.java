@@ -285,8 +285,6 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
                             current.deeplink,
                             ClickAction.DEEPLINK
                     );
-                } else if (CallbackManager.getInstance().getUrlClickCallback() != null) {
-                    CallbackManager.getInstance().getUrlClickCallback().onUrlClick(current.deeplink);
                 } else {
                     if (!InAppStoryService.isServiceConnected()) {
                         if (CallbackManager.getInstance().getErrorCallback() != null) {

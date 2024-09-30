@@ -4,10 +4,10 @@ import android.content.Context;
 import android.os.Bundle;
 
 import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.core.ui.screens.ILaunchScreenCallback;
-import com.inappstory.sdk.core.ui.screens.LaunchScreenStrategy;
+import com.inappstory.sdk.core.ui.screens.launcher.ILaunchScreenCallback;
+import com.inappstory.sdk.core.ui.screens.launcher.LaunchScreenStrategy;
 import com.inappstory.sdk.core.ui.screens.ScreenType;
-import com.inappstory.sdk.core.ui.screens.ScreensHolder;
+import com.inappstory.sdk.core.ui.screens.holder.ScreensHolder;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenReader;
 
 import java.util.ArrayList;

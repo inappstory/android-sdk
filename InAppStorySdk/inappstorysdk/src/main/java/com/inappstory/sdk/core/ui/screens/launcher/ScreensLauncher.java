@@ -1,9 +1,11 @@
-package com.inappstory.sdk.core.ui.screens;
+package com.inappstory.sdk.core.ui.screens.launcher;
 
 import android.content.Context;
 
 import androidx.annotation.NonNull;
 
+import com.inappstory.sdk.core.ui.screens.ScreenType;
+import com.inappstory.sdk.core.ui.screens.holder.IScreensHolder;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.DefaultOpenGameReader;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.DefaultOpenInAppMessageReader;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.DefaultOpenStoriesReader;
@@ -12,12 +14,9 @@ import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenInAppMessag
 import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenReader;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenStoriesReader;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class ScreensLauncher implements IScreensLauncher {
-    private final ScreensHolder holder;
-    public ScreensLauncher(ScreensHolder holder) {
+    private final IScreensHolder holder;
+    public ScreensLauncher(IScreensHolder holder) {
         this.holder = holder;
     }
 
@@ -41,7 +40,7 @@ public class ScreensLauncher implements IScreensLauncher {
 
     @Override
     public void openScreen(Context context, LaunchScreenStrategy strategy) {
-        holder.closeUGCEditor();
+        holder.launchScreenActions();
         switch (strategy.getType()) {
             case GAME:
                 strategy.launch(context, openGameReader, holder);

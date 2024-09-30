@@ -1,8 +1,9 @@
 package com.inappstory.sdk.stories.outercallbacks.common.gamereader;
 
+import com.inappstory.sdk.core.api.IASCallback;
 import com.inappstory.sdk.game.reader.GameStoryData;
 
-public interface GameReaderCallback {
+public interface GameReaderCallback extends IASCallback {
     void startGame(
             GameStoryData data,
             String gameId
