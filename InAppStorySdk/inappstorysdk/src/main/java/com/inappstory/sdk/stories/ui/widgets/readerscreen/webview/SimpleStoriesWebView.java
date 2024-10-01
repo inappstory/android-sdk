@@ -16,11 +16,14 @@ import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.view.ViewCompat;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.stories.ui.views.IASWebView;
 import com.inappstory.sdk.stories.ui.views.IASWebViewClient;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPager;
@@ -212,11 +215,16 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
         loadUrl("javascript:story_send_text_input_result(\"" + id + "\", \"" + data + "\")");
     }
 
-    public SimpleStoriesWebView(Context context) {
+    public SimpleStoriesWebView(final Context context) {
         super(context.getApplicationContext());
-        this.context = context;
-        manager = new StoriesViewManager(context);
-        manager.setStoriesView(this);
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                SimpleStoriesWebView.this.context = context;
+                manager = new StoriesViewManager(context, core);
+                manager.setStoriesView(SimpleStoriesWebView.this);
+            }
+        });
     }
 
 

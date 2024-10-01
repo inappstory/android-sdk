@@ -15,13 +15,17 @@ import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.UseManagerInstanceCallback;
 import com.inappstory.sdk.UseServiceInstanceCallback;
+import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.api.IASCallbackType;
+import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.ui.screens.ShareProcessHandler;
 import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryScreen;
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenAppearance;
+import com.inappstory.sdk.core.utils.CallbackTypesConverter;
 import com.inappstory.sdk.game.cache.SessionAssetsIsReadyCallback;
 import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.stories.api.models.Story;
-import com.inappstory.sdk.stories.callbacks.CallbackManager;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.ShowStoryCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
@@ -66,12 +70,10 @@ public class ReaderManager {
     }
 
     public SourceType source = SourceType.SINGLE;
-
-    public ReaderManager() {
-    }
-
+    private final IASCore core;
 
     public ReaderManager(
+            IASCore core,
             String listID,
             boolean showOnlyNewStories,
             String sessionId,
@@ -81,6 +83,7 @@ public class ReaderManager {
             SourceType source,
             int latestShowStoryAction
     ) {
+        this.core = core;
         this.listID = listID;
         this.showOnlyNewStories = showOnlyNewStories;
         this.feedId = feedId;
@@ -100,18 +103,26 @@ public class ReaderManager {
             return;
         if (lastSentId == storyId) return;
         lastSentId = storyId;
-        Story story = InAppStoryService.getInstance().getStoryDownloadManager().getStoryById(storyId, storyType);
+        final Story story = InAppStoryService.getInstance().getStoryDownloadManager().getStoryById(storyId, storyType);
         if (story != null) {
-            if (CallbackManager.getInstance().getShowStoryCallback() != null) {
-                CallbackManager.getInstance().getShowStoryCallback().showStory(
-                        StoryData.getStoryData(
-                                story,
-                                feedId,
-                                source,
-                                storyType
-                        ),
-                        CallbackManager.getInstance().getShowStoryActionTypeFromInt(latestShowStoryAction));
-            }
+            core.callbacksAPI().useCallback(
+                    IASCallbackType.SHOW_STORY,
+                    new UseIASCallback<ShowStoryCallback>() {
+                        @Override
+                        public void use(@NonNull ShowStoryCallback callback) {
+                            callback.showStory(
+                                    StoryData.getStoryData(
+                                            story,
+                                            feedId,
+                                            source,
+                                            storyType
+                                    ),
+                                    new CallbackTypesConverter()
+                                            .getShowStoryActionTypeFromInt(latestShowStoryAction)
+                            );
+                        }
+                    }
+            );
         }
     }
 
@@ -193,8 +204,8 @@ public class ReaderManager {
                             screen.setShowGoodsCallback(showGoodsCallback);
                             ((ShowGoodsCallback) screen).goodsIsOpened();
                         }
-                        manager
-                                .getScreensHolder()
+                        core
+                                .screensManager()
                                 .getStoryScreenHolder()
                                 .openGoodsOverlapContainer(
                                         skusString,
@@ -239,7 +250,8 @@ public class ReaderManager {
 
             @Override
             public void error() {
-                ShareProcessHandler shareProcessHandler = ShareProcessHandler.getInstance();
+                ShareProcessHandler shareProcessHandler = core
+                        .screensManager().getShareProcessHandler();
                 if (shareProcessHandler != null)
                     shareProcessHandler.isShareProcess(false);
             }
@@ -530,8 +542,7 @@ public class ReaderManager {
                 pageManager.unlockShareButton();
             }
         }
-        ShareProcessHandler shareProcessHandler =
-                ShareProcessHandler.getInstance();
+        ShareProcessHandler shareProcessHandler = core.screensManager().getShareProcessHandler();
         if (shareProcessHandler == null) return;
         shareProcessHandler.shareCompleteListener().complete(true);
         shareProcessHandler.clearShareIds();

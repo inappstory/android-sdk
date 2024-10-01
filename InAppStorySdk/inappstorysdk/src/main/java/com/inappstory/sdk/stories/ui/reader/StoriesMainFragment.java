@@ -27,13 +27,18 @@ import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.UseManagerInstanceCallback;
 import com.inappstory.sdk.UseServiceInstanceCallback;
+import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.UseIASCoreCallback;
+import com.inappstory.sdk.core.api.IASCallbackType;
+import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.ui.screens.ScreenType;
 import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryScreen;
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenAppearance;
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenData;
+import com.inappstory.sdk.core.utils.CallbackTypesConverter;
 import com.inappstory.sdk.stories.api.models.Story;
-import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoryItemCoordinates;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.CloseStoryCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
@@ -179,17 +184,20 @@ public abstract class StoriesMainFragment extends Fragment implements
             case AppearanceManager.POPUP:
                 return new PopupReaderAnimation(animatedContainer, screenSize.y, 0f).setAnimations(true);
             default:
-                StoryItemCoordinates coordinates = null;
-                InAppStoryManager manager = InAppStoryManager.getInstance();
-                if (manager != null) {
-                    coordinates = manager.getScreensHolder().getStoryScreenHolder().coordinates();
-                }
+                final StoryItemCoordinates[] coordinates = {null};
+                InAppStoryManager.useCore(new UseIASCoreCallback() {
+                    @Override
+                    public void use(@NonNull IASCore core) {
+                        coordinates[0] = core.screensManager().getStoryScreenHolder().coordinates();
+                    }
+                });
+
                 float pivotX = -screenSize.x / 2f;
                 float pivotY = -screenSize.y / 2f;
 
-                if (coordinates != null) {
-                    pivotX += coordinates.x();
-                    pivotY += coordinates.y();
+                if (coordinates[0] != null) {
+                    pivotX += coordinates[0].x();
+                    pivotY += coordinates[0].y();
                     return new ZoomReaderFromCellAnimation(animatedContainer,
                             pivotX,
                             pivotY
@@ -313,10 +321,10 @@ public abstract class StoriesMainFragment extends Fragment implements
         } else {
             reInitUI();
         }
-        InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
-            public void use(@NonNull InAppStoryManager manager) throws Exception {
-                manager.getScreensHolder().getStoryScreenHolder().subscribeScreen(StoriesMainFragment.this);
+            public void use(@NonNull IASCore core) {
+                core.screensManager().getStoryScreenHolder().subscribeScreen(StoriesMainFragment.this);
             }
         });
         return view;
@@ -325,16 +333,6 @@ public abstract class StoriesMainFragment extends Fragment implements
     @Override
     public void onViewCreated(@NonNull View view, @Nullable final Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
-        InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
-            @Override
-            public void use(@NonNull InAppStoryManager manager) throws Exception {
-                manager
-                        .getScreensLauncher()
-                        .getOpenReader(ScreenType.STORY)
-                        .onHideStatusBar(getActivity());
-            }
-        });
         if (getActivity() == null) {
             return;
         }
@@ -342,7 +340,13 @@ public abstract class StoriesMainFragment extends Fragment implements
             forceFinish();
             return;
         }
-
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.screensManager().getOpenReader(ScreenType.STORY)
+                        .onHideStatusBar(getActivity());
+            }
+        });
         chromeFader = new ElasticDragDismissFrameLayout.SystemChromeFader(getActivity()) {
             @Override
             public void onDrag(float elasticOffset, float elasticOffsetPixels, float rawOffset, float rawOffsetPixels) {
@@ -444,7 +448,7 @@ public abstract class StoriesMainFragment extends Fragment implements
     boolean isAnimation = false;
 
     @Override
-    public void closeWithAction(int action) {
+    public void closeWithAction(final int action) {
         if (closing) return;
         closing = true;
         InAppStoryService service = InAppStoryService.getInstance();
@@ -453,26 +457,37 @@ public abstract class StoriesMainFragment extends Fragment implements
         blockView.setVisibility(View.VISIBLE);
         if (service != null) {
             service.getListReaderConnector().readerIsClosed();
-            Story story = service.getStoryDownloadManager().getStoryById(
+            final Story story = service.getStoryDownloadManager().getStoryById(
                     service.getCurrentId(),
                     launchData.getType()
             );
             if (story != null) {
-                if (CallbackManager.getInstance().getCloseStoryCallback() != null) {
-                    CallbackManager.getInstance().getCloseStoryCallback().closeStory(
-                            new SlideData(
-                                    StoryData.getStoryData(
-                                            story,
-                                            launchData.getFeed(),
-                                            launchData.getSourceType(),
-                                            launchData.getType()
-                                    ),
-                                    story.lastIndex,
-                                    story.getSlideEventPayload(story.lastIndex)
-                            ),
-                            CallbackManager.getInstance().getCloseTypeFromInt(action)
-                    );
-                }
+                InAppStoryManager.useCore(new UseIASCoreCallback() {
+                    @Override
+                    public void use(@NonNull IASCore core) {
+                        core.callbacksAPI().useCallback(
+                                IASCallbackType.CLOSE_STORY,
+                                new UseIASCallback<CloseStoryCallback>() {
+                                    @Override
+                                    public void use(@NonNull CloseStoryCallback callback) {
+                                        callback.closeStory(
+                                                new SlideData(
+                                                        StoryData.getStoryData(
+                                                                story,
+                                                                launchData.getFeed(),
+                                                                launchData.getSourceType(),
+                                                                launchData.getType()
+                                                        ),
+                                                        story.lastIndex,
+                                                        story.getSlideEventPayload(story.lastIndex)
+                                                ),
+                                                new CallbackTypesConverter().getCloseTypeFromInt(action)
+                                        );
+                                    }
+                                });
+                    }
+                });
+
                 String cause = StatisticManager.AUTO;
                 switch (action) {
                     case CloseStory.CLICK:
@@ -525,10 +540,10 @@ public abstract class StoriesMainFragment extends Fragment implements
             oldOrientation = getActivity().getRequestedOrientation();
             getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         }
-        InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
-            public void use(@NonNull InAppStoryManager manager) throws Exception {
-                manager.getScreensHolder().getStoryScreenHolder().subscribeScreen(StoriesMainFragment.this);
+            public void use(@NonNull IASCore core) {
+                core.screensManager().getStoryScreenHolder().subscribeScreen(StoriesMainFragment.this);
             }
         });
     }
@@ -543,13 +558,10 @@ public abstract class StoriesMainFragment extends Fragment implements
         if (orientationChangeIsLocked()) {
             getActivity().setRequestedOrientation(oldOrientation);
         }
-        InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
-            public void use(@NonNull InAppStoryManager manager) throws Exception {
-                manager
-                        .getScreensHolder()
-                        .getStoryScreenHolder()
-                        .unsubscribeScreen(StoriesMainFragment.this);
+            public void use(@NonNull IASCore core) {
+                core.screensManager().getStoryScreenHolder().unsubscribeScreen(StoriesMainFragment.this);
             }
         });
     }
@@ -561,15 +573,16 @@ public abstract class StoriesMainFragment extends Fragment implements
 
     @Override
     public void onDestroyView() {
-        InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
-            public void use(@NonNull InAppStoryManager manager) throws Exception {
-                manager
-                        .getScreensLauncher()
+            public void use(@NonNull IASCore core) {
+                core.screensManager()
                         .getOpenReader(ScreenType.STORY)
                         .onRestoreStatusBar(getActivity());
             }
         });
+
         super.onDestroyView();
     }
 
@@ -587,16 +600,18 @@ public abstract class StoriesMainFragment extends Fragment implements
                         screenSize.y
                 ).setAnimations(false);
             default:
-                StoryItemCoordinates coordinates = null;
-                InAppStoryManager manager = InAppStoryManager.getInstance();
-                if (manager != null) {
-                    coordinates = manager.getScreensHolder().getStoryScreenHolder().coordinates();
-                }
+                final StoryItemCoordinates[] coordinates = {null};
+                InAppStoryManager.useCore(new UseIASCoreCallback() {
+                    @Override
+                    public void use(@NonNull IASCore core) {
+                        coordinates[0] = core.screensManager().getStoryScreenHolder().coordinates();
+                    }
+                });
                 float pivotX = -screenSize.x / 2f;
                 float pivotY = -screenSize.y / 2f;
-                if (coordinates != null) {
-                    pivotX += coordinates.x();
-                    pivotY += coordinates.y();
+                if (coordinates[0] != null) {
+                    pivotX += coordinates[0].x();
+                    pivotY += coordinates[0].y();
                     return new ZoomReaderFromCellAnimation(animatedContainer,
                             pivotX,
                             pivotY
@@ -632,10 +647,11 @@ public abstract class StoriesMainFragment extends Fragment implements
                         }
                     })
                     .start();
-            InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+
+            InAppStoryManager.useCore(new UseIASCoreCallback() {
                 @Override
-                public void use(@NonNull InAppStoryManager manager) throws Exception {
-                    manager.getScreensHolder().getStoryScreenHolder().clearCoordinates();
+                public void use(@NonNull IASCore core) {
+                    core.screensManager().getStoryScreenHolder().clearCoordinates();
                 }
             });
         } catch (Exception e) {

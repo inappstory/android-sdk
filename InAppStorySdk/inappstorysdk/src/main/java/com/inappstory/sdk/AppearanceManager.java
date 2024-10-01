@@ -494,22 +494,6 @@ public class AppearanceManager {
         return csCustomSecondaryFont;
     }
 
-    public static WidgetAppearance csWidgetAppearance() {
-        if (csWidgetAppearance == null) csWidgetAppearance = new WidgetAppearance();
-        return csWidgetAppearance;
-    }
-
-    public static void csWidgetAppearance(@NonNull Context context,
-                                          @NonNull Class widgetClass,
-                                          Integer corners) {
-        csWidgetAppearance();
-        csWidgetAppearance.widgetClass = widgetClass;
-        csWidgetAppearance.corners = corners;
-        csWidgetAppearance.context = context;
-        csWidgetAppearance.sandbox = false;
-        csWidgetAppearance.save();
-    }
-
     /**
      * use to set custom list item height in default cells
      *

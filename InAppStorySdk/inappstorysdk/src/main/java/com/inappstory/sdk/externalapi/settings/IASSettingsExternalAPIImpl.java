@@ -5,7 +5,7 @@ import androidx.annotation.NonNull;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.UseManagerInstanceCallback;
-import com.inappstory.sdk.core.api.IASSettings;
+import com.inappstory.sdk.core.api.IASDataSettings;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
 
 import java.util.ArrayList;
@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-public class IASSettingsExternalAPIImpl implements IASSettings {
+public class IASSettingsExternalAPIImpl implements IASDataSettings {
     public void setUserId(final String userId) {
         InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
             @Override

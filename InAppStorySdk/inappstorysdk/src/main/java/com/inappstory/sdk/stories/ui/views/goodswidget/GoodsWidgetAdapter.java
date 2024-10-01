@@ -6,7 +6,11 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.inappstory.sdk.AppearanceManager;
-import com.inappstory.sdk.stories.callbacks.CallbackManager;
+import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.UseIASCoreCallback;
+import com.inappstory.sdk.core.api.IASCallbackType;
+import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryWidgetCallback;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 
@@ -37,19 +41,28 @@ public class GoodsWidgetAdapter extends RecyclerView.Adapter<GoodsWidgetItem> {
         }
     }
 
-    public void onItemClick(GoodsItemData data) {
+    public void onItemClick(final GoodsItemData data) {
         if (data != null) {
             if (config != null && config.slideData != null) {
-                StoryWidgetCallback callback = CallbackManager.getInstance().getStoryWidgetCallback();
-                if (callback != null) {
-                    Map<String, String> widgetData = new HashMap<>();
-                    widgetData.put("story_id", "" + config.slideData.story.id);
-                    widgetData.put("feed_id", config.slideData.story.feed);
-                    widgetData.put("slide_index", "" + config.slideData.index);
-                    widgetData.put("widget_id", config.widgetId);
-                    widgetData.put("widget_value", data.sku);
-                    callback.widgetEvent(config.slideData, "w-goods-click", widgetData);
-                }
+                InAppStoryManager.useCore(new UseIASCoreCallback() {
+                    @Override
+                    public void use(@NonNull IASCore core) {
+                        core.callbacksAPI().useCallback(IASCallbackType.STORY_WIDGET,
+                                new UseIASCallback<StoryWidgetCallback>() {
+                                    @Override
+                                    public void use(@NonNull StoryWidgetCallback callback) {
+                                        Map<String, String> widgetData = new HashMap<>();
+                                        widgetData.put("story_id", "" + config.slideData.story.id);
+                                        widgetData.put("feed_id", config.slideData.story.feed);
+                                        widgetData.put("slide_index", "" + config.slideData.index);
+                                        widgetData.put("widget_id", config.widgetId);
+                                        widgetData.put("widget_value", data.sku);
+                                        callback.widgetEvent(config.slideData, "w-goods-click", widgetData);
+                                    }
+                                }
+                        );
+                    }
+                });
                 if (StatisticManager.getInstance() != null) {
                     StatisticManager.getInstance().sendGoodsClick(
                             config.slideData.story.id,

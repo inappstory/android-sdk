@@ -22,52 +22,54 @@ public class GetGameModelUseCase {
 
         final boolean demoMode;
         InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
-        if (inAppStoryManager != null)
-            demoMode = inAppStoryManager.isGameDemoMode();
-        else
-            demoMode = false;
-        SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
-            @Override
-            public void onSuccess(String sessionId) {
-                networkClient.enqueue(
-                        networkClient.getApi().getGameByInstanceId(gameId, new GameLaunchConfigObject(demoMode)),
-                        new NetworkCallback<GameCenterData>() {
-                            @Override
-                            public void onSuccess(final GameCenterData response) {
-                                callback.onCreateLog(response.loggerLevel());
-                                if (response.url == null ||
-                                        response.url.isEmpty() ||
-                                        response.initCode == null ||
-                                        response.initCode.isEmpty()
-                                ) {
-                                    callback.onError("Invalid game data");
-                                    return;
+        if (inAppStoryManager == null) {
+            callback.onError("");
+            return;
+        }
+        demoMode = inAppStoryManager.isGameDemoMode();
+        inAppStoryManager.iasCore().sessionManager()
+                .useOrOpenSession(new OpenSessionCallback() {
+                    @Override
+                    public void onSuccess(String sessionId) {
+                        networkClient.enqueue(
+                                networkClient.getApi().getGameByInstanceId(gameId, new GameLaunchConfigObject(demoMode)),
+                                new NetworkCallback<GameCenterData>() {
+                                    @Override
+                                    public void onSuccess(final GameCenterData response) {
+                                        callback.onCreateLog(response.loggerLevel());
+                                        if (response.url == null ||
+                                                response.url.isEmpty() ||
+                                                response.initCode == null ||
+                                                response.initCode.isEmpty()
+                                        ) {
+                                            callback.onError("Invalid game data");
+                                            return;
+                                        }
+                                        callback.onSuccess(response);
+                                    }
+
+                                    @Override
+                                    public Type getType() {
+                                        return GameCenterData.class;
+                                    }
+
+                                    @Override
+                                    public void errorDefault(String message) {
+                                        callback.onError(message);
+                                    }
+
+                                    @Override
+                                    public void timeoutError() {
+                                        callback.onError("Game loading run out of time");
+                                    }
                                 }
-                                callback.onSuccess(response);
-                            }
+                        );
+                    }
 
-                            @Override
-                            public Type getType() {
-                                return GameCenterData.class;
-                            }
-
-                            @Override
-                            public void errorDefault(String message) {
-                                callback.onError(message);
-                            }
-
-                            @Override
-                            public void timeoutError() {
-                                callback.onError("Game loading run out of time");
-                            }
-                        }
-                );
-            }
-
-            @Override
-            public void onError() {
-                callback.onError("Open session error");
-            }
-        });
+                    @Override
+                    public void onError() {
+                        callback.onError("Open session error");
+                    }
+                });
     }
 }

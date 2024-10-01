@@ -5,17 +5,23 @@ import android.os.Looper;
 
 import androidx.annotation.NonNull;
 
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.UseIASCoreCallback;
+import com.inappstory.sdk.core.api.IASCallbackType;
+import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.StoryLinkObject;
-import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.managers.TimerManager;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.CallToActionCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickAction;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryWidgetCallback;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.statistic.GetOldStatisticManagerCallback;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
@@ -40,6 +46,11 @@ public class ReaderPageManager {
     TimerManager timerManager;
     ReaderPageFragment host;
 
+    private final IASCore core;
+
+    public ReaderPageManager(IASCore core) {
+        this.core = core;
+    }
 
     public void unlockShareButton() {
         buttonsPanelManager.unlockShareButton();
@@ -153,30 +164,41 @@ public class ReaderPageManager {
         InAppStoryService.getInstance().getStoryDownloadManager().reloadStory(storyId, getStoryType());
     }
 
-    public void widgetEvent(String widgetName, String widgetData) {
-        Story story = InAppStoryService.getInstance()
+    public void widgetEvent(final String widgetName, String widgetData) {
+        final Story story = InAppStoryService.getInstance()
                 .getStoryDownloadManager().getStoryById(storyId, getStoryType());
         if (story == null) return;
-        Map<String, String> widgetEventMap = JsonParser.toMap(widgetData);
+        final Map<String, String> widgetEventMap = JsonParser.toMap(widgetData);
         if (widgetEventMap != null)
             widgetEventMap.put("feed_id", getFeedId());
-        if (CallbackManager.getInstance().getStoryWidgetCallback() != null) {
-            CallbackManager.getInstance().getStoryWidgetCallback().widgetEvent(
-                    getSlideData(story),
-                    StringsUtils.getNonNull(widgetName),
-                    widgetEventMap
-            );
-        }
+
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.callbacksAPI().useCallback(IASCallbackType.STORY_WIDGET,
+                        new UseIASCallback<StoryWidgetCallback>() {
+                            @Override
+                            public void use(@NonNull StoryWidgetCallback callback) {
+                                callback.widgetEvent(
+                                        getSlideData(story),
+                                        StringsUtils.getNonNull(widgetName),
+                                        widgetEventMap
+                                );
+                            }
+                        }
+                );
+            }
+        });
     }
 
     private void tapOnLink(String link) {
-        StoryLinkObject object = JsonParser.fromJson(link, StoryLinkObject.class);
+        final StoryLinkObject object = JsonParser.fromJson(link, StoryLinkObject.class);
         InAppStoryService service = InAppStoryService.getInstance();
         if (service == null) return;
         if (object != null) {
 
             ClickAction action = ClickAction.BUTTON;
-            Story story = service.getStoryDownloadManager().getStoryById(
+            final Story story = service.getStoryDownloadManager().getStoryById(
                     storyId, getStoryType()
             );
             switch (object.getLink().getType()) {
@@ -196,18 +218,29 @@ public class ReaderPageManager {
                                     }
                                 }
                         );
-                    if (CallbackManager.getInstance().getCallToActionCallback() != null) {
-                        if (story != null) {
-                            CallbackManager.getInstance().getCallToActionCallback().callToAction(
-                                    host != null ? host.getContext() : null,
-                                    getSlideData(story),
-                                    object.getLink().getTarget(),
-                                    action
-                            );
-                        }
-                    } else {
-                        parentManager.defaultTapOnLink(object.getLink().getTarget());
-                    }
+
+                    final ClickAction finalAction = action;
+                    core.callbacksAPI().useCallback(
+                            IASCallbackType.CALL_TO_ACTION,
+                            new UseIASCallback<CallToActionCallback>() {
+                                @Override
+                                public void use(@NonNull CallToActionCallback callback) {
+                                    if (story != null) {
+                                        callback.callToAction(
+                                                host != null ? host.getContext() : null,
+                                                getSlideData(story),
+                                                object.getLink().getTarget(),
+                                                finalAction
+                                        );
+                                    }
+                                }
+
+                                @Override
+                                public void onDefault() {
+                                    parentManager.defaultTapOnLink(object.getLink().getTarget());
+                                }
+                            }
+                    );
                     break;
                 case "json":
                     if (object.getType() != null && !object.getType().isEmpty()) {

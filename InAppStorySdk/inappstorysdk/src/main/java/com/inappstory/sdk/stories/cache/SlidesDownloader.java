@@ -4,13 +4,18 @@ import static com.inappstory.sdk.stories.api.models.Story.VOD;
 
 import android.util.Pair;
 
+import androidx.annotation.NonNull;
+
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.api.IASCallbackType;
+import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderType;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
 import com.inappstory.sdk.stories.api.models.ResourceMappingObject;
 import com.inappstory.sdk.stories.api.models.Story;
-import com.inappstory.sdk.stories.callbacks.CallbackManager;
+import com.inappstory.sdk.stories.outercallbacks.common.errors.ErrorCallback;
 import com.inappstory.sdk.stories.utils.LoopedExecutor;
 import com.inappstory.sdk.utils.StringsUtils;
 
@@ -47,8 +52,15 @@ class SlidesDownloader {
 
 
     private final Object pageTasksLock = new Object();
+    private final IASCore core;
 
-    SlidesDownloader(DownloadPageCallback callback, StoryDownloadManager manager) {
+
+    SlidesDownloader(
+            IASCore core,
+            DownloadPageCallback callback,
+            StoryDownloadManager manager
+    ) {
+        this.core = core;
         this.callback = callback;
         this.manager = manager;
     }
@@ -240,12 +252,16 @@ class SlidesDownloader {
     }
 
 
-    DownloadPageCallback callback;
+    private final DownloadPageCallback callback;
 
     private void loadPageError(SlideTaskData key) {
-        if (CallbackManager.getInstance().getErrorCallback() != null) {
-            CallbackManager.getInstance().getErrorCallback().cacheError();
-        }
+        core.callbacksAPI().useCallback(IASCallbackType.ERROR,
+                new UseIASCallback<ErrorCallback>() {
+                    @Override
+                    public void use(@NonNull ErrorCallback callback) {
+                        callback.cacheError();
+                    }
+                });
         synchronized (pageTasksLock) {
             Objects.requireNonNull(pageTasks.get(key)).loadType = -1;
             callback.onSlideError(key);

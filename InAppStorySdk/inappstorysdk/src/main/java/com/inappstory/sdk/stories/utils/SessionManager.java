@@ -18,6 +18,9 @@ import androidx.annotation.NonNull;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.UseServiceInstanceCallback;
+import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.api.IASCallbackType;
+import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
@@ -27,7 +30,7 @@ import com.inappstory.sdk.stories.api.models.SessionResponse;
 import com.inappstory.sdk.stories.api.models.StatisticPermissions;
 import com.inappstory.sdk.stories.api.models.StatisticSendObject;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
-import com.inappstory.sdk.stories.callbacks.CallbackManager;
+import com.inappstory.sdk.stories.outercallbacks.common.errors.ErrorCallback;
 import com.inappstory.sdk.stories.statistic.GetOldStatisticManagerCallback;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
@@ -39,16 +42,10 @@ import java.util.List;
 import java.util.Locale;
 
 public class SessionManager {
-    private static SessionManager INSTANCE;
+    private final IASCore core;
 
-    private static final Object lock = new Object();
-
-    public static SessionManager getInstance() {
-        synchronized (lock) {
-            if (INSTANCE == null)
-                INSTANCE = new SessionManager();
-            return INSTANCE;
-        }
+    public SessionManager(IASCore core) {
+        this.core = core;
     }
 
     public void useOrOpenSession(OpenSessionCallback callback) {
@@ -81,7 +78,7 @@ public class SessionManager {
     }
 
 
-    public static boolean openProcess = false;
+    public boolean openProcess = false;
 
     public final Object openProcessLock = new Object();
     public ArrayList<OpenSessionCallback> callbacks = new ArrayList<>();
@@ -291,9 +288,14 @@ public class SessionManager {
                     @Override
                     public void errorDefault(String message) {
                         ProfilingManager.getInstance().setReady(sessionOpenUID);
-                        if (CallbackManager.getInstance().getErrorCallback() != null) {
-                            CallbackManager.getInstance().getErrorCallback().sessionError();
-                        }
+                        core.callbacksAPI().useCallback(IASCallbackType.ERROR,
+                                new UseIASCallback<ErrorCallback>() {
+                                    @Override
+                                    public void use(@NonNull ErrorCallback callback) {
+                                        callback.sessionError();
+                                    }
+                                }
+                        );
                         final List<OpenSessionCallback> localCallbacks = new ArrayList<>();
                         final List<IOpenSessionCallback> localStaticCallbacks = new ArrayList<>();
                         synchronized (openProcessLock) {

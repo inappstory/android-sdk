@@ -15,6 +15,8 @@ import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.UseManagerInstanceCallback;
+import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.ui.screens.holder.GetScreenCallback;
 import com.inappstory.sdk.core.ui.screens.gamereader.BaseGameScreen;
 import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryScreen;
@@ -64,11 +66,10 @@ public class GameMainFragment extends Fragment
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
-            public void use(@NonNull InAppStoryManager manager) throws Exception {
-                manager.getScreensHolder().getStoryScreenHolder()
+            public void use(@NonNull IASCore core) {
+                core.screensManager().getStoryScreenHolder()
                         .useCurrentReader(new GetScreenCallback<BaseStoryScreen>() {
                             @Override
                             public void get(BaseStoryScreen screen) {
@@ -81,52 +82,59 @@ public class GameMainFragment extends Fragment
 
     @Override
     public void onDestroy() {
-        InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
-            public void use(@NonNull InAppStoryManager manager) throws Exception {
-                manager.getScreensHolder().getStoryScreenHolder()
-                        .useCurrentReader(
-                                new GetScreenCallback<BaseStoryScreen>() {
-                                    @Override
-                                    public void get(BaseStoryScreen screen) {
-                                        screen.resumeScreen();
-                                    }
-                                }
-                        );
+            public void use(@NonNull IASCore core) {
+                core.screensManager().getStoryScreenHolder().useCurrentReader(
+                        new GetScreenCallback<BaseStoryScreen>() {
+                    @Override
+                    public void get(BaseStoryScreen screen) {
+                        screen.resumeScreen();
+                    }
+                });
             }
         });
+
+
         super.onDestroy();
     }
 
 
     @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull View view, @Nullable final Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        if (getArguments() == null) {
-            forceFinish();
-            return;
-        }
-
-        InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
-            public void use(@NonNull InAppStoryManager manager) throws Exception {
-                manager.getScreensHolder().getGameScreenHolder().subscribeScreen(GameMainFragment.this);
+            public void use(@NonNull IASCore core) {
+                if (getArguments() == null) {
+                    forceFinish();
+                    return;
+                }
+                core.screensManager()
+                        .getGameScreenHolder().subscribeScreen(GameMainFragment.this);
+
+                createGameContentFragment(
+                        savedInstanceState,
+                        (GameReaderLaunchData) getArguments().getSerializable(
+                                GameReaderLaunchData.SERIALIZABLE_KEY
+                        )
+                );
+            }
+
+            @Override
+            public void error() {
+                forceFinish();
             }
         });
-        createGameContentFragment(
-                savedInstanceState,
-                (GameReaderLaunchData) getArguments().getSerializable(GameReaderLaunchData.SERIALIZABLE_KEY)
-        );
+
     }
 
     @Override
     public void onDestroyView() {
-        InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
-            public void use(@NonNull InAppStoryManager manager) throws Exception {
-                manager.getScreensHolder().getGameScreenHolder().unsubscribeScreen(
-                        GameMainFragment.this
-                );
+            public void use(@NonNull IASCore core) {
+                core.screensManager().getGameScreenHolder().unsubscribeScreen(GameMainFragment.this);
             }
         });
         super.onDestroyView();

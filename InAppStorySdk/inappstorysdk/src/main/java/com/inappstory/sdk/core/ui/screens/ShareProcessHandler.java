@@ -1,6 +1,5 @@
 package com.inappstory.sdk.core.ui.screens;
 
-import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.share.IShareCompleteListener;
 import com.inappstory.sdk.share.ShareListener;
 import com.inappstory.sdk.stories.ui.OverlapFragmentObserver;
@@ -23,12 +22,6 @@ public final class ShareProcessHandler {
         synchronized (shareLock) {
             this.sharingProcess = sharingProcess;
         }
-    }
-
-    public static ShareProcessHandler getInstance() {
-        InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
-        if (inAppStoryManager == null) return null;
-        return inAppStoryManager.getScreensHolder().getShareProcessHandler();
     }
 
     public ShareListener shareListener() {

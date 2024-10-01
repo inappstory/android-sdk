@@ -4,6 +4,7 @@ package com.inappstory.sdk.stories.cache;
 import androidx.annotation.WorkerThread;
 
 
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.callbacks.GetStoryByIdCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadStoriesCallback;
@@ -112,8 +113,8 @@ public class FakeStoryDownloadManager extends StoryDownloadManager {
     }
 
 
-    public FakeStoryDownloadManager() {
-        super();
+    public FakeStoryDownloadManager(IASCore core) {
+        super(core);
     }
 
     public void addStoryTask(int storyId, ArrayList<Integer> addIds, Story.StoryType type) {

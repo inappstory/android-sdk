@@ -43,6 +43,8 @@ import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryScreen;
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenAppearance;
 import com.inappstory.sdk.stories.api.models.Story;
@@ -668,27 +670,40 @@ public class ReaderPageFragment extends Fragment {
     LaunchStoryScreenAppearance appearanceSettings = null;
 
     @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+    public void onViewCreated(final @NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        manager = new ReaderPageManager();
-        setStoryId();
-        manager.host = this;
-        if (parentManager == null && getParentFragment() instanceof StoriesContentFragment) {
-            parentManager = ((StoriesContentFragment) getParentFragment()).readerManager;
-        }
-        manager.setParentManager(parentManager);
-        manager.setStoryId(storyId);
-        if (parentManager != null) {
-            parentManager.addSubscriber(manager);
-        }
-        bindViews(view);
-        setActions();
-        if (setManagers() && InAppStoryService.getInstance() != null
-                && InAppStoryService.getInstance().getStoryDownloadManager() != null) {
-            InAppStoryService.getInstance().getStoryDownloadManager().addSubscriber(manager);
-        } else {
-            InAppStoryManager.closeStoryReader();
-        }
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                manager = new ReaderPageManager(core);
+                setStoryId();
+                manager.host = ReaderPageFragment.this;
+                if (parentManager == null && getParentFragment() instanceof StoriesContentFragment) {
+                    parentManager = ((StoriesContentFragment) getParentFragment()).readerManager;
+                }
+                manager.setParentManager(parentManager);
+                manager.setStoryId(storyId);
+                if (parentManager != null) {
+                    parentManager.addSubscriber(manager);
+                }
+                bindViews(view);
+                setActions();
+                if (setManagers() && InAppStoryService.getInstance() != null
+                        && InAppStoryService.getInstance().getStoryDownloadManager() != null) {
+                    InAppStoryService.getInstance().getStoryDownloadManager().addSubscriber(manager);
+                } else {
+                    InAppStoryManager.closeStoryReader();
+                }
+            }
+
+            @Override
+            public void error() {
+                if (getParentFragment() instanceof StoriesContentFragment) {
+                    ((StoriesContentFragment) getParentFragment()).forceFinish();
+                }
+            }
+        });
+
 
     }
 

@@ -4,11 +4,14 @@ import android.content.Context;
 
 import androidx.annotation.NonNull;
 
-import com.inappstory.sdk.InAppStoryManager;
-import com.inappstory.sdk.UseManagerInstanceCallback;
+import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.api.IASCallbackType;
+import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.IASGames;
-import com.inappstory.sdk.stories.callbacks.CallbackManager;
+import com.inappstory.sdk.core.api.UseIASCallback;
+import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenData;
+import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenStrategy;
 import com.inappstory.sdk.stories.outercallbacks.common.gamereader.GameReaderCallback;
 
 public class IASGamesImpl implements IASGames {
@@ -24,13 +27,33 @@ public class IASGamesImpl implements IASGames {
     }
 
     @Override
-    public void open(@NonNull Context context, String gameId) {
-
+    public void open(@NonNull Context context, final String gameId) {
+        IASDataSettingsHolder settingsHolder = (IASDataSettingsHolder) core.settingsAPI();
+        if (settingsHolder.noCorrectUserIdOrDevice()) {
+            core.callbacksAPI().useCallback(
+                    IASCallbackType.GAME_READER,
+                    new UseIASCallback<GameReaderCallback>() {
+                        @Override
+                        public void use(@NonNull GameReaderCallback callback) {
+                            callback.gameOpenError(null, gameId);
+                        }
+                    }
+            );
+            return;
+        }
+        core.screensManager().openScreen(context,
+                new LaunchGameScreenStrategy(core, false)
+                        .data(new LaunchGameScreenData(
+                                null,
+                                null,
+                                gameId
+                        ))
+        );
     }
 
     @Override
     public void callback(GameReaderCallback gameReaderCallback) {
-        CallbackManager.getInstance().setGameReaderCallback(gameReaderCallback);
+        core.callbacksAPI().setCallback(IASCallbackType.GAME_READER, gameReaderCallback);
     }
 
     @Override

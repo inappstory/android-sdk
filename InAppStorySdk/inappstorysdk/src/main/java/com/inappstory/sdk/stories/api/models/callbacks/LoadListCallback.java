@@ -1,12 +1,17 @@
 package com.inappstory.sdk.stories.api.models.callbacks;
 
+import androidx.annotation.NonNull;
+
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.UseIASCoreCallback;
+import com.inappstory.sdk.core.api.IASCallbackType;
+import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.StoryListType;
-import com.inappstory.sdk.stories.callbacks.CallbackManager;
-import com.inappstory.sdk.stories.utils.SessionManager;
+import com.inappstory.sdk.stories.outercallbacks.common.errors.ErrorCallback;
 
 import java.lang.reflect.Type;
 import java.util.List;
@@ -23,34 +28,56 @@ public abstract class LoadListCallback extends NetworkCallback<List<Story>> {
 
     @Override
     public void onError(int code, String message) {
-        if (CallbackManager.getInstance().getErrorCallback() != null) {
-            CallbackManager.getInstance().getErrorCallback().loadListError("");
-        }
+        loadListError();
+    }
+
+    private void loadListError() {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.callbacksAPI().useCallback(IASCallbackType.ERROR,
+                        new UseIASCallback<ErrorCallback>() {
+                            @Override
+                            public void use(@NonNull ErrorCallback callback) {
+                                callback.loadListError("");
+                            }
+                        });
+            }
+        });
     }
 
     @Override
     public void error424(String message) {
-        if (CallbackManager.getInstance().getErrorCallback() != null) {
-            CallbackManager.getInstance().getErrorCallback().loadListError("");
-        }
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.callbacksAPI().useCallback(IASCallbackType.ERROR,
+                        new UseIASCallback<ErrorCallback>() {
+                            @Override
+                            public void use(@NonNull ErrorCallback callback) {
+                                callback.loadListError("");
+                            }
+                        });
+                String oldUserId = "";
+                Locale locale = Locale.getDefault();
+                InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
+                if (inAppStoryManager != null) {
+                    oldUserId = inAppStoryManager.getUserId();
+                    locale = inAppStoryManager.getCurrentLocale();
+                }
+                InAppStoryService service = InAppStoryService.getInstance();
+                if (service != null) {
+                    core.sessionManager().closeSession(
+                            true,
+                            false,
+                            locale,
+                            oldUserId,
+                            service.getSession().getSessionId()
+                    );
+                }
+            }
+        });
 
-        String oldUserId = "";
-        Locale locale = Locale.getDefault();
-        InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
-        if (inAppStoryManager != null) {
-            oldUserId = inAppStoryManager.getUserId();
-            locale = inAppStoryManager.getCurrentLocale();
-        }
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service != null) {
-            SessionManager.getInstance().closeSession(
-                    true,
-                    false,
-                    locale,
-                    oldUserId,
-                    service.getSession().getSessionId()
-            );
-        }
     }
 
 }

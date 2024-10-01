@@ -7,8 +7,9 @@ import androidx.annotation.NonNull;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.UseManagerInstanceCallback;
+import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASSingleStory;
-import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.callbacks.IShowStoryCallback;
 import com.inappstory.sdk.stories.callbacks.IShowStoryOnceCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.single.SingleLoadCallback;
@@ -44,7 +45,12 @@ public class IASSingleStoryExternalAPIImpl implements IASSingleStory {
         });
     }
 
-    public void loadCallback(SingleLoadCallback singleLoadCallback) {
-        CallbackManager.getInstance().setSingleLoadCallback(singleLoadCallback);
+    public void loadCallback(final SingleLoadCallback singleLoadCallback) {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.singleStoryAPI().loadCallback(singleLoadCallback);
+            }
+        });
     }
 }

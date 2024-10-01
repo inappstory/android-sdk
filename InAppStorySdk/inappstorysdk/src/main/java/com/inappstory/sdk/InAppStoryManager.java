@@ -20,6 +20,8 @@ import com.inappstory.iasutilsconnector.json.IJsonParser;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.IASCoreImpl;
 import com.inappstory.sdk.core.UseIASCoreCallback;
+import com.inappstory.sdk.core.api.IASCallbackType;
+import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.ui.screens.holder.GetScreenCallback;
 import com.inappstory.sdk.core.ui.screens.launcher.ILaunchScreenCallback;
 import com.inappstory.sdk.core.ui.screens.ScreenType;
@@ -48,12 +50,10 @@ import com.inappstory.sdk.stories.api.models.logs.ApiLogRequest;
 import com.inappstory.sdk.stories.api.models.logs.ApiLogResponse;
 import com.inappstory.sdk.stories.api.models.logs.ExceptionLog;
 import com.inappstory.sdk.stories.api.models.logs.WebConsoleLog;
-import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.callbacks.ExceptionCallback;
 import com.inappstory.sdk.stories.callbacks.IShowStoryCallback;
 import com.inappstory.sdk.stories.callbacks.IShowStoryOnceCallback;
 import com.inappstory.sdk.stories.callbacks.ShareCallback;
-import com.inappstory.sdk.stories.callbacks.UrlClickCallback;
 import com.inappstory.sdk.stories.exceptions.ExceptionManager;
 import com.inappstory.sdk.stories.outercallbacks.common.errors.ErrorCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.gamereader.GameReaderCallback;
@@ -83,7 +83,6 @@ import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryScreen;
 import com.inappstory.sdk.stories.ui.reader.ForceCloseReaderCallback;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
-import com.inappstory.sdk.stories.utils.SessionManager;
 import com.inappstory.sdk.utils.IVibrateUtils;
 import com.inappstory.sdk.utils.StringsUtils;
 
@@ -126,15 +125,8 @@ public class InAppStoryManager {
 
     private final ScreensHolder holder = new ScreensHolder();
 
-    public ScreensHolder getScreensHolder() {
-        return holder;
-    }
-
     private final ScreensLauncher launcher = new ScreensLauncher(holder);
 
-    public ScreensLauncher getScreensLauncher() {
-        return launcher;
-    }
 
     public static NetworkClient getNetworkClient() {
         synchronized (lock) {
@@ -311,10 +303,12 @@ public class InAppStoryManager {
      * use to close story reader
      */
     public static void closeStoryReader() {
-        InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+        useCore(new UseIASCoreCallback() {
             @Override
-            public void use(@NonNull InAppStoryManager manager) throws Exception {
-                manager.holder.getStoryScreenHolder().closeScreenWithAction(CloseStory.CUSTOM);
+            public void use(@NonNull IASCore core) {
+                core.screensManager()
+                        .getStoryScreenHolder()
+                        .closeScreenWithAction(CloseStory.CUSTOM);
             }
         });
     }
@@ -326,69 +320,51 @@ public class InAppStoryManager {
      * @param forceCloseReaderCallback (forceCloseReaderCallback) - triggers after reader is closed and only if {@code forceClose == true}
      */
     public static void closeStoryReader(final boolean forceClose, final ForceCloseReaderCallback forceCloseReaderCallback) {
-        InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+        useCore(new UseIASCoreCallback() {
             @Override
-            public void use(@NonNull InAppStoryManager manager) throws Exception {
-                manager.closeStoryReaderInternal(forceClose, forceCloseReaderCallback);
+            public void use(@NonNull IASCore core) {
+                if (forceClose) {
+                    core.screensManager()
+                            .forceCloseAllReaders(forceCloseReaderCallback);
+                } else {
+                    core.screensManager().getStoryScreenHolder()
+                            .closeScreenWithAction(CloseStory.CUSTOM);
+                }
             }
         });
     }
 
-    private void closeStoryReaderInternal(boolean forceClose, ForceCloseReaderCallback forceCloseReaderCallback) {
-        if (forceClose) {
-            holder.forceCloseAllReaders(forceCloseReaderCallback);
-        } else {
-            holder.getStoryScreenHolder().closeScreenWithAction(CloseStory.CUSTOM);
-        }
-    }
 
-    public void openGame(String gameId, @NonNull Context context) {
-        InAppStoryService service = InAppStoryService.getInstance();
-        GameReaderCallback callback = CallbackManager.getInstance().getGameReaderCallback();
-        if (noCorrectUserIdOrDevice()) {
-            if (callback != null) {
-                callback.gameOpenError(null, gameId);
-            }
-            return;
-        }
-        if (isGameReaderOpened()) {
-            if (callback != null) {
-                callback.gameOpenError(null, gameId);
-            }
-            showELog(IAS_ERROR_TAG, StringsUtils.getErrorStringFromContext(context, R.string.game_reader_already_opened_error));
-            return;
-        }
-        if (service != null) {
-            service.openGameReaderWithGC(context, null, gameId, null, false);
-        }
-    }
-
-    private boolean isStoryReaderOpenedLocal() {
-        return holder.getStoryScreenHolder().getScreen() != null;
-    }
-
-    private boolean isGameReaderOpenedLocal() {
-        return holder.getGameScreenHolder().getScreen() != null;
-    }
-
-    private boolean isIAMReaderOpenedLocal() {
-        return holder.getIAMScreenHolder().getScreen() != null;
+    public void openGame(final String gameId, @NonNull Context context) {
+        core.gamesAPI().open(context, gameId);
     }
 
     public static boolean isStoryReaderOpened() {
-        return getInstance() != null && getInstance().isStoryReaderOpenedLocal();
+        return getInstance() != null && getInstance()
+                .core
+                .screensManager()
+                .getStoryScreenHolder()
+                .isOpened();
     }
 
     public static boolean isGameReaderOpened() {
-        return getInstance() != null && getInstance().isGameReaderOpenedLocal();
+        return getInstance() != null && getInstance()
+                .core
+                .screensManager()
+                .getGameScreenHolder()
+                .isOpened();
     }
 
     public static boolean isIAMReaderOpened() {
-        return getInstance() != null && getInstance().isIAMReaderOpenedLocal();
+        return getInstance() != null && getInstance()
+                .core
+                .screensManager()
+                .getIAMScreenHolder()
+                .isOpened();
     }
 
     public void closeGame() {
-        holder.getGameScreenHolder().closeScreen();
+        core.gamesAPI().close();
     }
 
     /**
@@ -399,14 +375,14 @@ public class InAppStoryManager {
      * use to set callback on different errors
      */
     public void setErrorCallback(ErrorCallback errorCallback) {
-        CallbackManager.getInstance().setErrorCallback(errorCallback);
+        core.callbacksAPI().setCallback(IASCallbackType.ERROR, errorCallback);
     }
 
     /**
      * use to set callback on share click
      */
     public void setClickOnShareStoryCallback(ClickOnShareStoryCallback clickOnShareStoryCallback) {
-        CallbackManager.getInstance().setClickOnShareStoryCallback(clickOnShareStoryCallback);
+        core.callbacksAPI().setCallback(IASCallbackType.CLICK_SHARE, clickOnShareStoryCallback);
     }
 
 
@@ -414,28 +390,28 @@ public class InAppStoryManager {
      * use to set callback on game start/close/finish
      */
     public void setGameReaderCallback(GameReaderCallback gameReaderCallback) {
-        CallbackManager.getInstance().setGameReaderCallback(gameReaderCallback);
+        core.gamesAPI().callback(gameReaderCallback);
     }
 
     /**
      * use to set callback on onboardings load
      */
     public void setOnboardingLoadCallback(OnboardingLoadCallback onboardingLoadCallback) {
-        CallbackManager.getInstance().setOnboardingLoadCallback(onboardingLoadCallback);
+        core.onboardingsAPI().loadCallback(onboardingLoadCallback);
     }
 
     /**
      * use to set callback on click on buttons in stories (with info)
      */
     public void setCallToActionCallback(CallToActionCallback callToActionCallback) {
-        CallbackManager.getInstance().setCallToActionCallback(callToActionCallback);
+        core.callbacksAPI().setCallback(IASCallbackType.CALL_TO_ACTION, callToActionCallback);
     }
 
     /**
      * use to set callback on click on widgets in stories (with info)
      */
     public void setStoryWidgetCallback(StoryWidgetCallback storyWidgetCallback) {
-        CallbackManager.getInstance().setStoryWidgetCallback(storyWidgetCallback);
+        core.callbacksAPI().setCallback(IASCallbackType.STORY_WIDGET, storyWidgetCallback);
     }
 
 
@@ -443,50 +419,42 @@ public class InAppStoryManager {
      * use to set callback on stories reader closing
      */
     public void setCloseStoryCallback(CloseStoryCallback closeStoryCallback) {
-        CallbackManager.getInstance().setCloseStoryCallback(closeStoryCallback);
+        core.callbacksAPI().setCallback(IASCallbackType.CLOSE_STORY, closeStoryCallback);
     }
 
     /**
      * use to set callback on favorite action
      */
     public void setFavoriteStoryCallback(FavoriteStoryCallback favoriteStoryCallback) {
-        CallbackManager.getInstance().setFavoriteStoryCallback(favoriteStoryCallback);
+        core.callbacksAPI().setCallback(IASCallbackType.FAVORITE, favoriteStoryCallback);
     }
 
     /**
      * use to set callback on like/dislike action
      */
     public void setLikeDislikeStoryCallback(LikeDislikeStoryCallback likeDislikeStoryCallback) {
-        CallbackManager.getInstance().setLikeDislikeStoryCallback(likeDislikeStoryCallback);
+        core.callbacksAPI().setCallback(IASCallbackType.LIKE_DISLIKE, likeDislikeStoryCallback);
     }
 
     /**
      * use to set callback on slide shown in reader
      */
     public void setShowSlideCallback(ShowSlideCallback showSlideCallback) {
-        CallbackManager.getInstance().setShowSlideCallback(showSlideCallback);
+        core.callbacksAPI().setCallback(IASCallbackType.SHOW_SLIDE, showSlideCallback);
     }
 
     /**
      * use to set callback on story shown in reader
      */
     public void setShowStoryCallback(ShowStoryCallback showStoryCallback) {
-        CallbackManager.getInstance().setShowStoryCallback(showStoryCallback);
+        core.callbacksAPI().setCallback(IASCallbackType.SHOW_STORY, showStoryCallback);
     }
 
     /**
      * use to set callback on single story loading
      */
     public void setSingleLoadCallback(SingleLoadCallback singleLoadCallback) {
-        CallbackManager.getInstance().setSingleLoadCallback(singleLoadCallback);
-    }
-
-    /**
-     * use to set callback on click on buttons in stories (without additional info)
-     */
-    @Deprecated
-    public void setUrlClickCallback(UrlClickCallback urlClickCallback) {
-        CallbackManager.getInstance().setUrlClickCallback(urlClickCallback);
+        core.singleStoryAPI().loadCallback(singleLoadCallback);
     }
 
 
@@ -494,7 +462,7 @@ public class InAppStoryManager {
      * use to customize share functional
      */
     public void setShareCallback(ShareCallback shareCallback) {
-        CallbackManager.getInstance().setShareCallback(shareCallback);
+        core.callbacksAPI().setCallback(IASCallbackType.SHARE_ADDITIONAL, shareCallback);
     }
 
     //Test
@@ -938,7 +906,7 @@ public class InAppStoryManager {
     private ExceptionCache exceptionCache;
 
     public void removeFromFavorite(final int storyId) {
-        SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
+        core.sessionManager().useOrOpenSession(new OpenSessionCallback() {
             @Override
             public void onSuccess(String sessionId) {
                 favoriteOrRemoveStory(storyId, false);
@@ -952,7 +920,7 @@ public class InAppStoryManager {
     }
 
     public void removeAllFavorites() {
-        SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
+        core.sessionManager().useOrOpenSession(new OpenSessionCallback() {
             @Override
             public void onSuccess(String sessionId) {
                 favoriteRemoveAll();
@@ -1119,7 +1087,7 @@ public class InAppStoryManager {
                 builder.placeholders() != null ? builder.placeholders() : null,
                 builder.imagePlaceholders() != null ? builder.imagePlaceholders() : null
         );
-        new ExceptionManager().sendSavedException();
+        new ExceptionManager(core).sendSavedException();
     }
 
     public void preloadGames() {
@@ -1160,7 +1128,7 @@ public class InAppStoryManager {
                 holder.forceCloseAllReaders(new ForceCloseReaderCallback() {
                     @Override
                     public void onComplete() {
-                        SessionManager.getInstance().closeSession(
+                        core.sessionManager().closeSession(
                                 sendStatistic,
                                 true,
                                 getCurrentLocale(),
@@ -1193,7 +1161,7 @@ public class InAppStoryManager {
                 holder.forceCloseAllReaders(new ForceCloseReaderCallback() {
                     @Override
                     public void onComplete() {
-                        SessionManager.getInstance().closeSession(
+                        core.sessionManager().closeSession(
                                 sendStatistic,
                                 true,
                                 getCurrentLocale(),
@@ -1249,15 +1217,15 @@ public class InAppStoryManager {
     }
 
     public void setOpenStoriesReader(@NonNull IOpenStoriesReader openStoriesReader) {
-        this.getScreensLauncher().setOpenStoriesReader(openStoriesReader);
+        core.screensManager().setOpenStoriesReader(openStoriesReader);
     }
 
     public void setOpenInAppMessageReader(@NonNull IOpenInAppMessageReader openInAppMessageReader) {
-        this.getScreensLauncher().setOpenInAppMessageReader(openInAppMessageReader);
+        core.screensManager().setOpenInAppMessageReader(openInAppMessageReader);
     }
 
     public void setOpenGameReader(@NonNull IOpenGameReader openGameReader) {
-        this.getScreensLauncher().setOpenGameReader(openGameReader);
+        core.screensManager().setOpenGameReader(openGameReader);
     }
 
     public void clearCachedLists() {
@@ -1413,88 +1381,6 @@ public class InAppStoryManager {
     private Handler localHandler = new Handler();
     private Object handlerToken = new Object();
 
-    private void showLoadedOnboardings(
-            final List<Story> response,
-            final Context outerContext,
-            final AppearanceManager manager,
-            final String sessionId,
-            final String feed
-    ) {
-        Story.StoryType storyType = Story.StoryType.COMMON;
-        if (response == null || response.size() == 0) {
-            if (CallbackManager.getInstance().getOnboardingLoadCallback() != null) {
-                CallbackManager
-                        .getInstance()
-                        .getOnboardingLoadCallback()
-                        .onboardingLoadSuccess(
-                                0,
-                                StringsUtils.getNonNull(feed)
-                        );
-            }
-            return;
-        }
-
-        InAppStoryService inAppStoryService = InAppStoryService.getInstance();
-        if (inAppStoryService == null) return;
-        ArrayList<Story> stories = new ArrayList<Story>();
-        ArrayList<Integer> storiesIds = new ArrayList<>();
-        stories.addAll(response);
-        for (Story story : response) {
-            storiesIds.add(story.id);
-        }
-        inAppStoryService.getStoryDownloadManager().uploadingAdditional(stories, storyType);
-        LaunchStoryScreenData launchData = new LaunchStoryScreenData(
-                null,
-                feed,
-                sessionId,
-                storiesIds,
-                0,
-                false,
-                ShowStory.ACTION_OPEN,
-                SourceType.ONBOARDING,
-                0,
-                Story.StoryType.COMMON,
-                null
-        );
-        launcher.openScreen(
-                outerContext,
-                new LaunchStoryScreenStrategy(false).
-                        launchStoryScreenData(launchData).
-                        readerAppearanceSettings(
-                                new LaunchStoryScreenAppearance(
-                                        AppearanceManager.checkOrCreateAppearanceManager(manager),
-                                        outerContext
-                                )
-                        )
-                        .addLaunchScreenCallback(new ILaunchScreenCallback() {
-                            @Override
-                            public void onSuccess(ScreenType type) {
-
-                                if (CallbackManager.getInstance().getOnboardingLoadCallback() != null) {
-                                    CallbackManager
-                                            .getInstance()
-                                            .getOnboardingLoadCallback()
-                                            .onboardingLoadSuccess(
-                                                    response.size(),
-                                                    StringsUtils.getNonNull(feed)
-                                            );
-                                }
-                            }
-
-                            @Override
-                            public void onError(ScreenType type, String message) {
-                                CallbackManager
-                                        .getInstance()
-                                        .getOnboardingLoadCallback()
-                                        .onboardingLoadError(
-                                                StringsUtils.getNonNull(feed),
-                                                message
-                                        );
-                            }
-                        })
-        );
-
-    }
 
     public boolean noCorrectUserIdOrDevice() {
         if (this.userId == null || StringsUtils.getBytesLength(this.userId) > 255) {
@@ -1542,7 +1428,7 @@ public class InAppStoryManager {
             stackFeedResult.error();
             return;
         }
-        SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
+        core.sessionManager().useOrOpenSession(new OpenSessionCallback() {
             @Override
             public void onSuccess(final String sessionId) {
                 String localTags = null;
@@ -1577,6 +1463,7 @@ public class InAppStoryManager {
                                         }
                                     });
                                     final StackStoryObserver observer = new StackStoryObserver(
+                                            core,
                                             response.stories,
                                             sessionId,
                                             localAppearanceManager,
@@ -1657,123 +1544,26 @@ public class InAppStoryManager {
         });
     }
 
-    private void showOnboardingStoriesInner(final Integer limit, final String feed, final List<String> tags, final Context outerContext, final AppearanceManager manager) {
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service == null) {
-            localHandler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    showOnboardingStoriesInner(limit, feed, tags, outerContext, manager);
-                }
-            }, 1000);
-            return;
-        }
-
-        if (noCorrectUserIdOrDevice()) return;
-        if (tags != null && StringsUtils.getBytesLength(TextUtils.join(",", tags)) > TAG_LIMIT) {
-            showELog(IAS_ERROR_TAG, StringsUtils.getErrorStringFromContext(context, R.string.ias_setter_tags_length_error));
-            return;
-        }
-
-        SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
-            @Override
-            public void onSuccess(final String sessionId) {
-                String localTags = null;
-                if (tags != null) {
-                    localTags = TextUtils.join(",", tags);
-                } else if (getTags() != null) {
-                    localTags = TextUtils.join(",", getTags());
-                }
-
-                final String onboardUID =
-                        ProfilingManager.getInstance().addTask("api_onboarding");
-                final String localFeed;
-                if (feed != null) localFeed = feed;
-                else localFeed = ONBOARDING_FEED;
-                networkClient.enqueue(
-                        networkClient.getApi().getOnboardingFeed(
-                                localFeed,
-                                ApiSettings.getInstance().getTestKey(),
-                                limit,
-                                localTags == null ? getTagsString() : localTags
-                        ),
-                        new LoadFeedCallback() {
-                            @Override
-                            public void onSuccess(Feed response) {
-                                InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
-                                if (inAppStoryManager == null) return;
-                                ProfilingManager.getInstance().setReady(onboardUID);
-                                List<Story> notOpened = new ArrayList<>();
-                                Set<String> opens = SharedPreferencesAPI.getStringSet(
-                                        inAppStoryManager.getLocalOpensKey()
-                                );
-                                if (opens == null) opens = new HashSet<>();
-                                if (response.stories != null) {
-                                    for (Story story : response.stories) {
-                                        boolean add = true;
-                                        for (String opened : opens) {
-                                            if (Integer.toString(story.id).equals(opened)) {
-                                                add = false;
-                                            }
-                                        }
-                                        if (add) notOpened.add(story);
-                                    }
-                                }
-                                showLoadedOnboardings(notOpened, outerContext, manager, sessionId, localFeed);
-                            }
-
-                            @Override
-                            public void onError(int code, String message) {
-                                ProfilingManager.getInstance().setReady(onboardUID);
-                                loadOnboardingError(localFeed, "Can't load onboardings: request code " + code);
-                            }
-
-                            @Override
-                            public void timeoutError() {
-                                ProfilingManager.getInstance().setReady(onboardUID);
-                                loadOnboardingError(localFeed, "Can't load onboardings: timeout");
-                            }
-                        });
-            }
-
-            @Override
-            public void onError() {
-                loadOnboardingError(feed, "Can't open session");
-            }
-
-        });
-    }
-
-    private void loadOnboardingError(String feed, String message) {
-        OnboardingLoadCallback callback = CallbackManager.getInstance().getOnboardingLoadCallback();
-        if (callback != null) {
-            callback.onboardingLoadError(StringsUtils.getNonNull(feed), message);
-        }
-    }
-
-
     /**
      * Function for loading onboarding stories with custom tags
      *
      * @param tags         (tags)
-     * @param outerContext (outerContext) any type of context (preferably - same as for {@link InAppStoryManager}
+     * @param outerContext (outerContext) any type of context (preferably - activity)
      * @param manager      (manager) {@link AppearanceManager} for reader. May be null
      */
     public void showOnboardingStories(String feed, List<String> tags, Context outerContext, AppearanceManager manager) {
-        if (feed == null || feed.isEmpty()) feed = ONBOARDING_FEED;
-        showOnboardingStoriesInner(null, feed, tags, outerContext, manager);
+        core.onboardingsAPI().show(outerContext, feed, manager, tags, 1000);
     }
 
 
     /**
      * function for loading onboarding stories with default tags (set in InAppStoryManager.Builder)
      *
-     * @param context (context) any type of context (preferably - same as for {@link InAppStoryManager}
+     * @param outerContext (outerContext) any type of context (preferably - activity)
      * @param manager (manager) {@link AppearanceManager} for reader. May be null
      */
-    public void showOnboardingStories(String feed, Context context, final AppearanceManager manager) {
-        if (feed == null || feed.isEmpty()) feed = ONBOARDING_FEED;
-        showOnboardingStories(feed, getTags(), context, manager);
+    public void showOnboardingStories(String feed, Context outerContext, final AppearanceManager manager) {
+        core.onboardingsAPI().show(outerContext, feed, manager, null, 1000);
     }
 
 
@@ -1781,45 +1571,43 @@ public class InAppStoryManager {
      * Function for loading onboarding stories with custom tags
      *
      * @param tags         (tags)
-     * @param outerContext (outerContext) any type of context (preferably - same as for {@link InAppStoryManager}
+     * @param outerContext (outerContext) any type of context (preferably - activity)
      * @param manager      (manager) {@link AppearanceManager} for reader. May be null
      */
     public void showOnboardingStories(List<String> tags, Context outerContext, AppearanceManager manager) {
-        showOnboardingStoriesInner(null, ONBOARDING_FEED, tags, outerContext, manager);
+        core.onboardingsAPI().show(outerContext, null, manager, tags, 1000);
     }
 
     /**
      * function for loading onboarding stories with default tags (set in InAppStoryManager.Builder)
      *
-     * @param context (context) any type of context (preferably - same as for {@link InAppStoryManager}
+     * @param outerContext (outerContext) any type of context (preferably - activity)
      * @param manager (manager) {@link AppearanceManager} for reader. May be null
      */
-    public void showOnboardingStories(Context context, final AppearanceManager manager) {
-        showOnboardingStories(ONBOARDING_FEED, getTags(), context, manager);
+    public void showOnboardingStories(Context outerContext, final AppearanceManager manager) {
+        core.onboardingsAPI().show(outerContext, null, manager, null, 1000);
     }
 
     /**
      * Function for loading onboarding stories with custom tags
      *
      * @param tags         (tags)
-     * @param outerContext (outerContext) any type of context (preferably - same as for {@link InAppStoryManager}
+     * @param outerContext (outerContext) any type of context (preferably - activity)
      * @param manager      (manager) {@link AppearanceManager} for reader. May be null
      */
     public void showOnboardingStories(int limit, String feed, List<String> tags, Context outerContext, AppearanceManager manager) {
-        if (feed == null || feed.isEmpty()) feed = ONBOARDING_FEED;
-        showOnboardingStoriesInner(limit, feed, tags, outerContext, manager);
+        core.onboardingsAPI().show(outerContext, feed, manager, tags, limit);
     }
 
 
     /**
      * function for loading onboarding stories with default tags (set in InAppStoryManager.Builder)
      *
-     * @param context (context) any type of context (preferably - same as for {@link InAppStoryManager}
+     * @param outerContext (outerContext) any type of context (preferably - activity)
      * @param manager (manager) {@link AppearanceManager} for reader. May be null
      */
-    public void showOnboardingStories(int limit, String feed, Context context, final AppearanceManager manager) {
-        if (feed == null || feed.isEmpty()) feed = ONBOARDING_FEED;
-        showOnboardingStories(limit, feed, getTags(), context, manager);
+    public void showOnboardingStories(int limit, String feed, Context outerContext, final AppearanceManager manager) {
+        core.onboardingsAPI().show(outerContext, feed, manager, null, limit);
     }
 
 
@@ -1827,21 +1615,21 @@ public class InAppStoryManager {
      * Function for loading onboarding stories with custom tags
      *
      * @param tags         (tags)
-     * @param outerContext (outerContext) any type of context (preferably - same as for {@link InAppStoryManager}
+     * @param outerContext (outerContext) any type of context (preferably - activity)
      * @param manager      (manager) {@link AppearanceManager} for reader. May be null
      */
     public void showOnboardingStories(int limit, List<String> tags, Context outerContext, AppearanceManager manager) {
-        showOnboardingStoriesInner(limit, ONBOARDING_FEED, tags, outerContext, manager);
+        core.onboardingsAPI().show(outerContext, null, manager, tags, limit);
     }
 
     /**
      * function for loading onboarding stories with default tags (set in InAppStoryManager.Builder)
      *
-     * @param context (context) any type of context (preferably - same as for {@link InAppStoryManager}
+     * @param outerContext (outerContext) any type of context (preferably - activity)
      * @param manager (manager) {@link AppearanceManager} for reader. May be null
      */
-    public void showOnboardingStories(int limit, Context context, final AppearanceManager manager) {
-        showOnboardingStories(limit, ONBOARDING_FEED, getTags(), context, manager);
+    public void showOnboardingStories(int limit, Context outerContext, final AppearanceManager manager) {
+        core.onboardingsAPI().show(outerContext, null, manager, null, limit);
     }
 
     public boolean isSandbox() {

@@ -3,8 +3,13 @@ package com.inappstory.sdk.stories.cache;
 import static com.inappstory.sdk.stories.cache.StoryDownloadManager.EXPAND_STRING;
 
 
+import androidx.annotation.NonNull;
+
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.api.IASCallbackType;
+import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.NetworkClient;
@@ -12,16 +17,14 @@ import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.network.callbacks.SimpleApiCallback;
 import com.inappstory.sdk.network.models.Response;
 import com.inappstory.sdk.stories.api.models.Feed;
-import com.inappstory.sdk.stories.api.models.Session;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.StoryListType;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadFeedCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadListCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
-import com.inappstory.sdk.stories.callbacks.CallbackManager;
+import com.inappstory.sdk.stories.outercallbacks.common.errors.ErrorCallback;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.utils.LoopedExecutor;
-import com.inappstory.sdk.stories.utils.SessionManager;
 import com.inappstory.sdk.utils.StringsUtils;
 
 import java.lang.reflect.Type;
@@ -31,7 +34,14 @@ import java.util.List;
 import java.util.Objects;
 
 class StoryDownloader {
-    StoryDownloader(DownloadStoryCallback callback, StoryDownloadManager manager) {
+    private final @NonNull IASCore core;
+
+    StoryDownloader(
+            @NonNull IASCore core,
+            DownloadStoryCallback callback,
+            StoryDownloadManager manager
+    ) {
+        this.core = core;
         this.callback = callback;
         this.manager = manager;
     }
@@ -181,9 +191,14 @@ class StoryDownloader {
 
 
     private void loadStoryError(final StoryTaskData key) {
-        if (CallbackManager.getInstance().getErrorCallback() != null) {
-            CallbackManager.getInstance().getErrorCallback().cacheError();
-        }
+        core.callbacksAPI().useCallback(IASCallbackType.ERROR,
+                new UseIASCallback<ErrorCallback>() {
+                    @Override
+                    public void use(@NonNull ErrorCallback callback) {
+                        callback.cacheError();
+                    }
+                });
+
         synchronized (storyTasksLock) {
             if (storyTasks != null)
                 storyTasks.remove(key);
@@ -227,18 +242,17 @@ class StoryDownloader {
             if (service.getSession().getSessionId().isEmpty()) {
                 if (!isRefreshing) {
                     isRefreshing = true;
-                    if (SessionManager.getInstance() != null)
-                        SessionManager.getInstance().openSession(new OpenSessionCallback() {
-                            @Override
-                            public void onSuccess(String sessionId) {
-                                isRefreshing = false;
-                            }
+                    core.sessionManager().openSession(new OpenSessionCallback() {
+                        @Override
+                        public void onSuccess(String sessionId) {
+                            isRefreshing = false;
+                        }
 
-                            @Override
-                            public void onError() {
-                                loadStoryError(key);
-                            }
-                        });
+                        @Override
+                        public void onError() {
+                            loadStoryError(key);
+                        }
+                    });
                 }
                 loopedExecutor.freeExecutor();
                 return;
@@ -328,10 +342,16 @@ class StoryDownloader {
     }
 
 
-    public static void generateCommonLoadListError(String feed) {
-        if (CallbackManager.getInstance().getErrorCallback() != null) {
-            CallbackManager.getInstance().getErrorCallback().loadListError(StringsUtils.getNonNull(feed));
-        }
+    public void generateCommonLoadListError(final String feed) {
+        core.callbacksAPI().useCallback(
+                IASCallbackType.ERROR,
+                new UseIASCallback<ErrorCallback>() {
+                    @Override
+                    public void use(@NonNull ErrorCallback callback) {
+                        callback.loadListError(StringsUtils.getNonNull(feed));
+                    }
+                }
+        );
     }
 
     private static final String UGC_FEED = "UGC";
@@ -344,63 +364,58 @@ class StoryDownloader {
             callback.onError("");
             return;
         }
-        if (service.isConnected()) {
-            SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
-                @Override
-                public void onSuccess(final String sessionId) {
-                    final String loadStoriesUID = ProfilingManager.getInstance().addTask("api_ugc_story_list");
-                    networkClient.enqueue(
-                            networkClient.getApi().getUgcStories(
-                                    payload,
-                                    null,
-                                    "slides_count"
-                            ),
-                            new NetworkCallback<List<Story>>() {
-                                @Override
-                                public void onSuccess(List<Story> response) {
-                                    if (response == null) {
-                                        generateCommonLoadListError(UGC_FEED);
-                                        callback.onError("");
-                                    } else {
-                                        ProfilingManager.getInstance().setReady(loadStoriesUID);
-                                        callback.onSuccess(response);
-                                    }
-                                }
-
-                                @Override
-                                public Type getType() {
-                                    return new StoryListType();
-                                }
-
-                                @Override
-                                public void errorDefault(String message) {
-                                    ProfilingManager.getInstance().setReady(loadStoriesUID);
+        core.sessionManager().useOrOpenSession(new OpenSessionCallback() {
+            @Override
+            public void onSuccess(final String sessionId) {
+                final String loadStoriesUID = ProfilingManager.getInstance().addTask("api_ugc_story_list");
+                networkClient.enqueue(
+                        networkClient.getApi().getUgcStories(
+                                payload,
+                                null,
+                                "slides_count"
+                        ),
+                        new NetworkCallback<List<Story>>() {
+                            @Override
+                            public void onSuccess(List<Story> response) {
+                                if (response == null) {
                                     generateCommonLoadListError(UGC_FEED);
-                                    callback.onError(message);
-                                }
-
-
-                                @Override
-                                public void error424(String message) {
+                                    callback.onError("");
+                                } else {
                                     ProfilingManager.getInstance().setReady(loadStoriesUID);
-                                    generateCommonLoadListError(null);
-                                    callback.onError(message);
-                                    closeSessionIf424(sessionId);
-                                    loadUgcStoryList(callback, payload);
+                                    callback.onSuccess(response);
                                 }
-                            });
-                }
+                            }
 
-                @Override
-                public void onError() {
-                    generateCommonLoadListError(UGC_FEED);
-                    callback.onError("");
-                }
-            });
-        } else {
-            generateCommonLoadListError(UGC_FEED);
-            callback.onError("");
-        }
+                            @Override
+                            public Type getType() {
+                                return new StoryListType();
+                            }
+
+                            @Override
+                            public void errorDefault(String message) {
+                                ProfilingManager.getInstance().setReady(loadStoriesUID);
+                                generateCommonLoadListError(UGC_FEED);
+                                callback.onError(message);
+                            }
+
+
+                            @Override
+                            public void error424(String message) {
+                                ProfilingManager.getInstance().setReady(loadStoriesUID);
+                                generateCommonLoadListError(null);
+                                callback.onError(message);
+                                closeSessionIf424(sessionId);
+                                loadUgcStoryList(callback, payload);
+                            }
+                        });
+            }
+
+            @Override
+            public void onError() {
+                generateCommonLoadListError(UGC_FEED);
+                callback.onError("");
+            }
+        });
     }
 
     void loadStoryListByFeed(final String feed, final SimpleApiCallback<List<Story>> callback, final boolean retry) {
@@ -412,7 +427,7 @@ class StoryDownloader {
             return;
         }
         if (service.isConnected()) {
-            SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
+            core.sessionManager().useOrOpenSession(new OpenSessionCallback() {
                 @Override
                 public void onSuccess(final String sessionId) {
                     final String loadStoriesUID = ProfilingManager.getInstance().addTask("api_story_list");
@@ -478,61 +493,56 @@ class StoryDownloader {
             callback.onError("");
             return;
         }
-        if (service.isConnected()) {
-            SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
-                @Override
-                public void onSuccess(final String sessionId) {
-                    final String loadStoriesUID = ProfilingManager.getInstance().addTask(isFavorite
-                            ? "api_favorite_list" : "api_story_list");
-                    networkClient.enqueue(
-                            networkClient.getApi().getStories(
-                                    ApiSettings.getInstance().getTestKey(),
-                                    isFavorite ? 1 : 0,
-                                    isFavorite ? null : service.getTagsString(),
-                                    null
-                            ),
-                            new LoadListCallback() {
-                                @Override
-                                public void onSuccess(List<Story> response) {
-                                    if (response == null) {
-                                        generateCommonLoadListError(null);
-                                        callback.onError("");
-                                    } else {
-                                        ProfilingManager.getInstance().setReady(loadStoriesUID);
-                                        callback.onSuccess(response);
-                                    }
-                                }
-
-                                @Override
-                                public void errorDefault(String message) {
-                                    ProfilingManager.getInstance().setReady(loadStoriesUID);
+        core.sessionManager().useOrOpenSession(new OpenSessionCallback() {
+            @Override
+            public void onSuccess(final String sessionId) {
+                final String loadStoriesUID = ProfilingManager.getInstance().addTask(isFavorite
+                        ? "api_favorite_list" : "api_story_list");
+                networkClient.enqueue(
+                        networkClient.getApi().getStories(
+                                ApiSettings.getInstance().getTestKey(),
+                                isFavorite ? 1 : 0,
+                                isFavorite ? null : service.getTagsString(),
+                                null
+                        ),
+                        new LoadListCallback() {
+                            @Override
+                            public void onSuccess(List<Story> response) {
+                                if (response == null) {
                                     generateCommonLoadListError(null);
-                                    callback.onError(message);
-                                }
-
-
-                                @Override
-                                public void error424(String message) {
+                                    callback.onError("");
+                                } else {
                                     ProfilingManager.getInstance().setReady(loadStoriesUID);
-                                    generateCommonLoadListError(null);
-                                    callback.onError(message);
-                                    closeSessionIf424(sessionId);
-                                    if (retry)
-                                        loadStoryList(callback, isFavorite, false);
+                                    callback.onSuccess(response);
                                 }
-                            });
-                }
+                            }
 
-                @Override
-                public void onError() {
-                    generateCommonLoadListError(null);
-                    callback.onError("");
-                }
-            });
-        } else {
-            generateCommonLoadListError(null);
-            callback.onError("");
-        }
+                            @Override
+                            public void errorDefault(String message) {
+                                ProfilingManager.getInstance().setReady(loadStoriesUID);
+                                generateCommonLoadListError(null);
+                                callback.onError(message);
+                            }
+
+
+                            @Override
+                            public void error424(String message) {
+                                ProfilingManager.getInstance().setReady(loadStoriesUID);
+                                generateCommonLoadListError(null);
+                                callback.onError(message);
+                                closeSessionIf424(sessionId);
+                                if (retry)
+                                    loadStoryList(callback, isFavorite, false);
+                            }
+                        });
+            }
+
+            @Override
+            public void onError() {
+                generateCommonLoadListError(null);
+                callback.onError("");
+            }
+        });
     }
 
     private void closeSessionIf424(String sessionId) {
@@ -540,7 +550,7 @@ class StoryDownloader {
         InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
         if (inAppStoryManager != null) {
             oldUserId = inAppStoryManager.getUserId();
-            SessionManager.getInstance().closeSession(
+            core.sessionManager().closeSession(
                     true,
                     false,
                     inAppStoryManager.getCurrentLocale(),

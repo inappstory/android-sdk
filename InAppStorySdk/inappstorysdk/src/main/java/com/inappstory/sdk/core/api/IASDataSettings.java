@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-public interface IASSettings {
+public interface IASDataSettings {
     void setUserId(String userId);
     void setLang(Locale lang);
     void setPlaceholders(@NonNull Map<String, String> newPlaceholders);

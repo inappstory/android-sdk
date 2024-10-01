@@ -31,13 +31,17 @@ import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.UseManagerInstanceCallback;
 import com.inappstory.sdk.UseServiceInstanceCallback;
+import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.UseIASCoreCallback;
+import com.inappstory.sdk.core.api.IASCallbackType;
+import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryScreen;
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenAppearance;
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenData;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.Story;
-import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.CloseReader;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.CloseStoryCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.statistic.GetOldStatisticManagerCallback;
@@ -65,60 +69,60 @@ public class StoriesDialogFragment extends DialogFragment implements IASBackPres
 
     @Override
     public void onDismiss(DialogInterface dialogInterface) {
-        InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
-            public void use(@NonNull InAppStoryManager manager) throws Exception {
-                manager.getScreensHolder().getGameScreenHolder().forceCloseScreen(null);
-            }
-        });
-        OldStatisticManager.useInstance(
-                launchData.getSessionId(),
-                new GetOldStatisticManagerCallback() {
-                    @Override
-                    public void get(@NonNull OldStatisticManager manager) {
-                        manager.sendStatistic();
+            public void use(@NonNull IASCore core) {
+                core.screensManager()
+                        .getGameScreenHolder().forceCloseScreen(null);
+                OldStatisticManager.useInstance(
+                        launchData.getSessionId(),
+                        new GetOldStatisticManagerCallback() {
+                            @Override
+                            public void get(@NonNull OldStatisticManager manager) {
+                                manager.sendStatistic();
+                            }
+                        }
+                );
+                InAppStoryService service = InAppStoryService.getInstance();
+                if (service != null) {
+                    final Story story = service.getStoryDownloadManager()
+                            .getStoryById(service.getCurrentId(), type);
+
+                    if (story != null) {
+                        core.callbacksAPI().useCallback(
+                                IASCallbackType.CLOSE_STORY,
+                                new UseIASCallback<CloseStoryCallback>() {
+                                    @Override
+                                    public void use(@NonNull CloseStoryCallback callback) {
+                                        callback.closeStory(
+                                                new SlideData(
+                                                        StoryData.getStoryData(
+                                                                story,
+                                                                launchData.getFeed(),
+                                                                launchData.getSourceType(),
+                                                                type
+                                                        ),
+                                                        story.lastIndex,
+                                                        story.getSlideEventPayload(story.lastIndex)
+                                                ),
+                                                CloseReader.CLICK
+                                        );
+                                    }
+                                });
+                        String cause = StatisticManager.CLICK;
+                        StatisticManager.getInstance().sendCloseStory(story.id, cause, story.lastIndex,
+                                story.getSlidesCount(),
+                                launchData.getFeed());
                     }
-                }
-        );
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service != null) {
-            Story story = service.getStoryDownloadManager()
-                    .getStoryById(service.getCurrentId(), type);
 
-            if (story != null) {
-                if (CallbackManager.getInstance().getCloseStoryCallback() != null) {
-                    CallbackManager.getInstance().getCloseStoryCallback().closeStory(
-                            new SlideData(
-                                    StoryData.getStoryData(
-                                            story,
-                                            launchData.getFeed(),
-                                            launchData.getSourceType(),
-                                            type
-                                    ),
-                                    story.lastIndex,
-                                    story.getSlideEventPayload(story.lastIndex)
-                            ),
-                            CloseReader.CLICK
-                    );
                 }
-                String cause = StatisticManager.CLICK;
-                StatisticManager.getInstance().sendCloseStory(story.id, cause, story.lastIndex,
-                        story.getSlidesCount(),
-                        launchData.getFeed());
-            }
-
-        }
-        cleanReader();
-        super.onDismiss(dialogInterface);
-        InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
-            @Override
-            public void use(@NonNull InAppStoryManager manager) throws Exception {
-                manager
-                        .getScreensHolder()
-                        .getStoryScreenHolder()
+                cleanReader();
+                core.screensManager().getStoryScreenHolder()
                         .unsubscribeScreen(StoriesDialogFragment.this);
             }
         });
+
+        super.onDismiss(dialogInterface);
     }
 
     boolean cleaned = false;

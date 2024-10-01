@@ -8,11 +8,23 @@ import android.os.Vibrator;
 import android.util.Log;
 import android.view.View;
 
+import androidx.annotation.NonNull;
+
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.UseIASCoreCallback;
+import com.inappstory.sdk.core.api.IASCallbackType;
+import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.ui.screens.ShareProcessHandler;
+import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenData;
+import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenStrategy;
+import com.inappstory.sdk.core.utils.ConnectionCheck;
+import com.inappstory.sdk.core.utils.ConnectionCheckCallback;
 import com.inappstory.sdk.game.reader.GameStoryData;
 import com.inappstory.sdk.stories.api.models.UpdateTimelineData;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.ui.widgets.LoadProgressBar;
 import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.network.ApiSettings;
@@ -24,7 +36,6 @@ import com.inappstory.sdk.network.jsapiclient.JsApiResponseCallback;
 import com.inappstory.sdk.network.models.Response;
 import com.inappstory.sdk.share.IShareCompleteListener;
 import com.inappstory.sdk.stories.api.models.Story;
-import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ShowSlideCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
@@ -107,6 +118,7 @@ public class StoriesViewManager {
 
     public void sendApiRequest(String data) {
         new JsApiClient(
+                core,
                 storiesView.getActivityContext(),
                 ApiSettings.getInstance().getHost()
         ).sendApiRequest(data, new JsApiResponseCallback() {
@@ -153,9 +165,11 @@ public class StoriesViewManager {
     }
 
     Context context;
+    private final IASCore core;
 
-    public StoriesViewManager(Context context) {
+    public StoriesViewManager(Context context, IASCore core) {
         this.context = context;
+        this.core = core;
     }
 
     void innerLoad(Story story) {
@@ -279,7 +293,7 @@ public class StoriesViewManager {
         if (slideInCache == 1) {
             slideInCache(service, story, index);
         } else {
-            slideNotInCache(service, index);
+            slideNotInCache(index);
         }
     }
 
@@ -290,21 +304,29 @@ public class StoriesViewManager {
             innerLoad(story);
             pageManager.slideLoadedInCache(index, true);
         } else {
-            slideNotInCache(service, index);
+            slideNotInCache(index);
         }
     }
 
-    private void slideNotInCache(InAppStoryService service, int index) {
+    private void slideNotInCache(int index) {
         if (slideInCache == -1) {
             pageManager.slideLoadError(index);
         } else {
-            if (!service.isConnected()) {
-                if (CallbackManager.getInstance().getErrorCallback() != null) {
-                    CallbackManager.getInstance().getErrorCallback().noConnection();
+            InAppStoryManager.useCore(new UseIASCoreCallback() {
+                @Override
+                public void use(@NonNull IASCore core) {
+                    new ConnectionCheck().check(
+                            context,
+                            new ConnectionCheckCallback(core) {
+                                @Override
+                                public void success() {
+                                    pageManager.storyLoadStart();
+                                }
+                            }
+                    );
                 }
-                return;
-            }
-            pageManager.storyLoadStart();
+            });
+
         }
     }
 
@@ -425,7 +447,7 @@ public class StoriesViewManager {
 
     public void share(String id, String data) {
         InAppStoryService service = InAppStoryService.getInstance();
-        ShareProcessHandler shareProcessHandler = ShareProcessHandler.getInstance();
+        ShareProcessHandler shareProcessHandler = core.screensManager().getShareProcessHandler();
         if (shareProcessHandler == null || service == null || shareProcessHandler.isShareProcess())
             return;
         shareProcessHandler.isShareProcess(true);
@@ -482,7 +504,6 @@ public class StoriesViewManager {
 
 
     public void openGameReaderFromGameCenter(String gameId) {
-        InAppStoryService service = InAppStoryService.getInstance();
         final StoriesContentFragment storiesContentFragment =
                 (StoriesContentFragment) pageManager.host.getParentFragment();
         String uniqueId = null;
@@ -490,15 +511,18 @@ public class StoriesViewManager {
             uniqueId = storiesContentFragment.getReaderUniqueId();
             storiesContentFragment.observeGameReader();
         }
-        if (service != null && context != null) {
-            service.openGameReaderWithGC(
+        Context context = this.context;
+        if (context != null)
+            core.screensManager().openScreen(
                     context,
-                    getGameStoryData(),
-                    gameId,
-                    uniqueId,
-                    true
+                    new LaunchGameScreenStrategy(core, true)
+                            .data(new LaunchGameScreenData(
+                                    uniqueId,
+                                    getGameStoryData(),
+                                    gameId
+                            ))
             );
-        }
+
     }
 
 
@@ -553,12 +577,23 @@ public class StoriesViewManager {
     }
 
     public void sendShowSlideEvents() {
-        Story story = InAppStoryService.getInstance().getStoryDownloadManager().getStoryById(storyId, pageManager.getStoryType());
+        final Story story = InAppStoryService.getInstance().getStoryDownloadManager()
+                .getStoryById(storyId, pageManager.getStoryType());
         if (story != null) {
-            ShowSlideCallback showSlideCallback = CallbackManager.getInstance().getShowSlideCallback();
-            if (showSlideCallback != null) {
-                showSlideCallback.showSlide(pageManager.getSlideData(story));
-            }
+            InAppStoryManager.useCore(new UseIASCoreCallback() {
+                @Override
+                public void use(@NonNull IASCore core) {
+                    core.callbacksAPI().useCallback(
+                            IASCallbackType.SHOW_SLIDE,
+                            new UseIASCallback<ShowSlideCallback>() {
+                                @Override
+                                public void use(@NonNull ShowSlideCallback callback) {
+                                    callback.showSlide(pageManager.getSlideData(story));
+                                }
+                            }
+                    );
+                }
+            });
         }
     }
 

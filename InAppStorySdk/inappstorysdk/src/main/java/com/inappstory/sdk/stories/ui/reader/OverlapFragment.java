@@ -13,10 +13,13 @@ import androidx.fragment.app.Fragment;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.UseIASCoreCallback;
+import com.inappstory.sdk.core.api.IASCallbackType;
+import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.ui.screens.ShareProcessHandler;
 import com.inappstory.sdk.share.IASShareData;
 import com.inappstory.sdk.share.ShareListener;
-import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.callbacks.OverlappingContainerActions;
 import com.inappstory.sdk.stories.callbacks.ShareCallback;
 import com.inappstory.sdk.stories.ui.OverlapFragmentObserver;
@@ -33,32 +36,37 @@ public class OverlapFragment extends Fragment implements IASBackPressHandler {
     }
 
     FrameLayout readerTopContainer;
-    ShareCallback callback = CallbackManager.getInstance().getShareCallback();
 
 
     OverlappingContainerActions shareActions = new OverlappingContainerActions() {
         @Override
-        public void closeView(HashMap<String, Object> data) {
-            ShareProcessHandler shareProcessHandler =
-                    ShareProcessHandler.getInstance();
-            if (shareProcessHandler == null) return;
-            boolean shared = false;
-            if (data.containsKey("shared")) shared = (boolean) data.get("shared");
-            OverlapFragmentObserver observer = shareProcessHandler.overlapFragmentObserver();
-            if (observer != null) observer.closeView(data);
-            shareProcessHandler.overlapFragmentObserver(null);
-            try {
-                getParentFragmentManager().popBackStack();
-            } catch (IllegalStateException e) {
-                shareProcessHandler.setTempShareStatus(shared);
-            }
-            ShareListener shareListener = shareProcessHandler.shareListener();
-            if (shareListener != null) {
-                if (shared)
-                    shareListener.onSuccess(true);
-                else
-                    shareListener.onCancel();
-            }
+        public void closeView(final HashMap<String, Object> data) {
+            InAppStoryManager.useCore(new UseIASCoreCallback() {
+                @Override
+                public void use(@NonNull IASCore core) {
+                    ShareProcessHandler shareProcessHandler =
+                            core.screensManager().getShareProcessHandler();
+                    if (shareProcessHandler == null) return;
+                    boolean shared = false;
+                    if (data.containsKey("shared")) shared = (boolean) data.get("shared");
+                    OverlapFragmentObserver observer = shareProcessHandler.overlapFragmentObserver();
+                    if (observer != null) observer.closeView(data);
+                    shareProcessHandler.overlapFragmentObserver(null);
+                    try {
+                        getParentFragmentManager().popBackStack();
+                    } catch (IllegalStateException e) {
+                        shareProcessHandler.setTempShareStatus(shared);
+                    }
+                    ShareListener shareListener = shareProcessHandler.shareListener();
+                    if (shareListener != null) {
+                        if (shared)
+                            shareListener.onSuccess(true);
+                        else
+                            shareListener.onCancel();
+                    }
+                }
+            });
+
         }
     };
 
@@ -67,29 +75,36 @@ public class OverlapFragment extends Fragment implements IASBackPressHandler {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        InAppStoryManager manager = InAppStoryManager.getInstance();
-        if (manager == null) return;
-        OverlapFragmentObserver observer =
-                manager
-                        .getScreensHolder()
-                        .getShareProcessHandler()
-                        .overlapFragmentObserver();
-        if (observer != null) observer.viewIsOpened();
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                OverlapFragmentObserver observer =
+                        core
+                                .screensManager()
+                                .getShareProcessHandler()
+                                .overlapFragmentObserver();
+                if (observer != null) observer.viewIsOpened();
+            }
+        });
     }
 
 
     @Override
     public void onResume() {
         super.onResume();
-        InAppStoryManager manager = InAppStoryManager.getInstance();
-        if (manager == null) return;
-        Boolean shared = manager
-                .getScreensHolder()
-                .getShareProcessHandler()
-                .getTempShareStatus();
-        if (shared != null) {
-            getParentFragmentManager().popBackStack();
-        }
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                Boolean shared = core
+                        .screensManager()
+                        .getShareProcessHandler()
+                        .getTempShareStatus();
+                if (shared != null) {
+                    getParentFragmentManager().popBackStack();
+                }
+            }
+        });
+
     }
 
     @Override
@@ -97,28 +112,39 @@ public class OverlapFragment extends Fragment implements IASBackPressHandler {
         super.onViewCreated(view, savedInstanceState);
 
         readerTopContainer = view.findViewById(R.id.ias_stories_top_container);
-        Context context = getContext();
-        if (callback != null && context != null) {
-            HashMap<String, Object> content = new HashMap<>();
-            content.put("slidePayload", getArguments().getString("slidePayload"));
-            content.put("storyId", getArguments().getInt("storyId"));
-            content.put("slideIndex", getArguments().getInt("slideIndex"));
-            content.put("shareData",
-                    (IASShareData) getArguments().getSerializable("shareData")
-            );
-            readerTopContainer.removeAllViews();
-            View shareView = callback.getView(context, content, shareActions);
-            shareViewRef = new WeakReference<>(shareView);
-            shareView.setLayoutParams(
-                    new FrameLayout.LayoutParams(
-                            ViewGroup.LayoutParams.MATCH_PARENT,
-                            ViewGroup.LayoutParams.MATCH_PARENT
-                    )
-            );
-            readerTopContainer.addView(shareView);
-            readerTopContainer.setVisibility(View.VISIBLE);
-            callback.viewIsVisible(shareView);
-        }
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.callbacksAPI().useCallback(IASCallbackType.SHARE_ADDITIONAL,
+                        new UseIASCallback<ShareCallback>() {
+                            @Override
+                            public void use(@NonNull ShareCallback callback) {
+                                Context context = getContext();
+                                if (context == null) return;
+                                HashMap<String, Object> content = new HashMap<>();
+                                content.put("slidePayload", getArguments().getString("slidePayload"));
+                                content.put("storyId", getArguments().getInt("storyId"));
+                                content.put("slideIndex", getArguments().getInt("slideIndex"));
+                                content.put("shareData",
+                                        (IASShareData) getArguments().getSerializable("shareData")
+                                );
+                                readerTopContainer.removeAllViews();
+                                View shareView = callback.getView(context, content, shareActions);
+                                shareViewRef = new WeakReference<>(shareView);
+                                shareView.setLayoutParams(
+                                        new FrameLayout.LayoutParams(
+                                                ViewGroup.LayoutParams.MATCH_PARENT,
+                                                ViewGroup.LayoutParams.MATCH_PARENT
+                                        )
+                                );
+                                readerTopContainer.addView(shareView);
+                                readerTopContainer.setVisibility(View.VISIBLE);
+                                callback.viewIsVisible(shareView);
+                            }
+                        }
+                );
+            }
+        });
     }
 
     private WeakReference<View> shareViewRef;
@@ -126,9 +152,28 @@ public class OverlapFragment extends Fragment implements IASBackPressHandler {
     @Override
     public boolean onBackPressed() {
         if (shareViewRef != null) {
-            View shareView = shareViewRef.get();
+            final View shareView = shareViewRef.get();
             if (shareView != null) {
-                return callback.onBackPress(shareView, shareActions);
+                final boolean[] res = {true};
+                InAppStoryManager.useCore(new UseIASCoreCallback() {
+                    @Override
+                    public void use(@NonNull IASCore core) {
+                        core.callbacksAPI().useCallback(IASCallbackType.SHARE_ADDITIONAL,
+                                new UseIASCallback<ShareCallback>() {
+                                    @Override
+                                    public void use(@NonNull ShareCallback callback) {
+                                        res[0] = callback.onBackPress(shareView, shareActions);
+                                    }
+
+                                    @Override
+                                    public void onDefault() {
+                                        getParentFragmentManager().popBackStack();
+                                    }
+                                }
+                        );
+                    }
+                });
+                return res[0];
             }
         }
         getParentFragmentManager().popBackStack();

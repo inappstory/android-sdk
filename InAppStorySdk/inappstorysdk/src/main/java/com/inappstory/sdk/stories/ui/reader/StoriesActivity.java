@@ -30,13 +30,18 @@ import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.UseManagerInstanceCallback;
 import com.inappstory.sdk.UseServiceInstanceCallback;
+import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.UseIASCoreCallback;
+import com.inappstory.sdk.core.api.IASCallbackType;
+import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.ui.screens.ScreenType;
 import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryScreen;
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenAppearance;
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenData;
+import com.inappstory.sdk.core.utils.CallbackTypesConverter;
 import com.inappstory.sdk.stories.api.models.Story;
-import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoryItemCoordinates;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.CloseStoryCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
@@ -66,19 +71,20 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryScree
         super.onPause();
         unsubscribeClicks();
         if (isFinishing()) {
-            InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+            InAppStoryManager.useCore(new UseIASCoreCallback() {
                 @Override
-                public void use(@NonNull InAppStoryManager manager) throws Exception {
-                    manager
-                            .getScreensLauncher()
+                public void use(@NonNull IASCore core) {
+                    core
+                            .screensManager()
                             .getOpenReader(ScreenType.STORY)
                             .onRestoreStatusBar(StoriesActivity.this);
-                    manager
-                            .getScreensHolder()
+                    core
+                            .screensManager()
                             .getGameScreenHolder()
                             .forceCloseScreen(null);
                 }
             });
+
             OldStatisticManager.useInstance(
                     launchData.getSessionId(),
                     new GetOldStatisticManagerCallback() {
@@ -114,10 +120,13 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryScree
 
     @Override
     public void finish() {
-        InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
-            public void use(@NonNull InAppStoryManager manager) throws Exception {
-                manager.getScreensHolder().getGameScreenHolder().forceCloseScreen(null);
+            public void use(@NonNull IASCore core) {
+                core
+                        .screensManager()
+                        .getGameScreenHolder()
+                        .forceCloseScreen(null);
             }
         });
         if (animateFirst &&
@@ -139,15 +148,15 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryScree
     protected void onResume() {
         super.onResume();
         subscribeClicks();
-        InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
-            public void use(@NonNull InAppStoryManager manager) throws Exception {
-                manager
-                        .getScreensLauncher()
+            public void use(@NonNull IASCore core) {
+                core.screensManager()
                         .getOpenReader(ScreenType.STORY)
                         .onHideStatusBar(StoriesActivity.this);
             }
         });
+
     }
 
     public void startAnim(final Bundle savedInstanceState, final Rect readerContainer) {
@@ -181,16 +190,18 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryScree
             case AppearanceManager.POPUP:
                 return new PopupReaderAnimation(animatedContainer, screenSize.y, 0f).setAnimations(true);
             default:
-                StoryItemCoordinates coordinates = null;
-                InAppStoryManager manager = InAppStoryManager.getInstance();
-                if (manager != null) {
-                    coordinates = manager.getScreensHolder().getStoryScreenHolder().coordinates();
-                }
+                final StoryItemCoordinates[] coordinates = {null};
+                InAppStoryManager.useCore(new UseIASCoreCallback() {
+                    @Override
+                    public void use(@NonNull IASCore core) {
+                        coordinates[0] = core.screensManager().getStoryScreenHolder().coordinates();
+                    }
+                });
                 float pivotX = -screenSize.x / 2f;
                 float pivotY = -screenSize.y / 2f;
-                if (coordinates != null) {
-                    pivotX += coordinates.x();
-                    pivotY += coordinates.y();
+                if (coordinates[0] != null) {
+                    pivotX += coordinates[0].x();
+                    pivotY += coordinates[0].y();
                     return new ZoomReaderFromCellAnimation(animatedContainer,
                             pivotX,
                             pivotY
@@ -218,16 +229,18 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryScree
                         screenSize.y
                 ).setAnimations(false);
             default:
-                StoryItemCoordinates coordinates = null;
-                InAppStoryManager manager = InAppStoryManager.getInstance();
-                if (manager != null) {
-                    coordinates = manager.getScreensHolder().getStoryScreenHolder().coordinates();
-                }
+                final StoryItemCoordinates[] coordinates = {null};
+                InAppStoryManager.useCore(new UseIASCoreCallback() {
+                    @Override
+                    public void use(@NonNull IASCore core) {
+                        coordinates[0] = core.screensManager().getStoryScreenHolder().coordinates();
+                    }
+                });
                 float pivotX = -screenSize.x / 2f;
                 float pivotY = -screenSize.y / 2f;
-                if (coordinates != null) {
-                    pivotX += coordinates.x();
-                    pivotY += coordinates.y();
+                if (coordinates[0] != null) {
+                    pivotX += coordinates[0].x();
+                    pivotY += coordinates[0].y();
                     return new ZoomReaderFromCellAnimation(animatedContainer,
                             pivotX,
                             pivotY
@@ -255,10 +268,10 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryScree
                         }
                     })
                     .start();
-            InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+            InAppStoryManager.useCore(new UseIASCoreCallback() {
                 @Override
-                public void use(@NonNull InAppStoryManager manager) throws Exception {
-                    manager.getScreensHolder().getStoryScreenHolder().clearCoordinates();
+                public void use(@NonNull IASCore core) {
+                    core.screensManager().getStoryScreenHolder().clearCoordinates();
                 }
             });
         } catch (Exception e) {
@@ -386,10 +399,10 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryScree
         int navColor = appearanceSettings.csNavBarColor();
         if (navColor != 0)
             getWindow().setNavigationBarColor(navColor);
-        InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
-            public void use(@NonNull InAppStoryManager manager) throws Exception {
-                manager.getScreensHolder().getStoryScreenHolder().subscribeScreen(StoriesActivity.this);
+            public void use(@NonNull IASCore core) {
+                core.screensManager().getStoryScreenHolder().subscribeScreen(StoriesActivity.this);
             }
         });
         View view = getCurrentFocus();
@@ -459,11 +472,11 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryScree
             forceFinish();
             return;
         }
-        InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
-            public void use(@NonNull InAppStoryManager manager) throws Exception {
-                manager
-                        .getScreensLauncher()
+            public void use(@NonNull IASCore core) {
+                core
+                        .screensManager()
                         .getOpenReader(ScreenType.STORY)
                         .onHideStatusBar(StoriesActivity.this);
             }
@@ -612,22 +625,32 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryScree
         }
     }
 
-    private void sendCloseStatistic(@NonNull Story story, int action) {
-        if (CallbackManager.getInstance().getCloseStoryCallback() != null) {
-            CallbackManager.getInstance().getCloseStoryCallback().closeStory(
-                    new SlideData(
-                            StoryData.getStoryData(
-                                    story,
-                                    launchData.getFeed(),
-                                    launchData.getSourceType(),
-                                    type
-                            ),
-                            story.lastIndex,
-                            story.getSlideEventPayload(story.lastIndex)
-                    ),
-                    CallbackManager.getInstance().getCloseTypeFromInt(action)
-            );
-        }
+    private void sendCloseStatistic(final @NonNull Story story, final int action) {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.callbacksAPI().useCallback(
+                        IASCallbackType.CLOSE_STORY,
+                        new UseIASCallback<CloseStoryCallback>() {
+                            @Override
+                            public void use(@NonNull CloseStoryCallback callback) {
+                                callback.closeStory(
+                                        new SlideData(
+                                                StoryData.getStoryData(
+                                                        story,
+                                                        launchData.getFeed(),
+                                                        launchData.getSourceType(),
+                                                        type
+                                                ),
+                                                story.lastIndex,
+                                                story.getSlideEventPayload(story.lastIndex)
+                                        ),
+                                        new CallbackTypesConverter().getCloseTypeFromInt(action)
+                                );
+                            }
+                        });
+            }
+        });
         String cause = StatisticManager.AUTO;
         switch (action) {
             case CloseStory.CLICK:
@@ -711,36 +734,33 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryScree
 
     @Override
     public void onDestroy() {
-        InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
-        if (inAppStoryManager != null) {
-            inAppStoryManager.getScreensHolder().getStoryScreenHolder().unsubscribeScreen(this);
-        }
-        if (!pauseDestroyed) {
-            InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
-                @Override
-                public void use(@NonNull InAppStoryManager manager) throws Exception {
-                    manager
-                            .getScreensLauncher()
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.screensManager()
+                        .getStoryScreenHolder()
+                        .unsubscribeScreen(StoriesActivity.this);
+                if (!pauseDestroyed) {
+                    core.screensManager()
                             .getOpenReader(ScreenType.STORY)
                             .onRestoreStatusBar(StoriesActivity.this);
+                    if (launchData != null) {
+                        OldStatisticManager.useInstance(
+                                launchData.getSessionId(),
+                                new GetOldStatisticManagerCallback() {
+                                    @Override
+                                    public void get(@NonNull OldStatisticManager manager) {
+                                        manager.sendStatistic();
+                                    }
+                                }
+                        );
+                    }
+                    cleanReader();
+                    System.gc();
                 }
-            });
-            if (launchData != null) {
-                OldStatisticManager.useInstance(
-                        launchData.getSessionId(),
-                        new GetOldStatisticManagerCallback() {
-                            @Override
-                            public void get(@NonNull OldStatisticManager manager) {
-                                manager.sendStatistic();
-                            }
-                        }
-                );
             }
-
-            cleanReader();
-            System.gc();
-            pauseDestroyed = true;
-        }
+        });
+        pauseDestroyed = true;
         super.onDestroy();
     }
 

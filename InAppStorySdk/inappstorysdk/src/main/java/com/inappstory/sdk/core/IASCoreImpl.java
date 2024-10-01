@@ -5,10 +5,11 @@ import com.inappstory.sdk.core.api.IASFavorites;
 import com.inappstory.sdk.core.api.IASGames;
 import com.inappstory.sdk.core.api.IASManager;
 import com.inappstory.sdk.core.api.IASOnboardings;
-import com.inappstory.sdk.core.api.IASSettings;
+import com.inappstory.sdk.core.api.IASDataSettings;
 import com.inappstory.sdk.core.api.IASSingleStory;
 import com.inappstory.sdk.core.api.IASStackFeed;
 import com.inappstory.sdk.core.api.IASStoryList;
+import com.inappstory.sdk.core.api.IASStoryListCache;
 import com.inappstory.sdk.core.api.impl.IASCallbacksImpl;
 import com.inappstory.sdk.core.api.impl.IASFavoritesImpl;
 import com.inappstory.sdk.core.api.impl.IASGamesImpl;
@@ -17,9 +18,11 @@ import com.inappstory.sdk.core.api.impl.IASOnboardingsImpl;
 import com.inappstory.sdk.core.api.impl.IASSettingsImpl;
 import com.inappstory.sdk.core.api.impl.IASSingleStoryImpl;
 import com.inappstory.sdk.core.api.impl.IASStackFeedImpl;
+import com.inappstory.sdk.core.api.impl.IASStoryListCacheImpl;
 import com.inappstory.sdk.core.dataholders.IStoriesListVMHolder;
 import com.inappstory.sdk.core.dataholders.StoriesListVMHolder;
 import com.inappstory.sdk.core.ui.screens.ScreensManager;
+import com.inappstory.sdk.stories.utils.SessionManager;
 
 public class IASCoreImpl implements IASCore {
     private static IASCoreImpl INSTANCE;
@@ -29,12 +32,14 @@ public class IASCoreImpl implements IASCore {
     private final IASGames games = new IASGamesImpl(this);
     private final IASManager manager = new IASManagerImpl(this);
     private final IASOnboardings onboardings = new IASOnboardingsImpl(this);
-    private final IASSettings settings = new IASSettingsImpl(this);
+    private final IASDataSettings settings = new IASSettingsImpl(this);
     private final IASSingleStory singleStory = new IASSingleStoryImpl(this);
     private final IASStackFeed stackFeed = new IASStackFeedImpl(this);
     private IASStoryList storyList;
     private final IStoriesListVMHolder storiesListVMHolder = new StoriesListVMHolder();
     private final ScreensManager screensManager = new ScreensManager();
+    private final SessionManager sessionManager = new SessionManager(this);
+    private final IASStoryListCache storyListCache = new IASStoryListCacheImpl(this);
 
 
     public IASCoreImpl() {
@@ -76,7 +81,7 @@ public class IASCoreImpl implements IASCore {
     }
 
     @Override
-    public IASSettings settingsAPI() {
+    public IASDataSettings settingsAPI() {
         return settings;
     }
 
@@ -101,7 +106,17 @@ public class IASCoreImpl implements IASCore {
     }
 
     @Override
+    public IASStoryListCache storyListCache() {
+        return storyListCache;
+    }
+
+    @Override
     public ScreensManager screensManager() {
         return screensManager;
+    }
+
+    @Override
+    public SessionManager sessionManager() {
+        return sessionManager;
     }
 }

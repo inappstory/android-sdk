@@ -10,10 +10,14 @@ import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.UseManagerInstanceCallback;
+import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.UseIASCoreCallback;
+import com.inappstory.sdk.core.ui.screens.storyreader.StoryScreenHolder;
 import com.inappstory.sdk.stories.cache.usecases.IGetStoryCoverCallback;
 import com.inappstory.sdk.stories.cache.usecases.StoryCoverUseCase;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoryItemCoordinates;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
+import com.inappstory.sdk.stories.ui.reader.ActiveStoryItem;
 import com.inappstory.sdk.stories.ui.views.IStoriesListItem;
 import com.inappstory.sdk.stories.ui.views.IStoriesListItemWithStoryData;
 import com.inappstory.sdk.stories.utils.Sizes;
@@ -74,15 +78,14 @@ public class StoryListItem extends BaseStoryListItem {
                 v.getLocationOnScreen(location);
                 int x = location[0];
                 int y = location[1];
-                final StoryItemCoordinates coordinates = new StoryItemCoordinates(x + v.getWidth() / 2 - Sizes.dpToPxExt(8, itemView.getContext()),
-                        y + v.getHeight() / 2);
-                InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+                final StoryItemCoordinates coordinates = new StoryItemCoordinates(
+                        x + v.getWidth() / 2 - Sizes.dpToPxExt(8, itemView.getContext()),
+                        y + v.getHeight() / 2
+                );
+                InAppStoryManager.useCore(new UseIASCoreCallback() {
                     @Override
-                    public void use(@NonNull InAppStoryManager manager) throws Exception {
-                        manager
-                                .getScreensHolder()
-                                .getStoryScreenHolder()
-                                .coordinates(coordinates);
+                    public void use(@NonNull IASCore core) {
+                        core.screensManager().getStoryScreenHolder().coordinates(coordinates);
                     }
                 });
                 if (StoryListItem.this.callback != null)

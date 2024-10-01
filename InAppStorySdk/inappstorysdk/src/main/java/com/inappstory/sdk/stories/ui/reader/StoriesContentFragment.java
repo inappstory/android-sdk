@@ -24,6 +24,10 @@ import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.UseManagerInstanceCallback;
 import com.inappstory.sdk.UseServiceInstanceCallback;
+import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.UseIASCoreCallback;
+import com.inappstory.sdk.core.api.IASCallbackType;
+import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.ui.screens.ShareProcessHandler;
 import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryScreen;
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenAppearance;
@@ -36,7 +40,6 @@ import com.inappstory.sdk.share.IASShareData;
 import com.inappstory.sdk.share.IASShareManager;
 import com.inappstory.sdk.share.ShareListener;
 import com.inappstory.sdk.stories.api.models.Story;
-import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.callbacks.ShareCallback;
 import com.inappstory.sdk.stories.events.GameCompleteEvent;
 import com.inappstory.sdk.stories.events.GameCompleteEventObserver;
@@ -148,57 +151,62 @@ public class StoriesContentFragment extends Fragment
         }
     }
 
-    private void shareCustomOrDefault(String slidePayload,
-                                      IASShareData shareObject,
-                                      int storyId,
-                                      int slideIndex) {
-        InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
-        if (inAppStoryManager == null) return;
-        ShareProcessHandler shareProcessHandler = inAppStoryManager
-                .getScreensHolder()
-                .getShareProcessHandler();
-        shareProcessHandler.isShareProcess(false);
-        Context context = getContext();
-        ShareCallback callback = CallbackManager.getInstance().getShareCallback();
-        if (context == null) return;
-        if (callback != null) {
-            inAppStoryManager
-                    .getScreensHolder()
-                    .getStoryScreenHolder()
-                    .openShareOverlapContainer(
-                            new StoryReaderOverlapContainerDataForShare()
-                                    .shareData(shareObject)
-                                    .slideIndex(slideIndex)
-                                    .storyId(storyId)
-                                    .slidePayload(slidePayload)
-                                    .shareListener(
-                                            new ShareListener() {
-                                                @Override
-                                                public void onSuccess(boolean shared) {
-                                                    getStoriesReader().timerIsUnlocked();
-                                                }
+    private void shareCustomOrDefault(final String slidePayload,
+                                      final IASShareData shareObject,
+                                      final int storyId,
+                                      final int slideIndex) {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(final @NonNull IASCore core) {
+                final Context context = getContext();
+                if (context == null) return;
+                core.screensManager().getShareProcessHandler().isShareProcess(false);
+                core.callbacksAPI().useCallback(IASCallbackType.SHARE_ADDITIONAL,
+                        new UseIASCallback<ShareCallback>() {
+                            @Override
+                            public void use(@NonNull ShareCallback callback) {
+                                core.screensManager()
+                                        .getStoryScreenHolder()
+                                        .openShareOverlapContainer(
+                                                new StoryReaderOverlapContainerDataForShare()
+                                                        .shareData(shareObject)
+                                                        .slideIndex(slideIndex)
+                                                        .storyId(storyId)
+                                                        .slidePayload(slidePayload)
+                                                        .shareListener(
+                                                                new ShareListener() {
+                                                                    @Override
+                                                                    public void onSuccess(boolean shared) {
+                                                                        getStoriesReader().timerIsUnlocked();
+                                                                    }
 
-                                                @Override
-                                                public void onCancel() {
-                                                    getStoriesReader().timerIsUnlocked();
-                                                    readerManager.resumeCurrent(false);
-                                                }
+                                                                    @Override
+                                                                    public void onCancel() {
+                                                                        getStoriesReader().timerIsUnlocked();
+                                                                        readerManager.resumeCurrent(false);
+                                                                    }
 
-                                            }
-                                    ),
-                            getStoriesReader()
-                                    .getScreenFragmentManager(),
-                            this
-                    );
-            getStoriesReader().timerIsLocked();
-            readerManager.pauseCurrent(false);
-        } else {
-            new IASShareManager().shareDefault(
-                    StoryShareBroadcastReceiver.class,
-                    context,
-                    shareObject
-            );
-        }
+                                                                }
+                                                        ),
+                                                getStoriesReader()
+                                                        .getScreenFragmentManager(),
+                                                StoriesContentFragment.this
+                                        );
+                                getStoriesReader().timerIsLocked();
+                                readerManager.pauseCurrent(false);
+                            }
+
+                            @Override
+                            public void onDefault() {
+                                new IASShareManager().shareDefault(
+                                        StoryShareBroadcastReceiver.class,
+                                        context,
+                                        shareObject
+                                );
+                            }
+                        });
+            }
+        });
     }
 
     @Override
@@ -279,10 +287,16 @@ public class StoriesContentFragment extends Fragment
     public void resume() {
         if (!created && readerManager != null) {
             readerManager.resumeCurrent(true);
-            ShareProcessHandler shareProcessHandler = ShareProcessHandler.getInstance();
-            if (shareProcessHandler != null && shareProcessHandler.shareCompleteListener() != null) {
-                readerManager.shareComplete();
-            }
+            InAppStoryManager.useCore(new UseIASCoreCallback() {
+                @Override
+                public void use(@NonNull IASCore core) {
+                    ShareProcessHandler shareProcessHandler = core.screensManager().getShareProcessHandler();
+                    if (shareProcessHandler != null && shareProcessHandler.shareCompleteListener() != null) {
+                        readerManager.shareComplete();
+                    }
+                }
+            });
+
         }
         created = false;
     }
@@ -327,45 +341,10 @@ public class StoriesContentFragment extends Fragment
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+
         Context context = requireContext();
-        try {
-            Bundle arguments = requireArguments();
-            LaunchStoryScreenAppearance appearanceSettings = getAppearanceSettings();
-            LaunchStoryScreenData launchData = getLaunchData();
-            currentIds = launchData.getStoriesIds();
-            readerAnimation = appearanceSettings.csStoryReaderAnimation();
-            ind = launchData.getListIndex();
-
-            Story.StoryType type = launchData.getType();
-            readerManager = new ReaderManager(
-                    launchData.getListUniqueId(),
-                    launchData.shownOnlyNewStories(),
-                    launchData.getSessionId(),
-                    launchData.getFeed(),
-                    launchData.getFeed(),
-                    type,
-                    launchData.getSourceType() != null ? launchData.getSourceType() : SourceType.SINGLE,
-                    launchData.getFirstAction()
-            );
-            if (currentIds != null && !currentIds.isEmpty()) {
-                readerManager.setStoriesIds(currentIds);
-                readerManager.firstStoryId = currentIds.get(ind);
-                readerManager.startedSlideInd = arguments.getInt("slideIndex", 0);
-            }
-
-            closeOnSwipe = appearanceSettings.csCloseOnSwipe();
-            closeOnOverscroll = appearanceSettings.csCloseOnOverscroll();
-
-            created = true;
-        } catch (Exception e) {
-            forceFinish();
-            return new View(context);
-        }
-
-
         FrameLayout resView = new FrameLayout(context);
         storiesViewPager = new ReaderPager(context);
-        storiesViewPager.setHost(this);
         storiesViewPager.setLayoutParams(new FrameLayout.LayoutParams(MATCH_PARENT,
                 MATCH_PARENT));
         invMask = new View(context);
@@ -388,11 +367,10 @@ public class StoriesContentFragment extends Fragment
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         if (readerManager != null) readerManager.setHost(this);
-        InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
-            public void use(@NonNull InAppStoryManager manager) throws Exception {
-                manager
-                        .getScreensHolder()
+            public void use(@NonNull IASCore core) {
+                core.screensManager()
                         .getGameScreenHolder()
                         .putGameObserver(
                                 getReaderUniqueId(),
@@ -406,11 +384,10 @@ public class StoriesContentFragment extends Fragment
     public void onDetach() {
         if (readerManager != null && readerManager.hostIsEqual(this))
             readerManager.setHost(null);
-        InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
-            public void use(@NonNull InAppStoryManager manager) throws Exception {
-                manager
-                        .getScreensHolder()
+            public void use(@NonNull IASCore core) {
+                core.screensManager()
                         .getGameScreenHolder()
                         .removeGameObserver(
                                 getReaderUniqueId()
@@ -424,37 +401,81 @@ public class StoriesContentFragment extends Fragment
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        if (InAppStoryService.isNull() || currentIds == null || currentIds.isEmpty()) {
-            forceFinish();
-            return;
-        }
-        if (readerManager == null) return;
-        readerManager.subscribeToAssets();
-        readerManager.setHost(this);
-        getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                try {
+                    Bundle arguments = requireArguments();
+                    LaunchStoryScreenAppearance appearanceSettings = getAppearanceSettings();
+                    LaunchStoryScreenData launchData = getLaunchData();
+                    currentIds = launchData.getStoriesIds();
+                    readerAnimation = appearanceSettings.csStoryReaderAnimation();
+                    ind = launchData.getListIndex();
+                    if (currentIds == null || currentIds.isEmpty()) {
+                        forceFinish();
+                        return;
+                    }
+                    Story.StoryType type = launchData.getType();
+                    readerManager = new ReaderManager(
+                            core,
+                            launchData.getListUniqueId(),
+                            launchData.shownOnlyNewStories(),
+                            launchData.getSessionId(),
+                            launchData.getFeed(),
+                            launchData.getFeed(),
+                            type,
+                            launchData.getSourceType() != null ? launchData.getSourceType() : SourceType.SINGLE,
+                            launchData.getFirstAction()
+                    );
 
-        storiesViewPager.setParameters(readerAnimation);
-        source = getLaunchData().getSourceType();
-        outerViewPagerAdapter =
-                new ReaderPagerAdapter(
-                        getChildFragmentManager(),
-                        source,
-                        getAppearanceSettings(),
-                        ((Rect) getArguments().getParcelable("readerContainer")),
-                        currentIds,
-                        readerManager
-                );
-        storiesViewPager.setAdapter(outerViewPagerAdapter);
-        storiesViewPager.addOnPageChangeListener(this);
-        if (ind > 0) {
-            storiesViewPager.setCurrentItem(ind);
-        } else {
-            try {
-                onPageSelected(0);
-            } catch (Exception e) {
-                e.printStackTrace();
+                    storiesViewPager.setHost(StoriesContentFragment.this);
+                    readerManager.subscribeToAssets();
+                    readerManager.setHost(StoriesContentFragment.this);
+                    readerManager.setStoriesIds(currentIds);
+                    readerManager.firstStoryId = currentIds.get(ind);
+                    readerManager.startedSlideInd = arguments.getInt("slideIndex", 0);
+                    closeOnSwipe = appearanceSettings.csCloseOnSwipe();
+                    closeOnOverscroll = appearanceSettings.csCloseOnOverscroll();
+
+
+
+                    getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
+                    storiesViewPager.setParameters(readerAnimation);
+                    source = getLaunchData().getSourceType();
+                    outerViewPagerAdapter =
+                            new ReaderPagerAdapter(
+                                    getChildFragmentManager(),
+                                    source,
+                                    getAppearanceSettings(),
+                                    ((Rect) getArguments().getParcelable("readerContainer")),
+                                    currentIds,
+                                    readerManager
+                            );
+                    storiesViewPager.setAdapter(outerViewPagerAdapter);
+                    storiesViewPager.addOnPageChangeListener(StoriesContentFragment.this);
+                    if (ind > 0) {
+                        storiesViewPager.setCurrentItem(ind);
+                    } else {
+                        try {
+                            onPageSelected(0);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+
+                    created = true;
+                } catch (Exception e) {
+                    forceFinish();
+                }
+
             }
-        }
+
+            @Override
+            public void error() {
+                forceFinish();
+            }
+        });
     }
 
     public void swipeUpEvent() {

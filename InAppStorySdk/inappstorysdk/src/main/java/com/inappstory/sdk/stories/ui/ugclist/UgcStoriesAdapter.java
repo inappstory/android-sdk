@@ -15,14 +15,22 @@ import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.UseIASCoreCallback;
+import com.inappstory.sdk.core.api.IASCallbackType;
+import com.inappstory.sdk.core.api.UseIASCallback;
+import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenData;
+import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenStrategy;
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenAppearance;
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenData;
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenStrategy;
+import com.inappstory.sdk.core.utils.ConnectionCheck;
+import com.inappstory.sdk.core.utils.ConnectionCheckCallback;
 import com.inappstory.sdk.game.reader.GameStoryData;
 import com.inappstory.sdk.stories.api.models.Story;
-import com.inappstory.sdk.stories.callbacks.CallbackManager;
-import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderLaunchData;
+import com.inappstory.sdk.stories.outercallbacks.common.errors.ErrorCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoryItemCoordinates;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.CallToActionCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickAction;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
@@ -36,6 +44,7 @@ import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.list.BaseStoryListItem;
 import com.inappstory.sdk.stories.ui.list.ClickCallback;
 import com.inappstory.sdk.stories.ui.reader.ActiveStoryItem;
+import com.inappstory.sdk.stories.ui.reader.StoriesMainFragment;
 import com.inappstory.sdk.ugc.list.OnUGCItemClick;
 import com.inappstory.sdk.ugc.list.UGCListItem;
 
@@ -50,6 +59,7 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
     private List<Integer> storiesIds = new ArrayList<>();
     OnUGCItemClick ugcItemClick;
     ListCallback callback;
+    private final IASCore core;
 
     boolean useUGC;
 
@@ -57,14 +67,18 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
     private String listID;
     private String sessionId;
 
-    public UgcStoriesAdapter(Context context,
-                             String listID,
-                             String sessionId,
-                             List<Integer> storiesIds,
-                             AppearanceManager manager,
-                             ListCallback callback,
-                             boolean useUGC,
-                             OnUGCItemClick ugcItemClick) {
+    public UgcStoriesAdapter(
+            IASCore core,
+            Context context,
+            String listID,
+            String sessionId,
+            List<Integer> storiesIds,
+            AppearanceManager manager,
+            ListCallback callback,
+            boolean useUGC,
+            OnUGCItemClick ugcItemClick
+    ) {
+        this.core = core;
         this.context = context;
         this.sessionId = sessionId;
         this.listID = listID;
@@ -150,136 +164,155 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
     Long clickTimestamp = -1L;
 
     @Override
-    public void onItemClick(int ind, StoryItemCoordinates coordinates) {
-        InAppStoryService service = InAppStoryService.getInstance();
-        InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
-        if (inAppStoryManager == null) return;
-        if (service == null) return;
+    public void onItemClick(final int ind, final StoryItemCoordinates coordinates) {
         if (System.currentTimeMillis() - clickTimestamp < 1500) {
             return;
         }
-        inAppStoryManager
-                .getScreensHolder()
-                .getStoryScreenHolder()
-                .activeStoryItem(new ActiveStoryItem(ind, listID));
-        int hasUGC = useUGC ? 1 : 0;
-        int index = ind - hasUGC;
-        clickTimestamp = System.currentTimeMillis();
-        final Story current = service.getStoryDownloadManager()
-                .getStoryById(storiesIds.get(index), Story.StoryType.UGC);
-        if (current != null) {
-            if (callback != null) {
-                callback.itemClick(
-                        new UgcStoryData(
-                                current,
-                                SourceType.LIST
-                        ),
-                        index
-                );
-            }
-            String gameInstanceId = current.getGameInstanceId();
-            if (gameInstanceId != null) {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull final IASCore core) {
+                InAppStoryService service = InAppStoryService.getInstance();
+                if (service == null) return;
+                core.screensManager().getStoryScreenHolder().activeStoryItem(new ActiveStoryItem(ind, listID));
+                int hasUGC = useUGC ? 1 : 0;
+                int index = ind - hasUGC;
+                clickTimestamp = System.currentTimeMillis();
+                final Story current = service.getStoryDownloadManager()
+                        .getStoryById(storiesIds.get(index), Story.StoryType.UGC);
+                if (current != null) {
+                    if (callback != null) {
+                        callback.itemClick(
+                                new UgcStoryData(
+                                        current,
+                                        SourceType.LIST
+                                ),
+                                index
+                        );
+                    }
+                    if (current.getGameInstanceId() != null) {
 
-                OldStatisticManager.useInstance(
-                        sessionId,
-                        new GetOldStatisticManagerCallback() {
-                            @Override
-                            public void get(@NonNull OldStatisticManager manager) {
-                                manager.addGameClickStatistic(current.id);
-                            }
-                        }
-                );
-                service.openGameReaderWithGC(
-                        context,
-                        new GameStoryData(
-                                new SlideData(
-                                        new UgcStoryData(
-                                                current,
-                                                SourceType.LIST
-                                        ),
-                                        0,
-                                        null
+                        OldStatisticManager.useInstance(
+                                sessionId,
+                                new GetOldStatisticManagerCallback() {
+                                    @Override
+                                    public void get(@NonNull OldStatisticManager manager) {
+                                        manager.addGameClickStatistic(current.id);
+                                    }
+                                }
+                        );
+                        core.screensManager().openScreen(
+                                context,
+                                new LaunchGameScreenStrategy(
+                                        core,
+                                        false
                                 )
-                        ),
-                        gameInstanceId,
-                        null,
-                        false
-                );
-                return;
-            }
-            if (current.deeplink != null) {
-                StatisticManager.getInstance().sendDeeplinkStory(current.id, current.deeplink, null);
-                if (CallbackManager.getInstance().getCallToActionCallback() != null) {
-                    CallbackManager.getInstance().getCallToActionCallback().callToAction(
-                            context,
-                            new SlideData(
-                                    new UgcStoryData(
-                                            current,
-                                            SourceType.LIST
-                                    ),
-                                    0,
-                                    null
-                            ),
-                            current.deeplink,
-                            ClickAction.DEEPLINK
-                    );
-                } else {
-                    if (!InAppStoryService.isServiceConnected()) {
-                        if (CallbackManager.getInstance().getErrorCallback() != null) {
-                            CallbackManager.getInstance().getErrorCallback().noConnection();
-                        }
+                                        .data(new LaunchGameScreenData(
+                                                null,
+                                                new GameStoryData(
+                                                        new SlideData(
+                                                                new UgcStoryData(
+                                                                        current,
+                                                                        SourceType.LIST
+                                                                ),
+                                                                0,
+                                                                null
+                                                        )
+                                                ),
+                                                current.getGameInstanceId()
+                                        ))
+                        );
+                        return;
+                    } else if (current.deeplink != null) {
+                        StatisticManager.getInstance().sendDeeplinkStory(current.id, current.deeplink, null);
+                        core.callbacksAPI().useCallback(
+                                IASCallbackType.CALL_TO_ACTION,
+                                new UseIASCallback<CallToActionCallback>() {
+                                    @Override
+                                    public void use(@NonNull CallToActionCallback callback) {
+                                        callback.callToAction(
+                                                context,
+                                                new SlideData(
+                                                        new UgcStoryData(
+                                                                current,
+                                                                SourceType.LIST
+                                                        ),
+                                                        0,
+                                                        null
+                                                ),
+                                                current.deeplink,
+                                                ClickAction.DEEPLINK
+                                        );
+                                    }
+
+                                    @Override
+                                    public void onDefault() {
+                                        new ConnectionCheck().check(
+                                                context,
+                                                new ConnectionCheckCallback(core) {
+                                                    @Override
+                                                    public void success() {
+                                                        try {
+                                                            Intent i = new Intent(Intent.ACTION_VIEW);
+                                                            i.setData(Uri.parse(current.deeplink));
+                                                            i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                                            context.startActivity(i);
+                                                        } catch (Exception ignored) {
+                                                            InAppStoryService.createExceptionLog(ignored);
+                                                        }
+                                                    }
+                                                }
+                                        );
+                                    }
+                                }
+                        );
+                        current.isOpened = true;
+                        current.saveStoryOpened(Story.StoryType.UGC);
+                        notifyItemChanged(ind);
+                        return;
+                    } else if (current.isHideInReader()) {
+                        core.callbacksAPI().useCallback(IASCallbackType.ERROR,
+                                new UseIASCallback<ErrorCallback>() {
+                                    @Override
+                                    public void use(@NonNull ErrorCallback callback) {
+                                        callback.emptyLinkError();
+                                    }
+                                }
+                        );
                         return;
                     }
-                    try {
-                        Intent i = new Intent(Intent.ACTION_VIEW);
-                        i.setData(Uri.parse(current.deeplink));
-                        i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        context.startActivity(i);
-                    } catch (Exception ignored) {
-                        InAppStoryService.createExceptionLog(ignored);
-                    }
                 }
-                current.isOpened = true;
-                current.saveStoryOpened(Story.StoryType.UGC);
-                notifyItemChanged(ind);
-                return;
-            }
-            if (current.isHideInReader()) {
-                if (CallbackManager.getInstance().getErrorCallback() != null) {
-                    CallbackManager.getInstance().getErrorCallback().emptyLinkError();
+                ArrayList<Integer> tempStories = new ArrayList();
+                for (Integer storyId : storiesIds) {
+                    Story story = service.getStoryDownloadManager().getStoryById(storyId, Story.StoryType.UGC);
+                    if (story == null || !story.isHideInReader())
+                        tempStories.add(storyId);
                 }
-                return;
-            }
-        }
-        ArrayList<Integer> tempStories = new ArrayList();
-        for (Integer storyId : storiesIds) {
-            Story story = service.getStoryDownloadManager().getStoryById(storyId, Story.StoryType.UGC);
-            if (story == null || !story.isHideInReader())
-                tempStories.add(storyId);
-        }
-        LaunchStoryScreenData launchData = new LaunchStoryScreenData(
-                listID,
-                null,
-                sessionId,
-                tempStories,
-                tempStories.indexOf(storiesIds.get(index)),
-                false,
-                ShowStory.ACTION_OPEN,
-                SourceType.LIST,
-                0,
-                Story.StoryType.UGC,
-                coordinates
-        );
-        inAppStoryManager.getScreensLauncher().openScreen(context,
-                new LaunchStoryScreenStrategy(false).
-                        launchStoryScreenData(launchData).
-                        readerAppearanceSettings(
-                                new LaunchStoryScreenAppearance(
-                                        AppearanceManager.checkOrCreateAppearanceManager(manager),
-                                        context
+                LaunchStoryScreenData launchData = new LaunchStoryScreenData(
+                        listID,
+                        null,
+                        sessionId,
+                        tempStories,
+                        tempStories.indexOf(storiesIds.get(index)),
+                        false,
+                        ShowStory.ACTION_OPEN,
+                        SourceType.LIST,
+                        0,
+                        Story.StoryType.UGC,
+                        coordinates
+                );
+                core.screensManager().openScreen(context,
+                        new LaunchStoryScreenStrategy(false).
+                                launchStoryScreenData(launchData).
+                                readerAppearanceSettings(
+                                        new LaunchStoryScreenAppearance(
+                                                AppearanceManager.checkOrCreateAppearanceManager(manager),
+                                                context
+                                        )
                                 )
-                        )
-        );
+                );
+            }
+        });
+
     }
 
     @Override

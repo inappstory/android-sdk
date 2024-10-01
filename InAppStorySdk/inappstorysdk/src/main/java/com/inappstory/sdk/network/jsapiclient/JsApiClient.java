@@ -4,6 +4,7 @@ import static com.inappstory.sdk.network.JsonParser.toMap;
 
 import android.content.Context;
 
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.Session;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
@@ -19,10 +20,12 @@ public class JsApiClient {
     TaskRunner taskRunner = new TaskRunner();
 
     Context context;
+    private final IASCore core;
 
     String baseUrl;
 
-    public JsApiClient(Context context, String baseUrl) {
+    public JsApiClient(IASCore core, Context context, String baseUrl) {
+        this.core = core;
         this.context = context;
         this.baseUrl = baseUrl;
     }
@@ -50,7 +53,7 @@ public class JsApiClient {
                                     final String cb,
                                     final String profilingKey,
                                     final JsApiResponseCallback callback) {
-        SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
+        core.sessionManager().useOrOpenSession(new OpenSessionCallback() {
             @Override
             public void onSuccess(String sessionId) {
                 sendRequest(

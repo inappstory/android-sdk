@@ -3,9 +3,15 @@ package com.inappstory.sdk.game.reader;
 import android.content.Context;
 import android.media.AudioManager;
 
+import androidx.annotation.NonNull;
+
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.api.IASCallback;
+import com.inappstory.sdk.core.api.IASCallbackType;
+import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.ui.screens.ShareProcessHandler;
 import com.inappstory.sdk.game.reader.logger.AbstractGameLogger;
 import com.inappstory.sdk.game.reader.logger.GameLoggerLvl0;
@@ -25,7 +31,8 @@ import com.inappstory.sdk.share.IShareCompleteListener;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.UrlObject;
 import com.inappstory.sdk.stories.api.models.WebResource;
-import com.inappstory.sdk.stories.callbacks.CallbackManager;
+import com.inappstory.sdk.stories.outercallbacks.common.gamereader.GameReaderCallback;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.CallToActionCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickAction;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
@@ -38,14 +45,15 @@ import java.lang.reflect.Type;
 import java.util.List;
 
 public class GameManager {
+    private final IASCore core;
     String path;
-    String gameCenterId;
+    private final String gameCenterId;
     List<WebResource> resources;
     final GameLoadStatusHolder statusHolder = new GameLoadStatusHolder();
     String gameConfig;
     AbstractGameLogger logger;
+    private final GameStoryData dataModel;
 
-    GameStoryData dataModel;
 
     public void setLogger(int loggerLevel) {
         switch (loggerLevel) {
@@ -64,8 +72,17 @@ public class GameManager {
         }
     }
 
-    public GameManager(GameReaderContentFragment host) {
+    public GameManager(
+            GameReaderContentFragment host,
+            IASCore core,
+            String gameCenterId,
+            GameStoryData dataModel
+    ) {
+        this.core = core;
         this.host = host;
+        this.gameCenterId = gameCenterId;
+        this.dataModel = dataModel;
+        logger = new GameLoggerLvl1(gameCenterId);
     }
 
     void gameInstanceSetData(String gameInstanceId, String data, boolean sendToServer) {
@@ -165,31 +182,50 @@ public class GameManager {
             StatisticManager.getInstance().sendGameEvent(name, data, dataModel.slideData.story.feed);
     }
 
-    private void closeOrFinishGameCallback(GameStoryData dataModel, String gameCenterId, String eventData) {
-        if (CallbackManager.getInstance().getGameReaderCallback() != null) {
-            if (eventData == null ||
-                    eventData.isEmpty() ||
-                    eventData.equals("{}") ||
-                    eventData.equals("null")
-            ) {
-                CallbackManager
-                        .getInstance()
-                        .getGameReaderCallback()
-                        .closeGame(
+    void closeGameReader() {
+        core.callbacksAPI().useCallback(
+                IASCallbackType.GAME_READER,
+                new UseIASCallback<GameReaderCallback>() {
+                    @Override
+                    public void use(@NonNull GameReaderCallback callback) {
+                        callback.closeGame(
                                 dataModel,
                                 gameCenterId
                         );
-            } else {
-                CallbackManager
-                        .getInstance()
-                        .getGameReaderCallback()
-                        .finishGame(
-                                dataModel,
-                                eventData,
-                                gameCenterId
-                        );
-            }
-        }
+                    }
+                }
+        );
+    }
+
+    private void closeOrFinishGameCallback(
+            final GameStoryData dataModel,
+            final String gameCenterId,
+            final String eventData
+    ) {
+        core.callbacksAPI().useCallback(
+                IASCallbackType.GAME_READER,
+                new UseIASCallback<GameReaderCallback>() {
+                    @Override
+                    public void use(@NonNull GameReaderCallback callback) {
+                        if (eventData == null ||
+                                eventData.isEmpty() ||
+                                eventData.equals("{}") ||
+                                eventData.equals("null")
+                        ) {
+                            callback.closeGame(
+                                    dataModel,
+                                    gameCenterId
+                            );
+                        } else {
+                            callback.finishGame(
+                                    dataModel,
+                                    eventData,
+                                    gameCenterId
+                            );
+                        }
+                    }
+                }
+        );
     }
 
     private void gameCompletedWithObject(String gameState, final GameFinishOptions options, String eventData) {
@@ -230,6 +266,7 @@ public class GameManager {
 
     void sendApiRequest(String data) {
         new JsApiClient(
+                core,
                 host.getContext(),
                 ApiSettings.getInstance().getHost()
         ).sendApiRequest(data, new JsApiResponseCallback() {
@@ -245,22 +282,32 @@ public class GameManager {
         return data.replaceAll("'", "\\\\'");
     }
 
-    void tapOnLink(String link, Context context) {
-        SlideData data = null;
+    void tapOnLink(final String link, final Context context) {
+        final SlideData data;
         if (dataModel != null) {
             data = dataModel.slideData;
-        }
-
-        if (CallbackManager.getInstance().getCallToActionCallback() != null) {
-            CallbackManager.getInstance().getCallToActionCallback().callToAction(
-                    context,
-                    data,
-                    StringsUtils.getNonNull(link),
-                    ClickAction.GAME
-            );
         } else {
-            host.tapOnLinkDefault(StringsUtils.getNonNull(link));
+            data = null;
         }
+        core.callbacksAPI().useCallback(
+                IASCallbackType.CALL_TO_ACTION,
+                new UseIASCallback<CallToActionCallback>() {
+                    @Override
+                    public void use(@NonNull CallToActionCallback callback) {
+                        callback.callToAction(
+                                context,
+                                data,
+                                StringsUtils.getNonNull(link),
+                                ClickAction.GAME
+                        );
+                    }
+
+                    @Override
+                    public void onDefault() {
+                        host.tapOnLinkDefault(StringsUtils.getNonNull(link));
+                    }
+                }
+        );
     }
 
     int pausePlaybackOtherApp() {
@@ -300,8 +347,36 @@ public class GameManager {
         }
     }
 
-    void jsEvent(String name, String data) {
-        host.jsEvent(name, data);
+    void gameLoadError() {
+        core.callbacksAPI().useCallback(
+                IASCallbackType.GAME_READER,
+                new UseIASCallback<GameReaderCallback>() {
+                    @Override
+                    public void use(@NonNull GameReaderCallback callback) {
+                        callback.gameLoadError(
+                                dataModel,
+                                gameCenterId
+                        );
+                    }
+                }
+        );
+    }
+
+    void jsEvent(final String name, final String data) {
+        core.callbacksAPI().useCallback(
+                IASCallbackType.GAME_READER,
+                new UseIASCallback<GameReaderCallback>() {
+                    @Override
+                    public void use(@NonNull GameReaderCallback callback) {
+                        callback.eventGame(
+                                dataModel,
+                                gameCenterId,
+                                name,
+                                data
+                        );
+                    }
+                }
+        );
     }
 
     void clearTries() {
@@ -339,7 +414,7 @@ public class GameManager {
     }
 
     void shareData(String id, String data) {
-        ShareProcessHandler shareProcessHandler = ShareProcessHandler.getInstance();
+        ShareProcessHandler shareProcessHandler = core.screensManager().getShareProcessHandler();
         if (shareProcessHandler == null || shareProcessHandler.isShareProcess())
             return;
         shareProcessHandler.isShareProcess(true);

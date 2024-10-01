@@ -2,6 +2,7 @@ package com.inappstory.sdk.stories.exceptions;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.network.JsonParser;
@@ -16,6 +17,12 @@ import java.util.UUID;
 
 public class ExceptionManager {
     public static final String SAVED_EX = "saved_exception";
+
+    public ExceptionManager(IASCore core) {
+        this.core = core;
+    }
+
+    private final IASCore core;
 
     public void sendException(ExceptionLog log) {
         logException(log);
@@ -33,7 +40,7 @@ public class ExceptionManager {
         }
         final InAppStoryService service = InAppStoryService.getInstance();
         if (service == null) return;
-        SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
+        core.sessionManager().useOrOpenSession(new OpenSessionCallback() {
             @Override
             public void onSuccess(String sessionId) {
                 if (service.getSession().allowCrash())

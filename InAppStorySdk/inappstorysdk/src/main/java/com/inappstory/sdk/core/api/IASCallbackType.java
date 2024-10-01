@@ -10,6 +10,8 @@ public enum IASCallbackType {
     STORY_WIDGET,
     ONBOARDING,
     SINGLE,
-    SHARE,
+    SHARE_ADDITIONAL,
+    CLICK_SHARE,
+    CALL_TO_ACTION,
     GAME_READER
 }

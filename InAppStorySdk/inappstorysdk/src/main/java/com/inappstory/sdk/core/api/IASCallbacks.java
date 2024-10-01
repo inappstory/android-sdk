@@ -13,26 +13,13 @@ import com.inappstory.sdk.stories.outercallbacks.common.reader.ShowStoryCallback
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryWidgetCallback;
 
 public interface IASCallbacks {
-    void error(ErrorCallback errorCallback);
-
-    void clickOnShareStory(ClickOnShareStoryCallback clickOnShareStoryCallback);
-
-    void callToAction(CallToActionCallback callToActionCallback);
-
-    void storyWidget(StoryWidgetCallback storyWidgetCallback);
-
-    void closeStory(CloseStoryCallback closeStoryCallback);
-
-    void favoriteStory(FavoriteStoryCallback favoriteStoryCallback);
-
-    void likeDislikeStory(LikeDislikeStoryCallback likeDislikeStoryCallback);
-
-    void showSlide(ShowSlideCallback showSlideCallback);
-
-    void showStory(ShowStoryCallback showStoryCallback);
-
     void useCallback(
             IASCallbackType type,
             @NonNull UseIASCallback useIASCallback
+    );
+
+    void setCallback(
+            IASCallbackType type,
+            IASCallback useIASCallback
     );
 }

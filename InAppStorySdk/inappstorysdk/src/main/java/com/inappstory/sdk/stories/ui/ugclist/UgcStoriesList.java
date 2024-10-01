@@ -19,6 +19,8 @@ import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.UseManagerInstanceCallback;
+import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadStoriesCallback;
@@ -137,10 +139,10 @@ public class UgcStoriesList extends RecyclerView {
     public void onAttachedToWindow() {
         super.onAttachedToWindow();
         manager.list = this;
-        InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
-            public void use(@NonNull InAppStoryManager manager) throws Exception {
-                ActiveStoryItem activeStoryItem = manager.getScreensHolder().getStoryScreenHolder().activeStoryItem();
+            public void use(@NonNull IASCore core) {
+                ActiveStoryItem activeStoryItem = core.screensManager().getStoryScreenHolder().activeStoryItem();
                 if (
                         activeStoryItem != null
                                 && uniqueID != null
@@ -150,6 +152,7 @@ public class UgcStoriesList extends RecyclerView {
                 }
             }
         });
+
         InAppStoryManager.debugSDKCalls("StoriesList_onAttachedToWindow", ""
                 + InAppStoryService.isNotNull());
         InAppStoryService.checkAndAddListSubscriber(manager);
@@ -170,16 +173,13 @@ public class UgcStoriesList extends RecyclerView {
                         x + v.getWidth() / 2,
                         y + v.getHeight() / 2
                 );
-                InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+                InAppStoryManager.useCore(new UseIASCoreCallback() {
                     @Override
-                    public void use(@NonNull InAppStoryManager manager) throws Exception {
-                        manager
-                                .getScreensHolder()
-                                .getStoryScreenHolder()
+                    public void use(@NonNull IASCore core) {
+                        core.screensManager().getStoryScreenHolder()
                                 .coordinates(coordinates);
                     }
                 });
-
             }
         }, 950);
     }
@@ -335,14 +335,15 @@ public class UgcStoriesList extends RecyclerView {
             ((LinearLayoutManager) layoutManager).scrollToPositionWithOffset(ind > 0 ? ind : 0, 0);
         }
         if (ind >= 0 && this.uniqueID != null && this.uniqueID.equals(listID)) {
-            InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+            InAppStoryManager.useCore(new UseIASCoreCallback() {
                 @Override
-                public void use(@NonNull InAppStoryManager manager) throws Exception {
-                    manager.getScreensHolder().getStoryScreenHolder().activeStoryItem(
+                public void use(@NonNull IASCore core) {
+                    core.screensManager().getStoryScreenHolder().activeStoryItem(
                             new ActiveStoryItem(ind, listID)
                     );
                 }
             });
+
             renewCoordinates(ind);
         }
     }
@@ -440,7 +441,9 @@ public class UgcStoriesList extends RecyclerView {
         checkAppearanceManager();
         setOverScrollMode(getAppearanceManager().csListOverscroll() ?
                 OVER_SCROLL_ALWAYS : OVER_SCROLL_NEVER);
-        adapter = new UgcStoriesAdapter(getContext(),
+        adapter = new UgcStoriesAdapter(
+                InAppStoryManager.getInstance().iasCore(),
+                getContext(),
                 uniqueID,
                 manager != null ? manager.currentSessionId : "",
                 storiesIds,

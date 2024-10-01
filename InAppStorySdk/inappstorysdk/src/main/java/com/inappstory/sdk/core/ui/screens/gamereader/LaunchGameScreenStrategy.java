@@ -3,12 +3,16 @@ package com.inappstory.sdk.core.ui.screens.gamereader;
 import android.content.Context;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
+
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.api.IASCallbackType;
+import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.ui.screens.holder.IScreensHolder;
 import com.inappstory.sdk.core.ui.screens.launcher.LaunchScreenStrategy;
 import com.inappstory.sdk.core.ui.screens.ScreenType;
-import com.inappstory.sdk.core.ui.screens.holder.ScreensHolder;
-import com.inappstory.sdk.stories.callbacks.CallbackManager;
+import com.inappstory.sdk.stories.outercallbacks.common.gamereader.GameReaderCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.GameReaderAppearanceSettings;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenReader;
 
@@ -18,11 +22,13 @@ public class LaunchGameScreenStrategy implements LaunchScreenStrategy {
         return this;
     }
 
-    public LaunchGameScreenStrategy(boolean openedFromReader) {
+    public LaunchGameScreenStrategy(IASCore core, boolean openedFromReader) {
+        this.core = core;
         this.openedFromReader = openedFromReader;
     }
 
     private final boolean openedFromReader;
+    private final IASCore core;
 
     private LaunchGameScreenData data;
 
@@ -46,11 +52,17 @@ public class LaunchGameScreenStrategy implements LaunchScreenStrategy {
                 context,
                 bundle
         );
-        if (CallbackManager.getInstance().getGameReaderCallback() != null) {
-            CallbackManager.getInstance().getGameReaderCallback().startGame(
-                    data.gameStoryData, data.gameId
-            );
-        }
+        core.callbacksAPI().useCallback(
+                IASCallbackType.GAME_READER,
+                new UseIASCallback<GameReaderCallback>() {
+                    @Override
+                    public void use(@NonNull GameReaderCallback callback) {
+                        callback.startGame(
+                                data.gameStoryData, data.gameId
+                        );
+                    }
+                }
+        );
     }
 
     @Override

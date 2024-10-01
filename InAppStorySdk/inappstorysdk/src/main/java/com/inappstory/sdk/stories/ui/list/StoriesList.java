@@ -23,6 +23,8 @@ import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.UseManagerInstanceCallback;
 import com.inappstory.sdk.UseServiceInstanceCallback;
+import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.ui.screens.storyreader.StoryScreenHolder;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadStoriesCallback;
@@ -225,10 +227,10 @@ public class StoriesList extends RecyclerView {
     public void onAttachedToWindow() {
         super.onAttachedToWindow();
         manager.list = this;
-        InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
-            public void use(@NonNull InAppStoryManager manager) throws Exception {
-                StoryScreenHolder storyScreenHolder = manager.getScreensHolder().getStoryScreenHolder();
+            public void use(@NonNull IASCore core) {
+                StoryScreenHolder storyScreenHolder = core.screensManager().getStoryScreenHolder();
                 ActiveStoryItem activeStoryItem = storyScreenHolder.activeStoryItem();
                 if (
                         activeStoryItem != null
@@ -543,10 +545,10 @@ public class StoriesList extends RecyclerView {
             ((LinearLayoutManager) layoutManager).scrollToPositionWithOffset(Math.max(ind, 0), 0);
         }
         if (ind >= 0) {
-            InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+            InAppStoryManager.useCore(new UseIASCoreCallback() {
                 @Override
-                public void use(@NonNull InAppStoryManager manager) throws Exception {
-                    StoryScreenHolder storyScreenHolder = manager.getScreensHolder().getStoryScreenHolder();
+                public void use(@NonNull IASCore core) {
+                    StoryScreenHolder storyScreenHolder = core.screensManager().getStoryScreenHolder();
                     storyScreenHolder.activeStoryItem(
                             new ActiveStoryItem(ind, listID)
                     );
@@ -704,7 +706,9 @@ public class StoriesList extends RecyclerView {
 
         setOverScrollMode(getAppearanceManager().csListOverscroll() ?
                 OVER_SCROLL_ALWAYS : OVER_SCROLL_NEVER);
-        adapter = new StoriesAdapter(getContext(),
+        adapter = new StoriesAdapter(
+                InAppStoryManager.getInstance().iasCore(),
+                getContext(),
                 uniqueID,
                 manager != null ? manager.currentSessionId : "",
                 storiesIds,

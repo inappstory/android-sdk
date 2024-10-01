@@ -11,8 +11,11 @@ import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.UseServiceInstanceCallback;
+import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.api.IASCallback;
+import com.inappstory.sdk.core.api.IASCallbackType;
+import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.game.cache.SessionAssetsIsReadyCallback;
-import com.inappstory.sdk.listwidget.StoriesWidgetService;
 import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.NetworkClient;
@@ -29,16 +32,13 @@ import com.inappstory.sdk.stories.cache.usecases.GetCacheFileUseCase;
 import com.inappstory.sdk.stories.cache.usecases.StoryResourceFileUseCase;
 import com.inappstory.sdk.stories.cache.usecases.StoryVODResourceFileUseCase;
 import com.inappstory.sdk.stories.cache.usecases.StoryVODResourceFileUseCaseResult;
-import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.outercallbacks.common.single.SingleLoadCallback;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
-import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 import com.inappstory.sdk.stories.ui.list.FavoriteImage;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPageManager;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
-import com.inappstory.sdk.stories.utils.SessionManager;
 import com.inappstory.sdk.utils.ISessionHolder;
 
 import java.io.IOException;
@@ -48,6 +48,8 @@ import java.util.HashMap;
 import java.util.List;
 
 public class StoryDownloadManager {
+    private final IASCore core;
+
     public List<Story> getStories(Story.StoryType type) {
         return getStoriesListByType(type);
     }
@@ -82,8 +84,7 @@ public class StoryDownloadManager {
             storyByIdCallback.loadError(-1);
             return;
         }
-        final SingleLoadCallback externalLoadCallback = CallbackManager.getInstance().getSingleLoadCallback();
-        SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
+        core.sessionManager().useOrOpenSession(new OpenSessionCallback() {
             @Override
             public void onSuccess(final String sessionId) {
                 final String storyUID = ProfilingManager.getInstance().addTask("api_story");
@@ -99,16 +100,22 @@ public class StoryDownloadManager {
                             @Override
                             public void onSuccess(final Story response) {
                                 ProfilingManager.getInstance().setReady(storyUID);
-                                if (externalLoadCallback != null) {
-                                    externalLoadCallback.singleLoadSuccess(
-                                            StoryData.getStoryData(
-                                                    response,
-                                                    null,
-                                                    readerSource,
-                                                    type
-                                            )
-                                    );
-                                }
+                                core.callbacksAPI().useCallback(
+                                        IASCallbackType.SINGLE,
+                                        new UseIASCallback<SingleLoadCallback>() {
+                                            @Override
+                                            public void use(@NonNull SingleLoadCallback callback) {
+                                                callback.singleLoadSuccess(
+                                                        StoryData.getStoryData(
+                                                                response,
+                                                                null,
+                                                                readerSource,
+                                                                type
+                                                        )
+                                                );
+                                            }
+                                        }
+                                );
                                 ArrayList<Story> st = new ArrayList<>();
                                 st.add(response);
                                 uploadingAdditional(st, type);
@@ -132,9 +139,15 @@ public class StoryDownloadManager {
                             public void errorDefault(String message) {
 
                                 ProfilingManager.getInstance().setReady(storyUID);
-                                if (externalLoadCallback != null) {
-                                    externalLoadCallback.singleLoadError(id, "Can't load story");
-                                }
+                                core.callbacksAPI().useCallback(
+                                        IASCallbackType.SINGLE,
+                                        new UseIASCallback<SingleLoadCallback>() {
+                                            @Override
+                                            public void use(@NonNull SingleLoadCallback callback) {
+                                                callback.singleLoadError(id, "Can't load story");
+                                            }
+                                        }
+                                );
                                 if (storyByIdCallback != null)
                                     storyByIdCallback.loadError(-1);
                             }
@@ -143,9 +156,15 @@ public class StoryDownloadManager {
 
             @Override
             public void onError() {
-                if (externalLoadCallback != null) {
-                    externalLoadCallback.singleLoadError(id, "Can't open session");
-                }
+                core.callbacksAPI().useCallback(
+                        IASCallbackType.SINGLE,
+                        new UseIASCallback<SingleLoadCallback>() {
+                            @Override
+                            public void use(@NonNull SingleLoadCallback callback) {
+                                callback.singleLoadError(id, "Can't open session");
+                            }
+                        }
+                );
                 if (storyByIdCallback != null)
                     storyByIdCallback.loadError(-1);
             }
@@ -379,11 +398,17 @@ public class StoryDownloadManager {
     }
 
 
-    public StoryDownloadManager() {
+    public StoryDownloadManager(IASCore core) {
+        this.core = core;
     }
 
-    public StoryDownloadManager(final Context context, ExceptionCache cache) {
+    public StoryDownloadManager(
+            final @NonNull IASCore core,
+            final Context context,
+            ExceptionCache cache
+    ) {
         this.context = context;
+        this.core = core;
         this.stories = new ArrayList<>();
         this.ugcStories = new ArrayList<>();
         this.favStories = new ArrayList<>();
@@ -393,7 +418,7 @@ public class StoryDownloadManager {
             this.favStories.addAll(cache.getFavStories());
             this.favoriteImages.addAll(cache.getFavoriteImages());
         }
-        this.storyDownloader = new StoryDownloader(new DownloadStoryCallback() {
+        this.storyDownloader = new StoryDownloader(core, new DownloadStoryCallback() {
             @Override
             public void onDownload(Story story, int loadType, Story.StoryType type) {
                 Story local = getStoryById(story.id, type);
@@ -416,88 +441,92 @@ public class StoryDownloadManager {
             }
         }, StoryDownloadManager.this);
 
-        this.slidesDownloader = new SlidesDownloader(new DownloadPageCallback() {
-            @Override
-            public DownloadPageFileStatus downloadFile(UrlWithAlter urlWithAlter, SlideTaskData slideTaskData) {
-                try {
-                    Log.e("StoryResources", slideTaskData.storyId + " " + slideTaskData.index + " " + urlWithAlter);
-                    InAppStoryService service = InAppStoryService.getInstance();
-                    if (service == null) return DownloadPageFileStatus.ERROR;
-                    GetCacheFileUseCase<DownloadFileState> useCase =
-                            new StoryResourceFileUseCase(
-                                    service.getFilesDownloadManager(),
-                                    urlWithAlter.getUrl()
-                            );
-                    DownloadFileState state = useCase.getFile();
-                    if (urlWithAlter.getAlter() != null && (state == null || state.getFullFile() == null)) {
-                        //placeholders case, download full
-                        useCase =
-                                new StoryResourceFileUseCase(
-                                        service.getFilesDownloadManager(),
-                                        urlWithAlter.getAlter()
-                                );
-                        state = useCase.getFile();
-                        if (state != null && state.getFullFile() != null)
-                            return DownloadPageFileStatus.SUCCESS;
-                        return DownloadPageFileStatus.SKIP;
+        this.slidesDownloader = new SlidesDownloader(
+                core,
+                new DownloadPageCallback() {
+                    @Override
+                    public DownloadPageFileStatus downloadFile(UrlWithAlter urlWithAlter, SlideTaskData slideTaskData) {
+                        try {
+                            Log.e("StoryResources", slideTaskData.storyId + " " + slideTaskData.index + " " + urlWithAlter);
+                            InAppStoryService service = InAppStoryService.getInstance();
+                            if (service == null) return DownloadPageFileStatus.ERROR;
+                            GetCacheFileUseCase<DownloadFileState> useCase =
+                                    new StoryResourceFileUseCase(
+                                            service.getFilesDownloadManager(),
+                                            urlWithAlter.getUrl()
+                                    );
+                            DownloadFileState state = useCase.getFile();
+                            if (urlWithAlter.getAlter() != null && (state == null || state.getFullFile() == null)) {
+                                //placeholders case, download full
+                                useCase =
+                                        new StoryResourceFileUseCase(
+                                                service.getFilesDownloadManager(),
+                                                urlWithAlter.getAlter()
+                                        );
+                                state = useCase.getFile();
+                                if (state != null && state.getFullFile() != null)
+                                    return DownloadPageFileStatus.SUCCESS;
+                                return DownloadPageFileStatus.SKIP;
+                            }
+                            if (state != null && state.getFullFile() != null)
+                                return DownloadPageFileStatus.SUCCESS;
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        return DownloadPageFileStatus.ERROR;
                     }
-                    if (state != null && state.getFullFile() != null)
-                        return DownloadPageFileStatus.SUCCESS;
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                return DownloadPageFileStatus.ERROR;
-            }
 
-            @Override
-            public DownloadPageFileStatus downloadVODFile(
-                    String url,
-                    String uniqueKey,
-                    SlideTaskData slideTaskData,
-                    long start,
-                    long end
-            ) {
-                try {
-                    Log.e("StoryResources", slideTaskData.storyId + " " + slideTaskData.index + " " + url);
-                    InAppStoryService service = InAppStoryService.getInstance();
-                    if (service == null) return DownloadPageFileStatus.ERROR;
-                    GetCacheFileUseCase<StoryVODResourceFileUseCaseResult> useCase =
-                            new StoryVODResourceFileUseCase(
-                                    service.getFilesDownloadManager(),
-                                    url,
-                                    uniqueKey,
-                                    start,
-                                    end
-                            );
-                    Log.e("UrlFile", "DownloadManager: " + start + "-" + end + " " + url);
+                    @Override
+                    public DownloadPageFileStatus downloadVODFile(
+                            String url,
+                            String uniqueKey,
+                            SlideTaskData slideTaskData,
+                            long start,
+                            long end
+                    ) {
+                        try {
+                            Log.e("StoryResources", slideTaskData.storyId + " " + slideTaskData.index + " " + url);
+                            InAppStoryService service = InAppStoryService.getInstance();
+                            if (service == null) return DownloadPageFileStatus.ERROR;
+                            GetCacheFileUseCase<StoryVODResourceFileUseCaseResult> useCase =
+                                    new StoryVODResourceFileUseCase(
+                                            service.getFilesDownloadManager(),
+                                            url,
+                                            uniqueKey,
+                                            start,
+                                            end
+                                    );
+                            Log.e("UrlFile", "DownloadManager: " + start + "-" + end + " " + url);
 
-                    StoryVODResourceFileUseCaseResult state = useCase.getFile();
-                    if (state != null) {
-                        return DownloadPageFileStatus.SUCCESS;
+                            StoryVODResourceFileUseCaseResult state = useCase.getFile();
+                            if (state != null) {
+                                return DownloadPageFileStatus.SUCCESS;
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        return DownloadPageFileStatus.ERROR;
                     }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                return DownloadPageFileStatus.ERROR;
-            }
 
 
-            @Override
-            public void onError(StoryTaskData storyTaskData) {
-                storyError(storyTaskData);
-            }
+                    @Override
+                    public void onError(StoryTaskData storyTaskData) {
+                        storyError(storyTaskData);
+                    }
 
-            @Override
-            public void onSlideError(SlideTaskData taskData) {
-                slideError(taskData);
-                storyDownloader.setStoryLoadType(
-                        new StoryTaskData(
-                                taskData.storyId,
-                                taskData.storyType
-                        ),
-                        -2);
-            }
-        }, StoryDownloadManager.this);
+                    @Override
+                    public void onSlideError(SlideTaskData taskData) {
+                        slideError(taskData);
+                        storyDownloader.setStoryLoadType(
+                                new StoryTaskData(
+                                        taskData.storyId,
+                                        taskData.storyType
+                                ),
+                                -2);
+                    }
+                },
+                StoryDownloadManager.this
+        );
     }
 
     public void addStoryTask(int storyId, ArrayList<Integer> addIds, Story.StoryType type) {
@@ -649,33 +678,6 @@ public class StoryDownloadManager {
                 final ArrayList<Story> resStories = new ArrayList<>();
                 for (int i = 0; i < Math.min(response.size(), 4); i++) {
                     resStories.add(response.get(i));
-                }
-
-                if (StoriesWidgetService.getInstance() != null) {
-                    try {
-                        SharedPreferencesAPI.saveString("widgetStories", JsonParser.getJson(resStories));
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                    StoriesWidgetService.getInstance().refreshFactory();
-                }
-                if (response == null || response.size() == 0) {
-                    if (AppearanceManager.csWidgetAppearance() != null
-                            && AppearanceManager.csWidgetAppearance().getWidgetClass() != null) {
-                        StoriesWidgetService.loadEmpty(context,
-                                AppearanceManager.csWidgetAppearance().getWidgetClass());
-                    }
-                } else {
-                    if (AppearanceManager.csWidgetAppearance() != null
-                            && AppearanceManager.csWidgetAppearance().getWidgetClass() != null) {
-                        new Handler().postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                StoriesWidgetService.loadSuccess(context,
-                                        AppearanceManager.csWidgetAppearance().getWidgetClass());
-                            }
-                        }, 500);
-                    }
                 }
                 setLocalsOpened(response, Story.StoryType.COMMON);
                 uploadingAdditional(response, Story.StoryType.COMMON);

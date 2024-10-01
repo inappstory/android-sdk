@@ -3,6 +3,7 @@ package com.inappstory.sdk.core.api.impl;
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.api.IASCallback;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.IASCallbacks;
 import com.inappstory.sdk.core.api.UseIASCallback;
@@ -25,63 +26,6 @@ public class IASCallbacksImpl implements IASCallbacks {
 
     public IASCallbacksImpl(IASCore core) {
         this.core = core;
-    }
-
-    @Override
-    public void error(ErrorCallback errorCallback) {
-        this.errorCallback = errorCallback;
-    }
-
-    @Override
-    public void clickOnShareStory(ClickOnShareStoryCallback clickOnShareStoryCallback) {
-        this.clickOnShareStoryCallback = clickOnShareStoryCallback;
-    }
-
-    @Override
-    public void callToAction(CallToActionCallback callToActionCallback) {
-        this.callToActionCallback = callToActionCallback;
-    }
-
-    @Override
-    public void storyWidget(StoryWidgetCallback storyWidgetCallback) {
-        this.storyWidgetCallback = storyWidgetCallback;
-    }
-
-    @Override
-    public void closeStory(CloseStoryCallback closeStoryCallback) {
-        this.closeStoryCallback = closeStoryCallback;
-    }
-
-    @Override
-    public void favoriteStory(FavoriteStoryCallback favoriteStoryCallback) {
-        this.favoriteStoryCallback = favoriteStoryCallback;
-    }
-
-    @Override
-    public void likeDislikeStory(LikeDislikeStoryCallback likeDislikeStoryCallback) {
-        this.likeDislikeStoryCallback = likeDislikeStoryCallback;
-    }
-
-    @Override
-    public void showSlide(ShowSlideCallback showSlideCallback) {
-        this.showSlideCallback = showSlideCallback;
-    }
-
-    @Override
-    public void showStory(ShowStoryCallback showStoryCallback) {
-        this.showStoryCallback = showStoryCallback;
-    }
-
-    public void gameReader(GameReaderCallback gameReaderCallback) {
-        this.gameReaderCallback = gameReaderCallback;
-    }
-
-    public void onboardingLoad(OnboardingLoadCallback onboardingLoadCallback) {
-        this.onboardingLoadCallback = onboardingLoadCallback;
-    }
-
-    public void singleLoad(SingleLoadCallback singleLoadCallback) {
-        this.singleLoadCallback = singleLoadCallback;
     }
 
     public void share(ShareCallback shareCallback) {
@@ -131,18 +75,71 @@ public class IASCallbacksImpl implements IASCallbacks {
                 if (singleLoadCallback != null)
                     useIASCallback.use(singleLoadCallback);
                 return;
-            case SHARE:
+            case SHARE_ADDITIONAL:
                 if (shareCallback != null)
                     useIASCallback.use(shareCallback);
                 return;
             case GAME_READER:
                 if (gameReaderCallback != null)
                     useIASCallback.use(gameReaderCallback);
+            case CLICK_SHARE:
+                if (clickOnShareStoryCallback != null)
+                    useIASCallback.use(clickOnShareStoryCallback);
+            case CALL_TO_ACTION:
+                if (callToActionCallback != null)
+                    useIASCallback.use(callToActionCallback);
                 return;
             default:
                 break;
         }
         useIASCallback.onDefault();
+    }
+
+    @Override
+    public void setCallback(IASCallbackType type, IASCallback callback) {
+        switch (type) {
+            case ERROR:
+                errorCallback = (ErrorCallback) callback;
+                return;
+            case FAVORITE:
+                favoriteStoryCallback = (FavoriteStoryCallback) callback;
+                return;
+            case SHOW_SLIDE:
+                showSlideCallback = (ShowSlideCallback) callback;
+                return;
+            case STORY_WIDGET:
+                storyWidgetCallback = (StoryWidgetCallback) callback;
+                return;
+            case SHOW_STORY:
+                showStoryCallback = (ShowStoryCallback) callback;
+                return;
+            case CLOSE_STORY:
+                closeStoryCallback = (CloseStoryCallback) callback;
+                return;
+            case LIKE_DISLIKE:
+                likeDislikeStoryCallback = (LikeDislikeStoryCallback) callback;
+                return;
+            case ONBOARDING:
+                onboardingLoadCallback = (OnboardingLoadCallback) callback;
+                return;
+            case SINGLE:
+                singleLoadCallback = (SingleLoadCallback) callback;
+                return;
+            case SHARE_ADDITIONAL:
+                shareCallback = (ShareCallback) callback;
+                return;
+            case CALL_TO_ACTION:
+                callToActionCallback = (CallToActionCallback) callback;
+                return;
+            case CLICK_SHARE:
+                clickOnShareStoryCallback = (ClickOnShareStoryCallback) callback;
+                return;
+            case GAME_READER:
+                gameReaderCallback = (GameReaderCallback) callback;
+                return;
+            default:
+                break;
+        }
     }
 
 

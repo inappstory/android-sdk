@@ -1,7 +1,11 @@
 package com.inappstory.sdk.ugc.usecases;
 
+import androidx.annotation.NonNull;
+
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.stories.api.models.Session;
@@ -23,40 +27,48 @@ public class GetUgcEditor implements IGetUgcEditor {
             callback.onError();
             return;
         }
-        final InAppStoryService service = InAppStoryService.getInstance();
-        if (service == null) return;
-        SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
-            public void onSuccess(final String sessionId) {
-                networkClient.enqueue(
-                        networkClient.getApi().getUgcEditor(),
-                        new NetworkCallback<SessionEditor>() {
-                            @Override
-                            public void onSuccess(SessionEditor response) {
-                                callback.get(
-                                        new SessionEditorDTO(
-                                                response,
-                                                sessionId
-                                        )
-                                );
-                            }
+            public void use(@NonNull IASCore core) {
+                core.sessionManager().useOrOpenSession(new OpenSessionCallback() {
+                    @Override
+                    public void onSuccess(final String sessionId) {
+                        networkClient.enqueue(
+                                networkClient.getApi().getUgcEditor(),
+                                new NetworkCallback<SessionEditor>() {
+                                    @Override
+                                    public void onSuccess(SessionEditor response) {
+                                        callback.get(
+                                                new SessionEditorDTO(
+                                                        response,
+                                                        sessionId
+                                                )
+                                        );
+                                    }
 
-                            @Override
-                            public Type getType() {
-                                return SessionEditor.class;
-                            }
+                                    @Override
+                                    public Type getType() {
+                                        return SessionEditor.class;
+                                    }
 
-                            @Override
-                            public void onError(int code, String message) {
-                                super.onError(code, message);
-                                callback.onError();
-                            }
-                        }
-                );
+                                    @Override
+                                    public void onError(int code, String message) {
+                                        super.onError(code, message);
+                                        callback.onError();
+                                    }
+                                }
+                        );
+                    }
+
+                    @Override
+                    public void onError() {
+                        callback.onError();
+                    }
+                });
             }
 
             @Override
-            public void onError() {
+            public void error() {
                 callback.onError();
             }
         });

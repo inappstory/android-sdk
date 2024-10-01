@@ -20,6 +20,8 @@ import android.webkit.URLUtil;
 
 import androidx.annotation.NonNull;
 
+import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenData;
 import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenStrategy;
 import com.inappstory.sdk.externalapi.subscribers.InAppStoryAPISubscribersManager;
@@ -273,7 +275,7 @@ public class InAppStoryService {
         return storyDownloadManager;
     }
 
-    FakeStoryDownloadManager fakeStoryDownloadManager = new FakeStoryDownloadManager();
+    FakeStoryDownloadManager fakeStoryDownloadManager = new FakeStoryDownloadManager(InAppStoryManager.getInstance().iasCore());
     StoryDownloadManager storyDownloadManager;
     GameCacheManager gameCacheManager = new GameCacheManager();
 
@@ -309,7 +311,7 @@ public class InAppStoryService {
         InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
             @Override
             public void use(@NonNull InAppStoryManager manager) throws Exception {
-                SessionManager.getInstance().closeSession(
+                InAppStoryManager.getInstance().iasCore().sessionManager().closeSession(
                         true,
                         false,
                         manager.getCurrentLocale(),
@@ -454,7 +456,11 @@ public class InAppStoryService {
         return apiSubscribersManager;
     }
 
-    private InAppStoryAPISubscribersManager apiSubscribersManager = new InAppStoryAPISubscribersManager();
+    private InAppStoryAPISubscribersManager apiSubscribersManager = new InAppStoryAPISubscribersManager(
+            InAppStoryManager
+                    .getInstance()
+                    .iasCore()
+    );
 
 
     public boolean isConnected() {
@@ -542,11 +548,11 @@ public class InAppStoryService {
             final String observableId,
             final boolean openedFromStoriesReader
     ) {
-        InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
-            public void use(@NonNull InAppStoryManager manager) throws Exception {
-                manager.getScreensLauncher().openScreen(context,
-                        new LaunchGameScreenStrategy(openedFromStoriesReader)
+            public void use(@NonNull IASCore core) {
+                core.screensManager().openScreen(context,
+                        new LaunchGameScreenStrategy(core, openedFromStoriesReader)
                                 .data(new LaunchGameScreenData(
                                         observableId,
                                         data,
@@ -555,7 +561,6 @@ public class InAppStoryService {
                 );
             }
         });
-
     }
 
     public void runStatisticThread() {
@@ -746,7 +751,7 @@ public class InAppStoryService {
     }
 
     public static void createExceptionLog(Throwable throwable) {
-        ExceptionManager em = new ExceptionManager();
+        ExceptionManager em = new ExceptionManager(InAppStoryManager.getInstance().iasCore());
         ExceptionLog el = em.generateExceptionLog(throwable);
         em.saveException(el);
         em.sendException(el);
@@ -833,7 +838,11 @@ public class InAppStoryService {
 
     public void createDownloadManager(ExceptionCache cache) {
         if (storyDownloadManager == null)
-            storyDownloadManager = new StoryDownloadManager(context, cache);
+            storyDownloadManager = new StoryDownloadManager(
+                    InAppStoryManager.getInstance().iasCore(),
+                    context,
+                    cache
+            );
     }
 
 

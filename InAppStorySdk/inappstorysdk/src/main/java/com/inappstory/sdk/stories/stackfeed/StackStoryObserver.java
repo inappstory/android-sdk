@@ -12,15 +12,22 @@ import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.UseServiceInstanceCallback;
+import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.UseIASCoreCallback;
+import com.inappstory.sdk.core.api.IASCallbackType;
+import com.inappstory.sdk.core.api.UseIASCallback;
+import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenData;
+import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenStrategy;
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenAppearance;
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenData;
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenStrategy;
+import com.inappstory.sdk.core.utils.ConnectionCheck;
+import com.inappstory.sdk.core.utils.ConnectionCheckCallback;
 import com.inappstory.sdk.game.reader.GameStoryData;
 import com.inappstory.sdk.stories.api.models.Image;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.cache.Downloader;
-import com.inappstory.sdk.stories.callbacks.CallbackManager;
-import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderLaunchData;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.CallToActionCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickAction;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
@@ -35,7 +42,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class StackStoryObserver implements IStackFeedActions {
+    private final IASCore core;
+
     public StackStoryObserver(
+            IASCore core,
             List<Story> stories,
             String sessionId,
             AppearanceManager appearanceManager,
@@ -43,6 +53,7 @@ public class StackStoryObserver implements IStackFeedActions {
             String listId,
             StackStoryUpdatedCallback stackStoryUpdated
     ) {
+        this.core = core;
         if (stories == null)
             this.stories = new ArrayList<>();
         else
@@ -243,7 +254,7 @@ public class StackStoryObserver implements IStackFeedActions {
         service.unsubscribeStackStoryObserver(StackStoryObserver.this);
     }
 
-    private void openReader(Context context, boolean showNewStories) {
+    private void openReader(final Context context, boolean showNewStories) {
         InAppStoryService service = InAppStoryService.getInstance();
         InAppStoryManager manager = InAppStoryManager.getInstance();
         if (manager == null) return;
@@ -268,37 +279,48 @@ public class StackStoryObserver implements IStackFeedActions {
                     manager.addDeeplinkClickStatistic(currentStory.id);
                 }
             });
-            if (CallbackManager.getInstance().getCallToActionCallback() != null) {
-                CallbackManager.getInstance().getCallToActionCallback().callToAction(
-                        context,
-                        new SlideData(
-                                new StoryData(
-                                        currentStory,
-                                        feed,
-                                        SourceType.STACK
-                                ),
-                                0,
-                                null
-                        ),
-                        currentStory.getDeeplink(),
-                        ClickAction.DEEPLINK
-                );
-            } else {
-                if (!InAppStoryService.isServiceConnected()) {
-                    if (CallbackManager.getInstance().getErrorCallback() != null) {
-                        CallbackManager.getInstance().getErrorCallback().noConnection();
+            core.callbacksAPI().useCallback(
+                    IASCallbackType.CALL_TO_ACTION,
+                    new UseIASCallback<CallToActionCallback>() {
+                        @Override
+                        public void use(@NonNull CallToActionCallback callback) {
+                            callback.callToAction(
+                                    context,
+                                    new SlideData(
+                                            new StoryData(
+                                                    currentStory,
+                                                    feed,
+                                                    SourceType.STACK
+                                            ),
+                                            0,
+                                            null
+                                    ),
+                                    currentStory.getDeeplink(),
+                                    ClickAction.DEEPLINK
+                            );
+                        }
+
+                        @Override
+                        public void onDefault() {
+                            new ConnectionCheck().check(
+                                    context,
+                                    new ConnectionCheckCallback(core) {
+                                        @Override
+                                        public void success() {
+                                            try {
+                                                Intent i = new Intent(Intent.ACTION_VIEW);
+                                                i.setData(Uri.parse(currentStory.getDeeplink()));
+                                                i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                                context.startActivity(i);
+                                            } catch (Exception ignored) {
+                                                InAppStoryService.createExceptionLog(ignored);
+                                            }
+                                        }
+                                    }
+                            );
+                        }
                     }
-                    return;
-                }
-                try {
-                    Intent i = new Intent(Intent.ACTION_VIEW);
-                    i.setData(Uri.parse(currentStory.getDeeplink()));
-                    i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    context.startActivity(i);
-                } catch (Exception ignored) {
-                    InAppStoryService.createExceptionLog(ignored);
-                }
-            }
+            );
             if (current != null) {
                 current.isOpened = true;
                 current.saveStoryOpened(Story.StoryType.COMMON);
@@ -314,23 +336,24 @@ public class StackStoryObserver implements IStackFeedActions {
                         }
                     }
             );
-            service.openGameReaderWithGC(
-                    context,
-                    new GameStoryData(
-                            new SlideData(
-                                    new StoryData(
-                                            currentStory,
-                                            feed,
-                                            SourceType.STACK
-                                    ),
-                                    0,
-                                    null
-                            )
+            core.screensManager().openScreen(context,
+                    new LaunchGameScreenStrategy(core, false)
+                            .data(new LaunchGameScreenData(
+                                    null,
+                                    new GameStoryData(
+                                            new SlideData(
+                                                    new StoryData(
+                                                            currentStory,
+                                                            feed,
+                                                            SourceType.STACK
+                                                    ),
+                                                    0,
+                                                    null
+                                            )
 
-                    ),
-                    currentStory.getGameInstanceId(),
-                    null,
-                    false
+                                    ),
+                                    currentStory.getGameInstanceId()
+                            ))
             );
             if (current != null) {
                 current.isOpened = true;
@@ -363,7 +386,7 @@ public class StackStoryObserver implements IStackFeedActions {
                     Story.StoryType.COMMON,
                     null
             );
-            manager.getScreensLauncher().openScreen(context,
+            core.screensManager().openScreen(context,
                     new LaunchStoryScreenStrategy(false).
                             launchStoryScreenData(launchData).
                             readerAppearanceSettings(

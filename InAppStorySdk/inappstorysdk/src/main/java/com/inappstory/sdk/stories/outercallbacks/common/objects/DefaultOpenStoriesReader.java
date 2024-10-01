@@ -13,6 +13,8 @@ import androidx.fragment.app.FragmentActivity;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.UseManagerInstanceCallback;
+import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.stories.ui.reader.StoriesActivity;
 import com.inappstory.sdk.stories.ui.reader.StoriesDialogFragment;
 import com.inappstory.sdk.stories.utils.ActivityUtils;
@@ -46,10 +48,10 @@ public class DefaultOpenStoriesReader implements IOpenStoriesReader {
                 storiesDialogFragment.show(
                         ((FragmentActivity) context).getSupportFragmentManager(),
                         "DialogFragment");
-                InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+                InAppStoryManager.useCore(new UseIASCoreCallback() {
                     @Override
-                    public void use(@NonNull InAppStoryManager manager) throws Exception {
-                        manager.getScreensHolder().getStoryScreenHolder().subscribeScreen(storiesDialogFragment);
+                    public void use(@NonNull IASCore core) {
+                        core.screensManager().getStoryScreenHolder().subscribeScreen(storiesDialogFragment);
                     }
                 });
             } catch (IllegalStateException ignored) {

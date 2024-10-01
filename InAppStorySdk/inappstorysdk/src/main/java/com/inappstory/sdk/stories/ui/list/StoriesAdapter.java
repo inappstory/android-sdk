@@ -15,15 +15,23 @@ import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.UseIASCoreCallback;
+import com.inappstory.sdk.core.api.IASCallbackType;
+import com.inappstory.sdk.core.api.UseIASCallback;
+import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenData;
+import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenStrategy;
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenAppearance;
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenData;
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenStrategy;
+import com.inappstory.sdk.core.utils.ConnectionCheck;
+import com.inappstory.sdk.core.utils.ConnectionCheckCallback;
 import com.inappstory.sdk.game.reader.GameStoryData;
 import com.inappstory.sdk.stories.api.models.Story;
-import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.callbacks.OnFavoriteItemClick;
-import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderLaunchData;
+import com.inappstory.sdk.stories.outercallbacks.common.errors.ErrorCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoryItemCoordinates;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.CallToActionCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickAction;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
@@ -84,19 +92,25 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
         return data;
     }
 
-    public StoriesAdapter(Context context,
-                          String listID,
-                          String sessionId,
-                          List<Integer> storiesIds,
-                          AppearanceManager manager,
-                          boolean isFavoriteList,
-                          ListCallback callback,
-                          String feed,
-                          String feedID,
-                          boolean useFavorite,
-                          OnFavoriteItemClick favoriteItemClick,
-                          boolean useUGC,
-                          OnUGCItemClick ugcItemClick) {
+    private final IASCore core;
+
+    public StoriesAdapter(
+            IASCore core,
+            Context context,
+            String listID,
+            String sessionId,
+            List<Integer> storiesIds,
+            AppearanceManager manager,
+            boolean isFavoriteList,
+            ListCallback callback,
+            String feed,
+            String feedID,
+            boolean useFavorite,
+            OnFavoriteItemClick favoriteItemClick,
+            boolean useUGC,
+            OnUGCItemClick ugcItemClick
+    ) {
+        this.core = core;
         this.context = context;
         this.listID = listID;
         this.feed = feed;
@@ -198,7 +212,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
     }
 
     @Override
-    public void onItemClick(int ind, StoryItemCoordinates coordinates) {
+    public void onItemClick(final int ind, StoryItemCoordinates coordinates) {
 
         InAppStoryService service = InAppStoryService.getInstance();
         InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
@@ -208,7 +222,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
         if (System.currentTimeMillis() - clickTimestamp < 1500) {
             return;
         }
-        inAppStoryManager.getScreensHolder().getStoryScreenHolder().activeStoryItem(new ActiveStoryItem(ind, listID));
+        core.screensManager().getStoryScreenHolder().activeStoryItem(new ActiveStoryItem(ind, listID));
         int hasUGC = useUGC ? 1 : 0;
         int index = ind - hasUGC;
         clickTimestamp = System.currentTimeMillis();
@@ -235,23 +249,24 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
                             }
                         }
                 );
-                service.openGameReaderWithGC(
-                        context,
-                        new GameStoryData(
-                                new SlideData(
-                                        new StoryData(
-                                                current,
-                                                feed,
-                                                getListSourceType()
-                                        ),
-                                        0,
-                                        null
-                                )
+                core.screensManager().openScreen(context,
+                        new LaunchGameScreenStrategy(core, false)
+                                .data(new LaunchGameScreenData(
+                                        null,
+                                        new GameStoryData(
+                                                new SlideData(
+                                                        new StoryData(
+                                                                current,
+                                                                feed,
+                                                                getListSourceType()
+                                                        ),
+                                                        0,
+                                                        null
+                                                )
 
-                        ),
-                        gameInstanceId,
-                        null,
-                        false
+                                        ),
+                                        gameInstanceId
+                                ))
                 );
 
                 current.isOpened = true;
@@ -270,48 +285,62 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
                             }
                         }
                 );
-                if (CallbackManager.getInstance().getCallToActionCallback() != null) {
-                    CallbackManager.getInstance().getCallToActionCallback().callToAction(
-                            context,
-                            new SlideData(
-                                    new StoryData(
-                                            current,
-                                            feed,
-                                            getListSourceType()
-                                    ),
-                                    0,
-                                    null
-                            ),
-                            current.deeplink,
-                            ClickAction.DEEPLINK
-                    );
-                } else {
-                    if (!InAppStoryService.isServiceConnected()) {
-                        if (CallbackManager.getInstance().getErrorCallback() != null) {
-                            CallbackManager.getInstance().getErrorCallback().noConnection();
-                        }
-                        return;
-                    }
-                    try {
-                        Intent i = new Intent(Intent.ACTION_VIEW);
-                        i.setData(Uri.parse(current.deeplink));
-                        i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        context.startActivity(i);
-                    } catch (Exception ignored) {
-                        InAppStoryService.createExceptionLog(ignored);
-                    }
-                }
+                core.callbacksAPI().useCallback(
+                        IASCallbackType.CALL_TO_ACTION,
+                        new UseIASCallback<CallToActionCallback>() {
+                            @Override
+                            public void use(@NonNull CallToActionCallback callback) {
+                                callback.callToAction(
+                                        context,
+                                        new SlideData(
+                                                new StoryData(
+                                                        current,
+                                                        feed,
+                                                        getListSourceType()
+                                                ),
+                                                0,
+                                                null
+                                        ),
+                                        current.deeplink,
+                                        ClickAction.DEEPLINK
+                                );
+                            }
 
+                            @Override
+                            public void onDefault() {
+                                new ConnectionCheck().check(
+                                        context,
+                                        new ConnectionCheckCallback(core) {
+                                            @Override
+                                            public void success() {
+                                                try {
+                                                    Intent i = new Intent(Intent.ACTION_VIEW);
+                                                    i.setData(Uri.parse(current.deeplink));
+                                                    i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                                    context.startActivity(i);
+                                                } catch (Exception ignored) {
+                                                    InAppStoryService.createExceptionLog(ignored);
+                                                }
+                                            }
+                                        }
+                                );
+                            }
+                        }
+                );
                 current.isOpened = true;
                 current.saveStoryOpened(Story.StoryType.COMMON);
                 service.getListReaderConnector().changeStory(current.id, listID, false);
                 return;
             }
             if (current.isHideInReader()) {
-
-                if (CallbackManager.getInstance().getErrorCallback() != null) {
-                    CallbackManager.getInstance().getErrorCallback().emptyLinkError();
-                }
+                core.callbacksAPI().useCallback(IASCallbackType.ERROR,
+                        new UseIASCallback<ErrorCallback>() {
+                            @Override
+                            public void use(@NonNull ErrorCallback callback) {
+                                callback.emptyLinkError();
+                            }
+                        }
+                );
                 return;
             }
         }
@@ -334,7 +363,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
                 Story.StoryType.COMMON,
                 coordinates
         );
-        inAppStoryManager.getScreensLauncher().openScreen(
+        core.screensManager().openScreen(
                 context,
                 new LaunchStoryScreenStrategy(false).
                         launchStoryScreenData(launchData).

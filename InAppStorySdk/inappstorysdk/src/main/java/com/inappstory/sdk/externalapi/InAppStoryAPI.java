@@ -14,7 +14,7 @@ import com.inappstory.sdk.core.api.IASFavorites;
 import com.inappstory.sdk.core.api.IASGames;
 import com.inappstory.sdk.core.api.IASManager;
 import com.inappstory.sdk.core.api.IASOnboardings;
-import com.inappstory.sdk.core.api.IASSettings;
+import com.inappstory.sdk.core.api.IASDataSettings;
 import com.inappstory.sdk.core.api.IASSingleStory;
 import com.inappstory.sdk.core.api.IASStackFeed;
 import com.inappstory.sdk.core.api.IASStoryList;
@@ -34,7 +34,7 @@ public class InAppStoryAPI {
     public IASCallbacks callbacks = new IASCallbacksExternalAPIImpl();
     public IASGames games = new IASGamesExternalAPIImpl();
     public IASManager inAppStoryManager = new IASManagerExternalAPIImpl();
-    public IASSettings settings = new IASSettingsExternalAPIImpl();
+    public IASDataSettings settings = new IASSettingsExternalAPIImpl();
     public IASSingleStory singleStory = new IASSingleStoryExternalAPIImpl();
     public IASOnboardings onboardings = new IASOnboardingsExternalAPIImpl();
     public IASStackFeed stackFeed = new IASStackFeedExternalAPIImpl();

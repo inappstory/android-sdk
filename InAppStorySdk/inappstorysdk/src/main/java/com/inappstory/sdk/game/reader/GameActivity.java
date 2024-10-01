@@ -15,6 +15,8 @@ import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.UseManagerInstanceCallback;
+import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.ui.screens.gamereader.BaseGameScreen;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.GameReaderAppearanceSettings;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.GameReaderLaunchData;
@@ -26,29 +28,35 @@ public class GameActivity extends AppCompatActivity implements BaseGameScreen {
 
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(final Bundle savedInstanceState) {
         int theme = getIntent().getIntExtra("themeId", R.style.StoriesSDKAppTheme_GameActivity);
         setTheme(theme);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.cs_game_reader_layout);
-        GameReaderAppearanceSettings appearanceSettings = (GameReaderAppearanceSettings) getIntent()
-                .getSerializableExtra(GameReaderAppearanceSettings.SERIALIZABLE_KEY);
-        if (appearanceSettings != null) {
-            setNavBarColor(appearanceSettings.navBarColor);
-            setStatusBarColor(appearanceSettings.statusBarColor);
-        }
-        InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
-            public void use(@NonNull InAppStoryManager manager) throws Exception {
-                manager.getScreensHolder().getGameScreenHolder().subscribeScreen(GameActivity.this);
+            public void use(@NonNull IASCore core) {
+                GameReaderAppearanceSettings appearanceSettings = (GameReaderAppearanceSettings) getIntent()
+                        .getSerializableExtra(GameReaderAppearanceSettings.SERIALIZABLE_KEY);
+                if (appearanceSettings != null) {
+                    setNavBarColor(appearanceSettings.navBarColor);
+                    setStatusBarColor(appearanceSettings.statusBarColor);
+                }
+                core.screensManager().getGameScreenHolder().subscribeScreen(GameActivity.this);
+                createGameContentFragment(
+                        savedInstanceState,
+                        (GameReaderLaunchData) getIntent()
+                                .getSerializableExtra(GameReaderLaunchData.SERIALIZABLE_KEY)
+
+                );
+            }
+
+            @Override
+            public void error() {
+                forceFinish();
             }
         });
-        createGameContentFragment(
-                savedInstanceState,
-                (GameReaderLaunchData) getIntent()
-                        .getSerializableExtra(GameReaderLaunchData.SERIALIZABLE_KEY)
 
-        );
     }
 
     private void setStatusBarColor(String color) {
@@ -144,13 +152,13 @@ public class GameActivity extends AppCompatActivity implements BaseGameScreen {
 
     @Override
     protected void onDestroy() {
-
-        InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
-            public void use(@NonNull InAppStoryManager manager) throws Exception {
-                manager.getScreensHolder().getGameScreenHolder().unsubscribeScreen(GameActivity.this);
+            public void use(@NonNull IASCore core) {
+                core.screensManager().getGameScreenHolder().unsubscribeScreen(GameActivity.this);
             }
         });
+
         super.onDestroy();
     }
 
