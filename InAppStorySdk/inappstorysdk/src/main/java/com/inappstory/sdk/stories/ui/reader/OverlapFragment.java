@@ -71,7 +71,7 @@ public class OverlapFragment extends Fragment implements IASBackPressHandler {
                     (IASShareData) getArguments().getSerializable("shareData")
             );
             readerTopContainer.removeAllViews();
-            View shareView = callback.getView(context, content, shareActions);
+            shareView = callback.getView(context, content, shareActions);
             shareView.setLayoutParams(
                     new FrameLayout.LayoutParams(
                             ViewGroup.LayoutParams.MATCH_PARENT,
@@ -84,6 +84,8 @@ public class OverlapFragment extends Fragment implements IASBackPressHandler {
         }
     }
 
+    View shareView = null;
+
     public WeakReference<ShareListener> shareListenerWeakReference;
 
     public void setShareListener(ShareListener shareListener) {
@@ -92,6 +94,9 @@ public class OverlapFragment extends Fragment implements IASBackPressHandler {
 
     @Override
     public boolean onBackPressed() {
-        return callback.onBackPress(shareActions);
+        if (callback != null)
+            return callback.onBackPress(shareView, shareActions);
+        else
+            return false;
     }
 }

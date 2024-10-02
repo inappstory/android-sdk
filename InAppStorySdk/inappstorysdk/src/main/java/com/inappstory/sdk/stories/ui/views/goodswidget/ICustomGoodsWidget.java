@@ -12,6 +12,6 @@ public interface ICustomGoodsWidget {
     ICustomGoodsItem getItem();
     IGoodsWidgetAppearance getWidgetAppearance();
     RecyclerView.ItemDecoration getDecoration();
-    void getSkus(ArrayList<String> skus, GetGoodsDataCallback callback);
-    void onItemClick(View goodsItemView, GoodsItemData sku, GetGoodsDataCallback callback);
+    void getSkus(View widgetView, ArrayList<String> skus, GetGoodsDataCallback callback);
+    void onItemClick(View widgetView, View goodsItemView, GoodsItemData sku, GetGoodsDataCallback callback);
 }

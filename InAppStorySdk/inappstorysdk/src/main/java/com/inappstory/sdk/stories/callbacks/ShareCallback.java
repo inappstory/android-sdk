@@ -15,7 +15,7 @@ public interface ShareCallback {
             @NonNull OverlappingContainerActions actions
     );
 
-    void viewIsVisible(View view);
+    void viewIsVisible(View shareView);
 
-    boolean onBackPress(@NonNull OverlappingContainerActions actions);
+    boolean onBackPress(View shareView, @NonNull OverlappingContainerActions actions);
 }

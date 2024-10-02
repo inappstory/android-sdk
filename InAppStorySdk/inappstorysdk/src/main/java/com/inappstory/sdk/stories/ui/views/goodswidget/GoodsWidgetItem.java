@@ -12,7 +12,11 @@ public class GoodsWidgetItem extends RecyclerView.ViewHolder {
     GoodsWidgetAdapter adapter;
     ICustomGoodsItem customGoodsItem;
 
-    public GoodsWidgetItem(ICustomGoodsItem customGoodsItem, GoodsWidgetAdapter adapter, Context context) {
+    public GoodsWidgetItem(
+            ICustomGoodsItem customGoodsItem,
+            GoodsWidgetAdapter adapter,
+            Context context
+    ) {
         super(customGoodsItem.getView(context));
         this.customGoodsItem = customGoodsItem;
         this.adapter = adapter;
@@ -23,13 +27,7 @@ public class GoodsWidgetItem extends RecyclerView.ViewHolder {
         itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                AppearanceManager.getCommonInstance().csCustomGoodsWidget().onItemClick(
-                        itemView,
-                        GoodsWidgetItem.this.data,
-                        callback
-                );
-                if (adapter != null)
-                    adapter.onItemClick(GoodsWidgetItem.this.data);
+                adapter.onItemClick(GoodsWidgetItem.this.data, GoodsWidgetItem.this.itemView);
             }
         });
         if (customGoodsItem != null)

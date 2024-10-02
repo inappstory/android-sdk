@@ -21,6 +21,7 @@ import com.inappstory.sdk.stories.ui.views.goodswidget.GetGoodsDataCallback;
 import com.inappstory.sdk.stories.ui.views.goodswidget.GoodsItemData;
 import com.inappstory.sdk.stories.ui.views.goodswidget.GoodsWidget;
 import com.inappstory.sdk.stories.ui.views.goodswidget.GoodsWidgetAppearanceAdapter;
+import com.inappstory.sdk.stories.ui.views.goodswidget.ICustomGoodsWidget;
 import com.inappstory.sdk.stories.ui.views.goodswidget.IGoodsWidgetAppearance;
 
 import java.util.ArrayList;
@@ -34,20 +35,21 @@ public class GoodsRecyclerView extends FrameLayout implements GetGoodsDataCallba
     private View closeArea;
 
 
-    public GoodsRecyclerView(Context context) {
+    public GoodsRecyclerView(Context context, ICustomGoodsWidget customGoodsWidget) {
         super(context);
-        initView(context);
+        initView(context, customGoodsWidget);
     }
 
     @SuppressLint("UseCompatLoadingForDrawables")
-    private void initView(Context context) {
+    private void initView(Context context, ICustomGoodsWidget customGoodsWidget) {
         inflate(context, R.layout.cs_goods_recycler, this);
         goodsList = findViewById(R.id.goods_list);
+        goodsList.setParentView(this);
+        goodsList.setCustomGoodsWidget(customGoodsWidget);
         loaderContainer = findViewById(R.id.loader_container);
         bottomLine = findViewById(R.id.bottom_line);
         refresh = findViewById(R.id.refresh_button);
-        IGoodsWidgetAppearance iGoodsWidgetAppearance =
-                AppearanceManager.getCommonInstance().csCustomGoodsWidget().getWidgetAppearance();
+        IGoodsWidgetAppearance iGoodsWidgetAppearance = customGoodsWidget.getWidgetAppearance();
         if (iGoodsWidgetAppearance == null) {
             iGoodsWidgetAppearance = new GoodsWidgetAppearanceAdapter();
         }
