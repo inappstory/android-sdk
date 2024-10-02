@@ -17,5 +17,7 @@ public interface ShareCallback {
 
     void viewIsVisible(View shareView);
 
+    void onDestroyView(View shareView);
+
     boolean onBackPress(View shareView, @NonNull OverlappingContainerActions actions);
 }

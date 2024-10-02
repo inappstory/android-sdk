@@ -93,6 +93,13 @@ public class OverlapFragment extends Fragment implements IASBackPressHandler {
     }
 
     @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        if (callback != null)
+            callback.onDestroyView(shareView);
+    }
+
+    @Override
     public boolean onBackPressed() {
         if (callback != null)
             return callback.onBackPress(shareView, shareActions);
