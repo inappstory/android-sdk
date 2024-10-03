@@ -133,7 +133,7 @@ public class InAppStoryAPISubscribersManager {
         if (currentStory.getDeeplink() != null && !currentStory.getDeeplink().isEmpty()) {
             service.getListReaderConnector().changeStory(currentStory.id, uniqueKey, false);
 
-            StatisticManager.getInstance().sendDeeplinkStory(
+            core.statistic().v2().sendDeeplinkStory(
                     currentStory.id,
                     currentStory.getDeeplink(),
                     requestData.feed
@@ -370,8 +370,9 @@ public class InAppStoryAPISubscribersManager {
                     public void get(@NonNull OldStatisticManager manager) {
                         ArrayList<Integer> newIndexes = manager.newStatisticPreviews(indexes);
                         try {
-                            if (StatisticManager.getInstance() != null && iasStoryListRequestData != null) {
-                                StatisticManager.getInstance().sendViewStory(
+
+                            if (iasStoryListRequestData != null) {
+                                core.statistic().v2().sendViewStory(
                                         newIndexes,
                                         iasStoryListRequestData.isFavorite ?
                                                 StatisticManager.FAVORITE : StatisticManager.LIST,

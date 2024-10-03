@@ -25,6 +25,7 @@ import com.inappstory.sdk.UseManagerInstanceCallback;
 import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
+import com.inappstory.sdk.core.stories.StoriesListVMState;
 import com.inappstory.sdk.core.ui.screens.storyreader.StoryScreenHolder;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadStoriesCallback;
@@ -331,25 +332,28 @@ public class StoriesList extends RecyclerView {
                 }
             }
         }
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull final IASCore core) {
+                OldStatisticManager.useInstance(
+                        manager != null ? manager.currentSessionId : "",
+                        new GetOldStatisticManagerCallback() {
+                            @Override
+                            public void get(@NonNull OldStatisticManager manager) {
+                                ArrayList<Integer> newIndexes = manager.newStatisticPreviews(indexes);
+                                try {
+                                    core.statistic().v2().sendViewStory(newIndexes,
+                                            isFavoriteList ? StatisticManager.FAVORITE : StatisticManager.LIST, feedId);
+                                } catch (Exception e) {
 
-        OldStatisticManager.useInstance(
-                manager != null ? manager.currentSessionId : "",
-                new GetOldStatisticManagerCallback() {
-                    @Override
-                    public void get(@NonNull OldStatisticManager manager) {
-                        ArrayList<Integer> newIndexes = manager.newStatisticPreviews(indexes);
-                        try {
-                            if (StatisticManager.getInstance() != null) {
-                                StatisticManager.getInstance().sendViewStory(newIndexes,
-                                        isFavoriteList ? StatisticManager.FAVORITE : StatisticManager.LIST, feedId);
+                                }
+                                manager.previewStatisticEvent(indexes);
                             }
-                        } catch (Exception e) {
-
                         }
-                        manager.previewStatisticEvent(indexes);
-                    }
-                }
-        );
+                );
+            }
+        });
+
 
     }
 
@@ -654,27 +658,30 @@ public class StoriesList extends RecyclerView {
     }
 
     private void loadStoriesLocal() {
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service == null
-                || cacheId == null
-                || cacheId.isEmpty()) {
-            loadStoriesInner();
-            return;
-        }
-        List<Integer> storiesIds = service.listStoriesIds.get(cacheId);
-        if (storiesIds == null) {
-            loadStoriesInner();
-            return;
-        }
-        checkAppearanceManager();
-        setOrRefreshAdapter(storiesIds);
-        if (callback != null) {
-            callback.storiesLoaded(
-                    storiesIds.size(),
-                    StringsUtils.getNonNull(getFeed()),
-                    getStoriesData(storiesIds)
-            );
-        }
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                if (cacheId == null || cacheId.isEmpty()) {
+                    loadStoriesInner();
+                    return;
+                }
+                StoriesListVMState state = core.storiesListVMHolder().getVMState(cacheId);
+                List<Integer> storiesIds;
+                if (state == null || (storiesIds = state.getStoriesIds()) == null) {
+                    loadStoriesInner();
+                    return;
+                }
+                checkAppearanceManager();
+                setOrRefreshAdapter(storiesIds);
+                if (callback != null) {
+                    callback.storiesLoaded(
+                            storiesIds.size(),
+                            StringsUtils.getNonNull(getFeed()),
+                            getStoriesData(storiesIds)
+                    );
+                }
+            }
+        });
     }
 
     private List<StoryData> getStoriesData(List<Integer> storiesIds) {
@@ -810,7 +817,15 @@ public class StoriesList extends RecyclerView {
             @Override
             public void storiesLoaded(final List<Integer> storiesIds) {
                 if (cacheId != null && !cacheId.isEmpty()) {
-                    service.listStoriesIds.put(cacheId, storiesIds);
+                    InAppStoryManager.useCore(new UseIASCoreCallback() {
+                        @Override
+                        public void use(@NonNull IASCore core) {
+                            core.storiesListVMHolder().setVMState(
+                                    cacheId,
+                                    new StoriesListVMState(storiesIds)
+                            );
+                        }
+                    });
                 }
                 post(new Runnable() {
                     @Override

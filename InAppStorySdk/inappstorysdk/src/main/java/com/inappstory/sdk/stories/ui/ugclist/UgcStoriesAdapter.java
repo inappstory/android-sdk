@@ -223,7 +223,7 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
                         );
                         return;
                     } else if (current.deeplink != null) {
-                        StatisticManager.getInstance().sendDeeplinkStory(current.id, current.deeplink, null);
+                        core.statistic().v2().sendDeeplinkStory(current.id, current.deeplink, null);
                         core.callbacksAPI().useCallback(
                                 IASCallbackType.CALL_TO_ACTION,
                                 new UseIASCallback<CallToActionCallback>() {

@@ -9,6 +9,8 @@ import android.telephony.TelephonyManager;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.network.models.Request;
 import com.inappstory.sdk.network.utils.GetUrl;
 import com.inappstory.sdk.network.utils.UserAgent;
@@ -59,13 +61,20 @@ public class ProfilingManager {
     }
 
     public String addTask(String name) {
+        InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
+        if (inAppStoryManager == null) return "";
+        IASCore core = inAppStoryManager.iasCore();
+        IASDataSettingsHolder settingsHolder =
+                (IASDataSettingsHolder) core.settingsAPI();
+
+
         InAppStoryService service = InAppStoryService.getInstance();
         if (service == null) return "";
         String hash = randomUUID().toString();
         ProfilingTask task = new ProfilingTask();
-        task.sessionId = service.getSession().getSessionId();
+        task.sessionId = inAppStoryManager.iasCore().sessionManager().getSession().getSessionId();
         task.isAllowToForceSend = isAllowToSend();
-        task.userId = service.getUserId();
+        task.userId = settingsHolder.userId();
         task.uniqueHash = hash;
         task.name = name;
         task.startTime = System.currentTimeMillis();

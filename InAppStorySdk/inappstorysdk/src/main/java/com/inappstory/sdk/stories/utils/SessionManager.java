@@ -35,6 +35,7 @@ import com.inappstory.sdk.stories.statistic.GetOldStatisticManagerCallback;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.ugc.extinterfaces.IOpenSessionCallback;
+import com.inappstory.sdk.utils.ISessionHolder;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -58,6 +59,13 @@ public class SessionManager {
         }
     }
 
+
+    private final ISessionHolder sessionHolder = new SessionHolder();
+
+    public ISessionHolder getSession() {
+        return sessionHolder;
+    }
+
     public void checkOpenStatistic(final OpenSessionCallback callback) {
         boolean checkOpen = false;
         synchronized (openProcessLock) {
@@ -65,7 +73,7 @@ public class SessionManager {
         }
         InAppStoryService service = InAppStoryService.getInstance();
         if (service != null && service.isConnected()) {
-            String session = service.getSession().getSessionId();
+            String session = getSession().getSessionId();
             if (session.isEmpty() || checkOpen) {
                 openSession(callback);
             } else {
@@ -96,7 +104,7 @@ public class SessionManager {
                         response.isAllowCrash
                 );
                 response.session.isAllowUgc = response.isAllowUgc;
-                service.getSession().setSession(response.session);
+                getSession().setSession(response.session);
                 service.saveSessionPlaceholders(response.placeholders);
                 service.saveSessionImagePlaceholders(response.imagePlaceholders);
             }
@@ -321,9 +329,9 @@ public class SessionManager {
     }
 
     private void clearCaches() {
+        core.storiesListVMHolder().clear();
         InAppStoryService inAppStoryService = InAppStoryService.getInstance();
         if (inAppStoryService != null) {
-            inAppStoryService.listStoriesIds.clear();
             inAppStoryService.clearGames();
         }
     }

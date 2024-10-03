@@ -21,15 +21,15 @@ public class IASSingleStoryExternalAPIImpl implements IASSingleStory {
             final AppearanceManager appearanceManager,
             final IShowStoryOnceCallback callback
     ) {
-
-        InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
-            public void use(@NonNull InAppStoryManager manager) throws Exception {
-                manager.showStoryOnce(storyId, context, appearanceManager, callback);
+            public void use(@NonNull IASCore core) {
+                core.singleStoryAPI().showOnce(context, storyId, appearanceManager, callback);
             }
         });
     }
 
+    @Override
     public void show(
             final Context context,
             final String storyId,
@@ -37,10 +37,10 @@ public class IASSingleStoryExternalAPIImpl implements IASSingleStory {
             final IShowStoryCallback callback,
             final Integer slide
     ) {
-        InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
-            public void use(@NonNull InAppStoryManager manager) throws Exception {
-                manager.showStory(storyId, context, appearanceManager, callback, slide);
+            public void use(@NonNull IASCore core) {
+                core.singleStoryAPI().show(context, storyId, appearanceManager, callback, slide);
             }
         });
     }

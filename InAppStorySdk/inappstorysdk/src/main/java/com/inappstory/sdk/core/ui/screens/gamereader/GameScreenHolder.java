@@ -7,6 +7,7 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.ui.screens.holder.AbstractScreenHolder;
 import com.inappstory.sdk.core.ui.screens.holder.IOverlapContainerData;
 import com.inappstory.sdk.core.ui.screens.holder.IOverlapContainerHolder;
@@ -20,6 +21,7 @@ import java.util.HashMap;
 
 public class GameScreenHolder extends AbstractScreenHolder<BaseGameScreen, LaunchGameScreenData>  implements IOverlapContainerHolder {
     private final ShareProcessHandler shareProcessHandler;
+    private final IASCore core;
 
     HashMap<String, GameCompleteEventObserver> gameObservables = new HashMap<>();
 
@@ -35,8 +37,9 @@ public class GameScreenHolder extends AbstractScreenHolder<BaseGameScreen, Launc
         gameObservables.remove(id);
     }
 
-    public GameScreenHolder(ShareProcessHandler shareProcessHandler) {
+    public GameScreenHolder(IASCore core, ShareProcessHandler shareProcessHandler) {
         this.shareProcessHandler = shareProcessHandler;
+        this.core = core;
     }
 
     @Override

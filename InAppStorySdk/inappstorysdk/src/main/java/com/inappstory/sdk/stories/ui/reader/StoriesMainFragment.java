@@ -485,31 +485,32 @@ public abstract class StoriesMainFragment extends Fragment implements
                                         );
                                     }
                                 });
+                        String cause = StatisticManager.AUTO;
+                        switch (action) {
+                            case CloseStory.CLICK:
+                                cause = StatisticManager.CLICK;
+                                break;
+                            case CloseStory.CUSTOM:
+                                cause = StatisticManager.CUSTOM;
+                                break;
+                            case -1:
+                                cause = StatisticManager.BACK;
+                                break;
+                            case CloseStory.SWIPE:
+                                cause = StatisticManager.SWIPE;
+                                break;
+                        }
+                        core.statistic().v2().sendCloseStory(
+                                story.id,
+                                cause,
+                                story.lastIndex,
+                                story.getSlidesCount(),
+                                launchData.getFeed()
+                        );
                     }
                 });
 
-                String cause = StatisticManager.AUTO;
-                switch (action) {
-                    case CloseStory.CLICK:
-                        cause = StatisticManager.CLICK;
-                        break;
-                    case CloseStory.CUSTOM:
-                        cause = StatisticManager.CUSTOM;
-                        break;
-                    case -1:
-                        cause = StatisticManager.BACK;
-                        break;
-                    case CloseStory.SWIPE:
-                        cause = StatisticManager.SWIPE;
-                        break;
-                }
-                StatisticManager.getInstance().sendCloseStory(
-                        story.id,
-                        cause,
-                        story.lastIndex,
-                        story.getSlidesCount(),
-                        launchData.getFeed()
-                );
+
             }
         }
         cleanReader();

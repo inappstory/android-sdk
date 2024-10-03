@@ -37,7 +37,10 @@ import androidx.appcompat.widget.AppCompatTextView;
 import androidx.fragment.app.Fragment;
 
 import com.inappstory.sdk.AppearanceManager;
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.stories.api.models.dialogstructure.CenterStructure;
 import com.inappstory.sdk.stories.api.models.dialogstructure.DialogStructure;
 import com.inappstory.sdk.stories.api.models.dialogstructure.SizeStructure;
@@ -558,7 +561,12 @@ public class ContactDialogFragment extends Fragment implements IASBackPressHandl
                 editText.getMainText().addTextChangedListener(this);
             }
         });
-        StatisticManager.getInstance().pauseStoryEvent(false);
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.statistic().v2().pauseStoryEvent(false);
+            }
+        });
         final int finalInttype = inttype;
         buttonBackground.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -613,7 +621,12 @@ public class ContactDialogFragment extends Fragment implements IASBackPressHandl
     }
 
     private void hideDialog() {
-        StatisticManager.getInstance().resumeStoryEvent(true);
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.statistic().v2().resumeStoryEvent(true);
+            }
+        });
         getParentFragmentManager().popBackStack();
     }
 

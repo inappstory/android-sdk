@@ -4,10 +4,13 @@ import android.text.TextUtils;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.api.IASDataSettingsHolder;
+import com.inappstory.sdk.core.api.IASStatisticV2;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.models.Response;
-import com.inappstory.sdk.stories.api.models.CurrentState;
+import com.inappstory.sdk.stories.api.models.CurrentV2StatisticState;
 import com.inappstory.sdk.stories.utils.LoopedExecutor;
 
 import java.util.ArrayList;
@@ -18,11 +21,23 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 
-public class StatisticManager {
+public class StatisticManager implements IASStatisticV2 {
     private static StatisticManager INSTANCE;
+    private final IASCore core;
 
-    private static final ExecutorService netExecutor = Executors.newFixedThreadPool(1);
-    private static final ExecutorService runnableExecutor = Executors.newFixedThreadPool(1);
+    public void enabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    private boolean enabled;
+
+    public StatisticManager(IASCore core) {
+        this.core = core;
+        init();
+    }
+
+    private final ExecutorService netExecutor = Executors.newFixedThreadPool(1);
+    private final ExecutorService runnableExecutor = Executors.newFixedThreadPool(1);
 
     public static final String NEXT = "next";
     public static final String APPCLOSE = "app-close";
@@ -53,15 +68,13 @@ public class StatisticManager {
     private ArrayList<StatisticTask> faketasks = new ArrayList<>();
 
 
-    public void addTask(StatisticTask task) {
+    private void addTask(StatisticTask task) {
         addTask(task, false);
     }
 
 
-    public void addTask(StatisticTask task, boolean force) {
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (!force && service != null &&
-                service.statV2Disallowed()) return;
+    private void addTask(StatisticTask task, boolean force) {
+        if (!force && !enabled) return;
         synchronized (statisticTasksLock) {
             tasks.add(task);
             saveTasksSP();
@@ -69,46 +82,41 @@ public class StatisticManager {
     }
 
 
-    public void addFakeTask(StatisticTask task) {
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service != null &&
-                service.statV2Disallowed()) return;
+    private void addFakeTask(StatisticTask task) {
+        if (!enabled) return;
         synchronized (statisticTasksLock) {
             faketasks.add(task);
             saveFakeTasksSP();
         }
     }
 
-    public static void saveTasksSP() {
+    private void saveTasksSP() {
         try {
             ArrayList<StatisticTask> ltasks = new ArrayList<>();
-            ltasks.addAll(getInstance().tasks);
+            ltasks.addAll(tasks);
             SharedPreferencesAPI.saveString(TASKS_KEY, JsonParser.getJson(ltasks));
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public static void saveFakeTasksSP() {
+    private void saveFakeTasksSP() {
         try {
             ArrayList<StatisticTask> ltasks = new ArrayList<>();
-            ltasks.addAll(getInstance().faketasks);
+            ltasks.addAll(faketasks);
             SharedPreferencesAPI.saveString(FAKE_TASKS_KEY, JsonParser.getJson(ltasks));
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public static StatisticManager getInstance() {
-        if (INSTANCE == null) {
-            INSTANCE = new StatisticManager();
-            INSTANCE.init();
-        }
-        return INSTANCE;
-    }
+    private final String TASKS_KEY = "statisticTasks";
+    private final String FAKE_TASKS_KEY = "fakeStatisticTasks";
 
-    public static final String TASKS_KEY = "statisticTasks";
-    public static final String FAKE_TASKS_KEY = "fakeStatisticTasks";
+    @Override
+    public boolean enabled() {
+        return false;
+    }
 
     public void cleanTasks() {
         synchronized (statisticTasksLock) {
@@ -147,7 +155,7 @@ public class StatisticManager {
     LoopedExecutor loopedExecutor = new LoopedExecutor(100, 100);
 
 
-    public void init() {
+    private void init() {
         String tasksJson = SharedPreferencesAPI.getString(TASKS_KEY);
         String fakeTasksJson = SharedPreferencesAPI.getString(FAKE_TASKS_KEY);
         synchronized (statisticTasksLock) {
@@ -168,10 +176,6 @@ public class StatisticManager {
         loopedExecutor.init(queueTasksRunnable);
     }
 
-    public StatisticManager() {
-
-    }
-
     public void cleanFakeEvents() {
         synchronized (statisticTasksLock) {
             faketasks.clear();
@@ -180,7 +184,7 @@ public class StatisticManager {
     }
 
 
-    private Runnable queueTasksRunnable = new Runnable() {
+    private final Runnable queueTasksRunnable = new Runnable() {
         @Override
         public void run() {
             InAppStoryService service = InAppStoryService.getInstance();
@@ -286,25 +290,11 @@ public class StatisticManager {
         addTask(task);
     }
 
-    public void generateBase(StatisticTask task) {
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service != null) {
-            task.userId = service.getUserId();
-            task.sessionId = service.getSession().getSessionId();
-        }
+    private void generateBase(StatisticTask task) {
+
+        task.userId = ((IASDataSettingsHolder) core.settingsAPI()).userId();
+        task.sessionId = core.sessionManager().getSession().getSessionId();
         task.timestamp = System.currentTimeMillis() / 1000;
-    }
-
-    public void sendReadStory(final int i,
-                              final String feedId) {
-        StatisticTask task = new StatisticTask();
-        task.event = prefix + "read";
-        task.storyId = Integer.toString(i);
-
-        task.feedId = feedId;
-        generateBase(task);
-        addTask(task);
-
     }
 
     public void sendCloseStory(final int i,
@@ -328,7 +318,7 @@ public class StatisticManager {
         pauseTime = 0;
     }
 
-    public CurrentState currentState;
+    private CurrentV2StatisticState currentState;
 
     static Object csLock = new Object();
 
@@ -349,7 +339,7 @@ public class StatisticManager {
                                    final String feedId) {
         synchronized (csLock) {
             pauseTime = 0;
-            currentState = new CurrentState();
+            currentState = new CurrentV2StatisticState();
             currentState.storyId = stId;
             currentState.slideIndex = ind;
             currentState.feedId = feedId;
@@ -502,6 +492,11 @@ public class StatisticManager {
         task.feedId = feedId;
         generateBase(task);
         addTask(task);
+    }
+
+    @Override
+    public void changeV2StatePauseTime(long newTime) {
+        if (currentState != null) currentState.storyPause = newTime;
     }
 
 

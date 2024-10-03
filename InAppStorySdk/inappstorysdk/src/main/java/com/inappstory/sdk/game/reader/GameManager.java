@@ -9,9 +9,12 @@ import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASCallback;
 import com.inappstory.sdk.core.api.IASCallbackType;
+import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.UseIASCallback;
+import com.inappstory.sdk.core.api.impl.IASSingleStoryImpl;
 import com.inappstory.sdk.core.ui.screens.ShareProcessHandler;
 import com.inappstory.sdk.game.reader.logger.AbstractGameLogger;
 import com.inappstory.sdk.game.reader.logger.GameLoggerLvl0;
@@ -47,7 +50,7 @@ import java.util.List;
 public class GameManager {
     private final IASCore core;
     String path;
-    private final String gameCenterId;
+    final String gameCenterId;
     List<WebResource> resources;
     final GameLoadStatusHolder statusHolder = new GameLoadStatusHolder();
     String gameConfig;
@@ -87,6 +90,11 @@ public class GameManager {
 
     void gameInstanceSetData(String gameInstanceId, String data, boolean sendToServer) {
 
+        InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
+        if (inAppStoryManager == null) return;
+        IASDataSettingsHolder settingsHolder =
+                (IASDataSettingsHolder) inAppStoryManager.iasCore().settingsAPI();
+
         InAppStoryService service = InAppStoryService.getInstance();
         if (service == null) return;
         String id = gameInstanceId;
@@ -97,7 +105,7 @@ public class GameManager {
             return;
         }
         KeyValueStorage.saveString("gameInstance_" + gameInstanceId
-                + "__" + service.getUserId(), data);
+                + "__" + settingsHolder.userId(), data);
 
         if (service.statV1Disallowed()) return;
         if (sendToServer) {
@@ -133,6 +141,10 @@ public class GameManager {
     }
 
     void storySetData(String data, boolean sendToServer) {
+        InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
+        if (inAppStoryManager == null) return;
+        IASDataSettingsHolder settingsHolder =
+                (IASDataSettingsHolder) inAppStoryManager.iasCore().settingsAPI();
         InAppStoryService service = InAppStoryService.getInstance();
         if (service == null) return;
         if (dataModel == null) return;
@@ -140,8 +152,9 @@ public class GameManager {
         if (networkClient == null) {
             return;
         }
+
         KeyValueStorage.saveString("story" + dataModel.slideData.story.id
-                + "__" + service.getUserId(), data);
+                + "__" + settingsHolder.userId(), data);
 
         String sessionId = service.getSession().getSessionId();
         if (service.statV1Disallowed() || sessionId.isEmpty()) return;
@@ -179,7 +192,7 @@ public class GameManager {
 
     void sendGameStat(String name, String data) {
         if (dataModel != null)
-            StatisticManager.getInstance().sendGameEvent(name, data, dataModel.slideData.story.feed);
+            core.statistic().v2().sendGameEvent(name, data, dataModel.slideData.story.feed);
     }
 
     void closeGameReader() {
@@ -234,12 +247,14 @@ public class GameManager {
         if (options.openStory != null
                 && options.openStory.id != null
                 && !options.openStory.id.isEmpty()) {
-            InAppStoryManager.getInstance().showStoryFromReader(
-                    options.openStory.id,
+            ((IASSingleStoryImpl)core.singleStoryAPI()).show(
                     host.getContext(),
-                    0,
+                    options.openStory.id,
                     AppearanceManager.getCommonInstance(),
+                    null,
                     Story.StoryType.COMMON,
+                    0,
+                    true,
                     SourceType.SINGLE,
                     ShowStory.ACTION_CUSTOM
             );

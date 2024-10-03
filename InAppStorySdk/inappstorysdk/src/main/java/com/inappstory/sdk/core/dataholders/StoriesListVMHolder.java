@@ -1,17 +1,25 @@
 package com.inappstory.sdk.core.dataholders;
 
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.stories.StoriesListVM;
 import com.inappstory.sdk.core.stories.StoriesListVMState;
 
 import java.util.HashMap;
+import java.util.Map;
 
 public class StoriesListVMHolder implements IStoriesListVMHolder {
-    private HashMap<String, StoriesListVM> storiesListVMs;
+    private final IASCore core;
+    private final Map<String, StoriesListVM> storiesListVMs = new HashMap<>();
 
     private final Object lock = new Object();
 
+    public StoriesListVMHolder(IASCore core) {
+        this.core = core;
+    }
+
     @Override
     public StoriesListVMState getVMState(String uniqueId) {
+        if (uniqueId == null) return null;
         synchronized (lock) {
             StoriesListVM storiesListVM = storiesListVMs.get(uniqueId);
             if (storiesListVM != null) return storiesListVM.getState();
@@ -21,6 +29,7 @@ public class StoriesListVMHolder implements IStoriesListVMHolder {
 
     @Override
     public void setVMState(String uniqueId, StoriesListVMState state) {
+        if (uniqueId == null) return;
         synchronized (lock) {
             StoriesListVM storiesListVM = storiesListVMs.get(uniqueId);
             if (storiesListVM == null) {
@@ -33,6 +42,7 @@ public class StoriesListVMHolder implements IStoriesListVMHolder {
 
     @Override
     public void removeVM(String uniqueId) {
+        if (uniqueId == null) return;
         synchronized (lock) {
             storiesListVMs.remove(uniqueId);
         }

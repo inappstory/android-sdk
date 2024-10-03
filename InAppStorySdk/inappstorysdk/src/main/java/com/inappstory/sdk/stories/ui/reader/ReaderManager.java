@@ -17,7 +17,9 @@ import com.inappstory.sdk.UseManagerInstanceCallback;
 import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASCallbackType;
+import com.inappstory.sdk.core.api.IASStatisticV2;
 import com.inappstory.sdk.core.api.UseIASCallback;
+import com.inappstory.sdk.core.api.impl.IASSingleStoryImpl;
 import com.inappstory.sdk.core.ui.screens.ShareProcessHandler;
 import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryScreen;
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenAppearance;
@@ -303,20 +305,17 @@ public class ReaderManager {
                     } else {
                         appearanceManager = new AppearanceManager();
                     }
-                    InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
-                        @Override
-                        public void use(@NonNull InAppStoryManager manager) throws Exception {
-                            manager.showStoryFromReader(
-                                    storyId + "",
-                                    host.getContext(),
-                                    slideIndex,
-                                    appearanceManager,
-                                    storyType,
-                                    SourceType.SINGLE,
-                                    ShowStory.ACTION_CUSTOM
-                            );
-                        }
-                    });
+                    ((IASSingleStoryImpl)core.singleStoryAPI()).show(
+                            host.getContext(),
+                            storyId + "",
+                            appearanceManager,
+                            null,
+                            storyType,
+                            slideIndex,
+                            true,
+                            SourceType.SINGLE,
+                            ShowStory.ACTION_CUSTOM
+                    );
                 }
             }
         });
@@ -526,14 +525,15 @@ public class ReaderManager {
         if (service == null) return;
         Story story2 = service.getStoryDownloadManager().getStoryById(id, storyType);
         if (story2 == null) return;
-        StatisticManager.getInstance().sendCurrentState();
+        IASStatisticV2 statisticV2 = core.statistic().v2();
+        statisticV2.sendCurrentState();
         if (hasCloseEvent) {
             Story story = service.getStoryDownloadManager().getStoryById(storiesIds.get(lastPos), storyType);
-            StatisticManager.getInstance().sendCloseStory(story.id, whence, story.lastIndex, story.getSlidesCount(), feedId);
+            statisticV2.sendCloseStory(story.id, whence, story.lastIndex, story.getSlidesCount(), feedId);
         }
-        StatisticManager.getInstance().sendViewStory(id, whence, feedId);
-        StatisticManager.getInstance().sendOpenStory(id, whence, feedId);
-        StatisticManager.getInstance().createCurrentState(story2.id, story2.lastIndex, feedId);
+        statisticV2.sendViewStory(id, whence, feedId);
+        statisticV2.sendOpenStory(id, whence, feedId);
+        statisticV2.createCurrentState(story2.id, story2.lastIndex, feedId);
     }
 
     void shareComplete() {
@@ -695,7 +695,7 @@ public class ReaderManager {
         if (currentSubscriber != null) {
             currentSubscriber.pauseSlide(withBackground);
         }
-        StatisticManager.getInstance().pauseStoryEvent(withBackground);
+        core.statistic().v2().pauseStoryEvent(withBackground);
     }
 
     public void resumeCurrent(boolean withBackground) {
@@ -710,7 +710,7 @@ public class ReaderManager {
                 }
             });
         }
-        StatisticManager.getInstance().resumeStoryEvent(withBackground);
+        core.statistic().v2().resumeStoryEvent(withBackground);
     }
 
     public void swipeUp() {

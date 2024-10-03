@@ -8,8 +8,9 @@ import com.inappstory.sdk.core.api.IASOnboardings;
 import com.inappstory.sdk.core.api.IASDataSettings;
 import com.inappstory.sdk.core.api.IASSingleStory;
 import com.inappstory.sdk.core.api.IASStackFeed;
+import com.inappstory.sdk.core.api.IASStatistic;
 import com.inappstory.sdk.core.api.IASStoryList;
-import com.inappstory.sdk.core.api.IASStoryListCache;
+import com.inappstory.sdk.core.api.IASStoriesOpenedCache;
 import com.inappstory.sdk.core.dataholders.IStoriesListVMHolder;
 import com.inappstory.sdk.core.ui.screens.ScreensManager;
 import com.inappstory.sdk.stories.utils.SessionManager;
@@ -25,7 +26,8 @@ public interface IASCore {
     IASStackFeed stackFeedAPI();
     IASStoryList storyListAPI();
     IStoriesListVMHolder storiesListVMHolder();
-    IASStoryListCache storyListCache();
+    IASStoriesOpenedCache storyListCache();
     ScreensManager screensManager();
     SessionManager sessionManager();
+    IASStatistic statistic();
 }

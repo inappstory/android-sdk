@@ -61,17 +61,15 @@ public class GoodsWidgetAdapter extends RecyclerView.Adapter<GoodsWidgetItem> {
                                     }
                                 }
                         );
+                        core.statistic().v2().sendGoodsClick(
+                                config.slideData.story.id,
+                                config.slideData.index,
+                                config.widgetId,
+                                data.sku,
+                                config.slideData.story.feed
+                        );
                     }
                 });
-                if (StatisticManager.getInstance() != null) {
-                    StatisticManager.getInstance().sendGoodsClick(
-                            config.slideData.story.id,
-                            config.slideData.index,
-                            config.widgetId,
-                            data.sku,
-                            config.slideData.story.feed
-                    );
-                }
             }
         }
     }

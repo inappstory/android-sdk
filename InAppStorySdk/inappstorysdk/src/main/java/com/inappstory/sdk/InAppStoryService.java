@@ -166,8 +166,6 @@ public class InAppStoryService {
         }
     }
 
-    public HashMap<String, List<Integer>> listStoriesIds = new HashMap<>();
-
     public String getUserId() {
         if (userId == null) {
             InAppStoryManager manager = InAppStoryManager.getInstance();
@@ -214,10 +212,11 @@ public class InAppStoryService {
     };
 
     public void saveStoriesOpened(final List<Story> stories, final Story.StoryType type) {
-        InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
-            public void use(@NonNull InAppStoryManager manager) {
-                Set<String> opens = SharedPreferencesAPI.getStringSet(manager.getLocalOpensKey(type));
+            public void use(@NonNull IASCore core) {
+                String key = core.storyListCache().getLocalOpensKey(type);
+                Set<String> opens = SharedPreferencesAPI.getStringSet(key);
                 if (opens == null) opens = new HashSet<>();
                 for (Story story : stories) {
                     if (story.isOpened) {
@@ -226,19 +225,20 @@ public class InAppStoryService {
                         story.isOpened = true;
                     }
                 }
-                SharedPreferencesAPI.saveStringSet(manager.getLocalOpensKey(type), opens);
+                SharedPreferencesAPI.saveStringSet(key, opens);
             }
         });
     }
 
     public void saveStoryOpened(final int id, final Story.StoryType type) {
-        InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
-            public void use(@NonNull InAppStoryManager manager) {
-                Set<String> opens = SharedPreferencesAPI.getStringSet(manager.getLocalOpensKey(type));
+            public void use(@NonNull IASCore core) {
+                String key = core.storyListCache().getLocalOpensKey(type);
+                Set<String> opens = SharedPreferencesAPI.getStringSet(key);
                 if (opens == null) opens = new HashSet<>();
                 opens.add(Integer.toString(id));
-                SharedPreferencesAPI.saveStringSet(manager.getLocalOpensKey(type), opens);
+                SharedPreferencesAPI.saveStringSet(key, opens);
             }
         });
     }
@@ -323,7 +323,12 @@ public class InAppStoryService {
     }
 
     public void clearLocalData() {
-        listStoriesIds.clear();
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.storiesListVMHolder().clear();
+            }
+        });
         storyDownloadManager.clearLocalData();
     }
 
@@ -360,14 +365,19 @@ public class InAppStoryService {
         return stackStoryObservers;
     }
 
-    public void sendPageOpenStatistic(final int storyId, final int index, String feedId) {
+    public void sendPageOpenStatistic(final int storyId, final int index, final String feedId) {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.statistic().v2().createCurrentState(storyId, index, feedId);
+            }
+        });
         OldStatisticManager.useInstance(new GetOldStatisticManagerCallback() {
             @Override
             public void get(@NonNull OldStatisticManager manager) {
                 manager.addStatisticBlock(storyId, index);
             }
         });
-        StatisticManager.getInstance().createCurrentState(storyId, index, feedId);
     }
 
 
@@ -858,7 +868,7 @@ public class InAppStoryService {
         new ImageLoader(context);
         createDownloadManager(exceptionCache);
 
-        timerManager = new TimerManager();
+        timerManager = new TimerManager(InAppStoryManager.getInstance().iasCore());
         if (tempListSubscribers != null) {
             if (listSubscribers == null) listSubscribers = new HashSet<>();
             InAppStoryManager.debugSDKCalls("IASService_subscribers", "temp size:" + tempListSubscribers.size() + " / size:" + listSubscribers.size());

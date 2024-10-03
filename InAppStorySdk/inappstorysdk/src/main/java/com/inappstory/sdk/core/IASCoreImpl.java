@@ -8,8 +8,9 @@ import com.inappstory.sdk.core.api.IASOnboardings;
 import com.inappstory.sdk.core.api.IASDataSettings;
 import com.inappstory.sdk.core.api.IASSingleStory;
 import com.inappstory.sdk.core.api.IASStackFeed;
+import com.inappstory.sdk.core.api.IASStatistic;
 import com.inappstory.sdk.core.api.IASStoryList;
-import com.inappstory.sdk.core.api.IASStoryListCache;
+import com.inappstory.sdk.core.api.IASStoriesOpenedCache;
 import com.inappstory.sdk.core.api.impl.IASCallbacksImpl;
 import com.inappstory.sdk.core.api.impl.IASFavoritesImpl;
 import com.inappstory.sdk.core.api.impl.IASGamesImpl;
@@ -18,7 +19,8 @@ import com.inappstory.sdk.core.api.impl.IASOnboardingsImpl;
 import com.inappstory.sdk.core.api.impl.IASSettingsImpl;
 import com.inappstory.sdk.core.api.impl.IASSingleStoryImpl;
 import com.inappstory.sdk.core.api.impl.IASStackFeedImpl;
-import com.inappstory.sdk.core.api.impl.IASStoryListCacheImpl;
+import com.inappstory.sdk.core.api.impl.IASStatisticImpl;
+import com.inappstory.sdk.core.api.impl.IASStoriesOpenedCacheImpl;
 import com.inappstory.sdk.core.dataholders.IStoriesListVMHolder;
 import com.inappstory.sdk.core.dataholders.StoriesListVMHolder;
 import com.inappstory.sdk.core.ui.screens.ScreensManager;
@@ -36,11 +38,11 @@ public class IASCoreImpl implements IASCore {
     private final IASSingleStory singleStory = new IASSingleStoryImpl(this);
     private final IASStackFeed stackFeed = new IASStackFeedImpl(this);
     private IASStoryList storyList;
-    private final IStoriesListVMHolder storiesListVMHolder = new StoriesListVMHolder();
+    private final IStoriesListVMHolder storiesListVMHolder = new StoriesListVMHolder(this);
     private final ScreensManager screensManager = new ScreensManager();
     private final SessionManager sessionManager = new SessionManager(this);
-    private final IASStoryListCache storyListCache = new IASStoryListCacheImpl(this);
-
+    private final IASStoriesOpenedCache storyListCache = new IASStoriesOpenedCacheImpl(this);
+    private final IASStatistic statistic = new IASStatisticImpl(this);
 
     public IASCoreImpl() {
         synchronized (lock) {
@@ -106,7 +108,7 @@ public class IASCoreImpl implements IASCore {
     }
 
     @Override
-    public IASStoryListCache storyListCache() {
+    public IASStoriesOpenedCache storyListCache() {
         return storyListCache;
     }
 
@@ -118,5 +120,10 @@ public class IASCoreImpl implements IASCore {
     @Override
     public SessionManager sessionManager() {
         return sessionManager;
+    }
+
+    @Override
+    public IASStatistic statistic() {
+        return statistic;
     }
 }

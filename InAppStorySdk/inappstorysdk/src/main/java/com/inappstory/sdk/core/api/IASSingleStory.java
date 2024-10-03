@@ -20,8 +20,7 @@ public interface IASSingleStory {
             String storyId,
             AppearanceManager appearanceManager,
             IShowStoryCallback callback,
-            Integer slide,
-            boolean openedFromReader
+            Integer slide
     );
 
     void loadCallback(SingleLoadCallback singleLoadCallback);

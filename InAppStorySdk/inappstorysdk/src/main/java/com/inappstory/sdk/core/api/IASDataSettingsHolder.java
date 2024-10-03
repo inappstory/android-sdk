@@ -15,4 +15,7 @@ public interface IASDataSettingsHolder {
     List<String> tags();
     boolean noCorrectUserIdOrDevice();
     boolean noCorrectTags();
+    boolean gameDemoMode();
+    boolean sendStatistic();
+
 }

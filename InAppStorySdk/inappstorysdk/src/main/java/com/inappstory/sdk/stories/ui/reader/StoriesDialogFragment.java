@@ -110,7 +110,7 @@ public class StoriesDialogFragment extends DialogFragment implements IASBackPres
                                     }
                                 });
                         String cause = StatisticManager.CLICK;
-                        StatisticManager.getInstance().sendCloseStory(story.id, cause, story.lastIndex,
+                        core.statistic().v2().sendCloseStory(story.id, cause, story.lastIndex,
                                 story.getSlidesCount(),
                                 launchData.getFeed());
                     }

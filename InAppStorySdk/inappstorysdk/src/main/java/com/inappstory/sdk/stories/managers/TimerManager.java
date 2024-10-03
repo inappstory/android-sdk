@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.UseServiceInstanceCallback;
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.statistic.GetOldStatisticManagerCallback;
@@ -17,6 +18,11 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 public class TimerManager {
+    public TimerManager(IASCore core) {
+        this.core = core;
+    }
+
+    private final IASCore core;
     private long timerStartTimestamp;
 
     private long timerDuration;
@@ -105,7 +111,8 @@ public class TimerManager {
     }
 
     public void resumeTimerAndRefreshStat() {
-        StatisticManager.getInstance().cleanFakeEvents();
+
+        core.statistic().v2().cleanFakeEvents();
         if (pageManager == null) return;
         OldStatisticManager.useInstance(
                 pageManager.getParentManager().getSessionId(),
@@ -119,8 +126,9 @@ public class TimerManager {
                 }
         );
         pauseTime += System.currentTimeMillis() - startPauseTime;
-        if (StatisticManager.getInstance() != null && StatisticManager.getInstance().currentState != null)
-            StatisticManager.getInstance().currentState.storyPause = pauseTime;
+
+        core.statistic().v2().cleanFakeEvents();
+        core.statistic().v2().changeV2StatePauseTime(pauseTime);
         startPauseTime = 0;
     }
 
@@ -151,7 +159,8 @@ public class TimerManager {
                 Story story = service.getStoryDownloadManager()
                         .getStoryById(service.getCurrentId(), type);
                 if (story != null) {
-                    StatisticManager.getInstance().addFakeEvents(story.id, story.lastIndex, story.getSlidesCount(),
+
+                    core.statistic().v2().addFakeEvents(story.id, story.lastIndex, story.getSlidesCount(),
                             pageManager != null ? pageManager.getFeedId() : null);
                 }
                 startPauseTime = System.currentTimeMillis();

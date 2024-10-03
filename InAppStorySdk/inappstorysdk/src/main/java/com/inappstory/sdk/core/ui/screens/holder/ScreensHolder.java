@@ -3,6 +3,7 @@ package com.inappstory.sdk.core.ui.screens.holder;
 import android.os.Handler;
 import android.os.Looper;
 
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.ui.screens.ShareProcessHandler;
 import com.inappstory.sdk.core.ui.screens.gamereader.GameScreenHolder;
 import com.inappstory.sdk.core.ui.screens.inappmessagereader.IAMScreenHolder;
@@ -11,14 +12,21 @@ import com.inappstory.sdk.core.ui.screens.storyreader.StoryScreenHolder;
 import com.inappstory.sdk.stories.ui.reader.ForceCloseReaderCallback;
 
 public class ScreensHolder implements IScreensHolder {
+    public ScreensHolder(IASCore core) {
+        this.storyScreenHolder = new StoryScreenHolder(core, shareProcessHandler);
+        this.gameScreenHolder = new GameScreenHolder(core, shareProcessHandler);
+        this.IAMScreenHolder = new IAMScreenHolder();
+    }
+
     public ShareProcessHandler getShareProcessHandler() {
         return shareProcessHandler;
     }
 
+
     private final ShareProcessHandler shareProcessHandler = new ShareProcessHandler();
-    GameScreenHolder gameScreenHolder = new GameScreenHolder(shareProcessHandler);
-    StoryScreenHolder storyScreenHolder = new StoryScreenHolder(shareProcessHandler);
-    IAMScreenHolder IAMScreenHolder = new IAMScreenHolder();
+    private final GameScreenHolder gameScreenHolder;
+    private final StoryScreenHolder storyScreenHolder;
+    private final IAMScreenHolder IAMScreenHolder;
 
     public boolean hasActiveScreen(IScreenHolder activeHolder) {
         return checkHolderForScreen(storyScreenHolder, activeHolder) ||

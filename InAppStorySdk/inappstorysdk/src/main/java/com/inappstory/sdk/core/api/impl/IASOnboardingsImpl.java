@@ -13,6 +13,7 @@ import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.UseManagerInstanceCallback;
 import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.IASOnboardings;
@@ -95,8 +96,9 @@ public class IASOnboardingsImpl implements IASOnboardings {
                                 if (inAppStoryManager == null) return;
                                 ProfilingManager.getInstance().setReady(onboardUID);
                                 List<Story> notOpened = new ArrayList<>();
+                                String key = core.storyListCache().getLocalOpensKey(Story.StoryType.COMMON);
                                 Set<String> opens = SharedPreferencesAPI.getStringSet(
-                                        inAppStoryManager.getLocalOpensKey()
+                                        key
                                 );
                                 if (opens == null) opens = new HashSet<>();
                                 if (response.stories != null) {

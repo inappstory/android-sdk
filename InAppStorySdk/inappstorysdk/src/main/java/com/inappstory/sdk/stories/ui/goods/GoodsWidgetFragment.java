@@ -173,12 +173,10 @@ public class GoodsWidgetFragment extends Fragment implements IASBackPressHandler
                                         }
                                     }
                             );
+                            core.statistic().v2().sendGoodsClick(slideData.story.id,
+                                    slideData.index, widgetId, sku, slideData.story.feed);
                         }
                     });
-                    if (StatisticManager.getInstance() != null) {
-                        StatisticManager.getInstance().sendGoodsClick(slideData.story.id,
-                                slideData.index, widgetId, sku, slideData.story.feed);
-                    }
                 }
             };
         }

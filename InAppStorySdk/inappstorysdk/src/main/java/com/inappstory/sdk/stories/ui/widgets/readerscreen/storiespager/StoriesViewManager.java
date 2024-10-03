@@ -75,7 +75,7 @@ public class StoriesViewManager {
 
     public void sendStoryWidgetEvent(String name, String data, String eventData) {
         if (data != null)
-            StatisticManager.getInstance().sendStoryWidgetEvent(name, data,
+            core.statistic().v2().sendStoryWidgetEvent(name, data,
                     pageManager != null ? pageManager.getFeedId() : null);
         if (eventData != null)
             pageManager.widgetEvent(name, eventData);

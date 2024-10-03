@@ -8,6 +8,7 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.ui.screens.holder.AbstractScreenHolder;
 import com.inappstory.sdk.core.ui.screens.holder.IOverlapContainerData;
 import com.inappstory.sdk.core.ui.screens.holder.IOverlapContainerHolder;
@@ -22,8 +23,13 @@ import com.inappstory.sdk.stories.ui.reader.OverlapFragment;
 
 public class StoryScreenHolder extends AbstractScreenHolder<BaseStoryScreen, LaunchStoryScreenData> implements IOverlapContainerHolder {
     private final ShareProcessHandler shareProcessHandler;
+    private final IASCore core;
 
-    public StoryScreenHolder(ShareProcessHandler shareProcessHandler) {
+    public StoryScreenHolder(
+            IASCore core,
+            ShareProcessHandler shareProcessHandler
+    ) {
+        this.core = core;
         this.shareProcessHandler = shareProcessHandler;
     }
 
@@ -89,9 +95,13 @@ public class StoryScreenHolder extends AbstractScreenHolder<BaseStoryScreen, Lau
         if (widgetId != null) localTaskId = widgetId;
         else localTaskId = randomUUID().toString();
         final FragmentManager fragmentManager = getScreen().getScreenFragmentManager();
-        if (StatisticManager.getInstance() != null && slideData != null) {
-            StatisticManager.getInstance().sendGoodsOpen(slideData.story.id,
-                    slideData.index, widgetId, slideData.story.feed);
+        if (slideData != null) {
+            core.statistic().v2().sendGoodsOpen(
+                    slideData.story.id,
+                    slideData.index,
+                    widgetId,
+                    slideData.story.feed
+            );
         }
         try {
             GoodsWidgetFragment fragment = new GoodsWidgetFragment();

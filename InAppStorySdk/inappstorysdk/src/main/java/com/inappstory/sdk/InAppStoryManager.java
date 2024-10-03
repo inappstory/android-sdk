@@ -123,7 +123,7 @@ public class InAppStoryManager {
         }
     }
 
-    private final ScreensHolder holder = new ScreensHolder();
+    private final ScreensHolder holder = new ScreensHolder(core);
 
     private final ScreensLauncher launcher = new ScreensLauncher(holder);
 
@@ -1110,77 +1110,9 @@ public class InAppStoryManager {
     }
 
     private void setUserIdInner(final String userId) {
-        if (userId == null || StringsUtils.getBytesLength(userId) > 255) {
-            showELog(IAS_ERROR_TAG, StringsUtils.getErrorStringFromContext(context, R.string.ias_setter_user_length_error));
-            return;
-        }
-        if (userId.equals(this.userId)) return;
-        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
-            @Override
-            public void use(@NonNull InAppStoryService inAppStoryService) throws Exception {
-                final String sessionId = inAppStoryService.getSession().getSessionId();
-
-                clearCachedLists();
-
-                localOpensKey = null;
-                final String oldUserId = InAppStoryManager.this.userId;
-                InAppStoryManager.this.userId = userId;
-                holder.forceCloseAllReaders(new ForceCloseReaderCallback() {
-                    @Override
-                    public void onComplete() {
-                        core.sessionManager().closeSession(
-                                sendStatistic,
-                                true,
-                                getCurrentLocale(),
-                                oldUserId,
-                                sessionId
-                        );
-                    }
-                });
-
-                if (inAppStoryService.getFavoriteImages() != null)
-                    inAppStoryService.getFavoriteImages().clear();
-                inAppStoryService.getStoryDownloadManager().refreshLocals(Story.StoryType.COMMON);
-                inAppStoryService.getStoryDownloadManager().refreshLocals(Story.StoryType.UGC);
-                inAppStoryService.getStoryDownloadManager().cleanTasks(false);
-                inAppStoryService.setUserId(userId);
-            }
-        });
 
     }
 
-    private void setLocaleInner(@NonNull final Locale locale) {
-        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
-            @Override
-            public void use(@NonNull InAppStoryService inAppStoryService) throws Exception {
-                if (currentLocale.toLanguageTag().equals(locale.toLanguageTag())) return;
-                final String sessionId = inAppStoryService.getSession().getSessionId();
-                clearCachedLists();
-                localOpensKey = null;
-                //
-                holder.forceCloseAllReaders(new ForceCloseReaderCallback() {
-                    @Override
-                    public void onComplete() {
-                        core.sessionManager().closeSession(
-                                sendStatistic,
-                                true,
-                                getCurrentLocale(),
-                                getUserId(),
-                                sessionId
-                        );
-                        InAppStoryManager.this.currentLocale = locale;
-                    }
-                });
-
-                if (inAppStoryService.getFavoriteImages() != null)
-                    inAppStoryService.getFavoriteImages().clear();
-                inAppStoryService.getStoryDownloadManager().refreshLocals(Story.StoryType.COMMON);
-                inAppStoryService.getStoryDownloadManager().refreshLocals(Story.StoryType.UGC);
-                inAppStoryService.getStoryDownloadManager().cleanTasks(false);
-            }
-        });
-
-    }
 
     public Locale getCurrentLocale() {
         return currentLocale;
@@ -1189,7 +1121,7 @@ public class InAppStoryManager {
     private Locale currentLocale = Locale.getDefault();
 
     public void setLang(@NonNull Locale lang) {
-        setLocaleInner(lang);
+        core.settingsAPI().setLang(lang);
     }
 
 
@@ -1199,6 +1131,7 @@ public class InAppStoryManager {
      * @param userId (userId) - can't be longer than 255 characters
      */
     public void setUserId(@NonNull String userId) {
+        core.settingsAPI().setUserId(userId);
         setUserIdInner(userId);
     }
 
@@ -1209,11 +1142,7 @@ public class InAppStoryManager {
     }
 
     public void clearCachedList(String id) {
-        if (id == null) return;
-        InAppStoryService inAppStoryService = InAppStoryService.getInstance();
-        if (inAppStoryService != null) {
-            inAppStoryService.listStoriesIds.remove(id);
-        }
+        core.storiesListVMHolder().removeVM(id);
     }
 
     public void setOpenStoriesReader(@NonNull IOpenStoriesReader openStoriesReader) {
@@ -1229,10 +1158,7 @@ public class InAppStoryManager {
     }
 
     public void clearCachedLists() {
-        InAppStoryService inAppStoryService = InAppStoryService.getInstance();
-        if (inAppStoryService != null) {
-            inAppStoryService.listStoriesIds.clear();
-        }
+        core.storiesListVMHolder().clear();
     }
 
     public boolean isSendStatistic() {
@@ -1306,10 +1232,15 @@ public class InAppStoryManager {
     private static final Object lock = new Object();
 
     public static void logout() {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.storiesListVMHolder().clear();
+            }
+        });
         InAppStoryService.useInstance(new UseServiceInstanceCallback() {
             @Override
             public void use(@NonNull final InAppStoryService inAppStoryService) throws Exception {
-                inAppStoryService.listStoriesIds.clear();
                 inAppStoryService.getListSubscribers().clear();
                 inAppStoryService.getStoryDownloadManager().cleanTasks();
                 InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
@@ -1336,20 +1267,6 @@ public class InAppStoryManager {
 
     private static void localDestroy() {
         logout();
-    }
-
-
-    private String localOpensKey;
-
-    public String getLocalOpensKey(Story.StoryType type) {
-        if (localOpensKey == null && userId != null) {
-            localOpensKey = "opened" + userId;
-        }
-        return (type == Story.StoryType.COMMON) ? localOpensKey : type.name() + localOpensKey;
-    }
-
-    public String getLocalOpensKey() {
-        return getLocalOpensKey(Story.StoryType.COMMON);
     }
 
     /**
@@ -1638,220 +1555,6 @@ public class InAppStoryManager {
 
     private final static String ONBOARDING_FEED = "onboarding";
 
-    private void openStoryInReader(
-            final Story story,
-            final String sessionId,
-            final Context context,
-            final AppearanceManager manager,
-            final IShowStoryCallback callback,
-            final Integer slide,
-            final Story.StoryType type,
-            final SourceType readerSource,
-            final int readerAction,
-            final boolean openedFromReader) {
-
-        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
-            @Override
-            public void use(@NonNull InAppStoryService service) {
-                service.getStoryDownloadManager().putStories(
-                        service.getStoryDownloadManager().getStories(Story.StoryType.COMMON),
-                        type
-                );
-            }
-        });
-
-        ArrayList<Integer> stIds = new ArrayList<>();
-        stIds.add(story.id);
-        LaunchStoryScreenData launchData = new LaunchStoryScreenData(
-                null,
-                null,
-                sessionId,
-                stIds,
-                0,
-                false,
-                readerAction,
-                readerSource,
-                slide,
-                type,
-                null
-        );
-        launcher.openScreen(
-                context,
-                new LaunchStoryScreenStrategy(openedFromReader)
-                        .launchStoryScreenData(launchData)
-                        .readerAppearanceSettings(
-                                new LaunchStoryScreenAppearance(
-                                        AppearanceManager.checkOrCreateAppearanceManager(manager),
-                                        context
-                                )
-                        )
-                        .addLaunchScreenCallback(new ILaunchScreenCallback() {
-                            @Override
-                            public void onSuccess(ScreenType type) {
-                                if (callback != null)
-                                    callback.onShow();
-                            }
-
-                            @Override
-                            public void onError(ScreenType type, String message) {
-                                if (callback != null)
-                                    callback.onError();
-                            }
-                        })
-        );
-    }
-
-    private void showStoryOnceInner(
-            final String storyId,
-            final Context context,
-            final AppearanceManager manager,
-            final IShowStoryOnceCallback callback,
-            final Integer slide,
-            final Story.StoryType type,
-            final SourceType readerSource,
-            final int readerAction
-    ) {
-        final InAppStoryService service = InAppStoryService.getInstance();
-        if (service == null) {
-            localHandler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    showStoryOnceInner(
-                            storyId,
-                            context,
-                            manager,
-                            callback,
-                            slide,
-                            type,
-                            readerSource,
-                            readerAction
-                    );
-                }
-            }, 1000);
-            return;
-        }
-        if (noCorrectUserIdOrDevice()) return;
-        Set<String> opens = SharedPreferencesAPI.getStringSet(
-                getLocalOpensKey()
-        );
-        if (opens != null && opens.contains(storyId) && callback != null) {
-            callback.alreadyShown();
-            return;
-        }
-        service.getStoryDownloadManager().getFullStoryByStringId(
-                new GetStoryByIdCallback() {
-                    @Override
-                    public void getStory(final Story story, final String sessionId) {
-                        if (story != null) {
-                            service.getStoryDownloadManager().addCompletedStoryTask(story,
-                                    Story.StoryType.COMMON);
-                            openStoryInReader(
-                                    story,
-                                    sessionId,
-                                    context,
-                                    manager,
-                                    callback,
-                                    slide,
-                                    type,
-                                    readerSource,
-                                    readerAction,
-                                    false
-                            );
-                        } else {
-                            if (callback != null)
-                                callback.onError();
-                        }
-                    }
-
-                    @Override
-                    public void loadError(int type) {
-                        if (type == -2) {
-                            if (callback != null)
-                                callback.alreadyShown();
-                        } else {
-                            if (callback != null)
-                                callback.onError();
-                        }
-                    }
-
-                },
-                storyId,
-                type,
-                true,
-                readerSource
-        );
-    }
-
-    private void showStoryInner(final String storyId,
-                                final Context context,
-                                final AppearanceManager manager,
-                                final IShowStoryCallback callback,
-                                final Integer slide,
-                                final Story.StoryType type,
-                                final SourceType readerSource,
-                                final int readerAction,
-                                final boolean openedFromReader) {
-        final InAppStoryService service = InAppStoryService.getInstance();
-        if (service == null) {
-            localHandler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    showStoryInner(
-                            storyId,
-                            context,
-                            manager,
-                            callback,
-                            slide,
-                            type,
-                            readerSource,
-                            readerAction,
-                            openedFromReader
-                    );
-                }
-            }, 1000);
-            return;
-        }
-        if (noCorrectUserIdOrDevice()) return;
-        service.getStoryDownloadManager().getFullStoryByStringId(
-                new GetStoryByIdCallback() {
-                    @Override
-                    public void getStory(final Story story, final String sessionId) {
-                        if (story != null) {
-                            service.getStoryDownloadManager().addCompletedStoryTask(story,
-                                    Story.StoryType.COMMON);
-                            openStoryInReader(
-                                    story,
-                                    sessionId,
-                                    context,
-                                    manager,
-                                    callback,
-                                    slide,
-                                    type,
-                                    readerSource,
-                                    readerAction,
-                                    openedFromReader
-                            );
-                        } else {
-                            if (callback != null)
-                                callback.onError();
-                            return;
-                        }
-                    }
-
-                    @Override
-                    public void loadError(int type) {
-                        if (callback != null)
-                            callback.onError();
-                    }
-
-                },
-                storyId,
-                type,
-                false,
-                readerSource
-        );
-    }
-
     /**
      * use to show single story in reader by id
      *
@@ -1861,31 +1564,11 @@ public class InAppStoryManager {
      * @param callback (callback) custom action when story is loaded
      */
     public void showStory(String storyId, Context context, AppearanceManager manager, IShowStoryCallback callback) {
-        showStoryInner(
-                storyId,
-                context,
-                manager,
-                callback,
-                0,
-                Story.StoryType.COMMON,
-                SourceType.SINGLE,
-                ShowStory.ACTION_OPEN,
-                false
-        );
+        core.singleStoryAPI().show(context, storyId, manager, callback, 0);
     }
 
     public void showStory(String storyId, Context context, AppearanceManager manager, IShowStoryCallback callback, Integer slide) {
-        showStoryInner(
-                storyId,
-                context,
-                manager,
-                callback,
-                slide,
-                Story.StoryType.COMMON,
-                SourceType.SINGLE,
-                ShowStory.ACTION_OPEN,
-                false
-        );
+        core.singleStoryAPI().show(context, storyId, manager, callback, slide);
     }
 
 
@@ -1894,16 +1577,7 @@ public class InAppStoryManager {
                               AppearanceManager manager,
                               IShowStoryOnceCallback callback
     ) {
-        showStoryOnceInner(
-                storyId,
-                context,
-                manager,
-                callback,
-                0,
-                Story.StoryType.COMMON,
-                SourceType.SINGLE,
-                ShowStory.ACTION_OPEN
-        );
+        core.singleStoryAPI().showOnce(context, storyId, manager, callback);
     }
 
     /**
@@ -1914,39 +1588,7 @@ public class InAppStoryManager {
      * @param manager (manager) {@link AppearanceManager} for reader. May be null
      */
     public void showStory(String storyId, Context context, AppearanceManager manager) {
-        showStoryInner(
-                storyId,
-                context,
-                manager,
-                null,
-                0,
-                Story.StoryType.COMMON,
-                SourceType.SINGLE,
-                ShowStory.ACTION_OPEN,
-                false
-        );
-    }
-
-    public void showStoryFromReader(
-            String storyId,
-            Context context,
-            Integer slide,
-            AppearanceManager appearanceManager,
-            Story.StoryType type,
-            final SourceType readerSource,
-            final int readerAction
-    ) {
-        showStoryInner(
-                storyId,
-                context,
-                appearanceManager,
-                null,
-                slide,
-                type,
-                readerSource,
-                readerAction,
-                true
-        );
+        core.singleStoryAPI().show(context, storyId, manager, null, 0);
     }
 
     public static class Builder {

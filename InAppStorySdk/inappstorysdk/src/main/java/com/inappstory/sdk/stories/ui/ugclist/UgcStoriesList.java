@@ -21,6 +21,7 @@ import com.inappstory.sdk.R;
 import com.inappstory.sdk.UseManagerInstanceCallback;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
+import com.inappstory.sdk.core.stories.StoriesListVMState;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadStoriesCallback;
@@ -392,22 +393,30 @@ public class UgcStoriesList extends RecyclerView {
         this.cacheId = id;
     }
 
-    private void loadStoriesLocal(String payload) {
-        if (InAppStoryService.isNull()
-                || cacheId == null
-                || cacheId.isEmpty()) {
-            loadStoriesInner(payload);
-            return;
-        }
-        List<Integer> storiesIds = InAppStoryService.getInstance()
-                .listStoriesIds.get(cacheId);
-        if (storiesIds == null) {
-            loadStoriesInner(payload);
-            return;
-        }
-        checkAppearanceManager();
-        setOrRefreshAdapter(storiesIds);
-        if (callback != null) callback.storiesLoaded(storiesIds.size(), "", getStoriesData(storiesIds));
+    private void loadStoriesLocal(final String payload) {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                if (cacheId == null
+                        || cacheId.isEmpty()) {
+                    loadStoriesInner(payload);
+                    return;
+                }
+                StoriesListVMState state = core.storiesListVMHolder().getVMState(cacheId);
+                List<Integer> storiesIds;
+                if (state == null || (storiesIds = state.getStoriesIds()) == null) {
+                    loadStoriesInner(payload);
+                    return;
+                }
+                checkAppearanceManager();
+                setOrRefreshAdapter(storiesIds);
+                if (callback != null) callback.storiesLoaded(
+                        storiesIds.size(),
+                        "",
+                        getStoriesData(storiesIds)
+                );
+            }
+        });
     }
 
     private List<StoryData> getStoriesData(List<Integer> storiesIds) {
@@ -480,7 +489,15 @@ public class UgcStoriesList extends RecyclerView {
                 @Override
                 public void storiesLoaded(final List<Integer> storiesIds) {
                     if (cacheId != null && !cacheId.isEmpty()) {
-                       service.listStoriesIds.put(cacheId, storiesIds);
+                        InAppStoryManager.useCore(new UseIASCoreCallback() {
+                            @Override
+                            public void use(@NonNull IASCore core) {
+                                core.storiesListVMHolder().setVMState(
+                                        cacheId,
+                                        new StoriesListVMState(storiesIds)
+                                );
+                            }
+                        });
                     }
                     post(new Runnable() {
                         @Override

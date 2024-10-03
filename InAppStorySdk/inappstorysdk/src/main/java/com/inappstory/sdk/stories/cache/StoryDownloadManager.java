@@ -216,10 +216,10 @@ public class StoryDownloadManager {
         storyDownloader.cleanTasks();
         slidesDownloader.cleanTasks();
         KeyValueStorage.clear();
+        core.storiesListVMHolder().clear();
         InAppStoryService.useInstance(new UseServiceInstanceCallback() {
             @Override
             public void use(@NonNull InAppStoryService inAppStoryService) throws Exception {
-                inAppStoryService.listStoriesIds.clear();
                 inAppStoryService.getCommonCache().clearCache();
                 inAppStoryService.getFastCache().clearCache();
                 inAppStoryService.getInfiniteCache().clearCache();

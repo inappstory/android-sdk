@@ -268,7 +268,7 @@ public class StackStoryObserver implements IStackFeedActions {
         boolean showOnlyNewStories = !currentStoryIsOpened && showNewStories;
         if (currentStory.getDeeplink() != null && !currentStory.getDeeplink().isEmpty()) {
             service.getListReaderConnector().changeStory(currentStory.id, listId, showOnlyNewStories);
-            StatisticManager.getInstance().sendDeeplinkStory(
+            core.statistic().v2().sendDeeplinkStory(
                     currentStory.id,
                     currentStory.getDeeplink(),
                     feed

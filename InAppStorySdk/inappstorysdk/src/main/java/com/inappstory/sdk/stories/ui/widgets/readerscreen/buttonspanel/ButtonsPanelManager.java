@@ -103,11 +103,11 @@ public class ButtonsPanelManager {
                 }
         );
         if (like && !story.liked()) {
-            StatisticManager.getInstance().sendLikeStory(story.id, story.lastIndex,
+            core.statistic().v2().sendLikeStory(story.id, story.lastIndex,
                     pageManager != null ? pageManager.getFeedId() : null);
             val = 1;
         } else if (!like && !story.disliked()) {
-            StatisticManager.getInstance().sendDislikeStory(story.id, story.lastIndex,
+            core.statistic().v2().sendDislikeStory(story.id, story.lastIndex,
                     pageManager != null ? pageManager.getFeedId() : null);
             val = -1;
         } else {
@@ -163,7 +163,7 @@ public class ButtonsPanelManager {
         if (story == null) return;
         final boolean val = story.favorite;
         if (!story.favorite)
-            StatisticManager.getInstance().sendFavoriteStory(story.id, story.lastIndex,
+            core.statistic().v2().sendFavoriteStory(story.id, story.lastIndex,
                     pageManager != null ? pageManager.getFeedId() : null);
         core.callbacksAPI().useCallback(
                 IASCallbackType.FAVORITE,
@@ -240,7 +240,7 @@ public class ButtonsPanelManager {
         final Story story = inAppStoryService.getStoryDownloadManager().getStoryById(storyId, pageManager.getStoryType());
         if (story == null) return;
         final int slideIndex = story.lastIndex;
-        StatisticManager.getInstance().sendShareStory(story.id, slideIndex,
+        core.statistic().v2().sendShareStory(story.id, slideIndex,
                 story.shareType(slideIndex),
                 pageManager != null ? pageManager.getFeedId() : null);
         core.callbacksAPI().useCallback(

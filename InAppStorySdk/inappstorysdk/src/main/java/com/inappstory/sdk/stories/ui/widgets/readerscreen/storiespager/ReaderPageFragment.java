@@ -73,7 +73,7 @@ public class ReaderPageFragment extends Fragment {
     AppCompatImageView close;
     int storyId;
 
-    boolean setManagers() {
+    boolean setManagers(IASCore core) {
         boolean readerInitSuccess = true;
         if (buttonsPanel != null)
             manager.setButtonsPanelManager(buttonsPanel.getManager(), storyId);
@@ -87,7 +87,7 @@ public class ReaderPageFragment extends Fragment {
             manager.setWebViewManager(storiesView.getManager(), storyId);
         else
             readerInitSuccess = false;
-        manager.setTimerManager(new TimerManager());
+        manager.setTimerManager(new TimerManager(core));
         return readerInitSuccess;
     }
 
@@ -688,7 +688,7 @@ public class ReaderPageFragment extends Fragment {
                 }
                 bindViews(view);
                 setActions();
-                if (setManagers() && InAppStoryService.getInstance() != null
+                if (setManagers(core) && InAppStoryService.getInstance() != null
                         && InAppStoryService.getInstance().getStoryDownloadManager() != null) {
                     InAppStoryService.getInstance().getStoryDownloadManager().addSubscriber(manager);
                 } else {

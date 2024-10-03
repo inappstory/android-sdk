@@ -439,7 +439,7 @@ public class ReaderPageManager {
                 storyId + "_" + slideIndex);
         isPaused = false;
         pauseTimers();
-        StatisticManager.getInstance().sendCurrentState();
+        core.statistic().v2().sendCurrentState();
         service.getStoryDownloadManager().changePriorityForSingle(storyId,
                 parentManager.storyType);
         if (getStoryType() == Story.StoryType.COMMON)

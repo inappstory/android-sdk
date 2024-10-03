@@ -35,11 +35,6 @@ public class IASSingleStoryImpl implements IASSingleStory {
         this.core = core;
     }
 
-    private String getLocalOpensKey() {
-        return core.storyListCache().getLocalOpensKey(Story.StoryType.COMMON);
-    }
-
-
     @Override
     public void showOnce(
             final Context context,
@@ -52,68 +47,99 @@ public class IASSingleStoryImpl implements IASSingleStory {
 
         if (((IASDataSettingsHolder) core.settingsAPI()).noCorrectUserIdOrDevice()) return;
         Set<String> opens = SharedPreferencesAPI.getStringSet(
-                core.storyListCache().getLocalOpensKey(Story.StoryType.COMMON)
+                core.storyListCache().getLocalOpensKey(
+                        Story.StoryType.COMMON
+                )
         );
         if (opens != null && opens.contains(storyId) && callback != null) {
             callback.alreadyShown();
             return;
         }
 
+        service.getStoryDownloadManager().getFullStoryByStringId(new GetStoryByIdCallback() {
+            @Override
+            public void getStory(final Story story, final String sessionId) {
+                if (story != null) {
+                    service.getStoryDownloadManager().addCompletedStoryTask(story, Story.StoryType.COMMON);
+                    openStoryInReader(story,
+                            sessionId,
+                            context,
+                            appearanceManager,
+                            callback,
+                            0,
+                            Story.StoryType.COMMON,
+                            SourceType.SINGLE,
+                            ShowStory.ACTION_OPEN,
+                            false
+                    );
+                } else {
+                    if (callback != null) callback.onError();
+                }
+            }
+
+            @Override
+            public void loadError(int type) {
+                if (type == -2) {
+                    if (callback != null) callback.alreadyShown();
+                } else {
+                    if (callback != null) callback.onError();
+                }
+            }
+
+        }, storyId, Story.StoryType.COMMON, true, SourceType.SINGLE);
+    }
+
+
+    public void show(
+            final Context context,
+            final String storyId,
+            final AppearanceManager appearanceManager,
+            final IShowStoryCallback callback,
+            final Story.StoryType type,
+            final Integer slide,
+            final boolean fromReader,
+            final SourceType readerSource,
+            final int readerAction
+    ) {
+        final InAppStoryService service = InAppStoryService.getInstance();
+        if (service == null) return;
+        if (((IASDataSettingsHolder) core.settingsAPI()).noCorrectUserIdOrDevice()) return;
         service.getStoryDownloadManager().getFullStoryByStringId(
                 new GetStoryByIdCallback() {
                     @Override
                     public void getStory(final Story story, final String sessionId) {
                         if (story != null) {
-                            service.getStoryDownloadManager().addCompletedStoryTask(story,
-                                    Story.StoryType.COMMON);
+                            service.getStoryDownloadManager().addCompletedStoryTask(story, type);
                             openStoryInReader(
                                     story,
                                     sessionId,
                                     context,
                                     appearanceManager,
                                     callback,
-                                    0,
-                                    Story.StoryType.COMMON,
-                                    SourceType.SINGLE,
-                                    ShowStory.ACTION_OPEN,
-                                    false
+                                    slide,
+                                    type,
+                                    readerSource,
+                                    readerAction,
+                                    fromReader
                             );
                         } else {
-                            if (callback != null)
-                                callback.onError();
+                            if (callback != null) callback.onError();
                         }
                     }
 
                     @Override
                     public void loadError(int type) {
-                        if (type == -2) {
-                            if (callback != null)
-                                callback.alreadyShown();
-                        } else {
-                            if (callback != null)
-                                callback.onError();
-                        }
+                        if (callback != null) callback.onError();
                     }
 
                 },
                 storyId,
-                Story.StoryType.COMMON,
-                true,
-                SourceType.SINGLE
+                type,
+                false,
+                readerSource
         );
     }
 
-    @Override
-    public void show(
-            Context context,
-            String storyId,
-            AppearanceManager appearanceManager,
-            IShowStoryCallback callback,
-            Integer slide,
-            boolean openedFromReader
-    ) {
-
-    }
 
     @Override
     public void show(
@@ -123,7 +149,17 @@ public class IASSingleStoryImpl implements IASSingleStory {
             IShowStoryCallback callback,
             Integer slide
     ) {
-
+        show(
+                context,
+                storyId,
+                appearanceManager,
+                callback,
+                Story.StoryType.COMMON,
+                slide,
+                false,
+                SourceType.SINGLE,
+                ShowStory.ACTION_OPEN
+        );
     }
 
     private void openStoryInReader(
@@ -136,15 +172,19 @@ public class IASSingleStoryImpl implements IASSingleStory {
             final Story.StoryType type,
             final SourceType readerSource,
             final int readerAction,
-            final boolean openedFromReader) {
+            final boolean openedFromReader
+    ) {
 
         InAppStoryService.useInstance(new UseServiceInstanceCallback() {
             @Override
             public void use(@NonNull InAppStoryService service) {
-                service.getStoryDownloadManager().putStories(
-                        service.getStoryDownloadManager().getStories(Story.StoryType.COMMON),
-                        type
-                );
+                service.getStoryDownloadManager()
+                        .putStories(
+                                service
+                                        .getStoryDownloadManager()
+                                        .getStories(Story.StoryType.COMMON),
+                                type
+                        );
             }
         });
 
@@ -163,29 +203,27 @@ public class IASSingleStoryImpl implements IASSingleStory {
                 type,
                 null
         );
-        core.screensManager().openScreen(
-                context,
+        core.screensManager().openScreen(context,
                 new LaunchStoryScreenStrategy(openedFromReader)
                         .launchStoryScreenData(launchData)
                         .readerAppearanceSettings(
                                 new LaunchStoryScreenAppearance(
                                         AppearanceManager.checkOrCreateAppearanceManager(manager),
-                                        context
-                                )
+                                        context)
                         )
-                        .addLaunchScreenCallback(new ILaunchScreenCallback() {
-                            @Override
-                            public void onSuccess(ScreenType type) {
-                                if (callback != null)
-                                    callback.onShow();
-                            }
+                        .addLaunchScreenCallback(
+                                new ILaunchScreenCallback() {
+                                    @Override
+                                    public void onSuccess(ScreenType type) {
+                                        if (callback != null) callback.onShow();
+                                    }
 
-                            @Override
-                            public void onError(ScreenType type, String message) {
-                                if (callback != null)
-                                    callback.onError();
-                            }
-                        })
+                                    @Override
+                                    public void onError(ScreenType type, String message) {
+                                        if (callback != null) callback.onError();
+                                    }
+                                }
+                        )
         );
     }
 

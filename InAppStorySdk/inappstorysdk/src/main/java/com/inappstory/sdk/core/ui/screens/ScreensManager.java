@@ -4,6 +4,7 @@ import android.content.Context;
 
 import androidx.annotation.NonNull;
 
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.ui.screens.gamereader.GameScreenHolder;
 import com.inappstory.sdk.core.ui.screens.holder.IScreenHolder;
 import com.inappstory.sdk.core.ui.screens.holder.IScreensHolder;
@@ -20,9 +21,16 @@ import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenStoriesRead
 import com.inappstory.sdk.stories.ui.reader.ForceCloseReaderCallback;
 
 public class ScreensManager implements IScreensLauncher, IScreensHolder {
-    private final IScreensHolder screensHolder = new ScreensHolder();
+    private final IScreensHolder screensHolder;
+    private final IASCore core;
+    private final ScreensLauncher launcher;
 
-    private final ScreensLauncher launcher = new ScreensLauncher(screensHolder);
+    public ScreensManager(IASCore core) {
+        this.core = core;
+        screensHolder = new ScreensHolder(core);
+        launcher = new ScreensLauncher(screensHolder);
+    }
+
 
     @Override
     public GameScreenHolder getGameScreenHolder() {

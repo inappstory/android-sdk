@@ -275,7 +275,6 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
                 // notifyItemChanged(ind);
                 return;
             } else if (current.deeplink != null) {
-                StatisticManager.getInstance().sendDeeplinkStory(current.id, current.deeplink, feedID);
                 OldStatisticManager.useInstance(
                         sessionId,
                         new GetOldStatisticManagerCallback() {
@@ -285,6 +284,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
                             }
                         }
                 );
+                core.statistic().v2().sendDeeplinkStory(current.id, current.deeplink, feedID);
                 core.callbacksAPI().useCallback(
                         IASCallbackType.CALL_TO_ACTION,
                         new UseIASCallback<CallToActionCallback>() {

@@ -6,6 +6,7 @@ import android.webkit.JavascriptInterface;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
 
 
@@ -51,22 +52,26 @@ public class GameJSInterface {
 
     @JavascriptInterface
     public String gameInstanceGetLocalData(String gameInstanceId) {
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service == null) return "";
+        InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
+        if (inAppStoryManager == null) return "";
+        IASDataSettingsHolder settingsHolder =
+                (IASDataSettingsHolder) inAppStoryManager.iasCore().settingsAPI();
         String id = gameInstanceId;
         if (id == null) id = manager.gameCenterId;
         if (id == null) return "";
         String res = KeyValueStorage.getString("gameInstance_" + id
-                + "__" + service.getUserId());
+                + "__" + settingsHolder.userId());
         return res == null ? "" : res;
     }
 
     @JavascriptInterface
     public String storyGetLocalData(int storyId) {
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service == null) return "";
+        InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
+        if (inAppStoryManager == null) return "";
+        IASDataSettingsHolder settingsHolder =
+                (IASDataSettingsHolder) inAppStoryManager.iasCore().settingsAPI();
         String res = KeyValueStorage.getString("story" + storyId
-                + "__" + service.getUserId());
+                + "__" + settingsHolder.userId());
         return res == null ? "" : res;
     }
 
