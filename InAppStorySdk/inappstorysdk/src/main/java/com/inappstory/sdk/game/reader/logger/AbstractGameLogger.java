@@ -82,11 +82,11 @@ public abstract class AbstractGameLogger {
     }
 
     protected final GameLog createBaseLog() {
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service == null) return null;
+        InAppStoryManager manager = InAppStoryManager.getInstance();
+        if (manager == null) return null;
         return new GameLog(
                 gameInstanceId,
-                service.getSession().getSessionId(),
+                manager.iasCore().sessionManager().getSession().getSessionId(),
                 System.currentTimeMillis() / 1000,
                 launchTryNumber,
                 gameLoaded

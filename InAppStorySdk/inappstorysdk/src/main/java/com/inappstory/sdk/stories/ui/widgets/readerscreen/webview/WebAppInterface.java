@@ -6,6 +6,8 @@ import android.webkit.JavascriptInterface;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.StoryLoadedData;
 import com.inappstory.sdk.stories.api.models.UpdateTimelineData;
@@ -13,13 +15,20 @@ import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.StoriesVi
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
 
 public class WebAppInterface {
-    StoriesViewManager manager;
+    private final StoriesViewManager manager;
+    private final IASCore core;
+
+    private final Object lock = new Object();
 
     /**
      * Instantiate the interface and set the context
      */
-    WebAppInterface(StoriesViewManager manager) {
+    WebAppInterface(
+            StoriesViewManager manager,
+            IASCore core
+    ) {
         this.manager = manager;
+        this.core = core;
     }
 
 
@@ -206,7 +215,7 @@ public class WebAppInterface {
 
     @JavascriptInterface
     public void storySetLocalData(String data, boolean sendToServer) {
-        synchronized (manager) {
+        synchronized (lock) {
             manager.storySetLocalData(data, sendToServer);
             logMethod(data + " " + sendToServer);
         }
@@ -215,9 +224,9 @@ public class WebAppInterface {
 
     @JavascriptInterface
     public String storyGetLocalData() {
-        synchronized (manager) {
+        synchronized (lock) {
             String res = KeyValueStorage.getString("story" + manager.storyId
-                    + "__" + InAppStoryService.getInstance().getUserId());
+                    + "__" +  ((IASDataSettingsHolder)core.settingsAPI()).userId());
             logMethod(res != null ? res : "");
             return res == null ? "" : res;
         }

@@ -20,20 +20,23 @@ import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASCallbackType;
+import com.inappstory.sdk.core.api.IASDataSettingsHolder;
+import com.inappstory.sdk.core.api.IASStatisticV1;
 import com.inappstory.sdk.core.api.UseIASCallback;
+import com.inappstory.sdk.core.api.impl.IASSettingsImpl;
+import com.inappstory.sdk.core.utils.ConnectionCheck;
+import com.inappstory.sdk.core.utils.ConnectionCheckCallback;
 import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.stories.api.models.CachedSessionData;
 import com.inappstory.sdk.stories.api.models.SessionRequestFields;
 import com.inappstory.sdk.stories.api.models.SessionResponse;
-import com.inappstory.sdk.stories.api.models.StatisticPermissions;
 import com.inappstory.sdk.stories.api.models.StatisticSendObject;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.errors.ErrorCallback;
-import com.inappstory.sdk.stories.statistic.GetOldStatisticManagerCallback;
-import com.inappstory.sdk.stories.statistic.OldStatisticManager;
-import com.inappstory.sdk.stories.statistic.ProfilingManager;
+import com.inappstory.sdk.stories.statistic.GetStatisticV1Callback;
+import com.inappstory.sdk.stories.statistic.IASStatisticProfilingImpl;
 import com.inappstory.sdk.ugc.extinterfaces.IOpenSessionCallback;
 import com.inappstory.sdk.utils.ISessionHolder;
 
@@ -47,6 +50,7 @@ public class SessionManager {
 
     public SessionManager(IASCore core) {
         this.core = core;
+        sessionHolder = new SessionHolder(core);
     }
 
     public void useOrOpenSession(OpenSessionCallback callback) {
@@ -60,7 +64,7 @@ public class SessionManager {
     }
 
 
-    private final ISessionHolder sessionHolder = new SessionHolder();
+    private final ISessionHolder sessionHolder;
 
     public ISessionHolder getSession() {
         return sessionHolder;
@@ -94,22 +98,20 @@ public class SessionManager {
 
     private void saveSession(final SessionResponse response) {
         if (response == null || response.session == null) return;
-        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
-            @Override
-            public void use(@NonNull InAppStoryService service) throws Exception {
-                response.session.statisticPermissions = new StatisticPermissions(
-                        response.isAllowProfiling,
-                        response.isAllowStatV1,
-                        response.isAllowStatV2,
-                        response.isAllowCrash
-                );
-                response.session.isAllowUgc = response.isAllowUgc;
-                getSession().setSession(response.session);
-                service.saveSessionPlaceholders(response.placeholders);
-                service.saveSessionImagePlaceholders(response.imagePlaceholders);
-            }
-        });
-
+        boolean isSendStatistic = InAppStoryManager.getInstance().isSendStatistic();
+        core.statistic().v2().disabled(
+                !(isSendStatistic && response.isAllowStatV2)
+        );
+        core.statistic().profiling().disabled(
+                !(isSendStatistic && response.isAllowProfiling)
+        );
+        core.statistic().exceptions().disabled(
+                !(isSendStatistic && response.isAllowCrash)
+        );
+        response.session.isAllowUgc = response.isAllowUgc;
+        sessionHolder.setSession(response.session, !(isSendStatistic && response.isAllowStatV1));
+        ((IASSettingsImpl) core.settingsAPI()).sessionPlaceholders(response.placeholders);
+        ((IASSettingsImpl) core.settingsAPI()).sessionImagePlaceholders(response.imagePlaceholders);
     }
 
     private void sessionIsSaved(final SessionResponse response) {
@@ -123,13 +125,20 @@ public class SessionManager {
                             localCallback.onSuccess(response.session.id);
                     callbacks.clear();
                 }
-                InAppStoryService.useInstance(new UseServiceInstanceCallback() {
-                    @Override
-                    public void use(@NonNull InAppStoryService service) throws Exception {
-                        service.runStatisticThread();
-                        service.downloadSessionAssets(response.sessionAssets);
-                    }
-                });
+
+            }
+        });
+        core.statistic().v1(new GetStatisticV1Callback() {
+            @Override
+            public void get(@NonNull IASStatisticV1 manager) {
+                manager.restartSchedule();
+            }
+        });
+        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryService service) throws Exception {
+                service.restartV1Stat();
+                service.downloadSessionAssets(response.sessionAssets);
             }
         });
     }
@@ -182,150 +191,175 @@ public class SessionManager {
         final InAppStoryManager manager = InAppStoryManager.getInstance();
         if (manager == null) return;
         Context context = service.getContext();
-        String platform = "android";
-        String deviceId = null;
+
+        final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
+        if (networkClient == null) {
+            synchronized (openProcessLock) {
+                openProcess = false;
+            }
+            return;
+        }
+
+        final String platform = "android";
+        final String deviceId;
         if (manager.isDeviceIDEnabled()) {
             deviceId = Settings.Secure.getString(
                     context.getContentResolver(),
                     Settings.Secure.ANDROID_ID
             );
+        } else {
+            deviceId = null;
         }
-        String model = Build.MODEL;
-        String manufacturer = Build.MANUFACTURER;
-        String brand = Build.BRAND;
-        String screenWidth = Integer.toString(Sizes.getScreenSize(context).x);
-        String screenHeight = Integer.toString(Sizes.getScreenSize(context).y);
+        final String model = Build.MODEL;
+        final String manufacturer = Build.MANUFACTURER;
+        final String brand = Build.BRAND;
+        final String screenWidth = Integer.toString(Sizes.getScreenSize(context).x);
+        final String screenHeight = Integer.toString(Sizes.getScreenSize(context).y);
         DisplayMetrics metrics = context.getResources().getDisplayMetrics();
-        String screenDpi = Float.toString(metrics.density * 160f);
-        String osVersion = Build.VERSION.CODENAME;
-        String osSdkVersion = Integer.toString(Build.VERSION.SDK_INT);
-        String appPackageId = context.getPackageName();
+        final String screenDpi = Float.toString(metrics.density * 160f);
+        final String osVersion = Build.VERSION.CODENAME;
+        final String osSdkVersion = Integer.toString(Build.VERSION.SDK_INT);
+        final String appPackageId = context.getPackageName();
         PackageInfo pInfo = null;
         try {
             pInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
         } catch (PackageManager.NameNotFoundException e) {
             InAppStoryService.createExceptionLog(e);
         }
-        String appVersion = (pInfo != null ? pInfo.versionName : "");
-        String appBuild = (pInfo != null ? Integer.toString(pInfo.versionCode) : "");
-        final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
-        if (!InAppStoryService.isServiceConnected() || networkClient == null) {
-            synchronized (openProcessLock) {
-                openProcess = false;
-            }
-            return;
-        }
-        final String sessionOpenUID = ProfilingManager.getInstance().addTask("api_session_open");
-        final String initialUserId = InAppStoryService.getInstance().getUserId();
-        networkClient.enqueue(
-                networkClient.getApi().sessionOpen(
-                        SESSION_FIELDS,
-                        SESSION_EXPAND,
-                        FEATURES,
-                        platform,
-                        deviceId,
-                        model,
-                        manufacturer,
-                        brand,
-                        screenWidth,
-                        screenHeight,
-                        screenDpi,
-                        osVersion,
-                        osSdkVersion,
-                        appPackageId,
-                        appVersion,
-                        appBuild,
-                        initialUserId
-                ),
-                new NetworkCallback<SessionResponse>() {
+        final String appVersion = (pInfo != null ? pInfo.versionName : "");
+        final String appBuild = (pInfo != null ? Integer.toString(pInfo.versionCode) : "");
+
+        new ConnectionCheck().check(
+                context,
+                new ConnectionCheckCallback(core) {
                     @Override
-                    public void onSuccess(SessionResponse response) {
-                        InAppStoryService service = InAppStoryService.getInstance();
-                        if (service == null) return;
-                        saveSession(response);
-                        String serviceUserId = service.getUserId();
-                        String currentSession = service.getSession().getSessionId();
-                        if (initialUserId == null) {
-                            if (serviceUserId != null) {
-                                closeSession(
-                                        false,
-                                        true,
-                                        manager.getCurrentLocale(),
-                                        null,
-                                        currentSession
-                                );
-                                openSessionInner();
-                                return;
-                            }
-                        } else {
-                            if (!initialUserId.equals(serviceUserId)) {
-                                closeSession(
-                                        false,
-                                        true,
-                                        manager.getCurrentLocale(),
-                                        initialUserId,
-                                        currentSession
-                                );
-                                openSessionInner();
-                                return;
-                            }
-                        }
-                        networkClient.setSessionId(currentSession);
-                        service.getListReaderConnector().sessionIsOpened(currentSession);
-                        ProfilingManager.getInstance().setReady(sessionOpenUID);
-                        openStatisticSuccess(response);
-                        CachedSessionData cachedSessionData = new CachedSessionData();
-                        cachedSessionData.userId = serviceUserId;
-                        cachedSessionData.placeholders = response.placeholders;
-                        cachedSessionData.previewAspectRatio = response.getPreviewAspectRatio();
-                        cachedSessionData.sessionId = response.session.id;
-                        cachedSessionData.testKey = ApiSettings.getInstance().getTestKey();
-                        cachedSessionData.token = ApiSettings.getInstance().getApiKey();
-                        cachedSessionData.tags = service.getTagsString();
-                        CachedSessionData.setInstance(cachedSessionData);
-
-                        if (response.preloadGame) service.restartGamePreloader();
-                    }
-
-                    @Override
-                    public Type getType() {
-                        return SessionResponse.class;
-                    }
-
-
-                    @Override
-                    public void errorDefault(String message) {
-                        ProfilingManager.getInstance().setReady(sessionOpenUID);
-                        core.callbacksAPI().useCallback(IASCallbackType.ERROR,
-                                new UseIASCallback<ErrorCallback>() {
+                    public void success() {
+                        final String sessionOpenUID = core.statistic().profiling().addTask("api_session_open");
+                        final String initialUserId = ((IASDataSettingsHolder) core.settingsAPI()).userId();
+                        networkClient.enqueue(
+                                networkClient.getApi().sessionOpen(
+                                        SESSION_FIELDS,
+                                        SESSION_EXPAND,
+                                        FEATURES,
+                                        platform,
+                                        deviceId,
+                                        model,
+                                        manufacturer,
+                                        brand,
+                                        screenWidth,
+                                        screenHeight,
+                                        screenDpi,
+                                        osVersion,
+                                        osSdkVersion,
+                                        appPackageId,
+                                        appVersion,
+                                        appBuild,
+                                        initialUserId
+                                ),
+                                new NetworkCallback<SessionResponse>() {
                                     @Override
-                                    public void use(@NonNull ErrorCallback callback) {
-                                        callback.sessionError();
+                                    public void onSuccess(SessionResponse response) {
+                                        InAppStoryService service = InAppStoryService.getInstance();
+                                        if (service == null) return;
+                                        saveSession(response);
+                                        String serviceUserId = ((IASDataSettingsHolder) core.settingsAPI()).userId();
+                                        String currentSession = getSession().getSessionId();
+                                        if (initialUserId == null) {
+                                            if (serviceUserId != null) {
+                                                closeSession(
+                                                        false,
+                                                        true,
+                                                        manager.getCurrentLocale(),
+                                                        null,
+                                                        currentSession
+                                                );
+                                                openSessionInner();
+                                                return;
+                                            }
+                                        } else {
+                                            if (!initialUserId.equals(serviceUserId)) {
+                                                closeSession(
+                                                        false,
+                                                        true,
+                                                        manager.getCurrentLocale(),
+                                                        initialUserId,
+                                                        currentSession
+                                                );
+                                                openSessionInner();
+                                                return;
+                                            }
+                                        }
+                                        networkClient.setSessionId(currentSession);
+                                        service.getListReaderConnector().sessionIsOpened(currentSession);
+                                        core.statistic().profiling().setReady(sessionOpenUID);
+                                        openStatisticSuccess(response);
+                                        CachedSessionData cachedSessionData = new CachedSessionData();
+                                        cachedSessionData.userId = serviceUserId;
+                                        cachedSessionData.placeholders = response.placeholders;
+                                        cachedSessionData.previewAspectRatio = response.getPreviewAspectRatio();
+                                        cachedSessionData.sessionId = response.session.id;
+                                        cachedSessionData.testKey = ApiSettings.getInstance().getTestKey();
+                                        cachedSessionData.token = ApiSettings.getInstance().getApiKey();
+                                        cachedSessionData.tags =
+                                                TextUtils.join(",",
+                                                        ((IASDataSettingsHolder) core.settingsAPI()).tags());
+                                        CachedSessionData.setInstance(cachedSessionData);
+
+                                        if (response.preloadGame) service.restartGamePreloader();
+                                    }
+
+                                    @Override
+                                    public Type getType() {
+                                        return SessionResponse.class;
+                                    }
+
+
+                                    @Override
+                                    public void errorDefault(String message) {
+                                        core.statistic().profiling().setReady(sessionOpenUID);
+                                        core.callbacksAPI().useCallback(IASCallbackType.ERROR,
+                                                new UseIASCallback<ErrorCallback>() {
+                                                    @Override
+                                                    public void use(@NonNull ErrorCallback callback) {
+                                                        callback.sessionError();
+                                                    }
+                                                }
+                                        );
+                                        final List<OpenSessionCallback> localCallbacks = new ArrayList<>();
+                                        final List<IOpenSessionCallback> localStaticCallbacks = new ArrayList<>();
+                                        synchronized (openProcessLock) {
+                                            openProcess = false;
+                                            localCallbacks.addAll(callbacks);
+                                            callbacks.clear();
+                                            localStaticCallbacks.addAll(staticCallbacks);
+                                        }
+                                        new Handler(Looper.getMainLooper()).post(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                for (OpenSessionCallback localCallback : localCallbacks)
+                                                    if (localCallback != null)
+                                                        localCallback.onError();
+                                                for (IOpenSessionCallback localCallback : localStaticCallbacks)
+                                                    if (localCallback != null)
+                                                        localCallback.onError();
+                                            }
+                                        });
                                     }
                                 }
                         );
-                        final List<OpenSessionCallback> localCallbacks = new ArrayList<>();
-                        final List<IOpenSessionCallback> localStaticCallbacks = new ArrayList<>();
+
+                    }
+
+                    @Override
+                    protected void error() {
+                        super.error();
                         synchronized (openProcessLock) {
                             openProcess = false;
-                            localCallbacks.addAll(callbacks);
-                            callbacks.clear();
-                            localStaticCallbacks.addAll(staticCallbacks);
                         }
-                        new Handler(Looper.getMainLooper()).post(new Runnable() {
-                            @Override
-                            public void run() {
-                                for (OpenSessionCallback localCallback : localCallbacks)
-                                    if (localCallback != null)
-                                        localCallback.onError();
-                                for (IOpenSessionCallback localCallback : localStaticCallbacks)
-                                    if (localCallback != null)
-                                        localCallback.onError();
-                            }
-                        });
                     }
                 }
         );
+
     }
 
     private void clearCaches() {
@@ -348,18 +382,17 @@ public class SessionManager {
         final InAppStoryService service = InAppStoryService.getInstance();
         if (service == null) return;
         final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
-        OldStatisticManager.useInstance(oldSessionId, new GetOldStatisticManagerCallback() {
+        core.statistic().v1(oldSessionId, new GetStatisticV1Callback() {
             @Override
-            public void get(@NonNull OldStatisticManager manager) {
+            public void get(@NonNull IASStatisticV1 manager) {
                 List<List<Object>> stat = new ArrayList<>(
                         sendStatistic ?
-                                manager.statistic :
+                                manager.extractCurrentStatistic() :
                                 new ArrayList<List<Object>>()
                 );
-                manager.clear();
 
                 final String sessionCloseUID =
-                        ProfilingManager.getInstance().addTask("api_session_close");
+                        core.statistic().profiling().addTask("api_session_close");
                 if (networkClient == null) {
                     if (changeUserIdOrLocale)
                         service.getListReaderConnector().userIdChanged();
@@ -379,7 +412,7 @@ public class SessionManager {
                         new NetworkCallback<SessionResponse>() {
                             @Override
                             public void onSuccess(SessionResponse response) {
-                                ProfilingManager.getInstance().setReady(sessionCloseUID, true);
+                                core.statistic().profiling().setReady(sessionCloseUID, true);
                                 if (changeUserIdOrLocale)
                                     service.getListReaderConnector().userIdChanged();
                             }
@@ -391,7 +424,7 @@ public class SessionManager {
 
                             @Override
                             public void errorDefault(String message) {
-                                ProfilingManager.getInstance().setReady(sessionCloseUID);
+                                core.statistic().profiling().setReady(sessionCloseUID);
                                 if (changeUserIdOrLocale)
                                     service.getListReaderConnector().userIdChanged();
                             }
@@ -401,7 +434,7 @@ public class SessionManager {
         });
         if (networkClient != null)
             networkClient.setSessionId(null);
-        service.getSession().clear(oldSessionId);
+        sessionHolder.clear(oldSessionId);
     }
 
 }

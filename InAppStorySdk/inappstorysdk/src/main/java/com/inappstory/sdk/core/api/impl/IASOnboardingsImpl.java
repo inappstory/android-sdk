@@ -10,10 +10,7 @@ import androidx.annotation.NonNull;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.R;
-import com.inappstory.sdk.UseManagerInstanceCallback;
 import com.inappstory.sdk.core.IASCore;
-import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.IASOnboardings;
@@ -32,7 +29,7 @@ import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.onboarding.OnboardingLoadCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
-import com.inappstory.sdk.stories.statistic.ProfilingManager;
+import com.inappstory.sdk.stories.statistic.IASStatisticProfilingImpl;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 import com.inappstory.sdk.utils.StringsUtils;
 
@@ -81,7 +78,7 @@ public class IASOnboardingsImpl implements IASOnboardings {
             @Override
             public void onSuccess(final String sessionId) {
                 final String onboardUID =
-                        ProfilingManager.getInstance().addTask("api_onboarding");
+                        core.statistic().profiling().addTask("api_onboarding");
                 networkClient.enqueue(
                         networkClient.getApi().getOnboardingFeed(
                                 usedFeed,
@@ -94,7 +91,7 @@ public class IASOnboardingsImpl implements IASOnboardings {
                             public void onSuccess(Feed response) {
                                 InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
                                 if (inAppStoryManager == null) return;
-                                ProfilingManager.getInstance().setReady(onboardUID);
+                                core.statistic().profiling().setReady(onboardUID);
                                 List<Story> notOpened = new ArrayList<>();
                                 String key = core.storyListCache().getLocalOpensKey(Story.StoryType.COMMON);
                                 Set<String> opens = SharedPreferencesAPI.getStringSet(
@@ -117,13 +114,13 @@ public class IASOnboardingsImpl implements IASOnboardings {
 
                             @Override
                             public void onError(int code, String message) {
-                                ProfilingManager.getInstance().setReady(onboardUID);
+                                core.statistic().profiling().setReady(onboardUID);
                                 loadOnboardingError(usedFeed, "Can't load onboardings: request code " + code);
                             }
 
                             @Override
                             public void timeoutError() {
-                                ProfilingManager.getInstance().setReady(onboardUID);
+                                core.statistic().profiling().setReady(onboardUID);
                                 loadOnboardingError(usedFeed, "Can't load onboardings: timeout");
                             }
                         });
@@ -198,7 +195,7 @@ public class IASOnboardingsImpl implements IASOnboardings {
         );
         core.screensManager().openScreen(
                 outerContext,
-                new LaunchStoryScreenStrategy(false).
+                new LaunchStoryScreenStrategy(core, false).
                         launchStoryScreenData(launchData).
                         readerAppearanceSettings(
                                 new LaunchStoryScreenAppearance(

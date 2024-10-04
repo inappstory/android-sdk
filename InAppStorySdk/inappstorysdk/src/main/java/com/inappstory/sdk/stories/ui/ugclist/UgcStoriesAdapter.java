@@ -18,6 +18,7 @@ import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASCallbackType;
+import com.inappstory.sdk.core.api.IASStatisticV1;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenData;
 import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenStrategy;
@@ -38,13 +39,11 @@ import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.UgcStoryData;
 import com.inappstory.sdk.stories.outercallbacks.storieslist.ListCallback;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
-import com.inappstory.sdk.stories.statistic.GetOldStatisticManagerCallback;
-import com.inappstory.sdk.stories.statistic.OldStatisticManager;
-import com.inappstory.sdk.stories.statistic.StatisticManager;
+import com.inappstory.sdk.stories.statistic.GetStatisticV1Callback;
+import com.inappstory.sdk.stories.statistic.IASStatisticV1Impl;
 import com.inappstory.sdk.stories.ui.list.BaseStoryListItem;
 import com.inappstory.sdk.stories.ui.list.ClickCallback;
 import com.inappstory.sdk.stories.ui.reader.ActiveStoryItem;
-import com.inappstory.sdk.stories.ui.reader.StoriesMainFragment;
 import com.inappstory.sdk.ugc.list.OnUGCItemClick;
 import com.inappstory.sdk.ugc.list.UGCListItem;
 
@@ -191,11 +190,11 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
                     }
                     if (current.getGameInstanceId() != null) {
 
-                        OldStatisticManager.useInstance(
+                        core.statistic().v1(
                                 sessionId,
-                                new GetOldStatisticManagerCallback() {
+                                new GetStatisticV1Callback() {
                                     @Override
-                                    public void get(@NonNull OldStatisticManager manager) {
+                                    public void get(@NonNull IASStatisticV1 manager) {
                                         manager.addGameClickStatistic(current.id);
                                     }
                                 }
@@ -301,7 +300,7 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
                         coordinates
                 );
                 core.screensManager().openScreen(context,
-                        new LaunchStoryScreenStrategy(false).
+                        new LaunchStoryScreenStrategy(core, false).
                                 launchStoryScreenData(launchData).
                                 readerAppearanceSettings(
                                         new LaunchStoryScreenAppearance(

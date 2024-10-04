@@ -1,4 +1,4 @@
-package com.inappstory.sdk;
+package com.inappstory.sdk.utils;
 
 import android.content.Context;
 import android.os.Build;
@@ -7,7 +7,7 @@ import android.os.Vibrator;
 
 import com.inappstory.sdk.utils.IVibrateUtils;
 
-class VibrateUtils implements IVibrateUtils {
+public class VibrateUtils implements IVibrateUtils {
     private Vibrator vibrator;
 
     public void vibrate(Context context, int[] vibratePattern) {

@@ -21,24 +21,25 @@ import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
-import com.inappstory.sdk.UseManagerInstanceCallback;
 import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
+import com.inappstory.sdk.core.api.IASDataSettingsHolder;
+import com.inappstory.sdk.core.api.IASStatisticV1;
 import com.inappstory.sdk.core.stories.StoriesListVMState;
 import com.inappstory.sdk.core.ui.screens.storyreader.StoryScreenHolder;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadStoriesCallback;
+import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.callbacks.OnFavoriteItemClick;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoryItemCoordinates;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.outercallbacks.storieslist.ListCallback;
 import com.inappstory.sdk.stories.outercallbacks.storieslist.ListScrollCallback;
-import com.inappstory.sdk.stories.statistic.GetOldStatisticManagerCallback;
-import com.inappstory.sdk.stories.statistic.OldStatisticManager;
-import com.inappstory.sdk.stories.statistic.ProfilingManager;
-import com.inappstory.sdk.stories.statistic.StatisticManager;
+import com.inappstory.sdk.stories.statistic.GetStatisticV1Callback;
+import com.inappstory.sdk.stories.statistic.IASStatisticProfilingImpl;
+import com.inappstory.sdk.stories.statistic.IASStatisticV2Impl;
 import com.inappstory.sdk.stories.ui.reader.ActiveStoryItem;
 import com.inappstory.sdk.ugc.list.OnUGCItemClick;
 import com.inappstory.sdk.utils.StringsUtils;
@@ -139,9 +140,6 @@ public class StoriesList extends RecyclerView {
         init(attrs);
     }
 
-    public AppearanceManager getAppearanceManager() {
-        return appearanceManager;
-    }
 
     public void setStoryTouchListener(StoryTouchListener storyTouchListener) {
         this.storyTouchListener = storyTouchListener;
@@ -335,22 +333,29 @@ public class StoriesList extends RecyclerView {
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull final IASCore core) {
-                OldStatisticManager.useInstance(
-                        manager != null ? manager.currentSessionId : "",
-                        new GetOldStatisticManagerCallback() {
-                            @Override
-                            public void get(@NonNull OldStatisticManager manager) {
-                                ArrayList<Integer> newIndexes = manager.newStatisticPreviews(indexes);
-                                try {
-                                    core.statistic().v2().sendViewStory(newIndexes,
-                                            isFavoriteList ? StatisticManager.FAVORITE : StatisticManager.LIST, feedId);
-                                } catch (Exception e) {
-
+                final List<Integer> newIndexes = core.statistic().newStatisticPreviews(indexes);
+                core.sessionManager().useOrOpenSession(new OpenSessionCallback() {
+                    @Override
+                    public void onSuccess(String sessionId) {
+                        core.statistic().v2().sendViewStory(newIndexes,
+                                isFavoriteList ? IASStatisticV2Impl.FAVORITE : IASStatisticV2Impl.LIST, feedId);
+                        core.statistic().v1(
+                                sessionId,
+                                new GetStatisticV1Callback() {
+                                    @Override
+                                    public void get(@NonNull IASStatisticV1 manager) {
+                                        manager.previewStatisticEvent(newIndexes);
+                                    }
                                 }
-                                manager.previewStatisticEvent(indexes);
-                            }
-                        }
-                );
+                        );
+                    }
+
+                    @Override
+                    public void onError() {
+
+                    }
+                });
+
             }
         });
 
@@ -358,12 +363,10 @@ public class StoriesList extends RecyclerView {
     }
 
     int hasUgc() {
-        checkAppearanceManager();
-        return (hasSessionUGC() && !isFavoriteList && appearanceManager.csHasUGC()) ? 1 : 0;
+        return (hasSessionUGC() && !isFavoriteList && getAppearanceManager().csHasUGC()) ? 1 : 0;
     }
 
     private void getVisibleItems() {
-        checkAppearanceManager();
         int hasUgc = hasUgc();
         if (layoutManager instanceof LinearLayoutManager) {
             LinearLayoutManager linearLayoutManager = (LinearLayoutManager) layoutManager;
@@ -501,9 +504,8 @@ public class StoriesList extends RecyclerView {
         @Override
         public boolean onInterceptTouchEvent(RecyclerView rv, MotionEvent e) {
             View child = rv.findChildViewUnder(e.getX(), e.getY());
-            checkAppearanceManager();
             if (touchListener == null)
-                touchListener = appearanceManager.csStoryTouchListener();
+                touchListener = getAppearanceManager().csStoryTouchListener();
             if (touchListener != null) {
                 if (child != null && e.getAction() == MotionEvent.ACTION_DOWN) {
                     touchListener.touchDown(child, rv.getChildPosition(child));
@@ -587,15 +589,22 @@ public class StoriesList extends RecyclerView {
     public void onWindowFocusChanged(boolean hasWindowFocus) {
         super.onWindowFocusChanged(hasWindowFocus);
         if (!hasWindowFocus) {
-            OldStatisticManager.useInstance(
-                    manager != null ? manager.currentSessionId : "",
-                    new GetOldStatisticManagerCallback() {
-                        @Override
-                        public void get(@NonNull OldStatisticManager manager) {
-                            manager.sendStatistic();
-                        }
-                    }
-            );
+            InAppStoryManager.useCore(new UseIASCoreCallback() {
+                @Override
+                public void use(@NonNull IASCore core) {
+                    core.statistic().v1(
+                            manager != null ?
+                                    manager.currentSessionId :
+                                    core.sessionManager().getSession().getSessionId(),
+                            new GetStatisticV1Callback() {
+                                @Override
+                                public void get(@NonNull IASStatisticV1 manager) {
+                                    manager.sendStatistic();
+                                }
+                            }
+                    );
+                }
+            });
         }
     }
 
@@ -615,7 +624,6 @@ public class StoriesList extends RecyclerView {
     public void favStory(int id, boolean favStatus, List<FavoriteImage> favImages, boolean isEmpty) {
         if (adapter == null) return;
 
-        checkAppearanceManager();
         if (isFavoriteList) {
             adapter.hasFavItem = false;
             if (favStatus) {
@@ -629,7 +637,7 @@ public class StoriesList extends RecyclerView {
             updateVisibleArea(true);
         } else if (!adapter.hasFavItem) {
             if (!favImages.isEmpty()) {
-                adapter.hasFavItem = (appearanceManager != null && appearanceManager.csHasFavorite());
+                adapter.hasFavItem = (getAppearanceManager().csHasFavorite());
                 // adapter.refresh();
                 adapter.notifyDataSetChanged();
             }
@@ -671,7 +679,6 @@ public class StoriesList extends RecyclerView {
                     loadStoriesInner();
                     return;
                 }
-                checkAppearanceManager();
                 setOrRefreshAdapter(storiesIds);
                 if (callback != null) {
                     callback.storiesLoaded(
@@ -697,7 +704,7 @@ public class StoriesList extends RecyclerView {
         return data;
     }
 
-    private void checkAppearanceManager() {
+    private AppearanceManager getAppearanceManager() {
         if (this.appearanceManager == null) {
             this.appearanceManager = AppearanceManager.getCommonInstance();
         }
@@ -705,13 +712,12 @@ public class StoriesList extends RecyclerView {
         if (this.appearanceManager == null) {
             this.appearanceManager = new AppearanceManager();
         }
-
+        return this.appearanceManager;
     }
 
     private void setOrRefreshAdapter(List<Integer> storiesIds) {
-        checkAppearanceManager();
-
-        setOverScrollMode(getAppearanceManager().csListOverscroll() ?
+        final AppearanceManager appearanceManager = getAppearanceManager();
+        setOverScrollMode(appearanceManager.csListOverscroll() ?
                 OVER_SCROLL_ALWAYS : OVER_SCROLL_NEVER);
         adapter = new StoriesAdapter(
                 InAppStoryManager.getInstance().iasCore(),
@@ -781,52 +787,23 @@ public class StoriesList extends RecyclerView {
             );
             return;
         }
-        if (manager.noCorrectUserIdOrDevice()) return;
+        final IASCore core = manager.iasCore();
+        if (((IASDataSettingsHolder)core.settingsAPI()).noCorrectUserIdOrDevice()) return;
 
-        checkAppearanceManager();
         InAppStoryManager.debugSDKCalls("StoriesList_loadStoriesInner", "");
-        final String listUid = ProfilingManager.getInstance().addTask("widget_init");
-        final boolean hasFavorite = (appearanceManager != null && !isFavoriteList && appearanceManager.csHasFavorite());
+        final String listUid = core.statistic().profiling().addTask("widget_init");
+        final boolean hasFavorite = (!isFavoriteList && getAppearanceManager().csHasFavorite());
 
-        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
-            @Override
-            public void use(@NonNull final InAppStoryService service) throws Exception {
-                loadStoriesLocal(service, listUid, hasFavorite);
-            }
-
-            @Override
-            public void error() throws Exception {
-                new Handler().postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
-                            @Override
-                            public void use(@NonNull InAppStoryService service) throws Exception {
-                                loadStoriesLocal(service, listUid, hasFavorite);
-                            }
-                        });
-                    }
-                }, 1000);
-            }
-        });
-    }
-
-
-    private void loadStoriesLocal(final @NonNull InAppStoryService service, final String listUid, boolean hasFavorite) {
         lcallback = new LoadStoriesCallback() {
             @Override
             public void storiesLoaded(final List<Integer> storiesIds) {
                 if (cacheId != null && !cacheId.isEmpty()) {
-                    InAppStoryManager.useCore(new UseIASCoreCallback() {
-                        @Override
-                        public void use(@NonNull IASCore core) {
-                            core.storiesListVMHolder().setVMState(
-                                    cacheId,
-                                    new StoriesListVMState(storiesIds)
-                            );
-                        }
-                    });
+                    core.storiesListVMHolder().setVMState(
+                            cacheId,
+                            new StoriesListVMState(storiesIds)
+                    );
                 }
+                core.statistic().profiling().setReady(listUid);
                 post(new Runnable() {
                     @Override
                     public void run() {
@@ -839,7 +816,7 @@ public class StoriesList extends RecyclerView {
                             );
                     }
                 });
-                ProfilingManager.getInstance().setReady(listUid);
+
 
             }
 
@@ -854,7 +831,7 @@ public class StoriesList extends RecyclerView {
                     callback.loadError(StringsUtils.getNonNull(getFeed()));
             }
         };
-        service.getStoryDownloadManager().loadStories(
+        InAppStoryService.getInstance().getStoryDownloadManager().loadStories(
                 getFeed(),
                 lcallback,
                 null,
@@ -862,4 +839,5 @@ public class StoriesList extends RecyclerView {
                 hasFavorite
         );
     }
+
 }

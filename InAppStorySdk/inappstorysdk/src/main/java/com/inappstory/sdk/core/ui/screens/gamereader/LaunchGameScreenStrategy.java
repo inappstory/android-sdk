@@ -34,8 +34,7 @@ public class LaunchGameScreenStrategy implements LaunchScreenStrategy {
 
     @Override
     public void launch(Context context, IOpenReader openReader, IScreensHolder screensHolder) {
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service == null || service.getSession().getSessionId().isEmpty()) return;
+        if (core.sessionManager().getSession().getSessionId().isEmpty()) return;
         if ((!openedFromReader && screensHolder.hasActiveScreen()) ||
                 screensHolder.hasActiveScreen(screensHolder.getGameScreenHolder())
         ) {

@@ -7,6 +7,7 @@ import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASCallbackType;
+import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.stories.api.models.Story;
@@ -58,23 +59,14 @@ public abstract class LoadListCallback extends NetworkCallback<List<Story>> {
                                 callback.loadListError("");
                             }
                         });
-                String oldUserId = "";
-                Locale locale = Locale.getDefault();
-                InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
-                if (inAppStoryManager != null) {
-                    oldUserId = inAppStoryManager.getUserId();
-                    locale = inAppStoryManager.getCurrentLocale();
-                }
-                InAppStoryService service = InAppStoryService.getInstance();
-                if (service != null) {
-                    core.sessionManager().closeSession(
-                            true,
-                            false,
-                            locale,
-                            oldUserId,
-                            service.getSession().getSessionId()
-                    );
-                }
+                IASDataSettingsHolder settingsHolder = (IASDataSettingsHolder) core.settingsAPI();
+                core.sessionManager().closeSession(
+                        true,
+                        false,
+                        settingsHolder.lang(),
+                        settingsHolder.userId(),
+                        core.sessionManager().getSession().getSessionId()
+                );
             }
         });
 

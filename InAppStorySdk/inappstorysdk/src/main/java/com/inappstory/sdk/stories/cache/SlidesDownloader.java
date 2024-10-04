@@ -9,6 +9,7 @@ import androidx.annotation.NonNull;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASCallbackType;
+import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderType;
@@ -202,11 +203,9 @@ class SlidesDownloader {
     }
 
     void addStoryPages(Story story, int loadType, Story.StoryType type) throws Exception {
-        Map<String, Pair<ImagePlaceholderValue, ImagePlaceholderValue>> imgPlaceholders = new HashMap<>();
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service != null) {
-            imgPlaceholders.putAll(service.getImagePlaceholdersValuesWithDefaults());
-        }
+        Map<String, Pair<ImagePlaceholderValue, ImagePlaceholderValue>> imgPlaceholders = new HashMap<>(
+                ((IASDataSettingsHolder) core.settingsAPI()).imagePlaceholdersWithSessionDefaults()
+        );
         synchronized (pageTasksLock) {
             int key = story.id;
             int slidesCountToCache;

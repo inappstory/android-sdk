@@ -5,11 +5,10 @@ import androidx.annotation.NonNull;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.api.IASStatisticV1;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
-import com.inappstory.sdk.stories.statistic.GetOldStatisticManagerCallback;
-import com.inappstory.sdk.stories.statistic.OldStatisticManager;
-import com.inappstory.sdk.stories.statistic.StatisticManager;
+import com.inappstory.sdk.stories.statistic.GetStatisticV1Callback;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPageManager;
 
 import java.util.concurrent.ScheduledExecutorService;
@@ -114,14 +113,12 @@ public class TimerManager {
 
         core.statistic().v2().cleanFakeEvents();
         if (pageManager == null) return;
-        OldStatisticManager.useInstance(
+        core.statistic().v1(
                 pageManager.getParentManager().getSessionId(),
-                new GetOldStatisticManagerCallback() {
+                new GetStatisticV1Callback() {
                     @Override
-                    public void get(@NonNull OldStatisticManager manager) {
-                        if (manager.currentEvent == null) return;
-                        manager.currentEvent.eventType = 1;
-                        manager.currentEvent.timer = System.currentTimeMillis();
+                    public void get(@NonNull IASStatisticV1 manager) {
+                        manager.refreshCurrentState();
                     }
                 }
         );
@@ -141,11 +138,11 @@ public class TimerManager {
 
     public void pauseTimerAndRefreshStat() {
         if (pageManager == null) return;
-        OldStatisticManager.useInstance(
+        core.statistic().v1(
                 pageManager.getParentManager().getSessionId(),
-                new GetOldStatisticManagerCallback() {
+                new GetStatisticV1Callback() {
                     @Override
-                    public void get(@NonNull OldStatisticManager manager) {
+                    public void get(@NonNull IASStatisticV1 manager) {
                         manager.closeStatisticEvent(null, true);
                         manager.sendStatistic();
                         manager.increaseEventCount();

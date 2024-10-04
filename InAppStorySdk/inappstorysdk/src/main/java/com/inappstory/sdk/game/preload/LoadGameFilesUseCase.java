@@ -1,5 +1,6 @@
 package com.inappstory.sdk.game.preload;
 
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.game.cache.DownloadResourcesUseCase;
 import com.inappstory.sdk.game.cache.SuccessUseCaseCallback;
 import com.inappstory.sdk.stories.api.interfaces.IGameCenterData;
@@ -8,7 +9,7 @@ import com.inappstory.sdk.stories.cache.DownloadInterruption;
 import com.inappstory.sdk.stories.cache.FilesDownloadManager;
 import com.inappstory.sdk.stories.cache.usecases.ArchiveUseCase;
 import com.inappstory.sdk.stories.cache.usecases.GameFolderUseCase;
-import com.inappstory.sdk.stories.statistic.ProfilingManager;
+import com.inappstory.sdk.stories.statistic.IASStatisticProfilingImpl;
 import com.inappstory.sdk.utils.EmptyProgressCallback;
 import com.inappstory.sdk.utils.ProgressCallback;
 
@@ -22,13 +23,15 @@ public class LoadGameFilesUseCase {
     private final List<IGameCenterData> gamesData;
     private final DownloadInterruption interruption;
     private final FilesDownloadManager filesDownloadManager;
-
+    private final IASCore core;
 
     public LoadGameFilesUseCase(
+            IASCore core,
             List<IGameCenterData> gamesData,
             FilesDownloadManager filesDownloadManager,
             DownloadInterruption interruption
     ) {
+        this.core = core;
         this.gamesData = gamesData;
         this.interruption = interruption;
         this.filesDownloadManager = filesDownloadManager;
@@ -83,7 +86,7 @@ public class LoadGameFilesUseCase {
                         new SuccessUseCaseCallback<Void>() {
                             @Override
                             public void onSuccess(Void result) {
-                                ProfilingManager.getInstance().setReady(resourcesHash[0]);
+                                core.statistic().profiling().setReady(resourcesHash[0]);
                                 successUseCaseCallback.onSuccess(data);
                             }
                         }
@@ -98,7 +101,7 @@ public class LoadGameFilesUseCase {
                     public void onSuccess(String result) {
                         gameFolder[0] = result;
                         totalProgress[0] += 0.2 * finalTotalDownloadsSize;
-                        resourcesHash[0] = ProfilingManager.getInstance().addTask(
+                        resourcesHash[0] = core.statistic().profiling().addTask(
                                 "game_resources_download"
                         );
                         downloadResourcesUseCase.download();
@@ -109,6 +112,7 @@ public class LoadGameFilesUseCase {
 
         final ArchiveUseCase getZipFileUseCase =
                 new ArchiveUseCase(
+                        core,
                         filesDownloadManager,
                         archiveUrl,
                         data.archiveSize(),

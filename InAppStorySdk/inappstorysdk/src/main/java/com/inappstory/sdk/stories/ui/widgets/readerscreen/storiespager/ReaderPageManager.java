@@ -10,6 +10,7 @@ import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASCallbackType;
+import com.inappstory.sdk.core.api.IASStatisticV1;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.network.JsonParser;
@@ -23,10 +24,8 @@ import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryWidgetCallback;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
-import com.inappstory.sdk.stories.statistic.GetOldStatisticManagerCallback;
-import com.inappstory.sdk.stories.statistic.OldStatisticManager;
-import com.inappstory.sdk.stories.statistic.ProfilingManager;
-import com.inappstory.sdk.stories.statistic.StatisticManager;
+import com.inappstory.sdk.stories.statistic.GetStatisticV1Callback;
+import com.inappstory.sdk.stories.statistic.IASStatisticProfilingImpl;
 import com.inappstory.sdk.stories.ui.reader.ReaderManager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.buttonspanel.ButtonsPanelManager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.progresstimeline.StoryTimelineManager;
@@ -209,11 +208,11 @@ public class ReaderPageManager {
                         }
                     }
                     if (getStoryType() == Story.StoryType.COMMON)
-                        OldStatisticManager.useInstance(
+                        core.statistic().v1(
                                 parentManager.getSessionId(),
-                                new GetOldStatisticManagerCallback() {
+                                new GetStatisticV1Callback() {
                                     @Override
-                                    public void get(@NonNull OldStatisticManager manager) {
+                                    public void get(@NonNull IASStatisticV1 manager) {
                                         manager.addLinkOpenStatistic(storyId, slideIndex);
                                     }
                                 }
@@ -435,7 +434,7 @@ public class ReaderPageManager {
         if (service == null) return;
         host.showLoader();
         currentSlideIsLoaded = false;
-        ProfilingManager.getInstance().addTask("slide_show",
+        core.statistic().profiling().addTask("slide_show",
                 storyId + "_" + slideIndex);
         isPaused = false;
         pauseTimers();

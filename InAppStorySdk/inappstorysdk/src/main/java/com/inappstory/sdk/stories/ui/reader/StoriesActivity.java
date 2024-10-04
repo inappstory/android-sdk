@@ -28,11 +28,11 @@ import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
-import com.inappstory.sdk.UseManagerInstanceCallback;
 import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASCallbackType;
+import com.inappstory.sdk.core.api.IASStatisticV1;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.ui.screens.ScreenType;
 import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryScreen;
@@ -45,9 +45,9 @@ import com.inappstory.sdk.stories.outercallbacks.common.reader.CloseStoryCallbac
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
-import com.inappstory.sdk.stories.statistic.GetOldStatisticManagerCallback;
-import com.inappstory.sdk.stories.statistic.OldStatisticManager;
-import com.inappstory.sdk.stories.statistic.StatisticManager;
+import com.inappstory.sdk.stories.statistic.GetStatisticV1Callback;
+import com.inappstory.sdk.stories.statistic.IASStatisticV1Impl;
+import com.inappstory.sdk.stories.statistic.IASStatisticV2Impl;
 import com.inappstory.sdk.stories.ui.reader.animations.DisabledReaderAnimation;
 import com.inappstory.sdk.stories.ui.reader.animations.FadeReaderAnimation;
 import com.inappstory.sdk.stories.ui.reader.animations.HandlerAnimatorListenerAdapter;
@@ -82,18 +82,19 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryScree
                             .screensManager()
                             .getGameScreenHolder()
                             .forceCloseScreen(null);
+                    core
+                            .statistic()
+                            .v1(
+                                    launchData.getSessionId(),
+                                    new GetStatisticV1Callback() {
+                                        @Override
+                                        public void get(@NonNull IASStatisticV1 manager) {
+                                            manager.sendStatistic();
+                                        }
+                                    }
+                            );
                 }
             });
-
-            OldStatisticManager.useInstance(
-                    launchData.getSessionId(),
-                    new GetOldStatisticManagerCallback() {
-                        @Override
-                        public void get(@NonNull OldStatisticManager manager) {
-                            manager.sendStatistic();
-                        }
-                    }
-            );
             cleanReader();
             System.gc();
             pauseDestroyed = true;
@@ -649,19 +650,19 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryScree
                                 );
                             }
                         });
-                String cause = StatisticManager.AUTO;
+                String cause = IASStatisticV2Impl.AUTO;
                 switch (action) {
                     case CloseStory.CLICK:
-                        cause = StatisticManager.CLICK;
+                        cause = IASStatisticV2Impl.CLICK;
                         break;
                     case CloseStory.CUSTOM:
-                        cause = StatisticManager.CUSTOM;
+                        cause = IASStatisticV2Impl.CUSTOM;
                         break;
                     case -1:
-                        cause = StatisticManager.BACK;
+                        cause = IASStatisticV2Impl.BACK;
                         break;
                     case CloseStory.SWIPE:
-                        cause = StatisticManager.SWIPE;
+                        cause = IASStatisticV2Impl.SWIPE;
                         break;
                 }
                 core.statistic().v2().sendCloseStory(
@@ -712,15 +713,21 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryScree
     public void cleanReader() {
         if (cleaned) return;
         Log.e("statisticTests", "closeReader");
-        OldStatisticManager.useInstance(
-                launchData.getSessionId(),
-                new GetOldStatisticManagerCallback() {
-                    @Override
-                    public void get(@NonNull OldStatisticManager manager) {
-                        manager.closeStatisticEvent();
-                    }
-                }
-        );
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.statistic().v1(
+                        launchData.getSessionId(),
+                        new GetStatisticV1Callback() {
+                            @Override
+                            public void get(@NonNull IASStatisticV1 manager) {
+                                manager.closeStatisticEvent();
+                            }
+                        }
+                );
+            }
+        });
+
         InAppStoryService.useInstance(new UseServiceInstanceCallback() {
             @Override
             public void use(@NonNull InAppStoryService service) throws Exception {
@@ -746,11 +753,11 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryScree
                             .getOpenReader(ScreenType.STORY)
                             .onRestoreStatusBar(StoriesActivity.this);
                     if (launchData != null) {
-                        OldStatisticManager.useInstance(
+                        core.statistic().v1(
                                 launchData.getSessionId(),
-                                new GetOldStatisticManagerCallback() {
+                                new GetStatisticV1Callback() {
                                     @Override
-                                    public void get(@NonNull OldStatisticManager manager) {
+                                    public void get(@NonNull IASStatisticV1 manager) {
                                         manager.sendStatistic();
                                     }
                                 }

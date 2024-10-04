@@ -43,29 +43,31 @@ public class ExceptionManager {
         core.sessionManager().useOrOpenSession(new OpenSessionCallback() {
             @Override
             public void onSuccess(String sessionId) {
-                if (service.getSession().allowCrash())
-                    networkClient.enqueue(
-                            networkClient.getApi().sendException(
-                                    copiedLog.session,
-                                    copiedLog.timestamp / 1000,
-                                    copiedLog.message,
-                                    copiedLog.file,
-                                    copiedLog.line,
-                                    copiedLog.stacktrace
-                            ),
-                            new NetworkCallback() {
-                                @Override
-                                public void onSuccess(Object response) {
-                                    SharedPreferencesAPI.removeString(SAVED_EX);
-                                }
-
-                                @Override
-                                public Type getType() {
-                                    return null;
-                                }
-                            });
-                else
+                if (core.statistic().exceptions().disabled()) {
                     SharedPreferencesAPI.removeString(SAVED_EX);
+                    return;
+                }
+                networkClient.enqueue(
+                        networkClient.getApi().sendException(
+                                copiedLog.session,
+                                copiedLog.timestamp / 1000,
+                                copiedLog.message,
+                                copiedLog.file,
+                                copiedLog.line,
+                                copiedLog.stacktrace
+                        ),
+                        new NetworkCallback() {
+                            @Override
+                            public void onSuccess(Object response) {
+                                SharedPreferencesAPI.removeString(SAVED_EX);
+                            }
+
+                            @Override
+                            public Type getType() {
+                                return null;
+                            }
+                        }
+                );
             }
 
             @Override
@@ -79,7 +81,7 @@ public class ExceptionManager {
     public void sendSavedException() {
         ExceptionLog log = getSavedException();
         if (log == null) return;
-   //     sendException(log);
+        //     sendException(log);
     }
 
 
@@ -88,9 +90,7 @@ public class ExceptionManager {
         log.id = UUID.randomUUID().toString();
         log.timestamp = System.currentTimeMillis();
         log.message = throwable.getClass().getCanonicalName() + ": " + throwable.getMessage();
-
-        InAppStoryService service = InAppStoryService.getInstance();
-        log.session = (service != null ? service.getSession().getSessionId() : null);
+        log.session = core.sessionManager().getSession().getSessionId();
         StackTraceElement[] stackTraceElements = throwable.getStackTrace();
         if (stackTraceElements.length > 0) {
             String stackTrace = "";

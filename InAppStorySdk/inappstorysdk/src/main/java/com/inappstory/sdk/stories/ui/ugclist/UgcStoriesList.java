@@ -18,9 +18,10 @@ import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
-import com.inappstory.sdk.UseManagerInstanceCallback;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
+import com.inappstory.sdk.core.api.IASDataSettingsHolder;
+import com.inappstory.sdk.core.api.IASStatisticV1;
 import com.inappstory.sdk.core.stories.StoriesListVMState;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.Story;
@@ -32,9 +33,8 @@ import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.UgcStoryData;
 import com.inappstory.sdk.stories.outercallbacks.storieslist.ListCallback;
 import com.inappstory.sdk.stories.outercallbacks.storieslist.ListScrollCallback;
-import com.inappstory.sdk.stories.statistic.GetOldStatisticManagerCallback;
-import com.inappstory.sdk.stories.statistic.OldStatisticManager;
-import com.inappstory.sdk.stories.statistic.ProfilingManager;
+import com.inappstory.sdk.stories.statistic.GetStatisticV1Callback;
+import com.inappstory.sdk.stories.statistic.IASStatisticProfilingImpl;
 import com.inappstory.sdk.stories.ui.list.StoryTouchListener;
 import com.inappstory.sdk.stories.ui.reader.ActiveStoryItem;
 import com.inappstory.sdk.ugc.list.OnUGCItemClick;
@@ -357,15 +357,24 @@ public class UgcStoriesList extends RecyclerView {
     public void onWindowFocusChanged(boolean hasWindowFocus) {
         super.onWindowFocusChanged(hasWindowFocus);
         if (!hasWindowFocus) {
-            OldStatisticManager.useInstance(
-                    manager != null ? manager.currentSessionId : "",
-                    new GetOldStatisticManagerCallback() {
-                        @Override
-                        public void get(@NonNull OldStatisticManager manager) {
-                            manager.sendStatistic();
-                        }
-                    }
-            );
+
+            InAppStoryManager.useCore(new UseIASCoreCallback() {
+                @Override
+                public void use(@NonNull IASCore core) {
+                    core.statistic().v1(
+                            manager != null ?
+                                    manager.currentSessionId :
+                                    core.sessionManager().getSession().getSessionId(),
+                            new GetStatisticV1Callback() {
+                                @Override
+                                public void get(@NonNull IASStatisticV1 manager) {
+                                    manager.sendStatistic();
+                                }
+                            }
+                    );
+                }
+            });
+
         }
     }
 
@@ -478,94 +487,48 @@ public class UgcStoriesList extends RecyclerView {
             );
             return;
         }
-        if (manager.noCorrectUserIdOrDevice()) return;
 
+        final IASCore core = manager.iasCore();
+        if (((IASDataSettingsHolder)core.settingsAPI()).noCorrectUserIdOrDevice()) return;
         final InAppStoryService service = InAppStoryService.getInstance();
 
         checkAppearanceManager();
-        final String listUid = ProfilingManager.getInstance().addTask("widget_init");
-        if (service != null) {
-            lcallback = new LoadStoriesCallback() {
-                @Override
-                public void storiesLoaded(final List<Integer> storiesIds) {
-                    if (cacheId != null && !cacheId.isEmpty()) {
-                        InAppStoryManager.useCore(new UseIASCoreCallback() {
-                            @Override
-                            public void use(@NonNull IASCore core) {
-                                core.storiesListVMHolder().setVMState(
-                                        cacheId,
-                                        new StoriesListVMState(storiesIds)
-                                );
-                            }
-                        });
+        final String listUid = core.statistic().profiling().addTask("widget_init");
+        lcallback = new LoadStoriesCallback() {
+            @Override
+            public void storiesLoaded(final List<Integer> storiesIds) {
+                if (cacheId != null && !cacheId.isEmpty()) {
+                    core.storiesListVMHolder().setVMState(
+                            cacheId,
+                            new StoriesListVMState(storiesIds)
+                    );
+                }
+                post(new Runnable() {
+                    @Override
+                    public void run() {
+                        setOrRefreshAdapter(storiesIds);
+                        if (callback != null)
+                            callback.storiesLoaded(
+                                    storiesIds.size(),
+                                    "",
+                                    getStoriesData(storiesIds)
+                            );
                     }
-                    post(new Runnable() {
-                        @Override
-                        public void run() {
-                            setOrRefreshAdapter(storiesIds);
-                            if (callback != null)
-                                callback.storiesLoaded(
-                                        storiesIds.size(),
-                                        "",
-                                        getStoriesData(storiesIds)
-                                );
-                        }
-                    });
-                    ProfilingManager.getInstance().setReady(listUid);
-                }
+                });
+                core.statistic().profiling().setReady(listUid);
+            }
 
-                @Override
-                public void setFeedId(String feedId) {
+            @Override
+            public void setFeedId(String feedId) {
 
-                }
+            }
 
-                @Override
-                public void onError() {
-                    if (callback != null) callback.loadError("");
-                }
-            };
-            service.getStoryDownloadManager().loadUgcStories(lcallback, payload);
-
-        } else {
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    InAppStoryService service1 = InAppStoryService.getInstance();
-                    if (service1 != null) {
-                        lcallback = new LoadStoriesCallback() {
-                            @Override
-                            public void storiesLoaded(final List<Integer> storiesIds) {
-                                post(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        setOrRefreshAdapter(storiesIds);
-                                        if (callback != null)
-                                            callback.storiesLoaded(
-                                                    storiesIds.size(),
-                                                    "",
-                                                    getStoriesData(storiesIds)
-                                            );
-                                    }
-                                });
-                                ProfilingManager.getInstance().setReady(listUid);
-
-                            }
-
-                            @Override
-                            public void setFeedId(String feedId) {
-
-                            }
-
-                            @Override
-                            public void onError() {
-                                if (callback != null) callback.loadError("");
-                            }
-                        };
-                        service1.getStoryDownloadManager().loadUgcStories(lcallback, payload);
-                    }
-                }
-            }, 1000);
-        }
+            @Override
+            public void onError() {
+                if (callback != null) callback.loadError("");
+            }
+        };
+        service.getStoryDownloadManager().loadUgcStories(lcallback, payload);
 
     }
 

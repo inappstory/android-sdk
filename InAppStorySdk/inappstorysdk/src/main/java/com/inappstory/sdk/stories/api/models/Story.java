@@ -5,8 +5,10 @@ import android.os.Parcelable;
 
 import androidx.annotation.NonNull;
 
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.UseServiceInstanceCallback;
+import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.network.annotations.models.Ignore;
 import com.inappstory.sdk.network.annotations.models.Required;
 import com.inappstory.sdk.network.annotations.models.SerializedName;
@@ -134,9 +136,10 @@ public class Story implements Parcelable {
     }
 
     private String getReplacedField(String tmp) {
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service == null) return tmp;
-        Map<String, String> localPlaceholders = service.getPlaceholders();
+        InAppStoryManager manager = InAppStoryManager.getInstance();
+        if (manager == null) return tmp;
+        Map<String, String> localPlaceholders =
+                ((IASDataSettingsHolder)manager.iasCore().settingsAPI()).placeholders();
         for (String key : localPlaceholders.keySet()) {
             String modifiedKey = "%" + key + "%";
             String value = localPlaceholders.get(key);

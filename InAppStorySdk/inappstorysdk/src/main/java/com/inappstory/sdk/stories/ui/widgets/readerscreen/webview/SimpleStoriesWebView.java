@@ -215,6 +215,7 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
         loadUrl("javascript:story_send_text_input_result(\"" + id + "\", \"" + data + "\")");
     }
 
+
     public SimpleStoriesWebView(final Context context) {
         super(context.getApplicationContext());
         InAppStoryManager.useCore(new UseIASCoreCallback() {
@@ -329,7 +330,8 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
         if (!clientIsSet) {
             addJavascriptInterface(
                     new WebAppInterface(
-                            getManager()
+                            getManager(),
+                            getManager().core()
                     ), "Android");
             setWebViewClient(new IASWebViewClient());
             setWebChromeClient(new WebChromeClient() {

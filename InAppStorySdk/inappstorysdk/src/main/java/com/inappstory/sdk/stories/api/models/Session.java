@@ -13,8 +13,6 @@ import java.util.ArrayList;
 public class Session {
     @Required
     public String id;
-    @SerializedName("is_allow_profiling")
-    public StatisticPermissions statisticPermissions;
 
     public boolean isAllowUgc;
 }

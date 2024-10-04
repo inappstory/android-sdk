@@ -2,6 +2,7 @@ package com.inappstory.sdk.stories.cache;
 
 import android.content.Context;
 
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.lrudiskcache.LruCachesHolder;
 import com.inappstory.sdk.stories.cache.usecases.FinishDownloadFileCallback;
 import com.inappstory.sdk.stories.cache.vod.VODCacheJournal;
@@ -59,8 +60,8 @@ public class FilesDownloadManager {
         }
     }
 
-    public FilesDownloadManager(Context context, int cacheSize) {
-        cachesHolder = new LruCachesHolder(context, cacheSize);
+    public FilesDownloadManager(IASCore core, Context context, int cacheSize) {
+        cachesHolder = new LruCachesHolder(core, context, cacheSize);
         File file = new File(
                 context.getFilesDir() +
                         File.separator +

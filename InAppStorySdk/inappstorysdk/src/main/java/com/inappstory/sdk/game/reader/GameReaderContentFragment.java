@@ -92,7 +92,7 @@ import com.inappstory.sdk.stories.events.GameCompleteEventObserver;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.GameReaderLaunchData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.game.GameLoadedError;
-import com.inappstory.sdk.stories.statistic.ProfilingManager;
+import com.inappstory.sdk.stories.statistic.IASStatisticProfilingImpl;
 import com.inappstory.sdk.stories.ui.OverlapFragmentObserver;
 import com.inappstory.sdk.stories.ui.views.IASWebView;
 import com.inappstory.sdk.stories.ui.views.IASWebViewClient;
@@ -245,9 +245,20 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
     }
 
     void updateUI() {
-        GameStoryData dataModel = getStoryDataModel();
-        if (dataModel != null)
-            ProfilingManager.getInstance().setReady("game_init" + dataModel.slideData.story.id + "_" + dataModel.slideData.index);
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                GameStoryData dataModel = getStoryDataModel();
+                if (dataModel != null)
+                    core.statistic().profiling().setReady(
+                            "game_init"
+                                    + dataModel.slideData.story.id
+                                    + "_"
+                                    + dataModel.slideData.index
+                    );
+
+            }
+        });
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {

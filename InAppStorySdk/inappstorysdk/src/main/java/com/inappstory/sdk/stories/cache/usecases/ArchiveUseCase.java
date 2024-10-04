@@ -4,7 +4,7 @@ import static java.util.UUID.randomUUID;
 
 import androidx.annotation.WorkerThread;
 
-import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.game.cache.UseCaseCallback;
 import com.inappstory.sdk.lrudiskcache.CacheJournalItem;
 import com.inappstory.sdk.lrudiskcache.FileChecker;
@@ -15,7 +15,7 @@ import com.inappstory.sdk.stories.cache.DownloadInterruption;
 import com.inappstory.sdk.stories.cache.Downloader;
 import com.inappstory.sdk.stories.cache.FileLoadProgressCallback;
 import com.inappstory.sdk.stories.cache.FilesDownloadManager;
-import com.inappstory.sdk.stories.statistic.ProfilingManager;
+import com.inappstory.sdk.stories.statistic.IASStatisticProfilingImpl;
 import com.inappstory.sdk.utils.ProgressCallback;
 import com.inappstory.sdk.utils.StringsUtils;
 
@@ -33,9 +33,10 @@ public class ArchiveUseCase extends GetCacheFileUseCase<Void> {
     private final DownloadInterruption interruption;
     private final UseCaseCallback<File> useCaseCallback;
     private final FileChecker fileChecker = new FileChecker();
-
+    private final IASCore core;
 
     public ArchiveUseCase(
+            IASCore core,
             FilesDownloadManager filesDownloadManager,
             String url,
             long archiveSize,
@@ -46,6 +47,7 @@ public class ArchiveUseCase extends GetCacheFileUseCase<Void> {
             UseCaseCallback<File> useCaseCallback
     ) {
         super(filesDownloadManager);
+        this.core = core;
         this.url = url;
         this.totalFilesSize = totalFilesSize;
         this.uniqueKey = StringsUtils.md5(url);
@@ -172,7 +174,7 @@ public class ArchiveUseCase extends GetCacheFileUseCase<Void> {
         if (fileState != null) {
             offset = fileState.downloadedSize;
         }
-        ProfilingManager.getInstance().addTask("game_download", hash);
+        core.statistic().profiling().addTask("game_download", hash);
         try {
             downloadLog.generateResponseLog(false, filePath);
 
@@ -191,7 +193,7 @@ public class ArchiveUseCase extends GetCacheFileUseCase<Void> {
                             } else {
                                 useCaseCallback.onSuccess(fileState.file);
                             }
-                            ProfilingManager.getInstance().setReady(hash);
+                            core.statistic().profiling().setReady(hash);
                         }
                         CacheJournalItem cacheJournalItem = generateCacheItem();
                         cacheJournalItem.setDownloadedSize(fileState.downloadedSize);

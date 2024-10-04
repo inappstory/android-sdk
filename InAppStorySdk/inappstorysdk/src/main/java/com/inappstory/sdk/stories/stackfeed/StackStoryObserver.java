@@ -13,8 +13,8 @@ import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.core.IASCore;
-import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASCallbackType;
+import com.inappstory.sdk.core.api.IASStatisticV1;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenData;
 import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenStrategy;
@@ -33,9 +33,7 @@ import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
-import com.inappstory.sdk.stories.statistic.GetOldStatisticManagerCallback;
-import com.inappstory.sdk.stories.statistic.OldStatisticManager;
-import com.inappstory.sdk.stories.statistic.StatisticManager;
+import com.inappstory.sdk.stories.statistic.GetStatisticV1Callback;
 import com.inappstory.sdk.stories.utils.RunnableCallback;
 
 import java.util.ArrayList;
@@ -273,9 +271,9 @@ public class StackStoryObserver implements IStackFeedActions {
                     currentStory.getDeeplink(),
                     feed
             );
-            OldStatisticManager.useInstance(sessionId, new GetOldStatisticManagerCallback() {
+            core.statistic().v1(sessionId, new GetStatisticV1Callback() {
                 @Override
-                public void get(@NonNull OldStatisticManager manager) {
+                public void get(@NonNull IASStatisticV1 manager) {
                     manager.addDeeplinkClickStatistic(currentStory.id);
                 }
             });
@@ -327,11 +325,11 @@ public class StackStoryObserver implements IStackFeedActions {
             }
         } else if (currentStory.getGameInstanceId() != null && !currentStory.getGameInstanceId().isEmpty()) {
             service.getListReaderConnector().changeStory(currentStory.id, listId, showOnlyNewStories);
-            OldStatisticManager.useInstance(
+            core.statistic().v1(
                     sessionId,
-                    new GetOldStatisticManagerCallback() {
+                    new GetStatisticV1Callback() {
                         @Override
-                        public void get(@NonNull OldStatisticManager manager) {
+                        public void get(@NonNull IASStatisticV1 manager) {
                             manager.addGameClickStatistic(currentStory.id);
                         }
                     }
@@ -387,7 +385,7 @@ public class StackStoryObserver implements IStackFeedActions {
                     null
             );
             core.screensManager().openScreen(context,
-                    new LaunchStoryScreenStrategy(false).
+                    new LaunchStoryScreenStrategy(core, false).
                             launchStoryScreenData(launchData).
                             readerAppearanceSettings(
                                     new LaunchStoryScreenAppearance(

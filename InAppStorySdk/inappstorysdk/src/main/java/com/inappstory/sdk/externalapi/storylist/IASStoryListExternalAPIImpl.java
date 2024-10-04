@@ -5,8 +5,11 @@ import android.content.Context;
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.AppearanceManager;
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.UseServiceInstanceCallback;
+import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASStoryList;
 
 import java.util.List;
@@ -67,15 +70,21 @@ public class IASStoryListExternalAPIImpl implements IASStoryList {
     }
 
     public void updateVisiblePreviews(final List<Integer> storyIds, final String uniqueId) {
-        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
-            public void use(@NonNull InAppStoryService service) throws Exception {
-                service.getApiSubscribersManager().updateVisiblePreviews(
-                        service.getSession().getSessionId(),
-                        storyIds,
-                        uniqueId
-                );
+            public void use(@NonNull final IASCore core) {
+                InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+                    @Override
+                    public void use(@NonNull InAppStoryService service) throws Exception {
+                        service.getApiSubscribersManager().updateVisiblePreviews(
+                                core.sessionManager().getSession().getSessionId(),
+                                storyIds,
+                                uniqueId
+                        );
+                    }
+                });
             }
         });
+
     }
 }

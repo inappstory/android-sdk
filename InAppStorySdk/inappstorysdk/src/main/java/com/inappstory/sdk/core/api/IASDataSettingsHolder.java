@@ -1,5 +1,7 @@
 package com.inappstory.sdk.core.api;
 
+import android.util.Pair;
+
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
 
 import java.util.List;
@@ -12,6 +14,7 @@ public interface IASDataSettingsHolder {
     Locale lang();
     Map<String, String> placeholders();
     Map<String, ImagePlaceholderValue> imagePlaceholders();
+    Map<String, Pair<ImagePlaceholderValue, ImagePlaceholderValue>> imagePlaceholdersWithSessionDefaults();
     List<String> tags();
     boolean noCorrectUserIdOrDevice();
     boolean noCorrectTags();

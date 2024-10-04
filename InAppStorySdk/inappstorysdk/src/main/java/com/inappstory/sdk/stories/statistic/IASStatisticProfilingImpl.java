@@ -11,34 +11,32 @@ import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
+import com.inappstory.sdk.core.api.IASStatisticProfiling;
 import com.inappstory.sdk.network.models.Request;
 import com.inappstory.sdk.network.utils.GetUrl;
 import com.inappstory.sdk.network.utils.UserAgent;
-import com.inappstory.sdk.stories.api.models.Session;
 import com.inappstory.sdk.stories.utils.LoopedExecutor;
 
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class ProfilingManager {
-    ArrayList<ProfilingTask> tasks = new ArrayList<>();
-    ArrayList<ProfilingTask> readyTasks = new ArrayList<>();
-    private static ProfilingManager INSTANCE;
+public class IASStatisticProfilingImpl implements IASStatisticProfiling {
+    private final List<ProfilingTask> tasks = new ArrayList<>();
+    private final List<ProfilingTask> readyTasks = new ArrayList<>();
+    private final IASCore core;
 
-    Context context;
-    private static final ExecutorService runnableExecutor = Executors.newFixedThreadPool(1);
-
-    public static ProfilingManager getInstance() {
-        if (INSTANCE == null) {
-            INSTANCE = new ProfilingManager();
-            INSTANCE.init();
-        }
-        return INSTANCE;
+    public IASStatisticProfilingImpl(IASCore core) {
+        this.core = core;
+        loopedExecutor.init(queueTasksRunnable);
     }
+
+
+    private final ExecutorService runnableExecutor = Executors.newFixedThreadPool(1);
 
     private final Object tasksLock = new Object();
 
@@ -47,7 +45,7 @@ public class ProfilingManager {
         task.uniqueHash = hash;
         task.name = name;
         task.startTime = System.currentTimeMillis();
-        task.isAllowToForceSend = isAllowToSend();
+        task.isAllowToForceSend = !disabled;
         synchronized (tasksLock) {
             for (ProfilingTask hasTask : tasks) {
                 if (hasTask.uniqueHash.equals(hash)) {
@@ -61,19 +59,12 @@ public class ProfilingManager {
     }
 
     public String addTask(String name) {
-        InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
-        if (inAppStoryManager == null) return "";
-        IASCore core = inAppStoryManager.iasCore();
         IASDataSettingsHolder settingsHolder =
                 (IASDataSettingsHolder) core.settingsAPI();
-
-
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service == null) return "";
         String hash = randomUUID().toString();
         ProfilingTask task = new ProfilingTask();
-        task.sessionId = inAppStoryManager.iasCore().sessionManager().getSession().getSessionId();
-        task.isAllowToForceSend = isAllowToSend();
+        task.sessionId = core.sessionManager().getSession().getSessionId();
+        task.isAllowToForceSend = !disabled;
         task.userId = settingsHolder.userId();
         task.uniqueHash = hash;
         task.name = name;
@@ -129,27 +120,21 @@ public class ProfilingManager {
 
     LoopedExecutor loopedExecutor = new LoopedExecutor(100, 100);
 
-
-    public void init() {
-        context = InAppStoryManager.getInstance().getContext();
-        loopedExecutor.init(queueTasksRunnable);
-    }
-
-    private Runnable queueTasksRunnable = new Runnable() {
+    private final Runnable queueTasksRunnable = new Runnable() {
         @Override
         public void run() {
             boolean readyIsEmpty = false;
-            synchronized (getInstance().tasksLock) {
-                readyIsEmpty = getInstance().readyTasks == null || getInstance().readyTasks.size() == 0;
+            synchronized (tasksLock) {
+                readyIsEmpty = readyTasks.size() == 0;
             }
-            if (readyIsEmpty || !InAppStoryService.isServiceConnected() || !isAllowToSend()) {
+            if (readyIsEmpty || disabled) {
                 loopedExecutor.freeExecutor();
                 return;
             }
             ProfilingTask task;
-            synchronized (getInstance().tasksLock) {
-                task = getInstance().readyTasks.get(0);
-                getInstance().readyTasks.remove(0);
+            synchronized (tasksLock) {
+                task = readyTasks.get(0);
+                readyTasks.remove(0);
             }
 
             if (task != null) {
@@ -162,13 +147,8 @@ public class ProfilingManager {
         }
     };
 
-    private boolean isAllowToSend() {
-        InAppStoryService service = InAppStoryService.getInstance();
-        return service != null && service.getSession().allowProfiling();
-    }
-
     private String getCC() {
-        if (context == null) return null;
+        Context context = core.appContext();
         TelephonyManager tm = (TelephonyManager) context.getSystemService(TELEPHONY_SERVICE);
         String countryCodeValue = tm.getNetworkCountryIso();
         if (countryCodeValue == null || countryCodeValue.isEmpty()) {
@@ -184,16 +164,14 @@ public class ProfilingManager {
     }
 
 
-    private int sendTiming(ProfilingTask task) throws Exception {
-        InAppStoryService service = InAppStoryService.getInstance();
+    private void sendTiming(ProfilingTask task) throws Exception {
         Map<String, String> qParams = new HashMap<>();
         qParams.put("s", (task.sessionId != null && !task.sessionId.isEmpty()) ? task.sessionId :
-                (service != null ? service.getSession().getSessionId() : ""));
+                core.sessionManager().getSession().getSessionId());
         qParams.put("u", task.userId != null ? task.userId : "");
         String cc = getCC();
         qParams.put("ts", "" + System.currentTimeMillis() / 1000);
-        if (cc != null)
-            qParams.put("c", cc);
+        qParams.put("c", cc);
         qParams.put("n", task.name);
         qParams.put("v", "" + (task.endTime - task.startTime));
         HttpURLConnection connection = (HttpURLConnection) new GetUrl()
@@ -204,14 +182,26 @@ public class ProfilingManager {
                                 .build()
                 )
                 .openConnection();
-        connection.setRequestProperty("User-Agent", new UserAgent().generate(context));
+        connection.setRequestProperty("User-Agent", new UserAgent().generate(core.appContext()));
         connection.setConnectTimeout(30000);
         connection.setReadTimeout(30000);
         connection.setRequestMethod("POST");
         int statusCode = connection.getResponseCode();
         InAppStoryManager.showDLog("InAppStory_Network", connection.getURL().toString() + " \nStatus Code: " + statusCode);
         connection.disconnect();
-        return statusCode;
+        return;
 
+    }
+
+    private boolean disabled;
+
+    @Override
+    public void disabled(boolean disabled) {
+        this.disabled = disabled;
+    }
+
+    @Override
+    public boolean disabled() {
+        return disabled;
     }
 }

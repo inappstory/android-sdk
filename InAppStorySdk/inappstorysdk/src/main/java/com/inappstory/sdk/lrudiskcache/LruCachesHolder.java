@@ -9,6 +9,7 @@ import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_500;
 import android.content.Context;
 
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.core.IASCore;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,6 +21,7 @@ public class LruCachesHolder {
     private LruDiskCache vodCache;
 
     public LruCachesHolder(
+            IASCore core,
             Context context,
             int cacheSize
     ) {
@@ -38,24 +40,28 @@ public class LruCachesHolder {
             }
             String prefix = File.separator + "ias" + File.separator;
             this.fastCache = new LruDiskCache(
+                    core,
                     cacheDir,
                     prefix + "fastCache",
                     fastCacheSize,
                     CacheType.FAST
             );
             this.commonCache = new LruDiskCache(
+                    core,
                     cacheDir,
                     prefix + "commonCache",
                     commonCacheSize,
                     CacheType.COMMON
             );
             this.infiniteCache = new LruDiskCache(
+                    core,
                     cacheDir,
                     prefix + "infiniteCache",
                     cacheDir.getFreeSpace(),
                     CacheType.INFINITE
             );
             this.vodCache = new LruDiskCache(
+                    core,
                     cacheDir,
                     prefix + "vodCache",
                     MB_500,

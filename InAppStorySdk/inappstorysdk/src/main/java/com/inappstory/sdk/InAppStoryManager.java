@@ -21,15 +21,7 @@ import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.IASCoreImpl;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASCallbackType;
-import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.ui.screens.holder.GetScreenCallback;
-import com.inappstory.sdk.core.ui.screens.launcher.ILaunchScreenCallback;
-import com.inappstory.sdk.core.ui.screens.ScreenType;
-import com.inappstory.sdk.core.ui.screens.holder.ScreensHolder;
-import com.inappstory.sdk.core.ui.screens.launcher.ScreensLauncher;
-import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenAppearance;
-import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenData;
-import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenStrategy;
 import com.inappstory.sdk.lrudiskcache.CacheSize;
 import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.JsonParser;
@@ -42,8 +34,6 @@ import com.inappstory.sdk.stories.api.models.Feed;
 import com.inappstory.sdk.stories.api.models.Image;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
 import com.inappstory.sdk.stories.api.models.Story;
-import com.inappstory.sdk.stories.api.models.StoryPlaceholder;
-import com.inappstory.sdk.stories.api.models.callbacks.GetStoryByIdCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadFeedCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.api.models.logs.ApiLogRequest;
@@ -68,33 +58,28 @@ import com.inappstory.sdk.stories.outercallbacks.common.reader.FavoriteStoryCall
 import com.inappstory.sdk.stories.outercallbacks.common.reader.LikeDislikeStoryCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ShowSlideCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ShowStoryCallback;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryWidgetCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.single.SingleLoadCallback;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
-import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.stackfeed.IStackFeedActions;
 import com.inappstory.sdk.stories.stackfeed.IStackFeedResult;
 import com.inappstory.sdk.stories.stackfeed.IStackStoryData;
 import com.inappstory.sdk.stories.stackfeed.StackStoryObserver;
 import com.inappstory.sdk.stories.stackfeed.StackStoryUpdatedCallback;
-import com.inappstory.sdk.stories.statistic.ProfilingManager;
+import com.inappstory.sdk.stories.statistic.IASStatisticProfilingImpl;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryScreen;
 import com.inappstory.sdk.stories.ui.reader.ForceCloseReaderCallback;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
-import com.inappstory.sdk.utils.IVibrateUtils;
 import com.inappstory.sdk.utils.StringsUtils;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 
 
 /**
@@ -107,7 +92,7 @@ public class InAppStoryManager {
 
     private static InAppStoryManager INSTANCE;
 
-    private IASCore core = new IASCoreImpl();
+    private final IASCore core = new IASCoreImpl();
 
     public IASCore iasCore() {
         return core;
@@ -122,10 +107,6 @@ public class InAppStoryManager {
             }
         }
     }
-
-    private final ScreensHolder holder = new ScreensHolder(core);
-
-    private final ScreensLauncher launcher = new ScreensLauncher(holder);
 
 
     public static NetworkClient getNetworkClient() {
@@ -148,21 +129,9 @@ public class InAppStoryManager {
         }
     }
 
-    IVibrateUtils vibrateUtils = new VibrateUtils();
-
-    public IVibrateUtils getVibrateUtils() {
-        return vibrateUtils;
-    }
-
     public static boolean isNull() {
         synchronized (lock) {
             return INSTANCE == null;
-        }
-    }
-
-    public static void setInstance(InAppStoryManager manager) {
-        synchronized (lock) {
-            INSTANCE = manager;
         }
     }
 
@@ -277,11 +246,16 @@ public class InAppStoryManager {
      * use to clear downloaded files and in-app cache
      */
     public void clearCache() {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.sessionManager().getSession().assetsIsCleared();
+            }
+        });
         InAppStoryService.useInstance(new UseServiceInstanceCallback() {
             @Override
             public void use(@NonNull InAppStoryService service) {
                 service.getStoryDownloadManager().clearCache();
-                service.getSession().assetsIsCleared();
             }
         });
     }
@@ -291,6 +265,12 @@ public class InAppStoryManager {
      * use to clear downloaded files and in-app cache without manager
      */
     public void clearCache(Context context) {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.sessionManager().getSession().assetsIsCleared();
+            }
+        });
         InAppStoryService.useInstance(new UseServiceInstanceCallback() {
             @Override
             public void use(@NonNull InAppStoryService service) {
@@ -485,35 +465,7 @@ public class InAppStoryManager {
 
 
     public void setTags(ArrayList<String> tags) {
-        if (tags != null && StringsUtils.getBytesLength(TextUtils.join(",", tags)) > TAG_LIMIT) {
-            showELog(IAS_ERROR_TAG, StringsUtils.getErrorStringFromContext(context, R.string.ias_setter_tags_length_error));
-            return;
-        }
-        List<String> currentTags = getTags();
-        Set<String> oldList = new HashSet<>();
-        if (currentTags != null) {
-            oldList.addAll(currentTags);
-        }
-        Set<String> newList = new HashSet<>();
-        if (tags != null) {
-            newList.addAll(tags);
-        }
-        synchronized (tagsLock) {
-            if (oldList.size() == newList.size()) {
-                for (String newTag : newList) {
-                    if (!oldList.contains(newTag)) {
-                        this.tags = new ArrayList<>(newList);
-                        clearCachedLists();
-                        //    forceCloseAndClearCache();
-                        break;
-                    }
-                }
-            } else {
-                this.tags = new ArrayList<>(newList);
-                clearCachedLists();
-                //   forceCloseAndClearCache();
-            }
-        }
+        core.settingsAPI().setTags(tags);
     }
 
 
@@ -528,24 +480,7 @@ public class InAppStoryManager {
      */
 
     public void addTags(ArrayList<String> newTags) {
-        boolean hasNewTags = false;
-        synchronized (tagsLock) {
-            if (newTags == null || newTags.isEmpty()) return;
-            if (tags == null) tags = new ArrayList<>();
-            String oldTagsString = TextUtils.join(",", tags);
-            String newTagsString = TextUtils.join(",", newTags);
-            if (StringsUtils.getBytesLength(oldTagsString + newTagsString) > TAG_LIMIT - 1) {
-                showELog(IAS_ERROR_TAG, StringsUtils.getErrorStringFromContext(context, R.string.ias_setter_tags_length_error));
-                return;
-            }
-            for (String tag : newTags) {
-                hasNewTags |= addTag(tag);
-            }
-            if (hasNewTags) {
-                clearCachedLists();
-                //  forceCloseAndClearCache();
-            }
-        }
+        core.settingsAPI().addTags(newTags);
     }
 
     /**
@@ -555,44 +490,7 @@ public class InAppStoryManager {
      */
 
     public void removeTags(ArrayList<String> removedTags) {
-        boolean tagIsRemoved = false;
-        synchronized (tagsLock) {
-            if (tags == null || removedTags == null || removedTags.isEmpty()) return;
-            for (String tag : removedTags) {
-                tagIsRemoved |= removeTag(tag);
-            }
-        }
-        if (tagIsRemoved) {
-            clearCachedLists();
-            //forceCloseAndClearCache();
-        }
-    }
-
-    /**
-     * use to customize tags in runtime. Adds tag to array.
-     *
-     * @param tag (tag) - single additional tag
-     */
-    private boolean addTag(String tag) {
-        if (!tags.contains(tag)) {
-            tags.add(tag);
-            return true;
-        }
-        return false;
-    }
-
-
-    /**
-     * use to customize tags in runtime. Removes tag from array.
-     *
-     * @param tag (tag) - single removing tags
-     */
-    private boolean removeTag(String tag) {
-        if (tags.contains(tag)) {
-            tags.remove(tag);
-            return true;
-        }
-        return false;
+        core.settingsAPI().removeTags(removedTags);
     }
 
     /**
@@ -602,32 +500,7 @@ public class InAppStoryManager {
      * @param value (value) - replacement result
      */
     public void setPlaceholder(String key, String value) {
-        boolean isNewPlaceholder = false;
-        synchronized (placeholdersLock) {
-            if (key == null) return;
-            if (defaultPlaceholders == null) defaultPlaceholders = new HashMap<>();
-            if (placeholders == null) placeholders = new HashMap<>();
-            if (value == null) {
-                if (defaultPlaceholders.containsKey(key)) {
-                    isNewPlaceholder = setNewPlaceholder(key, defaultPlaceholders.get(key));
-                } else {
-                    isNewPlaceholder = setNewPlaceholder(key, null);
-                }
-            } else {
-                isNewPlaceholder = setNewPlaceholder(key, value);
-            }
-
-        }
-        if (isNewPlaceholder) {
-            //     forceCloseAndClearCache();
-        }
-    }
-
-
-    private boolean setNewPlaceholder(String key, String value) {
-        if (Objects.equals(placeholders.get(key), value)) return false;
-        placeholders.put(key, value);
-        return true;
+        core.settingsAPI().setPlaceholder(key, value);
     }
 
     /**
@@ -636,43 +509,7 @@ public class InAppStoryManager {
      * @param newPlaceholders (newPlaceholders) - key-value map (key - what we replace, value - replacement result)
      */
     public void setPlaceholders(@NonNull Map<String, String> newPlaceholders) {
-        boolean isNewPlaceholder = false;
-        synchronized (placeholdersLock) {
-            if (defaultPlaceholders == null) defaultPlaceholders = new HashMap<>();
-            if (this.placeholders == null)
-                this.placeholders = new HashMap<>();
-            else
-                this.placeholders.clear();
-            for (String key : newPlaceholders.keySet()) {
-                String value = newPlaceholders.get(key);
-                if (value == null) {
-                    if (defaultPlaceholders.containsKey(key)) {
-                        isNewPlaceholder |= setNewPlaceholder(key, defaultPlaceholders.get(key));
-                    } else {
-                        isNewPlaceholder |= setNewPlaceholder(key, null);
-                    }
-                } else {
-                    isNewPlaceholder |= setNewPlaceholder(key, value);
-                }
-            }
-        }
-        if (isNewPlaceholder) {
-            //      forceCloseAndClearCache();
-        }
-    }
-
-    void setDefaultPlaceholders(@NonNull List<StoryPlaceholder> placeholders) {
-        synchronized (placeholdersLock) {
-            for (StoryPlaceholder placeholder : placeholders) {
-                String key = placeholder.name;
-                this.defaultPlaceholders.put(key,
-                        placeholder.defaultVal);
-                if (!this.placeholders.containsKey(key)) {
-                    InAppStoryManager.getInstance().placeholders.put(key,
-                            placeholder.defaultVal);
-                }
-            }
-        }
+        core.settingsAPI().setPlaceholders(newPlaceholders);
     }
 
     public Map<String, String> getPlaceholdersCopy() {
@@ -771,36 +608,13 @@ public class InAppStoryManager {
         }
     }
 
-    void setDefaultImagePlaceholder(@NonNull String key, @NonNull ImagePlaceholderValue value) {
-        synchronized (placeholdersLock) {
-            if (defaultImagePlaceholders == null) defaultImagePlaceholders = new HashMap<>();
-            defaultImagePlaceholders.put(key, value);
-        }
-    }
-
 
     public void setImagePlaceholder(@NonNull String key, ImagePlaceholderValue value) {
-        boolean isNewPlaceholder = false;
-
-        synchronized (placeholdersLock) {
-            if (imagePlaceholders == null) imagePlaceholders = new HashMap<>();
-            isNewPlaceholder = setNewImagePlaceholder(key, value);
-        }
-        if (isNewPlaceholder) {
-            //    forceCloseAndClearCache();
-        }
+        core.settingsAPI().setImagePlaceholder(key, value);
     }
 
     Map<String, String> placeholders = new HashMap<>();
     Map<String, ImagePlaceholderValue> imagePlaceholders = new HashMap<>();
-
-    public Map<String, String> getDefaultPlaceholders() {
-        synchronized (placeholdersLock) {
-            if (defaultPlaceholders == null) defaultPlaceholders = new HashMap<>();
-            if (placeholders == null) placeholders = new HashMap<>();
-            return defaultPlaceholders;
-        }
-    }
 
     Map<String, String> defaultPlaceholders = new HashMap<>();
     Map<String, ImagePlaceholderValue> defaultImagePlaceholders = new HashMap<>();
@@ -891,7 +705,7 @@ public class InAppStoryManager {
             @Override
             public void run() {
                 Looper.prepare();
-                service = new InAppStoryService();
+                service = new InAppStoryService(core);
                 service.onCreate(context, CacheSize.MEDIUM, exceptionCache);
                 Looper.loop();
             }
@@ -940,37 +754,40 @@ public class InAppStoryManager {
         InAppStoryService.useInstance(new UseServiceInstanceCallback() {
             @Override
             public void use(@NonNull final InAppStoryService service) throws Exception {
-                final String favUID = ProfilingManager.getInstance().addTask("api_favorite_remove_all");
+
+                final String favUID = core.statistic().profiling().addTask("api_favorite_remove_all");
                 networkClient.enqueue(
                         networkClient.getApi().removeAllFavorites(),
                         new NetworkCallback<Response>() {
                             @Override
                             public void onSuccess(Response response) {
-                                ProfilingManager.getInstance().setReady(favUID);
+                                core.statistic().profiling().setReady(favUID);
                                 service.getStoryDownloadManager()
                                         .clearAllFavoriteStatus(Story.StoryType.COMMON);
                                 service.getStoryDownloadManager()
                                         .clearAllFavoriteStatus(Story.StoryType.UGC);
                                 service.getFavoriteImages().clear();
                                 service.getListReaderConnector().clearAllFavorites();
-                                holder.getStoryScreenHolder().useCurrentReader(new GetScreenCallback<BaseStoryScreen>() {
-                                    @Override
-                                    public void get(BaseStoryScreen screen) {
-                                        screen.removeAllStoriesFromFavorite();
-                                    }
-                                });
+                                core.screensManager().getStoryScreenHolder()
+                                        .useCurrentReader(
+                                                new GetScreenCallback<BaseStoryScreen>() {
+                                                    @Override
+                                                    public void get(BaseStoryScreen screen) {
+                                                        screen.removeAllStoriesFromFavorite();
+                                                    }
+                                                });
                             }
 
                             @Override
                             public void onError(int code, String message) {
-                                ProfilingManager.getInstance().setReady(favUID);
+                                core.statistic().profiling().setReady(favUID);
                                 super.onError(code, message);
                             }
 
                             @Override
                             public void timeoutError() {
                                 super.timeoutError();
-                                ProfilingManager.getInstance().setReady(favUID);
+                                core.statistic().profiling().setReady(favUID);
                             }
 
                             @Override
@@ -989,36 +806,41 @@ public class InAppStoryManager {
         InAppStoryService.useInstance(new UseServiceInstanceCallback() {
             @Override
             public void use(@NonNull final InAppStoryService service) throws Exception {
-                final String favUID = ProfilingManager.getInstance().addTask("api_favorite");
+                final String favUID = core.statistic().profiling().addTask("api_favorite");
                 networkClient.enqueue(
                         networkClient.getApi().storyFavorite(Integer.toString(storyId), favorite ? 1 : 0),
                         new NetworkCallback<Response>() {
                             @Override
                             public void onSuccess(Response response) {
-                                ProfilingManager.getInstance().setReady(favUID);
+                                core.statistic().profiling().setReady(favUID);
                                 Story story = service.getStoryDownloadManager()
                                         .getStoryById(storyId, Story.StoryType.COMMON);
                                 if (story != null)
                                     story.favorite = favorite;
                                 service.getListReaderConnector().storyFavorite(storyId, favorite);
-                                holder.getStoryScreenHolder().useCurrentReader(new GetScreenCallback<BaseStoryScreen>() {
-                                    @Override
-                                    public void get(BaseStoryScreen screen) {
-                                        screen.removeStoryFromFavorite(storyId);
-                                    }
-                                });
+                                core
+                                        .screensManager()
+                                        .getStoryScreenHolder()
+                                        .useCurrentReader(
+                                                new GetScreenCallback<BaseStoryScreen>() {
+                                                    @Override
+                                                    public void get(BaseStoryScreen screen) {
+                                                        screen.removeStoryFromFavorite(storyId);
+                                                    }
+                                                }
+                                        );
                             }
 
                             @Override
                             public void onError(int code, String message) {
-                                ProfilingManager.getInstance().setReady(favUID);
+                                core.statistic().profiling().setReady(favUID);
                                 super.onError(code, message);
                             }
 
                             @Override
                             public void timeoutError() {
                                 super.timeoutError();
-                                ProfilingManager.getInstance().setReady(favUID);
+                                core.statistic().profiling().setReady(favUID);
                             }
 
                             @Override
@@ -1109,10 +931,6 @@ public class InAppStoryManager {
         }
     }
 
-    private void setUserIdInner(final String userId) {
-
-    }
-
 
     public Locale getCurrentLocale() {
         return currentLocale;
@@ -1132,7 +950,6 @@ public class InAppStoryManager {
      */
     public void setUserId(@NonNull String userId) {
         core.settingsAPI().setUserId(userId);
-        setUserIdInner(userId);
     }
 
     private String userId;
@@ -1207,11 +1024,8 @@ public class InAppStoryManager {
         this.API_KEY = apiKey;
         this.TEST_KEY = testKey;
         this.userId = userId;
-        if (!isNull()) {
-            localHandler.removeCallbacksAndMessages(null);
-            localDestroy();
-        }
-        setInstance(this);
+        localHandler.removeCallbacksAndMessages(null);
+        logout();
         if (ApiSettings.getInstance().hostIsDifferent(cmsUrl)) {
             if (networkClient != null) {
                 networkClient.clear();
@@ -1234,39 +1048,31 @@ public class InAppStoryManager {
     public static void logout() {
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
-            public void use(@NonNull IASCore core) {
+            public void use(@NonNull final IASCore core) {
                 core.storiesListVMHolder().clear();
-            }
-        });
-        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
-            @Override
-            public void use(@NonNull final InAppStoryService inAppStoryService) throws Exception {
-                inAppStoryService.getListSubscribers().clear();
-                inAppStoryService.getStoryDownloadManager().cleanTasks();
-                InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+                InAppStoryService.useInstance(new UseServiceInstanceCallback() {
                     @Override
-                    public void use(@NonNull InAppStoryManager manager) throws Exception {
-                        manager.holder.forceCloseAllReaders(
-                                new ForceCloseReaderCallback() {
-                                    @Override
-                                    public void onComplete() {
-                                        inAppStoryService.logout();
-                                    }
-                                }
-                        );
+                    public void use(@NonNull final InAppStoryService inAppStoryService) throws Exception {
+                        inAppStoryService.getListSubscribers().clear();
+                        inAppStoryService.getStoryDownloadManager().cleanTasks();
+                        InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+                            @Override
+                            public void use(@NonNull InAppStoryManager manager) throws Exception {
+                                core.screensManager().forceCloseAllReaders(
+                                        new ForceCloseReaderCallback() {
+                                            @Override
+                                            public void onComplete() {
+                                                inAppStoryService.logout();
+                                            }
+                                        }
+                                );
+                            }
+                        });
                     }
                 });
             }
         });
-    }
 
-    @Deprecated
-    public static void destroy() {
-        logout();
-    }
-
-    private static void localDestroy() {
-        logout();
     }
 
     /**
@@ -1477,7 +1283,7 @@ public class InAppStoryManager {
      * function for loading onboarding stories with default tags (set in InAppStoryManager.Builder)
      *
      * @param outerContext (outerContext) any type of context (preferably - activity)
-     * @param manager (manager) {@link AppearanceManager} for reader. May be null
+     * @param manager      (manager) {@link AppearanceManager} for reader. May be null
      */
     public void showOnboardingStories(String feed, Context outerContext, final AppearanceManager manager) {
         core.onboardingsAPI().show(outerContext, feed, manager, null, 1000);
@@ -1499,7 +1305,7 @@ public class InAppStoryManager {
      * function for loading onboarding stories with default tags (set in InAppStoryManager.Builder)
      *
      * @param outerContext (outerContext) any type of context (preferably - activity)
-     * @param manager (manager) {@link AppearanceManager} for reader. May be null
+     * @param manager      (manager) {@link AppearanceManager} for reader. May be null
      */
     public void showOnboardingStories(Context outerContext, final AppearanceManager manager) {
         core.onboardingsAPI().show(outerContext, null, manager, null, 1000);
@@ -1521,7 +1327,7 @@ public class InAppStoryManager {
      * function for loading onboarding stories with default tags (set in InAppStoryManager.Builder)
      *
      * @param outerContext (outerContext) any type of context (preferably - activity)
-     * @param manager (manager) {@link AppearanceManager} for reader. May be null
+     * @param manager      (manager) {@link AppearanceManager} for reader. May be null
      */
     public void showOnboardingStories(int limit, String feed, Context outerContext, final AppearanceManager manager) {
         core.onboardingsAPI().show(outerContext, feed, manager, null, limit);
@@ -1543,7 +1349,7 @@ public class InAppStoryManager {
      * function for loading onboarding stories with default tags (set in InAppStoryManager.Builder)
      *
      * @param outerContext (outerContext) any type of context (preferably - activity)
-     * @param manager (manager) {@link AppearanceManager} for reader. May be null
+     * @param manager      (manager) {@link AppearanceManager} for reader. May be null
      */
     public void showOnboardingStories(int limit, Context outerContext, final AppearanceManager manager) {
         core.onboardingsAPI().show(outerContext, null, manager, null, limit);

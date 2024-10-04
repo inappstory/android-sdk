@@ -1,11 +1,15 @@
 package com.inappstory.sdk.core;
 
+import android.content.Context;
+
 import com.inappstory.sdk.core.api.IASCallbacks;
+import com.inappstory.sdk.core.api.IASContentPreload;
 import com.inappstory.sdk.core.api.IASFavorites;
 import com.inappstory.sdk.core.api.IASGames;
 import com.inappstory.sdk.core.api.IASManager;
 import com.inappstory.sdk.core.api.IASOnboardings;
 import com.inappstory.sdk.core.api.IASDataSettings;
+import com.inappstory.sdk.core.api.IASSessionAssetsHolder;
 import com.inappstory.sdk.core.api.IASSingleStory;
 import com.inappstory.sdk.core.api.IASStackFeed;
 import com.inappstory.sdk.core.api.IASStatistic;
@@ -25,6 +29,8 @@ import com.inappstory.sdk.core.dataholders.IStoriesListVMHolder;
 import com.inappstory.sdk.core.dataholders.StoriesListVMHolder;
 import com.inappstory.sdk.core.ui.screens.ScreensManager;
 import com.inappstory.sdk.stories.utils.SessionManager;
+import com.inappstory.sdk.utils.IVibrateUtils;
+import com.inappstory.sdk.utils.VibrateUtils;
 
 public class IASCoreImpl implements IASCore {
     private static IASCoreImpl INSTANCE;
@@ -39,10 +45,11 @@ public class IASCoreImpl implements IASCore {
     private final IASStackFeed stackFeed = new IASStackFeedImpl(this);
     private IASStoryList storyList;
     private final IStoriesListVMHolder storiesListVMHolder = new StoriesListVMHolder(this);
-    private final ScreensManager screensManager = new ScreensManager();
+    private final ScreensManager screensManager = new ScreensManager(this);
     private final SessionManager sessionManager = new SessionManager(this);
     private final IASStoriesOpenedCache storyListCache = new IASStoriesOpenedCacheImpl(this);
     private final IASStatistic statistic = new IASStatisticImpl(this);
+    private final IVibrateUtils vibrateUtils = new VibrateUtils();
 
     public IASCoreImpl() {
         synchronized (lock) {
@@ -56,6 +63,11 @@ public class IASCoreImpl implements IASCore {
         }
     }
 
+
+    @Override
+    public Context appContext() {
+        return null;
+    }
 
     @Override
     public IASCallbacks callbacksAPI() {
@@ -125,5 +137,20 @@ public class IASCoreImpl implements IASCore {
     @Override
     public IASStatistic statistic() {
         return statistic;
+    }
+
+    @Override
+    public IVibrateUtils vibrateUtils() {
+        return vibrateUtils;
+    }
+
+    @Override
+    public IASContentPreload contentPreload() {
+        return null;
+    }
+
+    @Override
+    public IASSessionAssetsHolder sessionAssets() {
+        return null;
     }
 }

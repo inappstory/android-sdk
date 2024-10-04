@@ -3,12 +3,15 @@ package com.inappstory.sdk.stories.cache;
 import static com.inappstory.sdk.stories.cache.StoryDownloadManager.EXPAND_STRING;
 
 
+import android.text.TextUtils;
+
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASCallbackType;
+import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.JsonParser;
@@ -23,7 +26,7 @@ import com.inappstory.sdk.stories.api.models.callbacks.LoadFeedCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadListCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.errors.ErrorCallback;
-import com.inappstory.sdk.stories.statistic.ProfilingManager;
+import com.inappstory.sdk.stories.statistic.IASStatisticProfilingImpl;
 import com.inappstory.sdk.stories.utils.LoopedExecutor;
 import com.inappstory.sdk.utils.StringsUtils;
 
@@ -234,12 +237,7 @@ class StoryDownloader {
                     setStoryLoadType(key, 2);
                 }
             }
-            InAppStoryService service = InAppStoryService.getInstance();
-            if (service == null) {
-                loopedExecutor.freeExecutor();
-                return;
-            }
-            if (service.getSession().getSessionId().isEmpty()) {
+            if (core.sessionManager().getSession().getSessionId().isEmpty()) {
                 if (!isRefreshing) {
                     isRefreshing = true;
                     core.sessionManager().openSession(new OpenSessionCallback() {
@@ -295,7 +293,7 @@ class StoryDownloader {
             String storyUID;
             Response response;
             if (key.storyType == Story.StoryType.UGC) {
-                storyUID = ProfilingManager.getInstance().addTask("api_story_ugc");
+                storyUID = core.statistic().profiling().addTask("api_story_ugc");
                 response = networkClient.execute(
                         networkClient.getApi().getUgcStoryById(
                                 Integer.toString(key.storyId),
@@ -304,7 +302,7 @@ class StoryDownloader {
                         )
                 );
             } else {
-                storyUID = ProfilingManager.getInstance().addTask("api_story");
+                storyUID = core.statistic().profiling().addTask("api_story");
                 response = networkClient.execute(
                         networkClient.getApi().getStoryById(
                                 Integer.toString(key.storyId),
@@ -315,7 +313,7 @@ class StoryDownloader {
                         )
                 );
             }
-            ProfilingManager.getInstance().setReady(storyUID);
+            core.statistic().profiling().setReady(storyUID);
             loadStoryResult(key, response);
         } catch (Throwable t) {
             t.printStackTrace();
@@ -367,7 +365,7 @@ class StoryDownloader {
         core.sessionManager().useOrOpenSession(new OpenSessionCallback() {
             @Override
             public void onSuccess(final String sessionId) {
-                final String loadStoriesUID = ProfilingManager.getInstance().addTask("api_ugc_story_list");
+                final String loadStoriesUID = core.statistic().profiling().addTask("api_ugc_story_list");
                 networkClient.enqueue(
                         networkClient.getApi().getUgcStories(
                                 payload,
@@ -381,7 +379,7 @@ class StoryDownloader {
                                     generateCommonLoadListError(UGC_FEED);
                                     callback.onError("");
                                 } else {
-                                    ProfilingManager.getInstance().setReady(loadStoriesUID);
+                                    core.statistic().profiling().setReady(loadStoriesUID);
                                     callback.onSuccess(response);
                                 }
                             }
@@ -393,7 +391,7 @@ class StoryDownloader {
 
                             @Override
                             public void errorDefault(String message) {
-                                ProfilingManager.getInstance().setReady(loadStoriesUID);
+                                core.statistic().profiling().setReady(loadStoriesUID);
                                 generateCommonLoadListError(UGC_FEED);
                                 callback.onError(message);
                             }
@@ -401,7 +399,7 @@ class StoryDownloader {
 
                             @Override
                             public void error424(String message) {
-                                ProfilingManager.getInstance().setReady(loadStoriesUID);
+                                core.statistic().profiling().setReady(loadStoriesUID);
                                 generateCommonLoadListError(null);
                                 callback.onError(message);
                                 closeSessionIf424(sessionId);
@@ -430,13 +428,14 @@ class StoryDownloader {
             core.sessionManager().useOrOpenSession(new OpenSessionCallback() {
                 @Override
                 public void onSuccess(final String sessionId) {
-                    final String loadStoriesUID = ProfilingManager.getInstance().addTask("api_story_list");
+                    final String loadStoriesUID = core.statistic().profiling().addTask("api_story_list");
                     networkClient.enqueue(
                             networkClient.getApi().getFeed(
                                     feed,
                                     ApiSettings.getInstance().getTestKey(),
                                     0,
-                                    service.getTagsString(),
+                                    TextUtils.join(",",
+                                            ((IASDataSettingsHolder) core.settingsAPI()).tags()),
                                     null,
                                     null
                             ),
@@ -447,14 +446,14 @@ class StoryDownloader {
                                         generateCommonLoadListError(feed);
                                         callback.onError("");
                                     } else {
-                                        ProfilingManager.getInstance().setReady(loadStoriesUID);
+                                        core.statistic().profiling().setReady(loadStoriesUID);
                                         callback.onSuccess(response.stories, response.hasFavorite(), response.getFeedId());
                                     }
                                 }
 
                                 @Override
                                 public void errorDefault(String message) {
-                                    ProfilingManager.getInstance().setReady(loadStoriesUID);
+                                    core.statistic().profiling().setReady(loadStoriesUID);
                                     generateCommonLoadListError(feed);
                                     callback.onError(message);
                                 }
@@ -462,7 +461,7 @@ class StoryDownloader {
 
                                 @Override
                                 public void error424(String message) {
-                                    ProfilingManager.getInstance().setReady(loadStoriesUID);
+                                    core.statistic().profiling().setReady(loadStoriesUID);
                                     generateCommonLoadListError(null);
                                     callback.onError(message);
                                     closeSessionIf424(sessionId);
@@ -496,13 +495,15 @@ class StoryDownloader {
         core.sessionManager().useOrOpenSession(new OpenSessionCallback() {
             @Override
             public void onSuccess(final String sessionId) {
-                final String loadStoriesUID = ProfilingManager.getInstance().addTask(isFavorite
+                final String loadStoriesUID = core.statistic().profiling().addTask(isFavorite
                         ? "api_favorite_list" : "api_story_list");
                 networkClient.enqueue(
                         networkClient.getApi().getStories(
                                 ApiSettings.getInstance().getTestKey(),
                                 isFavorite ? 1 : 0,
-                                isFavorite ? null : service.getTagsString(),
+                                isFavorite ? null :
+                                        TextUtils.join(",",
+                                                ((IASDataSettingsHolder) core.settingsAPI()).tags()),
                                 null
                         ),
                         new LoadListCallback() {
@@ -512,14 +513,14 @@ class StoryDownloader {
                                     generateCommonLoadListError(null);
                                     callback.onError("");
                                 } else {
-                                    ProfilingManager.getInstance().setReady(loadStoriesUID);
+                                    core.statistic().profiling().setReady(loadStoriesUID);
                                     callback.onSuccess(response);
                                 }
                             }
 
                             @Override
                             public void errorDefault(String message) {
-                                ProfilingManager.getInstance().setReady(loadStoriesUID);
+                                core.statistic().profiling().setReady(loadStoriesUID);
                                 generateCommonLoadListError(null);
                                 callback.onError(message);
                             }
@@ -527,7 +528,7 @@ class StoryDownloader {
 
                             @Override
                             public void error424(String message) {
-                                ProfilingManager.getInstance().setReady(loadStoriesUID);
+                                core.statistic().profiling().setReady(loadStoriesUID);
                                 generateCommonLoadListError(null);
                                 callback.onError(message);
                                 closeSessionIf424(sessionId);

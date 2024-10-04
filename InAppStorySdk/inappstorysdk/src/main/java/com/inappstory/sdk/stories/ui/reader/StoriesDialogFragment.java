@@ -29,11 +29,11 @@ import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
-import com.inappstory.sdk.UseManagerInstanceCallback;
 import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASCallbackType;
+import com.inappstory.sdk.core.api.IASStatisticV1;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryScreen;
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenAppearance;
@@ -44,9 +44,9 @@ import com.inappstory.sdk.stories.outercallbacks.common.reader.CloseReader;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.CloseStoryCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
-import com.inappstory.sdk.stories.statistic.GetOldStatisticManagerCallback;
-import com.inappstory.sdk.stories.statistic.OldStatisticManager;
-import com.inappstory.sdk.stories.statistic.StatisticManager;
+import com.inappstory.sdk.stories.statistic.GetStatisticV1Callback;
+import com.inappstory.sdk.stories.statistic.IASStatisticV1Impl;
+import com.inappstory.sdk.stories.statistic.IASStatisticV2Impl;
 import com.inappstory.sdk.stories.ui.widgets.elasticview.ElasticDragDismissFrameLayout;
 import com.inappstory.sdk.stories.utils.IASBackPressHandler;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
@@ -74,11 +74,11 @@ public class StoriesDialogFragment extends DialogFragment implements IASBackPres
             public void use(@NonNull IASCore core) {
                 core.screensManager()
                         .getGameScreenHolder().forceCloseScreen(null);
-                OldStatisticManager.useInstance(
+                core.statistic().v1(
                         launchData.getSessionId(),
-                        new GetOldStatisticManagerCallback() {
+                        new GetStatisticV1Callback() {
                             @Override
-                            public void get(@NonNull OldStatisticManager manager) {
+                            public void get(@NonNull IASStatisticV1 manager) {
                                 manager.sendStatistic();
                             }
                         }
@@ -109,14 +109,14 @@ public class StoriesDialogFragment extends DialogFragment implements IASBackPres
                                         );
                                     }
                                 });
-                        String cause = StatisticManager.CLICK;
+                        String cause = IASStatisticV2Impl.CLICK;
                         core.statistic().v2().sendCloseStory(story.id, cause, story.lastIndex,
                                 story.getSlidesCount(),
                                 launchData.getFeed());
                     }
 
                 }
-                cleanReader();
+                cleanReader(core);
                 core.screensManager().getStoryScreenHolder()
                         .unsubscribeScreen(StoriesDialogFragment.this);
             }
@@ -127,14 +127,13 @@ public class StoriesDialogFragment extends DialogFragment implements IASBackPres
 
     boolean cleaned = false;
 
-    public void cleanReader() {
+    public void cleanReader(IASCore core) {
         if (cleaned) return;
-
-        OldStatisticManager.useInstance(
+        core.statistic().v1(
                 launchData.getSessionId(),
-                new GetOldStatisticManagerCallback() {
+                new GetStatisticV1Callback() {
                     @Override
-                    public void get(@NonNull OldStatisticManager manager) {
+                    public void get(@NonNull IASStatisticV1 manager) {
                         manager.closeStatisticEvent();
                     }
                 }
@@ -267,16 +266,21 @@ public class StoriesDialogFragment extends DialogFragment implements IASBackPres
     }
 
     public void onDestroyView() {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.statistic().v1(
+                        launchData.getSessionId(),
+                        new GetStatisticV1Callback() {
+                            @Override
+                            public void get(@NonNull IASStatisticV1 manager) {
+                                manager.sendStatistic();
+                            }
+                        }
+                );
+            }
+        });
 
-        OldStatisticManager.useInstance(
-                launchData.getSessionId(),
-                new GetOldStatisticManagerCallback() {
-                    @Override
-                    public void get(@NonNull OldStatisticManager manager) {
-                        manager.sendStatistic();
-                    }
-                }
-        );
         super.onDestroyView();
     }
 

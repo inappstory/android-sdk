@@ -9,8 +9,6 @@ import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.core.IASCore;
-import com.inappstory.sdk.core.UseIASCoreCallback;
-import com.inappstory.sdk.core.api.IASCallback;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.UseIASCallback;
@@ -40,7 +38,6 @@ import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickAction;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
-import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
 import com.inappstory.sdk.utils.StringsUtils;
 
@@ -107,7 +104,7 @@ public class GameManager {
         KeyValueStorage.saveString("gameInstance_" + gameInstanceId
                 + "__" + settingsHolder.userId(), data);
 
-        if (service.statV1Disallowed()) return;
+        if (core.statistic().v1().disabled()) return;
         if (sendToServer) {
             networkClient.enqueue(networkClient.getApi().sendGameData(gameInstanceId, data),
                     new NetworkCallback<Response>() {
@@ -133,10 +130,7 @@ public class GameManager {
 
     void vibrate(int[] vibratePattern) {
         if (host != null && host.getContext() != null) {
-            InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
-            if (inAppStoryManager != null) {
-                inAppStoryManager.getVibrateUtils().vibrate(host.getContext(), vibratePattern);
-            }
+            core.vibrateUtils().vibrate(host.getContext(), vibratePattern);
         }
     }
 
@@ -156,8 +150,8 @@ public class GameManager {
         KeyValueStorage.saveString("story" + dataModel.slideData.story.id
                 + "__" + settingsHolder.userId(), data);
 
-        String sessionId = service.getSession().getSessionId();
-        if (service.statV1Disallowed() || sessionId.isEmpty()) return;
+        String sessionId = core.sessionManager().getSession().getSessionId();
+        if (core.statistic().v1().disabled() || sessionId.isEmpty()) return;
         if (sendToServer) {
             networkClient.enqueue(
                     networkClient.getApi().sendStoryData(

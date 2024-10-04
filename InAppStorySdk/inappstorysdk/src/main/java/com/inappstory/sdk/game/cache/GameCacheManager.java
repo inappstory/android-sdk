@@ -2,6 +2,7 @@ package com.inappstory.sdk.game.cache;
 
 import android.util.Log;
 
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.game.utils.GameConstants;
 import com.inappstory.sdk.lrudiskcache.FileManager;
 import com.inappstory.sdk.stories.api.interfaces.IGameCenterData;
@@ -11,7 +12,7 @@ import com.inappstory.sdk.stories.cache.DownloadInterruption;
 import com.inappstory.sdk.stories.cache.FilesDownloadManager;
 import com.inappstory.sdk.stories.cache.usecases.ArchiveUseCase;
 import com.inappstory.sdk.stories.cache.usecases.GameFolderUseCase;
-import com.inappstory.sdk.stories.statistic.ProfilingManager;
+import com.inappstory.sdk.stories.statistic.IASStatisticProfilingImpl;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
 import com.inappstory.sdk.utils.ProgressCallback;
 
@@ -28,6 +29,12 @@ public class GameCacheManager {
         cachedGames.clear();
     }
 
+    private final IASCore core;
+
+
+    public GameCacheManager(IASCore core) {
+        this.core = core;
+    }
 
     private final ExecutorService gameUseCasesThread = Executors.newFixedThreadPool(1);
 
@@ -239,7 +246,7 @@ public class GameCacheManager {
                                                 finalTotalFilesSize,
                                                 finalTotalFilesSize
                                         );
-                                        ProfilingManager.getInstance().setReady(resourcesHash[0]);
+                                        core.statistic().profiling().setReady(resourcesHash[0]);
                                         String fileName = gameFolder[0] + File.separator + GameConstants.INDEX_NAME;
                                         loadedFilePath = fileName;
                                         try {
@@ -270,7 +277,7 @@ public class GameCacheManager {
                             public void onSuccess(String result) {
                                 gameFolder[0] = result;
                                 totalProgress[0] += 0.2 * finalTotalDownloadsSize;
-                                resourcesHash[0] = ProfilingManager.getInstance().addTask(
+                                resourcesHash[0] = core.statistic().profiling().addTask(
                                         "game_resources_download"
                                 );
                                 downloadResourcesUseCase.download();

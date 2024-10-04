@@ -15,22 +15,19 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
-import android.util.Pair;
-import android.webkit.URLUtil;
 
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
-import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenData;
-import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenStrategy;
+import com.inappstory.sdk.core.api.IASDataSettingsHolder;
+import com.inappstory.sdk.core.api.IASStatisticV1;
 import com.inappstory.sdk.externalapi.subscribers.InAppStoryAPISubscribersManager;
 import com.inappstory.sdk.game.cache.GameCacheManager;
 import com.inappstory.sdk.game.cache.SuccessUseCaseCallback;
 import com.inappstory.sdk.game.cache.UseCaseCallback;
 import com.inappstory.sdk.game.preload.GamePreloader;
 import com.inappstory.sdk.game.preload.IGamePreloader;
-import com.inappstory.sdk.game.reader.GameStoryData;
 import com.inappstory.sdk.game.reader.logger.GameLogSaver;
 import com.inappstory.sdk.game.reader.logger.GameLogSender;
 import com.inappstory.sdk.game.reader.logger.IGameLogSaver;
@@ -39,11 +36,9 @@ import com.inappstory.sdk.imageloader.ImageLoader;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.stories.api.interfaces.IGameCenterData;
 import com.inappstory.sdk.stories.api.models.ExceptionCache;
-import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
 import com.inappstory.sdk.stories.api.models.ResourceMappingObject;
 import com.inappstory.sdk.stories.api.models.SessionAsset;
 import com.inappstory.sdk.stories.api.models.Story;
-import com.inappstory.sdk.stories.api.models.StoryPlaceholder;
 import com.inappstory.sdk.stories.api.models.logs.ExceptionLog;
 import com.inappstory.sdk.stories.cache.FilesDownloadManager;
 import com.inappstory.sdk.stories.cache.FakeStoryDownloadManager;
@@ -54,14 +49,10 @@ import com.inappstory.sdk.stories.cache.vod.VODCacheJournalItem;
 import com.inappstory.sdk.stories.exceptions.ExceptionManager;
 import com.inappstory.sdk.stories.managers.TimerManager;
 import com.inappstory.sdk.stories.stackfeed.StackStoryObserver;
-import com.inappstory.sdk.stories.statistic.GetOldStatisticManagerCallback;
-import com.inappstory.sdk.stories.statistic.OldStatisticManager;
+import com.inappstory.sdk.stories.statistic.GetStatisticV1Callback;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
-import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.list.FavoriteImage;
 import com.inappstory.sdk.stories.ui.list.ListManager;
-import com.inappstory.sdk.stories.utils.SessionHolder;
-import com.inappstory.sdk.stories.utils.SessionManager;
 import com.inappstory.sdk.utils.ISessionHolder;
 
 import java.io.File;
@@ -70,7 +61,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -115,7 +105,7 @@ public class InAppStoryService {
         ).getFile();
     }
 
-    private ISessionHolder sessionHolder = new SessionHolder();
+    private ISessionHolder sessionHolder;
 
     public ISessionHolder getSession() {
         return sessionHolder;
@@ -129,8 +119,10 @@ public class InAppStoryService {
         return getInstance() == null;
     }
 
-    public InAppStoryService() {
+    private final IASCore core;
 
+    public InAppStoryService(IASCore core) {
+        this.core = core;
     }
 
     public boolean hasLottieAnimation() {
@@ -179,12 +171,6 @@ public class InAppStoryService {
     }
 
     private String userId;
-
-    public String getTagsString() {
-        InAppStoryManager manager = InAppStoryManager.getInstance();
-        return manager != null ? manager.getTagsString() : null;
-    }
-
 
     public boolean genException = false;
 
@@ -257,31 +243,19 @@ public class InAppStoryService {
         });
     }
 
-    public boolean statV2Disallowed() {
-        return !sessionHolder.allowStatV2() || !InAppStoryManager.getInstance().isSendStatistic();
-    }
-
-    public boolean statV1Disallowed() {
-        return !sessionHolder.allowStatV1() || !InAppStoryManager.getInstance().isSendStatistic();
-    }
-
-    public InAppStoryService(String userId) {
-        this.userId = userId;
-    }
-
 
     public StoryDownloadManager getStoryDownloadManager() {
         if (storyDownloadManager == null) return fakeStoryDownloadManager;
         return storyDownloadManager;
     }
 
-    FakeStoryDownloadManager fakeStoryDownloadManager = new FakeStoryDownloadManager(InAppStoryManager.getInstance().iasCore());
+    FakeStoryDownloadManager fakeStoryDownloadManager;
     StoryDownloadManager storyDownloadManager;
-    GameCacheManager gameCacheManager = new GameCacheManager();
+    private GameCacheManager gameCacheManager;
 
     public GameCacheManager gameCacheManager() {
         if (gameCacheManager == null) {
-            gameCacheManager = new GameCacheManager();
+            gameCacheManager = new GameCacheManager(core);
         }
         return gameCacheManager;
     }
@@ -302,21 +276,22 @@ public class InAppStoryService {
 
 
     void logout() {
-        OldStatisticManager.useInstance(new GetOldStatisticManagerCallback() {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
-            public void get(@NonNull OldStatisticManager manager) {
-                manager.closeStatisticEvent(null, true);
-            }
-        });
-        InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
-            @Override
-            public void use(@NonNull InAppStoryManager manager) throws Exception {
-                InAppStoryManager.getInstance().iasCore().sessionManager().closeSession(
+            public void use(@NonNull IASCore core) {
+                IASDataSettingsHolder settingsHolder = ((IASDataSettingsHolder)core.settingsAPI());
+                core.statistic().v1(new GetStatisticV1Callback() {
+                    @Override
+                    public void get(@NonNull IASStatisticV1 manager) {
+                        manager.closeStatisticEvent();
+                    }
+                });
+                core.sessionManager().closeSession(
                         true,
                         false,
-                        manager.getCurrentLocale(),
-                        userId,
-                        sessionHolder.getSessionId()
+                        settingsHolder.lang(),
+                        settingsHolder.userId(),
+                        core.sessionManager().getSession().getSessionId()
                 );
             }
         });
@@ -370,12 +345,12 @@ public class InAppStoryService {
             @Override
             public void use(@NonNull IASCore core) {
                 core.statistic().v2().createCurrentState(storyId, index, feedId);
-            }
-        });
-        OldStatisticManager.useInstance(new GetOldStatisticManagerCallback() {
-            @Override
-            public void get(@NonNull OldStatisticManager manager) {
-                manager.addStatisticBlock(storyId, index);
+                core.statistic().v1(new GetStatisticV1Callback() {
+                    @Override
+                    public void get(@NonNull IASStatisticV1 manager) {
+                        manager.addStatisticBlock(storyId, index);
+                    }
+                });
             }
         });
     }
@@ -498,86 +473,11 @@ public class InAppStoryService {
         }
     }
 
-    public static boolean isServiceConnected() {
-        InAppStoryService service = getInstance();
-        if (service == null) return false;
-        return service.isConnected();
-    }
-
-
-    public Map<String, String> getPlaceholders() {
-        InAppStoryManager manager = InAppStoryManager.getInstance();
-        if (manager != null)
-            return manager.getPlaceholdersCopy();
-        return new HashMap<>();
-    }
-
-
-    public Map<String, ImagePlaceholderValue> getImagePlaceholdersValues() {
-        InAppStoryManager manager = InAppStoryManager.getInstance();
-        if (manager != null)
-            return manager.getImagePlaceholdersValues();
-        return new HashMap<>();
-    }
-
-    public Map<String, Pair<ImagePlaceholderValue, ImagePlaceholderValue>> getImagePlaceholdersValuesWithDefaults() {
-        InAppStoryManager manager = InAppStoryManager.getInstance();
-        if (manager != null)
-            return manager.getImagePlaceholdersValuesWithDefaults();
-        return new HashMap<>();
-    }
-
-    public void saveSessionPlaceholders(List<StoryPlaceholder> placeholders) {
-        if (placeholders == null) return;
-        InAppStoryManager manager = InAppStoryManager.getInstance();
-        if (manager == null) return;
-        manager.setDefaultPlaceholders(placeholders);
-    }
-
-    public void saveSessionImagePlaceholders(final List<StoryPlaceholder> placeholders) {
-        if (placeholders == null) return;
-        InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+    public void restartV1Stat() {
+        core.statistic().v1(new GetStatisticV1Callback() {
             @Override
-            public void use(@NonNull InAppStoryManager manager) {
-                for (StoryPlaceholder placeholder : placeholders) {
-                    if (!URLUtil.isNetworkUrl(placeholder.defaultVal))
-                        continue;
-                    String key = placeholder.name;
-                    ImagePlaceholderValue defaultVal = ImagePlaceholderValue.createByUrl(placeholder.defaultVal);
-                    manager.setDefaultImagePlaceholder(key,
-                            defaultVal);
-                }
-            }
-        });
-    }
-
-    public void openGameReaderWithGC(
-            final Context context,
-            final GameStoryData data,
-            final String gameId,
-            final String observableId,
-            final boolean openedFromStoriesReader
-    ) {
-        InAppStoryManager.useCore(new UseIASCoreCallback() {
-            @Override
-            public void use(@NonNull IASCore core) {
-                core.screensManager().openScreen(context,
-                        new LaunchGameScreenStrategy(core, openedFromStoriesReader)
-                                .data(new LaunchGameScreenData(
-                                        observableId,
-                                        data,
-                                        gameId
-                                ))
-                );
-            }
-        });
-    }
-
-    public void runStatisticThread() {
-        OldStatisticManager.useInstance(new GetOldStatisticManagerCallback() {
-            @Override
-            public void get(@NonNull OldStatisticManager manager) {
-                manager.refreshCallbacks();
+            public void get(@NonNull IASStatisticV1 manager) {
+                manager.restartSchedule();
             }
         });
     }
@@ -849,10 +749,13 @@ public class InAppStoryService {
     public void createDownloadManager(ExceptionCache cache) {
         if (storyDownloadManager == null)
             storyDownloadManager = new StoryDownloadManager(
-                    InAppStoryManager.getInstance().iasCore(),
+                    core,
                     context,
                     cache
             );
+        if (fakeStoryDownloadManager == null) {
+            fakeStoryDownloadManager = new FakeStoryDownloadManager(core);
+        }
     }
 
 
@@ -864,11 +767,11 @@ public class InAppStoryService {
 
     public void onCreate(final Context context, int cacheSize, ExceptionCache exceptionCache) {
         this.context = context;
+        createDownloadManager(exceptionCache);
         Thread.setDefaultUncaughtExceptionHandler(new DefaultExceptionHandler());
         new ImageLoader(context);
-        createDownloadManager(exceptionCache);
 
-        timerManager = new TimerManager(InAppStoryManager.getInstance().iasCore());
+        timerManager = new TimerManager(core);
         if (tempListSubscribers != null) {
             if (listSubscribers == null) listSubscribers = new HashSet<>();
             InAppStoryManager.debugSDKCalls("IASService_subscribers", "temp size:" + tempListSubscribers.size() + " / size:" + listSubscribers.size());
@@ -883,11 +786,12 @@ public class InAppStoryService {
         }
         checkSpaceThread.scheduleAtFixedRate(checkFreeSpace, 1L, 60000L, TimeUnit.MILLISECONDS);
         getStoryDownloadManager().initDownloaders();
-        filesDownloadManager = new FilesDownloadManager(context, cacheSize);
+        filesDownloadManager = new FilesDownloadManager(core, context, cacheSize);
 
         logSaver = new GameLogSaver();
         logSender = new GameLogSender(this, logSaver);
         gamePreloader = new GamePreloader(
+                core,
                 filesDownloadManager,
                 hasLottieAnimation(),
                 new SuccessUseCaseCallback<IGameCenterData>() {

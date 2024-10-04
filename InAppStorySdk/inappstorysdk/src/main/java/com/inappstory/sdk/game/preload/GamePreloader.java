@@ -1,5 +1,6 @@
 package com.inappstory.sdk.game.preload;
 
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.game.cache.SuccessUseCaseCallback;
 import com.inappstory.sdk.stories.api.interfaces.IGameCenterData;
 import com.inappstory.sdk.stories.cache.DownloadInterruption;
@@ -14,12 +15,15 @@ public class GamePreloader implements IGamePreloader {
 
     private boolean active = false;
     private final boolean useAnimSplash;
+    private final IASCore core;
 
     public GamePreloader(
+            IASCore core,
             FilesDownloadManager filesDownloadManager,
                          boolean useAnimSplash,
             SuccessUseCaseCallback<IGameCenterData> successUseCaseCallback
     ) {
+        this.core = core;
         this.filesDownloadManager = filesDownloadManager;
         this.useAnimSplash = useAnimSplash;
         this.successUseCaseCallback = successUseCaseCallback;
@@ -81,6 +85,7 @@ public class GamePreloader implements IGamePreloader {
                     public void onDownloaded() {
                         synchronized (useCaseCreateLock) {
                             gameFilesUseCase = new LoadGameFilesUseCase(
+                                    core,
                                     new ArrayList<>(loadedData.values()),
                                     filesDownloadManager,
                                     interruption

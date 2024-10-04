@@ -15,23 +15,25 @@ import com.inappstory.sdk.stories.utils.LoopedExecutor;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 
-public class StatisticManager implements IASStatisticV2 {
-    private static StatisticManager INSTANCE;
+public class IASStatisticV2Impl implements IASStatisticV2 {
+    private static IASStatisticV2Impl INSTANCE;
     private final IASCore core;
 
-    public void enabled(boolean enabled) {
-        this.enabled = enabled;
+    public void disabled(boolean disabled) {
+        this.disabled = disabled;
     }
 
-    private boolean enabled;
+    private boolean disabled;
 
-    public StatisticManager(IASCore core) {
+    public IASStatisticV2Impl(IASCore core) {
         this.core = core;
         init();
     }
@@ -74,7 +76,7 @@ public class StatisticManager implements IASStatisticV2 {
 
 
     private void addTask(StatisticTask task, boolean force) {
-        if (!force && !enabled) return;
+        if (!force && disabled) return;
         synchronized (statisticTasksLock) {
             tasks.add(task);
             saveTasksSP();
@@ -83,7 +85,7 @@ public class StatisticManager implements IASStatisticV2 {
 
 
     private void addFakeTask(StatisticTask task) {
-        if (!enabled) return;
+        if (disabled) return;
         synchronized (statisticTasksLock) {
             faketasks.add(task);
             saveFakeTasksSP();
@@ -114,7 +116,7 @@ public class StatisticManager implements IASStatisticV2 {
     private final String FAKE_TASKS_KEY = "fakeStatisticTasks";
 
     @Override
-    public boolean enabled() {
+    public boolean disabled() {
         return false;
     }
 
@@ -254,7 +256,7 @@ public class StatisticManager implements IASStatisticV2 {
                 InAppStoryManager.getInstance().isSendStatistic());
     }
 
-    public void sendViewStory(ArrayList<Integer> ids, final String w,
+    public void sendViewStory(List<Integer> ids, final String w,
                               final String feedId) {
         ArrayList<String> localIds = new ArrayList<>();
         for (int i : ids) {
@@ -274,7 +276,7 @@ public class StatisticManager implements IASStatisticV2 {
         }
     }
 
-    HashMap<Integer, Long> cTimes;
+    Map<Integer, Long> cTimes;
 
     public void sendOpenStory(final int i, final String w,
                               final String feedId) {
@@ -366,7 +368,7 @@ public class StatisticManager implements IASStatisticV2 {
         StatisticTask task2 = new StatisticTask();
         task2.event = prefix + "close";
         task2.storyId = Integer.toString(i);
-        task2.cause = StatisticManager.APPCLOSE;
+        task2.cause = IASStatisticV2Impl.APPCLOSE;
         task2.slideIndex = si;
         task2.isFake = true;
         task2.slideTotal = st;

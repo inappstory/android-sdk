@@ -22,11 +22,11 @@ import androidx.viewpager.widget.ViewPager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
-import com.inappstory.sdk.UseManagerInstanceCallback;
 import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASCallbackType;
+import com.inappstory.sdk.core.api.IASStatisticV1;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.ui.screens.ShareProcessHandler;
 import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryScreen;
@@ -46,8 +46,8 @@ import com.inappstory.sdk.stories.events.GameCompleteEventObserver;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
-import com.inappstory.sdk.stories.statistic.GetOldStatisticManagerCallback;
-import com.inappstory.sdk.stories.statistic.OldStatisticManager;
+import com.inappstory.sdk.stories.statistic.GetStatisticV1Callback;
+import com.inappstory.sdk.stories.statistic.IASStatisticV1Impl;
 import com.inappstory.sdk.stories.ui.OverlapFragmentObserver;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPagerAdapter;
@@ -266,15 +266,19 @@ public class StoriesContentFragment extends Fragment
 
     @Override
     public void onDestroyView() {
-        OldStatisticManager.useInstance(
-                launchData.getSessionId(),
-                new GetOldStatisticManagerCallback() {
-                    @Override
-                    public void get(@NonNull OldStatisticManager manager) {
-                        manager.currentEvent = null;
-                    }
-                }
-        );
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.statistic().v1(launchData.getSessionId(),
+                        new GetStatisticV1Callback() {
+                            @Override
+                            public void get(@NonNull IASStatisticV1 manager) {
+                                manager.clearCurrentState();
+                            }
+                        }
+                );
+            }
+        });
         if (readerManager != null) readerManager.unsubscribeFromAssets();
         super.onDestroyView();
     }
@@ -436,7 +440,6 @@ public class StoriesContentFragment extends Fragment
                     readerManager.startedSlideInd = arguments.getInt("slideIndex", 0);
                     closeOnSwipe = appearanceSettings.csCloseOnSwipe();
                     closeOnOverscroll = appearanceSettings.csCloseOnOverscroll();
-
 
 
                     getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);

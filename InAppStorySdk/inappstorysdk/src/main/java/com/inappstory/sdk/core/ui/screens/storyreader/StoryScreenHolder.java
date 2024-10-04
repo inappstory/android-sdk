@@ -15,7 +15,6 @@ import com.inappstory.sdk.core.ui.screens.holder.IOverlapContainerHolder;
 import com.inappstory.sdk.core.ui.screens.ShareProcessHandler;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoryItemCoordinates;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
-import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.OverlapFragmentObserver;
 import com.inappstory.sdk.stories.ui.goods.GoodsWidgetFragment;
 import com.inappstory.sdk.stories.ui.reader.ActiveStoryItem;

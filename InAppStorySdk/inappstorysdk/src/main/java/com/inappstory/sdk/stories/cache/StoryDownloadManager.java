@@ -1,23 +1,19 @@
 package com.inappstory.sdk.stories.cache;
 
 import android.content.Context;
-import android.os.Handler;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.WorkerThread;
 
-import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.core.IASCore;
-import com.inappstory.sdk.core.api.IASCallback;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.game.cache.SessionAssetsIsReadyCallback;
 import com.inappstory.sdk.network.ApiSettings;
-import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.stories.api.models.ExceptionCache;
@@ -35,7 +31,7 @@ import com.inappstory.sdk.stories.cache.usecases.StoryVODResourceFileUseCaseResu
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.outercallbacks.common.single.SingleLoadCallback;
-import com.inappstory.sdk.stories.statistic.ProfilingManager;
+import com.inappstory.sdk.stories.statistic.IASStatisticProfilingImpl;
 import com.inappstory.sdk.stories.ui.list.FavoriteImage;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPageManager;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
@@ -87,7 +83,7 @@ public class StoryDownloadManager {
         core.sessionManager().useOrOpenSession(new OpenSessionCallback() {
             @Override
             public void onSuccess(final String sessionId) {
-                final String storyUID = ProfilingManager.getInstance().addTask("api_story");
+                final String storyUID = core.statistic().profiling().addTask("api_story");
                 networkClient.enqueue(
                         networkClient.getApi().getStoryById(
                                 id,
@@ -99,7 +95,7 @@ public class StoryDownloadManager {
                         new NetworkCallback<Story>() {
                             @Override
                             public void onSuccess(final Story response) {
-                                ProfilingManager.getInstance().setReady(storyUID);
+                                core.statistic().profiling().setReady(storyUID);
                                 core.callbacksAPI().useCallback(
                                         IASCallbackType.SINGLE,
                                         new UseIASCallback<SingleLoadCallback>() {
@@ -138,7 +134,7 @@ public class StoryDownloadManager {
                             @Override
                             public void errorDefault(String message) {
 
-                                ProfilingManager.getInstance().setReady(storyUID);
+                                core.statistic().profiling().setReady(storyUID);
                                 core.callbacksAPI().useCallback(
                                         IASCallbackType.SINGLE,
                                         new UseIASCallback<SingleLoadCallback>() {
@@ -250,24 +246,18 @@ public class StoryDownloadManager {
 
 
     private void checkBundleResources(final ReaderPageManager subscriber, final SlideTaskData key) {
-        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
-            @Override
-            public void use(@NonNull InAppStoryService service) throws Exception {
-                ISessionHolder sessionHolder = service.getSession();
-                if (sessionHolder.checkIfSessionAssetsIsReady()) {
+        ISessionHolder sessionHolder = core.sessionManager().getSession();
+        if (sessionHolder.checkIfSessionAssetsIsReady()) {
+            subscriber.slideLoadedInCache(key.index);
+        } else {
+            sessionHolder.addSessionAssetsIsReadyCallback(new SessionAssetsIsReadyCallback() {
+                @Override
+                public void isReady() {
                     subscriber.slideLoadedInCache(key.index);
-                } else {
-                    sessionHolder.addSessionAssetsIsReadyCallback(new SessionAssetsIsReadyCallback() {
-                        @Override
-                        public void isReady() {
-                            subscriber.slideLoadedInCache(key.index);
-                        }
-                    });
-                    service.downloadSessionAssets(sessionHolder.getSessionAssets());
                 }
-
-            }
-        });
+            });
+            core.contentPreload().downloadSessionAssets(sessionHolder.getSessionAssets());
+        }
     }
 
     void slideLoaded(final SlideTaskData key) {
@@ -707,12 +697,12 @@ public class StoryDownloadManager {
                 }
                 final String sFeedId = feedId;
                 if (loadFav) {
-                    final String loadFavUID = ProfilingManager.getInstance().addTask("api_favorite_item");
+                    final String loadFavUID = core.statistic().profiling().addTask("api_favorite_item");
 
                     storyDownloader.loadStoryFavoriteList(new NetworkCallback<List<Story>>() {
                         @Override
                         public void onSuccess(List<Story> response2) {
-                            ProfilingManager.getInstance().setReady(loadFavUID);
+                            core.statistic().profiling().setReady(loadFavUID);
                             favStories.clear();
                             favStories.addAll(response2);
                             favoriteImages.clear();
@@ -766,7 +756,7 @@ public class StoryDownloadManager {
 
                         @Override
                         public void errorDefault(String message) {
-                            ProfilingManager.getInstance().setReady(loadFavUID);
+                            core.statistic().profiling().setReady(loadFavUID);
                             if (callback != null) {
                                 List<Integer> ids = new ArrayList<>();
                                 for (Story story : response) {

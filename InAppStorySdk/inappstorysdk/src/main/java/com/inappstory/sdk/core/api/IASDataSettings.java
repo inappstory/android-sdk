@@ -16,4 +16,8 @@ public interface IASDataSettings {
     void setImagePlaceholders(@NonNull Map<String, ImagePlaceholderValue> newPlaceholders);
     void setCommonAppearanceManager(AppearanceManager appearanceManager);
     void setTags(List<String> tags);
+    void addTags(List<String> tags);
+    void removeTags(List<String> tags);
+    void setPlaceholder(String key, String value);
+    void setImagePlaceholder(String key, ImagePlaceholderValue value);
 }

@@ -1,5 +1,6 @@
 package com.inappstory.sdk.lrudiskcache;
 
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.stories.cache.DownloadFileState;
 
 import java.io.File;
@@ -33,39 +34,15 @@ public class LruDiskCache {
         return manager.getCacheDir();
     }
 
-    private static Object cacheLock = new Object();
-
-    public static LruDiskCache create(File cacheDir, String subPath, long cacheSize, CacheType cacheType) throws IOException {
-        synchronized (cacheLock) {
-            if (cacheSize < MB_1)
-                cacheSize = MB_1;
-            switch (cacheType) {
-                case COMMON:
-                    if (commonCache == null)
-                        commonCache = new LruDiskCache(cacheDir, subPath + "commonCache", cacheSize, cacheType);
-                    return commonCache;
-                case FAST:
-                    if (fastCache == null)
-                        fastCache = new LruDiskCache(cacheDir, subPath + "fastCache", cacheSize, cacheType);
-                    return fastCache;
-                case INFINITE:
-                    if (infiniteCache == null)
-                        infiniteCache = new LruDiskCache(cacheDir, subPath + "infiniteCache", cacheSize, cacheType);
-                    return infiniteCache;
-                default:
-                    return null;
-            }
-        }
-    }
-
     LruDiskCache(
+            IASCore core,
             File cacheDir,
             String subPath,
             long cacheSize,
             CacheType cacheType
     ) throws IOException {
         this.manager = new FileManager(cacheDir, subPath);
-        this.journal = new CacheJournal(manager);
+        this.journal = new CacheJournal(core, manager);
         this.cacheSize = cacheSize;
         this.cacheType = cacheType;
     }

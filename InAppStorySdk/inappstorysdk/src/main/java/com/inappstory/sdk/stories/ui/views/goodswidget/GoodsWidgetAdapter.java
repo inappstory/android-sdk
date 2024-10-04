@@ -12,7 +12,6 @@ import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryWidgetCallback;
-import com.inappstory.sdk.stories.statistic.StatisticManager;
 
 import java.util.ArrayList;
 import java.util.HashMap;

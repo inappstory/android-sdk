@@ -16,7 +16,7 @@ public abstract class ConnectionCheckCallback {
 
     public abstract void success();
 
-    void error() {
+    protected void error() {
         core.callbacksAPI().useCallback(IASCallbackType.ERROR,
                 new UseIASCallback<ErrorCallback>() {
                     @Override

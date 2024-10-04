@@ -8,8 +8,12 @@ import android.util.Pair;
 
 import androidx.annotation.NonNull;
 
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.UseServiceInstanceCallback;
+import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.UseIASCoreCallback;
+import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.game.cache.UseCaseCallback;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderType;
@@ -130,11 +134,11 @@ public class WebPageConverter {
                                             final LruDiskCache cache
     ) throws IOException {
         final String[] newData = {innerWebData};
-        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
-            public void use(@NonNull InAppStoryService service) throws Exception {
+            public void use(@NonNull IASCore core) {
                 Map<String, Pair<ImagePlaceholderValue, ImagePlaceholderValue>> imgPlaceholders =
-                        service.getImagePlaceholdersValuesWithDefaults();
+                        ((IASDataSettingsHolder)core.settingsAPI()).imagePlaceholdersWithSessionDefaults();
                 Map<String, String> imgPlaceholderKeys = story.getPlaceholdersList(index, "image-placeholder");
                 for (Map.Entry<String, String> entry : imgPlaceholderKeys.entrySet()) {
                     String placeholderKey = entry.getKey();
@@ -184,9 +188,10 @@ public class WebPageConverter {
     private Pair<String, String> replacePlaceholders(String outerData, String outerLayout) {
         String tmpData = outerData;
         String tmpLayout = outerLayout;
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service != null) {
-            Map<String, String> localPlaceholders = service.getPlaceholders();
+        InAppStoryManager manager = InAppStoryManager.getInstance();
+        if (manager != null) {
+            Map<String, String> localPlaceholders =
+                    ((IASDataSettingsHolder)manager.iasCore().settingsAPI()).placeholders();
             for (String key : localPlaceholders.keySet()) {
                 String modifiedKey = "%" + key + "%";
                 String value = localPlaceholders.get(key);

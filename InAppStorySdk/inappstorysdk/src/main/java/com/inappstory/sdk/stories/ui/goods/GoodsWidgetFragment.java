@@ -21,8 +21,7 @@ import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryWidgetCallback;
-import com.inappstory.sdk.stories.statistic.ProfilingManager;
-import com.inappstory.sdk.stories.statistic.StatisticManager;
+import com.inappstory.sdk.stories.statistic.IASStatisticProfilingImpl;
 import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryScreen;
 import com.inappstory.sdk.stories.ui.views.goodswidget.GetGoodsDataCallback;
 import com.inappstory.sdk.stories.ui.views.goodswidget.GoodsItemData;
@@ -101,10 +100,15 @@ public class GoodsWidgetFragment extends Fragment implements IASBackPressHandler
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        ProfilingManager.getInstance().addTask(
-                "goods_resources",
-                getArguments().getString("localTaskId")
-        );
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.statistic().profiling().addTask(
+                        "goods_resources",
+                        getArguments().getString("localTaskId")
+                );
+            }
+        });
 
         final ArrayList<String> skus = JsonParser.listFromJson(
                 getArguments().getString("skusString"),
@@ -130,18 +134,28 @@ public class GoodsWidgetFragment extends Fragment implements IASBackPressHandler
             getGoodsDataCallback = new GetGoodsDataCallback() {
                 @Override
                 public void onSuccess(ArrayList<GoodsItemData> data) {
-                    ProfilingManager.getInstance().setReady(
-                            getArguments().getString("localTaskId")
-                    );
+                    InAppStoryManager.useCore(new UseIASCoreCallback() {
+                        @Override
+                        public void use(@NonNull IASCore core) {
+                            core.statistic().profiling().setReady(
+                                    getArguments().getString("localTaskId")
+                            );
+                        }
+                    });
                     ((GoodsRecyclerView)finalWidgetView).onSuccess(data);
 
                 }
 
                 @Override
                 public void onError() {
-                    ProfilingManager.getInstance().setReady(
-                            getArguments().getString("localTaskId")
-                    );
+                    InAppStoryManager.useCore(new UseIASCoreCallback() {
+                        @Override
+                        public void use(@NonNull IASCore core) {
+                            core.statistic().profiling().setReady(
+                                    getArguments().getString("localTaskId")
+                            );
+                        }
+                    });
                     ((GoodsRecyclerView)finalWidgetView).onError();
                 }
 

@@ -15,6 +15,7 @@ import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASCallbackType;
+import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.ui.screens.ShareProcessHandler;
 import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenData;
@@ -23,8 +24,6 @@ import com.inappstory.sdk.core.utils.ConnectionCheck;
 import com.inappstory.sdk.core.utils.ConnectionCheckCallback;
 import com.inappstory.sdk.game.reader.GameStoryData;
 import com.inappstory.sdk.stories.api.models.UpdateTimelineData;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.ui.widgets.LoadProgressBar;
 import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.network.ApiSettings;
@@ -39,8 +38,7 @@ import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ShowSlideCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
-import com.inappstory.sdk.stories.statistic.ProfilingManager;
-import com.inappstory.sdk.stories.statistic.StatisticManager;
+import com.inappstory.sdk.stories.statistic.IASStatisticProfilingImpl;
 import com.inappstory.sdk.stories.ui.dialog.CancelListener;
 import com.inappstory.sdk.stories.ui.dialog.ContactDialogCreator;
 import com.inappstory.sdk.stories.ui.dialog.SendListener;
@@ -92,10 +90,7 @@ public class StoriesViewManager {
 
     public void vibrate(int[] vibratePattern) {
         if (context != null) {
-            InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
-            if (inAppStoryManager != null) {
-                inAppStoryManager.getVibrateUtils().vibrate(context, vibratePattern);
-            }
+            core.vibrateUtils().vibrate(context, vibratePattern);
         }
     }
 
@@ -165,6 +160,11 @@ public class StoriesViewManager {
     }
 
     Context context;
+
+    public IASCore core() {
+        return core;
+    }
+
     private final IASCore core;
 
     public StoriesViewManager(Context context, IASCore core) {
@@ -481,7 +481,7 @@ public class StoriesViewManager {
                 (StoriesContentFragment) pageManager.host.getParentFragment();
         if (storiesContentFragment != null)
             storiesContentFragment.disableDrag(storyId, pageManager.getStoryType());
-        ProfilingManager.getInstance().setReady(storyId + "_" + index);
+        core.statistic().profiling().setReady(storyId + "_" + index);
     }
 
 
@@ -615,8 +615,10 @@ public class StoriesViewManager {
     public void storySetLocalData(String data, boolean sendToServer) {
         InAppStoryService service = InAppStoryService.getInstance();
         if (service == null) return;
-        KeyValueStorage.saveString("story" + storyId + "__" + service.getUserId(), data);
-        if (service.statV1Disallowed()) return;
+
+        KeyValueStorage.saveString("story" + storyId + "__" +
+                ((IASDataSettingsHolder)core.settingsAPI()).userId(), data);
+        if (core.statistic().v1().disabled()) return;
         final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
         if (networkClient == null) {
             return;
@@ -646,10 +648,7 @@ public class StoriesViewManager {
     public SourceType source = SourceType.SINGLE;
 
     public void storySendData(String data) {
-        if (InAppStoryService.getInstance().statV1Disallowed()) return;
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service == null) return;
-        if (service.statV1Disallowed()) return;
+        if (core.statistic().v1().disabled()) return;
         final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
         if (networkClient == null) {
             return;
@@ -658,7 +657,7 @@ public class StoriesViewManager {
                 networkClient.getApi().sendStoryData(
                         Integer.toString(storyId),
                         data,
-                        service.getSession().getSessionId()
+                        core.sessionManager().getSession().getSessionId()
                 ),
                 new NetworkCallback<Response>() {
                     @Override

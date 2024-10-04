@@ -42,7 +42,6 @@ import java.util.concurrent.Executors;
 public class ImageLoader {
 
     MemoryCache memoryCache = new MemoryCache();
-    MemoryCache memoryCache2 = new MemoryCache();
     private Map<ImageView, String> imageViews = Collections.synchronizedMap(new WeakHashMap<ImageView, String>());
     ExecutorService executorService;
     ExecutorService widgetImageExecutorService;
@@ -56,7 +55,6 @@ public class ImageLoader {
     Context mContext;
 
     public ImageLoader(Context context) {
-        memoryCache2 = new MemoryCache();
         mContext = context;
         executorService = Executors.newFixedThreadPool(1);
         widgetImageExecutorService = Executors.newFixedThreadPool(1);
@@ -67,33 +65,6 @@ public class ImageLoader {
 
     public void displayImage(String path, int loader, ImageView imageView) {
         displayImage(path, loader, imageView, null);
-    }
-
-    public HashMap<String, String> fileLinks = new HashMap<>();
-    private final Object fileLinksLock = new Object();
-
-    public String getFileLink(String link) {
-        synchronized (fileLinksLock) {
-            String checkedLink = fileLinks.get(link);
-            if (checkedLink != null)
-                if (new File(checkedLink).exists())
-                    return checkedLink;
-                else
-                    fileLinks.remove(link);
-            return null;
-        }
-    }
-
-    public void addLink(String link, String fileLink) {
-        synchronized (fileLinksLock) {
-            fileLinks.put(link, fileLink);
-        }
-    }
-
-    public void clearFileLinks() {
-        synchronized (fileLinksLock) {
-            fileLinks.clear();
-        }
     }
 
     public void displayImage(String path, int loader, ImageView imageView, LruDiskCache cache) {
@@ -111,75 +82,10 @@ public class ImageLoader {
         }
     }
 
-    LruDiskCache cache;
-
-    public void displayRemoteImage(final String url, int loader, final RemoteViews rv, final int id, final Integer cornerRadius, final Float ratio, Context context) {
-        try {
-            stub_id = loader;
-            if (memoryCache2 == null) memoryCache2 = new MemoryCache();
-            final Bitmap[] bitmap = {memoryCache2.get(url)};
-            if (bitmap[0] != null)
-                rv.setImageViewBitmap(id, bitmap[0]);
-            else {
-                if (cache == null) {
-                    cache = LruDiskCache.create(
-                            context.getCacheDir(),
-                            IAS_PREFIX,
-                            MB_10,
-                            CacheType.COMMON
-                    );
-                }
-                bitmap[0] = getWidgetBitmap(url, cornerRadius, true, ratio, null, cache);
-                memoryCache2.put(url, bitmap[0]);
-                rv.setImageViewBitmap(id, bitmap[0]);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void displayRemoteColor(String color, int loader, RemoteViews rv, int id, Integer cornerRadius, Float ratio, Context context) {
-        try {
-            stub_id = loader;
-            Bitmap bitmap = memoryCache2.get(color);
-            if (bitmap != null)
-                rv.setImageViewBitmap(id, bitmap);
-            else {
-                if (cache == null) {
-                    cache = LruDiskCache.create(
-                            context.getCacheDir(),
-                            IAS_PREFIX,
-                            MB_10,
-                            CacheType.FAST
-                    );
-                }
-                bitmap = getWidgetBitmap(null, cornerRadius, true, ratio, color, cache);
-                memoryCache2.put(color, bitmap);
-                rv.setImageViewBitmap(id, bitmap);
-            }
-        } catch (Exception e) {
-
-        }
-    }
 
     private void queuePhoto(String url, ImageView imageView, LruDiskCache cache) {
         PhotoToLoad p = new PhotoToLoad(url, imageView, cache);
         executorService.submit(new PhotosLoader(p));
-    }
-
-    public void addDarkGradient(Bitmap bitmap) {
-        if (bitmap == null) return;
-        Canvas canvas = new Canvas(bitmap);
-        Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        paint.setShader(createShader(bitmap.getWidth(), bitmap.getHeight()));
-        canvas.drawRect(0, 0, bitmap.getWidth(), bitmap.getHeight(), paint);
-    }
-
-    private Shader createShader(int x1, int y1) {
-        LinearGradient shader = new LinearGradient(0, 0, 0, y1,
-                new int[]{Color.TRANSPARENT, Color.parseColor("#AA000000")}, null,
-                Shader.TileMode.REPEAT);
-        return shader;
     }
 
     public Bitmap getBitmap(String url, LruDiskCache cache) {
@@ -194,86 +100,6 @@ public class ImageLoader {
             e.printStackTrace();
         }
         return bitmap;
-    }
-
-    public Bitmap getWidgetBitmap(String url, Integer pixels, boolean getThumbnail, Float ratio, String color, LruDiskCache lruDiskCache) {
-        if (url == null && color == null) return null;
-        String spixels;
-        String sratio;
-        if (pixels == null) {
-            spixels = memoryCache2.getSettings("pixels");
-            if (spixels != null) {
-                pixels = Integer.parseInt(spixels);
-            }
-        } else {
-            memoryCache2.putSettings("pixels", Integer.toString(pixels));
-        }
-        if (ratio == null) {
-            sratio = memoryCache2.getSettings("ratio");
-            if (sratio != null) {
-                ratio = Float.parseFloat(sratio);
-            }
-        } else {
-            memoryCache2.putSettings("ratio", Float.toString(ratio));
-        }
-
-        if (url == null) {
-            Bitmap bmp = Bitmap.createBitmap(400, 400, Bitmap.Config.RGB_565);
-            Canvas canvas = new Canvas(bmp);
-            canvas.drawColor(Color.parseColor(color));
-            if (getThumbnail) {
-                if (ratio != null && ratio > 0) {
-                    bmp = ThumbnailUtils.extractThumbnail(bmp, (int) (ratio * 300), 300);
-                } else {
-                    bmp = ThumbnailUtils.extractThumbnail(bmp, 300, 300);
-                }
-            }
-            addDarkGradient(bmp);
-            if (pixels != null)
-                bmp = getRoundedCornerBitmap(bmp, pixels);
-            return bmp;
-        }
-        try {
-            DownloadFileState fileState = Downloader.downloadOrGetFile(url, false, lruDiskCache, null, null);
-            if (fileState == null || fileState.file == null) return null;
-            Bitmap bitmap = decodeFile(fileState.file);
-            if (getThumbnail) {
-                if (ratio != null && ratio > 0) {
-                    bitmap = ThumbnailUtils.extractThumbnail(bitmap, (int) (ratio * 300), 300);
-                } else {
-                    bitmap = ThumbnailUtils.extractThumbnail(bitmap, 300, 300);
-                }
-            }
-            addDarkGradient(bitmap);
-            if (pixels != null)
-                bitmap = getRoundedCornerBitmap(bitmap, pixels);
-            return bitmap;
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            return null;
-        }
-    }
-
-    public static Bitmap getRoundedCornerBitmap(Bitmap bitmap, int pixels) {
-        Bitmap output = Bitmap.createBitmap(bitmap.getWidth(), bitmap
-                .getHeight(), Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(output);
-
-        final int color = 0xff424242;
-        final Paint paint = new Paint();
-        final Rect rect = new Rect(0, 0, bitmap.getWidth(), bitmap.getHeight());
-        final RectF rectF = new RectF(rect);
-        final float roundPx = pixels;
-
-        paint.setAntiAlias(true);
-        canvas.drawARGB(0, 0, 0, 0);
-        paint.setColor(color);
-        canvas.drawRoundRect(rectF, roundPx, roundPx, paint);
-
-        paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
-        canvas.drawBitmap(bitmap, rect, rect, paint);
-
-        return output;
     }
 
     //decodes image and scales it to reduce memory consumption
@@ -306,27 +132,6 @@ public class ImageLoader {
             InAppStoryService.createExceptionLog(e);
         }
         return null;
-    }
-
-    private Bitmap decodeStream(InputStream stream) {
-        BitmapFactory.Options o = new BitmapFactory.Options();
-        o.inJustDecodeBounds = true;
-        BitmapFactory.decodeStream(stream, null, o);
-
-        final int REQUIRED_SIZE = Sizes.dpToPxExt(800, mContext);
-        int width_tmp = o.outWidth, height_tmp = o.outHeight;
-        int scale = 1;
-        while (true) {
-            if (width_tmp / 2 < REQUIRED_SIZE || height_tmp / 2 < REQUIRED_SIZE)
-                break;
-            width_tmp /= 2;
-            height_tmp /= 2;
-            scale *= 2;
-        }
-
-        BitmapFactory.Options o2 = new BitmapFactory.Options();
-        o2.inSampleSize = scale;
-        return BitmapFactory.decodeStream(stream, null, o2);
     }
 
     private class PhotoToLoad {
@@ -394,11 +199,7 @@ public class ImageLoader {
 
     public void clearCache() {
         memoryCache.clear();
-        memoryCache2.clear();
     }
 
-    public void clearWidgetCache() {
-        memoryCache2.clear();
-    }
 
 }

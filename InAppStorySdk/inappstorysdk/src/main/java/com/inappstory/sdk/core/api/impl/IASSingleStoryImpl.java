@@ -204,7 +204,7 @@ public class IASSingleStoryImpl implements IASSingleStory {
                 null
         );
         core.screensManager().openScreen(context,
-                new LaunchStoryScreenStrategy(openedFromReader)
+                new LaunchStoryScreenStrategy(core, openedFromReader)
                         .launchStoryScreenData(launchData)
                         .readerAppearanceSettings(
                                 new LaunchStoryScreenAppearance(

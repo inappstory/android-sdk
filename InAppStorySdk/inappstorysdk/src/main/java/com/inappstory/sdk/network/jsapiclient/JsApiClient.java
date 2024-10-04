@@ -6,10 +6,8 @@ import android.content.Context;
 
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.network.JsonParser;
-import com.inappstory.sdk.stories.api.models.Session;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
-import com.inappstory.sdk.stories.statistic.ProfilingManager;
-import com.inappstory.sdk.stories.utils.SessionManager;
+import com.inappstory.sdk.stories.statistic.IASStatisticProfilingImpl;
 import com.inappstory.sdk.stories.utils.TaskRunner;
 
 import org.json.JSONObject;
@@ -98,7 +96,7 @@ public class JsApiClient {
                      final JsApiResponseCallback callback) {
         final String sarHash;
         if (profilingKey != null && !profilingKey.isEmpty()) {
-            sarHash = ProfilingManager.getInstance().addTask(profilingKey);
+            sarHash = core.statistic().profiling().addTask(profilingKey);
         } else {
             sarHash = null;
         }
@@ -116,7 +114,7 @@ public class JsApiClient {
                 new TaskRunner.Callback<JsApiResponse>() {
                     @Override
                     public void onComplete(JsApiResponse result) {
-                        ProfilingManager.getInstance().setReady(sarHash);
+                        core.statistic().profiling().setReady(sarHash);
                         try {
                             JSONObject resultJson = new JSONObject();
                             resultJson.put("requestId", result.requestId);

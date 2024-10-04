@@ -4,6 +4,7 @@ import android.util.Log;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.stories.api.models.logs.ExceptionLog;
 import com.inappstory.sdk.utils.CollectionUtils;
 
@@ -28,6 +29,7 @@ public class CacheJournal {
 
     public static final int VERSION = 1;
     private File journalFile;
+    private final IASCore core;
 
     private final Object lock = new Object();
 
@@ -42,8 +44,9 @@ public class CacheJournal {
         putLink(item);
     }
 
-    public CacheJournal(FileManager fileManager) {
+    public CacheJournal(IASCore core, FileManager fileManager) {
         this.fileManager = fileManager;
+        this.core = core;
         readJournal();
     }
 
@@ -140,8 +143,7 @@ public class CacheJournal {
         log.timestamp = System.currentTimeMillis();
         log.id = UUID.randomUUID().toString();
         log.message = "CacheOverflow";
-        InAppStoryService service = InAppStoryService.getInstance();
-        log.session = (service != null ? service.getSession().getSessionId() : null);
+        log.session = core.sessionManager().getSession().getSessionId();
         log.stacktrace = "Current size: "
                 + currentSize
                 + "\nNew file size: "

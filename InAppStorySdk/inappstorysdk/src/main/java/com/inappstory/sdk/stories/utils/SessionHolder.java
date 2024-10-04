@@ -1,15 +1,13 @@
 package com.inappstory.sdk.stories.utils;
 
 
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.game.cache.SessionAssetsIsReadyCallback;
 import com.inappstory.sdk.game.cache.UseCaseCallback;
-import com.inappstory.sdk.lrudiskcache.LruCachesHolder;
 import com.inappstory.sdk.stories.api.models.Session;
 import com.inappstory.sdk.stories.api.models.SessionAsset;
-import com.inappstory.sdk.stories.api.models.StatisticPermissions;
 import com.inappstory.sdk.stories.cache.FilesDownloadManager;
 import com.inappstory.sdk.stories.cache.usecases.SessionAssetLocalUseCase;
-import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.utils.ISessionHolder;
 
 import java.io.File;
@@ -22,10 +20,13 @@ import java.util.Set;
 
 public class SessionHolder implements ISessionHolder {
     private Session session;
+    private final IASCore core;
+
+    public SessionHolder(IASCore core) {
+        this.core = core;
+    }
 
     private final Object sessionLock = new Object();
-
-    private final HashMap<String, OldStatisticManager> statisticManagers = new HashMap<>();
 
     private final HashMap<String, SessionAsset> cacheObjects = new HashMap<>();
     private final HashMap<String, SessionAsset> allObjects = new HashMap<>();
@@ -35,43 +36,6 @@ public class SessionHolder implements ISessionHolder {
     private HashSet<SessionAssetsIsReadyCallback> assetsIsReadyCallbacks = new HashSet<>();
 
 
-    private final ArrayList<Integer> viewed = new ArrayList<>();
-
-    @Override
-    public boolean allowStatV1() {
-        synchronized (sessionLock) {
-            return session != null
-                    && session.statisticPermissions != null
-                    && session.statisticPermissions.allowStatV1;
-        }
-    }
-
-    @Override
-    public boolean allowStatV2() {
-        synchronized (sessionLock) {
-            return session != null
-                    && session.statisticPermissions != null
-                    && session.statisticPermissions.allowStatV2;
-        }
-    }
-
-    @Override
-    public boolean allowProfiling() {
-        synchronized (sessionLock) {
-            return session != null
-                    && session.statisticPermissions != null
-                    && session.statisticPermissions.allowProfiling;
-        }
-    }
-
-    @Override
-    public boolean allowCrash() {
-        synchronized (sessionLock) {
-            return session != null
-                    && session.statisticPermissions != null
-                    && session.statisticPermissions.allowCrash;
-        }
-    }
 
     @Override
     public boolean allowUGC() {
@@ -94,43 +58,17 @@ public class SessionHolder implements ISessionHolder {
     }
 
     @Override
-    public void setSessionPermissions(StatisticPermissions statisticPermissions) {
-        synchronized (sessionLock) {
-            if (session != null) session.statisticPermissions = statisticPermissions;
-        }
-    }
-
-    @Override
-    public void setSession(Session session) {
+    public void setSession(Session session, boolean v1Disabled) {
         synchronized (sessionLock) {
             this.session = session;
             if (session != null && session.id != null) {
-                statisticManagers.put(session.id, new OldStatisticManager());
+                core.statistic().createV1(session.id, v1Disabled);
             }
-            viewed.clear();
+            core.statistic().clearViewedIds();
         }
     }
 
-    @Override
-    public void addViewedId(int id) {
-        synchronized (sessionLock) {
-            viewed.add(id);
-        }
-    }
 
-    @Override
-    public boolean hasViewedId(int id) {
-        synchronized (sessionLock) {
-            return viewed.contains(id);
-        }
-    }
-
-    @Override
-    public boolean hasViewedIds() {
-        synchronized (sessionLock) {
-            return viewed.size() > 0;
-        }
-    }
 
     @Override
     public void addSessionAssetsKeys(List<SessionAsset> cacheObjects) {
@@ -220,29 +158,15 @@ public class SessionHolder implements ISessionHolder {
         return cachesIsReady[0];
     }
 
-    @Override
-    public OldStatisticManager currentStatisticManager() {
-        synchronized (sessionLock) {
-            if (session == null || session.id == null) return null;
-            return statisticManagers.get(session.id);
-        }
-    }
-
-    @Override
-    public OldStatisticManager getStatisticManager(String sessionId) {
-        synchronized (sessionLock) {
-            return statisticManagers.get(sessionId);
-        }
-    }
 
     @Override
     public void clear(String oldSessionId) {
         synchronized (sessionLock) {
-            viewed.clear();
+            core.statistic().clearViewedIds();
             if (session != null &&
                     oldSessionId != null &&
                     Objects.equals(session.id, oldSessionId)) {
-                statisticManagers.remove(oldSessionId);
+                core.statistic().removeV1(oldSessionId);
                 session = null;
             }
         }

@@ -1,9 +1,9 @@
 package com.inappstory.sdk.core.api;
 
-import java.util.ArrayList;
+import java.util.List;
 
-public interface IASStatisticV2 extends Enabled  {
-    boolean enabled();
+public interface IASStatisticV2 extends Disabled {
+    boolean disabled();
     void cleanTasks();
     void pauseStoryEvent(boolean withBg);
     void resumeStoryEvent(boolean withBg);
@@ -16,7 +16,7 @@ public interface IASStatisticV2 extends Enabled  {
     void sendGoodsClick(final int i, final int si,
                         final String wi, final String sku,
                         final String feedId);
-    void sendViewStory(ArrayList<Integer> ids, final String w,
+    void sendViewStory(List<Integer> ids, final String w,
                        final String feedId);
     void sendOpenStory(final int i, final String w,
                        final String feedId);

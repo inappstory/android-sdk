@@ -4,6 +4,8 @@ import android.content.Context;
 import android.os.Bundle;
 
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.ui.screens.holder.IScreensHolder;
 import com.inappstory.sdk.core.ui.screens.launcher.ILaunchScreenCallback;
 import com.inappstory.sdk.core.ui.screens.launcher.LaunchScreenStrategy;
 import com.inappstory.sdk.core.ui.screens.ScreenType;
@@ -15,13 +17,15 @@ import java.util.List;
 
 
 public class LaunchStoryScreenStrategy implements LaunchScreenStrategy {
+    private final IASCore core;
     private LaunchStoryScreenData launchStoryScreenData;
     private LaunchStoryScreenAppearance readerAppearanceSettings;
     private List<ILaunchScreenCallback> launchScreenCallbacks = new ArrayList<>();
     private final boolean openedFromReader;
 
-    public LaunchStoryScreenStrategy(boolean openedFromReader) {
+    public LaunchStoryScreenStrategy(IASCore core, boolean openedFromReader) {
         this.openedFromReader = openedFromReader;
+        this.core = core;
     }
 
     public LaunchStoryScreenStrategy readerAppearanceSettings(LaunchStoryScreenAppearance readerAppearanceSettings) {
@@ -43,7 +47,7 @@ public class LaunchStoryScreenStrategy implements LaunchScreenStrategy {
     public void launch(
             Context context,
             IOpenReader openReader,
-            ScreensHolder screensHolder
+            IScreensHolder screensHolder
     ) {
         StoryScreenHolder currentScreenHolder = screensHolder.getStoryScreenHolder();
         boolean cantBeOpened = false;
@@ -54,10 +58,7 @@ public class LaunchStoryScreenStrategy implements LaunchScreenStrategy {
         if (currentScreenHolder.isOpened(launchStoryScreenData)) {
             cantBeOpened = true;
         }
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service == null || service.getSession().getSessionId().isEmpty()) {
-            cantBeOpened = true;
-        }
+        cantBeOpened |= core.sessionManager().getSession().getSessionId().isEmpty();
         if (cantBeOpened) {
             for (ILaunchScreenCallback callback : launchScreenCallbacks) {
                 if (callback != null) callback.onError(getType(), message);
