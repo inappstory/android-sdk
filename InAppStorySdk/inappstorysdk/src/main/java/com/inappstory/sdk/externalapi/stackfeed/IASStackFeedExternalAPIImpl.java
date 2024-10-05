@@ -5,6 +5,8 @@ import androidx.annotation.NonNull;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.UseManagerInstanceCallback;
+import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASStackFeed;
 import com.inappstory.sdk.stories.stackfeed.IStackFeedResult;
 
@@ -18,11 +20,12 @@ public class IASStackFeedExternalAPIImpl implements IASStackFeed {
             final List<String> tags,
             final IStackFeedResult stackFeedResult
     ) {
-        InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
-            public void use(@NonNull InAppStoryManager manager) throws Exception {
-                manager.getStackFeed(feed, uniqueStackId, tags, appearanceManager, stackFeedResult);
+            public void use(@NonNull IASCore core) {
+                core.stackFeedAPI().get(feed, uniqueStackId, appearanceManager, tags, stackFeedResult);
             }
         });
+
     }
 }

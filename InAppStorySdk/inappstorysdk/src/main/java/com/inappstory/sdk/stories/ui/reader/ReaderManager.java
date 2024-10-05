@@ -607,21 +607,11 @@ public class ReaderManager {
     };
 
     public void subscribeToAssets() {
-        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
-            @Override
-            public void use(@NonNull InAppStoryService service) throws Exception {
-                service.getSession().addSessionAssetsIsReadyCallback(assetsIsReadyCallback);
-            }
-        });
+        core.sessionManager().getSession().addSessionAssetsIsReadyCallback(assetsIsReadyCallback);
     }
 
     public void unsubscribeFromAssets() {
-        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
-            @Override
-            public void use(@NonNull InAppStoryService service) throws Exception {
-                service.getSession().removeSessionAssetsIsReadyCallback(assetsIsReadyCallback);
-            }
-        });
+        core.sessionManager().getSession().removeSessionAssetsIsReadyCallback(assetsIsReadyCallback);
     }
 
     public void addSubscriber(ReaderPageManager manager) {

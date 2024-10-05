@@ -291,15 +291,14 @@ public class StoriesViewManager {
                 index,
                 pageManager.getStoryType());
         if (slideInCache == 1) {
-            slideInCache(service, story, index);
+            slideInCache(story, index);
         } else {
             slideNotInCache(index);
         }
     }
 
-    private void slideInCache(final InAppStoryService service, final Story story, final int index) {
-
-        ISessionHolder sessionHolder = service.getSession();
+    private void slideInCache(final Story story, final int index) {
+        ISessionHolder sessionHolder =  core.sessionManager().getSession();
         if (sessionHolder.checkIfSessionAssetsIsReady()) {
             innerLoad(story);
             pageManager.slideLoadedInCache(index, true);
@@ -613,9 +612,6 @@ public class StoriesViewManager {
     }
 
     public void storySetLocalData(String data, boolean sendToServer) {
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service == null) return;
-
         KeyValueStorage.saveString("story" + storyId + "__" +
                 ((IASDataSettingsHolder)core.settingsAPI()).userId(), data);
         if (core.statistic().v1().disabled()) return;
@@ -628,7 +624,7 @@ public class StoriesViewManager {
                     networkClient.getApi().sendStoryData(
                             Integer.toString(storyId),
                             data,
-                            service.getSession().getSessionId()
+                            core.sessionManager().getSession().getSessionId()
                     ),
                     new NetworkCallback<Response>() {
                         @Override

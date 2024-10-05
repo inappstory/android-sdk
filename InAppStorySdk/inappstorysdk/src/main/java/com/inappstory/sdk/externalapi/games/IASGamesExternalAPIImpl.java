@@ -41,10 +41,10 @@ public class IASGamesExternalAPIImpl implements IASGames {
 
     @Override
     public void preloadGames() {
-        InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
-            public void use(@NonNull InAppStoryManager manager) throws Exception {
-                manager.preloadGames();
+            public void use(@NonNull IASCore core) {
+                core.contentPreload().restartGamePreloader();
             }
         });
     }

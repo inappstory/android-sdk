@@ -16,6 +16,7 @@ import com.inappstory.sdk.core.api.IASStatistic;
 import com.inappstory.sdk.core.api.IASStoryList;
 import com.inappstory.sdk.core.api.IASStoriesOpenedCache;
 import com.inappstory.sdk.core.api.impl.IASCallbacksImpl;
+import com.inappstory.sdk.core.api.impl.IASContentPreloadImpl;
 import com.inappstory.sdk.core.api.impl.IASFavoritesImpl;
 import com.inappstory.sdk.core.api.impl.IASGamesImpl;
 import com.inappstory.sdk.core.api.impl.IASManagerImpl;
@@ -50,6 +51,7 @@ public class IASCoreImpl implements IASCore {
     private final IASStoriesOpenedCache storyListCache = new IASStoriesOpenedCacheImpl(this);
     private final IASStatistic statistic = new IASStatisticImpl(this);
     private final IVibrateUtils vibrateUtils = new VibrateUtils();
+    private final IASContentPreload contentPreload = new IASContentPreloadImpl(this);
 
     public IASCoreImpl() {
         synchronized (lock) {
@@ -146,7 +148,7 @@ public class IASCoreImpl implements IASCore {
 
     @Override
     public IASContentPreload contentPreload() {
-        return null;
+        return contentPreload;
     }
 
     @Override

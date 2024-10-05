@@ -74,43 +74,6 @@ public class InAppStoryService {
             return INSTANCE;
         }
     }
-
-    public void downloadSessionAssets(
-            List<SessionAsset> sessionAssets
-    ) {
-        if (sessionAssets != null) {
-            sessionHolder.addSessionAssetsKeys(sessionAssets);
-            for (SessionAsset sessionAsset : sessionAssets) {
-                downloadSessionAsset(sessionAsset);
-            }
-        }
-    }
-
-
-    private void downloadSessionAsset(final SessionAsset sessionAsset) {
-        new SessionAssetUseCase(filesDownloadManager,
-                new UseCaseCallback<File>() {
-                    @Override
-                    public void onError(String message) {
-
-                    }
-
-                    @Override
-                    public void onSuccess(File result) {
-                        sessionHolder.addSessionAsset(sessionAsset);
-                        sessionHolder.checkIfSessionAssetsIsReady(filesDownloadManager);
-                    }
-                },
-                sessionAsset
-        ).getFile();
-    }
-
-    private ISessionHolder sessionHolder;
-
-    public ISessionHolder getSession() {
-        return sessionHolder;
-    }
-
     public static boolean isNotNull() {
         return getInstance() != null;
     }
@@ -472,16 +435,6 @@ public class InAppStoryService {
             return true;
         }
     }
-
-    public void restartV1Stat() {
-        core.statistic().v1(new GetStatisticV1Callback() {
-            @Override
-            public void get(@NonNull IASStatisticV1 manager) {
-                manager.restartSchedule();
-            }
-        });
-    }
-
     ListReaderConnector connector = new ListReaderConnector();
 
     public ListReaderConnector getListReaderConnector() {
@@ -769,7 +722,6 @@ public class InAppStoryService {
         this.context = context;
         createDownloadManager(exceptionCache);
         Thread.setDefaultUncaughtExceptionHandler(new DefaultExceptionHandler());
-        new ImageLoader(context);
 
         timerManager = new TimerManager(core);
         if (tempListSubscribers != null) {

@@ -1,6 +1,7 @@
 package com.inappstory.sdk.stories.ui.views.goodswidget;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Typeface;
@@ -17,9 +18,15 @@ import androidx.appcompat.widget.AppCompatTextView;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.UseServiceInstanceCallback;
+import com.inappstory.sdk.game.cache.SuccessUseCaseCallback;
 import com.inappstory.sdk.imageloader.ImageLoader;
 import com.inappstory.sdk.imageloader.RoundedCornerLayout;
+import com.inappstory.sdk.memcache.IGetBitmapFromMemoryCache;
+import com.inappstory.sdk.stories.cache.usecases.CustomFileUseCase;
 import com.inappstory.sdk.stories.utils.Sizes;
+
+import java.io.File;
 
 public class SimpleCustomGoodsItem implements ICustomGoodsItem {
     public SimpleCustomGoodsItem csGoodsCellImageBackgroundColor(int goodsCellImageBackgroundColor) {
@@ -124,7 +131,7 @@ public class SimpleCustomGoodsItem implements ICustomGoodsItem {
     }
 
     @Override
-    public void bindView(View view, GoodsItemData data) {
+    public void bindView(final View view, final GoodsItemData data) {
         if (data.description != null) {
             AppCompatTextView desc = view.findViewById(R.id.description);
             desc.setText(data.description);
@@ -146,18 +153,17 @@ public class SimpleCustomGoodsItem implements ICustomGoodsItem {
             setTypeface(oldPrice, true, false, false);
             oldPrice.setPaintFlags(oldPrice.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
         }
-
+        ((AppCompatImageView) view.findViewById(R.id.image))
+                .setBackgroundColor(goodsCellImageBackgroundColor);
+        ((AppCompatImageView) view.findViewById(R.id.image))
+                .setImageBitmap(null);
         if (data.image != null && URLUtil.isNetworkUrl(data.image)) {
-            if (InAppStoryService.getInstance() != null)
-                ImageLoader.getInstance().displayImage(
-                        data.image,
-                        -1,
-                        (AppCompatImageView) view.findViewById(R.id.image),
-                        InAppStoryService.getInstance().getCommonCache()
-                );
-        } else {
-            ((AppCompatImageView) view.findViewById(R.id.image))
-                    .setBackgroundColor(goodsCellImageBackgroundColor);
+            new ImageLoader().getBitmapFromUrl(data.image, new IGetBitmapFromMemoryCache() {
+                @Override
+                public void get(Bitmap bitmap) {
+                    ((AppCompatImageView) view.findViewById(R.id.image)).setImageBitmap(bitmap);
+                }
+            });
         }
     }
 

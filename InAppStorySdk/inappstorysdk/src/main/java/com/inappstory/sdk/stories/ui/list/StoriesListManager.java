@@ -6,8 +6,11 @@ import android.view.View;
 
 import androidx.annotation.NonNull;
 
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.UseServiceInstanceCallback;
+import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.stories.api.models.Story;
 
 import java.util.List;
@@ -17,10 +20,10 @@ public class StoriesListManager implements ListManager {
     String currentSessionId;
 
     void checkCurrentSession() {
-        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
-            public void use(@NonNull InAppStoryService service) throws Exception {
-                currentSessionId = service.getSession().getSessionId();
+            public void use(@NonNull IASCore core) {
+                currentSessionId = core.sessionManager().getSession().getSessionId();
             }
         });
     }
@@ -30,7 +33,7 @@ public class StoriesListManager implements ListManager {
     }
 
     public StoriesListManager() {
-      //  this.list = list;
+        //  this.list = list;
         handler = new Handler(Looper.getMainLooper());
         checkCurrentSession();
     }

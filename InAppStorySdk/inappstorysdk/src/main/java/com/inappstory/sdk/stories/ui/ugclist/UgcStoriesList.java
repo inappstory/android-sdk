@@ -207,8 +207,9 @@ public class UgcStoriesList extends RecyclerView {
     OnItemTouchListener itemTouchListener;
 
     private boolean hasSessionUGC() {
-        InAppStoryService service = InAppStoryService.getInstance();
-        return service != null && service.getSession().allowUGC();
+        InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
+        if (inAppStoryManager == null) return false;
+        return inAppStoryManager.iasCore().sessionManager().getSession().allowUGC();
     }
 
     void sendIndexes() {

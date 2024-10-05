@@ -913,22 +913,7 @@ public class InAppStoryManager {
     }
 
     public void preloadGames() {
-        Runnable preloading = new Runnable() {
-            @Override
-            public void run() {
-                InAppStoryService.useInstance(new UseServiceInstanceCallback() {
-                    @Override
-                    public void use(@NonNull InAppStoryService service) throws Exception {
-                        service.restartGamePreloader();
-                    }
-                });
-            }
-        };
-        if (InAppStoryService.getInstance() == null) {
-            new Handler().postDelayed(preloading, 1000);
-        } else {
-            preloading.run();
-        }
+        core.contentPreload().restartGamePreloader();
     }
 
 
@@ -1024,7 +1009,6 @@ public class InAppStoryManager {
         this.API_KEY = apiKey;
         this.TEST_KEY = testKey;
         this.userId = userId;
-        localHandler.removeCallbacksAndMessages(null);
         logout();
         if (ApiSettings.getInstance().hostIsDifferent(cmsUrl)) {
             if (networkClient != null) {
@@ -1101,21 +1085,6 @@ public class InAppStoryManager {
         return soundOn;
     }
 
-    private Handler localHandler = new Handler();
-    private Object handlerToken = new Object();
-
-
-    public boolean noCorrectUserIdOrDevice() {
-        if (this.userId == null || StringsUtils.getBytesLength(this.userId) > 255) {
-            showELog(IAS_ERROR_TAG, StringsUtils.getErrorStringFromContext(context, R.string.ias_setter_user_length_error));
-            return true;
-        }
-        if (!isDeviceIDEnabled && userId.isEmpty()) {
-            showELog(IAS_ERROR_TAG, StringsUtils.getErrorStringFromContext(context, R.string.ias_usage_without_user_and_device));
-            return true;
-        }
-        return false;
-    }
 
     public void getStackFeed(
             final String feed,
@@ -1124,147 +1093,7 @@ public class InAppStoryManager {
             final AppearanceManager appearanceManager,
             final IStackFeedResult stackFeedResult
     ) {
-        if (noCorrectUserIdOrDevice()) return;
-        if (tags != null && StringsUtils.getBytesLength(TextUtils.join(",", tags)) > TAG_LIMIT) {
-            showELog(IAS_ERROR_TAG, StringsUtils.getErrorStringFromContext(context, R.string.ias_setter_tags_length_error));
-            stackFeedResult.error();
-            return;
-        }
-        final String localFeed;
-        if (feed != null && !feed.isEmpty()) localFeed = feed;
-        else localFeed = "default";
-        final String localUniqueStackId = (uniqueStackId != null) ? uniqueStackId : localFeed;
-        final AppearanceManager localAppearanceManager =
-                appearanceManager != null ? appearanceManager
-                        : AppearanceManager.getCommonInstance();
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service == null) {
-            localHandler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    getStackFeed(feed, uniqueStackId, tags, appearanceManager, stackFeedResult);
-                }
-            }, 1000);
-            return;
-        }
-        if (networkClient == null) {
-            stackFeedResult.error();
-            return;
-        }
-        core.sessionManager().useOrOpenSession(new OpenSessionCallback() {
-            @Override
-            public void onSuccess(final String sessionId) {
-                String localTags = null;
-                if (tags != null) {
-                    localTags = TextUtils.join(",", tags);
-                } else if (getTags() != null) {
-                    localTags = TextUtils.join(",", getTags());
-                }
-                networkClient.enqueue(
-                        networkClient.getApi().getFeed(
-                                localFeed,
-                                ApiSettings.getInstance().getTestKey(),
-                                0,
-                                localTags == null ? getTagsString() : localTags,
-                                null,
-                                null//"feed_info"
-                        ),
-                        new LoadFeedCallback() {
-                            @Override
-                            public void onSuccess(final Feed response) {
-                                if (response == null || response.stories == null) {
-                                    stackFeedResult.error();
-                                } else {
-                                    InAppStoryService.useInstance(new UseServiceInstanceCallback() {
-                                        @Override
-                                        public void use(@NonNull InAppStoryService service) throws Exception {
-                                            service.saveStoriesOpened(response.stories, Story.StoryType.COMMON);
-                                            service.getStoryDownloadManager().uploadingAdditional(
-                                                    response.stories,
-                                                    Story.StoryType.COMMON
-                                            );
-                                        }
-                                    });
-                                    final StackStoryObserver observer = new StackStoryObserver(
-                                            core,
-                                            response.stories,
-                                            sessionId,
-                                            localAppearanceManager,
-                                            localUniqueStackId,
-                                            localFeed,
-                                            new StackStoryUpdatedCallback() {
-                                                @Override
-                                                public void onUpdate(IStackStoryData newStackStoryData) {
-                                                    stackFeedResult.update(newStackStoryData);
-                                                }
-                                            }
-                                    );
-
-                                    final IStackFeedActions stackFeedActions = new IStackFeedActions() {
-                                        @Override
-                                        public void openReader(Context context) {
-                                            observer.openReader(context);
-                                        }
-
-                                        @Override
-                                        public void unsubscribe() {
-                                            observer.unsubscribe();
-                                        }
-                                    };
-                                    if (response.stories.size() == 0) {
-                                        stackFeedResult.success(null, stackFeedActions);
-                                        return;
-                                    }
-                                    final Runnable loadObserver = new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            observer.subscribe();
-                                            observer.onLoad(new StackStoryUpdatedCallback() {
-                                                @Override
-                                                public void onUpdate(IStackStoryData newStackStoryData) {
-                                                    stackFeedResult.success(
-                                                            newStackStoryData,
-                                                            stackFeedActions
-                                                    );
-                                                }
-                                            });
-                                        }
-                                    };
-                                    Image feedCover = response.getProperCover(localAppearanceManager.csCoverQuality());
-                                    if (feedCover != null) {
-                                        observer.feedCover = feedCover.getUrl();
-                                        loadObserver.run();
-                                      /*  Downloader.downloadFileAndSendToInterface(feedCover.getUrl(), new RunnableCallback() {
-                                            @Override
-                                            public void run(String coverPath) {
-                                                observer.feedCover = coverPath;
-                                                loadObserver.run();
-                                            }
-
-                                            @Override
-                                            public void error() {
-                                                loadObserver.run();
-                                            }
-                                        });*/
-                                    } else {
-                                        loadObserver.run();
-                                    }
-                                }
-                            }
-
-                            @Override
-                            public void onError(int code, String message) {
-                                stackFeedResult.error();
-                            }
-                        }
-                );
-            }
-
-            @Override
-            public void onError() {
-                stackFeedResult.error();
-            }
-        });
+        core.stackFeedAPI().get(feed, uniqueStackId, appearanceManager, tags, stackFeedResult);
     }
 
     /**

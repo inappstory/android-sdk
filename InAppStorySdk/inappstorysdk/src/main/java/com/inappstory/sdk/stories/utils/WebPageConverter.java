@@ -103,26 +103,32 @@ public class WebPageConverter {
         final String[] newLayout = {layout};
         InAppStoryService.useInstance(new UseServiceInstanceCallback() {
             @Override
-            public void use(@NonNull InAppStoryService service) throws Exception {
-                List<SessionAsset> assets = service.getSession().getSessionAssets();
-                for (final SessionAsset asset : assets) {
-                    new SessionAssetLocalUseCase(
-                            service.getFilesDownloadManager(),
-                            new UseCaseCallback<File>() {
-                                @Override
-                                public void onError(String message) {
+            public void use(@NonNull final InAppStoryService service) throws Exception {
+                InAppStoryManager.useCore(new UseIASCoreCallback() {
+                    @Override
+                    public void use(@NonNull IASCore core) {
+                        List<SessionAsset> assets = core.sessionManager().getSession().getSessionAssets();
+                        for (final SessionAsset asset : assets) {
+                            new SessionAssetLocalUseCase(
+                                    service.getFilesDownloadManager(),
+                                    new UseCaseCallback<File>() {
+                                        @Override
+                                        public void onError(String message) {
 
-                                }
+                                        }
 
-                                @Override
-                                public void onSuccess(File result) {
-                                    newLayout[0] = newLayout[0].replace(asset.replaceKey,
-                                            "file://" + result.getAbsolutePath());
-                                }
-                            },
-                            asset
-                    ).getFile();
-                }
+                                        @Override
+                                        public void onSuccess(File result) {
+                                            newLayout[0] = newLayout[0].replace(asset.replaceKey,
+                                                    "file://" + result.getAbsolutePath());
+                                        }
+                                    },
+                                    asset
+                            ).getFile();
+                        }
+                    }
+                });
+
             }
         });
         return newLayout[0];
@@ -138,7 +144,7 @@ public class WebPageConverter {
             @Override
             public void use(@NonNull IASCore core) {
                 Map<String, Pair<ImagePlaceholderValue, ImagePlaceholderValue>> imgPlaceholders =
-                        ((IASDataSettingsHolder)core.settingsAPI()).imagePlaceholdersWithSessionDefaults();
+                        ((IASDataSettingsHolder) core.settingsAPI()).imagePlaceholdersWithSessionDefaults();
                 Map<String, String> imgPlaceholderKeys = story.getPlaceholdersList(index, "image-placeholder");
                 for (Map.Entry<String, String> entry : imgPlaceholderKeys.entrySet()) {
                     String placeholderKey = entry.getKey();
@@ -191,7 +197,7 @@ public class WebPageConverter {
         InAppStoryManager manager = InAppStoryManager.getInstance();
         if (manager != null) {
             Map<String, String> localPlaceholders =
-                    ((IASDataSettingsHolder)manager.iasCore().settingsAPI()).placeholders();
+                    ((IASDataSettingsHolder) manager.iasCore().settingsAPI()).placeholders();
             for (String key : localPlaceholders.keySet()) {
                 String modifiedKey = "%" + key + "%";
                 String value = localPlaceholders.get(key);

@@ -66,6 +66,7 @@ import com.inappstory.sdk.game.cache.UseCaseCallback;
 import com.inappstory.sdk.game.cache.UseCaseWarnCallback;
 import com.inappstory.sdk.game.ui.GameProgressLoader;
 import com.inappstory.sdk.game.utils.GameConstants;
+import com.inappstory.sdk.imageloader.ImageLoader;
 import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.inner.share.InnerShareFilesPrepare;
 import com.inappstory.sdk.inner.share.ShareFilesPrepareCallback;
@@ -1234,17 +1235,16 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         if (splashFile == null || !splashFile.exists()) {
             loader.setBackgroundColor(Color.BLACK);
         } else {
-            Log.e("Loader", "Static " + splashFile.getAbsolutePath());
-            new GetBitmapFromCacheWithFilePath(
+            new ImageLoader().getBitmapFromFilePath(
                     splashFile.getAbsolutePath(),
                     new IGetBitmapFromMemoryCache() {
                         @Override
                         public void get(Bitmap bitmap) {
                             loader.setImageBitmap(bitmap);
                         }
-                    }
-            ).get();
-            //     ImageLoader.getInstance().displayImage(splashFile.getAbsolutePath(), -1, loader);
+                    },
+                    null
+            );
         }
     }
 

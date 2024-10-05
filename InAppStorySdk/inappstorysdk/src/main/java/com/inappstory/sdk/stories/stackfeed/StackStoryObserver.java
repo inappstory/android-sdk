@@ -99,6 +99,7 @@ public class StackStoryObserver implements IStackFeedActions {
             coverCompleteCallback.onComplete();
         } else {
             if (image != null) {
+
                 Downloader.downloadFileAndSendToInterface(image,
                         new RunnableCallback() {
                             @Override

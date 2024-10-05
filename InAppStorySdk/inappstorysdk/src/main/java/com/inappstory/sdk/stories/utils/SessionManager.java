@@ -134,13 +134,7 @@ public class SessionManager {
                 manager.restartSchedule();
             }
         });
-        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
-            @Override
-            public void use(@NonNull InAppStoryService service) throws Exception {
-                service.restartV1Stat();
-                service.downloadSessionAssets(response.sessionAssets);
-            }
-        });
+        core.contentPreload().downloadSessionAssets(response.sessionAssets);
     }
 
     public void openStatisticSuccess(SessionResponse response) {

@@ -5,6 +5,7 @@ import android.os.Handler;
 import android.os.Looper;
 
 
+import androidx.annotation.NonNull;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -12,50 +13,36 @@ import java.util.concurrent.Executors;
 public class GetBitmapFromCacheWithFilePath {
 
     public GetBitmapFromCacheWithFilePath(
-            String filePath,
+            @NonNull String filePath,
             IGetBitmapFromMemoryCache cacheSuccess,
             IGetBitmapFromMemoryCacheError cacheError
     ) {
-        this.cacheSuccess = cacheSuccess;
-        this.cacheError = cacheError;
+        if (cacheSuccess == null) {
+            this.cacheSuccess = new IGetBitmapFromMemoryCache() {
+                @Override
+                public void get(Bitmap bitmap) {
+
+                }
+            };
+        } else {
+            this.cacheSuccess = cacheSuccess;
+        }
+        if (cacheError == null) {
+            this.cacheError = new IGetBitmapFromMemoryCacheError() {
+                @Override
+                public void onError() {
+
+                }
+            };
+        } else {
+            this.cacheError = cacheError;
+        }
         this.filePath = filePath;
     }
 
-    public GetBitmapFromCacheWithFilePath(
-            String filePath,
-            IGetBitmapFromMemoryCache cacheSuccess
-    ) {
-        this.cacheSuccess = cacheSuccess;
-        this.cacheError = new IGetBitmapFromMemoryCacheError() {
-            @Override
-            public void onError() {
-
-            }
-        };
-        this.filePath = filePath;
-    }
-
-    public GetBitmapFromCacheWithFilePath(
-            String filePath
-    ) {
-        this.cacheSuccess = new IGetBitmapFromMemoryCache() {
-            @Override
-            public void get(Bitmap bitmap) {
-
-            }
-        };
-        this.cacheError = new IGetBitmapFromMemoryCacheError() {
-            @Override
-            public void onError() {
-
-            }
-        };
-        this.filePath = filePath;
-    }
-
-    private String filePath;
-    private IGetBitmapFromMemoryCache cacheSuccess;
-    private IGetBitmapFromMemoryCacheError cacheError;
+    private final String filePath;
+    private final IGetBitmapFromMemoryCache cacheSuccess;
+    private final IGetBitmapFromMemoryCacheError cacheError;
     private static final ExecutorService fileSystemThread = Executors.newFixedThreadPool(1);
     private static final BitmapCacheHolder bitmapCacheHolder = new BitmapCacheHolder();
 
