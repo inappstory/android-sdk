@@ -100,10 +100,6 @@ public class ScreensManager {
         }
     }
 
-    public void clearShareIds() {
-        shareCompleteListener(null);
-    }
-
     public void setTempShareStatus(boolean tempShareStatus) {
         this.tempShareStatus = tempShareStatus;
     }

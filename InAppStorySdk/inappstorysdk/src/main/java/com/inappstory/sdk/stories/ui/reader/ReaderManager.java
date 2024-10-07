@@ -17,6 +17,7 @@ import com.inappstory.sdk.UseManagerInstanceCallback;
 import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.game.cache.SessionAssetsIsReadyCallback;
 import com.inappstory.sdk.inner.share.InnerShareData;
+import com.inappstory.sdk.share.IShareCompleteListener;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
@@ -480,10 +481,13 @@ public class ReaderManager {
                 pageManager.unlockShareButton();
             }
         }
-
-        ScreensManager.getInstance().shareCompleteListener().complete(result);
-
-        ScreensManager.getInstance().clearShareIds();
+        ScreensManager screensManager = ScreensManager.getInstance();
+        IShareCompleteListener shareCompleteListener =
+                screensManager.shareCompleteListener();
+        if (shareCompleteListener != null) {
+            shareCompleteListener.complete(result);
+            screensManager.shareCompleteListener(null);
+        }
     }
 
     public int getCurrentStoryId() {

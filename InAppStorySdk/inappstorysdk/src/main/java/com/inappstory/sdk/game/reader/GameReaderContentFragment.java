@@ -1253,16 +1253,16 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
             public void run() {
                 boolean shared = false;
                 if (data.containsKey("shared")) shared = (boolean) data.get("shared");
+                ScreensManager screensManager = ScreensManager.getInstance();
                 IShareCompleteListener shareCompleteListener =
-                        ScreensManager.getInstance().shareCompleteListener();
+                        screensManager.shareCompleteListener();
                 if (shareCompleteListener != null) {
                     shareCompleteListener.complete(shared);
+                    screensManager.shareCompleteListener(null);
                 }
                 if (!shared)
                     resumeGame();
                 shareViewIsShown = false;
-
-                ScreensManager.getInstance().clearShareIds();
 
             }
         });
