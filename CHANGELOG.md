@@ -1,6 +1,17 @@
 Change Log
 ==========
 
+Version *1.20.0 (950)*
+----------------------------
+* Updated: changed ICustomGoodsWidget's getSkus and onItemClick signature (extended with widgetView parameter)
+* Updated: changed ShareCallback's onBackPress signature (extended with widgetView parameter)
+* Updated: added onDestroyView in ShareCallback
+
+Version *1.19.7 (917)*
+----------------------------
+* Fixed: partial fix memory leaks (share callbacks)
+* Added: close story reader from JS (SDK only)
+
 Version *1.19.6 (916)*
 ----------------------------
 * Fixed: dialog proportions and animation for tablets
