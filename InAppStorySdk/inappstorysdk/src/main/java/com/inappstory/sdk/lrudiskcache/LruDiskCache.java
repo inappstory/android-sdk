@@ -18,10 +18,6 @@ public class LruDiskCache {
 
     public CacheType cacheType;
 
-    private static LruDiskCache fastCache;
-    private static LruDiskCache commonCache;
-    private static LruDiskCache infiniteCache;
-
     public static final long MB_1 = 1024 * 1024;
     public static final long MB_5 = 5 * MB_1;
     public static final long MB_10 = 10 * MB_1;
@@ -47,14 +43,6 @@ public class LruDiskCache {
         this.cacheType = cacheType;
     }
 
-    public void put(String key, File file) throws IOException {
-        throw new NoSuchMethodError();
-    }
-
-    public void put(String key, File file, long fileSize, long downloadedSize) throws IOException {
-        throw new NoSuchMethodError();
-
-    }
 
     public void put(CacheJournalItem item) throws IOException {
         put(item, null);

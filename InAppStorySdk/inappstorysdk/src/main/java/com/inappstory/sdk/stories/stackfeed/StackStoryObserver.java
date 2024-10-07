@@ -257,9 +257,9 @@ public class StackStoryObserver implements IStackFeedActions {
         InAppStoryService service = InAppStoryService.getInstance();
         InAppStoryManager manager = InAppStoryManager.getInstance();
         if (manager == null) return;
-        if (service == null) return;
         final Story currentStory = stories.get(oldIndex);
-        Story current = service.getStoryDownloadManager().getStoryById(currentStory.id, Story.StoryType.COMMON);
+        Story current = core.contentLoader().storyDownloadManager()
+                .getStoryById(currentStory.id, Story.StoryType.COMMON);
         boolean currentStoryIsOpened = true;
         if (current != null) {
             currentStoryIsOpened = current.isOpened;
@@ -322,7 +322,7 @@ public class StackStoryObserver implements IStackFeedActions {
             );
             if (current != null) {
                 current.isOpened = true;
-                current.saveStoryOpened(Story.StoryType.COMMON);
+                core.storyListCache().saveStoryOpened(currentStory.id, Story.StoryType.COMMON);
             }
         } else if (currentStory.getGameInstanceId() != null && !currentStory.getGameInstanceId().isEmpty()) {
             service.getListReaderConnector().changeStory(currentStory.id, listId, showOnlyNewStories);
@@ -356,7 +356,7 @@ public class StackStoryObserver implements IStackFeedActions {
             );
             if (current != null) {
                 current.isOpened = true;
-                current.saveStoryOpened(Story.StoryType.COMMON);
+                core.storyListCache().saveStoryOpened(currentStory.id, Story.StoryType.COMMON);
             }
         } else if (!currentStory.isHideInReader()) {
             List<Integer> readerStories = new ArrayList<>();

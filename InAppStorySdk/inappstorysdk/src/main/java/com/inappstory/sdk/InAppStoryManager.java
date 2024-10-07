@@ -235,7 +235,7 @@ public class InAppStoryManager {
      */
     public List<String> getTags() {
         if (core == null) return new ArrayList<>();
-        return ((IASDataSettingsHolder)core.settingsAPI()).tags();
+        return ((IASDataSettingsHolder) core.settingsAPI()).tags();
     }
 
     //Test
@@ -423,7 +423,7 @@ public class InAppStoryManager {
      */
     public String getTagsString() {
         if (core == null) return "";
-        return TextUtils.join(",", ((IASDataSettingsHolder)core.settingsAPI()).tags());
+        return TextUtils.join(",", ((IASDataSettingsHolder) core.settingsAPI()).tags());
     }
 
     /**
@@ -714,7 +714,6 @@ public class InAppStoryManager {
         InAppStoryService.useInstance(new UseServiceInstanceCallback() {
             @Override
             public void use(@NonNull final InAppStoryService service) throws Exception {
-
                 final String favUID = core.statistic().profiling().addTask("api_favorite_remove_all");
                 networkClient.enqueue(
                         networkClient.getApi().removeAllFavorites(),
@@ -722,10 +721,16 @@ public class InAppStoryManager {
                             @Override
                             public void onSuccess(Response response) {
                                 core.statistic().profiling().setReady(favUID);
-                                service.getStoryDownloadManager()
-                                        .clearAllFavoriteStatus(Story.StoryType.COMMON);
-                                service.getStoryDownloadManager()
-                                        .clearAllFavoriteStatus(Story.StoryType.UGC);
+                                core.contentLoader()
+                                        .storyDownloadManager()
+                                        .clearAllFavoriteStatus(
+                                                Story.StoryType.COMMON
+                                        );
+                                core.contentLoader()
+                                        .storyDownloadManager()
+                                        .clearAllFavoriteStatus(
+                                                Story.StoryType.UGC
+                                        );
                                 service.getFavoriteImages().clear();
                                 service.getListReaderConnector().clearAllFavorites();
                                 core.screensManager().getStoryScreenHolder()
@@ -773,7 +778,7 @@ public class InAppStoryManager {
                             @Override
                             public void onSuccess(Response response) {
                                 core.statistic().profiling().setReady(favUID);
-                                Story story = service.getStoryDownloadManager()
+                                Story story = core.contentLoader().storyDownloadManager()
                                         .getStoryById(storyId, Story.StoryType.COMMON);
                                 if (story != null)
                                     story.favorite = favorite;
@@ -1001,7 +1006,7 @@ public class InAppStoryManager {
                         new ForceCloseReaderCallback() {
                             @Override
                             public void onComplete() {
-                                IASDataSettingsHolder settingsHolder = ((IASDataSettingsHolder)core.settingsAPI());
+                                IASDataSettingsHolder settingsHolder = ((IASDataSettingsHolder) core.settingsAPI());
                                 core.statistic().v1(new GetStatisticV1Callback() {
                                     @Override
                                     public void get(@NonNull IASStatisticV1 manager) {

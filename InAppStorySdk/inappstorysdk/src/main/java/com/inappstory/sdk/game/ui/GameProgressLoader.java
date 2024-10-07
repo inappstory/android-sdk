@@ -12,8 +12,11 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.inappstory.sdk.AppearanceManager;
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.UseServiceInstanceCallback;
+import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.UseIASCoreCallback;
 
 import java.io.File;
 
@@ -36,10 +39,10 @@ public class GameProgressLoader extends RelativeLayout implements IGameProgressL
     }
 
     private void init() {
-        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
-            public void use(@NonNull InAppStoryService service) throws Exception {
-                canUseLottieAnimation = service.hasLottieAnimation();
+            public void use(@NonNull IASCore core) {
+                canUseLottieAnimation = core.externalUtilsAPI().hasLottieAnimation();
             }
         });
         setGravity(Gravity.CENTER);

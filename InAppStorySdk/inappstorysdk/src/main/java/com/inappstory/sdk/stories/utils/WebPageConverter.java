@@ -40,57 +40,19 @@ public class WebPageConverter {
         }
     }
 
-    /*  public void replaceImagesAndLoad(String innerWebData, Story story, final int index, String layout,
-                                       WebPageConvertCallback callback) throws IOException {
-          List<String> imgs = story.getSrcListUrls(index, null);
-          List<String> imgKeys = story.getSrcListKeys(index, null);
-          for (int i = 0; i < imgs.size(); i++) {
-              String img = imgs.get(i);
-              String imgKey = imgKeys.get(i);
-              File file = InAppStoryService.getInstance().getCommonCache().get(img);
-              if (file != null) {
-                  FileInputStream fis = null;
-                  try {
-
-                      if (file.length() > 0) {
-                          fis = new FileInputStream(file);
-                          byte[] imageRaw = new byte[(int) file.length()];
-                          fis.read(imageRaw);
-                          String cType = KeyValueStorage.getString(file.getName());
-                          String image64;
-                          if (cType != null)
-                              image64 = "data:" + cType + ";base64," + Base64.encodeToString(imageRaw, Base64.DEFAULT);
-                          else
-                              image64 = "data:image/jpeg;base64," + Base64.encodeToString(imageRaw, Base64.DEFAULT);
-                          fis.close();
-                          innerWebData = innerWebData.replace(imgKey, image64);
-                      } else {
-                          innerWebData = innerWebData.replace(imgKey, img);
-                      }
-                  } catch (Exception e) {
-                      InAppStoryService.createExceptionLog(e);
-                  }
-              }
-          }
-          try {
-              String wData = layout
-                      .replace("//_ratio = 0.66666666666,", "")
-                      .replace("{{%content}}", innerWebData);
-              callback.onConvert(innerWebData, wData, index);
-          } catch (Exception e) {
-              InAppStoryService.createExceptionLog(e);
-          }
-      }
-  */
-
-    private String replaceStaticResources(String innerWebData, Story story, final int index, LruDiskCache cache) throws IOException {
+    private String replaceStaticResources(
+            IASCore core,
+            String innerWebData,
+            Story story,
+            final int index
+    ) {
         List<ResourceMappingObject> resources = new ArrayList<>();
         resources.addAll(story.staticResources(index));
         for (ResourceMappingObject object : resources) {
             String resource = object.getUrl();
             String resourceKey = object.getKey();
             String key = StringsUtils.md5(resource);
-            File file = cache.getFullFile(key);
+            File file = core.contentLoader().getCommonCache().getFullFile(key);
             if (file != null && file.exists() && file.length() > 0) {
                 resource = "file://" + file.getAbsolutePath();
             }
@@ -99,82 +61,74 @@ public class WebPageConverter {
         return innerWebData;
     }
 
-    private String replaceLayoutAssets(String layout) {
+    private String replaceLayoutAssets(IASCore core, String layout) {
         final String[] newLayout = {layout};
-        InAppStoryManager.useCore(new UseIASCoreCallback() {
-            @Override
-            public void use(@NonNull IASCore core) {
-                List<SessionAsset> assets = core.sessionManager().getSession().getSessionAssets();
-                for (final SessionAsset asset : assets) {
-                    new SessionAssetLocalUseCase(
-                            core.contentLoader().filesDownloadManager(),
-                            new UseCaseCallback<File>() {
-                                @Override
-                                public void onError(String message) {
+        List<SessionAsset> assets = core.sessionManager().getSession().getSessionAssets();
+        for (final SessionAsset asset : assets) {
+            new SessionAssetLocalUseCase(
+                    core.contentLoader().filesDownloadManager(),
+                    new UseCaseCallback<File>() {
+                        @Override
+                        public void onError(String message) {
 
-                                }
+                        }
 
-                                @Override
-                                public void onSuccess(File result) {
-                                    newLayout[0] = newLayout[0].replace(asset.replaceKey,
-                                            "file://" + result.getAbsolutePath());
-                                }
-                            },
-                            asset
-                    ).getFile();
-                }
-            }
-        });
+                        @Override
+                        public void onSuccess(File result) {
+                            newLayout[0] = newLayout[0].replace(asset.replaceKey,
+                                    "file://" + result.getAbsolutePath());
+                        }
+                    },
+                    asset
+            ).getFile();
+        }
         return newLayout[0];
     }
 
-    private String replaceImagePlaceholders(String innerWebData,
+    private String replaceImagePlaceholders(IASCore core,
+                                            String innerWebData,
                                             final Story story,
-                                            final int index,
-                                            final LruDiskCache cache
-    ) throws IOException {
+                                            final int index
+    ) {
         final String[] newData = {innerWebData};
-        InAppStoryManager.useCore(new UseIASCoreCallback() {
-            @Override
-            public void use(@NonNull IASCore core) {
-                Map<String, Pair<ImagePlaceholderValue, ImagePlaceholderValue>> imgPlaceholders =
-                        ((IASDataSettingsHolder) core.settingsAPI()).imagePlaceholdersWithSessionDefaults();
-                Map<String, String> imgPlaceholderKeys = story.getPlaceholdersList(index, "image-placeholder");
-                for (Map.Entry<String, String> entry : imgPlaceholderKeys.entrySet()) {
-                    String placeholderKey = entry.getKey();
-                    String placeholderName = entry.getValue();
-                    if (placeholderKey != null && placeholderName != null) {
-                        Pair<ImagePlaceholderValue, ImagePlaceholderValue> placeholderValue
-                                = imgPlaceholders.get(placeholderName);
-                        if (placeholderValue != null) {
-                            String path = "";
-                            if (placeholderValue.first.getType() == ImagePlaceholderType.URL) {
-                                String uniqueKey = StringsUtils.md5(placeholderValue.first.getUrl());
-                                File file = cache.getFullFile(uniqueKey);
+        Map<String, Pair<ImagePlaceholderValue, ImagePlaceholderValue>> imgPlaceholders =
+                ((IASDataSettingsHolder) core.settingsAPI()).imagePlaceholdersWithSessionDefaults();
+        Map<String, String> imgPlaceholderKeys = story.getPlaceholdersList(index, "image-placeholder");
+        for (Map.Entry<String, String> entry : imgPlaceholderKeys.entrySet()) {
+            String placeholderKey = entry.getKey();
+            String placeholderName = entry.getValue();
+            if (placeholderKey != null && placeholderName != null) {
+                Pair<ImagePlaceholderValue, ImagePlaceholderValue> placeholderValue
+                        = imgPlaceholders.get(placeholderName);
+                if (placeholderValue != null) {
+                    String path = "";
+                    if (placeholderValue.first.getType() == ImagePlaceholderType.URL) {
+                        String uniqueKey = StringsUtils.md5(placeholderValue.first.getUrl());
+                        File file = core.contentLoader().getCommonCache().getFullFile(uniqueKey);
+                        if (file != null && file.exists() && file.length() > 0) {
+                            path = "file://" + file.getAbsolutePath();
+                        } else {
+                            if (placeholderValue.second.getType() == ImagePlaceholderType.URL) {
+                                uniqueKey = StringsUtils.md5(placeholderValue.second.getUrl());
+                                file = core.contentLoader().getCommonCache().getFullFile(uniqueKey);
                                 if (file != null && file.exists() && file.length() > 0) {
                                     path = "file://" + file.getAbsolutePath();
-                                } else {
-                                    if (placeholderValue.second.getType() == ImagePlaceholderType.URL) {
-                                        uniqueKey = StringsUtils.md5(placeholderValue.second.getUrl());
-                                        file = cache.getFullFile(uniqueKey);
-                                        if (file != null && file.exists() && file.length() > 0) {
-                                            path = "file://" + file.getAbsolutePath();
-                                        }
-                                    }
                                 }
                             }
-                            newData[0] = newData[0].replace(placeholderKey, path);
                         }
                     }
+                    newData[0] = newData[0].replace(placeholderKey, path);
                 }
             }
-        });
+        }
 
         return newData[0];
     }
 
-    public void replaceEmptyAndLoad(int index, String layout,
-                                    WebPageConvertCallback callback) {
+    public void replaceEmptyAndLoad(
+            IASCore core,
+            int index, String layout,
+            WebPageConvertCallback callback) {
         try {
             String wData = layout
                     .replace("//_ratio = 0.66666666666,", "")
@@ -185,71 +139,50 @@ public class WebPageConverter {
         }
     }
 
-    private Pair<String, String> replacePlaceholders(String outerData, String outerLayout) {
+    private Pair<String, String> replacePlaceholders(
+            IASCore core,
+            String outerData,
+            String outerLayout
+    ) {
         String tmpData = outerData;
         String tmpLayout = outerLayout;
-        InAppStoryManager manager = InAppStoryManager.getInstance();
-        if (manager != null) {
-            Map<String, String> localPlaceholders =
-                    ((IASDataSettingsHolder) manager.iasCore().settingsAPI()).placeholders();
-            for (String key : localPlaceholders.keySet()) {
-                String modifiedKey = "%" + key + "%";
-                String value = localPlaceholders.get(key);
-                if (value != null) {
-                    tmpData = tmpData.replace(modifiedKey, value);
-                    tmpLayout = tmpLayout.replace(modifiedKey, value);
-                }
+        Map<String, String> localPlaceholders =
+                ((IASDataSettingsHolder) core.settingsAPI()).placeholders();
+        for (String key : localPlaceholders.keySet()) {
+            String modifiedKey = "%" + key + "%";
+            String value = localPlaceholders.get(key);
+            if (value != null) {
+                tmpData = tmpData.replace(modifiedKey, value);
+                tmpLayout = tmpLayout.replace(modifiedKey, value);
             }
         }
         return new Pair<>(tmpData, tmpLayout);
     }
 
-    public void replaceDataAndLoad(String innerWebData, Story story, int index, String layout,
-                                   WebPageConvertCallback callback) throws IOException {
-        String localData = innerWebData;
-        String newLayout = layout;
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service != null) {
-            LruDiskCache cache = service.getCommonCache();
-            localData = replaceStaticResources(localData, story, index, cache);
-            service.addVODResources(story, index);
-            localData = replaceImagePlaceholders(localData, story, index, cache);
-            newLayout = replaceLayoutAssets(layout);
-            Pair<String, String> replaced = replacePlaceholders(localData, newLayout);
-            newLayout = replaced.second;
-            localData = replaced.first;
-        }
-
-        /*for (int i = 0; i < imgs.size(); i++) {
-            String img = imgs.get(i);
-            String imgKey = imgKeys.get(i);
-            File file = cache.get(img);
-            if (file != null && file.exists() && file.length() > 0) {
-                FileInputStream fis = null;
+    public void replaceDataAndLoad(final String innerWebData, final Story story, final int index, final String layout,
+                                   final WebPageConvertCallback callback) {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                String localData = innerWebData;
+                String newLayout = layout;
+                localData = replaceStaticResources(core, localData, story, index);
+                core.contentLoader().addVODResources(story, index);
+                localData = replaceImagePlaceholders(core, localData, story, index);
+                newLayout = replaceLayoutAssets(core, layout);
+                Pair<String, String> replaced = replacePlaceholders(core, localData, newLayout);
+                newLayout = replaced.second;
+                localData = replaced.first;
                 try {
-                    fis = new FileInputStream(file);
-                    byte[] imageRaw = new byte[(int) file.length()];
-                    fis.read(imageRaw);
-                    String cType = KeyValueStorage.getString(file.getName());
-                    String image64;
-                    if (cType != null)
-                        image64 = "data:" + cType + ";base64," + Base64.encodeToString(imageRaw, Base64.DEFAULT);
-                    else
-                        image64 = "data:image/jpeg;base64," + Base64.encodeToString(imageRaw, Base64.DEFAULT);
-                    fis.close();
-                    innerWebData = innerWebData.replace(imgKey, image64);
+                    String wData = newLayout
+                            .replace("//_ratio = 0.66666666666,", "")
+                            .replace("{{%content}}", localData);
+                    callback.onConvert(localData, wData, index);
                 } catch (Exception e) {
                     InAppStoryService.createExceptionLog(e);
                 }
             }
-        }*/
-        try {
-            String wData = newLayout
-                    .replace("//_ratio = 0.66666666666,", "")
-                    .replace("{{%content}}", localData);
-            callback.onConvert(localData, wData, index);
-        } catch (Exception e) {
-            InAppStoryService.createExceptionLog(e);
-        }
+        });
+
     }
 }

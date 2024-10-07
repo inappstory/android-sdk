@@ -241,8 +241,6 @@ public class StoriesList extends RecyclerView {
             }
         });
 
-        InAppStoryManager.debugSDKCalls("StoriesList_onAttachedToWindow", ""
-                + InAppStoryService.isNotNull());
         InAppStoryService.checkAndAddListSubscriber(manager);
         manager.checkCurrentSession();
     }
@@ -397,9 +395,9 @@ public class StoriesList extends RecyclerView {
                             currentPercentage = Math.max(currentPercentage, cachedData.areaPercent);
                         }
                         Story current = null;
-                        InAppStoryService service = InAppStoryService.getInstance();
-                        if (service != null)
-                            current = service.getStoryDownloadManager()
+                        InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
+                        if (inAppStoryManager != null)
+                            current = inAppStoryManager.iasCore().contentLoader().storyDownloadManager()
                                     .getStoryById(adapter.getStoriesIds().get(ind), Story.StoryType.COMMON);
                         if (current != null && currentPercentage > 0) {
                             scrolledItems.put(i, new ShownStoriesListItem(
@@ -694,10 +692,11 @@ public class StoriesList extends RecyclerView {
 
     private List<StoryData> getStoriesData(List<Integer> storiesIds) {
         List<StoryData> data = new ArrayList<>();
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service != null)
+        InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
+        if (inAppStoryManager != null)
             for (int id : storiesIds) {
-                Story story = service.getStoryDownloadManager().getStoryById(id, Story.StoryType.COMMON);
+                Story story = inAppStoryManager.iasCore().contentLoader()
+                        .storyDownloadManager().getStoryById(id, Story.StoryType.COMMON);
                 if (story != null) {
                     data.add(new StoryData(story, feed, SourceType.LIST));
                 }
@@ -832,7 +831,7 @@ public class StoriesList extends RecyclerView {
                     callback.loadError(StringsUtils.getNonNull(getFeed()));
             }
         };
-        InAppStoryService.getInstance().getStoryDownloadManager().loadStories(
+        core.contentLoader().storyDownloadManager().loadStories(
                 getFeed(),
                 lcallback,
                 null,

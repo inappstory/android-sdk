@@ -6,7 +6,6 @@ import android.util.Pair;
 
 import androidx.annotation.NonNull;
 
-import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
@@ -83,10 +82,8 @@ class SlidesDownloader {
 
     int checkIfPageLoaded(SlideTaskData key) throws IOException { //0 - not loaded, 1 - loaded, -1 - loaded with error
         boolean remove = false;
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service == null) return 0;
-        LruDiskCache cache = service.getCommonCache();
-        LruDiskCache vodCache = service.getVodCache();
+        LruDiskCache cache = core.contentLoader().getCommonCache();
+        LruDiskCache vodCache = core.contentLoader().getVodCache();
         SlideTask slideTask = pageTasks.get(key);
         if (slideTask != null) {
             if (slideTask.loadType == 2) {

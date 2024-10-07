@@ -114,8 +114,7 @@ public class InAppStoryAPISubscribersManager {
         InAppStoryService service = InAppStoryService.getInstance();
         InAppStoryManager manager = InAppStoryManager.getInstance();
         if (manager == null) return;
-        if (service == null) return;
-        final Story currentStory = service.getStoryDownloadManager().getStoryById(storyId, Story.StoryType.COMMON);
+        final Story currentStory = core.contentLoader().storyDownloadManager().getStoryById(storyId, Story.StoryType.COMMON);
         if (currentStory == null)
             return;
         final IASStoryListRequestData requestData = requestsData.get(uniqueKey);
@@ -123,12 +122,12 @@ public class InAppStoryAPISubscribersManager {
             return;
         List<Story> stories = new ArrayList<>();
         for (StoryAPIData apiData : storyAPIDataList) {
-            Story story = service.getStoryDownloadManager().getStoryById(apiData.id, Story.StoryType.COMMON);
+            Story story = core.contentLoader().storyDownloadManager().getStoryById(apiData.id, Story.StoryType.COMMON);
             if (story == null) return;
             stories.add(story);
         }
         currentStory.isOpened = true;
-        currentStory.saveStoryOpened(Story.StoryType.COMMON);
+        core.storyListCache().saveStoryOpened(currentStory.id, Story.StoryType.COMMON);
         String sessionId = core.sessionManager().getSession().getSessionId();
         if (currentStory.getDeeplink() != null && !currentStory.getDeeplink().isEmpty()) {
             service.getListReaderConnector().changeStory(currentStory.id, uniqueKey, false);
@@ -264,7 +263,7 @@ public class InAppStoryAPISubscribersManager {
         InAppStoryService.useInstance(new UseServiceInstanceCallback() {
             @Override
             public void use(@NonNull final InAppStoryService service) throws Exception {
-                final StoryDownloadManager downloadManager = service.getStoryDownloadManager();
+                final StoryDownloadManager downloadManager = core.contentLoader().storyDownloadManager();
                 downloadManager.loadStories(
                         data.feed,
                         new LoadStoriesCallback() {
@@ -423,54 +422,50 @@ public class InAppStoryAPISubscribersManager {
 
 
     private void cacheStoryCover(final Integer storyId) {
-        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
-            @Override
-            public void use(@NonNull final InAppStoryService service) throws Exception {
-                final Story story = service.getStoryDownloadManager().getStoryById(storyId, Story.StoryType.COMMON);
-                if (story != null) {
-                    Image storyImage = story.getProperImage(AppearanceManager.getCommonInstance().csCoverQuality());
-                    final String image;
-                    if (storyImage != null)
-                        image = storyImage.getUrl();
-                    else
-                        image = null;
-                    String localImage = null;
-                    String localVideo = null;
-                    if (image != null && !image.isEmpty()) {
-                        localImage = urlLocalPath.get(image);
-                        if (localImage == null) {
-                            new CustomFileLoader()
-                                    .getFileLinkFromUrl(image, new SuccessUseCaseCallback<String>() {
-                                                @Override
-                                                public void onSuccess(String path) {
-                                                    urlLocalPath.put(image, path);
-                                                    updateStory(story, path, null);
-                                                }
-                                            }
-                                    );
-                        }
-                    }
-                    final String video = story.getVideoUrl();
-                    if (video != null && !video.isEmpty()) {
-                        localVideo = urlLocalPath.get(video);
-                        if (localVideo == null) {
-                            new CustomFileLoader()
-                                    .getFileLinkFromUrl(video, new SuccessUseCaseCallback<String>() {
-                                                @Override
-                                                public void onSuccess(String path) {
-                                                    urlLocalPath.put(video, path);
-                                                    updateStory(story, null, path);
-                                                }
-                                            }
-                                    );
-                        }
-                    }
-                    if (localImage != null && localVideo != null) {
-                        updateStory(story, localImage, localVideo);
-                    }
+        final Story story = core.contentLoader().storyDownloadManager()
+                .getStoryById(storyId, Story.StoryType.COMMON);
+        if (story != null) {
+            Image storyImage = story.getProperImage(AppearanceManager.getCommonInstance().csCoverQuality());
+            final String image;
+            if (storyImage != null)
+                image = storyImage.getUrl();
+            else
+                image = null;
+            String localImage = null;
+            String localVideo = null;
+            if (image != null && !image.isEmpty()) {
+                localImage = urlLocalPath.get(image);
+                if (localImage == null) {
+                    new CustomFileLoader()
+                            .getFileLinkFromUrl(image, new SuccessUseCaseCallback<String>() {
+                                        @Override
+                                        public void onSuccess(String path) {
+                                            urlLocalPath.put(image, path);
+                                            updateStory(story, path, null);
+                                        }
+                                    }
+                            );
                 }
             }
-        });
+            final String video = story.getVideoUrl();
+            if (video != null && !video.isEmpty()) {
+                localVideo = urlLocalPath.get(video);
+                if (localVideo == null) {
+                    new CustomFileLoader()
+                            .getFileLinkFromUrl(video, new SuccessUseCaseCallback<String>() {
+                                        @Override
+                                        public void onSuccess(String path) {
+                                            urlLocalPath.put(video, path);
+                                            updateStory(story, null, path);
+                                        }
+                                    }
+                            );
+                }
+            }
+            if (localImage != null && localVideo != null) {
+                updateStory(story, localImage, localVideo);
+            }
+        }
     }
 
     private final List<Integer> shownStories = new ArrayList<>();
@@ -515,21 +510,15 @@ public class InAppStoryAPISubscribersManager {
     }
 
     public void openStory(final int storyId, final String uniqueId) {
-        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
-            @Override
-            public void use(@NonNull final InAppStoryService service) throws Exception {
-                Story story = service.getStoryDownloadManager().getStoryById(storyId, Story.StoryType.COMMON);
-                if (story != null) {
-                    story.isOpened = true;
-                    updateStory(story, null, null);
-                }
-                IAPISubscriber currentSubscriber = inAppStoryAPISubscribers.get(uniqueId);
-                if (currentSubscriber instanceof InAppStoryAPIListSubscriber) {
-                    currentSubscriber.storyIsOpened(storyId);
-                }
-            }
-        });
-
+        Story story = core.contentLoader().storyDownloadManager().getStoryById(storyId, Story.StoryType.COMMON);
+        if (story != null) {
+            story.isOpened = true;
+            updateStory(story, null, null);
+        }
+        IAPISubscriber currentSubscriber = inAppStoryAPISubscribers.get(uniqueId);
+        if (currentSubscriber instanceof InAppStoryAPIListSubscriber) {
+            currentSubscriber.storyIsOpened(storyId);
+        }
     }
 
     public void readerIsClosed() {
@@ -593,8 +582,6 @@ public class InAppStoryAPISubscribersManager {
 
 
     private void updateFavorites(List<FavoriteImage> favoriteImages) {
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service == null) return;
         List<StoryFavoriteItemAPIData> favoriteItemAPIData = new ArrayList<>();
         for (FavoriteImage favoriteImage : favoriteImages) {
             favoriteItemAPIData.add(new StoryFavoriteItemAPIData(favoriteImage, null));
@@ -614,7 +601,8 @@ public class InAppStoryAPISubscribersManager {
                         }
                     }
                     if (addNew) {
-                        Story story = service.getStoryDownloadManager().getStoryById(favoriteImage.getId(), Story.StoryType.COMMON);
+                        Story story = core.contentLoader().storyDownloadManager()
+                                .getStoryById(favoriteImage.getId(), Story.StoryType.COMMON);
                         if (story == null) return;
                         String imagePath = null;
                         Image storyImage = story.getProperImage(AppearanceManager.getCommonInstance().csCoverQuality());

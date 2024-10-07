@@ -170,16 +170,13 @@ public class IASOnboardingsImpl implements IASOnboardings {
             );
             return;
         }
-
-        InAppStoryService inAppStoryService = InAppStoryService.getInstance();
-        if (inAppStoryService == null) return;
         ArrayList<Story> stories = new ArrayList<Story>();
         ArrayList<Integer> storiesIds = new ArrayList<>();
         stories.addAll(response);
         for (Story story : response) {
             storiesIds.add(story.id);
         }
-        inAppStoryService.getStoryDownloadManager().uploadingAdditional(stories, storyType);
+        core.contentLoader().storyDownloadManager().uploadingAdditional(stories, storyType);
         LaunchStoryScreenData launchData = new LaunchStoryScreenData(
                 null,
                 feed,

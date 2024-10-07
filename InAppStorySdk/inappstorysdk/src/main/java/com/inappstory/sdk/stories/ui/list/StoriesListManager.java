@@ -52,13 +52,13 @@ public class StoriesListManager implements ListManager {
 
 
     public void changeStory(final int storyId, final String listID) {
-        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
-            public void use(@NonNull InAppStoryService service) throws Exception {
-                Story st = service.getStoryDownloadManager().getStoryById(storyId, Story.StoryType.COMMON);
+            public void use(@NonNull IASCore core) {
+                Story st = core.contentLoader().storyDownloadManager().getStoryById(storyId, Story.StoryType.COMMON);
                 if (st == null) return;
                 st.isOpened = true;
-                st.saveStoryOpened(Story.StoryType.COMMON);
+                core.storyListCache().saveStoryOpened(st.id, Story.StoryType.COMMON);
                 checkHandler();
                 post(new Runnable() {
                     @Override
@@ -125,30 +125,29 @@ public class StoriesListManager implements ListManager {
         post(new Runnable() {
             @Override
             public void run() {
-                InAppStoryService.useInstance(new UseServiceInstanceCallback() {
-                    @Override
-                    public void use(@NonNull InAppStoryService service) throws Exception {
-                        List<FavoriteImage> favImages = service.getFavoriteImages();
-                        Story story = service.getStoryDownloadManager().getStoryById(id, Story.StoryType.COMMON);
-                        if (story == null) return;
-                        if (favStatus) {
-                            FavoriteImage favoriteImage = new FavoriteImage(id, story.getImage(), story.getBackgroundColor());
-                            if (!favImages.contains(favoriteImage))
-                                favImages.add(0, favoriteImage);
-                        } else {
-                            for (FavoriteImage favoriteImage : favImages) {
-                                if (favoriteImage.getId() == id) {
-                                    favImages.remove(favoriteImage);
-                                    break;
-                                }
-                            }
-                        }
-                        if (list == null) return;
-                        if (list.getVisibility() != View.VISIBLE) return;
-                        list.favStory(id, favStatus, favImages, isEmpty);
-                    }
-                });
-
+               InAppStoryManager.useCore(new UseIASCoreCallback() {
+                   @Override
+                   public void use(@NonNull IASCore core) {
+                       List<FavoriteImage> favImages = InAppStoryService.getInstance().getFavoriteImages();
+                       Story story = core.contentLoader().storyDownloadManager().getStoryById(id, Story.StoryType.COMMON);
+                       if (story == null) return;
+                       if (favStatus) {
+                           FavoriteImage favoriteImage = new FavoriteImage(id, story.getImage(), story.getBackgroundColor());
+                           if (!favImages.contains(favoriteImage))
+                               favImages.add(0, favoriteImage);
+                       } else {
+                           for (FavoriteImage favoriteImage : favImages) {
+                               if (favoriteImage.getId() == id) {
+                                   favImages.remove(favoriteImage);
+                                   break;
+                               }
+                           }
+                       }
+                       if (list == null) return;
+                       if (list.getVisibility() != View.VISIBLE) return;
+                       list.favStory(id, favStatus, favImages, isEmpty);
+                   }
+               });
             }
         });
     }

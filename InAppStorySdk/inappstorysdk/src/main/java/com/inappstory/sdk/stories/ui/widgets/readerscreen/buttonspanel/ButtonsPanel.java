@@ -6,11 +6,16 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.widget.LinearLayout;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatImageView;
 
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.UseIASCoreCallback;
+import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenAppearance;
 
 public class ButtonsPanel extends LinearLayout {
@@ -65,7 +70,14 @@ public class ButtonsPanel extends LinearLayout {
         favorite.setVisibility(hasFavorite ? VISIBLE : GONE);
         share.setVisibility(hasShare ? VISIBLE : GONE);
         sound.setVisibility(hasSound ? VISIBLE : GONE);
-        sound.setActivated(InAppStoryService.getInstance().isSoundOn());
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                sound.setActivated(
+                        ((IASDataSettingsHolder) core.settingsAPI()).isSoundOn()
+                );
+            }
+        });
         this.isVisible = (hasFavorite || hasLike || hasShare || hasSound);
         setVisibility(VISIBLE);
     }
@@ -81,57 +93,62 @@ public class ButtonsPanel extends LinearLayout {
     }
 
 
-    public void refreshSoundStatus() {
-        sound.setActivated(InAppStoryService.getInstance().isSoundOn());
+    public void refreshSoundStatus(IASCore core) {
+        sound.setActivated(((IASDataSettingsHolder) core.settingsAPI()).isSoundOn());
     }
 
     ButtonsPanelManager manager;
 
     public void init() {
         inflate(getContext(), R.layout.cs_buttons_panel, this);
-        manager = new ButtonsPanelManager(this);
         like = findViewById(R.id.likeButton);
         dislike = findViewById(R.id.dislikeButton);
         favorite = findViewById(R.id.favoriteButton);
         sound = findViewById(R.id.soundButton);
         share = findViewById(R.id.shareButton);
-        if (like != null)
-            like.setOnClickListener(new OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    likeClick();
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                manager = new ButtonsPanelManager(ButtonsPanel.this, core);
+                if (like != null)
+                    like.setOnClickListener(new OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            likeClick();
+                        }
+                    });
+                if (dislike != null)
+                    dislike.setOnClickListener(new OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            dislikeClick();
+                        }
+                    });
+                if (favorite != null)
+                    favorite.setOnClickListener(new OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            favoriteClick();
+                        }
+                    });
+                if (share != null)
+                    share.setOnClickListener(new OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            shareClick();
+                        }
+                    });
+                if (sound != null) {
+                    sound.setOnClickListener(new OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            soundClick();
+                        }
+                    });
+                    sound.setActivated(((IASDataSettingsHolder) core.settingsAPI()).isSoundOn());
                 }
-            });
-        if (dislike != null)
-            dislike.setOnClickListener(new OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    dislikeClick();
-                }
-            });
-        if (favorite != null)
-            favorite.setOnClickListener(new OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    favoriteClick();
-                }
-            });
-        if (share != null)
-            share.setOnClickListener(new OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    shareClick();
-                }
-            });
-        if (sound != null) {
-            sound.setOnClickListener(new OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    soundClick();
-                }
-            });
-            sound.setActivated(InAppStoryService.getInstance().isSoundOn());
-        }
+            }
+        });
     }
 
     @SuppressLint("UseCompatLoadingForDrawables")

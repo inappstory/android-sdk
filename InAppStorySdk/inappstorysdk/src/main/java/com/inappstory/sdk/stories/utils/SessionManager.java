@@ -304,7 +304,8 @@ public class SessionManager {
                                                         ((IASDataSettingsHolder) core.settingsAPI()).tags());
                                         CachedSessionData.setInstance(cachedSessionData);
 
-                                        if (response.preloadGame) service.restartGamePreloader();
+                                        if (response.preloadGame)
+                                            core.contentPreload().restartGamePreloader();
                                     }
 
                                     @Override

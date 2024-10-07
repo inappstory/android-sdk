@@ -102,10 +102,12 @@ public class UgcStoriesList extends RecyclerView {
     @Override
     public void onDetachedFromWindow() {
         super.onDetachedFromWindow();
-        if (InAppStoryService.getInstance() != null) {
-            InAppStoryService.getInstance().removeListSubscriber(manager);
-        } else
-            manager.clear();
+        if (manager != null) {
+            if (InAppStoryService.getInstance() != null) {
+                InAppStoryService.getInstance().removeListSubscriber(manager);
+            } else
+                manager.clear();
+        }
     }
 
     private float mPrevX = 0f;
@@ -139,7 +141,8 @@ public class UgcStoriesList extends RecyclerView {
     @Override
     public void onAttachedToWindow() {
         super.onAttachedToWindow();
-        manager.list = this;
+        if (manager != null)
+            manager.list = this;
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
@@ -153,11 +156,10 @@ public class UgcStoriesList extends RecyclerView {
                 }
             }
         });
-
-        InAppStoryManager.debugSDKCalls("StoriesList_onAttachedToWindow", ""
-                + InAppStoryService.isNotNull());
-        InAppStoryService.checkAndAddListSubscriber(manager);
-        manager.checkCurrentSession();
+        if (manager != null) {
+            InAppStoryService.checkAndAddListSubscriber(manager);
+            manager.checkCurrentSession();
+        }
     }
 
     private void renewCoordinates(final int index) {
@@ -187,7 +189,12 @@ public class UgcStoriesList extends RecyclerView {
 
     private void init(AttributeSet attributeSet) {
         uniqueID = randomUUID().toString();
-        manager = new UgcStoriesListManager();
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                manager = new UgcStoriesListManager(core);
+            }
+        });
         addOnScrollListener(new OnScrollListener() {
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
@@ -368,8 +375,8 @@ public class UgcStoriesList extends RecyclerView {
                                     core.sessionManager().getSession().getSessionId(),
                             new GetStatisticV1Callback() {
                                 @Override
-                                public void get(@NonNull IASStatisticV1 manager) {
-                                    manager.sendStatistic();
+                                public void get(@NonNull IASStatisticV1 statisticV1) {
+                                    statisticV1.sendStatistic();
                                 }
                             }
                     );
@@ -431,10 +438,11 @@ public class UgcStoriesList extends RecyclerView {
 
     private List<StoryData> getStoriesData(List<Integer> storiesIds) {
         List<StoryData> data = new ArrayList<>();
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service != null)
+        InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
+        if (inAppStoryManager != null)
             for (int id : storiesIds) {
-                Story story = service.getStoryDownloadManager().getStoryById(id, Story.StoryType.UGC);
+                Story story = inAppStoryManager.iasCore().contentLoader().storyDownloadManager()
+                        .getStoryById(id, Story.StoryType.UGC);
                 if (story != null) {
                     data.add(new UgcStoryData(story, SourceType.LIST));
                 }
@@ -490,7 +498,7 @@ public class UgcStoriesList extends RecyclerView {
         }
 
         final IASCore core = manager.iasCore();
-        if (((IASDataSettingsHolder)core.settingsAPI()).noCorrectUserIdOrDevice()) return;
+        if (((IASDataSettingsHolder) core.settingsAPI()).noCorrectUserIdOrDevice()) return;
         final InAppStoryService service = InAppStoryService.getInstance();
 
         checkAppearanceManager();
@@ -529,7 +537,7 @@ public class UgcStoriesList extends RecyclerView {
                 if (callback != null) callback.loadError("");
             }
         };
-        service.getStoryDownloadManager().loadUgcStories(lcallback, payload);
+        manager.iasCore().contentLoader().storyDownloadManager().loadUgcStories(lcallback, payload);
 
     }
 

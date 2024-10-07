@@ -20,9 +20,20 @@ import com.inappstory.sdk.stories.ui.goods.GoodsWidgetFragment;
 import com.inappstory.sdk.stories.ui.reader.ActiveStoryItem;
 import com.inappstory.sdk.stories.ui.reader.OverlapFragment;
 
-public class StoryScreenHolder extends AbstractScreenHolder<BaseStoryScreen, LaunchStoryScreenData> implements IOverlapContainerHolder {
+public class StoryScreenHolder extends AbstractScreenHolder<BaseStoryScreen, LaunchStoryScreenData>
+        implements IOverlapContainerHolder {
     private final ShareProcessHandler shareProcessHandler;
     private final IASCore core;
+
+    public int currentOpenedStoryId() {
+        return currentOpenedStoryId;
+    }
+
+    public void currentOpenedStoryId(int currentOpenedStoryId) {
+        this.currentOpenedStoryId = currentOpenedStoryId;
+    }
+
+    private int currentOpenedStoryId;
 
     public StoryScreenHolder(
             IASCore core,

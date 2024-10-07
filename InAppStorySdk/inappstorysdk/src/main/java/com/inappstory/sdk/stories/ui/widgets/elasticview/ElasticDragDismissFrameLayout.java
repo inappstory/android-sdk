@@ -12,8 +12,10 @@ import android.widget.FrameLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.stories.api.models.Story;
 
 import java.util.ArrayList;
@@ -195,8 +197,15 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
 
     @Override
     public void onStopNestedScroll(View child) {
-        Story st = InAppStoryService.getInstance().getStoryDownloadManager()
-                .getStoryById(InAppStoryService.getInstance().getCurrentId(), type);
+        InAppStoryManager manager = InAppStoryManager.getInstance();
+        Story st = null;
+        if (manager != null) {
+            st = manager
+                    .iasCore()
+                    .contentLoader()
+                    .storyDownloadManager()
+                    .getCurrentStory(type);
+        }
         if (totalDisabledDrag > 400) {
             swipeUpCallback();
         } else if (st != null && !st.disableClose && totalDisabledDrag < -400) {

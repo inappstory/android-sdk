@@ -85,9 +85,10 @@ public class StoriesDialogFragment extends DialogFragment implements IASBackPres
                 );
                 InAppStoryService service = InAppStoryService.getInstance();
                 if (service != null) {
-                    final Story story = service.getStoryDownloadManager()
-                            .getStoryById(service.getCurrentId(), type);
-
+                    final Story story = core
+                            .contentLoader()
+                            .storyDownloadManager()
+                            .getCurrentStory(type);
                     if (story != null) {
                         core.callbacksAPI().useCallback(
                                 IASCallbackType.CLOSE_STORY,
@@ -138,16 +139,9 @@ public class StoriesDialogFragment extends DialogFragment implements IASBackPres
                     }
                 }
         );
-        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
-            @Override
-            public void use(@NonNull InAppStoryService service) throws Exception {
-                service.setCurrentIndex(0);
-                service.setCurrentId(0);
-                service.getStoryDownloadManager().cleanStoriesIndex(type);
-                cleaned = true;
-            }
-        });
-
+        core.screensManager().getStoryScreenHolder().currentOpenedStoryId(0);
+        core.contentLoader().storyDownloadManager().cleanStoriesIndex(type);
+        cleaned = true;
     }
 
     @Override

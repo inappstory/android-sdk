@@ -125,7 +125,7 @@ public class StoriesViewManager {
     }
 
     public void changeSoundStatus() {
-        storiesView.changeSoundStatus();
+        storiesView.changeSoundStatus(core);
     }
 
     public int storyId;
@@ -154,8 +154,10 @@ public class StoriesViewManager {
         loadedIndex = oInd;
         loadedId = oId;
         if (alreadyLoaded) return;
-        Story story = InAppStoryService.getInstance() != null ?
-                InAppStoryService.getInstance().getStoryDownloadManager().getStoryById(storyId, pageManager.getStoryType()) : null;
+        Story story = core
+                .contentLoader()
+                .storyDownloadManager()
+                .getStoryById(storyId, pageManager.getStoryType());
         innerLoad(story);
     }
 
@@ -176,7 +178,6 @@ public class StoriesViewManager {
         try {
             setWebViewSettings(story);
         } catch (IOException e) {
-            InAppStoryService.createExceptionLog(e);
         }
     }
 
@@ -272,8 +273,6 @@ public class StoriesViewManager {
     }
 
     public void loadStory(Story story, int index) {
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service == null) return;
         synchronized (this) {
             if (story == null || story.checkIfEmpty()) {
                 return;
@@ -286,7 +285,7 @@ public class StoriesViewManager {
             loadedIndex = index;
             loadedId = storyId;
         }
-        slideInCache = service.getStoryDownloadManager().checkIfPageLoaded(
+        slideInCache = core.contentLoader().storyDownloadManager().checkIfPageLoaded(
                 storyId,
                 index,
                 pageManager.getStoryType());
@@ -298,7 +297,7 @@ public class StoriesViewManager {
     }
 
     private void slideInCache(final Story story, final int index) {
-        ISessionHolder sessionHolder =  core.sessionManager().getSession();
+        ISessionHolder sessionHolder = core.sessionManager().getSession();
         if (sessionHolder.checkIfSessionAssetsIsReady()) {
             innerLoad(story);
             pageManager.slideLoadedInCache(index, true);
@@ -445,9 +444,8 @@ public class StoriesViewManager {
     }
 
     public void share(String id, String data) {
-        InAppStoryService service = InAppStoryService.getInstance();
         ShareProcessHandler shareProcessHandler = core.screensManager().getShareProcessHandler();
-        if (shareProcessHandler == null || service == null || shareProcessHandler.isShareProcess())
+        if (shareProcessHandler == null || shareProcessHandler.isShareProcess())
             return;
         shareProcessHandler.isShareProcess(true);
         InnerShareData shareData = JsonParser.fromJson(data, InnerShareData.class);
@@ -459,9 +457,8 @@ public class StoriesViewManager {
                     }
                 }
         );
-        Story story = InAppStoryService.getInstance() != null ?
-                InAppStoryService.getInstance().getStoryDownloadManager()
-                        .getStoryById(storyId, pageManager.getStoryType()) : null;
+        Story story = core.contentLoader().storyDownloadManager()
+                .getStoryById(storyId, pageManager.getStoryType());
         if (story != null && shareData != null) {
             shareData.payload = story.getSlideEventPayload(index);
             pageManager.getParentManager().showShareView(
@@ -527,15 +524,12 @@ public class StoriesViewManager {
 
     private GameStoryData getGameStoryData() {
         GameStoryData data = null;
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service != null && service.getStoryDownloadManager() != null) {
-            Story.StoryType type = pageManager != null ? pageManager.getStoryType() : Story.StoryType.COMMON;
-            Story story = service.getStoryDownloadManager().getStoryById(storyId, type);
-            if (story != null) {
-                data = new GameStoryData(
-                        pageManager.getSlideData(story)
-                );
-            }
+        Story.StoryType type = pageManager != null ? pageManager.getStoryType() : Story.StoryType.COMMON;
+        Story story = core.contentLoader().storyDownloadManager().getStoryById(storyId, type);
+        if (story != null) {
+            data = new GameStoryData(
+                    pageManager.getSlideData(story)
+            );
         }
         return data;
     }
@@ -543,16 +537,22 @@ public class StoriesViewManager {
     private boolean storyIsLoaded = false;
 
     public void storyLoaded(int slideIndex) {
-
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service == null) return;
         clearShowLoader();
         clearShowRefresh();
         storyIsLoaded = true;
-        Story story = service.getStoryDownloadManager().getStoryById(storyId, pageManager.getStoryType());
+        Story story = core
+                .contentLoader()
+                .storyDownloadManager()
+                .getStoryById(
+                        storyId,
+                        pageManager.getStoryType()
+                );
         if ((slideIndex >= 0 && story.lastIndex != slideIndex)) {
             stopStory();
-        } else if (service.getCurrentId() != storyId) {
+        } else if (core
+                .screensManager()
+                .getStoryScreenHolder()
+                .currentOpenedStoryId() != storyId) {
             stopStory();
             setLatestVisibleIndex(slideIndex);
         } else {
@@ -576,7 +576,9 @@ public class StoriesViewManager {
     }
 
     public void sendShowSlideEvents() {
-        final Story story = InAppStoryService.getInstance().getStoryDownloadManager()
+        final Story story = core
+                .contentLoader()
+                .storyDownloadManager()
                 .getStoryById(storyId, pageManager.getStoryType());
         if (story != null) {
             InAppStoryManager.useCore(new UseIASCoreCallback() {
@@ -613,7 +615,7 @@ public class StoriesViewManager {
 
     public void storySetLocalData(String data, boolean sendToServer) {
         KeyValueStorage.saveString("story" + storyId + "__" +
-                ((IASDataSettingsHolder)core.settingsAPI()).userId(), data);
+                ((IASDataSettingsHolder) core.settingsAPI()).userId(), data);
         if (core.statistic().v1().disabled()) return;
         final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
         if (networkClient == null) {
@@ -674,14 +676,14 @@ public class StoriesViewManager {
     }
 
     public void restartStory() {
-        storiesView.restartSlide();
+        storiesView.restartSlide(core);
     }
 
     public void playStory() {
         if (storyIsLoaded) {
             sendShowStoryEvents();
             sendShowSlideEvents();
-            storiesView.startSlide();
+            storiesView.startSlide(core);
         }
     }
 

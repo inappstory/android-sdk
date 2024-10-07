@@ -338,14 +338,6 @@ public class Story implements Parcelable {
         return hasAudio != null ? hasAudio : false;
     }
 
-    public void saveStoryOpened(final StoryType type) {
-        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
-            @Override
-            public void use(@NonNull InAppStoryService service) throws Exception {
-                service.saveStoryOpened(id, type);
-            }
-        });
-    }
 
 
     @SerializedName("like_functional")

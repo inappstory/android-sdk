@@ -334,9 +334,6 @@ public abstract class StoriesMainFragment extends Fragment implements
     public void onViewCreated(@NonNull View view, @Nullable final Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         if (getActivity() == null) {
-            return;
-        }
-        if (InAppStoryManager.isNull() || InAppStoryService.isNull()) {
             forceFinish();
             return;
         }
@@ -451,68 +448,65 @@ public abstract class StoriesMainFragment extends Fragment implements
     public void closeWithAction(final int action) {
         if (closing) return;
         closing = true;
-        InAppStoryService service = InAppStoryService.getInstance();
         requireActivity().getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
                 WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
         blockView.setVisibility(View.VISIBLE);
-        if (service != null) {
-            service.getListReaderConnector().readerIsClosed();
-            final Story story = service.getStoryDownloadManager().getStoryById(
-                    service.getCurrentId(),
-                    launchData.getType()
-            );
-            if (story != null) {
-                InAppStoryManager.useCore(new UseIASCoreCallback() {
-                    @Override
-                    public void use(@NonNull IASCore core) {
-                        core.callbacksAPI().useCallback(
-                                IASCallbackType.CLOSE_STORY,
-                                new UseIASCallback<CloseStoryCallback>() {
-                                    @Override
-                                    public void use(@NonNull CloseStoryCallback callback) {
-                                        callback.closeStory(
-                                                new SlideData(
-                                                        StoryData.getStoryData(
-                                                                story,
-                                                                launchData.getFeed(),
-                                                                launchData.getSourceType(),
-                                                                launchData.getType()
-                                                        ),
-                                                        story.lastIndex,
-                                                        story.getSlideEventPayload(story.lastIndex)
-                                                ),
-                                                new CallbackTypesConverter().getCloseTypeFromInt(action)
-                                        );
-                                    }
-                                });
-                        String cause = IASStatisticV2Impl.AUTO;
-                        switch (action) {
-                            case CloseStory.CLICK:
-                                cause = IASStatisticV2Impl.CLICK;
-                                break;
-                            case CloseStory.CUSTOM:
-                                cause = IASStatisticV2Impl.CUSTOM;
-                                break;
-                            case -1:
-                                cause = IASStatisticV2Impl.BACK;
-                                break;
-                            case CloseStory.SWIPE:
-                                cause = IASStatisticV2Impl.SWIPE;
-                                break;
-                        }
-                        core.statistic().v2().sendCloseStory(
-                                story.id,
-                                cause,
-                                story.lastIndex,
-                                story.getSlidesCount(),
-                                launchData.getFeed()
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                InAppStoryService.getInstance().getListReaderConnector().readerIsClosed();
+                final Story story = core
+                        .contentLoader()
+                        .storyDownloadManager()
+                        .getCurrentStory(
+                                launchData.getType()
                         );
+                if (story != null) {
+                    core.callbacksAPI().useCallback(
+                            IASCallbackType.CLOSE_STORY,
+                            new UseIASCallback<CloseStoryCallback>() {
+                                @Override
+                                public void use(@NonNull CloseStoryCallback callback) {
+                                    callback.closeStory(
+                                            new SlideData(
+                                                    StoryData.getStoryData(
+                                                            story,
+                                                            launchData.getFeed(),
+                                                            launchData.getSourceType(),
+                                                            launchData.getType()
+                                                    ),
+                                                    story.lastIndex,
+                                                    story.getSlideEventPayload(story.lastIndex)
+                                            ),
+                                            new CallbackTypesConverter().getCloseTypeFromInt(action)
+                                    );
+                                }
+                            });
+                    String cause = IASStatisticV2Impl.AUTO;
+                    switch (action) {
+                        case CloseStory.CLICK:
+                            cause = IASStatisticV2Impl.CLICK;
+                            break;
+                        case CloseStory.CUSTOM:
+                            cause = IASStatisticV2Impl.CUSTOM;
+                            break;
+                        case -1:
+                            cause = IASStatisticV2Impl.BACK;
+                            break;
+                        case CloseStory.SWIPE:
+                            cause = IASStatisticV2Impl.SWIPE;
+                            break;
                     }
-                });
-
-
+                    core.statistic().v2().sendCloseStory(
+                            story.id,
+                            cause,
+                            story.lastIndex,
+                            story.getSlidesCount(),
+                            launchData.getFeed()
+                    );
+                }
             }
-        }
+        });
         cleanReader();
         animateFirst = true;
         new Handler(Looper.getMainLooper()).post(new Runnable() {
@@ -528,7 +522,11 @@ public abstract class StoriesMainFragment extends Fragment implements
             animateFirst = false;
             closeAnim();
         } else {
-            requireActivity().getSupportFragmentManager().popBackStack();
+            try {
+                requireActivity().getSupportFragmentManager().popBackStack();
+            } catch (Exception ignored) {
+
+            }
         }
     }
 
@@ -678,19 +676,11 @@ public abstract class StoriesMainFragment extends Fragment implements
                             }
                         }
                 );
-            }
-        });
-
-        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
-            @Override
-            public void use(@NonNull InAppStoryService service) throws Exception {
-                service.setCurrentIndex(0);
-                service.setCurrentId(0);
-                service.getStoryDownloadManager().cleanStoriesIndex(launchData.getType());
+                core.screensManager().getStoryScreenHolder().currentOpenedStoryId(0);
+                core.contentLoader().storyDownloadManager().cleanStoriesIndex(launchData.getType());
                 cleaned = true;
             }
         });
-
     }
 
     @Override

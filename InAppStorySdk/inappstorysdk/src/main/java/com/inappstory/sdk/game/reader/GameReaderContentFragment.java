@@ -484,7 +484,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                     }
                 });
                 checkInsets();
-                checkIntentValues(gameLoadedErrorCallback);
+                checkIntentValues(core, gameLoadedErrorCallback);
             }
 
             @Override
@@ -816,16 +816,17 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         getBaseGameReader().forceFinish();
     }
 
-    private void checkIntentValues(final GameLoadedError callback) {
+    private void checkIntentValues(IASCore core, final GameLoadedError callback) {
         String gameId = gameReaderLaunchData.getGameId();
         if (gameId == null) {
             callback.onError(null, "No game id");
             forceFinish();
             return;
         }
-        InAppStoryService inAppStoryService = InAppStoryService.getInstance();
+
+        InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
         Map<String, String> splashKeys = GameConstants.getSplashesKeys(
-                inAppStoryService != null && inAppStoryService.hasLottieAnimation()
+                core.externalUtilsAPI().hasLottieAnimation()
         );
         Map<String, File> splashPaths = new HashMap<>();
         for (Map.Entry<String, String> entry : splashKeys.entrySet()) {

@@ -334,17 +334,15 @@ public class StoryDownloadManager {
 
     public List<Story> getStoriesListByType(Story.StoryType type) {
         if (type == Story.StoryType.COMMON) {
-            if (this.stories == null) this.stories = new ArrayList<>();
             return this.stories;
         } else {
-            if (this.ugcStories == null) this.ugcStories = new ArrayList<>();
             return this.ugcStories;
         }
     }
 
-    public void putStories(List<Story> storiesToPut, Story.StoryType type) {
+    public void putStories(Story.StoryType type) {
         List<Story> stories = getStoriesListByType(type);
-        if (storiesToPut == null) return;
+        List<Story> storiesToPut = getStoriesListByType(type);
         for (Story story : storiesToPut) {
             if (story == null) continue;
             boolean newStory = true;
@@ -522,6 +520,16 @@ public class StoryDownloadManager {
             }
         }
         return null;
+    }
+
+    public Story getCurrentStory(Story.StoryType type) {
+        return getStoryById(
+                core
+                        .screensManager()
+                        .getStoryScreenHolder()
+                        .currentOpenedStoryId(),
+                type
+        );
     }
 
     public void setStory(final Story story, int id, Story.StoryType type) {
@@ -821,13 +829,8 @@ public class StoryDownloadManager {
         }
     }
 
-    void setLocalsOpened(final List<Story> response, final Story.StoryType type) {
-        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
-            @Override
-            public void use(@NonNull InAppStoryService service) {
-                service.saveStoriesOpened(response, type);
-            }
-        });
+    void setLocalsOpened(List<Story> response, Story.StoryType type) {
+        core.storyListCache().saveStoriesOpened(response, type);
     }
 
     private List<Story> stories = new ArrayList<>();

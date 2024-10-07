@@ -29,6 +29,7 @@ import androidx.appcompat.widget.AppCompatImageView;
 import androidx.cardview.widget.CardView;
 import androidx.fragment.app.Fragment;
 
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryScreen;
@@ -47,11 +48,13 @@ public class StoriesLoaderFragment extends Fragment {
     int storyId = -1;
 
     void setViews(View view) {
-        if (InAppStoryService.getInstance() == null) return;
-        Story story = InAppStoryService.getInstance().getStoryDownloadManager().getStoryById(
-                launchData.getStoriesIds().get(launchData.getListIndex()),
-                launchData.getType()
-        );
+        InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
+        if (inAppStoryManager == null) return;
+        Story story = inAppStoryManager.iasCore().contentLoader().storyDownloadManager()
+                .getStoryById(
+                        launchData.getStoriesIds().get(launchData.getListIndex()),
+                        launchData.getType()
+                );
         if (story == null) return;
         storyId = story.id;
         ButtonsPanel buttonsPanel = view.findViewById(R.id.ias_buttons_panel);

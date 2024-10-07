@@ -387,25 +387,21 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryScree
         }
         super.onCreate(savedInstanceState1);
         setContentView(R.layout.cs_mainscreen_stories_draggable);
+        InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
+
         launchData = (LaunchStoryScreenData) getIntent().
                 getSerializableExtra(LaunchStoryScreenData.SERIALIZABLE_KEY);
         appearanceSettings = (LaunchStoryScreenAppearance) getIntent()
                 .getSerializableExtra(LaunchStoryScreenAppearance.SERIALIZABLE_KEY);
-        if (InAppStoryManager.isNull() || InAppStoryService.isNull()) {
-            finish();
+        if (inAppStoryManager == null) {
+            forceFinish();
             return;
         }
-
-
+        IASCore core = inAppStoryManager.iasCore();
         int navColor = appearanceSettings.csNavBarColor();
         if (navColor != 0)
             getWindow().setNavigationBarColor(navColor);
-        InAppStoryManager.useCore(new UseIASCoreCallback() {
-            @Override
-            public void use(@NonNull IASCore core) {
-                core.screensManager().getStoryScreenHolder().subscribeScreen(StoriesActivity.this);
-            }
-        });
+        core.screensManager().getStoryScreenHolder().subscribeScreen(StoriesActivity.this);
         View view = getCurrentFocus();
         if (view != null) {
             InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -468,21 +464,11 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryScree
                 }
             }
         };
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service == null) {
-            forceFinish();
-            return;
-        }
-        InAppStoryManager.useCore(new UseIASCoreCallback() {
-            @Override
-            public void use(@NonNull IASCore core) {
-                core
-                        .screensManager()
-                        .getOpenReader(ScreenType.STORY)
-                        .onHideStatusBar(StoriesActivity.this);
-            }
-        });
-        service.getListReaderConnector().readerIsOpened();
+        core
+                .screensManager()
+                .getOpenReader(ScreenType.STORY)
+                .onHideStatusBar(StoriesActivity.this);
+        InAppStoryService.getInstance().getListReaderConnector().readerIsOpened();
         type = launchData.getType();
         draggableFrame.type = type;
         draggableFrame.post(new Runnable() {
@@ -521,12 +507,6 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryScree
             setAppearanceSettings(bundle);
             storiesLoaderFragment.setArguments(bundle);
             FragmentTransaction t = fragmentManager.beginTransaction()
-                    /*.setCustomAnimations(
-                            android.R.anim.fade_in,
-                            android.R.anim.fade_out,
-                            android.R.anim.fade_in,
-                            android.R.anim.fade_out
-                    )*/
                     .replace(R.id.stories_fragments_layout, storiesLoaderFragment);
             t.addToBackStack("TEST");
             t.commit();
@@ -602,14 +582,15 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryScree
     public void closeWithAction(int action) {
         if (closing) return;
         closing = true;
-        InAppStoryService service = InAppStoryService.getInstance();
-        Story story = null;
-        if (service != null) {
-            service.getListReaderConnector().readerIsClosed();
-            story = service.getStoryDownloadManager()
-                    .getStoryById(service.getCurrentId(), type);
-
-        }
+        final Story[] story = new Story[1];
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                story[0] = core.contentLoader().storyDownloadManager()
+                        .getCurrentStory(type);
+            }
+        });
+        InAppStoryService.getInstance().getListReaderConnector().readerIsClosed();
         cleanReader();
         animateFirst = true;
         new Handler(Looper.getMainLooper()).post(new Runnable() {
@@ -621,8 +602,8 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryScree
                 finishAfterTransition();
             }
         });
-        if (story != null) {
-            sendCloseStatistic(story, action);
+        if (story[0] != null) {
+            sendCloseStatistic(story[0], action);
         }
     }
 
@@ -681,12 +662,18 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryScree
     public void forceFinish() {
         InAppStoryService service = InAppStoryService.getInstance();
 
-        Story story = null;
+        final Story[] story = {null};
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                story[0] = core
+                        .contentLoader()
+                        .storyDownloadManager()
+                        .getCurrentStory(type);
+            }
+        });
         if (service != null) {
             service.getListReaderConnector().readerIsClosed();
-            story = service.getStoryDownloadManager()
-                    .getStoryById(service.getCurrentId(), type);
-
         }
         cleanReader();
         new Handler(Looper.getMainLooper()).post(new Runnable() {
@@ -698,8 +685,8 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryScree
                 finishWithoutAnimation();
             }
         });
-        if (story != null) {
-            sendCloseStatistic(story, CloseStory.CUSTOM);
+        if (story[0] != null) {
+            sendCloseStatistic(story[0], CloseStory.CUSTOM);
         }
     }
 
@@ -712,7 +699,6 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryScree
 
     public void cleanReader() {
         if (cleaned) return;
-        Log.e("statisticTests", "closeReader");
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
@@ -725,15 +711,8 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryScree
                             }
                         }
                 );
-            }
-        });
-
-        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
-            @Override
-            public void use(@NonNull InAppStoryService service) throws Exception {
-                service.setCurrentIndex(0);
-                service.setCurrentId(0);
-                service.getStoryDownloadManager().cleanStoriesIndex(type);
+                core.screensManager().getStoryScreenHolder().currentOpenedStoryId(0);
+                core.contentLoader().storyDownloadManager().cleanStoriesIndex(type);
                 cleaned = true;
             }
         });

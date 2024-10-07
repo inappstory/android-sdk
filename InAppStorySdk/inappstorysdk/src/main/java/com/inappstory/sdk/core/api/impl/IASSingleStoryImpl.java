@@ -42,8 +42,6 @@ public class IASSingleStoryImpl implements IASSingleStory {
             final AppearanceManager appearanceManager,
             final IShowStoryOnceCallback callback
     ) {
-        final InAppStoryService service = InAppStoryService.getInstance();
-        if (service == null) return;
 
         if (((IASDataSettingsHolder) core.settingsAPI()).noCorrectUserIdOrDevice()) return;
         Set<String> opens = SharedPreferencesAPI.getStringSet(
@@ -56,11 +54,11 @@ public class IASSingleStoryImpl implements IASSingleStory {
             return;
         }
 
-        service.getStoryDownloadManager().getFullStoryByStringId(new GetStoryByIdCallback() {
+        core.contentLoader().storyDownloadManager().getFullStoryByStringId(new GetStoryByIdCallback() {
             @Override
             public void getStory(final Story story, final String sessionId) {
                 if (story != null) {
-                    service.getStoryDownloadManager().addCompletedStoryTask(story, Story.StoryType.COMMON);
+                    core.contentLoader().storyDownloadManager().addCompletedStoryTask(story, Story.StoryType.COMMON);
                     openStoryInReader(story,
                             sessionId,
                             context,
@@ -101,15 +99,13 @@ public class IASSingleStoryImpl implements IASSingleStory {
             final SourceType readerSource,
             final int readerAction
     ) {
-        final InAppStoryService service = InAppStoryService.getInstance();
-        if (service == null) return;
         if (((IASDataSettingsHolder) core.settingsAPI()).noCorrectUserIdOrDevice()) return;
-        service.getStoryDownloadManager().getFullStoryByStringId(
+        core.contentLoader().storyDownloadManager().getFullStoryByStringId(
                 new GetStoryByIdCallback() {
                     @Override
                     public void getStory(final Story story, final String sessionId) {
                         if (story != null) {
-                            service.getStoryDownloadManager().addCompletedStoryTask(story, type);
+                            core.contentLoader().storyDownloadManager().addCompletedStoryTask(story, type);
                             openStoryInReader(
                                     story,
                                     sessionId,
@@ -175,18 +171,10 @@ public class IASSingleStoryImpl implements IASSingleStory {
             final boolean openedFromReader
     ) {
 
-        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
-            @Override
-            public void use(@NonNull InAppStoryService service) {
-                service.getStoryDownloadManager()
-                        .putStories(
-                                service
-                                        .getStoryDownloadManager()
-                                        .getStories(Story.StoryType.COMMON),
-                                type
-                        );
-            }
-        });
+        core.contentLoader().storyDownloadManager()
+                .putStories(
+                        type
+                );
 
         ArrayList<Integer> stIds = new ArrayList<>();
         stIds.add(story.id);

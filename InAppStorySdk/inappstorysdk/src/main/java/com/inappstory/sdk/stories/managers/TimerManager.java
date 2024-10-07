@@ -153,10 +153,11 @@ public class TimerManager {
             @Override
             public void use(@NonNull InAppStoryService service) throws Exception {
                 Story.StoryType type = (pageManager != null) ? pageManager.getStoryType() : Story.StoryType.COMMON;
-                Story story = service.getStoryDownloadManager()
-                        .getStoryById(service.getCurrentId(), type);
+                Story story = core
+                        .contentLoader()
+                        .storyDownloadManager()
+                        .getCurrentStory(type);
                 if (story != null) {
-
                     core.statistic().v2().addFakeEvents(story.id, story.lastIndex, story.getSlidesCount(),
                             pageManager != null ? pageManager.getFeedId() : null);
                 }

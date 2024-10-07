@@ -101,11 +101,9 @@ public class ReaderManager {
     int latestShowStoryAction = ShowStory.ACTION_OPEN;
 
     public void sendShowStoryEvents(int storyId) {
-        if (InAppStoryService.getInstance() == null || InAppStoryService.getInstance().getStoryDownloadManager() == null)
-            return;
         if (lastSentId == storyId) return;
         lastSentId = storyId;
-        final Story story = InAppStoryService.getInstance().getStoryDownloadManager().getStoryById(storyId, storyType);
+        final Story story = core.contentLoader().storyDownloadManager().getStoryById(storyId, storyType);
         if (story != null) {
             core.callbacksAPI().useCallback(
                     IASCallbackType.SHOW_STORY,
@@ -267,58 +265,53 @@ public class ReaderManager {
     }
 
     public void showSingleStory(final int storyId, final int slideIndex) {
-        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
-            @Override
-            public void use(@NonNull final InAppStoryService service) throws Exception {
-                final StoriesContentFragment host = getHost();
-                if (host == null) return;
-                if (storyType == Story.StoryType.COMMON)
-                    core.statistic().v1(getSessionId(), new GetStatisticV1Callback() {
-                        @Override
-                        public void get(@NonNull IASStatisticV1 manager) {
-                            manager.addLinkOpenStatistic(storyId, slideIndex);
-                        }
-                    });
-                if (storiesIds.contains(storyId)) {
-                    new Handler(Looper.getMainLooper()).post(new Runnable() {
-                        @Override
-                        public void run() {
-                            Story.StoryType type = Story.StoryType.COMMON;
-                            Story st = service.getStoryDownloadManager()
-                                    .getStoryById(storyId, type);
-                            if (st != null) {
-                                if (st.getSlidesCount() <= slideIndex) {
-                                    st.lastIndex = 0;
-                                } else {
-                                    st.lastIndex = slideIndex;
-                                }
-                            }
-                            latestShowStoryAction = ShowStory.ACTION_CUSTOM;
-                            host.setCurrentItem(storiesIds.indexOf(storyId));
-                        }
-                    });
-                } else {
-                    LaunchStoryScreenAppearance appearance = host.getAppearanceSettings();
-                    final AppearanceManager appearanceManager;
-                    if (appearance != null) {
-                        appearanceManager = appearance.toAppearanceManager();
-                    } else {
-                        appearanceManager = new AppearanceManager();
-                    }
-                    ((IASSingleStoryImpl) core.singleStoryAPI()).show(
-                            host.getContext(),
-                            storyId + "",
-                            appearanceManager,
-                            null,
-                            storyType,
-                            slideIndex,
-                            true,
-                            SourceType.SINGLE,
-                            ShowStory.ACTION_CUSTOM
-                    );
+        final StoriesContentFragment host = getHost();
+        if (host == null) return;
+        if (storyType == Story.StoryType.COMMON)
+            core.statistic().v1(getSessionId(), new GetStatisticV1Callback() {
+                @Override
+                public void get(@NonNull IASStatisticV1 manager) {
+                    manager.addLinkOpenStatistic(storyId, slideIndex);
                 }
+            });
+        if (storiesIds.contains(storyId)) {
+            new Handler(Looper.getMainLooper()).post(new Runnable() {
+                @Override
+                public void run() {
+                    Story.StoryType type = Story.StoryType.COMMON;
+                    Story st = core.contentLoader().storyDownloadManager()
+                            .getStoryById(storyId, type);
+                    if (st != null) {
+                        if (st.getSlidesCount() <= slideIndex) {
+                            st.lastIndex = 0;
+                        } else {
+                            st.lastIndex = slideIndex;
+                        }
+                    }
+                    latestShowStoryAction = ShowStory.ACTION_CUSTOM;
+                    host.setCurrentItem(storiesIds.indexOf(storyId));
+                }
+            });
+        } else {
+            LaunchStoryScreenAppearance appearance = host.getAppearanceSettings();
+            final AppearanceManager appearanceManager;
+            if (appearance != null) {
+                appearanceManager = appearance.toAppearanceManager();
+            } else {
+                appearanceManager = new AppearanceManager();
             }
-        });
+            ((IASSingleStoryImpl) core.singleStoryAPI()).show(
+                    host.getContext(),
+                    storyId + "",
+                    appearanceManager,
+                    null,
+                    storyType,
+                    slideIndex,
+                    true,
+                    SourceType.SINGLE,
+                    ShowStory.ACTION_CUSTOM
+            );
+        }
 
     }
 
@@ -358,9 +351,7 @@ public class ReaderManager {
                 adds.add(storiesIds.get(pos - 1));
             }
         }
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service == null) return;
-        if (!service.getStoryDownloadManager().changePriority(
+        if (!core.contentLoader().storyDownloadManager().changePriority(
                 storiesIds.get(pos),
                 adds,
                 storyType
@@ -373,7 +364,7 @@ public class ReaderManager {
             });
             return;
         }
-        service.getStoryDownloadManager().addStoryTask(
+        core.contentLoader().storyDownloadManager().addStoryTask(
                 storiesIds.get(pos),
                 adds,
                 storyType);
@@ -402,7 +393,8 @@ public class ReaderManager {
         lastPos = position;
         lastSentId = 0;
         currentStoryId = storiesIds.get(position);
-        Story story = service.getStoryDownloadManager().getStoryById(currentStoryId, storyType);
+        Story story = core.contentLoader().storyDownloadManager()
+                .getStoryById(currentStoryId, storyType);
         if (story != null) {
             if (firstStoryId > 0 && startedSlideInd > 0) {
                 if (story.getSlidesCount() > startedSlideInd)
@@ -417,7 +409,7 @@ public class ReaderManager {
         final int pos = position;
 
         service.getListReaderConnector().changeStory(currentStoryId, listID, showOnlyNewStories);
-        service.setCurrentId(currentStoryId);
+        core.screensManager().getStoryScreenHolder().currentOpenedStoryId(currentStoryId);
         if (story != null) {
             currentSlideIndex = story.lastIndex;
         }
@@ -520,15 +512,12 @@ public class ReaderManager {
     private String feedSlug;
 
     private void sendStatBlock(boolean hasCloseEvent, String whence, int id) {
-
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service == null) return;
-        Story story2 = service.getStoryDownloadManager().getStoryById(id, storyType);
+        Story story2 = core.contentLoader().storyDownloadManager().getStoryById(id, storyType);
         if (story2 == null) return;
         IASStatisticV2 statisticV2 = core.statistic().v2();
         statisticV2.sendCurrentState();
         if (hasCloseEvent) {
-            Story story = service.getStoryDownloadManager().getStoryById(storiesIds.get(lastPos), storyType);
+            Story story = core.contentLoader().storyDownloadManager().getStoryById(storiesIds.get(lastPos), storyType);
             statisticV2.sendCloseStory(story.id, whence, story.lastIndex, story.getSlidesCount(), feedId);
         }
         statisticV2.sendViewStory(id, whence, feedId);

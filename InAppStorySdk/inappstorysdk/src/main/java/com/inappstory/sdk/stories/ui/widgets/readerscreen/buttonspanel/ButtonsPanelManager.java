@@ -68,14 +68,12 @@ public class ButtonsPanelManager {
     }
 
     private void likeDislikeClick(final ButtonClickCallback callback, final boolean like) {
-        InAppStoryService inAppStoryService = InAppStoryService.getInstance();
-        if (inAppStoryService == null) return;
         NetworkClient networkClient = InAppStoryManager.getNetworkClient();
         if (networkClient == null) {
             return;
         }
         final Story story =
-                inAppStoryService.getStoryDownloadManager().getStoryById(
+                core.contentLoader().storyDownloadManager().getStoryById(
                         storyId, pageManager.getStoryType()
                 );
         if (story == null) return;
@@ -121,7 +119,8 @@ public class ButtonsPanelManager {
                     @Override
                     public void onSuccess(Response response) {
                         core.statistic().profiling().setReady(likeUID);
-                        Story story = InAppStoryService.getInstance().getStoryDownloadManager().getStoryById(storyId, pageManager.getStoryType());
+                        Story story = core.contentLoader().storyDownloadManager()
+                                .getStoryById(storyId, pageManager.getStoryType());
                         if (story != null)
                             story.like = val;
                         if (callback != null)
@@ -149,13 +148,11 @@ public class ButtonsPanelManager {
     }
 
     public void favoriteClick(final ButtonClickCallback callback) {
-        final InAppStoryService inAppStoryService = InAppStoryService.getInstance();
-        if (inAppStoryService == null) return;
         NetworkClient networkClient = InAppStoryManager.getNetworkClient();
         if (networkClient == null) {
             return;
         }
-        final Story story = inAppStoryService.getStoryDownloadManager().getStoryById(storyId, pageManager.getStoryType());
+        final Story story = core.contentLoader().storyDownloadManager().getStoryById(storyId, pageManager.getStoryType());
         if (story == null) return;
         final boolean val = story.favorite;
         if (!story.favorite)
@@ -182,13 +179,15 @@ public class ButtonsPanelManager {
                     @Override
                     public void onSuccess(Response response) {
                         core.statistic().profiling().setReady(favUID);
-                        Story story = inAppStoryService.getStoryDownloadManager().getStoryById(storyId, pageManager.getStoryType());
+                        Story story = core.contentLoader().storyDownloadManager()
+                                .getStoryById(storyId, pageManager.getStoryType());
                         boolean res = !val;
                         if (story != null)
                             story.favorite = res;
                         if (callback != null)
                             callback.onSuccess(res ? 1 : 0);
-                        inAppStoryService.getListReaderConnector().storyFavorite(storyId, res);
+                        InAppStoryService.getInstance()
+                                .getListReaderConnector().storyFavorite(storyId, res);
                     }
 
 
@@ -215,7 +214,7 @@ public class ButtonsPanelManager {
 
     public void refreshSoundStatus() {
         if (panel != null)
-            panel.refreshSoundStatus();
+            panel.refreshSoundStatus(core);
     }
 
     public abstract static class ShareButtonClickCallback implements ButtonClickCallback {
@@ -223,16 +222,14 @@ public class ButtonsPanelManager {
     }
 
     public void shareClick(final ShareButtonClickCallback callback) {
-        InAppStoryService inAppStoryService = InAppStoryService.getInstance();
         NetworkClient networkClient = InAppStoryManager.getNetworkClient();
         if (networkClient == null) {
             return;
         }
-        if (inAppStoryService == null)
-            return;
         final ShareProcessHandler shareProcessHandler = core.screensManager().getShareProcessHandler();
         if (shareProcessHandler == null || shareProcessHandler.isShareProcess()) return;
-        final Story story = inAppStoryService.getStoryDownloadManager().getStoryById(storyId, pageManager.getStoryType());
+        final Story story = core.contentLoader().storyDownloadManager()
+                .getStoryById(storyId, pageManager.getStoryType());
         if (story == null) return;
         final int slideIndex = story.lastIndex;
         core.statistic().v2().sendShareStory(story.id, slideIndex,

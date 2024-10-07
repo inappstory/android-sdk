@@ -12,11 +12,17 @@ import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASContentLoader;
 import com.inappstory.sdk.game.cache.GameCacheManager;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
+import com.inappstory.sdk.stories.api.models.ResourceMappingObject;
+import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.cache.FilesDownloadManager;
 import com.inappstory.sdk.stories.cache.StoryDownloadManager;
+import com.inappstory.sdk.stories.cache.vod.VODCacheItemPart;
+import com.inappstory.sdk.stories.cache.vod.VODCacheJournalItem;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class IASContentLoaderImpl implements IASContentLoader {
     private final IASCore core;
@@ -107,5 +113,27 @@ public class IASContentLoaderImpl implements IASContentLoader {
         }
         getFastCache().setCacheSize(fastCacheType);
         getCommonCache().setCacheSize(cacheType);
+    }
+
+    @Override
+    public void addVODResources(Story story, int slideIndex) {
+        List<ResourceMappingObject> resources = new ArrayList<>();
+        resources.addAll(story.vodResources(slideIndex));
+        for (ResourceMappingObject object : resources) {
+            VODCacheJournalItem item = filesDownloadManager.getVodCacheJournal().getItem(object.filename);
+            if (item == null) {
+                filesDownloadManager.getVodCacheJournal().putItem(new VODCacheJournalItem(
+                        "",
+                        object.filename,
+                        "",
+                        "",
+                        new ArrayList<VODCacheItemPart>(),
+                        "",
+                        0,
+                        object.getUrl(),
+                        System.currentTimeMillis()
+                ));
+            }
+        }
     }
 }

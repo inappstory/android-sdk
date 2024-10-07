@@ -231,14 +231,15 @@ public class StoriesContentFragment extends Fragment
         if (launchData.getStoriesIds().get(
                 storiesViewPager.getCurrentItem()
         ) != storyId) return;
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service == null) {
+        InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
+        if (inAppStoryManager == null) {
             return;
         }
-        Story st = service.getStoryDownloadManager().getStoryById(
-                storyId,
-                type
-        );
+        Story st = inAppStoryManager.iasCore().contentLoader().storyDownloadManager()
+                .getStoryById(
+                        storyId,
+                        type
+                );
         if (st == null) return;
         BaseStoryScreen screen = getStoriesReader();
         if (screen != null) screen.disableDrag(st.disableClose || st.hasSwipeUp());
@@ -508,10 +509,10 @@ public class StoriesContentFragment extends Fragment
 
     public void swipeCloseEvent(final int position, boolean check) {
         if (check) {
-            InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+            InAppStoryManager.useCore(new UseIASCoreCallback() {
                 @Override
-                public void use(@NonNull InAppStoryService service) throws Exception {
-                    Story story = service.getStoryDownloadManager()
+                public void use(@NonNull IASCore core) {
+                    Story story = core.contentLoader().storyDownloadManager()
                             .getStoryById(currentIds.get(position), readerManager.storyType);
                     if (story == null || story.disableClose) return;
                     BaseStoryScreen screen = getStoriesReader();
@@ -550,8 +551,10 @@ public class StoriesContentFragment extends Fragment
     }
 
     private int getCurIndexById(int id) {
-        if (InAppStoryService.getInstance().getStoryDownloadManager() == null) return 0;
-        Story st = InAppStoryService.getInstance().getStoryDownloadManager().getStoryById(id, readerManager.storyType);
+        InAppStoryManager manager = InAppStoryManager.getInstance();
+        if (manager == null) return 0;
+        Story st = manager.iasCore().contentLoader().storyDownloadManager()
+                .getStoryById(id, readerManager.storyType);
         return st == null ? 0 : st.lastIndex;
     }
 

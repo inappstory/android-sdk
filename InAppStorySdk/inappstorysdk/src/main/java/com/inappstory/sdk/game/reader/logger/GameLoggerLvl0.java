@@ -2,14 +2,16 @@ package com.inappstory.sdk.game.reader.logger;
 
 import android.util.Log;
 
+import com.inappstory.sdk.core.IASCore;
+
 public class GameLoggerLvl0 extends AbstractGameLogger {
 
-    public GameLoggerLvl0() {
-        super();
+    public GameLoggerLvl0(IASCore core) {
+        super(core);
     }
 
-    protected GameLoggerLvl0(String gameInstanceId) {
-        super(gameInstanceId);
+    protected GameLoggerLvl0(IASCore core, String gameInstanceId) {
+        super(core, gameInstanceId);
     }
 
     @Override

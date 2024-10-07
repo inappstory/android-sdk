@@ -167,12 +167,13 @@ public class ReaderPageFragment extends Fragment {
 
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
-        if (InAppStoryService.getInstance() != null
-                && InAppStoryService.getInstance().getStoryDownloadManager() != null) {
-            Story story = InAppStoryService.getInstance().getStoryDownloadManager().getStoryById(
-                    storyId,
-                    manager.getStoryType()
-            );
+        InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
+        if (inAppStoryManager != null) {
+            Story story = inAppStoryManager.iasCore().contentLoader().storyDownloadManager()
+                    .getStoryById(
+                            storyId,
+                            manager.getStoryType()
+                    );
             if (story != null)
                 this.story = story;
         }
@@ -688,9 +689,8 @@ public class ReaderPageFragment extends Fragment {
                 }
                 bindViews(view);
                 setActions();
-                if (setManagers(core) && InAppStoryService.getInstance() != null
-                        && InAppStoryService.getInstance().getStoryDownloadManager() != null) {
-                    InAppStoryService.getInstance().getStoryDownloadManager().addSubscriber(manager);
+                if (setManagers(core)) {
+                    core.contentLoader().storyDownloadManager().addSubscriber(manager);
                 } else {
                     InAppStoryManager.closeStoryReader();
                 }
@@ -711,12 +711,14 @@ public class ReaderPageFragment extends Fragment {
     public void onStart() {
         super.onStart();
         boolean storyIsEmpty = (story == null);
+        InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
         InAppStoryService service = InAppStoryService.getInstance();
-        if (service != null && service.getStoryDownloadManager() != null && storyIsEmpty) {
-            story = service.getStoryDownloadManager().getStoryById(
-                    storyId,
-                    manager.getStoryType()
-            );
+        if (inAppStoryManager != null && storyIsEmpty) {
+            story = inAppStoryManager.iasCore().contentLoader().storyDownloadManager()
+                    .getStoryById(
+                            storyId,
+                            manager.getStoryType()
+                    );
         }
         if (story != null) {
             loadIfStoryIsNotNull();
@@ -747,8 +749,12 @@ public class ReaderPageFragment extends Fragment {
             if (parentManager != null) {
                 parentManager.removeSubscriber(manager);
             }
-            if (InAppStoryService.getInstance() != null)
-                InAppStoryService.getInstance().getStoryDownloadManager().removeSubscriber(manager);
+            InAppStoryManager.useCore(new UseIASCoreCallback() {
+                @Override
+                public void use(@NonNull IASCore core) {
+                    core.contentLoader().storyDownloadManager().removeSubscriber(manager);
+                }
+            });
         }
         super.onDestroyView();
     }

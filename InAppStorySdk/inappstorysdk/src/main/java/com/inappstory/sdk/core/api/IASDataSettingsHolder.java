@@ -12,6 +12,7 @@ public interface IASDataSettingsHolder {
     void deviceId(String deviceId);
     String userId();
     Locale lang();
+    boolean isSoundOn();
     Map<String, String> placeholders();
     Map<String, ImagePlaceholderValue> imagePlaceholders();
     Map<String, Pair<ImagePlaceholderValue, ImagePlaceholderValue>> imagePlaceholdersWithSessionDefaults();

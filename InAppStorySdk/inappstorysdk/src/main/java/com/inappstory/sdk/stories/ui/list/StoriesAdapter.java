@@ -79,14 +79,12 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
 
     private List<StoryData> getStoriesData(List<Integer> storiesIds) {
         List<StoryData> data = new ArrayList<>();
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service != null)
-            for (int id : storiesIds) {
-                Story story = service.getStoryDownloadManager().getStoryById(id, Story.StoryType.COMMON);
-                if (story != null) {
-                    data.add(new StoryData(story, feed, SourceType.LIST));
-                }
+        for (int id : storiesIds) {
+            Story story = core.contentLoader().storyDownloadManager().getStoryById(id, Story.StoryType.COMMON);
+            if (story != null) {
+                data.add(new StoryData(story, feed, SourceType.LIST));
             }
+        }
         return data;
     }
 
@@ -159,8 +157,6 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
 
     @Override
     public void onBindViewHolder(@NonNull BaseStoryListItem holder, int position) {
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (holder == null || service == null) return;
         if (holder.isFavorite) {
             holder.bindFavorite();
             holder.itemView.setOnClickListener(new View.OnClickListener() {
@@ -183,7 +179,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
             });
         } else {
             int hasUGC = useUGC ? 1 : 0;
-            final Story story = service.getStoryDownloadManager()
+            final Story story = core.contentLoader().storyDownloadManager()
                     .getStoryById(storiesIds.get(position - hasUGC), Story.StoryType.COMMON);
             if (story == null) return;
             String imgUrl = (story.getImage() != null && story.getImage().size() > 0) ?
@@ -212,10 +208,6 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
     @Override
     public void onItemClick(final int ind, StoryItemCoordinates coordinates) {
 
-        InAppStoryService service = InAppStoryService.getInstance();
-        InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
-        if (service == null) return;
-        if (inAppStoryManager == null) return;
 
         if (System.currentTimeMillis() - clickTimestamp < 1500) {
             return;
@@ -224,7 +216,8 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
         int hasUGC = useUGC ? 1 : 0;
         int index = ind - hasUGC;
         clickTimestamp = System.currentTimeMillis();
-        final Story current = service.getStoryDownloadManager().getStoryById(storiesIds.get(index), Story.StoryType.COMMON);
+        final Story current = core.contentLoader().storyDownloadManager()
+                .getStoryById(storiesIds.get(index), Story.StoryType.COMMON);
         if (current != null) {
             if (callback != null) {
                 callback.itemClick(
@@ -268,8 +261,8 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
                 );
 
                 current.isOpened = true;
-                current.saveStoryOpened(Story.StoryType.COMMON);
-                service.getListReaderConnector().changeStory(current.id, listID, false);
+                core.storyListCache().saveStoryOpened(current.id, Story.StoryType.COMMON);
+                InAppStoryService.getInstance().getListReaderConnector().changeStory(current.id, listID, false);
                 // notifyItemChanged(ind);
                 return;
             } else if (current.deeplink != null) {
@@ -326,8 +319,8 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
                         }
                 );
                 current.isOpened = true;
-                current.saveStoryOpened(Story.StoryType.COMMON);
-                service.getListReaderConnector().changeStory(current.id, listID, false);
+                core.storyListCache().saveStoryOpened(current.id, Story.StoryType.COMMON);
+                InAppStoryService.getInstance().getListReaderConnector().changeStory(current.id, listID, false);
                 return;
             }
             if (current.isHideInReader()) {
@@ -344,7 +337,8 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
         }
         ArrayList<Integer> tempStories = new ArrayList();
         for (Integer storyId : storiesIds) {
-            Story story = service.getStoryDownloadManager().getStoryById(storyId, Story.StoryType.COMMON);
+            Story story = core.contentLoader().storyDownloadManager()
+                    .getStoryById(storyId, Story.StoryType.COMMON);
             if (story == null || !story.isHideInReader())
                 tempStories.add(storyId);
         }
@@ -387,7 +381,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
             int pref = pos * 10;
             InAppStoryService service = InAppStoryService.getInstance();
             if (service == null) return 0;
-            Story story = service.getStoryDownloadManager()
+            Story story = core.contentLoader().storyDownloadManager()
                     .getStoryById(storiesIds.get(pos), Story.StoryType.COMMON);
             if (story == null) return 0;
             if (story.getVideoUrl() != null) pref += 5;

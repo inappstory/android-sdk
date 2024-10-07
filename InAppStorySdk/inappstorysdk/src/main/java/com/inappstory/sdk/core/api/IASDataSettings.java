@@ -12,6 +12,8 @@ import java.util.Map;
 public interface IASDataSettings {
     void setUserId(String userId);
     void setLang(Locale lang);
+    void isSoundOn(boolean isSoundOn);
+    void switchSoundOn();
     void setPlaceholders(@NonNull Map<String, String> newPlaceholders);
     void setImagePlaceholders(@NonNull Map<String, ImagePlaceholderValue> newPlaceholders);
     void setCommonAppearanceManager(AppearanceManager appearanceManager);

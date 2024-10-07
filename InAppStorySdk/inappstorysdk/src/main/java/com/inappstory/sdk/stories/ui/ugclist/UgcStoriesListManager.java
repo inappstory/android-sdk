@@ -17,24 +17,21 @@ import com.inappstory.sdk.stories.ui.list.ListManager;
 class UgcStoriesListManager implements ListManager {
 
     UgcStoriesList list;
+    private final IASCore core;
 
     public void clear() {
         list = null;
     }
 
-    public UgcStoriesListManager() {
+    public UgcStoriesListManager(IASCore core) {
       //  this.list = list;
+        this.core = core;
         handler = new Handler(Looper.getMainLooper());
         checkCurrentSession();
     }
 
     void checkCurrentSession() {
-        InAppStoryManager.useCore(new UseIASCoreCallback() {
-            @Override
-            public void use(@NonNull IASCore core) {
-                currentSessionId = core.sessionManager().getSession().getSessionId();
-            }
-        });
+        currentSessionId = core.sessionManager().getSession().getSessionId();
     }
 
     private void checkHandler() {
@@ -50,13 +47,10 @@ class UgcStoriesListManager implements ListManager {
     }
 
     public void changeStory(final int storyId, final String listID) {
-        if (InAppStoryService.isNull()) {
-            return;
-        }
-        Story st = InAppStoryService.getInstance().getStoryDownloadManager().getStoryById(storyId, Story.StoryType.UGC);
+        Story st = core.contentLoader().storyDownloadManager().getStoryById(storyId, Story.StoryType.UGC);
         if (st == null) return;
         st.isOpened = true;
-        st.saveStoryOpened(Story.StoryType.UGC);
+        core.storyListCache().saveStoryOpened(st.id, Story.StoryType.UGC);
         checkHandler();
         post(new Runnable() {
             @Override

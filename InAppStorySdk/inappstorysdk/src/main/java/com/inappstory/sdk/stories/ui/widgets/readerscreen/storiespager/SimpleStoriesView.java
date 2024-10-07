@@ -2,10 +2,12 @@ package com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager;
 
 import android.content.Context;
 
+import com.inappstory.sdk.core.IASCore;
+
 public interface SimpleStoriesView {
     void pauseSlide();
-    void startSlide();
-    void restartSlide();
+    void startSlide(IASCore core);
+    void restartSlide(IASCore core);
     void stopSlide();
     void swipeUp();
 
@@ -13,7 +15,7 @@ public interface SimpleStoriesView {
     void loadJsApiResponse(String result, String cb);
     void resumeSlide();
     Context getActivityContext();
-    void changeSoundStatus();
+    void changeSoundStatus(IASCore core);
     void cancelDialog(String id);
     void sendDialog(String id, String data);
     void destroyView();

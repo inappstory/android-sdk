@@ -24,6 +24,7 @@ import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
+import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.stories.ui.views.IASWebView;
 import com.inappstory.sdk.stories.ui.views.IASWebViewClient;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPager;
@@ -41,10 +42,10 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
 
     boolean clientIsSet = false;
 
-    public void restartSlide() {
+    public void restartSlide(IASCore core) {
+        boolean isSoundOn = ((IASDataSettingsHolder)core.settingsAPI()).isSoundOn();
         String funAfterCheck =
-                (InAppStoryService.getInstance() != null
-                        && InAppStoryService.getInstance().isSoundOn()) ?
+                isSoundOn ?
                         "story_slide_restart('{\"muted\": false}');" :
                         "story_slide_restart('{\"muted\": true}');";
         loadUrl("javascript:(function(){" +
@@ -128,10 +129,10 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
         logMethod("story_slide_pause");
     }
 
-    public void startSlide() {
+    public void startSlide(IASCore core) {
+        boolean isSoundOn = ((IASDataSettingsHolder)core.settingsAPI()).isSoundOn();
         String funAfterCheck =
-                (InAppStoryService.getInstance() != null
-                        && InAppStoryService.getInstance().isSoundOn()) ?
+                isSoundOn ?
                         "story_slide_start('{\"muted\": false}');" :
                         "story_slide_start('{\"muted\": true}');";
         loadUrl("javascript:(function(){" +
@@ -198,8 +199,8 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
         });
     }
 
-    public void changeSoundStatus() {
-        if (InAppStoryService.getInstance().isSoundOn()) {
+    public void changeSoundStatus(IASCore core) {
+        if (((IASDataSettingsHolder)core.settingsAPI()).isSoundOn()) {
             loadUrl("javascript:(function(){story_slide_enable_audio();})()");
         } else {
             loadUrl("javascript:(function(){story_slide_disable_audio();})()");

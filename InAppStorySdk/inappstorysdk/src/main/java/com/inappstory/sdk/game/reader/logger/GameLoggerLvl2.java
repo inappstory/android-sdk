@@ -1,8 +1,10 @@
 package com.inappstory.sdk.game.reader.logger;
 
+import com.inappstory.sdk.core.IASCore;
+
 public class GameLoggerLvl2 extends GameLoggerLvl1 {
-    public GameLoggerLvl2(String gameInstanceId) {
-        super(gameInstanceId);
+    public GameLoggerLvl2(IASCore core, String gameInstanceId) {
+        super(core, gameInstanceId);
     }
 
     @Override

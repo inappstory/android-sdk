@@ -160,46 +160,39 @@ public class ReaderPageManager {
     }
 
     public void reloadStory() {
-        InAppStoryService.getInstance().getStoryDownloadManager().reloadStory(storyId, getStoryType());
+        core.contentLoader().storyDownloadManager().reloadStory(storyId, getStoryType());
     }
 
     public void widgetEvent(final String widgetName, String widgetData) {
-        final Story story = InAppStoryService.getInstance()
-                .getStoryDownloadManager().getStoryById(storyId, getStoryType());
+        final Story story = core.contentLoader().storyDownloadManager()
+                .getStoryById(storyId, getStoryType());
         if (story == null) return;
         final Map<String, String> widgetEventMap = JsonParser.toMap(widgetData);
         if (widgetEventMap != null)
             widgetEventMap.put("feed_id", getFeedId());
 
-        InAppStoryManager.useCore(new UseIASCoreCallback() {
-            @Override
-            public void use(@NonNull IASCore core) {
-                core.callbacksAPI().useCallback(IASCallbackType.STORY_WIDGET,
-                        new UseIASCallback<StoryWidgetCallback>() {
-                            @Override
-                            public void use(@NonNull StoryWidgetCallback callback) {
-                                callback.widgetEvent(
-                                        getSlideData(story),
-                                        StringsUtils.getNonNull(widgetName),
-                                        widgetEventMap
-                                );
-                            }
-                        }
-                );
-            }
-        });
+        core.callbacksAPI().useCallback(IASCallbackType.STORY_WIDGET,
+                new UseIASCallback<StoryWidgetCallback>() {
+                    @Override
+                    public void use(@NonNull StoryWidgetCallback callback) {
+                        callback.widgetEvent(
+                                getSlideData(story),
+                                StringsUtils.getNonNull(widgetName),
+                                widgetEventMap
+                        );
+                    }
+                }
+        );
     }
 
     private void tapOnLink(String link) {
         final StoryLinkObject object = JsonParser.fromJson(link, StoryLinkObject.class);
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service == null) return;
         if (object != null) {
-
             ClickAction action = ClickAction.BUTTON;
-            final Story story = service.getStoryDownloadManager().getStoryById(
-                    storyId, getStoryType()
-            );
+            final Story story = core.contentLoader().storyDownloadManager()
+                    .getStoryById(
+                            storyId, getStoryType()
+                    );
             switch (object.getLink().getType()) {
                 case "url":
                     if (object.getType() != null && !object.getType().isEmpty()) {
@@ -245,7 +238,9 @@ public class ReaderPageManager {
                     if (object.getType() != null && !object.getType().isEmpty()) {
                         if ("swipeUpItems".equals(object.getType())) {
                             if (story != null)
-                                showGoods(object.getLink().getTarget(), object.getElementId(),
+                                showGoods(
+                                        object.getLink().getTarget(),
+                                        object.getElementId(),
                                         getSlideData(story)
                                 );
                         }
@@ -338,7 +333,7 @@ public class ReaderPageManager {
     }
 
     public void openSlideByIndex(int index) {
-        Story story = InAppStoryService.getInstance().getStoryDownloadManager()
+        Story story = core.contentLoader().storyDownloadManager()
                 .getStoryById(storyId, getStoryType());
         if (index < 0) index = 0;
         if (story == null) return;
@@ -401,9 +396,8 @@ public class ReaderPageManager {
 
     public void nextSlide(int action) {
         if (checkIfManagersIsNull()) return;
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service == null) return;
-        Story story = service.getStoryDownloadManager().getStoryById(storyId, getStoryType());
+        Story story = core.contentLoader().storyDownloadManager()
+                .getStoryById(storyId, getStoryType());
         if (story == null) return;
         pauseTimers();
         int lastIndex = slideIndex;
@@ -428,10 +422,8 @@ public class ReaderPageManager {
         timelineManager.clearTimer();
     }
 
-    public void changeCurrentSlide(int slideIndex) {
+    public void changeCurrentSlide(final int slideIndex) {
         if (checkIfManagersIsNull()) return;
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service == null) return;
         host.showLoader();
         currentSlideIsLoaded = false;
         core.statistic().profiling().addTask("slide_show",
@@ -439,11 +431,21 @@ public class ReaderPageManager {
         isPaused = false;
         pauseTimers();
         core.statistic().v2().sendCurrentState();
-        service.getStoryDownloadManager().changePriorityForSingle(storyId,
+        core.contentLoader().storyDownloadManager().changePriorityForSingle(storyId,
                 parentManager.storyType);
-        if (getStoryType() == Story.StoryType.COMMON)
-            service.sendPageOpenStatistic(storyId, slideIndex,
-                    parentManager != null ? parentManager.getFeedId() : null);
+        if (getStoryType() == Story.StoryType.COMMON) {
+            core.statistic().v2().createCurrentState(
+                    storyId,
+                    slideIndex,
+                    parentManager != null ? parentManager.getFeedId() : null
+            );
+            core.statistic().v1(new GetStatisticV1Callback() {
+                @Override
+                public void get(@NonNull IASStatisticV1 manager) {
+                    manager.addStatisticBlock(storyId, slideIndex);
+                }
+            });
+        }
         loadStoryAndSlide(host.story, slideIndex);
     }
 
@@ -465,8 +467,8 @@ public class ReaderPageManager {
 
     public void showShareView(InnerShareData shareData) {
         if (parentManager != null) {
-
-            Story story = InAppStoryService.getInstance().getStoryDownloadManager().getStoryById(storyId, getStoryType());
+            Story story = core.contentLoader().storyDownloadManager()
+                    .getStoryById(storyId, getStoryType());
             if (story != null)
                 parentManager.showShareView(shareData, storyId, slideIndex);
         }
@@ -480,10 +482,8 @@ public class ReaderPageManager {
 
     public void prevSlide(int action) {
         if (checkIfManagersIsNull()) return;
-
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service == null) return;
-        Story story = service.getStoryDownloadManager().getStoryById(storyId, getStoryType());
+        Story story = core.contentLoader().storyDownloadManager()
+                .getStoryById(storyId, getStoryType());
 
         if (story == null) return;
         pauseTimers();
@@ -505,9 +505,12 @@ public class ReaderPageManager {
     }
 
     public void changeSoundStatus() {
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service == null) return;
-        service.changeSoundStatus();
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.settingsAPI().switchSoundOn();
+            }
+        });
         if (parentManager != null) {
             parentManager.updateSoundStatus();
         }

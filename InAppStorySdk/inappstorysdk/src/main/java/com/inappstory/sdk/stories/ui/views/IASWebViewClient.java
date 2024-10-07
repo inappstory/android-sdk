@@ -30,17 +30,12 @@ import java.util.Map;
 
 public class IASWebViewClient extends WebViewClient {
 
-    private File getCachedFile(String url, String key) {
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service == null) return null;
-        LruDiskCache cache = service.getCommonCache();
+    private File getCachedFile(String key) {
+        InAppStoryManager manager = InAppStoryManager.getInstance();
+        if (manager == null) return null;
+        IASCore core = manager.iasCore();
         try {
-            File cachedFile = cache.getFullFile(key);
-            if (cachedFile == null) {
-                // Downloader.downloadOrGetFile(url, true, cache, null, null);
-                return null;
-            }
-            return cachedFile;
+            return core.contentLoader().getCommonCache().getFullFile(key);
         } catch (Exception e) {
             InAppStoryService.createExceptionLog(e);
             return null;
@@ -60,8 +55,7 @@ public class IASWebViewClient extends WebViewClient {
         if (filePath != null) {
             file = new File(filePath);
         } else if (!url.startsWith("data:") && URLUtil.isValidUrl(url)) {
-            // skip any data URI scheme (data:content/type;)
-            file = getCachedFile(url, Downloader.deleteQueryArgumentsFromUrlOld(url, true));
+            file = getCachedFile(Downloader.deleteQueryArgumentsFromUrlOld(url, true));
         }
         return file;
     }

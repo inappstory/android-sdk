@@ -8,6 +8,7 @@ import com.inappstory.sdk.core.api.IASContentPreload;
 import com.inappstory.sdk.core.api.IASExternalUtilsAPI;
 import com.inappstory.sdk.core.api.IASFavorites;
 import com.inappstory.sdk.core.api.IASGames;
+import com.inappstory.sdk.core.api.IASLogs;
 import com.inappstory.sdk.core.api.IASManager;
 import com.inappstory.sdk.core.api.IASOnboardings;
 import com.inappstory.sdk.core.api.IASDataSettings;
@@ -44,4 +45,5 @@ public interface IASCore {
     IASSessionAssetsHolder sessionAssets();
     IASExternalUtilsAPI externalUtilsAPI();
     IASContentLoader contentLoader();
+    IASLogs logs();
 }

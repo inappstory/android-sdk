@@ -58,16 +58,16 @@ public class GameManager {
     public void setLogger(int loggerLevel) {
         switch (loggerLevel) {
             case 0:
-                logger = new GameLoggerLvl0();
+                logger = new GameLoggerLvl0(core);
                 break;
             case 1:
-                logger = new GameLoggerLvl1(gameCenterId);
+                logger = new GameLoggerLvl1(core, gameCenterId);
                 break;
             case 2:
-                logger = new GameLoggerLvl2(gameCenterId);
+                logger = new GameLoggerLvl2(core, gameCenterId);
                 break;
             case 3:
-                logger = new GameLoggerLvl3(gameCenterId);
+                logger = new GameLoggerLvl3(core, gameCenterId);
                 break;
         }
     }

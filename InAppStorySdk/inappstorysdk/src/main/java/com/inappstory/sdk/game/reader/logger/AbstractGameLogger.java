@@ -8,6 +8,7 @@ import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.UseServiceInstanceCallback;
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 import java.util.ArrayList;
@@ -24,6 +25,8 @@ public abstract class AbstractGameLogger {
     protected final String sdkError = "sdkError";
     protected final String sdkWarn = "sdkWarn";
 
+    private final IASCore core;
+
     protected String gameInstanceId() {
         return gameInstanceId;
     }
@@ -32,12 +35,14 @@ public abstract class AbstractGameLogger {
         this.gameInstanceId = gameInstanceId;
     }
 
-    protected AbstractGameLogger(String gameInstanceId) {
+    protected AbstractGameLogger(IASCore core, String gameInstanceId) {
         this.gameInstanceId = gameInstanceId;
+        this.core = core;
     }
 
 
-    protected AbstractGameLogger() {
+    protected AbstractGameLogger(IASCore core) {
+        this.core = core;
     }
 
     public abstract void sendGameError(String message);
@@ -71,22 +76,15 @@ public abstract class AbstractGameLogger {
         new Handler().post(new Runnable() {
             @Override
             public void run() {
-                InAppStoryService.useInstance(new UseServiceInstanceCallback() {
-                    @Override
-                    public void use(@NonNull InAppStoryService service) throws Exception {
-                        service.getLogSaver().saveLog(log);
-                    }
-                });
+                core.logs().logSaver().saveLog(log);
             }
         });
     }
 
     protected final GameLog createBaseLog() {
-        InAppStoryManager manager = InAppStoryManager.getInstance();
-        if (manager == null) return null;
         return new GameLog(
                 gameInstanceId,
-                manager.iasCore().sessionManager().getSession().getSessionId(),
+                core.sessionManager().getSession().getSessionId(),
                 System.currentTimeMillis() / 1000,
                 launchTryNumber,
                 gameLoaded

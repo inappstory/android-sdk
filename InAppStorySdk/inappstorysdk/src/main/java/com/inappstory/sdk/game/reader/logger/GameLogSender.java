@@ -3,8 +3,7 @@ package com.inappstory.sdk.game.reader.logger;
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.InAppStoryManager;
-import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.UseServiceInstanceCallback;
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.network.models.Response;
@@ -21,16 +20,17 @@ public class GameLogSender implements IGameLogSender {
 
     private final IGameLogSaver saver;
 
+    private final IASCore core;
+
     public GameLogSender(
-            @NonNull InAppStoryService service,
+            @NonNull IASCore core,
             @NonNull IGameLogSaver saver
     ) {
-        this.service = service;
+        this.core = core;
         this.saver = saver;
         submitRunnable();
     }
 
-    private final InAppStoryService service;
 
     private final Runnable statisticUpdateRunnable = new Runnable() {
         @Override
@@ -53,34 +53,18 @@ public class GameLogSender implements IGameLogSender {
             new ScheduledThreadPoolExecutor(1);
 
     private void sendLogs() {
-        if (service != InAppStoryService.getInstance()) {
-            statisticScheduledThread.shutdownNow();
-            return;
-        }
         synchronized (this) {
             if (inProcess) return;
             inProcess = true;
         }
-        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
-            @Override
-            public void use(@NonNull InAppStoryService service) throws Exception {
-                NetworkClient networkClient = InAppStoryManager.getNetworkClient();
-                if (networkClient == null) {
-                    synchronized (GameLogSender.this) {
-                        inProcess = false;
-                    }
-                    return;
-                }
-                sendLogs(getLogs(), service, networkClient);
+        NetworkClient networkClient = InAppStoryManager.getNetworkClient();
+        if (networkClient == null) {
+            synchronized (GameLogSender.this) {
+                inProcess = false;
             }
-
-            @Override
-            public void error() throws Exception {
-                synchronized (GameLogSender.this) {
-                    inProcess = false;
-                }
-            }
-        });
+            return;
+        }
+        sendLogs(getLogs(), networkClient);
     }
 
     private void saveLogs(List<GameLog> logs) {
@@ -95,7 +79,6 @@ public class GameLogSender implements IGameLogSender {
 
     private void sendLogs(
             final List<GameLog> logs,
-            final InAppStoryService service,
             final NetworkClient networkClient
     ) {
         if (logs.isEmpty()) {
@@ -109,7 +92,6 @@ public class GameLogSender implements IGameLogSender {
         if (logs.size() > 1) {
             nextLogs.addAll(logs.subList(1, logs.size()));
         }
-        if (service == null) return;
         networkClient.enqueue(
                 networkClient.getApi().sendGameLogMessage(
                         log.gameInstanceId(),
@@ -124,7 +106,7 @@ public class GameLogSender implements IGameLogSender {
                 new NetworkCallback<Response>() {
                     @Override
                     public void onSuccess(Response response) {
-                        sendLogs(nextLogs, service, networkClient);
+                        sendLogs(nextLogs, networkClient);
                     }
 
                     @Override

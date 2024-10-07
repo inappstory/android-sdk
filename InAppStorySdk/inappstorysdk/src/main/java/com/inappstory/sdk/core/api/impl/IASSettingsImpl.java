@@ -29,6 +29,7 @@ import java.util.Set;
 
 public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
     private final IASCore core;
+    private boolean isSoundOn = true;
     private Locale lang;
     private final Map<String, String> userPlaceholders = new HashMap<>();
     private final Map<String, ImagePlaceholderValue> userImagePlaceholders = new HashMap<>();
@@ -79,9 +80,9 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
 
                 if (inAppStoryService.getFavoriteImages() != null)
                     inAppStoryService.getFavoriteImages().clear();
-                inAppStoryService.getStoryDownloadManager().refreshLocals(Story.StoryType.COMMON);
-                inAppStoryService.getStoryDownloadManager().refreshLocals(Story.StoryType.UGC);
-                inAppStoryService.getStoryDownloadManager().cleanTasks(false);
+                core.contentLoader().storyDownloadManager().refreshLocals(Story.StoryType.COMMON);
+                core.contentLoader().storyDownloadManager().refreshLocals(Story.StoryType.UGC);
+                core.contentLoader().storyDownloadManager().cleanTasks(false);
             }
         });
 
@@ -120,11 +121,25 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
 
                 if (inAppStoryService.getFavoriteImages() != null)
                     inAppStoryService.getFavoriteImages().clear();
-                inAppStoryService.getStoryDownloadManager().refreshLocals(Story.StoryType.COMMON);
-                inAppStoryService.getStoryDownloadManager().refreshLocals(Story.StoryType.UGC);
-                inAppStoryService.getStoryDownloadManager().cleanTasks(false);
+                core.contentLoader().storyDownloadManager().refreshLocals(Story.StoryType.COMMON);
+                core.contentLoader().storyDownloadManager().refreshLocals(Story.StoryType.UGC);
+                core.contentLoader().storyDownloadManager().cleanTasks(false);
             }
         });
+    }
+
+    @Override
+    public void isSoundOn(boolean isSoundOn) {
+        synchronized (settingsLock) {
+            this.isSoundOn = isSoundOn;
+        }
+    }
+
+    @Override
+    public void switchSoundOn() {
+        synchronized (settingsLock) {
+            this.isSoundOn = !this.isSoundOn;
+        }
     }
 
     @Override
@@ -299,6 +314,13 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
     public Locale lang() {
         synchronized (settingsLock) {
             return lang;
+        }
+    }
+
+    @Override
+    public boolean isSoundOn() {
+        synchronized (settingsLock) {
+            return isSoundOn;
         }
     }
 

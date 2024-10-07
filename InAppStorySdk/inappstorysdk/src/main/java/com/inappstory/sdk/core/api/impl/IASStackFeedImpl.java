@@ -88,16 +88,11 @@ public class IASStackFeedImpl implements IASStackFeed {
                                 if (response == null || response.stories == null) {
                                     stackFeedResult.error();
                                 } else {
-                                    InAppStoryService.useInstance(new UseServiceInstanceCallback() {
-                                        @Override
-                                        public void use(@NonNull InAppStoryService service) throws Exception {
-                                            service.saveStoriesOpened(response.stories, Story.StoryType.COMMON);
-                                            service.getStoryDownloadManager().uploadingAdditional(
-                                                    response.stories,
-                                                    Story.StoryType.COMMON
-                                            );
-                                        }
-                                    });
+                                    core.storyListCache().saveStoriesOpened(response.stories, Story.StoryType.COMMON);
+                                    core.contentLoader().storyDownloadManager().uploadingAdditional(
+                                            response.stories,
+                                            Story.StoryType.COMMON
+                                    );
                                     final StackStoryObserver observer = new StackStoryObserver(
                                             core,
                                             response.stories,
