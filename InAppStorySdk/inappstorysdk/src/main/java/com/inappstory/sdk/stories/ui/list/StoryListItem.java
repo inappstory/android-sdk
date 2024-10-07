@@ -2,6 +2,8 @@ package com.inappstory.sdk.stories.ui.list;
 
 import android.app.Activity;
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -107,19 +109,29 @@ public class StoryListItem extends BaseStoryListItem {
                         imageUrl,
                         new IGetStoryCoverCallback() {
                             @Override
-                            public void success(String file) {
-                                if (viewCanBeUsed(itemView, getParent())) {
-                                    getListItem.setImage(itemView, file,
-                                            StoryListItem.this.backgroundColor);
-                                }
+                            public void success(final String file) {
+                                new Handler(Looper.getMainLooper()).post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        if (viewCanBeUsed(itemView, getParent())) {
+                                            getListItem.setImage(itemView, file,
+                                                    StoryListItem.this.backgroundColor);
+                                        }
+                                    }
+                                });
                             }
 
                             @Override
                             public void error() {
-                                if (viewCanBeUsed(itemView, getParent())) {
-                                    getListItem.setImage(itemView, null,
-                                            StoryListItem.this.backgroundColor);
-                                }
+                                new Handler(Looper.getMainLooper()).post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        if (viewCanBeUsed(itemView, getParent())) {
+                                            getListItem.setImage(itemView, null,
+                                                    StoryListItem.this.backgroundColor);
+                                        }
+                                    }
+                                });
                             }
                         }
                 ).getFile();
@@ -136,10 +148,15 @@ public class StoryListItem extends BaseStoryListItem {
                         videoUrl,
                         new IGetStoryCoverCallback() {
                             @Override
-                            public void success(String file) {
-                                if (viewCanBeUsed(itemView, getParent())) {
-                                    getListItem.setVideo(itemView, file);
-                                }
+                            public void success(final String file) {
+                                new Handler(Looper.getMainLooper()).post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        if (viewCanBeUsed(itemView, getParent())) {
+                                            getListItem.setVideo(itemView, file);
+                                        }
+                                    }
+                                });
                             }
 
                             @Override
@@ -151,7 +168,6 @@ public class StoryListItem extends BaseStoryListItem {
             }
         }
     }
-
 
 
     @Override
