@@ -26,12 +26,13 @@ import com.inappstory.sdk.core.utils.ConnectionCheckCallback;
 import com.inappstory.sdk.externalapi.StoryAPIData;
 import com.inappstory.sdk.externalapi.StoryFavoriteItemAPIData;
 import com.inappstory.sdk.externalapi.storylist.IASStoryListRequestData;
+import com.inappstory.sdk.game.cache.SuccessUseCaseCallback;
 import com.inappstory.sdk.game.reader.GameStoryData;
+import com.inappstory.sdk.imageloader.CustomFileLoader;
 import com.inappstory.sdk.stories.api.models.Image;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadFavoritesCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadStoriesCallback;
-import com.inappstory.sdk.stories.cache.Downloader;
 import com.inappstory.sdk.stories.cache.StoryDownloadManager;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.CallToActionCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickAction;
@@ -42,7 +43,6 @@ import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.statistic.GetStatisticV1Callback;
 import com.inappstory.sdk.stories.statistic.IASStatisticV2Impl;
 import com.inappstory.sdk.stories.ui.list.FavoriteImage;
-import com.inappstory.sdk.stories.utils.RunnableCallback;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -327,15 +327,15 @@ public class InAppStoryAPISubscribersManager {
             final FavoriteImage favoriteImage = iterator.next();
             String image = favoriteImage.getUrl();
             if (image != null && !image.isEmpty())
-                Downloader.downloadFileAndSendToInterface(image, new RunnableCallback() {
+                new CustomFileLoader().getFileLinkFromUrl(image, new SuccessUseCaseCallback<String>() {
                     @Override
-                    public void run(String path) {
+                    public void onSuccess(String path) {
                         favoriteItemAPIData.add(new StoryFavoriteItemAPIData(favoriteImage, path));
                         cacheFavoriteCellImage(iterator, favoriteItemAPIData, uniqueId);
                     }
 
                     @Override
-                    public void error() {
+                    public void onError(String message) {
                         favoriteItemAPIData.add(new StoryFavoriteItemAPIData(favoriteImage, null));
                         cacheFavoriteCellImage(iterator, favoriteItemAPIData, uniqueId);
                     }
@@ -439,36 +439,30 @@ public class InAppStoryAPISubscribersManager {
                     if (image != null && !image.isEmpty()) {
                         localImage = urlLocalPath.get(image);
                         if (localImage == null) {
-                            Downloader.downloadFileAndSendToInterface(image, new RunnableCallback() {
-                                @Override
-                                public void run(String path) {
-                                    urlLocalPath.put(image, path);
-                                    updateStory(story, path, null);
-                                }
-
-                                @Override
-                                public void error() {
-
-                                }
-                            });
+                            new CustomFileLoader()
+                                    .getFileLinkFromUrl(image, new SuccessUseCaseCallback<String>() {
+                                                @Override
+                                                public void onSuccess(String path) {
+                                                    urlLocalPath.put(image, path);
+                                                    updateStory(story, path, null);
+                                                }
+                                            }
+                                    );
                         }
                     }
                     final String video = story.getVideoUrl();
                     if (video != null && !video.isEmpty()) {
                         localVideo = urlLocalPath.get(video);
                         if (localVideo == null) {
-                            Downloader.downloadFileAndSendToInterface(video, new RunnableCallback() {
-                                @Override
-                                public void run(String path) {
-                                    urlLocalPath.put(video, path);
-                                    updateStory(story, null, path);
-                                }
-
-                                @Override
-                                public void error() {
-
-                                }
-                            });
+                            new CustomFileLoader()
+                                    .getFileLinkFromUrl(video, new SuccessUseCaseCallback<String>() {
+                                                @Override
+                                                public void onSuccess(String path) {
+                                                    urlLocalPath.put(video, path);
+                                                    updateStory(story, null, path);
+                                                }
+                                            }
+                                    );
                         }
                     }
                     if (localImage != null && localVideo != null) {

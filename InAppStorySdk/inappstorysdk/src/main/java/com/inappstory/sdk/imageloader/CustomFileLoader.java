@@ -1,11 +1,10 @@
 package com.inappstory.sdk.imageloader;
 
-import android.content.Context;
 import androidx.annotation.NonNull;
 
-import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.R;
-import com.inappstory.sdk.UseServiceInstanceCallback;
+import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.game.cache.SuccessUseCaseCallback;
 import com.inappstory.sdk.memcache.GetBitmapFromCacheWithFilePath;
 import com.inappstory.sdk.memcache.IGetBitmapFromMemoryCache;
@@ -14,7 +13,7 @@ import com.inappstory.sdk.stories.cache.usecases.CustomFileUseCase;
 
 import java.io.File;
 
-public class ImageLoader {
+public class CustomFileLoader {
 
     public void getBitmapFromUrl(
             @NonNull final String url,
@@ -23,15 +22,16 @@ public class ImageLoader {
         getBitmapFromUrl(url, success, null);
     }
 
+
     public void getFileLinkFromUrl(
             @NonNull final String url,
             final SuccessUseCaseCallback<String> useCaseCallback
     ) {
-        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
-            public void use(@NonNull InAppStoryService service) throws Exception {
+            public void use(@NonNull IASCore core) {
                 new CustomFileUseCase(
-                        service.getFilesDownloadManager(),
+                        core.contentLoader().filesDownloadManager(),
                         url,
                         new SuccessUseCaseCallback<File>() {
                             @Override
@@ -49,11 +49,10 @@ public class ImageLoader {
             }
 
             @Override
-            public void error() throws Exception {
+            public void error() {
                 useCaseCallback.onError("");
             }
         });
-
     }
 
     public void getBitmapFromUrl(

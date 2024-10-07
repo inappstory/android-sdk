@@ -3,7 +3,9 @@ package com.inappstory.sdk.core;
 import android.content.Context;
 
 import com.inappstory.sdk.core.api.IASCallbacks;
+import com.inappstory.sdk.core.api.IASContentLoader;
 import com.inappstory.sdk.core.api.IASContentPreload;
+import com.inappstory.sdk.core.api.IASExternalUtilsAPI;
 import com.inappstory.sdk.core.api.IASFavorites;
 import com.inappstory.sdk.core.api.IASGames;
 import com.inappstory.sdk.core.api.IASManager;
@@ -16,7 +18,9 @@ import com.inappstory.sdk.core.api.IASStatistic;
 import com.inappstory.sdk.core.api.IASStoryList;
 import com.inappstory.sdk.core.api.IASStoriesOpenedCache;
 import com.inappstory.sdk.core.api.impl.IASCallbacksImpl;
+import com.inappstory.sdk.core.api.impl.IASContentLoaderImpl;
 import com.inappstory.sdk.core.api.impl.IASContentPreloadImpl;
+import com.inappstory.sdk.core.api.impl.IASExternalUtilsAPIImpl;
 import com.inappstory.sdk.core.api.impl.IASFavoritesImpl;
 import com.inappstory.sdk.core.api.impl.IASGamesImpl;
 import com.inappstory.sdk.core.api.impl.IASManagerImpl;
@@ -52,11 +56,16 @@ public class IASCoreImpl implements IASCore {
     private final IASStatistic statistic = new IASStatisticImpl(this);
     private final IVibrateUtils vibrateUtils = new VibrateUtils();
     private final IASContentPreload contentPreload = new IASContentPreloadImpl(this);
+    private final IASExternalUtilsAPI externalUtilsAPI = new IASExternalUtilsAPIImpl();
+    private final IASContentLoader contentLoader = new IASContentLoaderImpl(this);
+    private final Context context;
 
-    public IASCoreImpl() {
+    public IASCoreImpl(Context context) {
         synchronized (lock) {
             INSTANCE = this;
         }
+        this.context = context;
+        externalUtilsAPI.init();
     }
 
     public static IASCoreImpl getInstance() {
@@ -68,7 +77,7 @@ public class IASCoreImpl implements IASCore {
 
     @Override
     public Context appContext() {
-        return null;
+        return context;
     }
 
     @Override
@@ -154,5 +163,15 @@ public class IASCoreImpl implements IASCore {
     @Override
     public IASSessionAssetsHolder sessionAssets() {
         return null;
+    }
+
+    @Override
+    public IASExternalUtilsAPI externalUtilsAPI() {
+        return externalUtilsAPI;
+    }
+
+    @Override
+    public IASContentLoader contentLoader() {
+        return contentLoader;
     }
 }

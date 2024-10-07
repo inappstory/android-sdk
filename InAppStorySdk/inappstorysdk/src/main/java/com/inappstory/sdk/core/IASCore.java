@@ -3,7 +3,9 @@ package com.inappstory.sdk.core;
 import android.content.Context;
 
 import com.inappstory.sdk.core.api.IASCallbacks;
+import com.inappstory.sdk.core.api.IASContentLoader;
 import com.inappstory.sdk.core.api.IASContentPreload;
+import com.inappstory.sdk.core.api.IASExternalUtilsAPI;
 import com.inappstory.sdk.core.api.IASFavorites;
 import com.inappstory.sdk.core.api.IASGames;
 import com.inappstory.sdk.core.api.IASManager;
@@ -17,6 +19,7 @@ import com.inappstory.sdk.core.api.IASStoryList;
 import com.inappstory.sdk.core.api.IASStoriesOpenedCache;
 import com.inappstory.sdk.core.dataholders.IStoriesListVMHolder;
 import com.inappstory.sdk.core.ui.screens.ScreensManager;
+import com.inappstory.sdk.stories.cache.FilesDownloadManager;
 import com.inappstory.sdk.stories.utils.SessionManager;
 import com.inappstory.sdk.utils.IVibrateUtils;
 
@@ -39,4 +42,6 @@ public interface IASCore {
     IVibrateUtils vibrateUtils();
     IASContentPreload contentPreload();
     IASSessionAssetsHolder sessionAssets();
+    IASExternalUtilsAPI externalUtilsAPI();
+    IASContentLoader contentLoader();
 }

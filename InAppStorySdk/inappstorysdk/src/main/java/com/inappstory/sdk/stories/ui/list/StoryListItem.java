@@ -60,6 +60,89 @@ public class StoryListItem extends BaseStoryListItem {
     public Integer backgroundColor;
     public ClickCallback callback;
 
+    private void loadCovers(final @NonNull IStoriesListItem getListItem,
+                            final String imageUrl,
+                            final Integer backgroundColor,
+                            final String videoUrl) {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                if (imageUrl != null) {
+                    new StoryCoverUseCase(
+                            core.contentLoader().filesDownloadManager(),
+                            imageUrl,
+                            new IGetStoryCoverCallback() {
+                                @Override
+                                public void success(final String file) {
+                                    itemView.post(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            if (viewCanBeUsed(itemView, getParent())) {
+                                                getListItem.setImage(itemView, file, backgroundColor);
+                                            }
+                                        }
+                                    });
+                                }
+
+                                @Override
+                                public void error() {
+                                    itemView.post(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            if (viewCanBeUsed(itemView, getParent())) {
+                                                getListItem.setImage(itemView, null, backgroundColor);
+                                            }
+                                        }
+                                    });
+                                }
+                            }
+                    ).getFile();
+                } else {
+                    if (viewCanBeUsed(itemView, getParent())) {
+                        getListItem.setImage(itemView, null, backgroundColor);
+                    }
+                }
+
+                if (videoUrl != null) {
+                    new StoryCoverUseCase(
+                            core.contentLoader().filesDownloadManager(),
+                            videoUrl,
+                            new IGetStoryCoverCallback() {
+                                @Override
+                                public void success(final String file) {
+                                    itemView.post(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            if (viewCanBeUsed(itemView, getParent())) {
+                                                getListItem.setVideo(itemView, file);
+                                            }
+                                        }
+                                    });
+                                }
+
+                                @Override
+                                public void error() {
+
+                                }
+                            }
+                    ).getFile();
+                }
+            }
+
+            @Override
+            public void error() {
+                itemView.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (viewCanBeUsed(itemView, getParent())) {
+                            getListItem.setImage(itemView, null, backgroundColor);
+                        }
+                    }
+                });
+            }
+        });
+    }
+
     public void bind(Integer id,
                      String titleText,
                      Integer titleColor,
@@ -67,7 +150,7 @@ public class StoryListItem extends BaseStoryListItem {
                      Integer backgroundColor,
                      boolean isOpened,
                      boolean hasAudio,
-                     String videoUrl,
+                     final String videoUrl,
                      StoryData storyData,
                      ClickCallback callback) {
         this.callback = callback;
@@ -108,57 +191,7 @@ public class StoryListItem extends BaseStoryListItem {
                     ((IStoriesListItemWithStoryData) getListItem).setCustomData(itemView, storyData);
                 }
             }
-            InAppStoryService service = InAppStoryService.getInstance();
-            if (service == null) return;
-
-            if (imageUrl != null) {
-                new StoryCoverUseCase(
-                        service.getFilesDownloadManager(),
-                        imageUrl,
-                        new IGetStoryCoverCallback() {
-                            @Override
-                            public void success(String file) {
-                                if (viewCanBeUsed(itemView, getParent())) {
-                                    getListItem.setImage(itemView, file,
-                                            StoryListItem.this.backgroundColor);
-                                }
-                            }
-
-                            @Override
-                            public void error() {
-                                if (viewCanBeUsed(itemView, getParent())) {
-                                    getListItem.setImage(itemView, null,
-                                            StoryListItem.this.backgroundColor);
-                                }
-                            }
-                        }
-                ).getFile();
-            } else {
-                if (viewCanBeUsed(itemView, getParent())) {
-                    getListItem.setImage(itemView, null,
-                            StoryListItem.this.backgroundColor);
-                }
-            }
-
-            if (videoUrl != null) {
-                new StoryCoverUseCase(
-                        service.getFilesDownloadManager(),
-                        videoUrl,
-                        new IGetStoryCoverCallback() {
-                            @Override
-                            public void success(String file) {
-                                if (viewCanBeUsed(itemView, getParent())) {
-                                    getListItem.setVideo(itemView, file);
-                                }
-                            }
-
-                            @Override
-                            public void error() {
-
-                            }
-                        }
-                ).getFile();
-            }
+            loadCovers(getListItem, imageUrl, backgroundColor, videoUrl);
         }
     }
 

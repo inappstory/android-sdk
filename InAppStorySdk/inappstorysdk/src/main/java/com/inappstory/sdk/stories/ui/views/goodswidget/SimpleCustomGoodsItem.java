@@ -16,17 +16,11 @@ import androidx.appcompat.widget.AppCompatImageView;
 import androidx.appcompat.widget.AppCompatTextView;
 
 import com.inappstory.sdk.AppearanceManager;
-import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
-import com.inappstory.sdk.UseServiceInstanceCallback;
-import com.inappstory.sdk.game.cache.SuccessUseCaseCallback;
-import com.inappstory.sdk.imageloader.ImageLoader;
+import com.inappstory.sdk.imageloader.CustomFileLoader;
 import com.inappstory.sdk.imageloader.RoundedCornerLayout;
 import com.inappstory.sdk.memcache.IGetBitmapFromMemoryCache;
-import com.inappstory.sdk.stories.cache.usecases.CustomFileUseCase;
 import com.inappstory.sdk.stories.utils.Sizes;
-
-import java.io.File;
 
 public class SimpleCustomGoodsItem implements ICustomGoodsItem {
     public SimpleCustomGoodsItem csGoodsCellImageBackgroundColor(int goodsCellImageBackgroundColor) {
@@ -158,7 +152,7 @@ public class SimpleCustomGoodsItem implements ICustomGoodsItem {
         ((AppCompatImageView) view.findViewById(R.id.image))
                 .setImageBitmap(null);
         if (data.image != null && URLUtil.isNetworkUrl(data.image)) {
-            new ImageLoader().getBitmapFromUrl(data.image, new IGetBitmapFromMemoryCache() {
+            new CustomFileLoader().getBitmapFromUrl(data.image, new IGetBitmapFromMemoryCache() {
                 @Override
                 public void get(Bitmap bitmap) {
                     ((AppCompatImageView) view.findViewById(R.id.image)).setImageBitmap(bitmap);

@@ -1,6 +1,5 @@
 package com.inappstory.sdk.stories.cache;
 
-import android.content.Context;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -16,7 +15,6 @@ import com.inappstory.sdk.game.cache.SessionAssetsIsReadyCallback;
 import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
-import com.inappstory.sdk.stories.api.models.ExceptionCache;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.StoryListType;
 import com.inappstory.sdk.stories.api.models.callbacks.GetStoryByIdCallback;
@@ -31,10 +29,8 @@ import com.inappstory.sdk.stories.cache.usecases.StoryVODResourceFileUseCaseResu
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.outercallbacks.common.single.SingleLoadCallback;
-import com.inappstory.sdk.stories.statistic.IASStatisticProfilingImpl;
 import com.inappstory.sdk.stories.ui.list.FavoriteImage;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPageManager;
-import com.inappstory.sdk.stories.utils.KeyValueStorage;
 import com.inappstory.sdk.utils.ISessionHolder;
 
 import java.io.IOException;
@@ -49,8 +45,6 @@ public class StoryDownloadManager {
     public List<Story> getStories(Story.StoryType type) {
         return getStoriesListByType(type);
     }
-
-    private Context context;
 
     public void clearLocalData() {
         favoriteImages.clear();
@@ -180,7 +174,8 @@ public class StoryDownloadManager {
 
     }
 
-    public void initDownloaders() {
+    public void init() {
+        destroy();
         storyDownloader.init();
         slidesDownloader.init();
     }
@@ -208,21 +203,9 @@ public class StoryDownloadManager {
     }
 
 
-    public void clearCache() {
+    public void clearCache() throws IOException {
         storyDownloader.cleanTasks();
         slidesDownloader.cleanTasks();
-        KeyValueStorage.clear();
-        core.storiesListVMHolder().clear();
-        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
-            @Override
-            public void use(@NonNull InAppStoryService inAppStoryService) throws Exception {
-                inAppStoryService.getCommonCache().clearCache();
-                inAppStoryService.getFastCache().clearCache();
-                inAppStoryService.getInfiniteCache().clearCache();
-                inAppStoryService.getVodCache().clearCache();
-                inAppStoryService.getFilesDownloadManager().getVodCacheJournal().clear();
-            }
-        });
     }
 
     private final Object lock = new Object();
@@ -387,27 +370,15 @@ public class StoryDownloadManager {
         }
     }
 
-
-    public StoryDownloadManager(IASCore core) {
-        this.core = core;
-    }
-
     public StoryDownloadManager(
-            final @NonNull IASCore core,
-            final Context context,
-            ExceptionCache cache
+            final @NonNull IASCore core
     ) {
-        this.context = context;
         this.core = core;
         this.stories = new ArrayList<>();
         this.ugcStories = new ArrayList<>();
         this.favStories = new ArrayList<>();
         this.favoriteImages = new ArrayList<>();
-        if (cache != null) {
-            this.stories.addAll(cache.getStories());
-            this.favStories.addAll(cache.getFavStories());
-            this.favoriteImages.addAll(cache.getFavoriteImages());
-        }
+
         this.storyDownloader = new StoryDownloader(core, new DownloadStoryCallback() {
             @Override
             public void onDownload(Story story, int loadType, Story.StoryType type) {
@@ -442,7 +413,7 @@ public class StoryDownloadManager {
                             if (service == null) return DownloadPageFileStatus.ERROR;
                             GetCacheFileUseCase<DownloadFileState> useCase =
                                     new StoryResourceFileUseCase(
-                                            service.getFilesDownloadManager(),
+                                            core.contentLoader().filesDownloadManager(),
                                             urlWithAlter.getUrl()
                                     );
                             DownloadFileState state = useCase.getFile();
@@ -450,7 +421,7 @@ public class StoryDownloadManager {
                                 //placeholders case, download full
                                 useCase =
                                         new StoryResourceFileUseCase(
-                                                service.getFilesDownloadManager(),
+                                                core.contentLoader().filesDownloadManager(),
                                                 urlWithAlter.getAlter()
                                         );
                                 state = useCase.getFile();
@@ -480,7 +451,7 @@ public class StoryDownloadManager {
                             if (service == null) return DownloadPageFileStatus.ERROR;
                             GetCacheFileUseCase<StoryVODResourceFileUseCaseResult> useCase =
                                     new StoryVODResourceFileUseCase(
-                                            service.getFilesDownloadManager(),
+                                            core.contentLoader().filesDownloadManager(),
                                             url,
                                             uniqueKey,
                                             start,

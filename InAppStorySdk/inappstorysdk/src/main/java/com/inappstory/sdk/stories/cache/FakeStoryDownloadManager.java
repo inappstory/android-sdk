@@ -50,7 +50,7 @@ public class FakeStoryDownloadManager extends StoryDownloadManager {
 
     }
 
-    public void initDownloaders() {
+    public void init() {
 
     }
 

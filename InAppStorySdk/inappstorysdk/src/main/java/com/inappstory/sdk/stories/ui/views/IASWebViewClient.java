@@ -9,7 +9,9 @@ import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.stories.cache.Downloader;
 import com.inappstory.sdk.stories.cache.usecases.StoryVODResourceFileUseCase;
@@ -110,9 +112,10 @@ public class IASWebViewClient extends WebViewClient {
             String rangeHeader,
             String uniqueKey
     ) {
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service == null) return null;
-        VODCacheJournalItem item = service.getFilesDownloadManager().getVodCacheJournal().getItem(uniqueKey);
+        InAppStoryManager manager = InAppStoryManager.getInstance();
+        if (manager == null) return null;
+        IASCore core = manager.iasCore();
+        VODCacheJournalItem item = core.contentLoader().filesDownloadManager().getVodCacheJournal().getItem(uniqueKey);
         if (item == null) return null;
 
         ContentRange range;
@@ -126,7 +129,7 @@ public class IASWebViewClient extends WebViewClient {
         Log.e("WebProfiling", "getWebResourceResponse Req " + item.getUrl() + " " + rangeHeader + " " + System.currentTimeMillis());
         try {
             StoryVODResourceFileUseCaseResult res = new StoryVODResourceFileUseCase(
-                    service.getFilesDownloadManager(),
+                    core.contentLoader().filesDownloadManager(),
                     item.getUrl(),
                     uniqueKey,
                     range.start(),

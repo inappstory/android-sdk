@@ -23,7 +23,9 @@ import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenData;
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenStrategy;
 import com.inappstory.sdk.core.utils.ConnectionCheck;
 import com.inappstory.sdk.core.utils.ConnectionCheckCallback;
+import com.inappstory.sdk.game.cache.SuccessUseCaseCallback;
 import com.inappstory.sdk.game.reader.GameStoryData;
+import com.inappstory.sdk.imageloader.CustomFileLoader;
 import com.inappstory.sdk.stories.api.models.Image;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.cache.Downloader;
@@ -99,32 +101,30 @@ public class StackStoryObserver implements IStackFeedActions {
             coverCompleteCallback.onComplete();
         } else {
             if (image != null) {
+                new CustomFileLoader().getFileLinkFromUrl(image, new SuccessUseCaseCallback<String>() {
+                    @Override
+                    public void onSuccess(String imagePath) {
+                        localStackStoryData.updateStoryDataCover(
+                                imagePath,
+                                StackStoryCoverLoadType.IMAGE,
+                                coverCompleteCallback
+                        );
+                    }
 
-                Downloader.downloadFileAndSendToInterface(image,
-                        new RunnableCallback() {
-                            @Override
-                            public void run(String imagePath) {
-                                localStackStoryData.updateStoryDataCover(
-                                        imagePath,
-                                        StackStoryCoverLoadType.IMAGE,
-                                        coverCompleteCallback
-                                );
-                            }
-
-                            @Override
-                            public void error() {
-                                localStackStoryData.updateStoryDataCover(
-                                        null,
-                                        StackStoryCoverLoadType.IMAGE,
-                                        coverCompleteCallback
-                                );
-                            }
-                        });
+                    @Override
+                    public void onError(String message) {
+                        localStackStoryData.updateStoryDataCover(
+                                null,
+                                StackStoryCoverLoadType.IMAGE,
+                                coverCompleteCallback
+                        );
+                    }
+                });
             }
             if (video != null) {
-                Downloader.downloadFileAndSendToInterface(video, new RunnableCallback() {
+                new CustomFileLoader().getFileLinkFromUrl(video, new SuccessUseCaseCallback<String>() {
                     @Override
-                    public void run(String videoPath) {
+                    public void onSuccess(String videoPath) {
                         localStackStoryData.updateStoryDataCover(
                                 videoPath,
                                 StackStoryCoverLoadType.VIDEO,
@@ -133,7 +133,7 @@ public class StackStoryObserver implements IStackFeedActions {
                     }
 
                     @Override
-                    public void error() {
+                    public void onError(String message) {
                         localStackStoryData.updateStoryDataCover(
                                 null,
                                 StackStoryCoverLoadType.VIDEO,

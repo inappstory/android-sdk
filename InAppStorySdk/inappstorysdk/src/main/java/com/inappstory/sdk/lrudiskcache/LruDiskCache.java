@@ -41,7 +41,7 @@ public class LruDiskCache {
             long cacheSize,
             CacheType cacheType
     ) throws IOException {
-        this.manager = new FileManager(cacheDir, subPath);
+        this.manager = new FileManager(core, cacheDir, subPath);
         this.journal = new CacheJournal(core, manager);
         this.cacheSize = cacheSize;
         this.cacheType = cacheType;

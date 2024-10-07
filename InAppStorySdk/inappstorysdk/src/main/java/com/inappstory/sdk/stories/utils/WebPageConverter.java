@@ -101,34 +101,28 @@ public class WebPageConverter {
 
     private String replaceLayoutAssets(String layout) {
         final String[] newLayout = {layout};
-        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
-            public void use(@NonNull final InAppStoryService service) throws Exception {
-                InAppStoryManager.useCore(new UseIASCoreCallback() {
-                    @Override
-                    public void use(@NonNull IASCore core) {
-                        List<SessionAsset> assets = core.sessionManager().getSession().getSessionAssets();
-                        for (final SessionAsset asset : assets) {
-                            new SessionAssetLocalUseCase(
-                                    service.getFilesDownloadManager(),
-                                    new UseCaseCallback<File>() {
-                                        @Override
-                                        public void onError(String message) {
+            public void use(@NonNull IASCore core) {
+                List<SessionAsset> assets = core.sessionManager().getSession().getSessionAssets();
+                for (final SessionAsset asset : assets) {
+                    new SessionAssetLocalUseCase(
+                            core.contentLoader().filesDownloadManager(),
+                            new UseCaseCallback<File>() {
+                                @Override
+                                public void onError(String message) {
 
-                                        }
+                                }
 
-                                        @Override
-                                        public void onSuccess(File result) {
-                                            newLayout[0] = newLayout[0].replace(asset.replaceKey,
-                                                    "file://" + result.getAbsolutePath());
-                                        }
-                                    },
-                                    asset
-                            ).getFile();
-                        }
-                    }
-                });
-
+                                @Override
+                                public void onSuccess(File result) {
+                                    newLayout[0] = newLayout[0].replace(asset.replaceKey,
+                                            "file://" + result.getAbsolutePath());
+                                }
+                            },
+                            asset
+                    ).getFile();
+                }
             }
         });
         return newLayout[0];

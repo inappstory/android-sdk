@@ -13,6 +13,8 @@ import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.UseIASCallback;
+import com.inappstory.sdk.core.utils.ConnectionCheck;
+import com.inappstory.sdk.core.utils.ConnectionCheckCallback;
 import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.NetworkClient;
@@ -424,63 +426,78 @@ class StoryDownloader {
             callback.onError("");
             return;
         }
-        if (service.isConnected()) {
-            core.sessionManager().useOrOpenSession(new OpenSessionCallback() {
-                @Override
-                public void onSuccess(final String sessionId) {
-                    final String loadStoriesUID = core.statistic().profiling().addTask("api_story_list");
-                    networkClient.enqueue(
-                            networkClient.getApi().getFeed(
-                                    feed,
-                                    ApiSettings.getInstance().getTestKey(),
-                                    0,
-                                    TextUtils.join(",",
-                                            ((IASDataSettingsHolder) core.settingsAPI()).tags()),
-                                    null,
-                                    null
-                            ),
-                            new LoadFeedCallback() {
-                                @Override
-                                public void onSuccess(Feed response) {
-                                    if (response == null) {
-                                        generateCommonLoadListError(feed);
-                                        callback.onError("");
-                                    } else {
-                                        core.statistic().profiling().setReady(loadStoriesUID);
-                                        callback.onSuccess(response.stories, response.hasFavorite(), response.getFeedId());
-                                    }
-                                }
+        new ConnectionCheck().check(
+                core.appContext(),
+                new ConnectionCheckCallback(core) {
+                    @Override
+                    public void success() {
+                        core.sessionManager().useOrOpenSession(new OpenSessionCallback() {
+                            @Override
+                            public void onSuccess(final String sessionId) {
+                                final String loadStoriesUID =
+                                        core.statistic().profiling().addTask("api_story_list");
+                                networkClient.enqueue(
+                                        networkClient.getApi().getFeed(
+                                                feed,
+                                                ApiSettings.getInstance().getTestKey(),
+                                                0,
+                                                TextUtils.join(",",
+                                                        ((IASDataSettingsHolder) core.settingsAPI()).tags()),
+                                                null,
+                                                null
+                                        ),
+                                        new LoadFeedCallback() {
+                                            @Override
+                                            public void onSuccess(Feed response) {
+                                                if (response == null) {
+                                                    generateCommonLoadListError(feed);
+                                                    callback.onError("");
+                                                } else {
+                                                    core.statistic().profiling().setReady(loadStoriesUID);
+                                                    callback.onSuccess(
+                                                            response.stories,
+                                                            response.hasFavorite(),
+                                                            response.getFeedId()
+                                                    );
+                                                }
+                                            }
 
-                                @Override
-                                public void errorDefault(String message) {
-                                    core.statistic().profiling().setReady(loadStoriesUID);
-                                    generateCommonLoadListError(feed);
-                                    callback.onError(message);
-                                }
+                                            @Override
+                                            public void errorDefault(String message) {
+                                                core.statistic().profiling().setReady(loadStoriesUID);
+                                                generateCommonLoadListError(feed);
+                                                callback.onError(message);
+                                            }
 
 
-                                @Override
-                                public void error424(String message) {
-                                    core.statistic().profiling().setReady(loadStoriesUID);
-                                    generateCommonLoadListError(null);
-                                    callback.onError(message);
-                                    closeSessionIf424(sessionId);
-                                    if (retry)
-                                        loadStoryListByFeed(feed, callback, false);
-                                }
-                            });
+                                            @Override
+                                            public void error424(String message) {
+                                                core.statistic().profiling().setReady(loadStoriesUID);
+                                                generateCommonLoadListError(null);
+                                                callback.onError(message);
+                                                closeSessionIf424(sessionId);
+                                                if (retry)
+                                                    loadStoryListByFeed(feed, callback, false);
+                                            }
+                                        });
+                            }
+
+                            @Override
+                            public void onError() {
+                                generateCommonLoadListError(feed);
+                                callback.onError("");
+                            }
+                        });
+                    }
+
+                    @Override
+                    protected void error() {
+                        generateCommonLoadListError(feed);
+                        callback.onError("");
+                    }
                 }
+        );
 
-                @Override
-                public void onError() {
-                    generateCommonLoadListError(feed);
-                    callback.onError("");
-                }
-            });
-        } else {
-            generateCommonLoadListError(feed);
-            callback.onError("");
-        }
     }
 
 

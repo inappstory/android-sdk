@@ -7,7 +7,6 @@ import android.annotation.SuppressLint;
 import android.app.Application;
 import android.content.ContentProvider;
 import android.content.Context;
-import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
 import android.util.Log;
@@ -21,6 +20,8 @@ import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.IASCoreImpl;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASCallbackType;
+import com.inappstory.sdk.core.api.IASDataSettingsHolder;
+import com.inappstory.sdk.core.api.IASStatisticV1;
 import com.inappstory.sdk.core.ui.screens.holder.GetScreenCallback;
 import com.inappstory.sdk.lrudiskcache.CacheSize;
 import com.inappstory.sdk.network.ApiSettings;
@@ -30,11 +31,8 @@ import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.network.models.Response;
 import com.inappstory.sdk.network.utils.HostFromSecretKey;
 import com.inappstory.sdk.stories.api.models.ExceptionCache;
-import com.inappstory.sdk.stories.api.models.Feed;
-import com.inappstory.sdk.stories.api.models.Image;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
 import com.inappstory.sdk.stories.api.models.Story;
-import com.inappstory.sdk.stories.api.models.callbacks.LoadFeedCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.api.models.logs.ApiLogRequest;
 import com.inappstory.sdk.stories.api.models.logs.ApiLogResponse;
@@ -61,12 +59,8 @@ import com.inappstory.sdk.stories.outercallbacks.common.reader.ShowStoryCallback
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryWidgetCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.single.SingleLoadCallback;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
-import com.inappstory.sdk.stories.stackfeed.IStackFeedActions;
 import com.inappstory.sdk.stories.stackfeed.IStackFeedResult;
-import com.inappstory.sdk.stories.stackfeed.IStackStoryData;
-import com.inappstory.sdk.stories.stackfeed.StackStoryObserver;
-import com.inappstory.sdk.stories.stackfeed.StackStoryUpdatedCallback;
-import com.inappstory.sdk.stories.statistic.IASStatisticProfilingImpl;
+import com.inappstory.sdk.stories.statistic.GetStatisticV1Callback;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryScreen;
 import com.inappstory.sdk.stories.ui.reader.ForceCloseReaderCallback;
@@ -92,7 +86,7 @@ public class InAppStoryManager {
 
     private static InAppStoryManager INSTANCE;
 
-    private final IASCore core = new IASCoreImpl();
+    private final IASCore core;
 
     public IASCore iasCore() {
         return core;
@@ -108,6 +102,15 @@ public class InAppStoryManager {
         }
     }
 
+    private static void clearLocalData() {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.storiesListVMHolder().clear();
+                core.contentLoader().storyDownloadManager().clearLocalData();
+            }
+        });
+    }
 
     public static NetworkClient getNetworkClient() {
         synchronized (lock) {
@@ -133,10 +136,6 @@ public class InAppStoryManager {
         synchronized (lock) {
             return INSTANCE == null;
         }
-    }
-
-    public Context getContext() {
-        return context;
     }
 
     Context context;
@@ -232,12 +231,11 @@ public class InAppStoryManager {
 
 
     /**
-     * @return {@link ArrayList} of tags
+     * @return {@link List} of tags
      */
-    public ArrayList<String> getTags() {
-        synchronized (tagsLock) {
-            return tags;
-        }
+    public List<String> getTags() {
+        if (core == null) return new ArrayList<>();
+        return ((IASDataSettingsHolder)core.settingsAPI()).tags();
     }
 
     //Test
@@ -246,37 +244,7 @@ public class InAppStoryManager {
      * use to clear downloaded files and in-app cache
      */
     public void clearCache() {
-        InAppStoryManager.useCore(new UseIASCoreCallback() {
-            @Override
-            public void use(@NonNull IASCore core) {
-                core.sessionManager().getSession().assetsIsCleared();
-            }
-        });
-        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
-            @Override
-            public void use(@NonNull InAppStoryService service) {
-                service.getStoryDownloadManager().clearCache();
-            }
-        });
-    }
-    //Test
-
-    /**
-     * use to clear downloaded files and in-app cache without manager
-     */
-    public void clearCache(Context context) {
-        InAppStoryManager.useCore(new UseIASCoreCallback() {
-            @Override
-            public void use(@NonNull IASCore core) {
-                core.sessionManager().getSession().assetsIsCleared();
-            }
-        });
-        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
-            @Override
-            public void use(@NonNull InAppStoryService service) {
-                service.getStoryDownloadManager().clearCache();
-            }
-        });
+        core.contentLoader().clearCache();
     }
 
     /**
@@ -299,7 +267,10 @@ public class InAppStoryManager {
      * @param forceClose               (forceClose) - close reader immediately without animation
      * @param forceCloseReaderCallback (forceCloseReaderCallback) - triggers after reader is closed and only if {@code forceClose == true}
      */
-    public static void closeStoryReader(final boolean forceClose, final ForceCloseReaderCallback forceCloseReaderCallback) {
+    public static void closeStoryReader(
+            final boolean forceClose,
+            final ForceCloseReaderCallback forceCloseReaderCallback
+    ) {
         useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
@@ -451,10 +422,8 @@ public class InAppStoryManager {
      * @return {@link String} with tags joined by comma
      */
     public String getTagsString() {
-        synchronized (tagsLock) {
-            if (tags == null) return null;
-            return TextUtils.join(",", tags);
-        }
+        if (core == null) return "";
+        return TextUtils.join(",", ((IASDataSettingsHolder)core.settingsAPI()).tags());
     }
 
     /**
@@ -588,7 +557,6 @@ public class InAppStoryManager {
             imagePlaceholders.putAll(placeholders);
 
         }
-        //forceCloseAndClearCache();
     }
 
     private boolean setNewImagePlaceholder(@NonNull String key, ImagePlaceholderValue value) {
@@ -683,7 +651,7 @@ public class InAppStoryManager {
     Thread serviceThread;
 
     private InAppStoryManager(Context context) {
-        this.context = context;
+        core = new IASCoreImpl(context);
         KeyValueStorage.setContext(context);
         SharedPreferencesAPI.setContext(context);
         this.soundOn = !context.getResources().getBoolean(R.bool.defaultMuted);
@@ -691,16 +659,8 @@ public class InAppStoryManager {
 
 
     void createServiceThread(final Context context) {
-        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
-            @Override
-            public void use(@NonNull InAppStoryService service) throws Exception {
-                service.onDestroy();
-            }
-        });
-        if (serviceThread != null) {
-            serviceThread.interrupt();
-            serviceThread = null;
-        }
+        core.contentLoader().storyDownloadManager().init();
+
         serviceThread = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -859,7 +819,7 @@ public class InAppStoryManager {
 
 
     private void build(final Builder builder) {
-        Context context = this.context;
+        Context context = core.appContext();
         Integer errorStringId = null;
         if (context == null) {
             errorStringId = R.string.ias_context_is_null;
@@ -886,11 +846,8 @@ public class InAppStoryManager {
                     R.string.ias_min_free_space_error));
             return;
         }
-        InAppStoryService inAppStoryService = InAppStoryService.getInstance();
-        if (inAppStoryService != null) {
-            inAppStoryService.setUserId(builder.userId);
-            inAppStoryService.setCacheSizes(context);
-        }
+        core.settingsAPI().setUserId(builder.userId);
+        core.contentLoader().setCacheSizes();
         String domain = new HostFromSecretKey(
                 builder.apiKey
         ).get(builder.sandbox);
@@ -994,7 +951,6 @@ public class InAppStoryManager {
             Map<String, String> placeholders,
             Map<String, ImagePlaceholderValue> imagePlaceholders
     ) {
-        this.context = context;
         soundOn = !context.getResources().getBoolean(R.bool.defaultMuted);
         this.isDeviceIDEnabled = isDeviceIDEnabled;
         this.currentLocale = locale;
@@ -1033,27 +989,36 @@ public class InAppStoryManager {
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull final IASCore core) {
-                core.storiesListVMHolder().clear();
                 InAppStoryService.useInstance(new UseServiceInstanceCallback() {
                     @Override
                     public void use(@NonNull final InAppStoryService inAppStoryService) throws Exception {
                         inAppStoryService.getListSubscribers().clear();
-                        inAppStoryService.getStoryDownloadManager().cleanTasks();
-                        InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
-                            @Override
-                            public void use(@NonNull InAppStoryManager manager) throws Exception {
-                                core.screensManager().forceCloseAllReaders(
-                                        new ForceCloseReaderCallback() {
-                                            @Override
-                                            public void onComplete() {
-                                                inAppStoryService.logout();
-                                            }
-                                        }
-                                );
-                            }
-                        });
                     }
                 });
+                core.storiesListVMHolder().clear();
+                core.contentLoader().storyDownloadManager().cleanTasks();
+                core.screensManager().forceCloseAllReaders(
+                        new ForceCloseReaderCallback() {
+                            @Override
+                            public void onComplete() {
+                                IASDataSettingsHolder settingsHolder = ((IASDataSettingsHolder)core.settingsAPI());
+                                core.statistic().v1(new GetStatisticV1Callback() {
+                                    @Override
+                                    public void get(@NonNull IASStatisticV1 manager) {
+                                        manager.closeStatisticEvent();
+                                    }
+                                });
+                                core.sessionManager().closeSession(
+                                        true,
+                                        false,
+                                        settingsHolder.lang(),
+                                        settingsHolder.userId(),
+                                        core.sessionManager().getSession().getSessionId()
+                                );
+                            }
+                        }
+                );
+
             }
         });
 

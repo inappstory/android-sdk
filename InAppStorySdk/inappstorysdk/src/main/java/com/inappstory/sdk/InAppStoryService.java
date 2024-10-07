@@ -13,37 +13,27 @@ import android.net.NetworkCapabilities;
 import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Handler;
-import android.os.Looper;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
-import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.IASStatisticV1;
 import com.inappstory.sdk.externalapi.subscribers.InAppStoryAPISubscribersManager;
-import com.inappstory.sdk.game.cache.GameCacheManager;
-import com.inappstory.sdk.game.cache.SuccessUseCaseCallback;
-import com.inappstory.sdk.game.cache.UseCaseCallback;
-import com.inappstory.sdk.game.preload.GamePreloader;
 import com.inappstory.sdk.game.preload.IGamePreloader;
 import com.inappstory.sdk.game.reader.logger.GameLogSaver;
 import com.inappstory.sdk.game.reader.logger.GameLogSender;
 import com.inappstory.sdk.game.reader.logger.IGameLogSaver;
 import com.inappstory.sdk.game.reader.logger.IGameLogSender;
-import com.inappstory.sdk.imageloader.ImageLoader;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
-import com.inappstory.sdk.stories.api.interfaces.IGameCenterData;
 import com.inappstory.sdk.stories.api.models.ExceptionCache;
 import com.inappstory.sdk.stories.api.models.ResourceMappingObject;
-import com.inappstory.sdk.stories.api.models.SessionAsset;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.logs.ExceptionLog;
 import com.inappstory.sdk.stories.cache.FilesDownloadManager;
 import com.inappstory.sdk.stories.cache.FakeStoryDownloadManager;
 import com.inappstory.sdk.stories.cache.StoryDownloadManager;
-import com.inappstory.sdk.stories.cache.usecases.SessionAssetUseCase;
 import com.inappstory.sdk.stories.cache.vod.VODCacheItemPart;
 import com.inappstory.sdk.stories.cache.vod.VODCacheJournalItem;
 import com.inappstory.sdk.stories.exceptions.ExceptionManager;
@@ -53,7 +43,6 @@ import com.inappstory.sdk.stories.statistic.GetStatisticV1Callback;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 import com.inappstory.sdk.stories.ui.list.FavoriteImage;
 import com.inappstory.sdk.stories.ui.list.ListManager;
-import com.inappstory.sdk.utils.ISessionHolder;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -214,20 +203,9 @@ public class InAppStoryService {
 
     FakeStoryDownloadManager fakeStoryDownloadManager;
     StoryDownloadManager storyDownloadManager;
-    private GameCacheManager gameCacheManager;
-
-    public GameCacheManager gameCacheManager() {
-        if (gameCacheManager == null) {
-            gameCacheManager = new GameCacheManager(core);
-        }
-        return gameCacheManager;
-    }
 
     public static InAppStoryService INSTANCE;
 
-    public void clearGames() {
-        gameCacheManager().clearGames();
-    }
 
     IGameLogSender logSender;
 
@@ -236,39 +214,6 @@ public class InAppStoryService {
     }
 
     IGameLogSaver logSaver;
-
-
-    void logout() {
-        InAppStoryManager.useCore(new UseIASCoreCallback() {
-            @Override
-            public void use(@NonNull IASCore core) {
-                IASDataSettingsHolder settingsHolder = ((IASDataSettingsHolder)core.settingsAPI());
-                core.statistic().v1(new GetStatisticV1Callback() {
-                    @Override
-                    public void get(@NonNull IASStatisticV1 manager) {
-                        manager.closeStatisticEvent();
-                    }
-                });
-                core.sessionManager().closeSession(
-                        true,
-                        false,
-                        settingsHolder.lang(),
-                        settingsHolder.userId(),
-                        core.sessionManager().getSession().getSessionId()
-                );
-            }
-        });
-    }
-
-    public void clearLocalData() {
-        InAppStoryManager.useCore(new UseIASCoreCallback() {
-            @Override
-            public void use(@NonNull IASCore core) {
-                core.storiesListVMHolder().clear();
-            }
-        });
-        storyDownloadManager.clearLocalData();
-    }
 
     public List<FavoriteImage> getFavoriteImages() {
         if (storyDownloadManager == null) return new ArrayList<>();
@@ -623,8 +568,10 @@ public class InAppStoryService {
     public static class DefaultExceptionHandler implements Thread.UncaughtExceptionHandler {
 
         Thread.UncaughtExceptionHandler oldHandler;
+        private final IASCore core;
 
-        public DefaultExceptionHandler() {
+        public DefaultExceptionHandler(IASCore core) {
+            this.core = core;
             oldHandler = Thread.getDefaultUncaughtExceptionHandler();
         }
 
@@ -649,11 +596,9 @@ public class InAppStoryService {
                                     service.getStoryDownloadManager().favStories,
                                     service.getStoryDownloadManager().favoriteImages
                             ));
-                            synchronized (lock) {
-                                service.onDestroy();
-                            }
+
                             manager.createServiceThread(
-                                    manager.context
+                                    core.appContext()
                             );
                             if (manager.getExceptionCallback() != null) {
                                 manager.getExceptionCallback().onException(throwable);
@@ -699,29 +644,9 @@ public class InAppStoryService {
     private ScheduledExecutorService checkSpaceThread = new ScheduledThreadPoolExecutor(1);
 
 
-    public void createDownloadManager(ExceptionCache cache) {
-        if (storyDownloadManager == null)
-            storyDownloadManager = new StoryDownloadManager(
-                    core,
-                    context,
-                    cache
-            );
-        if (fakeStoryDownloadManager == null) {
-            fakeStoryDownloadManager = new FakeStoryDownloadManager(core);
-        }
-    }
-
-
-    public FilesDownloadManager getFilesDownloadManager() {
-        return filesDownloadManager;
-    }
-
-    private FilesDownloadManager filesDownloadManager;
-
     public void onCreate(final Context context, int cacheSize, ExceptionCache exceptionCache) {
         this.context = context;
-        createDownloadManager(exceptionCache);
-        Thread.setDefaultUncaughtExceptionHandler(new DefaultExceptionHandler());
+        Thread.setDefaultUncaughtExceptionHandler(new DefaultExceptionHandler(core));
 
         timerManager = new TimerManager(core);
         if (tempListSubscribers != null) {
@@ -737,27 +662,9 @@ public class InAppStoryService {
             checkSpaceThread = new ScheduledThreadPoolExecutor(1);
         }
         checkSpaceThread.scheduleAtFixedRate(checkFreeSpace, 1L, 60000L, TimeUnit.MILLISECONDS);
-        getStoryDownloadManager().initDownloaders();
-        filesDownloadManager = new FilesDownloadManager(core, context, cacheSize);
 
         logSaver = new GameLogSaver();
         logSender = new GameLogSender(this, logSaver);
-        gamePreloader = new GamePreloader(
-                core,
-                filesDownloadManager,
-                hasLottieAnimation(),
-                new SuccessUseCaseCallback<IGameCenterData>() {
-                    @Override
-                    public void onSuccess(final IGameCenterData result) {
-                        new Handler(Looper.getMainLooper()).post(new Runnable() {
-                            @Override
-                            public void run() {
-                                Log.d("IAS_Game_Preloading", "Game " + result.id() + " is loaded");
-                            }
-                        });
-                    }
-                }
-        );
 
     }
 

@@ -71,22 +71,27 @@ public class SessionManager {
     }
 
     public void checkOpenStatistic(final OpenSessionCallback callback) {
-        boolean checkOpen = false;
+        final boolean checkOpen;
         synchronized (openProcessLock) {
             checkOpen = openProcess;
         }
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service != null && service.isConnected()) {
-            String session = getSession().getSessionId();
-            if (session.isEmpty() || checkOpen) {
-                openSession(callback);
-            } else {
-                callback.onSuccess(session);
+        new ConnectionCheck().check(core.appContext(), new ConnectionCheckCallback(core) {
+            @Override
+            public void success() {
+                String session = getSession().getSessionId();
+                if (session.isEmpty() || checkOpen) {
+                    openSession(callback);
+                } else {
+                    callback.onSuccess(session);
+                }
             }
-        } else {
-            if (callback != null)
-                callback.onError();
-        }
+
+            @Override
+            protected void error() {
+                if (callback != null)
+                    callback.onError();
+            }
+        });
     }
 
 
@@ -358,10 +363,7 @@ public class SessionManager {
 
     private void clearCaches() {
         core.storiesListVMHolder().clear();
-        InAppStoryService inAppStoryService = InAppStoryService.getInstance();
-        if (inAppStoryService != null) {
-            inAppStoryService.clearGames();
-        }
+        core.contentLoader().clearGames();
     }
 
     public void closeSession(

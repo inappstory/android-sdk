@@ -8,8 +8,11 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.AppearanceManager;
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.stories.cache.usecases.IGetStoryCoverCallback;
 import com.inappstory.sdk.stories.cache.usecases.StoryCoverUseCase;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
@@ -46,6 +49,9 @@ public class StoryFavoriteListItem extends BaseStoryListItem {
                 service.getFavoriteImages().isEmpty()
         )
             return;
+
+
+
         RunnableCallback runnableCallback = new RunnableCallback() {
             @Override
             public void run(String path) {
@@ -117,14 +123,24 @@ public class StoryFavoriteListItem extends BaseStoryListItem {
             }
             loadFavoriteImages(new LoadFavoriteImagesCallback() {
                 @Override
-                public void onLoad(List<String> downloadImages) {
-                    if (viewCanBeUsed(itemView, getParent())) {
-                        if (getFavoriteListItem != null
-                                && getFavoriteListItem.getFavoriteItem() != null) {
-                            getFavoriteListItem.setImages(itemView, downloadImages, backgroundColors,
-                                    downloadImages.size());
+                public void onLoad(final List<String> downloadImages) {
+                    itemView.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (viewCanBeUsed(itemView, getParent())) {
+                                if (getFavoriteListItem != null
+                                        && getFavoriteListItem.getFavoriteItem() != null) {
+                                    getFavoriteListItem.setImages(
+                                            itemView,
+                                            downloadImages,
+                                            backgroundColors,
+                                            downloadImages.size()
+                                    );
+                                }
+                            }
                         }
-                    }
+                    });
+
                 }
             }, count);
             return;
@@ -136,43 +152,38 @@ public class StoryFavoriteListItem extends BaseStoryListItem {
 
     }
 
-    private void downloadFileAndSendToInterface(String url, final RunnableCallback callback) {
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service == null) return;
+    private void downloadFileAndSendToInterface(final String url, final RunnableCallback callback) {
         if (url == null || url.isEmpty()) {
-            new Handler(Looper.getMainLooper()).post(new Runnable() {
-                @Override
-                public void run() {
-                    callback.error();
-                }
-            });
+            callback.error();
             return;
         }
-        new StoryCoverUseCase(
-                service.getFilesDownloadManager(),
-                url,
-                new IGetStoryCoverCallback() {
-                    @Override
-                    public void success(final String file) {
-                        new Handler(Looper.getMainLooper()).post(new Runnable() {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                new StoryCoverUseCase(
+                        core.contentLoader().filesDownloadManager(),
+                        url,
+                        new IGetStoryCoverCallback() {
                             @Override
-                            public void run() {
+                            public void success(final String file) {
                                 callback.run(file);
                             }
-                        });
-                    }
 
-                    @Override
-                    public void error() {
-                        new Handler(Looper.getMainLooper()).post(new Runnable() {
                             @Override
-                            public void run() {
+                            public void error() {
                                 callback.error();
                             }
-                        });
-                    }
-                }
-        ).getFile();
+                        }
+                ).getFile();
+            }
+
+            @Override
+            public void error() {
+                callback.error();
+            }
+        });
+
+
 
     }
 

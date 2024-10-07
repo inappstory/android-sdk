@@ -50,7 +50,6 @@ import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.UseManagerInstanceCallback;
-import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASCallbackType;
@@ -60,17 +59,15 @@ import com.inappstory.sdk.core.ui.screens.ShareProcessHandler;
 import com.inappstory.sdk.core.ui.screens.gamereader.BaseGameScreen;
 import com.inappstory.sdk.core.ui.screens.gamereader.GameReaderOverlapContainerDataForShare;
 import com.inappstory.sdk.game.cache.FilePathAndContent;
-import com.inappstory.sdk.game.cache.GameCacheManager;
 import com.inappstory.sdk.game.cache.SetGameLoggerCallback;
 import com.inappstory.sdk.game.cache.UseCaseCallback;
 import com.inappstory.sdk.game.cache.UseCaseWarnCallback;
 import com.inappstory.sdk.game.ui.GameProgressLoader;
 import com.inappstory.sdk.game.utils.GameConstants;
-import com.inappstory.sdk.imageloader.ImageLoader;
+import com.inappstory.sdk.imageloader.CustomFileLoader;
 import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.inner.share.InnerShareFilesPrepare;
 import com.inappstory.sdk.inner.share.ShareFilesPrepareCallback;
-import com.inappstory.sdk.memcache.GetBitmapFromCacheWithFilePath;
 import com.inappstory.sdk.memcache.IGetBitmapFromMemoryCache;
 import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.JsonParser;
@@ -93,7 +90,6 @@ import com.inappstory.sdk.stories.events.GameCompleteEventObserver;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.GameReaderLaunchData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.game.GameLoadedError;
-import com.inappstory.sdk.stories.statistic.IASStatisticProfilingImpl;
 import com.inappstory.sdk.stories.ui.OverlapFragmentObserver;
 import com.inappstory.sdk.stories.ui.views.IASWebView;
 import com.inappstory.sdk.stories.ui.views.IASWebViewClient;
@@ -171,60 +167,62 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         }
     };
 
-    private void setLayout() {
-    }
 
     public void shareComplete(String id, boolean success) {
         webView.loadUrl("javascript:(function(){share_complete(\"" + id + "\", " + success + ");})()");
     }
 
     void restartGame() {
-        InAppStoryService service = InAppStoryService.getInstance();
-        final GameCacheManager cacheManager;
-        if (service != null) {
-            cacheManager = service.gameCacheManager();
-            new Handler(Looper.getMainLooper()).post(new Runnable() {
-                @Override
-                public void run() {
-                    closeButton.setVisibility(View.VISIBLE);
-                    loaderContainer.setVisibility(View.VISIBLE);
-                    if (webView != null) {
-                        webView.post(
-                                new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        synchronized (initLock) {
-                                            initWithEmpty = true;
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull final IASCore core) {
+                new Handler(Looper.getMainLooper()).post(new Runnable() {
+                    @Override
+                    public void run() {
+                        closeButton.setVisibility(View.VISIBLE);
+                        loaderContainer.setVisibility(View.VISIBLE);
+                        if (webView != null) {
+                            webView.post(
+                                    new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            synchronized (initLock) {
+                                                initWithEmpty = true;
+                                            }
+                                            if (webView != null)
+                                                webView.loadUrl("about:blank");
                                         }
-                                        if (webView != null)
-                                            webView.loadUrl("about:blank");
                                     }
+                            );
+                            webView.postDelayed(new Runnable() {
+                                @Override
+                                public void run() {
+                                    synchronized (initLock) {
+                                        init = false;
+                                        initWithEmpty = false;
+                                    }
+                                    FilePathAndContent filePathAndContent =
+                                            core
+                                                    .contentLoader()
+                                                    .gameCacheManager()
+                                                    .getCurrentFilePathAndContent();
+                                    if (webView != null)
+                                        webView.loadDataWithBaseURL(
+                                                filePathAndContent.getFilePath(),
+                                                webView.setDir(
+                                                        filePathAndContent.getFileContent()
+                                                ),
+                                                "text/html; charset=utf-8", "UTF-8",
+                                                null
+                                        );
                                 }
-                        );
-                        webView.postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                synchronized (initLock) {
-                                    init = false;
-                                    initWithEmpty = false;
-                                }
-                                FilePathAndContent filePathAndContent = cacheManager.getCurrentFilePathAndContent();
-                                if (webView != null)
-                                    webView.loadDataWithBaseURL(
-                                            filePathAndContent.getFilePath(),
-                                            webView.setDir(
-                                                    filePathAndContent.getFileContent()
-                                            ),
-                                            "text/html; charset=utf-8", "UTF-8",
-                                            null
-                                    );
-                            }
-                        }, 200);
-                    }
+                            }, 200);
+                        }
 
-                }
-            });
-        }
+                    }
+                });
+            }
+        });
 
     }
 
@@ -906,14 +904,14 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
             final String gameId
     ) {
         startDownloadTime = System.currentTimeMillis();
-        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
-            public void use(@NonNull final InAppStoryService service) throws Exception {
-                service.getGamePreloader().pause();
-                service.gameCacheManager().getGame(
+            public void use(@NonNull final IASCore core) {
+                core.contentPreload().getGamePreloader().pause();
+                core.contentLoader().gameCacheManager().getGame(
                         gameId,
-                        service.hasLottieAnimation(),
-                        service.getFilesDownloadManager(),
+                        core.externalUtilsAPI().hasLottieAnimation(),
+                        core.contentLoader().filesDownloadManager(),
                         interruption,
                         new ProgressCallback() {
                             @Override
@@ -982,7 +980,6 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                                 new Handler(Looper.getMainLooper()).post(new Runnable() {
                                     @Override
                                     public void run() {
-                                        setLayout();
                                         GameCenterData gameCenterData = (GameCenterData) iGameCenterData;
                                         progressLoader.setIndeterminate(false);
                                         manager.statusHolder.setTotalReloadTries(
@@ -1019,7 +1016,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
 
                             @Override
                             public void onSuccess(final FilePathAndContent result) {
-                                service.getGamePreloader().restart();
+                                core.contentPreload().getGamePreloader().restart();
                                 webView.post(new Runnable() {
                                     @Override
                                     public void run() {
@@ -1235,7 +1232,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         if (splashFile == null || !splashFile.exists()) {
             loader.setBackgroundColor(Color.BLACK);
         } else {
-            new ImageLoader().getBitmapFromFilePath(
+            new CustomFileLoader().getBitmapFromFilePath(
                     splashFile.getAbsolutePath(),
                     new IGetBitmapFromMemoryCache() {
                         @Override

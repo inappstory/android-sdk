@@ -25,7 +25,6 @@ import java.util.List;
 public class IASContentPreloadImpl implements IASContentPreload {
     private final IASCore core;
 
-
     public IGamePreloader getGamePreloader() {
         return gamePreloader;
     }
@@ -36,8 +35,8 @@ public class IASContentPreloadImpl implements IASContentPreload {
         this.core = core;
         gamePreloader = new GamePreloader(
                 core,
-                filesDownloadManager,
-                hasLottieAnimation(),
+                core.contentLoader().filesDownloadManager(),
+                core.externalUtilsAPI().hasLottieAnimation(),
                 new SuccessUseCaseCallback<IGameCenterData>() {
                     @Override
                     public void onSuccess(final IGameCenterData result) {
@@ -67,7 +66,7 @@ public class IASContentPreloadImpl implements IASContentPreload {
         InAppStoryService.useInstance(new UseServiceInstanceCallback() {
             @Override
             public void use(@NonNull final InAppStoryService service) throws Exception {
-                new SessionAssetUseCase(service.getFilesDownloadManager(),
+                new SessionAssetUseCase(core.contentLoader().filesDownloadManager(),
                         new UseCaseCallback<File>() {
                             @Override
                             public void onError(String message) {
@@ -78,7 +77,7 @@ public class IASContentPreloadImpl implements IASContentPreload {
                             public void onSuccess(File result) {
                                 sessionHolder.addSessionAsset(sessionAsset);
                                 sessionHolder.checkIfSessionAssetsIsReady(
-                                        service.getFilesDownloadManager()
+                                        core.contentLoader().filesDownloadManager()
                                 );
                             }
                         },

@@ -1,6 +1,7 @@
 package com.inappstory.sdk.lrudiskcache;
 
 import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.stories.cache.DownloadFileState;
 
 import java.io.BufferedReader;
@@ -17,7 +18,10 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class FileManager {
-    public FileManager(File cacheDir, String subPath) throws IOException {
+    private final IASCore core;
+
+    public FileManager(IASCore core, File cacheDir, String subPath) throws IOException {
+        this.core = core;
         this.cacheDir = cacheDir;
         prepareCacheDir(subPath);
     }
@@ -166,7 +170,7 @@ public class FileManager {
 
     public void prepareCacheDir(String subPath) throws IOException {
         if (!checkAndUse(cacheDir, subPath)) {
-            if (!checkAndUse(InAppStoryManager.getInstance().getContext().getFilesDir(),
+            if (!checkAndUse(core.appContext().getFilesDir(),
                     subPath)) {
                 throw formatException("Unable to use cache directory %s", cacheDir);
             }

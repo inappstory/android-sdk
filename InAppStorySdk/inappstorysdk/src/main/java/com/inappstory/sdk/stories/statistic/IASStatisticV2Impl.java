@@ -189,9 +189,7 @@ public class IASStatisticV2Impl implements IASStatisticV2 {
     private final Runnable queueTasksRunnable = new Runnable() {
         @Override
         public void run() {
-            InAppStoryService service = InAppStoryService.getInstance();
-            if (tasks == null || tasks.size() == 0 || service == null
-                    || !service.isConnected()) {
+            if (tasks == null || tasks.size() == 0) {
                 loopedExecutor.freeExecutor();
                 return;
             }
