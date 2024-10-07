@@ -113,6 +113,7 @@ public class ScreensManager {
     }
 
     public void unsubscribeReaderScreen(BaseReaderScreen readerScreen) {
+        cleanOverlapFragmentObserver();
         synchronized (storiesReaderScreenLock) {
             if (currentStoriesReaderScreen == readerScreen) {
                 currentStoriesReaderScreen = null;
