@@ -925,7 +925,7 @@ public class AppearanceManager {
     }
 
     public int csListItemTitleSize(Context context) {
-        if (csListItemTitleSize == -1) return Sizes.dpToPxExt(14, context);
+        if (csListItemTitleSize == -1) return Sizes.dpToPxExt(12, context);
         return csListItemTitleSize;
     }
 

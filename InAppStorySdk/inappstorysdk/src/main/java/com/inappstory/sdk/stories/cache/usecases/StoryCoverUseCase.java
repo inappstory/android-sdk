@@ -45,7 +45,8 @@ public class StoryCoverUseCase extends GetCacheFileUseCase<Void> {
         filesDownloadManager.useLocalFilesThread(new Runnable() {
             @Override
             public void run() {
-                DownloadFileState fileState = getCache().get(uniqueKey);
+                final LruDiskCache cache = getCache();
+                DownloadFileState fileState = cache.get(uniqueKey);
                 if (fileState == null || fileState.downloadedSize != fileState.totalSize) {
                     Log.e("ScenarioDownload", "Download: " + uniqueKey + " Url: " + url);
                     downloadLog.sendRequestLog();
@@ -67,7 +68,7 @@ public class StoryCoverUseCase extends GetCacheFileUseCase<Void> {
                                         cacheJournalItem.setSize(fileState.totalSize);
                                         cacheJournalItem.setDownloadedSize(fileState.totalSize);
                                         try {
-                                            getCache().put(cacheJournalItem);
+                                            cache.put(cacheJournalItem);
                                         } catch (IOException e) {
 
                                             getStoryCoverCallback.error();

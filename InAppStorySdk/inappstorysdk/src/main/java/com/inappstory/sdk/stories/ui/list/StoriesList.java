@@ -712,16 +712,25 @@ public class StoriesList extends RecyclerView {
                     return scrollRange;
                 }
             });
-            addItemDecoration(new ItemDecoration() {
-                @Override
-                public void getItemOffsets(@NonNull Rect outRect, @NonNull View view, @NonNull RecyclerView parent, @NonNull State state) {
-                    super.getItemOffsets(outRect, view, parent, state);
-                    outRect.bottom = appearanceManager.csListItemMargin(getContext());
-                    outRect.top = appearanceManager.csListItemMargin(getContext());
-                }
-            });
-        } else
+        } else {
             setLayoutManager(layoutManager);
+        }
+        addItemDecoration(new ItemDecoration() {
+            @Override
+            public void getItemOffsets(@NonNull Rect outRect, @NonNull View view, @NonNull RecyclerView parent, @NonNull State state) {
+                super.getItemOffsets(outRect, view, parent, state);
+                int margin = appearanceManager.csListItemMargin(getContext());
+                outRect.bottom = margin;
+                outRect.top = margin;
+                int position = parent.getChildAdapterPosition(view);
+                int itemCount = state.getItemCount();
+                if (position == 0)
+                    outRect.left = margin;
+                if (position == itemCount-1) {
+                    outRect.right = margin;
+                }
+            }
+        });
         setAdapter(adapter);
         post(
                 new Runnable() {
