@@ -1,6 +1,5 @@
 package com.inappstory.sdk.share;
 
-import com.inappstory.sdk.stories.ui.ScreensManager;
 
 public abstract class IShareCompleteListener {
     public String getShareId() {

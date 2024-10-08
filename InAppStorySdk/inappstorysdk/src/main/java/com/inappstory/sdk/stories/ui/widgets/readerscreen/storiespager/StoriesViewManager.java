@@ -111,9 +111,9 @@ public class StoriesViewManager {
     }
 
     public void sendApiRequest(String data) {
-        if (storiesView != null)
+        if (storiesView != null && context != null)
             new JsApiClient(
-                    storiesView.getActivityContext(),
+                    context,
                     ApiSettings.getInstance().getHost()
             ).sendApiRequest(data, new JsApiResponseCallback() {
                         @Override
@@ -159,7 +159,9 @@ public class StoriesViewManager {
         loadedId = oId;
         if (alreadyLoaded) return;
         Story story = InAppStoryService.getInstance() != null ?
-                InAppStoryService.getInstance().getStoryDownloadManager().getStoryById(storyId, pageManager.getStoryType()) : null;
+                InAppStoryService.getInstance()
+                        .getStoryDownloadManager()
+                        .getStoryById(storyId, pageManager.getStoryType()) : null;
         innerLoad(story);
     }
 
@@ -247,7 +249,6 @@ public class StoriesViewManager {
             this.slideIndex = slideIndex;
             this.viewManagerWeakReference = new WeakReference<>(viewManager);
         }
-
 
 
         @Override
@@ -366,14 +367,16 @@ public class StoriesViewManager {
     boolean isVideo = false;
 
 
-    public void setStoriesView(SimpleStoriesView storiesWebView) {
+    public void setStoriesView(SimpleStoriesView storiesWebView, Context context) {
         this.storiesView = storiesWebView;
+        this.context = context;
         storiesWebView.checkIfClientIsSet();
     }
 
     public void clearStoriesView() {
         Log.e("clearStoriesView", "clearStoriesView " + (showLoader != null) + " " + (showRefresh != null));
         this.storiesView = null;
+        this.context = null;
         synchronized (latestIndexLock) {
             if (showLoader != null) {
                 try {
@@ -415,7 +418,7 @@ public class StoriesViewManager {
         if (readerScreen != null) {
             Size size = null;
             if (readerScreen instanceof StoriesDialogFragment) {
-                Rect rect = ((StoriesDialogFragment)readerScreen).screenRectangle;
+                Rect rect = ((StoriesDialogFragment) readerScreen).screenRectangle;
                 size = new Size(rect.width(), rect.height());
             }
             ContactDialogCreator contactDialogCreator = new ContactDialogCreator(

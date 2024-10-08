@@ -211,16 +211,16 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
     public SimpleStoriesWebView(Context context) {
         super(context.getApplicationContext());
         this.context = context;
-        manager = new StoriesViewManager(context);
-        manager.setStoriesView(this);
+        manager = new StoriesViewManager(context.getApplicationContext());
+        manager.setStoriesView(this, context.getApplicationContext());
     }
 
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
         if (manager == null)
-            manager = new StoriesViewManager(context);
-        manager.setStoriesView(this);
+            manager = new StoriesViewManager(context.getApplicationContext());
+        manager.setStoriesView(this, context.getApplicationContext());
     }
 
     @Override
