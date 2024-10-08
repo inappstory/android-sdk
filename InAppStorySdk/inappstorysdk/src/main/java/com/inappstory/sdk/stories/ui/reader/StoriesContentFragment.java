@@ -595,6 +595,7 @@ public class StoriesContentFragment extends Fragment
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
+                viewIsClosed();
                 boolean shared = false;
                 if (data.containsKey("shared")) shared = (boolean) data.get("shared");
                 if (!shared)
@@ -607,6 +608,11 @@ public class StoriesContentFragment extends Fragment
     @Override
     public void viewIsOpened() {
 
+    }
+
+    @Override
+    public void viewIsClosed() {
+        readerManager.unlockShareButton();
     }
 
     @Override

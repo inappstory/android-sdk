@@ -475,12 +475,16 @@ public class ReaderManager {
         StatisticManager.getInstance().createCurrentState(story2.id, story2.lastIndex, feedId);
     }
 
-    void shareComplete(boolean result) {
+    void unlockShareButton() {
         synchronized (subscribers) {
             for (ReaderPageManager pageManager : subscribers) {
                 pageManager.unlockShareButton();
             }
         }
+    }
+
+    void shareComplete(boolean result) {
+        unlockShareButton();
         ScreensManager screensManager = ScreensManager.getInstance();
         IShareCompleteListener shareCompleteListener =
                 screensManager.shareCompleteListener();

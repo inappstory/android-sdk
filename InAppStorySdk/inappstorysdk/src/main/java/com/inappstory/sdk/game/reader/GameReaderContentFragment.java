@@ -1294,6 +1294,11 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         });
     }
 
+    @Override
+    public void viewIsClosed() {
+
+    }
+
     private void gameReaderGestureBack() {
         if (manager.statusHolder.gameLoaded()) {
             webView.evaluateJavascript("gameReaderGestureBack();", new ValueCallback<String>() {
