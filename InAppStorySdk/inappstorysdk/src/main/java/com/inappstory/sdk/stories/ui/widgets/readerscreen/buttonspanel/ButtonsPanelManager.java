@@ -222,9 +222,6 @@ public class ButtonsPanelManager {
             panel.refreshSoundStatus();
     }
 
-    public abstract static class ShareButtonClickCallback implements ButtonClickCallback {
-        abstract void onClick();
-    }
 
     public void shareClick(final ShareButtonClickCallback callback) {
         InAppStoryService inAppStoryService = InAppStoryService.getInstance();

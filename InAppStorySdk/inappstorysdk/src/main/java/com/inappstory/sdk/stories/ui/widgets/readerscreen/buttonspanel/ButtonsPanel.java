@@ -285,27 +285,6 @@ public class ButtonsPanel extends LinearLayout {
     public void shareClick() {
         share.setEnabled(false);
         share.setClickable(false);
-        manager.shareClick(new ButtonsPanelManager.ShareButtonClickCallback() {
-            @Override
-            void onClick() {
-                manager.getPageManager().pauseSlide(false, true);
-            }
-
-            @Override
-            public void onSuccess(int val) {
-
-            }
-
-            @Override
-            public void onError() {
-                post(new Runnable() {
-                    @Override
-                    public void run() {
-                        share.setEnabled(true);
-                        share.setClickable(true);
-                    }
-                });
-            }
-        });
+        manager.shareClick(new ShareButtonClickCallback(manager, share));
     }
 }
