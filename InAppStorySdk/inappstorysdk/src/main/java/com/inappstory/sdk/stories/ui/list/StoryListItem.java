@@ -149,14 +149,9 @@ public class StoryListItem extends BaseStoryListItem {
                         new IGetStoryCoverCallback() {
                             @Override
                             public void success(final String file) {
-                                new Handler(Looper.getMainLooper()).post(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        if (viewCanBeUsed(itemView, getParent())) {
-                                            getListItem.setVideo(itemView, file);
-                                        }
-                                    }
-                                });
+                                if (viewCanBeUsed(itemView, getParent())) {
+                                    getListItem.setVideo(itemView, file);
+                                }
                             }
 
                             @Override
