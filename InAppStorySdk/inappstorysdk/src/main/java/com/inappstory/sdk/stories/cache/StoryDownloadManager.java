@@ -324,16 +324,28 @@ public class StoryDownloadManager {
                 Story tmp = story;
                 int ind = stories.indexOf(story);
                 if (ind >= 0) {
-                    if (tmp.pages == null & stories.get(ind).pages != null) {
+                    Story byInd = stories.get(ind);
+                    if (tmp.pages == null & byInd.pages != null) {
                         tmp.pages = new ArrayList<>();
-                        tmp.pages.addAll(stories.get(ind).pages);
+                        tmp.pages.addAll(byInd.pages);
                     }
-                    if (tmp.layout == null & stories.get(ind).layout != null) {
-                        tmp.layout = stories.get(ind).layout;
+                    if (tmp.layout == null & byInd.layout != null) {
+                        tmp.layout = byInd.layout;
                     }
-                    if (tmp.srcList == null & stories.get(ind).srcList != null) {
+                    if (tmp.srcList == null & byInd.srcList != null) {
                         tmp.srcList = new ArrayList<>();
-                        tmp.srcList.addAll(stories.get(ind).srcList);
+                        tmp.srcList.addAll(byInd.srcList);
+                    }
+                    if (tmp.slidesPayload == null & byInd.slidesPayload != null) {
+                        tmp.slidesPayload = new ArrayList<>();
+                        tmp.slidesPayload.addAll(byInd.slidesPayload);
+                    }
+                    if (tmp.slidesShare == null & byInd.slidesShare != null) {
+                        tmp.slidesShare = new ArrayList<>();
+                        tmp.slidesShare.addAll(byInd.slidesShare);
+                    }
+                    if (tmp.ugcPayload == null & byInd.ugcPayload != null) {
+                        tmp.ugcPayload = new HashMap<>(byInd.ugcPayload);
                     }
                     tmp.isOpened = tmp.isOpened || stories.get(ind).isOpened;
                 }
