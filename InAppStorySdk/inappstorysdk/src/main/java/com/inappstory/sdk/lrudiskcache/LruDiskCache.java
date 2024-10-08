@@ -172,15 +172,6 @@ public class LruDiskCache {
     }
 
     public DownloadFileState get(String key, String type) {
-        String threadName = Thread.currentThread().getName();
-        Log.e("LruDiskCacheThread", threadName);
-        if (threadName.equals("main")) {
-            try {
-                throw new RuntimeException("LruDiskCacheThread");
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
         synchronized (journal) {
             try {
                 keyIsValid(key);
