@@ -1,8 +1,8 @@
 package com.inappstory.sdk.stories.cache.usecases;
 
-import android.util.Log;
 
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.game.cache.UseCaseCallback;
 import com.inappstory.sdk.lrudiskcache.CacheJournalItem;
 import com.inappstory.sdk.lrudiskcache.FileChecker;
@@ -12,7 +12,6 @@ import com.inappstory.sdk.stories.cache.DownloadFileState;
 import com.inappstory.sdk.stories.cache.DownloadInterruption;
 import com.inappstory.sdk.stories.cache.Downloader;
 import com.inappstory.sdk.stories.cache.FileLoadProgressCallback;
-import com.inappstory.sdk.stories.cache.FilesDownloadManager;
 import com.inappstory.sdk.utils.ProgressCallback;
 import com.inappstory.sdk.utils.StringsUtils;
 
@@ -35,7 +34,7 @@ public class GameResourceUseCase extends GetCacheFileUseCase<Void> {
     }
 
     public GameResourceUseCase(
-            FilesDownloadManager filesDownloadManager,
+            IASCore core,
             String zipUrl,
             String gameInstanceId,
             ProgressCallback progressCallback,
@@ -43,7 +42,7 @@ public class GameResourceUseCase extends GetCacheFileUseCase<Void> {
             UseCaseCallback<Void> useCaseCallback,
             WebResource resource
     ) {
-        super(filesDownloadManager);
+        super(core);
         this.useCaseCallback = useCaseCallback;
         this.interruption = interruption;
         this.progressCallback = progressCallback;
@@ -162,32 +161,34 @@ public class GameResourceUseCase extends GetCacheFileUseCase<Void> {
                                 }
                             }
                         };
-                Downloader.downloadFile(
-                        resource.url,
-                        new File(filePath),
-                        new FileLoadProgressCallback() {
-                            @Override
-                            public void onSuccess(File file) {
+                core
+                        .contentLoader()
+                        .downloader()
+                        .downloadFile(
+                                resource.url,
+                                new File(filePath),
+                                new FileLoadProgressCallback() {
+                                    @Override
+                                    public void onSuccess(File file) {
 
-                            }
+                                    }
 
-                            @Override
-                            public void onError(String error) {
+                                    @Override
+                                    public void onError(String error) {
 
-                            }
+                                    }
 
-                            @Override
-                            public void onProgress(long loadedSize, long totalSize) {
-                                progressCallback.onProgress(loadedSize, totalSize);
-                            }
-                        },
-                        downloadLog.responseLog,
-                        interruption,
-                        offset,
-                        -1,
-                        filesDownloadManager,
-                        callback
-                );
+                                    @Override
+                                    public void onProgress(long loadedSize, long totalSize) {
+                                        progressCallback.onProgress(loadedSize, totalSize);
+                                    }
+                                },
+                                downloadLog.responseLog,
+                                interruption,
+                                offset,
+                                -1,
+                                callback
+                        );
             } catch (Exception e) {
                 useCaseCallback.onError(e.getMessage());
                 e.printStackTrace();
@@ -217,6 +218,6 @@ public class GameResourceUseCase extends GetCacheFileUseCase<Void> {
 
     @Override
     protected LruDiskCache getCache() {
-        return filesDownloadManager.getCachesHolder().getInfiniteCache();
+        return core.contentLoader().getInfiniteCache();
     }
 }

@@ -96,7 +96,7 @@ public class IASStatisticV2Impl implements IASStatisticV2 {
         try {
             ArrayList<StatisticTask> ltasks = new ArrayList<>();
             ltasks.addAll(tasks);
-            SharedPreferencesAPI.saveString(TASKS_KEY, JsonParser.getJson(ltasks));
+            core.sharedPreferencesAPI().saveString(TASKS_KEY, JsonParser.getJson(ltasks));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -106,7 +106,7 @@ public class IASStatisticV2Impl implements IASStatisticV2 {
         try {
             ArrayList<StatisticTask> ltasks = new ArrayList<>();
             ltasks.addAll(faketasks);
-            SharedPreferencesAPI.saveString(FAKE_TASKS_KEY, JsonParser.getJson(ltasks));
+            core.sharedPreferencesAPI().saveString(FAKE_TASKS_KEY, JsonParser.getJson(ltasks));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -123,9 +123,9 @@ public class IASStatisticV2Impl implements IASStatisticV2 {
     public void cleanTasks() {
         synchronized (statisticTasksLock) {
             tasks.clear();
-            SharedPreferencesAPI.remove(TASKS_KEY);
+            core.sharedPreferencesAPI().remove(TASKS_KEY);
             faketasks.clear();
-            SharedPreferencesAPI.remove(FAKE_TASKS_KEY);
+            core.sharedPreferencesAPI().remove(FAKE_TASKS_KEY);
         }
     }
 
@@ -158,8 +158,8 @@ public class IASStatisticV2Impl implements IASStatisticV2 {
 
 
     private void init() {
-        String tasksJson = SharedPreferencesAPI.getString(TASKS_KEY);
-        String fakeTasksJson = SharedPreferencesAPI.getString(FAKE_TASKS_KEY);
+        String tasksJson = core.sharedPreferencesAPI().getString(TASKS_KEY);
+        String fakeTasksJson = core.sharedPreferencesAPI().getString(FAKE_TASKS_KEY);
         synchronized (statisticTasksLock) {
             if (tasksJson != null) {
                 tasks = JsonParser.listFromJson(tasksJson, StatisticTask.class);
@@ -173,7 +173,7 @@ public class IASStatisticV2Impl implements IASStatisticV2 {
                 task.isFake = false;
             }
 
-            SharedPreferencesAPI.remove(FAKE_TASKS_KEY);
+            core.sharedPreferencesAPI().remove(FAKE_TASKS_KEY);
         }
         loopedExecutor.init(queueTasksRunnable);
     }
@@ -181,7 +181,7 @@ public class IASStatisticV2Impl implements IASStatisticV2 {
     public void cleanFakeEvents() {
         synchronized (statisticTasksLock) {
             faketasks.clear();
-            SharedPreferencesAPI.remove(FAKE_TASKS_KEY);
+            core.sharedPreferencesAPI().remove(FAKE_TASKS_KEY);
         }
     }
 

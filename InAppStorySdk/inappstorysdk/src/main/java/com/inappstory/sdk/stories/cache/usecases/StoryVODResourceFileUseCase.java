@@ -1,18 +1,18 @@
 package com.inappstory.sdk.stories.cache.usecases;
 
 
-import android.util.Log;
 import android.util.Pair;
 
 import androidx.annotation.WorkerThread;
 
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.lrudiskcache.CacheJournalItem;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.stories.cache.DownloadFileState;
 import com.inappstory.sdk.stories.cache.Downloader;
-import com.inappstory.sdk.stories.cache.FilesDownloadManager;
 import com.inappstory.sdk.stories.cache.vod.ContentRange;
 import com.inappstory.sdk.stories.cache.vod.VODCacheItemPart;
+import com.inappstory.sdk.stories.cache.vod.VODCacheJournal;
 import com.inappstory.sdk.stories.cache.vod.VODCacheJournalItem;
 import com.inappstory.sdk.stories.cache.vod.VODDownloader;
 import com.inappstory.sdk.utils.StringsUtils;
@@ -27,13 +27,13 @@ public class StoryVODResourceFileUseCase extends GetCacheFileUseCase<StoryVODRes
 
 
     public StoryVODResourceFileUseCase(
-            FilesDownloadManager filesDownloadManager,
+            IASCore core,
             String url,
             String uniqueKey,
             long rangeStart,
             long rangeEnd
     ) {
-        super(filesDownloadManager);
+        super(core);
         this.url = url;
         this.uniqueKey = uniqueKey;
         this.rangeStart = rangeStart;
@@ -55,8 +55,10 @@ public class StoryVODResourceFileUseCase extends GetCacheFileUseCase<StoryVODRes
     public StoryVODResourceFileUseCaseResult getFile() {
         downloadLog.generateRequestLog(url);
         DownloadFileState fileState = getCache().get(uniqueKey);
-        VODCacheJournalItem vodJournalItem = filesDownloadManager.getVodCacheJournal().getItem(uniqueKey);
-        VODDownloader vodDownloader = new VODDownloader();
+        VODCacheJournal vodCacheJournal = core.contentLoader().filesDownloadManager()
+                .getVodCacheJournal();
+        VODCacheJournalItem vodJournalItem = vodCacheJournal.getItem(uniqueKey);
+        VODDownloader vodDownloader = new VODDownloader(core);
         Pair<ContentRange, byte[]> result = null;
         if (fileState != null
                 && fileState.file != null
@@ -84,7 +86,7 @@ public class StoryVODResourceFileUseCase extends GetCacheFileUseCase<StoryVODRes
         }
         if (vodJournalItem == null) {
             vodJournalItem = generateVODCacheItem();
-            filesDownloadManager.getVodCacheJournal().putItem(vodJournalItem);
+            vodCacheJournal.putItem(vodJournalItem);
         }
         try {
             downloadLog.sendRequestLog();
@@ -101,7 +103,7 @@ public class StoryVODResourceFileUseCase extends GetCacheFileUseCase<StoryVODRes
                 if (vodDownloader.putBytesToFile(rangeStart, result.second, filePath)) {
                     vodJournalItem.addPart(rangeStart, rangeEnd);
                     vodJournalItem.setFullSize(result.first.length());
-                    filesDownloadManager.getVodCacheJournal().putItem(vodJournalItem);
+                    vodCacheJournal.putItem(vodJournalItem);
                     long size = vodJournalItem.getDownloadedSize();
 
                     CacheJournalItem cacheJournalItem = generateCacheItem();
@@ -153,7 +155,7 @@ public class StoryVODResourceFileUseCase extends GetCacheFileUseCase<StoryVODRes
 
     @Override
     protected LruDiskCache getCache() {
-        return filesDownloadManager.getCachesHolder().getVodCache();
+        return core.contentLoader().getVodCache();
     }
 
 }

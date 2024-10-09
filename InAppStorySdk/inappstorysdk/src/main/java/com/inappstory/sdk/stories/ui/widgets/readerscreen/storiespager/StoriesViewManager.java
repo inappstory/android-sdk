@@ -11,7 +11,6 @@ import android.view.View;
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.InAppStoryManager;
-import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASCallbackType;
@@ -38,7 +37,6 @@ import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ShowSlideCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
-import com.inappstory.sdk.stories.statistic.IASStatisticProfilingImpl;
 import com.inappstory.sdk.stories.ui.dialog.CancelListener;
 import com.inappstory.sdk.stories.ui.dialog.ContactDialogCreator;
 import com.inappstory.sdk.stories.ui.dialog.SendListener;
@@ -298,7 +296,7 @@ public class StoriesViewManager {
 
     private void slideInCache(final Story story, final int index) {
         ISessionHolder sessionHolder = core.sessionManager().getSession();
-        if (sessionHolder.checkIfSessionAssetsIsReady()) {
+        if (sessionHolder.checkIfSessionAssetsIsReadySync()) {
             innerLoad(story);
             pageManager.slideLoadedInCache(index, true);
         } else {
@@ -614,7 +612,7 @@ public class StoriesViewManager {
     }
 
     public void storySetLocalData(String data, boolean sendToServer) {
-        KeyValueStorage.saveString("story" + storyId + "__" +
+        core.keyValueStorage().saveString("story" + storyId + "__" +
                 ((IASDataSettingsHolder) core.settingsAPI()).userId(), data);
         if (core.statistic().v1().disabled()) return;
         final NetworkClient networkClient = InAppStoryManager.getNetworkClient();

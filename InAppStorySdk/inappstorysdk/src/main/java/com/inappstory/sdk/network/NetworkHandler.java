@@ -5,6 +5,8 @@ import android.util.Pair;
 
 
 import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.network.annotations.api.Body;
 import com.inappstory.sdk.network.annotations.api.DELETE;
 import com.inappstory.sdk.network.annotations.api.ExcludeHeaders;
@@ -49,6 +51,7 @@ public final class NetworkHandler implements InvocationHandler {
     Context appContext;
     String baseUrl;
     String sessionId;
+    private final IASCore core;
     private final Object sessionLock = new Object();
 
     public void setSessionId(String sessionId) {
@@ -61,9 +64,9 @@ public final class NetworkHandler implements InvocationHandler {
         return baseUrl;
     }
 
-    public NetworkHandler(String baseUrl, Context appContext) {
+    public NetworkHandler(String baseUrl, IASCore core) {
         this.baseUrl = baseUrl;
-        this.appContext = appContext;
+        this.core = core;
     }
 
     private Request generateRequest(
@@ -124,7 +127,6 @@ public final class NetworkHandler implements InvocationHandler {
                     .isFormEncoded(isFormEncoded)
                     .headers(
                             generateHeaders(
-                                    appContext,
                                     exclude,
                                     replacedHeaders,
                                     isFormEncoded,
@@ -145,14 +147,13 @@ public final class NetworkHandler implements InvocationHandler {
     }
 
     List<Header> generateHeaders(
-            Context context,
             String[] exclude,
             List<Pair<String, String>> replaceHeaders,
             boolean isFormEncoded,
             boolean hasBody
     ) {
-        InAppStoryManager manager = InAppStoryManager.getInstance();
-        boolean hasDeviceId = manager == null || manager.isDeviceIDEnabled();
+        IASDataSettingsHolder dataSettingsHolder = (IASDataSettingsHolder) core.settingsAPI();
+        String deviceId = dataSettingsHolder.deviceId();
         List<String> excludeList = Arrays.asList(exclude);
         List<Header> resHeaders = new ArrayList<>();
         if (!excludeList.contains(HeadersKeys.ACCEPT))
@@ -164,7 +165,7 @@ public final class NetworkHandler implements InvocationHandler {
         if (!excludeList.contains(HeadersKeys.AUTHORIZATION))
             resHeaders.add(new AuthorizationHeader());
         if (!excludeList.contains(HeadersKeys.APP_PACKAGE_ID))
-            resHeaders.add(new XAppPackageIdHeader(context));
+            resHeaders.add(new XAppPackageIdHeader(core.appContext()));
         if (!excludeList.contains(HeadersKeys.AUTH_SESSION_ID)) {
             synchronized (sessionLock) {
                 if (sessionId != null && !sessionId.isEmpty()) {
@@ -174,12 +175,12 @@ public final class NetworkHandler implements InvocationHandler {
         }
         if (!excludeList.contains(HeadersKeys.CONTENT_TYPE))
             resHeaders.add(new ContentTypeHeader(isFormEncoded, hasBody));
-        if (!excludeList.contains(HeadersKeys.DEVICE_ID) && hasDeviceId)
-            resHeaders.add(new XDeviceIdHeader(context));
+        if (!excludeList.contains(HeadersKeys.DEVICE_ID) && deviceId != null)
+            resHeaders.add(new XDeviceIdHeader(deviceId));
         if (!excludeList.contains(HeadersKeys.REQUEST_ID))
             resHeaders.add(new XRequestIdHeader());
         if (!excludeList.contains(HeadersKeys.USER_AGENT))
-            resHeaders.add(new UserAgentHeader(context));
+            resHeaders.add(new UserAgentHeader(core.appContext()));
         if (!excludeList.contains(HeadersKeys.USER_ID))
             resHeaders.add(new XUserIdHeader());
         for (Header header : resHeaders) {

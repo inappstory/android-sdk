@@ -3,6 +3,7 @@ package com.inappstory.sdk.stories.cache.usecases;
 
 import androidx.annotation.WorkerThread;
 
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.lrudiskcache.CacheJournalItem;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.stories.cache.DownloadFileState;
@@ -17,10 +18,10 @@ public class StoryResourceFileUseCase extends GetCacheFileUseCase<DownloadFileSt
     private final String url;
 
     public StoryResourceFileUseCase(
-            FilesDownloadManager filesDownloadManager,
+            IASCore core,
             String url
     ) {
-        super(filesDownloadManager);
+        super(core);
         this.url = url;
         this.uniqueKey = StringsUtils.md5(url);
         this.filePath = getCache().getCacheDir().getAbsolutePath() +
@@ -61,15 +62,17 @@ public class StoryResourceFileUseCase extends GetCacheFileUseCase<DownloadFileSt
                         fileState[0] = state;
                     }
                 };
-                Downloader.downloadFile(
-                        url,
-                        new File(filePath),
-                        null,
-                        downloadLog.responseLog,
-                        null,
-                        filesDownloadManager,
-                        callback
-                );
+                core
+                        .contentLoader()
+                        .downloader()
+                        .downloadFile(
+                                url,
+                                new File(filePath),
+                                null,
+                                downloadLog.responseLog,
+                                null,
+                                callback
+                        );
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -99,7 +102,7 @@ public class StoryResourceFileUseCase extends GetCacheFileUseCase<DownloadFileSt
 
     @Override
     protected LruDiskCache getCache() {
-        return filesDownloadManager.getCachesHolder().getCommonCache();
+        return core.contentLoader().getCommonCache();
     }
 
 }

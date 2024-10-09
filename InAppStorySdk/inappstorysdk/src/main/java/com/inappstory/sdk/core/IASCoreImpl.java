@@ -2,6 +2,7 @@ package com.inappstory.sdk.core;
 
 import android.content.Context;
 
+import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.core.api.IASCallbacks;
 import com.inappstory.sdk.core.api.IASContentLoader;
 import com.inappstory.sdk.core.api.IASContentPreload;
@@ -35,6 +36,9 @@ import com.inappstory.sdk.core.api.impl.IASStoriesOpenedCacheImpl;
 import com.inappstory.sdk.core.dataholders.IStoriesListVMHolder;
 import com.inappstory.sdk.core.dataholders.StoriesListVMHolder;
 import com.inappstory.sdk.core.ui.screens.ScreensManager;
+import com.inappstory.sdk.network.NetworkClient;
+import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
+import com.inappstory.sdk.stories.utils.KeyValueStorage;
 import com.inappstory.sdk.stories.utils.SessionManager;
 import com.inappstory.sdk.utils.IVibrateUtils;
 import com.inappstory.sdk.utils.VibrateUtils;
@@ -48,7 +52,6 @@ public class IASCoreImpl implements IASCore {
     private final IASDataSettings settings;
     private final IASSingleStory singleStory;
     private final IASStackFeed stackFeed;
-    private IASStoryList storyList;
     private final IStoriesListVMHolder storiesListVMHolder;
     private final ScreensManager screensManager;
     private final SessionManager sessionManager;
@@ -60,9 +63,16 @@ public class IASCoreImpl implements IASCore {
     private final IASContentLoader contentLoader;
     private final IASLogs iasLogs;
     private final Context context;
+    private final InAppStoryService inAppStoryService;
+    private final NetworkClient networkClient;
+    private final KeyValueStorage keyValueStorage;
+    private final SharedPreferencesAPI sharedPreferencesAPI;
 
     public IASCoreImpl(Context context) {
         this.context = context;
+        this.sharedPreferencesAPI = new SharedPreferencesAPI(this);
+        keyValueStorage = new KeyValueStorage(this);
+        networkClient = new NetworkClient(this);
         callbacks = new IASCallbacksImpl(this);
         favorites = new IASFavoritesImpl(this);
         games = new IASGamesImpl(this);
@@ -81,6 +91,7 @@ public class IASCoreImpl implements IASCore {
         externalUtilsAPI = new IASExternalUtilsAPIImpl();
         contentLoader = new IASContentLoaderImpl(this);
         iasLogs = new IASLogsImpl(this);
+        inAppStoryService = new InAppStoryService(this);
         externalUtilsAPI.init();
     }
 
@@ -132,7 +143,7 @@ public class IASCoreImpl implements IASCore {
 
     @Override
     public IASStoryList storyListAPI() {
-        return storyList;
+        return null;
     }
 
     @Override
@@ -186,7 +197,27 @@ public class IASCoreImpl implements IASCore {
     }
 
     @Override
+    public NetworkClient network() {
+        return networkClient;
+    }
+
+    @Override
     public IASLogs logs() {
         return iasLogs;
+    }
+
+    @Override
+    public KeyValueStorage keyValueStorage() {
+        return keyValueStorage;
+    }
+
+    @Override
+    public SharedPreferencesAPI sharedPreferencesAPI() {
+        return sharedPreferencesAPI;
+    }
+
+    @Override
+    public InAppStoryService inAppStoryService() {
+        return inAppStoryService;
     }
 }

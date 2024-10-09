@@ -69,7 +69,7 @@ public class StoryListItem extends BaseStoryListItem {
             public void use(@NonNull IASCore core) {
                 if (imageUrl != null) {
                     new StoryCoverUseCase(
-                            core.contentLoader().filesDownloadManager(),
+                            core,
                             imageUrl,
                             new IGetStoryCoverCallback() {
                                 @Override
@@ -105,7 +105,7 @@ public class StoryListItem extends BaseStoryListItem {
 
                 if (videoUrl != null) {
                     new StoryCoverUseCase(
-                            core.contentLoader().filesDownloadManager(),
+                            core,
                             videoUrl,
                             new IGetStoryCoverCallback() {
                                 @Override

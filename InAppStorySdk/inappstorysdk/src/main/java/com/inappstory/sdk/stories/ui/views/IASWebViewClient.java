@@ -123,7 +123,7 @@ public class IASWebViewClient extends WebViewClient {
         Log.e("WebProfiling", "getWebResourceResponse Req " + item.getUrl() + " " + rangeHeader + " " + System.currentTimeMillis());
         try {
             StoryVODResourceFileUseCaseResult res = new StoryVODResourceFileUseCase(
-                    core.contentLoader().filesDownloadManager(),
+                    core,
                     item.getUrl(),
                     uniqueKey,
                     range.start(),

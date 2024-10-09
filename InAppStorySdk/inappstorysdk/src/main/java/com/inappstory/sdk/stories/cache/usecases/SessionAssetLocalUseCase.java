@@ -1,5 +1,6 @@
 package com.inappstory.sdk.stories.cache.usecases;
 
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.game.cache.UseCaseCallback;
 import com.inappstory.sdk.lrudiskcache.CacheJournalItem;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
@@ -18,11 +19,11 @@ public class SessionAssetLocalUseCase extends GetCacheFileUseCase<Void> {
     private final UseCaseCallback<File> useCaseCallback;
 
     public SessionAssetLocalUseCase(
-            FilesDownloadManager filesDownloadManager,
+            IASCore core,
             UseCaseCallback<File> useCaseCallback,
             SessionAsset cacheObject
     ) {
-        super(filesDownloadManager);
+        super(core);
         this.cacheObject = cacheObject;
         this.useCaseCallback = useCaseCallback;
         this.uniqueKey = StringsUtils.md5(cacheObject.filename);
@@ -90,6 +91,6 @@ public class SessionAssetLocalUseCase extends GetCacheFileUseCase<Void> {
 
     @Override
     protected LruDiskCache getCache() {
-        return filesDownloadManager.getCachesHolder().getInfiniteCache();
+        return core.contentLoader().getInfiniteCache();
     }
 }

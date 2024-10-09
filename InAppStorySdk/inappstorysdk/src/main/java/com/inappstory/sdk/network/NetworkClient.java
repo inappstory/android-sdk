@@ -1,10 +1,10 @@
 package com.inappstory.sdk.network;
 
-import android.content.Context;
 import android.util.Pair;
 
 import androidx.annotation.WorkerThread;
 
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.network.callbacks.Callback;
 import com.inappstory.sdk.network.dummy.DummyApiInterface;
 import com.inappstory.sdk.network.models.Request;
@@ -16,13 +16,7 @@ import com.inappstory.sdk.network.utils.headers.Header;
 import java.lang.reflect.ParameterizedType;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.NavigableSet;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -31,30 +25,47 @@ import java.util.concurrent.Executors;
 
 public class NetworkClient {
     private ApiInterface apiInterface;
-    private final NetworkHandler networkHandler;
+    private NetworkHandler networkHandler;
 
-    private final String baseUrl;
+    private String baseUrl;
     public String userAgent;
+
+    public String userAgent() {
+        return userAgent;
+    }
+    private final IASCore core;
 
     public String getBaseUrl() {
         return baseUrl;
     }
 
-    private final Context appContext;
 
-    public NetworkClient(Context context, String baseUrl) {
-        this.appContext = context.getApplicationContext();
-        this.baseUrl = baseUrl;
-        this.networkHandler = new NetworkHandler(baseUrl, this.appContext);
-        this.userAgent = new UserAgent().generate(context);
+    public NetworkClient(IASCore core) {
+        this.core = core;
+        this.userAgent = new UserAgent().generate(core.appContext());
     }
+
     public void clear() {
         apiInterface = null;
+    }
+
+    public void setBaseUrl(String baseUrl) {
+        this.baseUrl = baseUrl;
+        this.networkHandler = new NetworkHandler(baseUrl, core);
     }
 
     ExecutorService netExecutor = Executors.newFixedThreadPool(10);
 
     public void enqueue(final Request request, final Callback callback) {
+        if (networkHandler == null) {
+            callback.onFailure(
+                    new Response
+                            .Builder().code(-4)
+                            .errorBody("InAppStoryManager wasn't initialized")
+                            .build()
+            );
+            return;
+        }
         netExecutor.submit(new Callable<Response>() {
             @Override
             public Response call() {
@@ -65,11 +76,18 @@ public class NetworkClient {
 
     @WorkerThread
     public Response execute(Request request) {
+        if (networkHandler == null) {
+            return new Response
+                    .Builder().code(-4)
+                    .errorBody("InAppStoryManager wasn't initialized")
+                    .build();
+        }
         return execute(request, null);
     }
 
 
     public static final String NC_IS_UNAVAILABLE = "Network client is unavailable";
+
     @WorkerThread
     public Response execute(Request request, Callback callback) {
         Response response;
@@ -133,13 +151,12 @@ public class NetworkClient {
     }
 
     public List<Header> generateHeaders(
-            Context context,
             String[] exclude,
             List<Pair<String, String>> replace,
             boolean isFormEncoded,
             boolean hasBody
     ) {
-        return networkHandler.generateHeaders(context, exclude, replace, isFormEncoded, hasBody);
+        return networkHandler.generateHeaders(exclude, replace, isFormEncoded, hasBody);
     }
 
     public ApiInterface getApi() {

@@ -66,7 +66,7 @@ public class WebPageConverter {
         List<SessionAsset> assets = core.sessionManager().getSession().getSessionAssets();
         for (final SessionAsset asset : assets) {
             new SessionAssetLocalUseCase(
-                    core.contentLoader().filesDownloadManager(),
+                    core,
                     new UseCaseCallback<File>() {
                         @Override
                         public void onError(String message) {

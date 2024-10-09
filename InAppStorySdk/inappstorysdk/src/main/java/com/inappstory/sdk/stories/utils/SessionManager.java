@@ -185,30 +185,17 @@ public class SessionManager {
 
     @SuppressLint("HardwareIds")
     private void openSessionInner() {
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service == null) return;
-        final InAppStoryManager manager = InAppStoryManager.getInstance();
-        if (manager == null) return;
-        Context context = service.getContext();
-
-        final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
-        if (networkClient == null) {
+        if (core.network().getBaseUrl() == null) {
             synchronized (openProcessLock) {
                 openProcess = false;
             }
             return;
         }
+        Context context = core.appContext();
 
         final String platform = "android";
-        final String deviceId;
-        if (manager.isDeviceIDEnabled()) {
-            deviceId = Settings.Secure.getString(
-                    context.getContentResolver(),
-                    Settings.Secure.ANDROID_ID
-            );
-        } else {
-            deviceId = null;
-        }
+        final IASDataSettingsHolder dataSettingsHolder = (IASDataSettingsHolder) core.settingsAPI();
+        final String deviceId = dataSettingsHolder.deviceId();
         final String model = Build.MODEL;
         final String manufacturer = Build.MANUFACTURER;
         final String brand = Build.BRAND;
@@ -234,9 +221,9 @@ public class SessionManager {
                     @Override
                     public void success() {
                         final String sessionOpenUID = core.statistic().profiling().addTask("api_session_open");
-                        final String initialUserId = ((IASDataSettingsHolder) core.settingsAPI()).userId();
-                        networkClient.enqueue(
-                                networkClient.getApi().sessionOpen(
+                        final String initialUserId = dataSettingsHolder.userId();
+                        core.network().enqueue(
+                                core.network().getApi().sessionOpen(
                                         SESSION_FIELDS,
                                         SESSION_EXPAND,
                                         FEATURES,
@@ -258,17 +245,15 @@ public class SessionManager {
                                 new NetworkCallback<SessionResponse>() {
                                     @Override
                                     public void onSuccess(SessionResponse response) {
-                                        InAppStoryService service = InAppStoryService.getInstance();
-                                        if (service == null) return;
                                         saveSession(response);
-                                        String serviceUserId = ((IASDataSettingsHolder) core.settingsAPI()).userId();
+                                        String serviceUserId = dataSettingsHolder.userId();
                                         String currentSession = getSession().getSessionId();
                                         if (initialUserId == null) {
                                             if (serviceUserId != null) {
                                                 closeSession(
                                                         false,
                                                         true,
-                                                        manager.getCurrentLocale(),
+                                                        dataSettingsHolder.lang(),
                                                         null,
                                                         currentSession
                                                 );
@@ -280,7 +265,7 @@ public class SessionManager {
                                                 closeSession(
                                                         false,
                                                         true,
-                                                        manager.getCurrentLocale(),
+                                                        dataSettingsHolder.lang(),
                                                         initialUserId,
                                                         currentSession
                                                 );
@@ -288,8 +273,9 @@ public class SessionManager {
                                                 return;
                                             }
                                         }
-                                        networkClient.setSessionId(currentSession);
-                                        service.getListReaderConnector().sessionIsOpened(currentSession);
+                                        core.network().setSessionId(currentSession);
+                                        InAppStoryService.getInstance()
+                                                .getListReaderConnector().sessionIsOpened(currentSession);
                                         core.statistic().profiling().setReady(sessionOpenUID);
                                         openStatisticSuccess(response);
                                         CachedSessionData cachedSessionData = new CachedSessionData();
@@ -300,9 +286,8 @@ public class SessionManager {
                                         cachedSessionData.testKey = ApiSettings.getInstance().getTestKey();
                                         cachedSessionData.token = ApiSettings.getInstance().getApiKey();
                                         cachedSessionData.tags =
-                                                TextUtils.join(",",
-                                                        ((IASDataSettingsHolder) core.settingsAPI()).tags());
-                                        CachedSessionData.setInstance(cachedSessionData);
+                                                TextUtils.join(",", dataSettingsHolder.tags());
+                                        sessionHolder.sessionData(cachedSessionData);
 
                                         if (response.preloadGame)
                                             core.contentPreload().restartGamePreloader();

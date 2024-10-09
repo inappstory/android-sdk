@@ -41,17 +41,16 @@ public class StoryFavoriteListItem extends BaseStoryListItem {
     private void loadFavoriteImages(final LoadFavoriteImagesCallback callback, final int count) {
         final List<String> downloadImages = new ArrayList<>();
         final int[] i = {0};
-
-        final InAppStoryService service = InAppStoryService.getInstance();
-        if (count == 0 ||
-                service == null ||
-                service.getFavoriteImages() == null ||
-                service.getFavoriteImages().isEmpty()
-        )
+        InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
+        if (inAppStoryManager == null) return;
+        final List<FavoriteImage> favoriteImages = inAppStoryManager
+                .iasCore()
+                .contentLoader()
+                .storyDownloadManager()
+                .favoriteImages();
+        if (count == 0 || favoriteImages.isEmpty()) {
             return;
-
-
-
+        }
         RunnableCallback runnableCallback = new RunnableCallback() {
             @Override
             public void run(String path) {
@@ -60,11 +59,10 @@ public class StoryFavoriteListItem extends BaseStoryListItem {
                 if (i[0] >= count)
                     callback.onLoad(downloadImages);
                 else {
-                    List<FavoriteImage> images = service.getFavoriteImages();
-                    if (images == null || images.size() <= i[0]) {
+                    if (favoriteImages.size() <= i[0]) {
                         downloadFileAndSendToInterface("", this);
                     } else {
-                        downloadFileAndSendToInterface(images.get(i[0]).getUrl(), this);
+                        downloadFileAndSendToInterface(favoriteImages.get(i[0]).getUrl(), this);
                     }
                 }
             }
@@ -76,16 +74,15 @@ public class StoryFavoriteListItem extends BaseStoryListItem {
                 if (i[0] >= count)
                     callback.onLoad(downloadImages);
                 else {
-                    List<FavoriteImage> images = service.getFavoriteImages();
-                    if (images == null || images.size() <= i[0]) {
+                    if (favoriteImages.size() <= i[0]) {
                         downloadFileAndSendToInterface("", this);
                     } else {
-                        downloadFileAndSendToInterface(images.get(i[0]).getUrl(), this);
+                        downloadFileAndSendToInterface(favoriteImages.get(i[0]).getUrl(), this);
                     }
                 }
             }
         };
-        downloadFileAndSendToInterface(service.getFavoriteImages().get(0).getUrl(), runnableCallback);
+        downloadFileAndSendToInterface(favoriteImages.get(0).getUrl(), runnableCallback);
     }
 
     interface LoadFavoriteImagesCallback {
@@ -109,14 +106,20 @@ public class StoryFavoriteListItem extends BaseStoryListItem {
     }
 
     public void bindFavorite() {
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service == null) return;
+
+        InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
+        if (inAppStoryManager == null) return;
+        List<FavoriteImage> favoriteImages = inAppStoryManager
+                .iasCore()
+                .contentLoader()
+                .storyDownloadManager()
+                .favoriteImages();
         if (getFavoriteListItem != null
                 && getFavoriteListItem.getFavoriteItem() != null) {
-            int count = service.getFavoriteImages().size();
+            int count = favoriteImages.size();
             final List<Integer> backgroundColors = new ArrayList<>();
             for (int j = 0; j < count; j++) {
-                backgroundColors.add(service.getFavoriteImages().get(j).getBackgroundColor());
+                backgroundColors.add(favoriteImages.get(j).getBackgroundColor());
             }
             if (viewCanBeUsed(itemView, getParent())) {
                 getFavoriteListItem.bindFavoriteItem(itemView, backgroundColors, count);
@@ -143,7 +146,6 @@ public class StoryFavoriteListItem extends BaseStoryListItem {
 
                 }
             }, count);
-            return;
         }
     }
 
@@ -161,7 +163,7 @@ public class StoryFavoriteListItem extends BaseStoryListItem {
             @Override
             public void use(@NonNull IASCore core) {
                 new StoryCoverUseCase(
-                        core.contentLoader().filesDownloadManager(),
+                        core,
                         url,
                         new IGetStoryCoverCallback() {
                             @Override
@@ -182,7 +184,6 @@ public class StoryFavoriteListItem extends BaseStoryListItem {
                 callback.error();
             }
         });
-
 
 
     }

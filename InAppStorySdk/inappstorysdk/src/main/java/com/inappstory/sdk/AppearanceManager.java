@@ -178,7 +178,6 @@ public class AppearanceManager {
 
     private IGameReaderLoaderView csGameReaderLoaderView;
     private StoryTouchListener storyTouchListener;
-    private static WidgetAppearance csWidgetAppearance;
 
     private ICustomGoodsWidget csCustomGoodsWidget;
     private ICustomGoodsItem csCustomGoodsItem;
@@ -231,7 +230,7 @@ public class AppearanceManager {
     private boolean csCloseOnOverscroll = true;
 
 
-    private float getCurrentRatio(Context context) {
+    private float getCurrentRatio() {
         if (csListItemHeight != null
                 && csListItemWidth != null
                 && csListItemHeight > 0
@@ -239,7 +238,9 @@ public class AppearanceManager {
         )
             return 1f * csListItemHeight / csListItemWidth;
         if (csListItemRatio != null && csListItemRatio > 0) return csListItemRatio;
-        CachedSessionData sessionData = CachedSessionData.getInstance(context);
+        InAppStoryManager manager = InAppStoryManager.getInstance();
+        CachedSessionData sessionData = manager.iasCore().sessionManager()
+                .getSession().sessionData();
         if (sessionData != null) return sessionData.previewAspectRatio;
         return 1f;
     }
@@ -256,7 +257,7 @@ public class AppearanceManager {
         } else {
             if (csListItemWidth != null && csListItemWidth > 0)
                 return csListItemWidth;
-            float ratio = getCurrentRatio(context);
+            float ratio = getCurrentRatio();
             if (csListItemHeight != null && csListItemHeight > 0) {
                 return (int) (csListItemHeight * ratio);
             } else {
@@ -266,7 +267,7 @@ public class AppearanceManager {
     }
 
     public Integer getRealHeight(Context context) {
-        float ratio = getCurrentRatio(context);
+        float ratio = getCurrentRatio();
         if (csColumnCount != null && csColumnCount > 0) {
             return (int) (getScaledWidth(context) / ratio);
         } else {
@@ -1000,7 +1001,6 @@ public class AppearanceManager {
         this.csCustomGoodsWidget = csCustomGoodsWidget;
         return AppearanceManager.this;
     }
-
 
 
     public AppearanceManager csStoryLoaderView(IStoryReaderLoaderView csStoryLoaderView) {

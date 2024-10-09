@@ -307,9 +307,9 @@ public class InAppStoryAPISubscribersManager {
     public void showFavoriteItem(
             final String uniqueId
     ) {
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service == null) return;
-        List<FavoriteImage> actualFavoriteImages = new ArrayList<>(service.getFavoriteImages());
+        List<FavoriteImage> actualFavoriteImages = new ArrayList<>(
+                core.contentLoader().storyDownloadManager().favoriteImages()
+        );
         cacheFavoriteCellImage(
                 actualFavoriteImages.iterator(),
                 new ArrayList<StoryFavoriteItemAPIData>(),
@@ -573,10 +573,9 @@ public class InAppStoryAPISubscribersManager {
     }
 
     public void storyFavorite() {
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service == null) return;
-        List<FavoriteImage> actualFavoriteImages = new ArrayList<>(service.getFavoriteImages());
-
+        List<FavoriteImage> actualFavoriteImages = new ArrayList<>(
+                core.contentLoader().storyDownloadManager().favoriteImages()
+        );
         updateFavorites(actualFavoriteImages);
     }
 

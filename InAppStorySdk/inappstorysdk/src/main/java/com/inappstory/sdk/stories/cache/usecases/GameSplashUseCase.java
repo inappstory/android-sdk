@@ -3,6 +3,7 @@ package com.inappstory.sdk.stories.cache.usecases;
 
 import androidx.annotation.WorkerThread;
 
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.game.cache.UseCaseCallback;
 import com.inappstory.sdk.lrudiskcache.CacheJournalItem;
 import com.inappstory.sdk.lrudiskcache.FileChecker;
@@ -22,10 +23,10 @@ public class GameSplashUseCase extends GetCacheFileUseCase<DownloadFileState> {
     private final IDownloadResource splashScreen;
 
     public GameSplashUseCase(
-            FilesDownloadManager filesDownloadManager,
+            IASCore core,
             IDownloadResource splashScreen
     ) {
-        super(filesDownloadManager);
+        super(core);
         this.splashScreen = splashScreen;
         this.uniqueKey = StringsUtils.md5(splashScreen.url());
         this.filePath = getCache().getCacheDir().getAbsolutePath() +
@@ -72,19 +73,21 @@ public class GameSplashUseCase extends GetCacheFileUseCase<DownloadFileState> {
                                     } catch (IOException e) {
 
                                     }
-                                    fileState[0] =state;
+                                    fileState[0] = state;
                                 }
                             }
                         };
-                Downloader.downloadFile(
-                        splashScreen.url(),
-                        new File(filePath),
-                        null,
-                        downloadLog.responseLog,
-                        null,
-                        filesDownloadManager,
-                        callback
-                );
+                core
+                        .contentLoader()
+                        .downloader()
+                        .downloadFile(
+                                splashScreen.url(),
+                                new File(filePath),
+                                null,
+                                downloadLog.responseLog,
+                                null,
+                                callback
+                        );
                 return fileState[0];
             } catch (Exception e) {
                 e.printStackTrace();
@@ -115,6 +118,6 @@ public class GameSplashUseCase extends GetCacheFileUseCase<DownloadFileState> {
 
     @Override
     protected LruDiskCache getCache() {
-        return filesDownloadManager.getCachesHolder().getInfiniteCache();
+        return core.contentLoader().getInfiniteCache();
     }
 }

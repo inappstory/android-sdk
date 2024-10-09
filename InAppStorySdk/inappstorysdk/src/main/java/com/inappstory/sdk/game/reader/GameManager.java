@@ -45,6 +45,10 @@ import java.lang.reflect.Type;
 import java.util.List;
 
 public class GameManager {
+    public IASCore core() {
+        return core;
+    }
+
     private final IASCore core;
     String path;
     final String gameCenterId;
@@ -82,7 +86,7 @@ public class GameManager {
         this.host = host;
         this.gameCenterId = gameCenterId;
         this.dataModel = dataModel;
-        logger = new GameLoggerLvl1(gameCenterId);
+        logger = new GameLoggerLvl1(core, gameCenterId);
     }
 
     void gameInstanceSetData(String gameInstanceId, String data, boolean sendToServer) {
@@ -101,7 +105,7 @@ public class GameManager {
         if (networkClient == null) {
             return;
         }
-        KeyValueStorage.saveString("gameInstance_" + gameInstanceId
+        core.keyValueStorage().saveString("gameInstance_" + gameInstanceId
                 + "__" + settingsHolder.userId(), data);
 
         if (core.statistic().v1().disabled()) return;
@@ -147,7 +151,7 @@ public class GameManager {
             return;
         }
 
-        KeyValueStorage.saveString("story" + dataModel.slideData.story.id
+        core.keyValueStorage().saveString("story" + dataModel.slideData.story.id
                 + "__" + settingsHolder.userId(), data);
 
         String sessionId = core.sessionManager().getSession().getSessionId();

@@ -6,7 +6,6 @@ import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_100;
 import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_5;
 import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_50;
 
-import android.content.Context;
 
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASContentLoader;
@@ -14,6 +13,7 @@ import com.inappstory.sdk.game.cache.GameCacheManager;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.stories.api.models.ResourceMappingObject;
 import com.inappstory.sdk.stories.api.models.Story;
+import com.inappstory.sdk.stories.cache.Downloader;
 import com.inappstory.sdk.stories.cache.FilesDownloadManager;
 import com.inappstory.sdk.stories.cache.StoryDownloadManager;
 import com.inappstory.sdk.stories.cache.vod.VODCacheItemPart;
@@ -23,19 +23,25 @@ import com.inappstory.sdk.stories.utils.KeyValueStorage;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 public class IASContentLoaderImpl implements IASContentLoader {
     private final IASCore core;
     private final FilesDownloadManager filesDownloadManager;
     private final GameCacheManager gameCacheManager;
+    private final Downloader downloader;
 
     private final StoryDownloadManager storyDownloadManager;
 
     public IASContentLoaderImpl(IASCore core) {
         this.core = core;
+        this.downloader = new Downloader(core);
         this.filesDownloadManager = new FilesDownloadManager(core);
         this.storyDownloadManager = new StoryDownloadManager(core);
         this.gameCacheManager = new GameCacheManager(core);
+        runFreeSpaceCheck();
     }
 
     @Override
@@ -83,7 +89,7 @@ public class IASContentLoaderImpl implements IASContentLoader {
             getVodCache().clearCache();
             filesDownloadManager().getVodCacheJournal().clear();
             storyDownloadManager.clearCache();
-            KeyValueStorage.clear();
+            core.keyValueStorage().clear();
         } catch (IOException ignored) {
 
         }
@@ -135,5 +141,42 @@ public class IASContentLoaderImpl implements IASContentLoader {
                 ));
             }
         }
+    }
+
+    private ScheduledExecutorService checkSpaceThread = new ScheduledThreadPoolExecutor(1);
+
+    Runnable checkFreeSpace = new Runnable() {
+        @Override
+        public void run() {
+            LruDiskCache commonCache = getCommonCache();
+            LruDiskCache fastCache = getFastCache();
+            if (commonCache != null && fastCache != null) {
+                long freeSpace = commonCache.getCacheDir().getFreeSpace();
+                if (freeSpace < commonCache.getCacheSize() + fastCache.getCacheSize() + MB_10) {
+                    commonCache.setCacheSize(MB_50);
+                    if (freeSpace < commonCache.getCacheSize() + fastCache.getCacheSize() + MB_10) {
+                        commonCache.setCacheSize(MB_10);
+                        fastCache.setCacheSize(MB_5);
+                        if (freeSpace < commonCache.getCacheSize() + fastCache.getCacheSize() + MB_10) {
+                            commonCache.setCacheSize(MB_10);
+                            fastCache.setCacheSize(MB_5);
+                        }
+                    }
+                }
+            }
+        }
+    };
+
+    @Override
+    public void runFreeSpaceCheck() {
+        if (checkSpaceThread.isShutdown()) {
+            checkSpaceThread = new ScheduledThreadPoolExecutor(1);
+        }
+        checkSpaceThread.scheduleAtFixedRate(checkFreeSpace, 1L, 60000L, TimeUnit.MILLISECONDS);
+    }
+
+    @Override
+    public Downloader downloader() {
+        return downloader;
     }
 }

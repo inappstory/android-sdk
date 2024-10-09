@@ -7,6 +7,7 @@ import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.WindowManager;
 
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 
@@ -29,16 +30,6 @@ public class Sizes {
     }
 
 
-    private static float getPixelScaleFactorExt() {
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service == null) return 1;
-        Context con = InAppStoryService.getInstance().getContext();
-        if (con == null)
-            return 1;
-        DisplayMetrics displayMetrics = con.getResources().getDisplayMetrics();
-        return displayMetrics.density;
-    }
-
     private static float getPixelScaleFactorExt(Context context) {
         if (context == null)
             return 1;
@@ -46,23 +37,10 @@ public class Sizes {
         return displayMetrics.density;
     }
 
-    @Deprecated
-    public static Point getScreenSize() {
-        Context con = null;
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service != null) con = service.getContext();
-        if (con == null) return new Point(0, 0);
-        WindowManager wm = (WindowManager) con.getSystemService(Context.WINDOW_SERVICE);
-        Display display = wm.getDefaultDisplay();
-        Point size = new Point();
-        display.getSize(size);
-        return size;
-    }
-
     public static Point getScreenSize(Context context) {
         if (context == null) {
-            InAppStoryService service = InAppStoryService.getInstance();
-            if (service != null) context = service.getContext();
+            InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
+            if (inAppStoryManager != null) context = inAppStoryManager.iasCore().appContext();
         }
         if (context == null)
             return new Point(0, 0);
@@ -85,25 +63,12 @@ public class Sizes {
         return Math.round(dp * getPixelScaleFactorExt(context));
     }
 
-    @Deprecated
-    public static int dpToPxExt(int dp) {
-        return Math.round(dp * getPixelScaleFactorExt());
-    }
-
-    @Deprecated
-    public static boolean isTablet() {
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service != null && service.getContext() != null)
-            return service.getContext().getResources().getBoolean(R.bool.isTablet);
-        else return false;
-    }
-
     public static boolean isTablet(Context context) {
+        InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
         Context localContext = null;
         if (context == null) {
-            InAppStoryService service = InAppStoryService.getInstance();
-            if (service != null)
-                localContext = service.getContext();
+            if (inAppStoryManager != null)
+                localContext = inAppStoryManager.iasCore().appContext();
         } else {
             localContext = context;
         }
@@ -116,10 +81,6 @@ public class Sizes {
         return Math.round(dp * getPixelScaleFactorExt(context));
     }
 
-    @Deprecated
-    public static int pxToDpExt(int dp) {
-        return Math.round(dp / getPixelScaleFactorExt());
-    }
 
     public static int pxToDpExt(int dp, Context context) {
         return Math.round(dp / getPixelScaleFactorExt(context));

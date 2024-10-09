@@ -2,6 +2,7 @@ package com.inappstory.sdk.core;
 
 import android.content.Context;
 
+import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.core.api.IASCallbacks;
 import com.inappstory.sdk.core.api.IASContentLoader;
 import com.inappstory.sdk.core.api.IASContentPreload;
@@ -20,7 +21,10 @@ import com.inappstory.sdk.core.api.IASStoryList;
 import com.inappstory.sdk.core.api.IASStoriesOpenedCache;
 import com.inappstory.sdk.core.dataholders.IStoriesListVMHolder;
 import com.inappstory.sdk.core.ui.screens.ScreensManager;
+import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.stories.cache.FilesDownloadManager;
+import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
+import com.inappstory.sdk.stories.utils.KeyValueStorage;
 import com.inappstory.sdk.stories.utils.SessionManager;
 import com.inappstory.sdk.utils.IVibrateUtils;
 
@@ -45,5 +49,9 @@ public interface IASCore {
     IASSessionAssetsHolder sessionAssets();
     IASExternalUtilsAPI externalUtilsAPI();
     IASContentLoader contentLoader();
+    NetworkClient network();
     IASLogs logs();
+    KeyValueStorage keyValueStorage();
+    SharedPreferencesAPI sharedPreferencesAPI();
+    InAppStoryService inAppStoryService();
 }

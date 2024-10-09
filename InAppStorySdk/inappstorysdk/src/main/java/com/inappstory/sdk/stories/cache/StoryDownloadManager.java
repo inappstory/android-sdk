@@ -7,7 +7,6 @@ import androidx.annotation.WorkerThread;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.UseIASCallback;
@@ -230,7 +229,7 @@ public class StoryDownloadManager {
 
     private void checkBundleResources(final ReaderPageManager subscriber, final SlideTaskData key) {
         ISessionHolder sessionHolder = core.sessionManager().getSession();
-        if (sessionHolder.checkIfSessionAssetsIsReady()) {
+        if (sessionHolder.checkIfSessionAssetsIsReadySync()) {
             subscriber.slideLoadedInCache(key.index);
         } else {
             sessionHolder.addSessionAssetsIsReadyCallback(new SessionAssetsIsReadyCallback() {
@@ -411,7 +410,7 @@ public class StoryDownloadManager {
                             if (service == null) return DownloadPageFileStatus.ERROR;
                             GetCacheFileUseCase<DownloadFileState> useCase =
                                     new StoryResourceFileUseCase(
-                                            core.contentLoader().filesDownloadManager(),
+                                            core,
                                             urlWithAlter.getUrl()
                                     );
                             DownloadFileState state = useCase.getFile();
@@ -419,7 +418,7 @@ public class StoryDownloadManager {
                                 //placeholders case, download full
                                 useCase =
                                         new StoryResourceFileUseCase(
-                                                core.contentLoader().filesDownloadManager(),
+                                                core,
                                                 urlWithAlter.getAlter()
                                         );
                                 state = useCase.getFile();
@@ -449,7 +448,7 @@ public class StoryDownloadManager {
                             if (service == null) return DownloadPageFileStatus.ERROR;
                             GetCacheFileUseCase<StoryVODResourceFileUseCaseResult> useCase =
                                     new StoryVODResourceFileUseCase(
-                                            core.contentLoader().filesDownloadManager(),
+                                            core,
                                             url,
                                             uniqueKey,
                                             start,
@@ -835,6 +834,14 @@ public class StoryDownloadManager {
 
     private List<Story> stories = new ArrayList<>();
     private List<Story> ugcStories = new ArrayList<>();
-    public List<Story> favStories = new ArrayList<>();
-    public List<FavoriteImage> favoriteImages = new ArrayList<>();
+    private List<Story> favStories = new ArrayList<>();
+    private List<FavoriteImage> favoriteImages = new ArrayList<>();
+
+    public List<FavoriteImage> favoriteImages() {
+        return favoriteImages;
+    }
+
+    public List<Story> favStories() {
+        return favStories;
+    }
 }

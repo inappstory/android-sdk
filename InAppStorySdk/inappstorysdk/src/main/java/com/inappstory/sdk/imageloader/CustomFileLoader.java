@@ -31,7 +31,7 @@ public class CustomFileLoader {
             @Override
             public void use(@NonNull IASCore core) {
                 new CustomFileUseCase(
-                        core.contentLoader().filesDownloadManager(),
+                        core,
                         url,
                         new SuccessUseCaseCallback<File>() {
                             @Override

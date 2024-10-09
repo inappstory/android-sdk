@@ -4,40 +4,36 @@ import android.content.Context;
 import android.content.SharedPreferences;
 
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.network.JsonParser;
 
 import java.util.HashMap;
 
 public class KeyValueStorage {
 
+    private final IASCore core;
 
-    public static void setContext(Context context) {
-        KeyValueStorage.context = context;
+    public KeyValueStorage(IASCore core) {
+        this.core = core;
     }
 
-    private static Context context;
+
+    private Context context;
 
     private static final String SHARED_PREFERENCES_DEFAULT = "key_value_prefs";
 
-    private static SharedPreferences getKeyValuePrefs() {
-        if (context == null) {
-
-            InAppStoryService service = InAppStoryService.getInstance();
-            if (service == null) return null;
-            context = service.getContext();
-        }
-        if (context == null) return null;
-        return context.getSharedPreferences(SHARED_PREFERENCES_DEFAULT, Context.MODE_PRIVATE);
+    private SharedPreferences getKeyValuePrefs() {
+        return core.appContext().getSharedPreferences(SHARED_PREFERENCES_DEFAULT, Context.MODE_PRIVATE);
     }
 
-    public static void clear() {
+    public void clear() {
         getKeyValuePrefs().edit().clear().apply();
     }
 
     /**
      * Сохранение строки
      */
-    public static void saveString(String key, String value) {
+    public void saveString(String key, String value) {
         if (getKeyValuePrefs() == null) return;
         SharedPreferences.Editor editor = getKeyValuePrefs().edit();
         editor.putString(key, value);
@@ -48,7 +44,7 @@ public class KeyValueStorage {
     /**
      * Получение строки
      */
-    public static String getString(String key) {
+    public String getString(String key) {
         if (getKeyValuePrefs() == null) return null;
         return getKeyValuePrefs().getString(key, null);
     }
@@ -56,7 +52,7 @@ public class KeyValueStorage {
     /**
      * Получение строки
      */
-    public static void removeString(String key) {
+    public void removeString(String key) {
         if (getKeyValuePrefs() == null) return;
         SharedPreferences.Editor editor = getKeyValuePrefs().edit();
         editor.remove(key);
@@ -66,7 +62,7 @@ public class KeyValueStorage {
     /**
      * Получение строки
      */
-    public static String getString(String key, String def) {
+    public String getString(String key, String def) {
         if (getKeyValuePrefs() == null) return null;
         return getKeyValuePrefs().getString(key, def);
     }
@@ -74,7 +70,7 @@ public class KeyValueStorage {
     /**
      * Сохранение json объекта
      */
-    public static void saveObject(String key, Object value) {
+    public void saveObject(String key, Object value) {
         if (getKeyValuePrefs() == null) return;
         try {
             SharedPreferences.Editor editor = getKeyValuePrefs().edit();
@@ -88,7 +84,7 @@ public class KeyValueStorage {
     /**
      * Получение json объекта
      */
-    public static <T> T getObject(String key, Class<T> type) {
+    public <T> T getObject(String key, Class<T> type) {
         if (getKeyValuePrefs() == null) return null;
         String jsonString = getKeyValuePrefs().getString(key, null);
         if (jsonString != null) {
@@ -101,7 +97,7 @@ public class KeyValueStorage {
     /**
      * Сохранение json объекта
      */
-    public static void saveMap(String key, HashMap value) {
+    public void saveMap(String key, HashMap value) {
         SharedPreferences.Editor editor = getKeyValuePrefs().edit();
         try {
             editor.putString(key, JsonParser.getJson(value));

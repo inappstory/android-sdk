@@ -68,8 +68,8 @@ public class GamePreloader implements IGamePreloader {
         synchronized (useCaseCreateLock) {
             interruption = new DownloadInterruption();
             splashesUseCase = new LoadGameSplashesUseCase(
+                    core,
                     new ArrayList<>(loadedData.values()),
-                    filesDownloadManager,
                     interruption
             );
         }

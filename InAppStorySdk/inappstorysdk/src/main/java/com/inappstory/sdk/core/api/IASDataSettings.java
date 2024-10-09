@@ -10,7 +10,9 @@ import java.util.Locale;
 import java.util.Map;
 
 public interface IASDataSettings {
+    void deviceId(String deviceId);
     void setUserId(String userId);
+    void gameDemoMode(boolean gameDemoMode);
     void setLang(Locale lang);
     void isSoundOn(boolean isSoundOn);
     void switchSoundOn();

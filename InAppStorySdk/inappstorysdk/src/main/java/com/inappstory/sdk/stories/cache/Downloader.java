@@ -45,6 +45,11 @@ import java.util.concurrent.Executors;
  */
 
 public class Downloader {
+    private final IASCore core;
+
+    public Downloader(IASCore core) {
+        this.core = core;
+    }
 
     /**
      * Получение ссылки без параметров
@@ -72,13 +77,12 @@ public class Downloader {
     }
 
 
-    public static DownloadFileState downloadFile(
+    public DownloadFileState downloadFile(
             String url,
             File outputFile,
             FileLoadProgressCallback callback,
             ApiLogResponse apiLogResponse,
             DownloadInterruption interruption,
-            FilesDownloadManager manager,
             FinishDownloadFileCallback finishCallback
     ) throws Exception {
         return downloadFile(url,
@@ -88,13 +92,12 @@ public class Downloader {
                 interruption,
                 -1,
                 -1,
-                manager,
                 finishCallback
         );
     }
 
 
-    public static DownloadFileState downloadFile(
+    public DownloadFileState downloadFile(
             String url,
             File outputFile,
             FileLoadProgressCallback callback,
@@ -102,10 +105,10 @@ public class Downloader {
             DownloadInterruption interruption,
             long downloadOffset,
             long downloadLimit,
-            FilesDownloadManager manager,
             FinishDownloadFileCallback finishCallback
     ) throws Exception {
         DownloadFileState state = null;
+        FilesDownloadManager manager = core.contentLoader().filesDownloadManager();
         if (manager != null && !manager.addFinishCallback(url, finishCallback))
             return null;
         InAppStoryManager.showDLog("InAppStory_File", url);
@@ -201,9 +204,9 @@ public class Downloader {
         String contentType = urlConnection.getHeaderField("Content-Type");
 
         if (contentType != null)
-            KeyValueStorage.saveString(outputFile.getName(), contentType);
+            core.keyValueStorage().saveString(outputFile.getName(), contentType);
         else
-            KeyValueStorage.saveString(outputFile.getName(), "image/jpeg");
+            core.keyValueStorage().saveString(outputFile.getName(), "image/jpeg");
         byte[] buffer = new byte[1024];
         int bufferLength = 0;
         int cnt = 0;

@@ -66,7 +66,7 @@ public class IASContentPreloadImpl implements IASContentPreload {
         InAppStoryService.useInstance(new UseServiceInstanceCallback() {
             @Override
             public void use(@NonNull final InAppStoryService service) throws Exception {
-                new SessionAssetUseCase(core.contentLoader().filesDownloadManager(),
+                new SessionAssetUseCase(core,
                         new UseCaseCallback<File>() {
                             @Override
                             public void onError(String message) {
@@ -76,9 +76,7 @@ public class IASContentPreloadImpl implements IASContentPreload {
                             @Override
                             public void onSuccess(File result) {
                                 sessionHolder.addSessionAsset(sessionAsset);
-                                sessionHolder.checkIfSessionAssetsIsReady(
-                                        core.contentLoader().filesDownloadManager()
-                                );
+                                sessionHolder.checkIfSessionAssetsIsReadyAsync();
                             }
                         },
                         sessionAsset

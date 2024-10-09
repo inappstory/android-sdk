@@ -1,5 +1,6 @@
 package com.inappstory.sdk.game.preload;
 
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.game.cache.DownloadSplashUseCase;
 import com.inappstory.sdk.game.cache.GetLocalSplashUseCase;
 import com.inappstory.sdk.game.cache.UseCaseCallback;
@@ -20,16 +21,15 @@ public class LoadGameSplashesUseCase {
 
     private final List<IGameCenterData> gamesData;
     private final DownloadInterruption interruption;
-    private final FilesDownloadManager filesDownloadManager;
-
+    private final IASCore core;
 
     public LoadGameSplashesUseCase(
+            IASCore core,
             List<IGameCenterData> gamesData,
-            FilesDownloadManager filesDownloadManager,
             DownloadInterruption interruption
     ) {
         this.gamesData = gamesData;
-        this.filesDownloadManager = filesDownloadManager;
+        this.core = core;
         this.interruption = interruption;
     }
 
@@ -57,11 +57,13 @@ public class LoadGameSplashesUseCase {
             final IGameCenterData gameData = gamesDataIterator.next();
 
             GetLocalSplashUseCase getLocalStaticSplashUseCase = new GetLocalSplashUseCase(
+                    core,
                     gameData.id(),
                     GameConstants.SPLASH_STATIC_KV
             );
 
             GetLocalSplashUseCase getLocalAnimSplashUseCase = new GetLocalSplashUseCase(
+                    core,
                     gameData.id(),
                     GameConstants.SPLASH_STATIC_KV
             );
@@ -88,7 +90,7 @@ public class LoadGameSplashesUseCase {
             });
             File staticFile = localSplashFiles.get(GameConstants.SPLASH_STATIC);
             DownloadSplashUseCase downloadStaticSplashUseCase = new DownloadSplashUseCase(
-                    filesDownloadManager,
+                    core,
                     gameData.splashScreen(),
                     staticFile != null ? staticFile.getAbsolutePath() : null,
                     GameConstants.SPLASH_STATIC_KV,
@@ -97,7 +99,7 @@ public class LoadGameSplashesUseCase {
 
             File animFile = localSplashFiles.get(GameConstants.SPLASH_ANIM);
             final DownloadSplashUseCase downloadAnimSplashUseCase = new DownloadSplashUseCase(
-                    filesDownloadManager,
+                    core,
                     gameData.splashAnimation(),
                     animFile != null ? animFile.getAbsolutePath() : null,
                     GameConstants.SPLASH_ANIM_KV,
@@ -106,7 +108,7 @@ public class LoadGameSplashesUseCase {
             final UseCaseCallback<File> downloadAnimSplashCallback = new UseCaseCallback<File>() {
                 @Override
                 public void onError(String message) {
-                    KeyValueStorage.saveString(
+                    core.keyValueStorage().saveString(
                             GameConstants.SPLASH_ANIM_KV + gameData.id(),
                             ""
                     );
@@ -120,13 +122,13 @@ public class LoadGameSplashesUseCase {
                 @Override
                 public void onSuccess(File result) {
                     if (result == null) return;
-                    KeyValueStorage.saveString(
+                    core.keyValueStorage().saveString(
                             GameConstants.SPLASH_ANIM_KV + gameData.id(),
                             result.getAbsolutePath()
                     );
 
                     try {
-                        KeyValueStorage.saveString(
+                        core.keyValueStorage().saveString(
                                 GameConstants.SPLASH_ANIM_KV_SETTINGS + gameData.id(),
                                 JsonParser.getJson(gameData.splashAnimation())
                         );
@@ -159,7 +161,7 @@ public class LoadGameSplashesUseCase {
                 @Override
                 public void onSuccess(File result) {
                     if (result == null) return;
-                    KeyValueStorage.saveString(
+                    core.keyValueStorage().saveString(
                             GameConstants.SPLASH_STATIC_KV + gameData.id(),
                             result.getAbsolutePath()
                     );

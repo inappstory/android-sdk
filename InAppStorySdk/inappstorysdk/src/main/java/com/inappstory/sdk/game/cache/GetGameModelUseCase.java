@@ -1,32 +1,32 @@
 package com.inappstory.sdk.game.cache;
 
-import static com.inappstory.sdk.network.NetworkClient.NC_IS_UNAVAILABLE;
-
 import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.stories.api.models.GameCenterData;
 import com.inappstory.sdk.stories.api.models.GameLaunchConfigObject;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
-import com.inappstory.sdk.stories.utils.SessionManager;
 
 import java.lang.reflect.Type;
 
 public class GetGameModelUseCase {
-    void get(final String gameId, final GameLoadCallback callback) {
-        final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
-        if (networkClient == null) {
-            callback.onError(NC_IS_UNAVAILABLE);
-            return;
-        }
+    private final IASCore core;
 
+    public GetGameModelUseCase(IASCore core) {
+        this.core = core;
+    }
+
+    void get(final String gameId, final GameLoadCallback callback) {
+        final NetworkClient networkClient = core.network();
         final boolean demoMode;
         InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
         if (inAppStoryManager == null) {
             callback.onError("");
             return;
         }
-        demoMode = inAppStoryManager.isGameDemoMode();
+        demoMode = ((IASDataSettingsHolder) core.settingsAPI()).gameDemoMode();
         inAppStoryManager.iasCore().sessionManager()
                 .useOrOpenSession(new OpenSessionCallback() {
                     @Override

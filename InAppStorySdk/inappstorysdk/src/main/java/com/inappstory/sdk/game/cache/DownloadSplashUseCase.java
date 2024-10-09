@@ -4,6 +4,7 @@ import android.webkit.URLUtil;
 
 import androidx.annotation.WorkerThread;
 
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.lrudiskcache.FileChecker;
 import com.inappstory.sdk.stories.api.interfaces.IDownloadResource;
 import com.inappstory.sdk.stories.cache.DownloadFileState;
@@ -14,21 +15,21 @@ import com.inappstory.sdk.stories.utils.KeyValueStorage;
 import java.io.File;
 
 public class DownloadSplashUseCase {
-    IDownloadResource resource;
-    FilesDownloadManager filesDownloadManager;
-    String oldSplashPath;
-    String gameId;
-    String keyValueStorageKey;
+    private final IDownloadResource resource;
+    private final String oldSplashPath;
+    private final String gameId;
+    private final String keyValueStorageKey;
+    private final IASCore core;
 
     public DownloadSplashUseCase(
-            FilesDownloadManager filesDownloadManager,
+            IASCore core,
             IDownloadResource resource,
             String oldSplashPath,
             String keyValueStorageKey,
             String gameId
     ) {
         this.resource = resource;
-        this.filesDownloadManager = filesDownloadManager;
+        this.core = core;
         this.oldSplashPath = oldSplashPath;
         this.gameId = gameId;
         this.keyValueStorageKey = keyValueStorageKey;
@@ -43,7 +44,7 @@ public class DownloadSplashUseCase {
         if (oldSplashPath != null) {
             oldSplash = new File(oldSplashPath);
             if (resource == null || !URLUtil.isValidUrl(resource.url())) {
-                KeyValueStorage.removeString(keyValueStorageKey + gameId);
+                core.keyValueStorage().removeString(keyValueStorageKey + gameId);
                 if (oldSplash.exists()) {
                     oldSplash.deleteOnExit();
                 }
@@ -66,13 +67,13 @@ public class DownloadSplashUseCase {
             return;
         }
         GameSplashUseCase gameSplashUseCase =
-                new GameSplashUseCase(filesDownloadManager, resource);
+                new GameSplashUseCase(core, resource);
         DownloadFileState fileState = gameSplashUseCase.getFile();
         if (fileState != null) {
             if (fileState.file.exists()) {
                 if (oldSplashPath != null) {
                     oldSplash = new File(oldSplashPath);
-                    KeyValueStorage.removeString(keyValueStorageKey + gameId);
+                    core.keyValueStorage().removeString(keyValueStorageKey + gameId);
                     if (oldSplash.exists()) {
                         oldSplash.deleteOnExit();
                     }

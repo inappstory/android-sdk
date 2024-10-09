@@ -60,7 +60,6 @@ public class JsApiNetwork {
                             List<Header> defaultHeaders;
                             try {
                                 defaultHeaders = networkClient.generateHeaders(
-                                        context,
                                         new String[]{},
                                         new ArrayList<Pair<String, String>>(),
                                         false,
@@ -86,7 +85,7 @@ public class JsApiNetwork {
                                     .vars(getParams != null ? getParams : new HashMap<String, String>())
                                     .body(body)
                                     .build();
-                            Response networkResponse = networkClient.execute(request, null);
+                            Response networkResponse = networkClient.execute(request);
                             jsResponse.status = networkResponse.code;
                             if (networkResponse.headers != null && networkResponse.headers.size() > 0) {
                                 JSONObject jheaders = new JSONObject();

@@ -10,6 +10,7 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.externalapi.subscribers.InAppStoryAPISubscribersManager;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.stories.api.models.ExceptionCache;
@@ -25,25 +26,14 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
 public class InAppStoryService {
 
     public static InAppStoryService getInstance() {
-        synchronized (lock) {
-            if (InAppStoryManager.getInstance() == null) return null;
-            return INSTANCE;
-        }
+        InAppStoryManager manager = InAppStoryManager.getInstance();
+        if (manager == null) return null;
+        return manager.iasCore().inAppStoryService();
     }
-
-    private final IASCore core;
-
-    public InAppStoryService(IASCore core) {
-        this.core = core;
-    }
-
 
     public static void useInstance(@NonNull UseServiceInstanceCallback callback) {
         InAppStoryService inAppStoryService = getInstance();
@@ -58,41 +48,17 @@ public class InAppStoryService {
         }
     }
 
-    public static InAppStoryService INSTANCE;
+    private final IASCore core;
 
-
-    public List<FavoriteImage> getFavoriteImages() {
-        return core.contentLoader().storyDownloadManager().favoriteImages;
+    public InAppStoryService(IASCore core) {
+        this.core = core;
     }
-
-
-    public Context getContext() {
-        return context;
-    }
-
-    private Context context;
-
-
-    public LruDiskCache getFastCache() {
-        return filesDownloadManager.getCachesHolder().getFastCache();
-    }
-
-
-
-    public LruDiskCache getCommonCache() {
-        return filesDownloadManager.getCachesHolder().getCommonCache();
-    }
-
 
     public InAppStoryAPISubscribersManager getApiSubscribersManager() {
         return apiSubscribersManager;
     }
 
-    private InAppStoryAPISubscribersManager apiSubscribersManager = new InAppStoryAPISubscribersManager(
-            InAppStoryManager
-                    .getInstance()
-                    .iasCore()
-    );
+    private InAppStoryAPISubscribersManager apiSubscribersManager;
 
 
     ListReaderConnector connector = new ListReaderConnector();
@@ -174,7 +140,8 @@ public class InAppStoryService {
             useInstance(new UseServiceInstanceCallback() {
                 @Override
                 public void use(@NonNull InAppStoryService service) {
-                    List<FavoriteImage> favImages = service.getFavoriteImages();
+                    List<FavoriteImage> favImages =
+                            core.contentLoader().storyDownloadManager().favoriteImages();
                     Story story = core.contentLoader().storyDownloadManager()
                             .getStoryById(id, Story.StoryType.COMMON);
                     if (story == null) return;
@@ -275,114 +242,27 @@ public class InAppStoryService {
         listSubscribers.remove(listManager);
     }
 
-    public static void createExceptionLog(Throwable throwable) {
-        ExceptionManager em = new ExceptionManager(InAppStoryManager.getInstance().iasCore());
-        ExceptionLog el = em.generateExceptionLog(throwable);
-        em.saveException(el);
-        em.sendException(el);
+    public static void createExceptionLog(final Throwable throwable) {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                ExceptionManager em = new ExceptionManager(core);
+                ExceptionLog el = em.generateExceptionLog(throwable);
+                em.saveException(el);
+                em.sendException(el);
+            }
+        });
     }
 
-    public static class DefaultExceptionHandler implements Thread.UncaughtExceptionHandler {
-
-        Thread.UncaughtExceptionHandler oldHandler;
-        private final IASCore core;
-
-        public DefaultExceptionHandler(IASCore core) {
-            this.core = core;
-            oldHandler = Thread.getDefaultUncaughtExceptionHandler();
-        }
-
-        @Override
-        public void uncaughtException(final Thread thread, final Throwable throwable) {
-            createExceptionLog(throwable);
-            Log.d("InAppStory_SDK_error", throwable.getCause() + "\n"
-                    + throwable.getMessage());
-            useInstance(new UseServiceInstanceCallback() {
-                @Override
-                public void use(@NonNull final InAppStoryService service) {
-                    InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
-                        @Override
-                        public void use(@NonNull InAppStoryManager manager) {
-                            if (thread != manager.serviceThread) {
-                                if (oldHandler != null)
-                                    oldHandler.uncaughtException(thread, throwable);
-                                return;
-                            }
-                            manager.setExceptionCache(new ExceptionCache(
-                                    core.contentLoader().storyDownloadManager()
-                                            .getStories(Story.StoryType.COMMON),
-                                    core.contentLoader().storyDownloadManager()
-                                            .favStories,
-                                    core.contentLoader().storyDownloadManager()
-                                            .favoriteImages
-                            ));
-
-                            manager.createServiceThread(
-                                    core.appContext()
-                            );
-                            if (manager.getExceptionCallback() != null) {
-                                manager.getExceptionCallback().onException(throwable);
-                            }
-                        }
-                    });
-
-                }
-            });
-
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            if (oldHandler != null)
-                oldHandler.uncaughtException(thread, throwable);
-        }
-    }
-
-    Runnable checkFreeSpace = new Runnable() {
-        @Override
-        public void run() {
-            LruDiskCache commonCache = getCommonCache();
-            LruDiskCache fastCache = getFastCache();
-            if (commonCache != null && fastCache != null) {
-                long freeSpace = commonCache.getCacheDir().getFreeSpace();
-                if (freeSpace < commonCache.getCacheSize() + fastCache.getCacheSize() + MB_10) {
-                    commonCache.setCacheSize(MB_50);
-                    if (freeSpace < commonCache.getCacheSize() + fastCache.getCacheSize() + MB_10) {
-                        commonCache.setCacheSize(MB_10);
-                        fastCache.setCacheSize(MB_5);
-                        if (freeSpace < commonCache.getCacheSize() + fastCache.getCacheSize() + MB_10) {
-                            commonCache.setCacheSize(MB_10);
-                            fastCache.setCacheSize(MB_5);
-                        }
-                    }
-                }
-            }
-        }
-    };
-
-    private ScheduledExecutorService checkSpaceThread = new ScheduledThreadPoolExecutor(1);
-
-
-    public void onCreate(final Context context, int cacheSize, ExceptionCache exceptionCache) {
-        this.context = context;
-        Thread.setDefaultUncaughtExceptionHandler(new DefaultExceptionHandler(core));
+    public void onCreate() {
+        this.apiSubscribersManager = new InAppStoryAPISubscribersManager(core);
         if (tempListSubscribers != null) {
             if (listSubscribers == null) listSubscribers = new HashSet<>();
             InAppStoryManager.debugSDKCalls("IASService_subscribers", "temp size:" + tempListSubscribers.size() + " / size:" + listSubscribers.size());
             listSubscribers.addAll(tempListSubscribers);
             tempListSubscribers.clear();
         }
-        synchronized (lock) {
-            INSTANCE = this;
-        }
-        if (checkSpaceThread.isShutdown()) {
-            checkSpaceThread = new ScheduledThreadPoolExecutor(1);
-        }
-        checkSpaceThread.scheduleAtFixedRate(checkFreeSpace, 1L, 60000L, TimeUnit.MILLISECONDS);
 
     }
-
-    private static final Object lock = new Object();
 
 }

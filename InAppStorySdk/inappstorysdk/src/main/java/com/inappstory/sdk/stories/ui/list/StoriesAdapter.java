@@ -120,10 +120,14 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
         this.isFavoriteList = isFavoriteList;
         this.useFavorite = useFavorite;
         this.useUGC = useUGC;
-        InAppStoryService service = InAppStoryService.getInstance();
-        hasFavItem = !isFavoriteList && service != null
-                && manager != null && manager.csHasFavorite()
-                && service.getFavoriteImages().size() > 0;
+        hasFavItem = !isFavoriteList
+                && manager != null
+                && manager.csHasFavorite()
+                && core
+                .contentLoader()
+                .storyDownloadManager()
+                .favoriteImages()
+                .size() > 0;
         notifyChanges();
     }
 

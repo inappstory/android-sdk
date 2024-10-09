@@ -12,6 +12,7 @@ import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.stories.api.models.Story;
+import com.inappstory.sdk.stories.cache.StoryDownloadManager;
 
 import java.util.List;
 
@@ -122,33 +123,36 @@ public class StoriesListManager implements ListManager {
 
     //StoryFavoriteEvent
     public void storyFavorite(final int id, final boolean favStatus, final boolean isEmpty) {
-        post(new Runnable() {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
-            public void run() {
-               InAppStoryManager.useCore(new UseIASCoreCallback() {
-                   @Override
-                   public void use(@NonNull IASCore core) {
-                       List<FavoriteImage> favImages = InAppStoryService.getInstance().getFavoriteImages();
-                       Story story = core.contentLoader().storyDownloadManager().getStoryById(id, Story.StoryType.COMMON);
-                       if (story == null) return;
-                       if (favStatus) {
-                           FavoriteImage favoriteImage = new FavoriteImage(id, story.getImage(), story.getBackgroundColor());
-                           if (!favImages.contains(favoriteImage))
-                               favImages.add(0, favoriteImage);
-                       } else {
-                           for (FavoriteImage favoriteImage : favImages) {
-                               if (favoriteImage.getId() == id) {
-                                   favImages.remove(favoriteImage);
-                                   break;
-                               }
-                           }
-                       }
-                       if (list == null) return;
-                       if (list.getVisibility() != View.VISIBLE) return;
-                       list.favStory(id, favStatus, favImages, isEmpty);
-                   }
-               });
+            public void use(@NonNull IASCore core) {
+                StoryDownloadManager downloadManager =
+                        core.contentLoader().storyDownloadManager();
+                final List<FavoriteImage> favImages = downloadManager.favoriteImages();
+                Story story = downloadManager.getStoryById(id, Story.StoryType.COMMON);
+                if (story == null) return;
+                if (favStatus) {
+                    FavoriteImage favoriteImage = new FavoriteImage(id, story.getImage(), story.getBackgroundColor());
+                    if (!favImages.contains(favoriteImage))
+                        favImages.add(0, favoriteImage);
+                } else {
+                    for (FavoriteImage favoriteImage : favImages) {
+                        if (favoriteImage.getId() == id) {
+                            favImages.remove(favoriteImage);
+                            break;
+                        }
+                    }
+                }
+                post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (list == null) return;
+                        if (list.getVisibility() != View.VISIBLE) return;
+                        list.favStory(id, favStatus, favImages, isEmpty);
+                    }
+                });
             }
         });
+
     }
 }

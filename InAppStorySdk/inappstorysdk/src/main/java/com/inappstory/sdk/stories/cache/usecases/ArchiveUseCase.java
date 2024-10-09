@@ -33,11 +33,9 @@ public class ArchiveUseCase extends GetCacheFileUseCase<Void> {
     private final DownloadInterruption interruption;
     private final UseCaseCallback<File> useCaseCallback;
     private final FileChecker fileChecker = new FileChecker();
-    private final IASCore core;
 
     public ArchiveUseCase(
             IASCore core,
-            FilesDownloadManager filesDownloadManager,
             String url,
             long archiveSize,
             String archiveSha1,
@@ -46,8 +44,7 @@ public class ArchiveUseCase extends GetCacheFileUseCase<Void> {
             DownloadInterruption interruption,
             UseCaseCallback<File> useCaseCallback
     ) {
-        super(filesDownloadManager);
-        this.core = core;
+        super(core);
         this.url = url;
         this.totalFilesSize = totalFilesSize;
         this.uniqueKey = StringsUtils.md5(url);
@@ -208,32 +205,34 @@ public class ArchiveUseCase extends GetCacheFileUseCase<Void> {
                     }
                 }
             };
-            Downloader.downloadFile(
-                    url,
-                    new File(filePath),
-                    new FileLoadProgressCallback() {
-                        @Override
-                        public void onProgress(long loadedSize, long totalSize) {
-                            progressCallback.onProgress(loadedSize, totalSize);
-                        }
+            core
+                    .contentLoader()
+                    .downloader()
+                    .downloadFile(
+                            url,
+                            new File(filePath),
+                            new FileLoadProgressCallback() {
+                                @Override
+                                public void onProgress(long loadedSize, long totalSize) {
+                                    progressCallback.onProgress(loadedSize, totalSize);
+                                }
 
-                        @Override
-                        public void onSuccess(File file) {
+                                @Override
+                                public void onSuccess(File file) {
 
-                        }
+                                }
 
-                        @Override
-                        public void onError(String error) {
-                            useCaseCallback.onError(error);
-                        }
-                    },
-                    downloadLog.responseLog,
-                    interruption,
-                    offset,
-                    -1,
-                    filesDownloadManager,
-                    callback
-            );
+                                @Override
+                                public void onError(String error) {
+                                    useCaseCallback.onError(error);
+                                }
+                            },
+                            downloadLog.responseLog,
+                            interruption,
+                            offset,
+                            -1,
+                            callback
+                    );
         } catch (Exception e) {
             useCaseCallback.onError(e.getMessage());
         }
@@ -257,6 +256,6 @@ public class ArchiveUseCase extends GetCacheFileUseCase<Void> {
 
     @Override
     protected LruDiskCache getCache() {
-        return filesDownloadManager.getCachesHolder().getInfiniteCache();
+        return core.contentLoader().getInfiniteCache();
     }
 }

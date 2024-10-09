@@ -20,20 +20,15 @@ import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.IASCoreImpl;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASCallbackType;
+import com.inappstory.sdk.core.api.IASDataSettings;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.IASStatisticV1;
-import com.inappstory.sdk.core.ui.screens.holder.GetScreenCallback;
 import com.inappstory.sdk.lrudiskcache.CacheSize;
 import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.NetworkClient;
-import com.inappstory.sdk.network.callbacks.NetworkCallback;
-import com.inappstory.sdk.network.models.Response;
 import com.inappstory.sdk.network.utils.HostFromSecretKey;
-import com.inappstory.sdk.stories.api.models.ExceptionCache;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
-import com.inappstory.sdk.stories.api.models.Story;
-import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.api.models.logs.ApiLogRequest;
 import com.inappstory.sdk.stories.api.models.logs.ApiLogResponse;
 import com.inappstory.sdk.stories.api.models.logs.ExceptionLog;
@@ -62,7 +57,6 @@ import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.stackfeed.IStackFeedResult;
 import com.inappstory.sdk.stories.statistic.GetStatisticV1Callback;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
-import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryScreen;
 import com.inappstory.sdk.stories.ui.reader.ForceCloseReaderCallback;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
 import com.inappstory.sdk.utils.StringsUtils;
@@ -214,20 +208,6 @@ public class InAppStoryManager {
         if (iasQaLog != null) iasQaLog.getWebConsoleLog(log);
     }
 
-    /**
-     * use set custom callback in case of uncaught exceptions.
-     *
-     * @param callback (callback). Has {@link ExceptionCallback} type
-     */
-    public void setCallback(ExceptionCallback callback) {
-        this.exceptionCallback = callback;
-    }
-
-    public ExceptionCallback getExceptionCallback() {
-        return exceptionCallback;
-    }
-
-    private ExceptionCallback exceptionCallback;
 
 
     /**
@@ -482,10 +462,7 @@ public class InAppStoryManager {
     }
 
     public Map<String, String> getPlaceholdersCopy() {
-        synchronized (placeholdersLock) {
-            if (placeholders == null) return new HashMap<>();
-            return new HashMap<>(placeholders);
-        }
+        return new HashMap<>(getPlaceholders());
     }
 
     ArrayList<String> tags;
@@ -496,107 +473,26 @@ public class InAppStoryManager {
      * Returns map with all default strings replacements
      */
     public Map<String, String> getPlaceholders() {
-        synchronized (placeholdersLock) {
-            if (defaultPlaceholders == null) defaultPlaceholders = new HashMap<>();
-            if (placeholders == null) placeholders = new HashMap<>();
-            return placeholders;
-        }
+        return ((IASDataSettingsHolder)core.settingsAPI()).placeholders();
     }
 
     public Map<String, ImagePlaceholderValue> getImagePlaceholdersValues() {
-        synchronized (placeholdersLock) {
-            Map<String, ImagePlaceholderValue> resultPlaceholders = new HashMap<>();
-            if (defaultImagePlaceholders == null) defaultImagePlaceholders = new HashMap<>();
-            if (imagePlaceholders == null) imagePlaceholders = new HashMap<>();
-            resultPlaceholders.putAll(defaultImagePlaceholders);
-            resultPlaceholders.putAll(imagePlaceholders);
-            return resultPlaceholders;
-        }
+        return ((IASDataSettingsHolder)core.settingsAPI()).imagePlaceholders();
     }
 
     public Map<String, Pair<ImagePlaceholderValue, ImagePlaceholderValue>> getImagePlaceholdersValuesWithDefaults() {
-        synchronized (placeholdersLock) {
-            Map<String, Pair<ImagePlaceholderValue, ImagePlaceholderValue>> resultPlaceholders = new HashMap<>();
-            Map<String, ImagePlaceholderValue> tempPlaceholders = new HashMap<>();
-            if (defaultImagePlaceholders == null) defaultImagePlaceholders = new HashMap<>();
-            if (imagePlaceholders == null) imagePlaceholders = new HashMap<>();
-
-            tempPlaceholders.putAll(defaultImagePlaceholders);
-            tempPlaceholders.putAll(imagePlaceholders);
-            for (Map.Entry<String, ImagePlaceholderValue> entry : tempPlaceholders.entrySet()) {
-                if (defaultImagePlaceholders.containsKey(entry.getKey())) {
-                    resultPlaceholders.put(
-                            entry.getKey(),
-                            new Pair<>(
-                                    entry.getValue(),
-                                    //entry.getValue()
-                                    defaultImagePlaceholders.get(entry.getKey())
-                            )
-                    );
-                } else {
-                    resultPlaceholders.put(
-                            entry.getKey(),
-                            new Pair<>(
-                                    entry.getValue(),
-                                    entry.getValue()
-                            )
-                    );
-                }
-            }
-            return resultPlaceholders;
-        }
+        return ((IASDataSettingsHolder)core.settingsAPI()).imagePlaceholdersWithSessionDefaults();
     }
 
 
     public void setImagePlaceholders(@NonNull Map<String, ImagePlaceholderValue> placeholders) {
-        synchronized (placeholdersLock) {
-            if (imagePlaceholders == null)
-                imagePlaceholders = new HashMap<>();
-            else
-                imagePlaceholders.clear();
-            imagePlaceholders.putAll(placeholders);
-
-        }
+        core.settingsAPI().setImagePlaceholders(placeholders);
     }
-
-    private boolean setNewImagePlaceholder(@NonNull String key, ImagePlaceholderValue value) {
-        if (Objects.equals(imagePlaceholders.get(key), value)) {
-            return false;
-        }
-        imagePlaceholders.put(key, value);
-        return true;
-    }
-
-
-    void setDefaultImagePlaceholders(@NonNull Map<String, ImagePlaceholderValue> placeholders) {
-        synchronized (placeholdersLock) {
-            if (defaultImagePlaceholders == null) defaultImagePlaceholders = new HashMap<>();
-            defaultImagePlaceholders.clear();
-            defaultImagePlaceholders.putAll(placeholders);
-        }
-    }
-
 
     public void setImagePlaceholder(@NonNull String key, ImagePlaceholderValue value) {
         core.settingsAPI().setImagePlaceholder(key, value);
     }
 
-    Map<String, String> placeholders = new HashMap<>();
-    Map<String, ImagePlaceholderValue> imagePlaceholders = new HashMap<>();
-
-    Map<String, String> defaultPlaceholders = new HashMap<>();
-    Map<String, ImagePlaceholderValue> defaultImagePlaceholders = new HashMap<>();
-
-    private static final String TEST_DOMAIN = "https://api.test.inappstory.com/";
-    private static final String PRODUCT_DOMAIN = "https://api.inappstory.ru/";
-
-    public String getApiKey() {
-        return API_KEY;
-    }
-
-    public String getTestKey() {
-        return TEST_KEY;
-    }
 
     String API_KEY = "";
 
@@ -632,191 +528,38 @@ public class InAppStoryManager {
                 INSTANCE = new InAppStoryManager(context);
             }
         }
-        INSTANCE.createServiceThread(context);
-        INSTANCE.utilModulesHolder = UtilModulesHolder.INSTANCE;
-        INSTANCE.utilModulesHolder.setJsonParser(new IJsonParser() {
-            @Override
-            public <T> T fromJson(String json, Class<T> typeOfT) {
-                return JsonParser.fromJson(json, typeOfT);
-            }
-        });
+
     }
 
     public static void initSDK(@NonNull Context context) {
         initSDK(context, false);
     }
 
-    InAppStoryService service;
-
-    Thread serviceThread;
-
     private InAppStoryManager(Context context) {
         core = new IASCoreImpl(context);
-        KeyValueStorage.setContext(context);
-        SharedPreferencesAPI.setContext(context);
-        this.soundOn = !context.getResources().getBoolean(R.bool.defaultMuted);
-    }
-
-
-    void createServiceThread(final Context context) {
         core.contentLoader().storyDownloadManager().init();
-
-        serviceThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                Looper.prepare();
-                service = new InAppStoryService(core);
-                service.onCreate(context, CacheSize.MEDIUM, exceptionCache);
-                Looper.loop();
-            }
-        });
-        serviceThread.start();
+        core.settingsAPI().isSoundOn(!context.getResources().getBoolean(R.bool.defaultMuted));
+        core.contentLoader().storyDownloadManager().init();
+        core.inAppStoryService().onCreate();
     }
 
-    void setExceptionCache(ExceptionCache exceptionCache) {
-        this.exceptionCache = exceptionCache;
-    }
 
-    private ExceptionCache exceptionCache;
 
-    public void removeFromFavorite(final int storyId) {
-        core.sessionManager().useOrOpenSession(new OpenSessionCallback() {
-            @Override
-            public void onSuccess(String sessionId) {
-                favoriteOrRemoveStory(storyId, false);
-            }
-
-            @Override
-            public void onError() {
-
-            }
-        });
+    public void removeFromFavorite(int storyId) {
+        core.favoritesAPI().removeByStoryId(storyId);
     }
 
     public void removeAllFavorites() {
-        core.sessionManager().useOrOpenSession(new OpenSessionCallback() {
-            @Override
-            public void onSuccess(String sessionId) {
-                favoriteRemoveAll();
-            }
+        core.favoritesAPI().removeAll();
 
-            @Override
-            public void onError() {
-
-            }
-        });
     }
 
     NetworkClient networkClient;
 
-    private void favoriteRemoveAll() {
-        if (networkClient == null) return;
-        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
-            @Override
-            public void use(@NonNull final InAppStoryService service) throws Exception {
-                final String favUID = core.statistic().profiling().addTask("api_favorite_remove_all");
-                networkClient.enqueue(
-                        networkClient.getApi().removeAllFavorites(),
-                        new NetworkCallback<Response>() {
-                            @Override
-                            public void onSuccess(Response response) {
-                                core.statistic().profiling().setReady(favUID);
-                                core.contentLoader()
-                                        .storyDownloadManager()
-                                        .clearAllFavoriteStatus(
-                                                Story.StoryType.COMMON
-                                        );
-                                core.contentLoader()
-                                        .storyDownloadManager()
-                                        .clearAllFavoriteStatus(
-                                                Story.StoryType.UGC
-                                        );
-                                service.getFavoriteImages().clear();
-                                service.getListReaderConnector().clearAllFavorites();
-                                core.screensManager().getStoryScreenHolder()
-                                        .useCurrentReader(
-                                                new GetScreenCallback<BaseStoryScreen>() {
-                                                    @Override
-                                                    public void get(BaseStoryScreen screen) {
-                                                        screen.removeAllStoriesFromFavorite();
-                                                    }
-                                                });
-                            }
-
-                            @Override
-                            public void onError(int code, String message) {
-                                core.statistic().profiling().setReady(favUID);
-                                super.onError(code, message);
-                            }
-
-                            @Override
-                            public void timeoutError() {
-                                super.timeoutError();
-                                core.statistic().profiling().setReady(favUID);
-                            }
-
-                            @Override
-                            public Type getType() {
-                                return null;
-                            }
-                        });
-            }
-        });
-
-    }
 
 
-    private void favoriteOrRemoveStory(final int storyId, final boolean favorite) {
-        if (networkClient == null) return;
-        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
-            @Override
-            public void use(@NonNull final InAppStoryService service) throws Exception {
-                final String favUID = core.statistic().profiling().addTask("api_favorite");
-                networkClient.enqueue(
-                        networkClient.getApi().storyFavorite(Integer.toString(storyId), favorite ? 1 : 0),
-                        new NetworkCallback<Response>() {
-                            @Override
-                            public void onSuccess(Response response) {
-                                core.statistic().profiling().setReady(favUID);
-                                Story story = core.contentLoader().storyDownloadManager()
-                                        .getStoryById(storyId, Story.StoryType.COMMON);
-                                if (story != null)
-                                    story.favorite = favorite;
-                                service.getListReaderConnector().storyFavorite(storyId, favorite);
-                                core
-                                        .screensManager()
-                                        .getStoryScreenHolder()
-                                        .useCurrentReader(
-                                                new GetScreenCallback<BaseStoryScreen>() {
-                                                    @Override
-                                                    public void get(BaseStoryScreen screen) {
-                                                        screen.removeStoryFromFavorite(storyId);
-                                                    }
-                                                }
-                                        );
-                            }
 
-                            @Override
-                            public void onError(int code, String message) {
-                                core.statistic().profiling().setReady(favUID);
-                                super.onError(code, message);
-                            }
 
-                            @Override
-                            public void timeoutError() {
-                                super.timeoutError();
-                                core.statistic().profiling().setReady(favUID);
-                            }
-
-                            @Override
-                            public Type getType() {
-                                return null;
-                            }
-                        });
-            }
-        });
-
-    }
 
     private boolean isSandbox = false;
 
@@ -856,7 +599,6 @@ public class InAppStoryManager {
         String domain = new HostFromSecretKey(
                 builder.apiKey
         ).get(builder.sandbox);
-
         this.isSandbox = builder.sandbox;
         initManager(
                 context,
@@ -876,11 +618,6 @@ public class InAppStoryManager {
 
     public void preloadGames() {
         core.contentPreload().restartGamePreloader();
-    }
-
-
-    public Locale getCurrentLocale() {
-        return currentLocale;
     }
 
     private Locale currentLocale = Locale.getDefault();
@@ -931,15 +668,8 @@ public class InAppStoryManager {
 
     private boolean sendStatistic = true;
 
-    public boolean isGameDemoMode() {
-        return gameDemoMode;
-    }
-
     private boolean gameDemoMode = false;
 
-    public boolean isDeviceIDEnabled() {
-        return isDeviceIDEnabled;
-    }
 
     private boolean isDeviceIDEnabled = true;
 
@@ -956,35 +686,29 @@ public class InAppStoryManager {
             Map<String, String> placeholders,
             Map<String, ImagePlaceholderValue> imagePlaceholders
     ) {
-        soundOn = !context.getResources().getBoolean(R.bool.defaultMuted);
-        this.isDeviceIDEnabled = isDeviceIDEnabled;
-        this.currentLocale = locale;
-        this.gameDemoMode = gameDemoMode;
-        synchronized (tagsLock) {
-            this.tags = tags;
+        IASDataSettings settings = core.settingsAPI();
+        settings.setUserId(userId);
+        settings.setLang(locale);
+        settings.setTags(tags);
+        if (isDeviceIDEnabled) {
+            settings.deviceId();
         }
+        settings.gameDemoMode(gameDemoMode);
         if (placeholders != null)
             setPlaceholders(placeholders);
         if (imagePlaceholders != null)
             setImagePlaceholders(imagePlaceholders);
-        this.API_KEY = apiKey;
-        this.TEST_KEY = testKey;
-        this.userId = userId;
         logout();
         if (ApiSettings.getInstance().hostIsDifferent(cmsUrl)) {
-            if (networkClient != null) {
-                networkClient.clear();
-                networkClient = null;
-            }
+            core.network().clear();
         }
         ApiSettings
                 .getInstance()
                 .cacheDirPath(context.getCacheDir().getAbsolutePath())
-                .apiKey(this.API_KEY)
-                .testKey(this.TEST_KEY)
+                .apiKey(apiKey)
+                .testKey(testKey)
                 .host(cmsUrl);
-
-        networkClient = new NetworkClient(context, cmsUrl);
+        core.network().setBaseUrl(cmsUrl);
     }
 
 
@@ -1045,16 +769,9 @@ public class InAppStoryManager {
         return new Pair<>(BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE);
     }
 
-    private boolean soundOn = false;
-
     public void soundOn(boolean isSoundOn) {
-        this.soundOn = isSoundOn;
+        core.settingsAPI().isSoundOn(isSoundOn);
     }
-
-    public boolean soundOn() {
-        return soundOn;
-    }
-
 
     public void getStackFeed(
             final String feed,
@@ -1157,8 +874,6 @@ public class InAppStoryManager {
     public boolean isSandbox() {
         return isSandbox;
     }
-
-    private final static String ONBOARDING_FEED = "onboarding";
 
     /**
      * use to show single story in reader by id

@@ -17,7 +17,7 @@ public class IASLogsImpl implements IASLogs {
 
     public IASLogsImpl(IASCore core) {
         this.core = core;
-        logSaver = new GameLogSaver();
+        logSaver = new GameLogSaver(core);
         new GameLogSender(core, logSaver);
     }
 }

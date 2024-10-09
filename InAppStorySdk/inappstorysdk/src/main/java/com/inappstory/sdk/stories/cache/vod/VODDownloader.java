@@ -1,35 +1,30 @@
 package com.inappstory.sdk.stories.cache.vod;
 
-import android.content.Context;
-import android.util.Log;
 import android.util.Pair;
-import android.webkit.MimeTypeMap;
-import android.webkit.WebResourceResponse;
 
-import com.inappstory.sdk.InAppStoryManager;
-import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.network.utils.ConnectionHeadersMap;
 import com.inappstory.sdk.network.utils.ResponseStringFromStream;
-import com.inappstory.sdk.stories.cache.FilesDownloadManager;
-import com.inappstory.sdk.stories.cache.usecases.StoryVODResourceFileUseCase;
-import com.inappstory.sdk.stories.cache.usecases.StoryVODResourceFileUseCaseResult;
 import com.inappstory.sdk.utils.StringsUtils;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.nio.ByteBuffer;
 import java.util.HashMap;
 
 public class VODDownloader {
+
+    private final IASCore core;
+
+    public VODDownloader(IASCore core) {
+        this.core = core;
+    }
+
     public boolean putBytesToFile(
             long position,
             byte[] bytes,
@@ -109,9 +104,7 @@ public class VODDownloader {
         urlConnection.setConnectTimeout(300000);
         urlConnection.setReadTimeout(300000);
         urlConnection.setRequestMethod("GET");
-        if (InAppStoryManager.getNetworkClient() != null) {
-            urlConnection.setRequestProperty("User-Agent", InAppStoryManager.getNetworkClient().userAgent);
-        }
+        urlConnection.setRequestProperty("User-Agent", core.network().userAgent());
         if (from > 0) {
             if (to > 0) {
                 urlConnection.setRequestProperty("Range", "bytes=" + from + "-" + to);
@@ -138,21 +131,7 @@ public class VODDownloader {
             urlConnection.disconnect();
             return null;
         }
-       /* for (String headerKey : urlConnection.getHeaderFields().keySet()) {
-            if (headerKey == null) continue;
-            if (urlConnection.getHeaderFields().get(headerKey).isEmpty()) continue;
-            headers.put(headerKey, urlConnection.getHeaderFields().get(headerKey).get(0));
-            if (headerKey.equalsIgnoreCase("Content-Range")) {
-                String rangeHeader = urlConnection.getHeaderFields().get(headerKey).get(0);
-                if (!rangeHeader.equalsIgnoreCase("none")) {
-                    try {
-                        sz = Integer.parseInt(rangeHeader.split("/")[1]);
-                    } catch (Exception e) {
 
-                    }
-                }
-            }
-        }*/
         String decompression = null;
         HashMap<String, String> responseHeaders = new ConnectionHeadersMap().get(urlConnection);
         if (responseHeaders.containsKey("Content-Encoding")) {

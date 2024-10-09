@@ -53,6 +53,7 @@ import com.inappstory.sdk.UseManagerInstanceCallback;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASCallbackType;
+import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.ui.screens.ScreenType;
 import com.inappstory.sdk.core.ui.screens.ShareProcessHandler;
@@ -830,7 +831,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         );
         Map<String, File> splashPaths = new HashMap<>();
         for (Map.Entry<String, String> entry : splashKeys.entrySet()) {
-            String path = KeyValueStorage.getString(entry.getValue() + gameId);
+            String path = core.keyValueStorage().getString(entry.getValue() + gameId);
             if (path != null) {
                 if (!path.isEmpty()) {
                     File splash = new File(path);
@@ -996,7 +997,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                                         } catch (Exception ignored) {
 
                                         }
-                                        replaceConfigs();
+                                        replaceConfigs((IASDataSettingsHolder) core.settingsAPI());
                                     }
                                 });
                             }
@@ -1047,7 +1048,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
 
     }
 
-    private void replaceConfigs() {
+    private void replaceConfigs(IASDataSettingsHolder dataSettingsHolder) {
         if (manager.gameConfig != null) {
             if (manager.gameConfig.contains("{{%sdkVersion}}"))
                 manager.gameConfig = manager.gameConfig.replace("{{%sdkVersion}}", BuildConfig.VERSION_NAME);
@@ -1055,7 +1056,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                 String replacedConfig = generateJsonConfig();
                 manager.gameConfig = manager.gameConfig.replace("\"{{%sdkConfig}}\"", replacedConfig);
             } else if (manager.gameConfig.contains("{{%sdkPlaceholders}}") || manager.gameConfig.contains("\"{{%sdkPlaceholders}}\"")) {
-                String replacedPlaceholders = generateJsonPlaceholders();
+                String replacedPlaceholders = generateJsonPlaceholders(dataSettingsHolder);
                 manager.gameConfig = manager.gameConfig.replace("\"{{%sdkPlaceholders}}\"", replacedPlaceholders);
                 manager.gameConfig = manager.gameConfig.replace("{{%sdkPlaceholders}}", replacedPlaceholders);
             }
@@ -1067,21 +1068,36 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         Context context = getContext();
         GameConfigOptions options = new GameConfigOptions();
         options.fullScreen = isFullscreen;
-        NetworkClient networkClient = InAppStoryManager.getNetworkClient();
         InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
-        if (networkClient == null) {
-            options.apiBaseUrl = new HostFromSecretKey(
-                    ApiSettings.getInstance().getApiKey()
-            ).get(inAppStoryManager != null && inAppStoryManager.isSandbox());
+        final IASCore core = inAppStoryManager != null ? inAppStoryManager.iasCore() : null;
+
+        if (core != null) {
+            IASDataSettingsHolder dataSettingsHolder = ((IASDataSettingsHolder) core.settingsAPI());
+            options.apiBaseUrl = core.network().getBaseUrl();
+            options.deviceId = dataSettingsHolder.deviceId();
+            options.userId = StringsUtils.getEscapedString(
+                    dataSettingsHolder.userId()
+            );
+            options.lang = dataSettingsHolder.lang().toLanguageTag();
+            options.userAgent = StringsUtils.getEscapedString(
+                    core.network().userAgent()
+            );
+            options.sessionId = core.sessionManager().getSession().getSessionId();
+            options.apiKey = ApiSettings.getInstance().getApiKey();
+            options.placeholders = generatePlaceholders(dataSettingsHolder);
         } else {
-            options.apiBaseUrl = networkClient.getBaseUrl();
+            options.lang = Locale.getDefault().toLanguageTag();
+            options.deviceId = "";
+            options.apiBaseUrl = "";
+            options.userAgent = StringsUtils.getEscapedString(
+                    new UserAgent().generate(context)
+            );
+            options.sessionId = "";
         }
+
         int orientation = getResources().getConfiguration().orientation;
         options.screenOrientation =
                 (orientation == Configuration.ORIENTATION_LANDSCAPE) ? "landscape" : "portrait";
-        options.userAgent = StringsUtils.getEscapedString(
-                new UserAgent().generate(context)
-        );
         String appPackageName = "";
         try {
             appPackageName = context.getPackageManager().getPackageInfo(context.getPackageName(), 0).packageName;
@@ -1092,26 +1108,6 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         options.sdkVersion = StringsUtils.getEscapedString(
                 BuildConfig.VERSION_NAME
         );
-        if (inAppStoryManager != null) {
-            options.apiKey = inAppStoryManager.getApiKey();
-            options.userId = StringsUtils.getEscapedString(
-                    inAppStoryManager.getUserId()
-            );
-            options.lang = inAppStoryManager.getCurrentLocale().toLanguageTag();
-        } else {
-            options.lang = Locale.getDefault().toLanguageTag();
-        }
-        options.sessionId = CachedSessionData.getInstance(context).sessionId;
-        options.deviceId = "";
-        if (inAppStoryManager == null || inAppStoryManager.isDeviceIDEnabled()) {
-            options.deviceId = StringsUtils.getEscapedString(
-                    Settings.Secure.getString(
-                            context.getContentResolver(),
-                            Settings.Secure.ANDROID_ID
-                    )
-            );
-        }
-        options.placeholders = generatePlaceholders();
         SafeAreaInsets insets = new SafeAreaInsets();
         if (Build.VERSION.SDK_INT >= 28) {
             if (getActivity() != null) {
@@ -1175,21 +1171,21 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
     }
 
 
-    private String generateJsonPlaceholders() {
+    private String generateJsonPlaceholders(IASDataSettingsHolder dataSettingsHolder) {
         String st = "[]";
         try {
-            st = JsonParser.getJson(generatePlaceholders());
+            st = JsonParser.getJson(generatePlaceholders(dataSettingsHolder));
         } catch (Exception e) {
             e.printStackTrace();
         }
         return st;
     }
 
-    private ArrayList<GameDataPlaceholder> generatePlaceholders() {
+    private ArrayList<GameDataPlaceholder> generatePlaceholders(IASDataSettingsHolder dataSettingsHolder) {
         Map<String, String> textPlaceholders =
-                InAppStoryManager.getInstance().getPlaceholders();
+                dataSettingsHolder.placeholders();
         Map<String, ImagePlaceholderValue> imagePlaceholders =
-                InAppStoryManager.getInstance().getImagePlaceholdersValues();
+                dataSettingsHolder.imagePlaceholders();
         ArrayList<GameDataPlaceholder> gameDataPlaceholders = new ArrayList<GameDataPlaceholder>();
         for (Map.Entry<String, String> entry : textPlaceholders.entrySet()) {
             if (entry.getKey() != null && entry.getValue() != null)

@@ -2,6 +2,7 @@ package com.inappstory.sdk.game.cache;
 
 import androidx.annotation.WorkerThread;
 
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.lrudiskcache.FileChecker;
 import com.inappstory.sdk.stories.api.models.WebResource;
 import com.inappstory.sdk.stories.cache.DownloadInterruption;
@@ -12,17 +13,17 @@ import com.inappstory.sdk.utils.ProgressCallback;
 import java.util.List;
 
 public class DownloadResourcesUseCase {
+    private final IASCore core;
     private final List<WebResource> resources;
     private long totalResourcesSize;
     private final String gameInstanceId;
     private final String zipUrl;
-    private final FilesDownloadManager downloadManager;
     private final DownloadInterruption interruption;
     private final ProgressCallback progressCallback;
     private final UseCaseCallback<Void> useCaseCallback;
 
     public DownloadResourcesUseCase(
-            FilesDownloadManager downloadManager,
+            IASCore core,
             List<WebResource> resources,
             String gameInstanceId,
             String zipUrl,
@@ -31,7 +32,7 @@ public class DownloadResourcesUseCase {
             UseCaseCallback<Void> useCaseCallback
     ) {
         this.resources = resources;
-        this.downloadManager = downloadManager;
+        this.core = core;
         this.progressCallback = progressCallback;
         this.useCaseCallback = useCaseCallback;
         this.gameInstanceId = gameInstanceId;
@@ -55,7 +56,7 @@ public class DownloadResourcesUseCase {
                 return;
             }
             new GameResourceUseCase(
-                    downloadManager,
+                    core,
                     zipUrl,
                     gameInstanceId,
                     new ProgressCallback() {

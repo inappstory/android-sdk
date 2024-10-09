@@ -59,10 +59,12 @@ public class GameCacheManager {
         final String animStorageKey = GameConstants.SPLASH_ANIM_KV;
         final String staticStorageKey = GameConstants.SPLASH_STATIC_KV;
         GetLocalSplashUseCase getLocalStaticSplashUseCase = new GetLocalSplashUseCase(
+                core,
                 gameId,
                 staticStorageKey
         );
         GetLocalSplashUseCase getLocalAnimSplashUseCase = new GetLocalSplashUseCase(
+                core,
                 gameId,
                 animStorageKey
         );
@@ -104,7 +106,7 @@ public class GameCacheManager {
                 }
             }
         });
-        new GetGameModelUseCase().get(gameId, new GameLoadCallback() {
+        new GetGameModelUseCase(core).get(gameId, new GameLoadCallback() {
             @Override
             public void onSuccess(GameCenterData data) {
                 gameModelCallback.onSuccess(data);
@@ -117,7 +119,7 @@ public class GameCacheManager {
                         animFilePath = animFile.getAbsolutePath();
                     }
                     downloadAnimSplashUseCase = new DownloadSplashUseCase(
-                            filesDownloadManager,
+                            core,
                             data.splashAnimation,
                             animFilePath,
                             animStorageKey,
@@ -135,7 +137,7 @@ public class GameCacheManager {
                 }
 
                 DownloadSplashUseCase downloadSplashUseCase = new DownloadSplashUseCase(
-                        filesDownloadManager,
+                        core,
                         data.splashScreen,
                         staticFilePath,
                         staticStorageKey,
@@ -152,7 +154,7 @@ public class GameCacheManager {
                     public void onSuccess(File result) {
                         if (result == null) return;
                         if (result.exists()) {
-                            KeyValueStorage.saveString(
+                            core.keyValueStorage().saveString(
                                     splashesKeyValueStorageKeys.get(animKey) + gameId,
                                     result.getAbsolutePath()
                             );
@@ -179,7 +181,7 @@ public class GameCacheManager {
                     @Override
                     public void onSuccess(File result) {
                         if (result == null) return;
-                        KeyValueStorage.saveString(
+                        core.keyValueStorage().saveString(
                                 splashesKeyValueStorageKeys.get(staticKey) + gameId,
                                 result.getAbsolutePath()
                         );
@@ -215,7 +217,7 @@ public class GameCacheManager {
                 final String[] gameFolder = {""};
                 final DownloadResourcesUseCase downloadResourcesUseCase =
                         new DownloadResourcesUseCase(
-                                filesDownloadManager,
+                                core,
                                 data.resources,
                                 gameId,
                                 archiveUrl,
@@ -265,7 +267,7 @@ public class GameCacheManager {
 
 
                 final GameFolderUseCase gameFolderUseCase = new GameFolderUseCase(
-                        filesDownloadManager,
+                        core,
                         archiveUrl,
                         new UseCaseCallback<String>() {
                             @Override
@@ -301,7 +303,7 @@ public class GameCacheManager {
 
                 final ArchiveUseCase getZipFileUseCase =
                         new ArchiveUseCase(
-                                filesDownloadManager,
+                                core,
                                 archiveUrl,
                                 data.archiveSize,
                                 data.archiveSha1,

@@ -44,7 +44,7 @@ public class IASSingleStoryImpl implements IASSingleStory {
     ) {
 
         if (((IASDataSettingsHolder) core.settingsAPI()).noCorrectUserIdOrDevice()) return;
-        Set<String> opens = SharedPreferencesAPI.getStringSet(
+        Set<String> opens = core.sharedPreferencesAPI().getStringSet(
                 core.storyListCache().getLocalOpensKey(
                         Story.StoryType.COMMON
                 )

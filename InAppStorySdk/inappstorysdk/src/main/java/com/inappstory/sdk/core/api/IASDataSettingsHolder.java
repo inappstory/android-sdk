@@ -9,7 +9,7 @@ import java.util.Locale;
 import java.util.Map;
 
 public interface IASDataSettingsHolder {
-    void deviceId(String deviceId);
+    String deviceId();
     String userId();
     Locale lang();
     boolean isSoundOn();

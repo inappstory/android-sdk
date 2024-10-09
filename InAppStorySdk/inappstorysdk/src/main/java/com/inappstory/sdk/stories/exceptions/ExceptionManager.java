@@ -38,13 +38,11 @@ public class ExceptionManager {
         if (networkClient == null) {
             return;
         }
-        final InAppStoryService service = InAppStoryService.getInstance();
-        if (service == null) return;
         core.sessionManager().useOrOpenSession(new OpenSessionCallback() {
             @Override
             public void onSuccess(String sessionId) {
                 if (core.statistic().exceptions().disabled()) {
-                    SharedPreferencesAPI.removeString(SAVED_EX);
+                    core.sharedPreferencesAPI().removeString(SAVED_EX);
                     return;
                 }
                 networkClient.enqueue(
@@ -59,7 +57,7 @@ public class ExceptionManager {
                         new NetworkCallback() {
                             @Override
                             public void onSuccess(Object response) {
-                                SharedPreferencesAPI.removeString(SAVED_EX);
+                                core.sharedPreferencesAPI().removeString(SAVED_EX);
                             }
 
                             @Override
@@ -72,7 +70,7 @@ public class ExceptionManager {
 
             @Override
             public void onError() {
-                SharedPreferencesAPI.removeString(SAVED_EX);
+                core.sharedPreferencesAPI().removeString(SAVED_EX);
             }
         });
 
@@ -106,14 +104,14 @@ public class ExceptionManager {
 
     public void saveException(ExceptionLog log) {
         try {
-            SharedPreferencesAPI.saveString(SAVED_EX, JsonParser.getJson(log));
+            core.sharedPreferencesAPI().saveString(SAVED_EX, JsonParser.getJson(log));
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     public ExceptionLog getSavedException() {
-        String ex = SharedPreferencesAPI.getString(SAVED_EX, null);
+        String ex = core.sharedPreferencesAPI().getString(SAVED_EX, null);
         if (ex == null) return null;
         return JsonParser.fromJson(ex, ExceptionLog.class);
     }

@@ -35,7 +35,7 @@ public class IASStoriesOpenedCacheImpl implements IASStoriesOpenedCache {
     @Override
     public void saveStoriesOpened(List<Story> stories, Story.StoryType type) {
         String key = getLocalOpensKey(type);
-        Set<String> opens = SharedPreferencesAPI.getStringSet(key);
+        Set<String> opens = core.sharedPreferencesAPI().getStringSet(key);
         if (opens == null) opens = new HashSet<>();
         for (Story story : stories) {
             if (story.isOpened) {
@@ -44,15 +44,15 @@ public class IASStoriesOpenedCacheImpl implements IASStoriesOpenedCache {
                 story.isOpened = true;
             }
         }
-        SharedPreferencesAPI.saveStringSet(key, opens);
+        core.sharedPreferencesAPI().saveStringSet(key, opens);
     }
 
     @Override
     public void saveStoryOpened(int id, Story.StoryType type) {
         String key = core.storyListCache().getLocalOpensKey(type);
-        Set<String> opens = SharedPreferencesAPI.getStringSet(key);
+        Set<String> opens = core.sharedPreferencesAPI().getStringSet(key);
         if (opens == null) opens = new HashSet<>();
         opens.add(Integer.toString(id));
-        SharedPreferencesAPI.saveStringSet(key, opens);
+        core.sharedPreferencesAPI().saveStringSet(key, opens);
     }
 }

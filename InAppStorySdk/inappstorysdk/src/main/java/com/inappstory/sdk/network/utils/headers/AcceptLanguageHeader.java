@@ -3,6 +3,7 @@ package com.inappstory.sdk.network.utils.headers;
 import android.os.Build;
 
 import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 
 import java.util.Locale;
 
@@ -16,7 +17,7 @@ public class AcceptLanguageHeader implements Header {
     public String getValue() {
         InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
         if (inAppStoryManager != null)
-            return inAppStoryManager.getCurrentLocale().toLanguageTag();
+            return ((IASDataSettingsHolder) inAppStoryManager.iasCore().settingsAPI()).lang().toLanguageTag();
         return Locale.getDefault().toLanguageTag();
     }
 }

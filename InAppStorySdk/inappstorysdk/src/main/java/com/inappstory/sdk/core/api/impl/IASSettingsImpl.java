@@ -36,6 +36,7 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
     private final List<String> tags = new ArrayList<>();
     private String deviceId = null;
     private String userId;
+    private boolean isSandbox;
     private final Object settingsLock = new Object();
 
     final static int TAG_LIMIT = 4000;
@@ -50,82 +51,68 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
             // showELog(IAS_ERROR_TAG, StringsUtils.getErrorStringFromContext(context, R.string.ias_setter_user_length_error));
             return;
         }
-        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+        final String currentUserId;
+        final Locale currentLang;
+        synchronized (settingsLock) {
+            currentUserId = userId;
+            if (currentUserId != null && currentUserId.equals(newUserId)) return;
+            currentLang = lang;
+            userId = newUserId;
+        }
+        final String sessionId = core.sessionManager().getSession().getSessionId();
+
+        core.storiesListVMHolder().clear();
+        core.storyListCache().clearLocalOpensKey();
+        core.screensManager().forceCloseAllReaders(new ForceCloseReaderCallback() {
             @Override
-            public void use(@NonNull InAppStoryService inAppStoryService) throws Exception {
-                final String currentUserId;
-                final Locale currentLang;
-                synchronized (settingsLock) {
-                    currentUserId = userId;
-                    if (currentUserId != null && currentUserId.equals(newUserId)) return;
-                    currentLang = lang;
-                    userId = newUserId;
-                }
-                final String sessionId = core.sessionManager().getSession().getSessionId();
-
-                core.storiesListVMHolder().clear();
-                core.storyListCache().clearLocalOpensKey();
-                core.screensManager().forceCloseAllReaders(new ForceCloseReaderCallback() {
-                    @Override
-                    public void onComplete() {
-                        core.sessionManager().closeSession(
-                                sendStatistic,
-                                true,
-                                currentLang,
-                                currentUserId,
-                                sessionId
-                        );
-                    }
-                });
-
-                if (inAppStoryService.getFavoriteImages() != null)
-                    inAppStoryService.getFavoriteImages().clear();
-                core.contentLoader().storyDownloadManager().refreshLocals(Story.StoryType.COMMON);
-                core.contentLoader().storyDownloadManager().refreshLocals(Story.StoryType.UGC);
-                core.contentLoader().storyDownloadManager().cleanTasks(false);
+            public void onComplete() {
+                core.sessionManager().closeSession(
+                        sendStatistic,
+                        true,
+                        currentLang,
+                        currentUserId,
+                        sessionId
+                );
             }
         });
+        core.contentLoader().storyDownloadManager().favoriteImages().clear();
+        core.contentLoader().storyDownloadManager().refreshLocals(Story.StoryType.COMMON);
+        core.contentLoader().storyDownloadManager().refreshLocals(Story.StoryType.UGC);
+        core.contentLoader().storyDownloadManager().cleanTasks(false);
 
     }
 
     @Override
     public void setLang(final Locale newLang) {
-
-        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+        final Locale currentLang;
+        final String currentUserId;
+        synchronized (settingsLock) {
+            if (lang.toLanguageTag().equals(newLang.toLanguageTag())) return;
+            currentLang = lang;
+            lang = newLang;
+            currentUserId = userId;
+        }
+        final String sessionId = core.sessionManager().getSession().getSessionId();
+        core.storiesListVMHolder().clear();
+        core.storyListCache().clearLocalOpensKey();
+        core.screensManager().forceCloseAllReaders(new ForceCloseReaderCallback() {
             @Override
-            public void use(@NonNull InAppStoryService inAppStoryService) throws Exception {
-                final Locale currentLang;
-                final String currentUserId;
-                synchronized (settingsLock) {
-                    if (lang.toLanguageTag().equals(newLang.toLanguageTag())) return;
-                    currentLang = lang;
-                    lang = newLang;
-                    currentUserId = userId;
-                }
-                final String sessionId = core.sessionManager().getSession().getSessionId();
-                core.storiesListVMHolder().clear();
-                core.storyListCache().clearLocalOpensKey();
-                core.screensManager().forceCloseAllReaders(new ForceCloseReaderCallback() {
-                    @Override
-                    public void onComplete() {
+            public void onComplete() {
 
-                        core.sessionManager().closeSession(
-                                sendStatistic,
-                                true,
-                                currentLang,
-                                currentUserId,
-                                sessionId
-                        );
-                    }
-                });
-
-                if (inAppStoryService.getFavoriteImages() != null)
-                    inAppStoryService.getFavoriteImages().clear();
-                core.contentLoader().storyDownloadManager().refreshLocals(Story.StoryType.COMMON);
-                core.contentLoader().storyDownloadManager().refreshLocals(Story.StoryType.UGC);
-                core.contentLoader().storyDownloadManager().cleanTasks(false);
+                core.sessionManager().closeSession(
+                        sendStatistic,
+                        true,
+                        currentLang,
+                        currentUserId,
+                        sessionId
+                );
             }
         });
+
+        core.contentLoader().storyDownloadManager().favoriteImages().clear();
+        core.contentLoader().storyDownloadManager().refreshLocals(Story.StoryType.COMMON);
+        core.contentLoader().storyDownloadManager().refreshLocals(Story.StoryType.UGC);
+        core.contentLoader().storyDownloadManager().cleanTasks(false);
     }
 
     @Override
@@ -300,6 +287,13 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
     public void deviceId(String deviceId) {
         synchronized (settingsLock) {
             this.deviceId = deviceId;
+        }
+    }
+
+    @Override
+    public String deviceId() {
+        synchronized (settingsLock) {
+            return deviceId;
         }
     }
 

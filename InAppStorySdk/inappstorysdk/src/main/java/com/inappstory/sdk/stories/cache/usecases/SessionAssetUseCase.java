@@ -1,5 +1,6 @@
 package com.inappstory.sdk.stories.cache.usecases;
 
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.game.cache.UseCaseCallback;
 import com.inappstory.sdk.lrudiskcache.CacheJournalItem;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
@@ -18,11 +19,11 @@ public class SessionAssetUseCase extends GetCacheFileUseCase<Void> {
     private final UseCaseCallback<File> useCaseCallback;
 
     public SessionAssetUseCase(
-            FilesDownloadManager filesDownloadManager,
+            IASCore core,
             UseCaseCallback<File> useCaseCallback,
             SessionAsset cacheObject
     ) {
-        super(filesDownloadManager);
+        super(core);
         this.cacheObject = cacheObject;
         this.useCaseCallback = useCaseCallback;
         this.uniqueKey = StringsUtils.md5(cacheObject.filename);
@@ -46,44 +47,47 @@ public class SessionAssetUseCase extends GetCacheFileUseCase<Void> {
     private void downloadFile() {
         downloadLog.sendRequestLog();
         downloadLog.generateResponseLog(false, filePath);
-        filesDownloadManager.useBundleDownloader(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    FinishDownloadFileCallback callback = new FinishDownloadFileCallback() {
-                        @Override
-                        public void finish(DownloadFileState fileState) {
-                            downloadLog.sendResponseLog();
-                            if (fileState == null) {
-                                useCaseCallback.onError("Can't download bundle file: " + cacheObject.url);
-                                return;
-                            }
-                            CacheJournalItem cacheJournalItem = generateCacheItem();
-                            cacheJournalItem.setSize(fileState.totalSize);
-                            cacheJournalItem.setDownloadedSize(fileState.totalSize);
-                            try {
-                                getCache().put(cacheJournalItem);
-                            } catch (IOException e) {
+        core.contentLoader().filesDownloadManager()
+                .useBundleDownloader(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            FinishDownloadFileCallback callback = new FinishDownloadFileCallback() {
+                                @Override
+                                public void finish(DownloadFileState fileState) {
+                                    downloadLog.sendResponseLog();
+                                    if (fileState == null) {
+                                        useCaseCallback.onError("Can't download bundle file: " + cacheObject.url);
+                                        return;
+                                    }
+                                    CacheJournalItem cacheJournalItem = generateCacheItem();
+                                    cacheJournalItem.setSize(fileState.totalSize);
+                                    cacheJournalItem.setDownloadedSize(fileState.totalSize);
+                                    try {
+                                        getCache().put(cacheJournalItem);
+                                    } catch (IOException e) {
 
-                            }
-                            useCaseCallback.onSuccess(fileState.file);
+                                    }
+                                    useCaseCallback.onSuccess(fileState.file);
+                                }
+                            };
+                            core
+                                    .contentLoader()
+                                    .downloader()
+                                    .downloadFile(
+                                            cacheObject.url,
+                                            new File(filePath),
+                                            null,
+                                            downloadLog.responseLog,
+                                            null,
+                                            callback
+                                    );
+
+                        } catch (Exception e) {
+                            useCaseCallback.onError(e.getMessage());
                         }
-                    };
-                    Downloader.downloadFile(
-                            cacheObject.url,
-                            new File(filePath),
-                            null,
-                            downloadLog.responseLog,
-                            null,
-                            filesDownloadManager,
-                            callback
-                    );
-
-                } catch (Exception e) {
-                    useCaseCallback.onError(e.getMessage());
-                }
-            }
-        });
+                    }
+                });
 
     }
 
@@ -137,6 +141,6 @@ public class SessionAssetUseCase extends GetCacheFileUseCase<Void> {
 
     @Override
     protected LruDiskCache getCache() {
-        return filesDownloadManager.getCachesHolder().getInfiniteCache();
+        return core.contentLoader().getInfiniteCache();
     }
 }

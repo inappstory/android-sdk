@@ -1,5 +1,6 @@
 package com.inappstory.sdk.stories.cache.usecases;
 
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.game.cache.UnzipUseCase;
 import com.inappstory.sdk.game.cache.UseCaseCallback;
 import com.inappstory.sdk.lrudiskcache.CacheJournalItem;
@@ -25,12 +26,12 @@ public class GameFolderUseCase extends GetCacheFileUseCase<Void> {
     private final String type = "Folder";
 
     public GameFolderUseCase(
-            FilesDownloadManager filesDownloadManager,
+            IASCore core,
             String url,
             UseCaseCallback<String> useCaseCallback,
             ProgressCallback progressCallback
     ) {
-        super(filesDownloadManager);
+        super(core);
         this.url = url;
         this.useCaseCallback = useCaseCallback;
         this.progressCallback = progressCallback;
@@ -162,6 +163,6 @@ public class GameFolderUseCase extends GetCacheFileUseCase<Void> {
 
     @Override
     protected LruDiskCache getCache() {
-        return filesDownloadManager.getCachesHolder().getInfiniteCache();
+        return core.contentLoader().getInfiniteCache();
     }
 }

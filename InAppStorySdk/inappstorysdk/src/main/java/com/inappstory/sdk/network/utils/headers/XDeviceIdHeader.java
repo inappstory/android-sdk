@@ -7,11 +7,10 @@ import android.provider.Settings;
 import com.inappstory.sdk.InAppStoryManager;
 
 public class XDeviceIdHeader implements Header {
-    private Context appContext;
+    private final String deviceId;
 
-    public XDeviceIdHeader(Context context) {
-        if (context != null)
-            this.appContext = context.getApplicationContext();
+    public XDeviceIdHeader(String deviceId) {
+        this.deviceId = deviceId;
     }
 
 
@@ -23,15 +22,6 @@ public class XDeviceIdHeader implements Header {
     @SuppressLint("HardwareIds")
     @Override
     public String getValue() {
-        String deviceId = null;
-        InAppStoryManager manager = InAppStoryManager.getInstance();
-        if (manager != null && manager.isDeviceIDEnabled()) {
-            if (appContext != null)
-                deviceId = Settings.Secure.getString(
-                        appContext.getContentResolver(),
-                        Settings.Secure.ANDROID_ID
-                );
-        }
         return deviceId != null ? deviceId : "-";
     }
 }

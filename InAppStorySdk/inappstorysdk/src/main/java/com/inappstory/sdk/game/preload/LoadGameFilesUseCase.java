@@ -22,7 +22,6 @@ public class LoadGameFilesUseCase {
 
     private final List<IGameCenterData> gamesData;
     private final DownloadInterruption interruption;
-    private final FilesDownloadManager filesDownloadManager;
     private final IASCore core;
 
     public LoadGameFilesUseCase(
@@ -34,7 +33,6 @@ public class LoadGameFilesUseCase {
         this.core = core;
         this.gamesData = gamesData;
         this.interruption = interruption;
-        this.filesDownloadManager = filesDownloadManager;
     }
 
     public void download(SuccessUseCaseCallback<IGameCenterData> successUseCaseCallback) {
@@ -77,7 +75,7 @@ public class LoadGameFilesUseCase {
         final String[] gameFolder = {""};
         final DownloadResourcesUseCase downloadResourcesUseCase =
                 new DownloadResourcesUseCase(
-                        filesDownloadManager,
+                        core,
                         data.resources(),
                         data.id(),
                         archiveUrl,
@@ -94,7 +92,7 @@ public class LoadGameFilesUseCase {
 
 
         final GameFolderUseCase gameFolderUseCase = new GameFolderUseCase(
-                filesDownloadManager,
+                core,
                 archiveUrl,
                 new SuccessUseCaseCallback<String>() {
                     @Override
@@ -113,7 +111,6 @@ public class LoadGameFilesUseCase {
         final ArchiveUseCase getZipFileUseCase =
                 new ArchiveUseCase(
                         core,
-                        filesDownloadManager,
                         archiveUrl,
                         data.archiveSize(),
                         data.archiveSha1(),

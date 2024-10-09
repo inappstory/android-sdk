@@ -2,6 +2,7 @@ package com.inappstory.sdk.stories.cache.usecases;
 
 import android.util.Log;
 
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.lrudiskcache.CacheJournalItem;
 import com.inappstory.sdk.lrudiskcache.LruCachesHolder;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
@@ -18,11 +19,11 @@ public class StoryCoverUseCase extends GetCacheFileUseCase<Void> {
     String url;
 
     public StoryCoverUseCase(
-            FilesDownloadManager filesDownloadManager,
+            IASCore core,
             String url,
             IGetStoryCoverCallback getStoryCoverCallback
     ) {
-        super(filesDownloadManager);
+        super(core);
         this.getStoryCoverCallback = getStoryCoverCallback;
         this.url = url;
         this.uniqueKey = StringsUtils.md5(url);
@@ -44,49 +45,52 @@ public class StoryCoverUseCase extends GetCacheFileUseCase<Void> {
         Log.e("ScenarioDownload", "UniqueKey: " + uniqueKey);
         DownloadFileState fileState = getCache().get(uniqueKey);
         if (fileState == null || fileState.downloadedSize != fileState.totalSize) {
-                Log.e("ScenarioDownload", "Download: " + uniqueKey + " Url: " + url);
-                downloadLog.sendRequestLog();
-                downloadLog.generateResponseLog(false, filePath);
-                filesDownloadManager.useFastDownloader(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            FinishDownloadFileCallback callback = new FinishDownloadFileCallback() {
-                                @Override
-                                public void finish(DownloadFileState fileState) {
-                                    downloadLog.sendResponseLog();
-                                    if (fileState == null || fileState.downloadedSize != fileState.totalSize) {
-                                        getStoryCoverCallback.error();
-                                        return;
-                                    }
-                                    Log.e("ScenarioDownload", "Downloaded: " + uniqueKey + " Url: " + url);
-                                    CacheJournalItem cacheJournalItem = generateCacheItem();
-                                    cacheJournalItem.setSize(fileState.totalSize);
-                                    cacheJournalItem.setDownloadedSize(fileState.totalSize);
-                                    try {
-                                        getCache().put(cacheJournalItem);
-                                    } catch (IOException e) {
+            Log.e("ScenarioDownload", "Download: " + uniqueKey + " Url: " + url);
+            downloadLog.sendRequestLog();
+            downloadLog.generateResponseLog(false, filePath);
+            core.contentLoader().filesDownloadManager()
+                    .useFastDownloader(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                FinishDownloadFileCallback callback = new FinishDownloadFileCallback() {
+                                    @Override
+                                    public void finish(DownloadFileState fileState) {
+                                        downloadLog.sendResponseLog();
+                                        if (fileState == null || fileState.downloadedSize != fileState.totalSize) {
+                                            getStoryCoverCallback.error();
+                                            return;
+                                        }
+                                        Log.e("ScenarioDownload", "Downloaded: " + uniqueKey + " Url: " + url);
+                                        CacheJournalItem cacheJournalItem = generateCacheItem();
+                                        cacheJournalItem.setSize(fileState.totalSize);
+                                        cacheJournalItem.setDownloadedSize(fileState.totalSize);
+                                        try {
+                                            getCache().put(cacheJournalItem);
+                                        } catch (IOException e) {
 
-                                        getStoryCoverCallback.error();
+                                            getStoryCoverCallback.error();
+                                        }
+                                        getStoryCoverCallback.success(filePath);
                                     }
-                                    getStoryCoverCallback.success(filePath);
-                                }
-                            };
-                            Downloader.downloadFile(
-                                    url,
-                                    new File(filePath),
-                                    null,
-                                    downloadLog.responseLog,
-                                    null,
-                                    filesDownloadManager,
-                                    callback
-                            );
+                                };
+                                core
+                                        .contentLoader()
+                                        .downloader()
+                                        .downloadFile(
+                                        url,
+                                        new File(filePath),
+                                        null,
+                                        downloadLog.responseLog,
+                                        null,
+                                        callback
+                                );
 
-                        } catch (Exception e) {
-                            getStoryCoverCallback.error();
+                            } catch (Exception e) {
+                                getStoryCoverCallback.error();
+                            }
                         }
-                    }
-                });
+                    });
         } else {
             Log.e("ScenarioDownload", "Cached: " + uniqueKey);
             downloadLog.generateResponseLog(true, filePath);
@@ -114,6 +118,6 @@ public class StoryCoverUseCase extends GetCacheFileUseCase<Void> {
 
     @Override
     protected LruDiskCache getCache() {
-        return filesDownloadManager.getCachesHolder().getFastCache();
+        return core.contentLoader().getFastCache();
     }
 }

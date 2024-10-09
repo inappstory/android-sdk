@@ -225,7 +225,7 @@ public class WebAppInterface {
     @JavascriptInterface
     public String storyGetLocalData() {
         synchronized (lock) {
-            String res = KeyValueStorage.getString("story" + manager.storyId
+            String res = core.keyValueStorage().getString("story" + manager.storyId
                     + "__" +  ((IASDataSettingsHolder)core.settingsAPI()).userId());
             logMethod(res != null ? res : "");
             return res == null ? "" : res;

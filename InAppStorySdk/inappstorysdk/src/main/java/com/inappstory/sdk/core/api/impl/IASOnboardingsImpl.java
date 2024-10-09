@@ -94,7 +94,7 @@ public class IASOnboardingsImpl implements IASOnboardings {
                                 core.statistic().profiling().setReady(onboardUID);
                                 List<Story> notOpened = new ArrayList<>();
                                 String key = core.storyListCache().getLocalOpensKey(Story.StoryType.COMMON);
-                                Set<String> opens = SharedPreferencesAPI.getStringSet(
+                                Set<String> opens = core.sharedPreferencesAPI().getStringSet(
                                         key
                                 );
                                 if (opens == null) opens = new HashSet<>();
