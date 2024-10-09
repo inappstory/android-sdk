@@ -10,6 +10,7 @@ import androidx.annotation.NonNull;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.UseIASCallback;
@@ -563,18 +564,20 @@ class StoryDownloader {
         });
     }
 
-    private void closeSessionIf424(String sessionId) {
-        String oldUserId = "";
+    private void closeSessionIf424(final String sessionId) {
         InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
-        if (inAppStoryManager != null) {
-            oldUserId = inAppStoryManager.getUserId();
-            core.sessionManager().closeSession(
-                    true,
-                    false,
-                    inAppStoryManager.getCurrentLocale(),
-                    oldUserId,
-                    sessionId
-            );
-        }
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                IASDataSettingsHolder dataSettingsHolder = (IASDataSettingsHolder) core.settingsAPI();
+                core.sessionManager().closeSession(
+                        true,
+                        false,
+                        dataSettingsHolder.lang(),
+                        dataSettingsHolder.userId(),
+                        sessionId
+                );
+            }
+        });
     }
 }
