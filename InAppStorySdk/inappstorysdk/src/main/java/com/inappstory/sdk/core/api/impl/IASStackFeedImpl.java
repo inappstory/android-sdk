@@ -43,11 +43,6 @@ public class IASStackFeedImpl implements IASStackFeed {
             final List<String> tags,
             final IStackFeedResult stackFeedResult
     ) {
-        final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
-        if (networkClient == null) {
-            stackFeedResult.error();
-            return;
-        }
         IASDataSettingsHolder settingsHolder = (IASDataSettingsHolder) core.settingsAPI();
         if (settingsHolder.noCorrectUserIdOrDevice()) {
             stackFeedResult.error();
@@ -73,8 +68,8 @@ public class IASStackFeedImpl implements IASStackFeed {
         core.sessionManager().useOrOpenSession(new OpenSessionCallback() {
             @Override
             public void onSuccess(final String sessionId) {
-                networkClient.enqueue(
-                        networkClient.getApi().getFeed(
+                core.network().enqueue(
+                        core.network().getApi().getFeed(
                                 localFeed,
                                 ApiSettings.getInstance().getTestKey(),
                                 0,

@@ -361,9 +361,6 @@ public class SessionManager {
     ) {
         if (oldSessionId == null) return;
         clearCaches();
-        final InAppStoryService service = InAppStoryService.getInstance();
-        if (service == null) return;
-        final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
         core.statistic().v1(oldSessionId, new GetStatisticV1Callback() {
             @Override
             public void get(@NonNull IASStatisticV1 manager) {
@@ -375,15 +372,9 @@ public class SessionManager {
 
                 final String sessionCloseUID =
                         core.statistic().profiling().addTask("api_session_close");
-                if (networkClient == null) {
-                    if (changeUserIdOrLocale)
-                        service.getListReaderConnector().userIdChanged();
-                    return;
-                }
-
                 Log.e("statisticTests", "closeSession");
-                networkClient.enqueue(
-                        networkClient.getApi().sessionClose(
+                core.network().enqueue(
+                        core.network().getApi().sessionClose(
                                 new StatisticSendObject(
                                         oldSessionId,
                                         stat
@@ -396,7 +387,7 @@ public class SessionManager {
                             public void onSuccess(SessionResponse response) {
                                 core.statistic().profiling().setReady(sessionCloseUID, true);
                                 if (changeUserIdOrLocale)
-                                    service.getListReaderConnector().userIdChanged();
+                                    core.inAppStoryService().getListReaderConnector().userIdChanged();
                             }
 
                             @Override
@@ -408,14 +399,13 @@ public class SessionManager {
                             public void errorDefault(String message) {
                                 core.statistic().profiling().setReady(sessionCloseUID);
                                 if (changeUserIdOrLocale)
-                                    service.getListReaderConnector().userIdChanged();
+                                    core.inAppStoryService().getListReaderConnector().userIdChanged();
                             }
                         }
                 );
             }
         });
-        if (networkClient != null)
-            networkClient.setSessionId(null);
+        core.network().setSessionId(null);
         sessionHolder.clear(oldSessionId);
     }
 

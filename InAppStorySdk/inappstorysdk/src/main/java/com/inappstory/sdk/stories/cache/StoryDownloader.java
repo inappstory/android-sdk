@@ -292,13 +292,12 @@ class StoryDownloader {
     void loadStory(StoryTaskData key) {
 
         try {
-            NetworkClient networkClient = InAppStoryManager.getNetworkClient();
             String storyUID;
             Response response;
             if (key.storyType == Story.StoryType.UGC) {
                 storyUID = core.statistic().profiling().addTask("api_story_ugc");
-                response = networkClient.execute(
-                        networkClient.getApi().getUgcStoryById(
+                response = core.network().execute(
+                        core.network().getApi().getUgcStoryById(
                                 Integer.toString(key.storyId),
                                 1,
                                 EXPAND_STRING
@@ -306,8 +305,8 @@ class StoryDownloader {
                 );
             } else {
                 storyUID = core.statistic().profiling().addTask("api_story");
-                response = networkClient.execute(
-                        networkClient.getApi().getStoryById(
+                response = core.network().execute(
+                        core.network().getApi().getStoryById(
                                 Integer.toString(key.storyId),
                                 ApiSettings.getInstance().getTestKey(),
                                 0,
@@ -326,13 +325,8 @@ class StoryDownloader {
     }
 
     void loadStoryFavoriteList(final NetworkCallback<List<Story>> callback) {
-        NetworkClient networkClient = InAppStoryManager.getNetworkClient();
-        if (networkClient == null) {
-            callback.errorDefault("No network client");
-            return;
-        }
-        networkClient.enqueue(
-                networkClient.getApi().getStories(
+        core.network().enqueue(
+                core.network().getApi().getStories(
                         ApiSettings.getInstance().getTestKey(),
                         1,
                         null,
@@ -358,19 +352,13 @@ class StoryDownloader {
     private static final String UGC_FEED = "UGC";
 
     void loadUgcStoryList(final SimpleApiCallback<List<Story>> callback, final String payload) {
-        final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service == null || networkClient == null) {
-            generateCommonLoadListError(UGC_FEED);
-            callback.onError("");
-            return;
-        }
+
         core.sessionManager().useOrOpenSession(new OpenSessionCallback() {
             @Override
             public void onSuccess(final String sessionId) {
                 final String loadStoriesUID = core.statistic().profiling().addTask("api_ugc_story_list");
-                networkClient.enqueue(
-                        networkClient.getApi().getUgcStories(
+                core.network().enqueue(
+                        core.network().getApi().getUgcStories(
                                 payload,
                                 null,
                                 "slides_count"
@@ -420,13 +408,6 @@ class StoryDownloader {
     }
 
     void loadStoryListByFeed(final String feed, final SimpleApiCallback<List<Story>> callback, final boolean retry) {
-        final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
-        final InAppStoryService service = InAppStoryService.getInstance();
-        if (service == null || networkClient == null) {
-            generateCommonLoadListError(feed);
-            callback.onError("");
-            return;
-        }
         new ConnectionCheck().check(
                 core.appContext(),
                 new ConnectionCheckCallback(core) {
@@ -437,8 +418,8 @@ class StoryDownloader {
                             public void onSuccess(final String sessionId) {
                                 final String loadStoriesUID =
                                         core.statistic().profiling().addTask("api_story_list");
-                                networkClient.enqueue(
-                                        networkClient.getApi().getFeed(
+                                core.network().enqueue(
+                                        core.network().getApi().getFeed(
                                                 feed,
                                                 ApiSettings.getInstance().getTestKey(),
                                                 0,
@@ -503,20 +484,13 @@ class StoryDownloader {
 
 
     void loadStoryList(final SimpleApiCallback<List<Story>> callback, final boolean isFavorite, final boolean retry) {
-        final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
-        final InAppStoryService service = InAppStoryService.getInstance();
-        if (service == null || networkClient == null) {
-            generateCommonLoadListError(null);
-            callback.onError("");
-            return;
-        }
         core.sessionManager().useOrOpenSession(new OpenSessionCallback() {
             @Override
             public void onSuccess(final String sessionId) {
                 final String loadStoriesUID = core.statistic().profiling().addTask(isFavorite
                         ? "api_favorite_list" : "api_story_list");
-                networkClient.enqueue(
-                        networkClient.getApi().getStories(
+                core.network().enqueue(
+                        core.network().getApi().getStories(
                                 ApiSettings.getInstance().getTestKey(),
                                 isFavorite ? 1 : 0,
                                 isFavorite ? null :

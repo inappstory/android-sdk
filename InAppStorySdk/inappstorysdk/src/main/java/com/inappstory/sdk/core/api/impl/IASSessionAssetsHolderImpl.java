@@ -13,38 +13,39 @@ public class IASSessionAssetsHolderImpl implements IASSessionAssetsHolder {
     private final HashMap<String, SessionAsset> cacheObjects = new HashMap<>();
     private final HashMap<String, SessionAsset> allObjects = new HashMap<>();
 
+
     @Override
-    public void addSessionAssetsKeys(List<SessionAsset> cacheObjects) {
+    public void addKeys(List<SessionAsset> cacheObjects) {
 
     }
 
     @Override
-    public void addSessionAsset(SessionAsset cacheObject) {
+    public void add(SessionAsset cacheObject) {
 
     }
 
     @Override
-    public void addSessionAssetsIsReadyCallback(SessionAssetsIsReadyCallback callback) {
+    public void addContentIsReadyCallback(SessionAssetsIsReadyCallback callback) {
 
     }
 
     @Override
-    public void removeSessionAssetsIsReadyCallback(SessionAssetsIsReadyCallback callback) {
+    public void removeContentIsReadyCallback(SessionAssetsIsReadyCallback callback) {
 
     }
 
     @Override
-    public boolean checkIfSessionAssetsIsReady() {
+    public boolean checkIfContentIsReady() {
         return false;
     }
 
     @Override
-    public void assetsIsCleared() {
+    public void contentIsCleared() {
 
     }
 
     @Override
-    public boolean checkIfSessionAssetsIsReady(FilesDownloadManager filesDownloadManager) {
+    public boolean checkIfContentIsReady(FilesDownloadManager filesDownloadManager) {
         return false;
     }
 }

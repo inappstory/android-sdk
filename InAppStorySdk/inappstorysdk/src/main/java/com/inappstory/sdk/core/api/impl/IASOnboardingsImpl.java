@@ -72,15 +72,13 @@ public class IASOnboardingsImpl implements IASOnboardings {
             loadOnboardingError(usedFeed, "Tags string too long");
             return;
         }
-        final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
-        if (networkClient == null) return;
         core.sessionManager().useOrOpenSession(new OpenSessionCallback() {
             @Override
             public void onSuccess(final String sessionId) {
                 final String onboardUID =
                         core.statistic().profiling().addTask("api_onboarding");
-                networkClient.enqueue(
-                        networkClient.getApi().getOnboardingFeed(
+                core.network().enqueue(
+                        core.network().getApi().getOnboardingFeed(
                                 usedFeed,
                                 ApiSettings.getInstance().getTestKey(),
                                 limit,

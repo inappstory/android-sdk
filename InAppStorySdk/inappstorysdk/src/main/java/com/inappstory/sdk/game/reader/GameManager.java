@@ -101,16 +101,12 @@ public class GameManager {
         String id = gameInstanceId;
         if (id == null) id = gameCenterId;
         if (id == null) return;
-        final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
-        if (networkClient == null) {
-            return;
-        }
         core.keyValueStorage().saveString("gameInstance_" + gameInstanceId
                 + "__" + settingsHolder.userId(), data);
 
         if (core.statistic().v1().disabled()) return;
         if (sendToServer) {
-            networkClient.enqueue(networkClient.getApi().sendGameData(gameInstanceId, data),
+            core.network().enqueue(core.network().getApi().sendGameData(gameInstanceId, data),
                     new NetworkCallback<Response>() {
                         @Override
                         public void onSuccess(Response response) {
@@ -146,10 +142,7 @@ public class GameManager {
         InAppStoryService service = InAppStoryService.getInstance();
         if (service == null) return;
         if (dataModel == null) return;
-        final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
-        if (networkClient == null) {
-            return;
-        }
+
 
         core.keyValueStorage().saveString("story" + dataModel.slideData.story.id
                 + "__" + settingsHolder.userId(), data);
@@ -157,8 +150,8 @@ public class GameManager {
         String sessionId = core.sessionManager().getSession().getSessionId();
         if (core.statistic().v1().disabled() || sessionId.isEmpty()) return;
         if (sendToServer) {
-            networkClient.enqueue(
-                    networkClient.getApi().sendStoryData(
+            core.network().enqueue(
+                    core.network().getApi().sendStoryData(
                             Integer.toString(dataModel.slideData.story.id),
                             data,
                             sessionId
@@ -422,8 +415,7 @@ public class GameManager {
     }
 
     boolean hasFilePicker() {
-        InAppStoryManager manager = InAppStoryManager.getInstance();
-        return (manager != null && manager.utilModulesHolder.hasFilePickerModule());
+        return core.externalUtilsAPI().getUtilsAPI().hasFilePickerModule();
     }
 
     void shareData(String id, String data) {

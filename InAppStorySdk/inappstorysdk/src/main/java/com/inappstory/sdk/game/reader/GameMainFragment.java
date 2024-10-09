@@ -204,12 +204,14 @@ public class GameMainFragment extends Fragment
             @NonNull final String[] permissions,
             @NonNull final int[] grantResults
     ) {
-        InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
-            public void use(@NonNull InAppStoryManager manager) throws Exception {
-                manager.utilModulesHolder.getFilePicker().permissionResult(requestCode, permissions, grantResults);
+            public void use(@NonNull IASCore core) {
+                core.externalUtilsAPI().getUtilsAPI()
+                        .getFilePicker().permissionResult(requestCode, permissions, grantResults);
             }
         });
+
         useContentFragment(new FragmentAction<GameReaderContentFragment>() {
             @Override
             public void invoke(GameReaderContentFragment fragment) {

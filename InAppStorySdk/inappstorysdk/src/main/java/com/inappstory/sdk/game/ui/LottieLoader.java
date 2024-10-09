@@ -17,17 +17,18 @@ import java.io.File;
 public class LottieLoader implements IGameReaderLoaderView {
     private ILottieView lottieView;
     private float currentProgress = 0f;
-    private final Object progressLock = new Object();
 
 
     public LottieLoader(Context context, @NonNull File source) {
         InAppStoryManager manager = InAppStoryManager.getInstance();
         if (manager != null)
-            lottieView = manager.utilModulesHolder.getLottieViewGenerator().getView(context);
-        lottieView.setSource(new Pair<>(
-                StringsUtils.md5(source.getAbsolutePath()),
-                source
-        ));
+            lottieView = manager.iasCore().externalUtilsAPI().getUtilsAPI()
+                    .getLottieViewGenerator().getView(context);
+        if (lottieView != null)
+            lottieView.setSource(new Pair<>(
+                    StringsUtils.md5(source.getAbsolutePath()),
+                    source
+            ));
     }
 
     @Override
@@ -38,10 +39,7 @@ public class LottieLoader implements IGameReaderLoaderView {
 
     private void setProgressInternal(float newProgress) {
         float oldProgress;
-      //  lottieView.setAnimProgress(newProgress);
-   //     synchronized (progressLock) {
-            oldProgress = currentProgress;
-   //     }
+        oldProgress = currentProgress;
         if (newProgress <= oldProgress) return;
         if (valueAnimator != null && valueAnimator.isRunning()) {
             valueAnimator.cancel();
@@ -51,10 +49,10 @@ public class LottieLoader implements IGameReaderLoaderView {
         valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
-         //       synchronized (progressLock) {
-                    currentProgress = (float) animation.getAnimatedValue();
-                    lottieView.setAnimProgress(currentProgress);
-        //        }
+                //       synchronized (progressLock) {
+                currentProgress = (float) animation.getAnimatedValue();
+                lottieView.setAnimProgress(currentProgress);
+                //        }
             }
         });
         valueAnimator.start();
@@ -66,8 +64,7 @@ public class LottieLoader implements IGameReaderLoaderView {
 
     @Override
     public void setProgress(int progress, int max) {
-        Log.e("LottieLoader", progress + " " + max + " " + lottieView.isLooped());
-        if (lottieView.isLooped()) {
+        if (lottieView != null && lottieView.isLooped()) {
             if (!launchedLoopedAnimation) {
                 launchedLoopedAnimation = true;
                 lottieView.play();
@@ -80,9 +77,7 @@ public class LottieLoader implements IGameReaderLoaderView {
 
     @Override
     public void setIndeterminate(boolean indeterminate) {
-       // if (indeterminate) {
-            //lottieView.setLoop(true);
-       // }
+
     }
 
     @Override

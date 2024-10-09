@@ -5,6 +5,7 @@ import androidx.annotation.NonNull;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
+import com.inappstory.sdk.core.api.IASCallback;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.IASCallbacks;
 import com.inappstory.sdk.core.api.UseIASCallback;
@@ -28,7 +29,7 @@ public class IASCallbacksExternalAPIImpl implements IASCallbacks {
         useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-                core.callbacksAPI().error(errorCallback);
+                core.callbacksAPI().setCallback(IASCallbackType.ERROR, errorCallback);
             }
         });
     }
@@ -37,7 +38,7 @@ public class IASCallbacksExternalAPIImpl implements IASCallbacks {
         useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-                core.callbacksAPI().clickOnShareStory(clickOnShareStoryCallback);
+                core.callbacksAPI().setCallback(IASCallbackType.CLICK_SHARE, clickOnShareStoryCallback);
             }
         });
     }
@@ -46,7 +47,7 @@ public class IASCallbacksExternalAPIImpl implements IASCallbacks {
         useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-                core.callbacksAPI().callToAction(callToActionCallback);
+                core.callbacksAPI().setCallback(IASCallbackType.CALL_TO_ACTION, callToActionCallback);
             }
         });
     }
@@ -55,7 +56,7 @@ public class IASCallbacksExternalAPIImpl implements IASCallbacks {
         useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-                core.callbacksAPI().storyWidget(storyWidgetCallback);
+                core.callbacksAPI().setCallback(IASCallbackType.STORY_WIDGET, storyWidgetCallback);
             }
         });
     }
@@ -64,7 +65,7 @@ public class IASCallbacksExternalAPIImpl implements IASCallbacks {
         useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-                core.callbacksAPI().closeStory(closeStoryCallback);
+                core.callbacksAPI().setCallback(IASCallbackType.CLOSE_STORY, closeStoryCallback);
             }
         });
     }
@@ -73,7 +74,7 @@ public class IASCallbacksExternalAPIImpl implements IASCallbacks {
         useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-                core.callbacksAPI().favoriteStory(favoriteStoryCallback);
+                core.callbacksAPI().setCallback(IASCallbackType.FAVORITE, favoriteStoryCallback);
             }
         });
     }
@@ -82,7 +83,7 @@ public class IASCallbacksExternalAPIImpl implements IASCallbacks {
         useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-                core.callbacksAPI().likeDislikeStory(likeDislikeStoryCallback);
+                core.callbacksAPI().setCallback(IASCallbackType.LIKE_DISLIKE, likeDislikeStoryCallback);
             }
         });
     }
@@ -91,7 +92,7 @@ public class IASCallbacksExternalAPIImpl implements IASCallbacks {
         useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-                core.callbacksAPI().showSlide(showSlideCallback);
+                core.callbacksAPI().setCallback(IASCallbackType.SHOW_SLIDE, showSlideCallback);
             }
         });
     }
@@ -100,13 +101,18 @@ public class IASCallbacksExternalAPIImpl implements IASCallbacks {
         useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-                core.callbacksAPI().showStory(showStoryCallback);
+                core.callbacksAPI().setCallback(IASCallbackType.SHOW_STORY, showStoryCallback);
             }
         });
     }
 
     @Override
     public void useCallback(IASCallbackType type, @NonNull UseIASCallback useIASCallback) {
+        throw new NoSuchMethodError();
+    }
 
+    @Override
+    public void setCallback(IASCallbackType type, IASCallback useIASCallback) {
+        throw new NoSuchMethodError();
     }
 }

@@ -122,9 +122,7 @@ public class Downloader {
         urlConnection.setConnectTimeout(300000);
         urlConnection.setReadTimeout(300000);
         urlConnection.setRequestMethod("GET");
-        if (InAppStoryManager.getNetworkClient() != null) {
-            urlConnection.setRequestProperty("User-Agent", InAppStoryManager.getNetworkClient().userAgent);
-        }
+        urlConnection.setRequestProperty("User-Agent", core.network().userAgent);
         if (downloadOffset > 0) {
             if (downloadLimit > 0) {
                 urlConnection.setRequestProperty("Range", "bytes=" + downloadOffset + "-" + downloadLimit);

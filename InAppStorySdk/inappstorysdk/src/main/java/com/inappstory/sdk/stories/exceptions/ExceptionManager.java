@@ -34,10 +34,7 @@ public class ExceptionManager {
         copiedLog.file = log.file;
         copiedLog.session = log.session;
         copiedLog.line = log.line;
-        final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
-        if (networkClient == null) {
-            return;
-        }
+
         core.sessionManager().useOrOpenSession(new OpenSessionCallback() {
             @Override
             public void onSuccess(String sessionId) {
@@ -45,8 +42,8 @@ public class ExceptionManager {
                     core.sharedPreferencesAPI().removeString(SAVED_EX);
                     return;
                 }
-                networkClient.enqueue(
-                        networkClient.getApi().sendException(
+                core.network().enqueue(
+                        core.network().getApi().sendException(
                                 copiedLog.session,
                                 copiedLog.timestamp / 1000,
                                 copiedLog.message,

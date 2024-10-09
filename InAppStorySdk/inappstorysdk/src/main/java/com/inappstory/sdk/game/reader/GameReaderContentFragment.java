@@ -283,34 +283,36 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
     }
 
     void openFilePicker(final String data) {
-        InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
-            @Override
-            public void use(@NonNull InAppStoryManager manager) throws Exception {
-                IFilePicker filePicker = manager.utilModulesHolder.getFilePicker();
-                filePicker.setPickerSettings(data);
-                filePicker.show(
-                        getContext(),
-                        getBaseGameReader().getScreenFragmentManager(),
-                        R.id.ias_file_picker_container,
-                        new OnFilesChooseCallback() {
-                            @Override
-                            public void onChoose(String cbName, String cbId, String[] filesWithTypes) {
-                                uploadFilesFromFilePicker(cbName, cbId, filesWithTypes);
-                            }
+        InAppStoryManager.useCore(
+                new UseIASCoreCallback() {
+                    @Override
+                    public void use(@NonNull IASCore core) {
+                        IFilePicker filePicker = core.externalUtilsAPI().getUtilsAPI().getFilePicker();
+                        filePicker.setPickerSettings(data);
+                        filePicker.show(
+                                getContext(),
+                                getBaseGameReader().getScreenFragmentManager(),
+                                R.id.ias_file_picker_container,
+                                new OnFilesChooseCallback() {
+                                    @Override
+                                    public void onChoose(String cbName, String cbId, String[] filesWithTypes) {
+                                        uploadFilesFromFilePicker(cbName, cbId, filesWithTypes);
+                                    }
 
-                            @Override
-                            public void onCancel(String cbName, String cbId) {
-                                uploadFilesFromFilePicker(cbName, cbId, new String[0]);
-                            }
+                                    @Override
+                                    public void onCancel(String cbName, String cbId) {
+                                        uploadFilesFromFilePicker(cbName, cbId, new String[0]);
+                                    }
 
-                            @Override
-                            public void onError(String cbName, String cbId, String reason) {
-                                uploadFilesFromFilePicker(cbName, cbId, new String[0]);
-                            }
-                        }
-                );
-            }
-        });
+                                    @Override
+                                    public void onError(String cbName, String cbId, String reason) {
+                                        uploadFilesFromFilePicker(cbName, cbId, new String[0]);
+                                    }
+                                }
+                        );
+                    }
+                }
+        );
     }
 
     private void uploadFilesFromFilePicker(String cbName, String cbId, String[] filesWithTypes) {

@@ -8,8 +8,6 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
-import kotlin.NotImplementedError;
-
 public class LruDiskCache {
 
     private final CacheJournal journal;

@@ -1,5 +1,6 @@
 package com.inappstory.sdk;
 
+import static com.inappstory.sdk.core.api.impl.IASSettingsImpl.TAG_LIMIT;
 import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_10;
 import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_5;
 
@@ -8,6 +9,7 @@ import android.app.Application;
 import android.content.ContentProvider;
 import android.content.Context;
 import android.os.Looper;
+import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Log;
 import android.util.Pair;
@@ -67,7 +69,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
 
 
 /**
@@ -106,13 +107,6 @@ public class InAppStoryManager {
         });
     }
 
-    public static NetworkClient getNetworkClient() {
-        synchronized (lock) {
-            if (INSTANCE == null) return null;
-            return INSTANCE.networkClient;
-        }
-    }
-
     public static void useInstance(@NonNull UseManagerInstanceCallback callback) {
         InAppStoryManager manager = getInstance();
         try {
@@ -125,15 +119,6 @@ public class InAppStoryManager {
             e.printStackTrace();
         }
     }
-
-    public static boolean isNull() {
-        synchronized (lock) {
-            return INSTANCE == null;
-        }
-    }
-
-    Context context;
-
 
     static final String DEBUG_API = "IAS debug api";
 
@@ -207,7 +192,6 @@ public class InAppStoryManager {
     public static void sendWebConsoleLog(WebConsoleLog log) {
         if (iasQaLog != null) iasQaLog.getWebConsoleLog(log);
     }
-
 
 
     /**
@@ -418,7 +402,6 @@ public class InAppStoryManager {
     }
 
 
-    private final static int TAG_LIMIT = 4000;
 
     private final Object tagsLock = new Object();
 
@@ -465,23 +448,19 @@ public class InAppStoryManager {
         return new HashMap<>(getPlaceholders());
     }
 
-    ArrayList<String> tags;
-
-    private final Object placeholdersLock = new Object();
-
     /**
      * Returns map with all default strings replacements
      */
     public Map<String, String> getPlaceholders() {
-        return ((IASDataSettingsHolder)core.settingsAPI()).placeholders();
+        return ((IASDataSettingsHolder) core.settingsAPI()).placeholders();
     }
 
     public Map<String, ImagePlaceholderValue> getImagePlaceholdersValues() {
-        return ((IASDataSettingsHolder)core.settingsAPI()).imagePlaceholders();
+        return ((IASDataSettingsHolder) core.settingsAPI()).imagePlaceholders();
     }
 
     public Map<String, Pair<ImagePlaceholderValue, ImagePlaceholderValue>> getImagePlaceholdersValuesWithDefaults() {
-        return ((IASDataSettingsHolder)core.settingsAPI()).imagePlaceholdersWithSessionDefaults();
+        return ((IASDataSettingsHolder) core.settingsAPI()).imagePlaceholdersWithSessionDefaults();
     }
 
 
@@ -492,14 +471,6 @@ public class InAppStoryManager {
     public void setImagePlaceholder(@NonNull String key, ImagePlaceholderValue value) {
         core.settingsAPI().setImagePlaceholder(key, value);
     }
-
-
-    String API_KEY = "";
-
-    String TEST_KEY = null;
-
-
-    public UtilModulesHolder utilModulesHolder;
 
 
     public static void initSDK(@NonNull Context context, boolean skipCheck) {
@@ -544,22 +515,13 @@ public class InAppStoryManager {
     }
 
 
-
     public void removeFromFavorite(int storyId) {
         core.favoritesAPI().removeByStoryId(storyId);
     }
 
     public void removeAllFavorites() {
         core.favoritesAPI().removeAll();
-
     }
-
-    NetworkClient networkClient;
-
-
-
-
-
 
     private boolean isSandbox = false;
 
@@ -575,7 +537,9 @@ public class InAppStoryManager {
             errorStringId = R.string.ias_api_key_error;
         } else if (StringsUtils.getBytesLength(builder.userId) > 255) {
             errorStringId = R.string.ias_builder_user_length_error;
-        } else if (builder.tags != null && StringsUtils.getBytesLength(TextUtils.join(",", builder.tags)) > TAG_LIMIT) {
+        } else if (builder.tags != null
+                &&
+                StringsUtils.getBytesLength(TextUtils.join(",", builder.tags)) > TAG_LIMIT) {
             errorStringId = R.string.ias_builder_tags_length_error;
         }
         if (errorStringId != null) {
@@ -620,8 +584,6 @@ public class InAppStoryManager {
         core.contentPreload().restartGamePreloader();
     }
 
-    private Locale currentLocale = Locale.getDefault();
-
     public void setLang(@NonNull Locale lang) {
         core.settingsAPI().setLang(lang);
     }
@@ -636,10 +598,8 @@ public class InAppStoryManager {
         core.settingsAPI().setUserId(userId);
     }
 
-    private String userId;
-
     public String getUserId() {
-        return userId;
+        return ((IASDataSettingsHolder) core.settingsAPI()).userId();
     }
 
     public void clearCachedList(String id) {
@@ -668,11 +628,6 @@ public class InAppStoryManager {
 
     private boolean sendStatistic = true;
 
-    private boolean gameDemoMode = false;
-
-
-    private boolean isDeviceIDEnabled = true;
-
     private void initManager(
             Context context,
             String cmsUrl,
@@ -691,13 +646,19 @@ public class InAppStoryManager {
         settings.setLang(locale);
         settings.setTags(tags);
         if (isDeviceIDEnabled) {
-            settings.deviceId();
+            settings.deviceId
+                    (
+                            Settings.Secure.getString(
+                                    context.getContentResolver(),
+                                    Settings.Secure.ANDROID_ID
+                            )
+                    );
         }
         settings.gameDemoMode(gameDemoMode);
         if (placeholders != null)
-            setPlaceholders(placeholders);
+            settings.setPlaceholders(placeholders);
         if (imagePlaceholders != null)
-            setImagePlaceholders(imagePlaceholders);
+            settings.setImagePlaceholders(imagePlaceholders);
         logout();
         if (ApiSettings.getInstance().hostIsDifferent(cmsUrl)) {
             core.network().clear();

@@ -57,14 +57,7 @@ public class GameLogSender implements IGameLogSender {
             if (inProcess) return;
             inProcess = true;
         }
-        NetworkClient networkClient = InAppStoryManager.getNetworkClient();
-        if (networkClient == null) {
-            synchronized (GameLogSender.this) {
-                inProcess = false;
-            }
-            return;
-        }
-        sendLogs(getLogs(), networkClient);
+        sendLogs(getLogs());
     }
 
     private void saveLogs(List<GameLog> logs) {
@@ -78,8 +71,7 @@ public class GameLogSender implements IGameLogSender {
 
 
     private void sendLogs(
-            final List<GameLog> logs,
-            final NetworkClient networkClient
+            final List<GameLog> logs
     ) {
         if (logs.isEmpty()) {
             synchronized (GameLogSender.this) {
@@ -92,8 +84,8 @@ public class GameLogSender implements IGameLogSender {
         if (logs.size() > 1) {
             nextLogs.addAll(logs.subList(1, logs.size()));
         }
-        networkClient.enqueue(
-                networkClient.getApi().sendGameLogMessage(
+        core.network().enqueue(
+                core.network().getApi().sendGameLogMessage(
                         log.gameInstanceId(),
                         log.type(),
                         log.launchTryNumber(),
@@ -106,7 +98,7 @@ public class GameLogSender implements IGameLogSender {
                 new NetworkCallback<Response>() {
                     @Override
                     public void onSuccess(Response response) {
-                        sendLogs(nextLogs, networkClient);
+                        sendLogs(nextLogs);
                     }
 
                     @Override

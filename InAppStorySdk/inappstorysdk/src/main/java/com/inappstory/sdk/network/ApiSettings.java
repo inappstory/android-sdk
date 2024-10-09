@@ -59,8 +59,8 @@ public class ApiSettings {
 
     public ApiSettings apiKey(String cmsKey) {
         if (ApiSettings.this.apiKey != null && cmsKey != null && !ApiSettings.this.apiKey.equals(cmsKey)) {
-            NetworkClient networkClient = InAppStoryManager.getNetworkClient();
-            if (networkClient != null) networkClient.clear();
+            InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
+            if (inAppStoryManager != null) inAppStoryManager.iasCore().network().clear();
         }
         ApiSettings.this.apiKey = cmsKey;
         return ApiSettings.this;

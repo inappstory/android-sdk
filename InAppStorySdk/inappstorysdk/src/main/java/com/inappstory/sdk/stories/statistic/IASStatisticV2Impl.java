@@ -501,14 +501,13 @@ public class IASStatisticV2Impl implements IASStatisticV2 {
 
 
     private void sendTask(final StatisticTask task) {
-        final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
-        if (networkClient == null) return;
+
         try {
             final Callable<Boolean> _ff = new Callable<Boolean>() {
                 @Override
                 public Boolean call() throws Exception {
-                    Response response = networkClient.execute(
-                            networkClient.getApi().sendStat(
+                    Response response = core.network().execute(
+                            core.network().getApi().sendStat(
                                     task.event,
                                     task.sessionId,
                                     task.userId,

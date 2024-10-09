@@ -3,6 +3,7 @@ package com.inappstory.sdk.core.ui.screens.inappmessagereader;
 import android.content.Context;
 import android.view.ViewGroup;
 
+import com.inappstory.sdk.core.ui.screens.holder.IScreensHolder;
 import com.inappstory.sdk.core.ui.screens.launcher.LaunchScreenStrategy;
 import com.inappstory.sdk.core.ui.screens.ScreenType;
 import com.inappstory.sdk.core.ui.screens.holder.ScreensHolder;
@@ -24,7 +25,7 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
 
 
     @Override
-    public void launch(Context context, IOpenReader openReader, ScreensHolder screensHolders) {
+    public void launch(Context context, IOpenReader openReader, IScreensHolder screensHolders) {
 
     }
 

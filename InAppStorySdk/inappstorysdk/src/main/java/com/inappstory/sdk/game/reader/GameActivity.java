@@ -11,6 +11,7 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
+import com.inappstory.iasutilsconnector.UtilModulesHolder;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
@@ -78,8 +79,6 @@ public class GameActivity extends AppCompatActivity implements BaseGameScreen {
     }
 
 
-
-
     private void setNavBarColor(String color) {
         if (color == null) return;
         getWindow().setNavigationBarColor(Color.parseColor(color));
@@ -131,7 +130,10 @@ public class GameActivity extends AppCompatActivity implements BaseGameScreen {
     @Override
     public void onBackPressed() {
         InAppStoryManager manager = InAppStoryManager.getInstance();
-        if (manager != null && manager.utilModulesHolder.getFilePicker().onBackPressed()) return;
+        if (manager != null) {
+            UtilModulesHolder utilModulesHolder = manager.iasCore().externalUtilsAPI().getUtilsAPI();
+            if (utilModulesHolder.getFilePicker().onBackPressed()) return;
+        }
         if (!useContentFragment(
                 new FragmentAction<GameReaderContentFragment>() {
                     @Override
@@ -213,10 +215,11 @@ public class GameActivity extends AppCompatActivity implements BaseGameScreen {
             @NonNull final String[] permissions,
             @NonNull final int[] grantResults
     ) {
-        InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
-            public void use(@NonNull InAppStoryManager manager) throws Exception {
-                manager.utilModulesHolder.getFilePicker().permissionResult(requestCode, permissions, grantResults);
+            public void use(@NonNull IASCore core) {
+                core.externalUtilsAPI().getUtilsAPI()
+                        .getFilePicker().permissionResult(requestCode, permissions, grantResults);
             }
         });
         useContentFragment(new FragmentAction<GameReaderContentFragment>() {

@@ -39,7 +39,7 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
     private boolean isSandbox;
     private final Object settingsLock = new Object();
 
-    final static int TAG_LIMIT = 4000;
+    public final static int TAG_LIMIT = 4000;
 
     public IASSettingsImpl(IASCore core) {
         this.core = core;

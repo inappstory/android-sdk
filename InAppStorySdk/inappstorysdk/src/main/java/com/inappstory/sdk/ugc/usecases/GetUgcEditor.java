@@ -22,19 +22,15 @@ public class GetUgcEditor implements IGetUgcEditor {
 
     @Override
     public void get(final IGetUgcEditorCallback callback) {
-        final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
-        if (networkClient == null) {
-            callback.onError();
-            return;
-        }
+
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
-            public void use(@NonNull IASCore core) {
+            public void use(@NonNull final IASCore core) {
                 core.sessionManager().useOrOpenSession(new OpenSessionCallback() {
                     @Override
                     public void onSuccess(final String sessionId) {
-                        networkClient.enqueue(
-                                networkClient.getApi().getUgcEditor(),
+                        core.network().enqueue(
+                                core.network().getApi().getUgcEditor(),
                                 new NetworkCallback<SessionEditor>() {
                                     @Override
                                     public void onSuccess(SessionEditor response) {

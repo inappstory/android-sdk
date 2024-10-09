@@ -74,16 +74,20 @@ public class StoriesList extends RecyclerView {
         }
     }
 
-    public Object feedLock = new Object();
+    private final Object feedLock = new Object();
 
     public void setFeed(String feed) {
         boolean reloadStories = false;
         synchronized (feedLock) {
             if (!isFavoriteList && feed != null && !feed.isEmpty()) {
                 if (this.feed != null && !this.feed.isEmpty() && !this.feed.equals(feed)) {
-                    InAppStoryManager manager = InAppStoryManager.getInstance();
-                    if (manager != null && cacheId != null)
-                        manager.clearCachedList(cacheId);
+                    InAppStoryManager.useCore(new UseIASCoreCallback() {
+                        @Override
+                        public void use(@NonNull IASCore core) {
+                            if (cacheId != null)
+                                core.storiesListVMHolder().removeVM(cacheId);
+                        }
+                    });
                     reloadStories = true;
                 }
                 this.feed = feed;
@@ -788,7 +792,7 @@ public class StoriesList extends RecyclerView {
             return;
         }
         final IASCore core = manager.iasCore();
-        if (((IASDataSettingsHolder)core.settingsAPI()).noCorrectUserIdOrDevice()) return;
+        if (((IASDataSettingsHolder) core.settingsAPI()).noCorrectUserIdOrDevice()) return;
 
         InAppStoryManager.debugSDKCalls("StoriesList_loadStoriesInner", "");
         final String listUid = core.statistic().profiling().addTask("widget_init");

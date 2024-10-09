@@ -140,10 +140,7 @@ public class IASStatisticV1Impl implements IASStatisticV1 {
 
     @Override
     public void sendStatistic() {
-        final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
-        if (networkClient == null) {
-            return;
-        }
+
         final String sessionId = core.sessionManager().getSession().getSessionId();
         if (sessionId.isEmpty()) return;
         synchronized (openProcessLock) {
@@ -170,8 +167,8 @@ public class IASStatisticV1Impl implements IASStatisticV1 {
                         final String updateUUID = core.statistic().profiling().addTask(
                                 "api_session_update"
                         );
-                        networkClient.enqueue(
-                                networkClient.getApi().sessionUpdate(statisticSendObject),
+                        core.network().enqueue(
+                                core.network().getApi().sessionUpdate(statisticSendObject),
                                 new NetworkCallback<SessionResponse>() {
                                     @Override
                                     public void onSuccess(SessionResponse response) {

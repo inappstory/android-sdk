@@ -179,53 +179,37 @@ public class ReaderManager {
             final ShowGoodsCallback showGoodsCallback,
             final SlideData slideData
     ) {
-        InAppStoryManager.useInstance(
-                new UseManagerInstanceCallback() {
-                    @Override
-                    public void use(@NonNull InAppStoryManager manager) throws Exception {
-                        BaseStoryScreen screen = getReaderScreen();
-                        if (screen == null) {
-                            showGoodsCallback.goodsIsCanceled(widgetId);
-                            Log.d("InAppStory_SDK_error", "Something wrong");
-                            return;
-                        }
-                        if (AppearanceManager.getCommonInstance().csCustomGoodsWidget() == null) {
-                            showGoodsCallback.goodsIsCanceled(widgetId);
-                            Log.d("InAppStory_SDK_error", "Empty goods widget");
-                            return;
-                        }
-                        FragmentManager fragmentManager = screen.getScreenFragmentManager();
-                        if (fragmentManager.findFragmentById(R.id.ias_outer_top_container) != null) {
-                            showGoodsCallback.goodsIsCanceled(widgetId);
-                            Log.d("InAppStory_SDK_error", "Top container is busy");
-                            return;
-                        }
-                        if (screen instanceof ShowGoodsCallback) {
-                            screen.setShowGoodsCallback(showGoodsCallback);
-                            ((ShowGoodsCallback) screen).goodsIsOpened();
-                        }
-                        core
-                                .screensManager()
-                                .getStoryScreenHolder()
-                                .openGoodsOverlapContainer(
-                                        skusString,
-                                        widgetId,
-                                        slideData
-                                );
-                    }
-                }
-        );
+        BaseStoryScreen screen = getReaderScreen();
+        if (screen == null) {
+            showGoodsCallback.goodsIsCanceled(widgetId);
+            Log.d("InAppStory_SDK_error", "Something wrong");
+            return;
+        }
+        if (AppearanceManager.getCommonInstance().csCustomGoodsWidget() == null) {
+            showGoodsCallback.goodsIsCanceled(widgetId);
+            Log.d("InAppStory_SDK_error", "Empty goods widget");
+            return;
+        }
+        FragmentManager fragmentManager = screen.getScreenFragmentManager();
+        if (fragmentManager.findFragmentById(R.id.ias_outer_top_container) != null) {
+            showGoodsCallback.goodsIsCanceled(widgetId);
+            Log.d("InAppStory_SDK_error", "Top container is busy");
+            return;
+        }
+        if (screen instanceof ShowGoodsCallback) {
+            screen.setShowGoodsCallback(showGoodsCallback);
+            ((ShowGoodsCallback) screen).goodsIsOpened();
+        }
+        core
+                .screensManager()
+                .getStoryScreenHolder()
+                .openGoodsOverlapContainer(
+                        skusString,
+                        widgetId,
+                        slideData
+                );
     }
 
-    /*public void pause() {
-        if (parentFragment != null)
-            parentFragment.pause();
-    }
-
-    public void resume() {
-        if (parentFragment != null)
-            parentFragment.resume();
-    }*/
 
     public void gameComplete(String data, int storyId, int slideIndex) {
         ReaderPageManager pageManager = getSubscriberByStoryId(storyId);

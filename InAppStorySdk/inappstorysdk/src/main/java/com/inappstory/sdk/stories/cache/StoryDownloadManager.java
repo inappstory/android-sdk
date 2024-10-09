@@ -67,18 +67,13 @@ public class StoryDownloadManager {
             final boolean showOnce,
             final SourceType readerSource
     ) {
-        final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
-        final InAppStoryService service = InAppStoryService.getInstance();
-        if (networkClient == null || service == null) {
-            storyByIdCallback.loadError(-1);
-            return;
-        }
+
         core.sessionManager().useOrOpenSession(new OpenSessionCallback() {
             @Override
             public void onSuccess(final String sessionId) {
                 final String storyUID = core.statistic().profiling().addTask("api_story");
-                networkClient.enqueue(
-                        networkClient.getApi().getStoryById(
+                core.network().enqueue(
+                        core.network().getApi().getStoryById(
                                 id,
                                 ApiSettings.getInstance().getTestKey(),
                                 showOnce ? 1 : 0,

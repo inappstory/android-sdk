@@ -39,7 +39,7 @@ public class GamePreloader implements IGamePreloader {
     public void launch() {
         if (!active) return;
         if (loadedData == null) {
-            GetGamePreloadModelsUseCase getGameModelsUseCase = new GetGamePreloadModelsUseCase();
+            GetGamePreloadModelsUseCase getGameModelsUseCase = new GetGamePreloadModelsUseCase(core);
             getGameModelsUseCase.get(new IGetGamePreloadModelsCallback() {
                 @Override
                 public void onSuccess(List<IGameCenterData> data) {

@@ -1,8 +1,6 @@
 package com.inappstory.sdk.game.preload;
 
-import com.inappstory.sdk.InAppStoryManager;
-import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.network.NetworkClient;
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.stories.api.interfaces.IGameCenterData;
 import com.inappstory.sdk.stories.api.models.PreloadGameCenterData;
@@ -13,14 +11,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class GetGamePreloadModelsUseCase {
+    private final IASCore core;
+
+    public GetGamePreloadModelsUseCase(IASCore core) {
+        this.core = core;
+    }
+
     public void get(final IGetGamePreloadModelsCallback callback) {
-        InAppStoryService service = InAppStoryService.getInstance();
-        final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
-        if (service == null || networkClient == null) {
-            callback.onError(null);
-            return;
-        }
-        networkClient.enqueue(networkClient.getApi().getPreloadGames(true),
+        core.network().enqueue(
+                core.network().getApi().getPreloadGames(true),
                 new NetworkCallback<List<PreloadGameCenterData>>() {
                     @Override
                     public void onSuccess(List<PreloadGameCenterData> response) {

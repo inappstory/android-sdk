@@ -9,6 +9,8 @@ import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.UseManagerInstanceCallback;
 import com.inappstory.sdk.UseServiceInstanceCallback;
+import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASCallbacks;
 import com.inappstory.sdk.core.api.IASFavorites;
 import com.inappstory.sdk.core.api.IASGames;
@@ -42,28 +44,28 @@ public class InAppStoryAPI {
 
 
     public void addSubscriber(final IAPISubscriber subscriber) {
-        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
-            public void use(@NonNull InAppStoryService service) throws Exception {
-                service.getApiSubscribersManager().addAPISubscriber(subscriber);
+            public void use(@NonNull IASCore core) {
+                core.inAppStoryService().getApiSubscribersManager().addAPISubscriber(subscriber);
             }
         });
     }
 
     public void removeSubscriber(final String uniqueKey) {
-        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
-            public void use(@NonNull InAppStoryService service) throws Exception {
-                service.getApiSubscribersManager().removeAPISubscriber(uniqueKey);
+            public void use(@NonNull IASCore core) {
+                core.inAppStoryService().getApiSubscribersManager().removeAPISubscriber(uniqueKey);
             }
         });
     }
 
     public void removeSubscriber(final IAPISubscriber subscriber) {
-        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
-            public void use(@NonNull InAppStoryService service) throws Exception {
-                service.getApiSubscribersManager().removeAPISubscriber(subscriber);
+            public void use(@NonNull IASCore core) {
+                core.inAppStoryService().getApiSubscribersManager().removeAPISubscriber(subscriber);
             }
         });
     }
@@ -78,16 +80,11 @@ public class InAppStoryAPI {
     }
 
     public void clearCache() {
-        InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
-            public void use(@NonNull InAppStoryManager manager) throws Exception {
-                manager.clearCache();
-            }
-        });
-        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
-            @Override
-            public void use(@NonNull InAppStoryService service) throws Exception {
-                service.getApiSubscribersManager().clearCache();
+            public void use(@NonNull IASCore core) {
+                core.contentLoader().clearCache();
+                core.inAppStoryService().getApiSubscribersManager().clearCache();
             }
         });
     }

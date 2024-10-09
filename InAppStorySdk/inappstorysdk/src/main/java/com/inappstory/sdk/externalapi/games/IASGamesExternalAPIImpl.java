@@ -22,10 +22,10 @@ public class IASGamesExternalAPIImpl implements IASGames {
     }
 
     public void open(@NonNull final Context context, final String gameId) {
-        InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
-            public void use(@NonNull InAppStoryManager manager) throws Exception {
-                manager.openGame(gameId, context);
+            public void use(@NonNull IASCore core) {
+                core.gamesAPI().open(context, gameId);
             }
         });
     }

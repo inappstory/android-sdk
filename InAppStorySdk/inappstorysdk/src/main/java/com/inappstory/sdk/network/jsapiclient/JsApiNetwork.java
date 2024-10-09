@@ -43,9 +43,9 @@ public class JsApiNetwork {
         jsResponse.requestId = requestId;
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
-            public void use(@NonNull IASCore core) {
-                final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
-                if (networkClient == null) {
+            public void use(@NonNull final IASCore core) {
+
+                if (core.network().getBaseUrl() == null) {
                     jsResponse.status = 12163;
                 } else {
                     new ConnectionCheck().check(context, new ConnectionCheckCallback(core) {
@@ -59,7 +59,7 @@ public class JsApiNetwork {
                                     && !body.isEmpty();
                             List<Header> defaultHeaders;
                             try {
-                                defaultHeaders = networkClient.generateHeaders(
+                                defaultHeaders = core.network().generateHeaders(
                                         new String[]{},
                                         new ArrayList<Pair<String, String>>(),
                                         false,
@@ -85,7 +85,7 @@ public class JsApiNetwork {
                                     .vars(getParams != null ? getParams : new HashMap<String, String>())
                                     .body(body)
                                     .build();
-                            Response networkResponse = networkClient.execute(request);
+                            Response networkResponse = core.network().execute(request);
                             jsResponse.status = networkResponse.code;
                             if (networkResponse.headers != null && networkResponse.headers.size() > 0) {
                                 JSONObject jheaders = new JSONObject();

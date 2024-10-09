@@ -615,13 +615,10 @@ public class StoriesViewManager {
         core.keyValueStorage().saveString("story" + storyId + "__" +
                 ((IASDataSettingsHolder) core.settingsAPI()).userId(), data);
         if (core.statistic().v1().disabled()) return;
-        final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
-        if (networkClient == null) {
-            return;
-        }
+
         if (sendToServer) {
-            networkClient.enqueue(
-                    networkClient.getApi().sendStoryData(
+            core.network().enqueue(
+                    core.network().getApi().sendStoryData(
                             Integer.toString(storyId),
                             data,
                             core.sessionManager().getSession().getSessionId()
@@ -645,12 +642,8 @@ public class StoriesViewManager {
 
     public void storySendData(String data) {
         if (core.statistic().v1().disabled()) return;
-        final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
-        if (networkClient == null) {
-            return;
-        }
-        networkClient.enqueue(
-                networkClient.getApi().sendStoryData(
+        core.network().enqueue(
+                core.network().getApi().sendStoryData(
                         Integer.toString(storyId),
                         data,
                         core.sessionManager().getSession().getSessionId()

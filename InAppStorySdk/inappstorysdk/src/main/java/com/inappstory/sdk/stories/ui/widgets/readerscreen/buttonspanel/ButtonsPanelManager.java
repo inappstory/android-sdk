@@ -68,10 +68,7 @@ public class ButtonsPanelManager {
     }
 
     private void likeDislikeClick(final ButtonClickCallback callback, final boolean like) {
-        NetworkClient networkClient = InAppStoryManager.getNetworkClient();
-        if (networkClient == null) {
-            return;
-        }
+
         final Story story =
                 core.contentLoader().storyDownloadManager().getStoryById(
                         storyId, pageManager.getStoryType()
@@ -110,8 +107,8 @@ public class ButtonsPanelManager {
         }
         final String likeUID =
                 core.statistic().profiling().addTask("api_like");
-        networkClient.enqueue(
-                networkClient.getApi().storyLike(
+        core.network().enqueue(
+                core.network().getApi().storyLike(
                         Integer.toString(storyId),
                         val
                 ),
@@ -148,10 +145,6 @@ public class ButtonsPanelManager {
     }
 
     public void favoriteClick(final ButtonClickCallback callback) {
-        NetworkClient networkClient = InAppStoryManager.getNetworkClient();
-        if (networkClient == null) {
-            return;
-        }
         final Story story = core.contentLoader().storyDownloadManager().getStoryById(storyId, pageManager.getStoryType());
         if (story == null) return;
         final boolean val = story.favorite;
@@ -170,8 +163,8 @@ public class ButtonsPanelManager {
                     }
                 });
         final String favUID = core.statistic().profiling().addTask("api_favorite");
-        networkClient.enqueue(
-                networkClient.getApi().storyFavorite(
+        core.network().enqueue(
+                core.network().getApi().storyFavorite(
                         Integer.toString(storyId),
                         val ? 0 : 1
                 ),
@@ -222,10 +215,7 @@ public class ButtonsPanelManager {
     }
 
     public void shareClick(final ShareButtonClickCallback callback) {
-        NetworkClient networkClient = InAppStoryManager.getNetworkClient();
-        if (networkClient == null) {
-            return;
-        }
+
         final ShareProcessHandler shareProcessHandler = core.screensManager().getShareProcessHandler();
         if (shareProcessHandler == null || shareProcessHandler.isShareProcess()) return;
         final Story story = core.contentLoader().storyDownloadManager()
@@ -253,8 +243,8 @@ public class ButtonsPanelManager {
         if (callback != null)
             callback.onClick();
         final String shareUID = core.statistic().profiling().addTask("api_share");
-        networkClient.enqueue(
-                networkClient.getApi().share(
+        core.network().enqueue(
+                core.network().getApi().share(
                         Integer.toString(storyId),
                         null
                 ),
