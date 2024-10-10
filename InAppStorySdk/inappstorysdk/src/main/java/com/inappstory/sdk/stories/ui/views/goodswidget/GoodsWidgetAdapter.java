@@ -1,5 +1,6 @@
 package com.inappstory.sdk.stories.ui.views.goodswidget;
 
+import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
@@ -22,9 +23,30 @@ public class GoodsWidgetAdapter extends RecyclerView.Adapter<GoodsWidgetItem> {
     GoodsWidget.GoodsWidgetConfig config;
     GetGoodsDataCallback callback;
 
-    public GoodsWidgetAdapter(ArrayList<GoodsItemData> items,
-                              GoodsWidget.GoodsWidgetConfig config,
-                              GetGoodsDataCallback callback) {
+    ICustomGoodsWidget customGoodsWidget;
+    private View parentView;
+
+    @Override
+    public void onAttachedToRecyclerView(@NonNull RecyclerView recyclerView) {
+        super.onAttachedToRecyclerView(recyclerView);
+        if (recyclerView instanceof GoodsWidget) {
+            this.parentView = ((GoodsWidget) recyclerView).parentView;
+        }
+    }
+
+    @Override
+    public void onDetachedFromRecyclerView(@NonNull RecyclerView recyclerView) {
+        super.onDetachedFromRecyclerView(recyclerView);
+        this.parentView = null;
+    }
+
+    public GoodsWidgetAdapter(
+
+            ICustomGoodsWidget customGoodsWidget,
+            ArrayList<GoodsItemData> items,
+            GoodsWidget.GoodsWidgetConfig config,
+            GetGoodsDataCallback callback
+    ) {
         this.callback = callback;
         if (items != null)
             this.items.addAll(items);
@@ -40,7 +62,13 @@ public class GoodsWidgetAdapter extends RecyclerView.Adapter<GoodsWidgetItem> {
         }
     }
 
-    public void onItemClick(final GoodsItemData data) {
+    public void onItemClick(final GoodsItemData data, View view) {
+        customGoodsWidget.onItemClick(
+                parentView,
+                view,
+                data,
+                callback
+        );
         if (data != null) {
             if (config != null && config.slideData != null) {
                 InAppStoryManager.useCore(new UseIASCoreCallback() {
@@ -76,12 +104,14 @@ public class GoodsWidgetAdapter extends RecyclerView.Adapter<GoodsWidgetItem> {
     @NonNull
     @Override
     public GoodsWidgetItem onCreateViewHolder(@NonNull final ViewGroup nParent, int viewType) {
-        ICustomGoodsItem customGoodsItem = AppearanceManager
-                .getCommonInstance()
-                .csCustomGoodsWidget()
+        ICustomGoodsItem customGoodsItem = customGoodsWidget
                 .getItem();
         if (customGoodsItem != null) {
-            return new GoodsWidgetItem(customGoodsItem, this, nParent.getContext());
+            return new GoodsWidgetItem(
+                    customGoodsItem,
+                    this,
+                    nParent.getContext()
+            );
         } else {
             return new GoodsWidgetItem(
                     new SimpleCustomGoodsItem(),
@@ -93,7 +123,7 @@ public class GoodsWidgetAdapter extends RecyclerView.Adapter<GoodsWidgetItem> {
 
     @Override
     public void onBindViewHolder(@NonNull GoodsWidgetItem holder, int position) {
-        holder.bind(this.items.get(position), callback);
+        holder.bind(this.items.get(position));
     }
 
 

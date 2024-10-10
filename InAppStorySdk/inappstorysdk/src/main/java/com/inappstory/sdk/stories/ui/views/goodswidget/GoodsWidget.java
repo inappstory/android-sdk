@@ -20,6 +20,12 @@ public class GoodsWidget extends RecyclerView {
     Context context;
     GoodsWidgetAdapter adapter;
 
+    public void setParentView(View parentView) {
+        this.parentView = parentView;
+    }
+
+    View parentView;
+
     @Nullable
     @Override
     public GoodsWidgetAdapter getAdapter() {
@@ -43,15 +49,21 @@ public class GoodsWidget extends RecyclerView {
 
     GoodsWidgetConfig config;
     public void setItems(ArrayList<GoodsItemData> items, GetGoodsDataCallback callback) {
-        adapter = new GoodsWidgetAdapter(items, config, callback);
+        adapter = new GoodsWidgetAdapter(customGoodsWidget, items, config, callback);
         setAdapter(adapter);
     }
+
+    private ICustomGoodsWidget customGoodsWidget;
 
     private void init(Context context) {
         this.context = context;
         setLayoutManager(new LinearLayoutManager(context, HORIZONTAL, false));
-        if (AppearanceManager.getCommonInstance().csCustomGoodsWidget().getDecoration() != null) {
-            addItemDecoration(AppearanceManager.getCommonInstance().csCustomGoodsWidget().getDecoration());
+    }
+
+    public void setCustomGoodsWidget(ICustomGoodsWidget customGoodsWidget) {
+        this.customGoodsWidget = customGoodsWidget;
+        if (customGoodsWidget.getDecoration() != null) {
+            addItemDecoration(customGoodsWidget.getDecoration());
         } else {
             addItemDecoration(new ItemDecoration() {
                 @Override
