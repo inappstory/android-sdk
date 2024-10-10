@@ -26,6 +26,7 @@ import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryScreen;
 import com.inappstory.sdk.stories.ui.views.goodswidget.GetGoodsDataCallback;
 import com.inappstory.sdk.stories.ui.views.goodswidget.GoodsItemData;
 import com.inappstory.sdk.stories.ui.views.goodswidget.GoodsWidget;
+import com.inappstory.sdk.stories.ui.views.goodswidget.ICustomGoodsWidget;
 import com.inappstory.sdk.stories.utils.IASBackPressHandler;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 
@@ -45,6 +46,8 @@ public class GoodsWidgetFragment extends Fragment implements IASBackPressHandler
         }
         return screen;
     }
+
+    ICustomGoodsWidget customGoodsWidget = AppearanceManager.getCommonInstance().csCustomGoodsWidget();
 
     @Nullable
     @Override
@@ -67,8 +70,7 @@ public class GoodsWidgetFragment extends Fragment implements IASBackPressHandler
     }
 
     private GoodsRecyclerView createRecyclerView(Context context) {
-
-        final GoodsRecyclerView widgetView = new GoodsRecyclerView(context);
+        final GoodsRecyclerView widgetView = new GoodsRecyclerView(context, customGoodsWidget);
         widgetView.setConfig(new GoodsWidget.GoodsWidgetConfig(
                 getArguments().getString("widgetId"),
                 (SlideData) getArguments().getSerializable("slideData")
@@ -87,13 +89,71 @@ public class GoodsWidgetFragment extends Fragment implements IASBackPressHandler
                         getArguments().getString("skusString"),
                         String.class
                 );
-                AppearanceManager.getCommonInstance().csCustomGoodsWidget().getSkus(
-                        widgetView,
-                        skus,
-                        getGoodsDataCallback
-                );
+                customGoodsWidget.getSkus(widgetView, skus, getGoodsDataCallback);
             }
         });
+        getGoodsDataCallback = new GetGoodsDataCallback() {
+            @Override
+            public void onSuccess(ArrayList<GoodsItemData> data) {
+                InAppStoryManager.useCore(new UseIASCoreCallback() {
+                    @Override
+                    public void use(@NonNull IASCore core) {
+                        core.statistic().profiling().setReady(
+                                getArguments().getString("localTaskId")
+                        );
+                    }
+                });
+                ((GoodsRecyclerView)widgetView).onSuccess(data);
+
+            }
+
+            @Override
+            public void onError() {
+                InAppStoryManager.useCore(new UseIASCoreCallback() {
+                    @Override
+                    public void use(@NonNull IASCore core) {
+                        core.statistic().profiling().setReady(
+                                getArguments().getString("localTaskId")
+                        );
+                    }
+                });
+                ((GoodsRecyclerView)widgetView).onError();
+            }
+
+            @Override
+            public void onClose() {
+                hideGoods();
+            }
+
+            @Override
+            public void itemClick(final String sku) {
+                final SlideData slideData =
+                        (SlideData) getArguments().getSerializable("slideData");
+                final String widgetId = getArguments().getString("widgetId");
+                if (slideData == null) return;
+                InAppStoryManager.useCore(new UseIASCoreCallback() {
+                    @Override
+                    public void use(@NonNull IASCore core) {
+                        core.callbacksAPI().useCallback(IASCallbackType.STORY_WIDGET,
+                                new UseIASCallback<StoryWidgetCallback>() {
+                                    @Override
+                                    public void use(@NonNull StoryWidgetCallback callback) {
+                                        Map<String, String> widgetData = new HashMap<>();
+                                        widgetData.put("story_id", "" + slideData.story.id);
+                                        widgetData.put("feed_id", slideData.story.feed);
+                                        widgetData.put("slide_index", "" + slideData.index);
+                                        widgetData.put("widget_id", widgetId);
+                                        widgetData.put("widget_value", sku);
+                                        callback.widgetEvent(slideData, "w-goods-click", widgetData);
+                                    }
+                                }
+                        );
+                        core.statistic().v2().sendGoodsClick(slideData.story.id,
+                                slideData.index, widgetId, sku, slideData.story.feed);
+                    }
+                });
+            }
+        };
         return widgetView;
     }
 
@@ -116,9 +176,8 @@ public class GoodsWidgetFragment extends Fragment implements IASBackPressHandler
         );
         FrameLayout layout = view.findViewById(R.id.cs_widget_container);
         Context context = getContext();
-        View widgetView =
-                AppearanceManager.getCommonInstance().csCustomGoodsWidget().getWidgetView(context);
-        if (widgetView != null) {
+        View appearanceView = customGoodsWidget.getWidgetView(context);
+        if (appearanceView != null) {
             getGoodsDataCallback = new GoodsDataCallbackImpl(
                     (SlideData) getArguments().getSerializable("slideData"),
                     getArguments().getString("widgetId")
@@ -129,73 +188,14 @@ public class GoodsWidgetFragment extends Fragment implements IASBackPressHandler
                 }
             };
         } else {
-            widgetView = createRecyclerView(context);
-            final View finalWidgetView = widgetView;
-            getGoodsDataCallback = new GetGoodsDataCallback() {
-                @Override
-                public void onSuccess(ArrayList<GoodsItemData> data) {
-                    InAppStoryManager.useCore(new UseIASCoreCallback() {
-                        @Override
-                        public void use(@NonNull IASCore core) {
-                            core.statistic().profiling().setReady(
-                                    getArguments().getString("localTaskId")
-                            );
-                        }
-                    });
-                    ((GoodsRecyclerView)finalWidgetView).onSuccess(data);
-
-                }
-
-                @Override
-                public void onError() {
-                    InAppStoryManager.useCore(new UseIASCoreCallback() {
-                        @Override
-                        public void use(@NonNull IASCore core) {
-                            core.statistic().profiling().setReady(
-                                    getArguments().getString("localTaskId")
-                            );
-                        }
-                    });
-                    ((GoodsRecyclerView)finalWidgetView).onError();
-                }
-
-                @Override
-                public void onClose() {
-                    hideGoods();
-                }
-
-                @Override
-                public void itemClick(final String sku) {
-                    final SlideData slideData =
-                            (SlideData) getArguments().getSerializable("slideData");
-                    final String widgetId = getArguments().getString("widgetId");
-                    if (slideData == null) return;
-                    InAppStoryManager.useCore(new UseIASCoreCallback() {
-                        @Override
-                        public void use(@NonNull IASCore core) {
-                            core.callbacksAPI().useCallback(IASCallbackType.STORY_WIDGET,
-                                    new UseIASCallback<StoryWidgetCallback>() {
-                                        @Override
-                                        public void use(@NonNull StoryWidgetCallback callback) {
-                                            Map<String, String> widgetData = new HashMap<>();
-                                            widgetData.put("story_id", "" + slideData.story.id);
-                                            widgetData.put("feed_id", slideData.story.feed);
-                                            widgetData.put("slide_index", "" + slideData.index);
-                                            widgetData.put("widget_id", widgetId);
-                                            widgetData.put("widget_value", sku);
-                                            callback.widgetEvent(slideData, "w-goods-click", widgetData);
-                                        }
-                                    }
-                            );
-                            core.statistic().v2().sendGoodsClick(slideData.story.id,
-                                    slideData.index, widgetId, sku, slideData.story.feed);
-                        }
-                    });
-                }
-            };
+            appearanceView = createRecyclerView(context);
         }
-        layout.addView(widgetView);
-        AppearanceManager.getCommonInstance().csCustomGoodsWidget().getSkus(widgetView, skus, getGoodsDataCallback);
+        layout.addView(appearanceView);
+        AppearanceManager.getCommonInstance().csCustomGoodsWidget().getSkus(
+                appearanceView,
+                skus,
+                getGoodsDataCallback
+        );
     }
 
     @Override
