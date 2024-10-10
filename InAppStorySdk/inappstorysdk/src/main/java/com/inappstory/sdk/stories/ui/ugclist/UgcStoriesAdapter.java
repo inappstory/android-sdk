@@ -221,8 +221,8 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
                                         ))
                         );
                         return;
-                    } else if (current.deeplink != null) {
-                        core.statistic().v2().sendDeeplinkStory(current.id, current.deeplink, null);
+                    } else if (current.getDeeplink() != null) {
+                        core.statistic().v2().sendDeeplinkStory(current.id, current.getDeeplink(), null);
                         core.callbacksAPI().useCallback(
                                 IASCallbackType.CALL_TO_ACTION,
                                 new UseIASCallback<CallToActionCallback>() {
@@ -238,7 +238,7 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
                                                         0,
                                                         null
                                                 ),
-                                                current.deeplink,
+                                                current.getDeeplink(),
                                                 ClickAction.DEEPLINK
                                         );
                                     }
@@ -252,7 +252,7 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
                                                     public void success() {
                                                         try {
                                                             Intent i = new Intent(Intent.ACTION_VIEW);
-                                                            i.setData(Uri.parse(current.deeplink));
+                                                            i.setData(Uri.parse(current.getDeeplink()));
                                                             i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                                                             context.startActivity(i);
                                                         } catch (Exception ignored) {

@@ -21,12 +21,14 @@ public class IASStatisticImpl implements IASStatistic {
     private final IASStatisticV2 iasStatisticV2;
     private final Map<String, IASStatisticV1> iasStatisticV1Map = new HashMap<>();
     private final IASStatisticProfiling iasStatisticProfiling;
+    private final IASStatisticExceptions iasStatisticExceptions;
 
 
     public IASStatisticImpl(IASCore core) {
         this.core = core;
         iasStatisticV2 = new IASStatisticV2Impl(core);
         iasStatisticProfiling = new IASStatisticProfilingImpl(core);
+        iasStatisticExceptions = new IASStatisticExceptionsImpl(core);
     }
 
 
@@ -127,11 +129,11 @@ public class IASStatisticImpl implements IASStatistic {
 
     @Override
     public IASStatisticProfiling profiling() {
-        return null;
+        return iasStatisticProfiling;
     }
 
     @Override
     public IASStatisticExceptions exceptions() {
-        return null;
+        return iasStatisticExceptions;
     }
 }

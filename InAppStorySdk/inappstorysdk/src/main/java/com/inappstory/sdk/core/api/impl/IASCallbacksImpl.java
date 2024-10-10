@@ -40,55 +40,70 @@ public class IASCallbacksImpl implements IASCallbacks {
     ) {
         switch (type) {
             case ERROR:
-                if (errorCallback != null)
+                if (errorCallback != null) {
                     useIASCallback.use(errorCallback);
-                return;
+                    return;
+                }
             case FAVORITE:
-                if (favoriteStoryCallback != null)
+                if (favoriteStoryCallback != null) {
                     useIASCallback.use(favoriteStoryCallback);
-                return;
+                    return;
+                }
             case SHOW_SLIDE:
-                if (showSlideCallback != null)
+                if (showSlideCallback != null) {
                     useIASCallback.use(showSlideCallback);
-                return;
+                    return;
+                }
             case STORY_WIDGET:
-                if (storyWidgetCallback != null)
+                if (storyWidgetCallback != null) {
                     useIASCallback.use(storyWidgetCallback);
-                return;
+                    return;
+                }
             case SHOW_STORY:
-                if (showStoryCallback != null)
+                if (showStoryCallback != null) {
                     useIASCallback.use(showStoryCallback);
-                return;
+                    return;
+                }
             case CLOSE_STORY:
-                if (closeStoryCallback != null)
+                if (closeStoryCallback != null) {
                     useIASCallback.use(closeStoryCallback);
-                return;
+                    return;
+                }
             case LIKE_DISLIKE:
-                if (likeDislikeStoryCallback != null)
+                if (likeDislikeStoryCallback != null) {
                     useIASCallback.use(likeDislikeStoryCallback);
-                return;
+                    return;
+                }
             case ONBOARDING:
-                if (onboardingLoadCallback != null)
+                if (onboardingLoadCallback != null) {
                     useIASCallback.use(onboardingLoadCallback);
-                return;
+                    return;
+                }
             case SINGLE:
-                if (singleLoadCallback != null)
+                if (singleLoadCallback != null) {
                     useIASCallback.use(singleLoadCallback);
-                return;
+                    return;
+                }
             case SHARE_ADDITIONAL:
-                if (shareCallback != null)
+                if (shareCallback != null) {
                     useIASCallback.use(shareCallback);
-                return;
+                    return;
+                }
             case GAME_READER:
-                if (gameReaderCallback != null)
+                if (gameReaderCallback != null) {
                     useIASCallback.use(gameReaderCallback);
+                    return;
+                }
             case CLICK_SHARE:
-                if (clickOnShareStoryCallback != null)
+                if (clickOnShareStoryCallback != null) {
                     useIASCallback.use(clickOnShareStoryCallback);
+                    return;
+                }
             case CALL_TO_ACTION:
-                if (callToActionCallback != null)
+                if (callToActionCallback != null) {
                     useIASCallback.use(callToActionCallback);
-                return;
+                    return;
+                }
             default:
                 break;
         }

@@ -70,7 +70,9 @@ public class IASCoreImpl implements IASCore {
 
     public IASCoreImpl(Context context) {
         this.context = context;
-        this.sharedPreferencesAPI = new SharedPreferencesAPI(this);
+        contentLoader = new IASContentLoaderImpl(this);
+        externalUtilsAPI = new IASExternalUtilsAPIImpl();
+        sharedPreferencesAPI = new SharedPreferencesAPI(this);
         keyValueStorage = new KeyValueStorage(this);
         networkClient = new NetworkClient(this);
         callbacks = new IASCallbacksImpl(this);
@@ -88,8 +90,6 @@ public class IASCoreImpl implements IASCore {
         statistic = new IASStatisticImpl(this);
         vibrateUtils = new VibrateUtils();
         contentPreload = new IASContentPreloadImpl(this);
-        externalUtilsAPI = new IASExternalUtilsAPIImpl();
-        contentLoader = new IASContentLoaderImpl(this);
         iasLogs = new IASLogsImpl(this);
         inAppStoryService = new InAppStoryService(this);
         externalUtilsAPI.init();

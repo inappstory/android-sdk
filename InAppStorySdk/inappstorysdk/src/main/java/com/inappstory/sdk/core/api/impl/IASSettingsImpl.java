@@ -30,7 +30,7 @@ import java.util.Set;
 public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
     private final IASCore core;
     private boolean isSoundOn = true;
-    private Locale lang;
+    private Locale lang = Locale.getDefault();
     private final Map<String, String> userPlaceholders = new HashMap<>();
     private final Map<String, ImagePlaceholderValue> userImagePlaceholders = new HashMap<>();
     private final List<String> tags = new ArrayList<>();
@@ -86,6 +86,7 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
     public void setLang(final Locale newLang) {
         final Locale currentLang;
         final String currentUserId;
+        if (newLang == null) return;
         synchronized (settingsLock) {
             if (lang.toLanguageTag().equals(newLang.toLanguageTag())) return;
             currentLang = lang;

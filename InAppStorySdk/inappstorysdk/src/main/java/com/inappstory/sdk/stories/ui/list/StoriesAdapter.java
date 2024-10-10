@@ -269,7 +269,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
                 InAppStoryService.getInstance().getListReaderConnector().changeStory(current.id, listID, false);
                 // notifyItemChanged(ind);
                 return;
-            } else if (current.deeplink != null) {
+            } else if (current.getDeeplink() != null) {
                 core.statistic().v1(
                         sessionId,
                         new GetStatisticV1Callback() {
@@ -279,7 +279,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
                             }
                         }
                 );
-                core.statistic().v2().sendDeeplinkStory(current.id, current.deeplink, feedID);
+                core.statistic().v2().sendDeeplinkStory(current.id, current.getDeeplink(), feedID);
                 core.callbacksAPI().useCallback(
                         IASCallbackType.CALL_TO_ACTION,
                         new UseIASCallback<CallToActionCallback>() {
@@ -296,7 +296,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
                                                 0,
                                                 null
                                         ),
-                                        current.deeplink,
+                                        current.getDeeplink(),
                                         ClickAction.DEEPLINK
                                 );
                             }
@@ -310,7 +310,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
                                             public void success() {
                                                 try {
                                                     Intent i = new Intent(Intent.ACTION_VIEW);
-                                                    i.setData(Uri.parse(current.deeplink));
+                                                    i.setData(Uri.parse(current.getDeeplink()));
                                                     i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                                                     context.startActivity(i);
                                                 } catch (Exception ignored) {
