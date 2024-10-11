@@ -441,7 +441,7 @@ public class ReaderPageManager {
         InAppStoryService service = InAppStoryService.getInstance();
         if (service == null) return;
         if (host == null) return;
-        host.showLoader();
+        //host.showLoader();
         StoriesContentFragment storiesContentFragment = parentManager.getHost();
         if (storiesContentFragment != null)
             storiesContentFragment.disableClicksSlideChange();
