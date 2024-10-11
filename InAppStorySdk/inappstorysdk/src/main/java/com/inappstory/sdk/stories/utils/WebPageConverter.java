@@ -16,6 +16,7 @@ import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.game.cache.UseCaseCallback;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
+import com.inappstory.sdk.stories.api.interfaces.IResourceObject;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderType;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
 import com.inappstory.sdk.stories.api.models.ResourceMappingObject;
@@ -46,9 +47,9 @@ public class WebPageConverter {
             Story story,
             final int index
     ) {
-        List<ResourceMappingObject> resources = new ArrayList<>();
+        List<IResourceObject> resources = new ArrayList<>();
         resources.addAll(story.staticResources(index));
-        for (ResourceMappingObject object : resources) {
+        for (IResourceObject object : resources) {
             String resource = object.getUrl();
             String resourceKey = object.getKey();
             String key = StringsUtils.md5(resource);
@@ -93,7 +94,7 @@ public class WebPageConverter {
         final String[] newData = {innerWebData};
         Map<String, Pair<ImagePlaceholderValue, ImagePlaceholderValue>> imgPlaceholders =
                 ((IASDataSettingsHolder) core.settingsAPI()).imagePlaceholdersWithSessionDefaults();
-        Map<String, String> imgPlaceholderKeys = story.getPlaceholdersList(index, "image-placeholder");
+        Map<String, String> imgPlaceholderKeys = story.getPlaceholdersList(index);
         for (Map.Entry<String, String> entry : imgPlaceholderKeys.entrySet()) {
             String placeholderKey = entry.getKey();
             String placeholderName = entry.getValue();

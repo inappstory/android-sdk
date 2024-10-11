@@ -96,8 +96,6 @@ public class GameManager {
         IASDataSettingsHolder settingsHolder =
                 (IASDataSettingsHolder) inAppStoryManager.iasCore().settingsAPI();
 
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service == null) return;
         String id = gameInstanceId;
         if (id == null) id = gameCenterId;
         if (id == null) return;
@@ -139,8 +137,6 @@ public class GameManager {
         if (inAppStoryManager == null) return;
         IASDataSettingsHolder settingsHolder =
                 (IASDataSettingsHolder) inAppStoryManager.iasCore().settingsAPI();
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service == null) return;
         if (dataModel == null) return;
 
 

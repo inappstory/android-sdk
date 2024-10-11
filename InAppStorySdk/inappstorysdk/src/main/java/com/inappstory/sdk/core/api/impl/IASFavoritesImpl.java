@@ -61,7 +61,7 @@ public class IASFavoritesImpl implements IASFavorites {
                                 .getStoryById(storyId, Story.StoryType.COMMON);
                         if (story != null)
                             story.favorite = favorite;
-                        InAppStoryService.getInstance().getListReaderConnector().storyFavorite(storyId, favorite);
+                        core.inAppStoryService().getListReaderConnector().storyFavorite(storyId, favorite);
                         core
                                 .screensManager()
                                 .getStoryScreenHolder()
@@ -114,7 +114,7 @@ public class IASFavoritesImpl implements IASFavorites {
                                         Story.StoryType.UGC
                                 );
                         core.contentLoader().storyDownloadManager().favoriteImages().clear();
-                        InAppStoryService.getInstance().getListReaderConnector().clearAllFavorites();
+                        core.inAppStoryService().getListReaderConnector().clearAllFavorites();
                         core.screensManager().getStoryScreenHolder()
                                 .useCurrentReader(
                                         new GetScreenCallback<BaseStoryScreen>() {

@@ -111,9 +111,7 @@ public class InAppStoryAPISubscribersManager {
             List<StoryAPIData> storyAPIDataList,
             final AppearanceManager appearanceManager
     ) {
-        InAppStoryService service = InAppStoryService.getInstance();
-        InAppStoryManager manager = InAppStoryManager.getInstance();
-        if (manager == null) return;
+        InAppStoryService service = core.inAppStoryService();
         final Story currentStory = core.contentLoader().storyDownloadManager().getStoryById(storyId, Story.StoryType.COMMON);
         if (currentStory == null)
             return;
@@ -260,48 +258,43 @@ public class InAppStoryAPISubscribersManager {
     }
 
     public void getStoryList(final IASStoryListRequestData data) {
-        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
-            @Override
-            public void use(@NonNull final InAppStoryService service) throws Exception {
-                final StoryDownloadManager downloadManager = core.contentLoader().storyDownloadManager();
-                downloadManager.loadStories(
-                        data.feed,
-                        new LoadStoriesCallback() {
-                            @Override
-                            public void storiesLoaded(List<Integer> storiesIds) {
-                                List<Story> stories = new ArrayList<>();
-                                for (Integer storyId : storiesIds) {
-                                    Story story = downloadManager.getStoryById(storyId, Story.StoryType.COMMON);
-                                    if (story == null) return;
-                                    stories.add(story);
-                                }
-                                updateStoryList(data.uniqueId, data.feed, stories);
-                                for (Story story : stories) {
-                                    updateStory(story, null, null);
-                                }
-                            }
+        final StoryDownloadManager downloadManager = core.contentLoader().storyDownloadManager();
+        downloadManager.loadStories(
+                data.feed,
+                new LoadStoriesCallback() {
+                    @Override
+                    public void storiesLoaded(List<Integer> storiesIds) {
+                        List<Story> stories = new ArrayList<>();
+                        for (Integer storyId : storiesIds) {
+                            Story story = downloadManager.getStoryById(storyId, Story.StoryType.COMMON);
+                            if (story == null) return;
+                            stories.add(story);
+                        }
+                        updateStoryList(data.uniqueId, data.feed, stories);
+                        for (Story story : stories) {
+                            updateStory(story, null, null);
+                        }
+                    }
 
-                            @Override
-                            public void setFeedId(String feedId) {
+                    @Override
+                    public void setFeedId(String feedId) {
 
-                            }
+                    }
 
-                            @Override
-                            public void onError() {
+                    @Override
+                    public void onError() {
 
-                            }
-                        },
-                        data.hasFavorite ? new LoadFavoritesCallback() {
-                            @Override
-                            public void success(List<FavoriteImage> favoriteImages) {
-                                updateFavorites(favoriteImages);
-                            }
-                        } : null,
-                        data.isFavorite,
-                        data.hasFavorite
-                );
-            }
-        });
+                    }
+                },
+                data.hasFavorite ? new LoadFavoritesCallback() {
+                    @Override
+                    public void success(List<FavoriteImage> favoriteImages) {
+                        updateFavorites(favoriteImages);
+                    }
+                } : null,
+                data.isFavorite,
+                data.hasFavorite
+        );
     }
 
     public void showFavoriteItem(

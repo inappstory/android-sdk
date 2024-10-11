@@ -2,12 +2,13 @@ package com.inappstory.sdk.stories.api.models;
 
 
 import com.inappstory.sdk.network.annotations.models.SerializedName;
+import com.inappstory.sdk.stories.api.interfaces.IResourceObject;
 
 /**
  * Created by paperrose on 19.02.2018.
  */
 
-public class ResourceMappingObject {
+public class ResourceMappingObject implements IResourceObject {
     @SerializedName("url")
     public String url;
     @SerializedName("key")
@@ -49,8 +50,9 @@ public class ResourceMappingObject {
     public String getPurpose() {
         return purpose != null ? purpose : "";
     }
-    public String getRangeStart() {
-        return key;
+
+    public long getRangeStart() {
+        return rangeStart != null ? rangeStart : -1;
     }
 
     public long getRangeEnd() {
@@ -68,4 +70,8 @@ public class ResourceMappingObject {
         }
         return res;
     }
+
+
+    public static final String VOD = "vod";
+
 }

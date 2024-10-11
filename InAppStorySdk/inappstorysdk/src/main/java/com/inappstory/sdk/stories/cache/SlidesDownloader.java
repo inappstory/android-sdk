@@ -1,6 +1,6 @@
 package com.inappstory.sdk.stories.cache;
 
-import static com.inappstory.sdk.stories.api.models.Story.VOD;
+import static com.inappstory.sdk.stories.api.models.ResourceMappingObject.VOD;
 
 import android.util.Pair;
 
@@ -11,9 +11,9 @@ import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
+import com.inappstory.sdk.stories.api.interfaces.IResourceObject;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderType;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
-import com.inappstory.sdk.stories.api.models.ResourceMappingObject;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.outercallbacks.common.errors.ErrorCallback;
 import com.inappstory.sdk.stories.utils.LoopedExecutor;
@@ -87,7 +87,7 @@ class SlidesDownloader {
         SlideTask slideTask = pageTasks.get(key);
         if (slideTask != null) {
             if (slideTask.loadType == 2) {
-                for (ResourceMappingObject object : slideTask.staticResources) {
+                for (IResourceObject object : slideTask.staticResources) {
                     String uniqueKey = StringsUtils.md5(object.getUrl());
                     if (!cache.hasKey(uniqueKey)) {
                         remove = true;
@@ -100,7 +100,7 @@ class SlidesDownloader {
                         }
                     }
                 }
-                for (ResourceMappingObject object : slideTask.vodResources) {
+                for (IResourceObject object : slideTask.vodResources) {
                     String uniqueKey = object.getFileName();
                     if (!vodCache.hasKey(uniqueKey)) {
                         remove = true;
@@ -207,7 +207,7 @@ class SlidesDownloader {
             int key = story.id;
             int slidesCountToCache;
             if (loadType == 3) {
-                slidesCountToCache = story.pages.size();
+                slidesCountToCache = story.getPages().size();
             } else {
                 slidesCountToCache = 2;
             }
@@ -285,7 +285,7 @@ class SlidesDownloader {
 
     Object loadSlide(SlideTaskData slideTaskData) {
         try {
-            ArrayList<ResourceMappingObject> allResources = new ArrayList<>();
+            ArrayList<IResourceObject> allResources = new ArrayList<>();
             SlideTask slideTask = pageTasks.get(slideTaskData);
             if (slideTask == null) {
                 loopedExecutor.freeExecutor();
@@ -296,10 +296,10 @@ class SlidesDownloader {
                 allResources.addAll(slideTask.vodResources);
             }
             DownloadPageFileStatus status = DownloadPageFileStatus.SUCCESS;
-            for (ResourceMappingObject object : allResources) {
+            for (IResourceObject object : allResources) {
                 if (Objects.equals(object.getPurpose(), VOD)) {
-                    long rangeStart = object.rangeStart;
-                    long rangeEnd = object.rangeEnd;
+                    long rangeStart = object.getRangeStart();
+                    long rangeEnd = object.getRangeEnd();
                     if (callback != null) {
                         status = callback.downloadVODFile(
                                 object.getUrl(),

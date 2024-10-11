@@ -5,14 +5,12 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.WorkerThread;
 
-import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.game.cache.SessionAssetsIsReadyCallback;
 import com.inappstory.sdk.network.ApiSettings;
-import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.StoryListType;
@@ -308,12 +306,12 @@ public class StoryDownloadManager {
                 Story tmp = story;
                 int ind = stories.indexOf(story);
                 if (ind >= 0) {
-                    if (tmp.pages == null & stories.get(ind).pages != null) {
-                        tmp.pages = new ArrayList<>();
-                        tmp.pages.addAll(stories.get(ind).pages);
+                    Story byInd = stories.get(ind);
+                    if (tmp.getPages() == null & byInd.getPages() != null) {
+                        tmp.pages(byInd.pages);
                     }
-                    if (tmp.layout == null & stories.get(ind).layout != null) {
-                        tmp.layout = stories.get(ind).layout;
+                    if (tmp.layout() == null & byInd.layout() != null) {
+                        tmp.layout(byInd.layout());
                     }
                     if (tmp.srcList == null & stories.get(ind).srcList != null) {
                         tmp.srcList = new ArrayList<>();
@@ -401,8 +399,6 @@ public class StoryDownloadManager {
                     public DownloadPageFileStatus downloadFile(UrlWithAlter urlWithAlter, SlideTaskData slideTaskData) {
                         try {
                             Log.e("StoryResources", slideTaskData.storyId + " " + slideTaskData.index + " " + urlWithAlter);
-                            InAppStoryService service = InAppStoryService.getInstance();
-                            if (service == null) return DownloadPageFileStatus.ERROR;
                             GetCacheFileUseCase<DownloadFileState> useCase =
                                     new StoryResourceFileUseCase(
                                             core,
@@ -546,11 +542,11 @@ public class StoryDownloadManager {
         cur.hasSwipeUp = story.hasSwipeUp();
         cur.title = story.title;
         cur.statTitle = story.statTitle;
-        cur.srcList = new ArrayList<>(story.getSrcList());
-        cur.imagePlaceholdersList = new ArrayList<>(story.getImagePlaceholdersList());
-        cur.slidesShare = story.slidesShare;
-        cur.slidesPayload = story.slidesPayload;
-        cur.setSlidesCount(story.getSlidesCount());
+        cur.srcList(story.getSrcList());
+        cur.imagePlaceholdersList(story.getImagePlaceholdersList());
+        cur.slidesShare = new ArrayList<>(story.slidesShare);
+        cur.slidesPayload = new ArrayList<>(story.slidesPayload);
+        cur.slidesCount = story.getSlidesCount();
     }
 
     private StoryDownloader storyDownloader;

@@ -1,17 +1,15 @@
 package com.inappstory.sdk.stories.api.models;
 
+import static com.inappstory.sdk.stories.api.models.ResourceMappingObject.VOD;
+
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import androidx.annotation.NonNull;
-
 import com.inappstory.sdk.InAppStoryManager;
-import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
-import com.inappstory.sdk.network.annotations.models.Ignore;
 import com.inappstory.sdk.network.annotations.models.Required;
 import com.inappstory.sdk.network.annotations.models.SerializedName;
+import com.inappstory.sdk.stories.api.interfaces.IResourceObject;
 import com.inappstory.sdk.stories.api.models.slidestructure.SlideStructure;
 
 import java.util.ArrayList;
@@ -139,7 +137,7 @@ public class Story implements Parcelable {
         InAppStoryManager manager = InAppStoryManager.getInstance();
         if (manager == null) return tmp;
         Map<String, String> localPlaceholders =
-                ((IASDataSettingsHolder)manager.iasCore().settingsAPI()).placeholders();
+                ((IASDataSettingsHolder) manager.iasCore().settingsAPI()).placeholders();
         for (String key : localPlaceholders.keySet()) {
             String modifiedKey = "%" + key + "%";
             String value = localPlaceholders.get(key);
@@ -167,11 +165,25 @@ public class Story implements Parcelable {
     @SerializedName("has_swipe_up")
     public Boolean hasSwipeUp;
 
+    public void srcList(List<IResourceObject> srcList) {
+        this.srcList = new ArrayList<>();
+        for (IResourceObject resourceObject: srcList) {
+            this.srcList.add((ResourceMappingObject) resourceObject);
+        }
+    }
+
     @SerializedName("src_list")
     public List<ResourceMappingObject> srcList;
 
+    public void imagePlaceholdersList(List<IResourceObject> imagePlaceholdersList) {
+        this.imagePlaceholdersList = new ArrayList<>();
+        for (IResourceObject resourceObject: imagePlaceholdersList) {
+            this.imagePlaceholdersList.add((ResourceMappingObject) resourceObject);
+        }
+    }
+
     @SerializedName("img_placeholder_src_list")
-    public List<ImagePlaceholderMappingObject> imagePlaceholdersList;
+    public List<ResourceMappingObject> imagePlaceholdersList;
 
 
     @SerializedName("like")
@@ -250,19 +262,23 @@ public class Story implements Parcelable {
     }
 
 
-    public List<ResourceMappingObject> getSrcList() {
+    public List<IResourceObject> getSrcList() {
         if (srcList == null) srcList = new ArrayList<>();
-        return srcList;
+        List<IResourceObject> res = new ArrayList<>();
+        res.addAll(srcList);
+        return res;
     }
 
-    public List<ImagePlaceholderMappingObject> getImagePlaceholdersList() {
+    public List<IResourceObject> getImagePlaceholdersList() {
         if (imagePlaceholdersList == null) imagePlaceholdersList = new ArrayList<>();
-        return imagePlaceholdersList;
+        List<IResourceObject> res = new ArrayList<>();
+        res.addAll(imagePlaceholdersList);
+        return res;
     }
 
     public List<String> getPlaceholdersListNames(int index) {
-        ArrayList<String> res = new ArrayList<>();
-        for (ImagePlaceholderMappingObject object : getImagePlaceholdersList()) {
+        List<String> res = new ArrayList<>();
+        for (IResourceObject object : getImagePlaceholdersList()) {
             if (object.getIndex() == index && (object.getType().equals("image-placeholder"))) {
                 String name = object.getUrl();
                 if (name != null) res.add(name);
@@ -273,9 +289,9 @@ public class Story implements Parcelable {
     }
 
 
-    public Map<String, String> getPlaceholdersList(int index, String type) {
+    public Map<String, String> getPlaceholdersList(int index) {
         Map<String, String> res = new HashMap<>();
-        for (ImagePlaceholderMappingObject object : getImagePlaceholdersList()) {
+        for (IResourceObject object : getImagePlaceholdersList()) {
             if (object.getIndex() == index && (object.getType().equals("image-placeholder"))) {
                 res.put(object.getKey(), object.getUrl());
             }
@@ -283,22 +299,20 @@ public class Story implements Parcelable {
         return res;
     }
 
-    public static final String VOD = "vod";
-
-    public List<ResourceMappingObject> vodResources(int index) {
-        ArrayList<ResourceMappingObject> res = new ArrayList<>();
-        for (ResourceMappingObject object : getSrcList()) {
-            if (Objects.equals(VOD, object.purpose) && object.getIndex() == index) {
+    public List<IResourceObject> vodResources(int index) {
+        List<IResourceObject> res = new ArrayList<>();
+        for (IResourceObject object : getSrcList()) {
+            if (Objects.equals(VOD, object.getPurpose()) && object.getIndex() == index) {
                 res.add(object);
             }
         }
         return res;
     }
 
-    public List<ResourceMappingObject> staticResources(int index) {
-        ArrayList<ResourceMappingObject> res = new ArrayList<>();
-        for (ResourceMappingObject object : getSrcList()) {
-            if (!Objects.equals(VOD, object.purpose) && object.getIndex() == index) {
+    public List<IResourceObject> staticResources(int index) {
+        List<IResourceObject> res = new ArrayList<>();
+        for (IResourceObject object : getSrcList()) {
+            if (!Objects.equals(VOD, object.getPurpose()) && object.getIndex() == index) {
                 res.add(object);
             }
         }
@@ -338,7 +352,74 @@ public class Story implements Parcelable {
         return hasAudio != null ? hasAudio : false;
     }
 
-
+    public Story(int id,
+                 String titleColor,
+                 String statTitle,
+                 List<Image> videoUrl,
+                 List<PayloadObject> slidesPayload,
+                 StoryFeedInfo feedInfo,
+                 HashMap<String, Object> ugcPayload,
+                 int lastIndex,
+                 String title,
+                 String tags,
+                 String source,
+                 String backgroundColor,
+                 List<Image> image,
+                 Boolean hasSwipeUp,
+                 List<ResourceMappingObject> srcList,
+                 List<ResourceMappingObject> imagePlaceholdersList,
+                 Integer like,
+                 List<Integer> slidesShare,
+                 int slidesCount,
+                 boolean favorite,
+                 Boolean hideInReader,
+                 String deeplink,
+                 GameInstance gameInstance,
+                 boolean isOpened,
+                 boolean disableClose,
+                 Boolean hasLike,
+                 Boolean hasAudio,
+                 Boolean hasFavorite,
+                 Boolean hasShare,
+                 List<String> pages,
+                 List<SlideStructure> slidesStructure,
+                 List<Boolean> loadedPages,
+                 String layout
+    ) {
+        this.id = id;
+        this.titleColor = titleColor;
+        this.statTitle = statTitle;
+        this.videoUrl = videoUrl;
+        this.slidesPayload = slidesPayload;
+        this.feedInfo = feedInfo;
+        this.ugcPayload = ugcPayload;
+        this.lastIndex = lastIndex;
+        this.title = title;
+        this.tags = tags;
+        this.source = source;
+        this.backgroundColor = backgroundColor;
+        this.image = image;
+        this.hasSwipeUp = hasSwipeUp;
+        this.srcList = srcList;
+        this.imagePlaceholdersList = imagePlaceholdersList;
+        this.like = like;
+        this.slidesShare = slidesShare;
+        this.slidesCount = slidesCount;
+        this.favorite = favorite;
+        this.hideInReader = hideInReader;
+        this.deeplink = deeplink;
+        this.gameInstance = gameInstance;
+        this.isOpened = isOpened;
+        this.disableClose = disableClose;
+        this.hasLike = hasLike;
+        this.hasAudio = hasAudio;
+        this.hasFavorite = hasFavorite;
+        this.hasShare = hasShare;
+        this.pages = pages;
+        this.slidesStructure = slidesStructure;
+        this.loadedPages = loadedPages;
+        this.layout = layout;
+    }
 
     @SerializedName("like_functional")
     public Boolean hasLike;
@@ -362,6 +443,19 @@ public class Story implements Parcelable {
 
     @SerializedName("layout")
     public String layout;
+
+    public String layout() {
+        return layout;
+    }
+
+    public void layout(String layout) {
+        this.layout = layout;
+    }
+
+    public void pages(List<String> pages) {
+        this.pages = new ArrayList<>(pages);
+    }
+
 
     public Story() {
     }
