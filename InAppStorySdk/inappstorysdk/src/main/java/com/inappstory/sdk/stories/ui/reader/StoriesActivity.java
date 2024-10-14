@@ -610,6 +610,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
     }
 
 
+
     @Override
     public void forceFinish() {
         InAppStoryService service = InAppStoryService.getInstance();
