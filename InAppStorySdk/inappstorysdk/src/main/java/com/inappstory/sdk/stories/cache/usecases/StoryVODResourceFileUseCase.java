@@ -9,7 +9,7 @@ import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.lrudiskcache.CacheJournalItem;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.stories.cache.DownloadFileState;
-import com.inappstory.sdk.stories.cache.Downloader;
+import com.inappstory.sdk.stories.cache.FilesDownloader;
 import com.inappstory.sdk.stories.cache.vod.ContentRange;
 import com.inappstory.sdk.stories.cache.vod.VODCacheItemPart;
 import com.inappstory.sdk.stories.cache.vod.VODCacheJournal;
@@ -47,7 +47,7 @@ public class StoryVODResourceFileUseCase extends GetCacheFileUseCase<StoryVODRes
                 "resources" +
                 File.separator +
                 StringsUtils.md5(url) +
-                Downloader.getFileExtensionFromUrl(url);
+                FilesDownloader.getFileExtensionFromUrl(url);
     }
 
     @WorkerThread

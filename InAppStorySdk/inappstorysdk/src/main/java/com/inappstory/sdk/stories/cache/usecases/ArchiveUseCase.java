@@ -12,10 +12,8 @@ import com.inappstory.sdk.lrudiskcache.FileManager;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.stories.cache.DownloadFileState;
 import com.inappstory.sdk.stories.cache.DownloadInterruption;
-import com.inappstory.sdk.stories.cache.Downloader;
+import com.inappstory.sdk.stories.cache.FilesDownloader;
 import com.inappstory.sdk.stories.cache.FileLoadProgressCallback;
-import com.inappstory.sdk.stories.cache.FilesDownloadManager;
-import com.inappstory.sdk.stories.statistic.IASStatisticProfilingImpl;
 import com.inappstory.sdk.utils.ProgressCallback;
 import com.inappstory.sdk.utils.StringsUtils;
 
@@ -63,7 +61,7 @@ public class ArchiveUseCase extends GetCacheFileUseCase<Void> {
                 archiveName +
                 File.separator +
                 uniqueKey +
-                Downloader.getFileExtensionFromUrl(url);
+                FilesDownloader.getFileExtensionFromUrl(url);
     }
 
     private String getArchiveName(String url) {

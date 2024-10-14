@@ -26,9 +26,9 @@ import com.inappstory.sdk.core.utils.ConnectionCheckCallback;
 import com.inappstory.sdk.game.cache.SuccessUseCaseCallback;
 import com.inappstory.sdk.game.reader.GameStoryData;
 import com.inappstory.sdk.imageloader.CustomFileLoader;
+import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.Image;
 import com.inappstory.sdk.stories.api.models.Story;
-import com.inappstory.sdk.stories.cache.Downloader;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.CallToActionCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickAction;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
@@ -36,7 +36,6 @@ import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.statistic.GetStatisticV1Callback;
-import com.inappstory.sdk.stories.utils.RunnableCallback;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -259,7 +258,7 @@ public class StackStoryObserver implements IStackFeedActions {
         if (manager == null) return;
         final Story currentStory = stories.get(oldIndex);
         Story current = core.contentLoader().storyDownloadManager()
-                .getStoryById(currentStory.id, Story.StoryType.COMMON);
+                .getStoryById(currentStory.id, ContentType.COMMON);
         boolean currentStoryIsOpened = true;
         if (current != null) {
             currentStoryIsOpened = current.isOpened;
@@ -322,7 +321,7 @@ public class StackStoryObserver implements IStackFeedActions {
             );
             if (current != null) {
                 current.isOpened = true;
-                core.storyListCache().saveStoryOpened(currentStory.id, Story.StoryType.COMMON);
+                core.storyListCache().saveStoryOpened(currentStory.id, ContentType.COMMON);
             }
         } else if (currentStory.getGameInstanceId() != null && !currentStory.getGameInstanceId().isEmpty()) {
             service.getListReaderConnector().changeStory(currentStory.id, listId, showOnlyNewStories);
@@ -356,7 +355,7 @@ public class StackStoryObserver implements IStackFeedActions {
             );
             if (current != null) {
                 current.isOpened = true;
-                core.storyListCache().saveStoryOpened(currentStory.id, Story.StoryType.COMMON);
+                core.storyListCache().saveStoryOpened(currentStory.id, ContentType.COMMON);
             }
         } else if (!currentStory.isHideInReader()) {
             List<Integer> readerStories = new ArrayList<>();
@@ -382,7 +381,7 @@ public class StackStoryObserver implements IStackFeedActions {
                     ShowStory.ACTION_OPEN,
                     SourceType.STACK,
                     0,
-                    Story.StoryType.COMMON,
+                    ContentType.COMMON,
                     null
             );
             core.screensManager().openScreen(context,

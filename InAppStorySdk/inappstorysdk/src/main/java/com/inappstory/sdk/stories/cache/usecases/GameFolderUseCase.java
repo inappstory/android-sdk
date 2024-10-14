@@ -4,13 +4,9 @@ import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.game.cache.UnzipUseCase;
 import com.inappstory.sdk.game.cache.UseCaseCallback;
 import com.inappstory.sdk.lrudiskcache.CacheJournalItem;
-import com.inappstory.sdk.lrudiskcache.LruCachesHolder;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.stories.cache.DownloadFileState;
-import com.inappstory.sdk.stories.cache.DownloadInterruption;
-import com.inappstory.sdk.stories.cache.Downloader;
-import com.inappstory.sdk.stories.cache.FileLoadProgressCallback;
-import com.inappstory.sdk.stories.cache.FilesDownloadManager;
+import com.inappstory.sdk.stories.cache.FilesDownloader;
 import com.inappstory.sdk.utils.ProgressCallback;
 import com.inappstory.sdk.utils.StringsUtils;
 
@@ -97,7 +93,7 @@ public class GameFolderUseCase extends GetCacheFileUseCase<Void> {
                 archiveName +
                 File.separator +
                 uniqueKey +
-                Downloader.getFileExtensionFromUrl(url);
+                FilesDownloader.getFileExtensionFromUrl(url);
         File zipFile = new File(zipFilePath);
         if (!zipFile.exists()) {
             useCaseCallback.onError("Can't find archive");

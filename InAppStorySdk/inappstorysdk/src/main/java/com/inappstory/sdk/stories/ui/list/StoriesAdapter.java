@@ -12,7 +12,6 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.inappstory.sdk.AppearanceManager;
-import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.IASCore;
@@ -27,6 +26,7 @@ import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenStrategy;
 import com.inappstory.sdk.core.utils.ConnectionCheck;
 import com.inappstory.sdk.core.utils.ConnectionCheckCallback;
 import com.inappstory.sdk.game.reader.GameStoryData;
+import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.OnFavoriteItemClick;
 import com.inappstory.sdk.stories.outercallbacks.common.errors.ErrorCallback;
@@ -80,7 +80,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
     private List<StoryData> getStoriesData(List<Integer> storiesIds) {
         List<StoryData> data = new ArrayList<>();
         for (int id : storiesIds) {
-            Story story = core.contentLoader().storyDownloadManager().getStoryById(id, Story.StoryType.COMMON);
+            Story story = core.contentLoader().storyDownloadManager().getStoryById(id, ContentType.COMMON);
             if (story != null) {
                 data.add(new StoryData(story, feed, SourceType.LIST));
             }
@@ -184,7 +184,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
         } else {
             int hasUGC = useUGC ? 1 : 0;
             final Story story = core.contentLoader().storyDownloadManager()
-                    .getStoryById(storiesIds.get(position - hasUGC), Story.StoryType.COMMON);
+                    .getStoryById(storiesIds.get(position - hasUGC), ContentType.COMMON);
             if (story == null) return;
             String imgUrl = (story.getImage() != null && story.getImage().size() > 0) ?
                     story.getProperImage(manager.csCoverQuality()).getUrl() : null;
@@ -197,7 +197,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
                     story.isOpened || isFavoriteList,
                     story.hasAudio(),
                     story.getVideoUrl(),
-                    StoryData.getStoryData(story, feed, getListSourceType(), Story.StoryType.COMMON),
+                    StoryData.getStoryData(story, feed, getListSourceType(), ContentType.COMMON),
                     this
             );
         }
@@ -221,7 +221,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
         int index = ind - hasUGC;
         clickTimestamp = System.currentTimeMillis();
         final Story current = core.contentLoader().storyDownloadManager()
-                .getStoryById(storiesIds.get(index), Story.StoryType.COMMON);
+                .getStoryById(storiesIds.get(index), ContentType.COMMON);
         if (current != null) {
             if (callback != null) {
                 callback.itemClick(
@@ -265,7 +265,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
                 );
 
                 current.isOpened = true;
-                core.storyListCache().saveStoryOpened(current.id, Story.StoryType.COMMON);
+                core.storyListCache().saveStoryOpened(current.id, ContentType.COMMON);
                 InAppStoryService.getInstance().getListReaderConnector().changeStory(current.id, listID, false);
                 // notifyItemChanged(ind);
                 return;
@@ -323,7 +323,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
                         }
                 );
                 current.isOpened = true;
-                core.storyListCache().saveStoryOpened(current.id, Story.StoryType.COMMON);
+                core.storyListCache().saveStoryOpened(current.id, ContentType.COMMON);
                 InAppStoryService.getInstance().getListReaderConnector().changeStory(current.id, listID, false);
                 return;
             }
@@ -342,7 +342,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
         ArrayList<Integer> tempStories = new ArrayList();
         for (Integer storyId : storiesIds) {
             Story story = core.contentLoader().storyDownloadManager()
-                    .getStoryById(storyId, Story.StoryType.COMMON);
+                    .getStoryById(storyId, ContentType.COMMON);
             if (story == null || !story.isHideInReader())
                 tempStories.add(storyId);
         }
@@ -356,7 +356,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
                 ShowStory.ACTION_OPEN,
                 isFavoriteList ? SourceType.FAVORITE : SourceType.LIST,
                 0,
-                Story.StoryType.COMMON,
+                ContentType.COMMON,
                 coordinates
         );
         core.screensManager().openScreen(
@@ -386,7 +386,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
             InAppStoryService service = InAppStoryService.getInstance();
             if (service == null) return 0;
             Story story = core.contentLoader().storyDownloadManager()
-                    .getStoryById(storiesIds.get(pos), Story.StoryType.COMMON);
+                    .getStoryById(storiesIds.get(pos), ContentType.COMMON);
             if (story == null) return 0;
             if (story.getVideoUrl() != null) pref += 5;
             return story.isOpened ? (pref + 2) : (pref + 1);

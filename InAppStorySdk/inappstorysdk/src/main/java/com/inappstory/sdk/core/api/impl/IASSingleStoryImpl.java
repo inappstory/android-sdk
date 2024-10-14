@@ -2,11 +2,7 @@ package com.inappstory.sdk.core.api.impl;
 
 import android.content.Context;
 
-import androidx.annotation.NonNull;
-
 import com.inappstory.sdk.AppearanceManager;
-import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
@@ -16,6 +12,7 @@ import com.inappstory.sdk.core.ui.screens.launcher.ILaunchScreenCallback;
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenAppearance;
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenData;
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenStrategy;
+import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.callbacks.GetStoryByIdCallback;
 import com.inappstory.sdk.stories.callbacks.IShowStoryCallback;
@@ -23,7 +20,6 @@ import com.inappstory.sdk.stories.callbacks.IShowStoryOnceCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outercallbacks.common.single.SingleLoadCallback;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
-import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 
 import java.util.ArrayList;
 import java.util.Set;
@@ -46,7 +42,7 @@ public class IASSingleStoryImpl implements IASSingleStory {
         if (((IASDataSettingsHolder) core.settingsAPI()).noCorrectUserIdOrDevice()) return;
         Set<String> opens = core.sharedPreferencesAPI().getStringSet(
                 core.storyListCache().getLocalOpensKey(
-                        Story.StoryType.COMMON
+                        ContentType.COMMON
                 )
         );
         if (opens != null && opens.contains(storyId) && callback != null) {
@@ -58,14 +54,14 @@ public class IASSingleStoryImpl implements IASSingleStory {
             @Override
             public void getStory(final Story story, final String sessionId) {
                 if (story != null) {
-                    core.contentLoader().storyDownloadManager().addCompletedStoryTask(story, Story.StoryType.COMMON);
+                    core.contentLoader().storyDownloadManager().addCompletedStoryTask(story, ContentType.COMMON);
                     openStoryInReader(story,
                             sessionId,
                             context,
                             appearanceManager,
                             callback,
                             0,
-                            Story.StoryType.COMMON,
+                            ContentType.COMMON,
                             SourceType.SINGLE,
                             ShowStory.ACTION_OPEN,
                             false
@@ -84,7 +80,7 @@ public class IASSingleStoryImpl implements IASSingleStory {
                 }
             }
 
-        }, storyId, Story.StoryType.COMMON, true, SourceType.SINGLE);
+        }, storyId, ContentType.COMMON, true, SourceType.SINGLE);
     }
 
 
@@ -93,7 +89,7 @@ public class IASSingleStoryImpl implements IASSingleStory {
             final String storyId,
             final AppearanceManager appearanceManager,
             final IShowStoryCallback callback,
-            final Story.StoryType type,
+            final ContentType type,
             final Integer slide,
             final boolean fromReader,
             final SourceType readerSource,
@@ -150,7 +146,7 @@ public class IASSingleStoryImpl implements IASSingleStory {
                 storyId,
                 appearanceManager,
                 callback,
-                Story.StoryType.COMMON,
+                ContentType.COMMON,
                 slide,
                 false,
                 SourceType.SINGLE,
@@ -165,7 +161,7 @@ public class IASSingleStoryImpl implements IASSingleStory {
             final AppearanceManager manager,
             final IShowStoryCallback callback,
             final Integer slide,
-            final Story.StoryType type,
+            final ContentType type,
             final SourceType readerSource,
             final int readerAction,
             final boolean openedFromReader

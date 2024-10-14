@@ -1,36 +1,37 @@
 package com.inappstory.sdk.stories.cache;
 
+import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.Story;
 
 import java.util.Objects;
 
-public class SlideTaskData {
-    public SlideTaskData(Integer storyId,
-                         Integer index,
-                         Story.StoryType storyType) {
+public class SlideTaskKey {
+    public SlideTaskKey(Integer storyId,
+                        Integer index,
+                        ContentType contentType) {
         this.storyId = storyId;
         this.index = index;
-        this.storyType = storyType;
+        this.contentType = contentType;
     }
 
-    public SlideTaskData(StoryTaskData key,
-                         Integer index) {
+    public SlideTaskKey(StoryTaskKey key,
+                        Integer index) {
         this.storyId = key.storyId;
         this.index = index;
-        this.storyType = key.storyType;
+        this.contentType = key.contentType;
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        SlideTaskData that = (SlideTaskData) o;
-        return Objects.equals(storyId, that.storyId) && Objects.equals(index, that.index) && storyType == that.storyType;
+        SlideTaskKey that = (SlideTaskKey) o;
+        return Objects.equals(storyId, that.storyId) && Objects.equals(index, that.index) && contentType == that.contentType;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(storyId, index, storyType);
+        return Objects.hash(storyId, index, contentType);
     }
 
     @Override
@@ -38,11 +39,11 @@ public class SlideTaskData {
         return "SlideTaskData{" +
                 "storyId=" + storyId +
                 ", index=" + index +
-                ", storyType=" + storyType +
+                ", storyType=" + contentType +
                 '}';
     }
 
     public Integer storyId;
     public Integer index;
-    public Story.StoryType storyType;
+    public ContentType contentType;
 }

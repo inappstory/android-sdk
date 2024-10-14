@@ -38,7 +38,6 @@ public class InAppMessageImpl implements InAppMessage {
     @SerializedName("campaign_name")
     public String campaignName;
 
-    
 
     @Override
     public InAppMessage copy() {
@@ -110,6 +109,13 @@ public class InAppMessageImpl implements InAppMessage {
             }
         }
         return res;
+    }
+
+    @Override
+    public int actualSlidesCount() {
+        if (slides != null)
+            return slides.size();
+        return 0;
     }
 
     @Override

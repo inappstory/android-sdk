@@ -11,14 +11,13 @@ import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASContentLoader;
 import com.inappstory.sdk.game.cache.GameCacheManager;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
-import com.inappstory.sdk.stories.api.models.ResourceMappingObject;
-import com.inappstory.sdk.stories.api.models.Story;
-import com.inappstory.sdk.stories.cache.Downloader;
+import com.inappstory.sdk.stories.api.interfaces.IResourceObject;
+import com.inappstory.sdk.stories.api.interfaces.SlidesContentHolder;
+import com.inappstory.sdk.stories.cache.FilesDownloader;
 import com.inappstory.sdk.stories.cache.FilesDownloadManager;
 import com.inappstory.sdk.stories.cache.StoryDownloadManager;
 import com.inappstory.sdk.stories.cache.vod.VODCacheItemPart;
 import com.inappstory.sdk.stories.cache.vod.VODCacheJournalItem;
-import com.inappstory.sdk.stories.utils.KeyValueStorage;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -31,13 +30,13 @@ public class IASContentLoaderImpl implements IASContentLoader {
     private final IASCore core;
     private final FilesDownloadManager filesDownloadManager;
     private final GameCacheManager gameCacheManager;
-    private final Downloader downloader;
+    private final FilesDownloader filesDownloader;
 
     private final StoryDownloadManager storyDownloadManager;
 
     public IASContentLoaderImpl(IASCore core) {
         this.core = core;
-        this.downloader = new Downloader(core);
+        this.filesDownloader = new FilesDownloader(core);
         this.filesDownloadManager = new FilesDownloadManager(core);
         this.storyDownloadManager = new StoryDownloadManager(core);
         this.gameCacheManager = new GameCacheManager(core);
@@ -122,15 +121,14 @@ public class IASContentLoaderImpl implements IASContentLoader {
     }
 
     @Override
-    public void addVODResources(Story story, int slideIndex) {
-        List<ResourceMappingObject> resources = new ArrayList<>();
-        resources.addAll(story.vodResources(slideIndex));
-        for (ResourceMappingObject object : resources) {
-            VODCacheJournalItem item = filesDownloadManager.getVodCacheJournal().getItem(object.filename);
-            if (item == null) {
+    public void addVODResources(SlidesContentHolder slidesContentHolder, int slideIndex) {
+        List<IResourceObject> resources = new ArrayList<>();
+        resources.addAll(slidesContentHolder.vodResources(slideIndex));
+        for (IResourceObject object : resources) {
+            if (filesDownloadManager.getVodCacheJournal().getItem(object.getFileName()) == null) {
                 filesDownloadManager.getVodCacheJournal().putItem(new VODCacheJournalItem(
                         "",
-                        object.filename,
+                        object.getFileName(),
                         "",
                         "",
                         new ArrayList<VODCacheItemPart>(),
@@ -176,7 +174,7 @@ public class IASContentLoaderImpl implements IASContentLoader {
     }
 
     @Override
-    public Downloader downloader() {
-        return downloader;
+    public FilesDownloader downloader() {
+        return filesDownloader;
     }
 }

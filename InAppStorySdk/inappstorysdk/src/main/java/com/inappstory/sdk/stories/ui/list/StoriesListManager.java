@@ -7,10 +7,9 @@ import android.view.View;
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.InAppStoryManager;
-import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
+import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.cache.StoryDownloadManager;
 
@@ -56,10 +55,10 @@ public class StoriesListManager implements ListManager {
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-                Story st = core.contentLoader().storyDownloadManager().getStoryById(storyId, Story.StoryType.COMMON);
+                Story st = core.contentLoader().storyDownloadManager().getStoryById(storyId, ContentType.COMMON);
                 if (st == null) return;
                 st.isOpened = true;
-                core.storyListCache().saveStoryOpened(st.id, Story.StoryType.COMMON);
+                core.storyListCache().saveStoryOpened(st.id, ContentType.COMMON);
                 checkHandler();
                 post(new Runnable() {
                     @Override
@@ -129,7 +128,7 @@ public class StoriesListManager implements ListManager {
                 StoryDownloadManager downloadManager =
                         core.contentLoader().storyDownloadManager();
                 final List<FavoriteImage> favImages = downloadManager.favoriteImages();
-                Story story = downloadManager.getStoryById(id, Story.StoryType.COMMON);
+                Story story = downloadManager.getStoryById(id, ContentType.COMMON);
                 if (story == null) return;
                 if (favStatus) {
                     FavoriteImage favoriteImage = new FavoriteImage(id, story.getImage(), story.getBackgroundColor());

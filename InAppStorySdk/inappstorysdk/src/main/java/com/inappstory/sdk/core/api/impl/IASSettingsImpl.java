@@ -7,11 +7,10 @@ import android.webkit.URLUtil;
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.AppearanceManager;
-import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASDataSettings;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
+import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.StoryPlaceholder;
@@ -24,7 +23,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
@@ -76,8 +74,8 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
             }
         });
         core.contentLoader().storyDownloadManager().favoriteImages().clear();
-        core.contentLoader().storyDownloadManager().refreshLocals(Story.StoryType.COMMON);
-        core.contentLoader().storyDownloadManager().refreshLocals(Story.StoryType.UGC);
+        core.contentLoader().storyDownloadManager().refreshLocals(ContentType.COMMON);
+        core.contentLoader().storyDownloadManager().refreshLocals(ContentType.UGC);
         core.contentLoader().storyDownloadManager().cleanTasks(false);
 
     }
@@ -111,8 +109,8 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
         });
 
         core.contentLoader().storyDownloadManager().favoriteImages().clear();
-        core.contentLoader().storyDownloadManager().refreshLocals(Story.StoryType.COMMON);
-        core.contentLoader().storyDownloadManager().refreshLocals(Story.StoryType.UGC);
+        core.contentLoader().storyDownloadManager().refreshLocals(ContentType.COMMON);
+        core.contentLoader().storyDownloadManager().refreshLocals(ContentType.UGC);
         core.contentLoader().storyDownloadManager().cleanTasks(false);
     }
 

@@ -10,6 +10,7 @@ import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.network.annotations.models.Required;
 import com.inappstory.sdk.network.annotations.models.SerializedName;
 import com.inappstory.sdk.stories.api.interfaces.IResourceObject;
+import com.inappstory.sdk.stories.api.interfaces.SlidesContentHolder;
 import com.inappstory.sdk.stories.api.models.slidestructure.SlideStructure;
 
 import java.util.ArrayList;
@@ -23,23 +24,12 @@ import java.util.Objects;
  */
 
 
-public class Story implements Parcelable {
+public class Story implements Parcelable, SlidesContentHolder {
     @Required
     public int id;
 
-    public enum StoryType {
+    public enum ContentType {
         COMMON, UGC
-    }
-
-    public static StoryType storyTypeFromName(String storyType) {
-        if (storyType.equals(StoryType.UGC.name())) {
-            return StoryType.UGC;
-        }
-        return StoryType.COMMON;
-    }
-
-    public static String nameFromStoryType(StoryType storyType) {
-        return storyType.name();
     }
 
     public String getTitle() {
@@ -276,29 +266,6 @@ public class Story implements Parcelable {
         return res;
     }
 
-    public List<String> getPlaceholdersListNames(int index) {
-        List<String> res = new ArrayList<>();
-        for (IResourceObject object : getImagePlaceholdersList()) {
-            if (object.getIndex() == index && (object.getType().equals("image-placeholder"))) {
-                String name = object.getUrl();
-                if (name != null) res.add(name);
-            }
-
-        }
-        return res;
-    }
-
-
-    public Map<String, String> getPlaceholdersList(int index) {
-        Map<String, String> res = new HashMap<>();
-        for (IResourceObject object : getImagePlaceholdersList()) {
-            if (object.getIndex() == index && (object.getType().equals("image-placeholder"))) {
-                res.put(object.getKey(), object.getUrl());
-            }
-        }
-        return res;
-    }
-
     public List<IResourceObject> vodResources(int index) {
         List<IResourceObject> res = new ArrayList<>();
         for (IResourceObject object : getSrcList()) {
@@ -317,6 +284,36 @@ public class Story implements Parcelable {
             }
         }
         return res;
+    }
+
+    @Override
+    public List<String> placeholdersNames(int index) {
+        List<String> res = new ArrayList<>();
+        for (IResourceObject object : getImagePlaceholdersList()) {
+            if (object.getIndex() == index && (object.getType().equals("image-placeholder"))) {
+                String name = object.getUrl();
+                if (name != null) res.add(name);
+            }
+
+        }
+        return res;
+    }
+
+    @Override
+    public Map<String, String> placeholdersMap(int index) {
+        Map<String, String> res = new HashMap<>();
+        for (IResourceObject object : getImagePlaceholdersList()) {
+            if (object.getIndex() == index && (object.getType().equals("image-placeholder"))) {
+                res.put(object.getKey(), object.getUrl());
+            }
+        }
+        return res;
+    }
+
+    @Override
+    public int actualSlidesCount() {
+        if (pages != null) return pages.size();
+        return 0;
     }
 
     public int getLike() {
@@ -446,6 +443,14 @@ public class Story implements Parcelable {
 
     public String layout() {
         return layout;
+    }
+
+    @Override
+    public String slideByIndex(int index) {
+        if (pages != null && pages.size() > index && index >= 0) {
+            return pages.get(index);
+        }
+        return null;
     }
 
     public void layout(String layout) {

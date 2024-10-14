@@ -24,6 +24,21 @@ import com.inappstory.sdk.stories.api.models.StatisticSendObject;
 
 public interface ApiInterface {
 
+    @GET("v2/inappmessaging")
+    Request getInAppMessages(
+            @Query("srcList") Integer srcList,
+            @Query("fields") String fields,
+            @Query("expand") String expand
+    );
+
+    @GET("v2/inappmessaging/message/{id}")
+    Request getInAppMessage(
+            @Path("id") String id,
+            @Query("srcList") Integer srcList,
+            @Query("fields") String fields,
+            @Query("expand") String expand
+    );
+
     @GET("v2/ugc/feed")
     Request getUgcStories(
             @QueryObject("f") String f,
@@ -191,7 +206,6 @@ public interface ApiInterface {
 
     @GET("v2/ugc/editor-config")
     Request getUgcEditor();
-
 
 
     @GET("v2/game/preload")

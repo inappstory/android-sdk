@@ -9,7 +9,6 @@ import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
-import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
@@ -21,7 +20,7 @@ import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenAppearanc
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenData;
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenStrategy;
 import com.inappstory.sdk.network.ApiSettings;
-import com.inappstory.sdk.network.NetworkClient;
+import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.Feed;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadFeedCallback;
@@ -29,8 +28,6 @@ import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.onboarding.OnboardingLoadCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
-import com.inappstory.sdk.stories.statistic.IASStatisticProfilingImpl;
-import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 import com.inappstory.sdk.utils.StringsUtils;
 
 import java.util.ArrayList;
@@ -91,7 +88,7 @@ public class IASOnboardingsImpl implements IASOnboardings {
                                 if (inAppStoryManager == null) return;
                                 core.statistic().profiling().setReady(onboardUID);
                                 List<Story> notOpened = new ArrayList<>();
-                                String key = core.storyListCache().getLocalOpensKey(Story.StoryType.COMMON);
+                                String key = core.storyListCache().getLocalOpensKey(ContentType.COMMON);
                                 Set<String> opens = core.sharedPreferencesAPI().getStringSet(
                                         key
                                 );
@@ -153,7 +150,7 @@ public class IASOnboardingsImpl implements IASOnboardings {
             final String sessionId,
             final String feed
     ) {
-        Story.StoryType storyType = Story.StoryType.COMMON;
+        ContentType contentType = ContentType.COMMON;
         if (response == null || response.size() == 0) {
             core.callbacksAPI().useCallback(IASCallbackType.ONBOARDING,
                     new UseIASCallback<OnboardingLoadCallback>() {
@@ -174,7 +171,7 @@ public class IASOnboardingsImpl implements IASOnboardings {
         for (Story story : response) {
             storiesIds.add(story.id);
         }
-        core.contentLoader().storyDownloadManager().uploadingAdditional(stories, storyType);
+        core.contentLoader().storyDownloadManager().uploadingAdditional(stories, contentType);
         LaunchStoryScreenData launchData = new LaunchStoryScreenData(
                 null,
                 feed,
@@ -185,7 +182,7 @@ public class IASOnboardingsImpl implements IASOnboardings {
                 ShowStory.ACTION_OPEN,
                 SourceType.ONBOARDING,
                 0,
-                Story.StoryType.COMMON,
+                ContentType.COMMON,
                 null
         );
         core.screensManager().openScreen(

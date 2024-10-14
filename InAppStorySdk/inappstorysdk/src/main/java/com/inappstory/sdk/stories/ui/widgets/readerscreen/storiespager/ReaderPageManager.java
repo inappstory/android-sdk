@@ -6,7 +6,6 @@ import android.os.Looper;
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.InAppStoryManager;
-import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASCallbackType;
@@ -14,6 +13,7 @@ import com.inappstory.sdk.core.api.IASStatisticV1;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.network.JsonParser;
+import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.StoryLinkObject;
 import com.inappstory.sdk.stories.managers.TimerManager;
@@ -25,7 +25,6 @@ import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryWidgetCallback;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.statistic.GetStatisticV1Callback;
-import com.inappstory.sdk.stories.statistic.IASStatisticProfilingImpl;
 import com.inappstory.sdk.stories.ui.reader.ReaderManager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.buttonspanel.ButtonsPanelManager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.progresstimeline.StoryTimelineManager;
@@ -98,8 +97,8 @@ public class ReaderPageManager {
         return storyId;
     }
 
-    public Story.StoryType getStoryType() {
-        return parentManager != null ? parentManager.storyType : Story.StoryType.COMMON;
+    public ContentType getStoryType() {
+        return parentManager != null ? parentManager.contentType : ContentType.COMMON;
     }
 
 
@@ -200,7 +199,7 @@ public class ReaderPageManager {
                             action = ClickAction.SWIPE;
                         }
                     }
-                    if (getStoryType() == Story.StoryType.COMMON)
+                    if (getStoryType() == ContentType.COMMON)
                         core.statistic().v1(
                                 parentManager.getSessionId(),
                                 new GetStatisticV1Callback() {
@@ -432,8 +431,8 @@ public class ReaderPageManager {
         pauseTimers();
         core.statistic().v2().sendCurrentState();
         core.contentLoader().storyDownloadManager().changePriorityForSingle(storyId,
-                parentManager.storyType);
-        if (getStoryType() == Story.StoryType.COMMON) {
+                parentManager.contentType);
+        if (getStoryType() == ContentType.COMMON) {
             core.statistic().v2().createCurrentState(
                     storyId,
                     slideIndex,

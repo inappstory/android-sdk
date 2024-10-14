@@ -1,6 +1,7 @@
 package com.inappstory.sdk.stories.outercallbacks.common.reader;
 
 import com.inappstory.sdk.network.annotations.models.Ignore;
+import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.utils.StringsUtils;
 
@@ -14,7 +15,7 @@ public class StoryData implements Serializable {
     public SourceType sourceType;
     public int slidesCount;
     @Ignore
-    public Story.StoryType storyType;
+    public ContentType contentType;
 
     public StoryData(
             int id,
@@ -24,13 +25,13 @@ public class StoryData implements Serializable {
             String feed,
             SourceType sourceType
     ) {
-        this(id, Story.StoryType.COMMON, title, tags, slidesCount, feed, sourceType);
+        this(id, ContentType.COMMON, title, tags, slidesCount, feed, sourceType);
     }
 
     public StoryData(Story story, String feed, SourceType sourceType) {
         this(
                 story.id,
-                Story.StoryType.COMMON,
+                ContentType.COMMON,
                 StringsUtils.getNonNull(story.statTitle),
                 StringsUtils.getNonNull(story.tags),
                 story.slidesCount,
@@ -41,7 +42,7 @@ public class StoryData implements Serializable {
 
     protected StoryData(
             int id,
-            Story.StoryType storyType,
+            ContentType contentType,
             String title,
             String tags,
             int slidesCount,
@@ -52,7 +53,7 @@ public class StoryData implements Serializable {
         this.title = title;
         this.tags = tags;
         this.slidesCount = slidesCount;
-        this.storyType = storyType;
+        this.contentType = contentType;
         this.feed = feed;
         this.sourceType = sourceType;
     }
@@ -73,9 +74,9 @@ public class StoryData implements Serializable {
             Story story,
             String feed,
             SourceType sourceType,
-            Story.StoryType storyType
+            ContentType contentType
     ) {
-        if (storyType == Story.StoryType.COMMON) {
+        if (contentType == ContentType.COMMON) {
             return new StoryData(story, feed, sourceType);
         } else {
             return new UgcStoryData(story, sourceType);

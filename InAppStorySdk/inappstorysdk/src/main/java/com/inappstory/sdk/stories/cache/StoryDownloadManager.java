@@ -1,17 +1,15 @@
 package com.inappstory.sdk.stories.cache;
 
-import android.util.Log;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.WorkerThread;
 
-import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.game.cache.SessionAssetsIsReadyCallback;
 import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
+import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.StoryListType;
 import com.inappstory.sdk.stories.api.models.callbacks.GetStoryByIdCallback;
@@ -19,10 +17,6 @@ import com.inappstory.sdk.stories.api.models.callbacks.LoadFavoritesCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadStoriesCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.SimpleListCallback;
-import com.inappstory.sdk.stories.cache.usecases.GetCacheFileUseCase;
-import com.inappstory.sdk.stories.cache.usecases.StoryResourceFileUseCase;
-import com.inappstory.sdk.stories.cache.usecases.StoryVODResourceFileUseCase;
-import com.inappstory.sdk.stories.cache.usecases.StoryVODResourceFileUseCaseResult;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.outercallbacks.common.single.SingleLoadCallback;
@@ -39,7 +33,7 @@ import java.util.List;
 public class StoryDownloadManager {
     private final IASCore core;
 
-    public List<Story> getStories(Story.StoryType type) {
+    public List<Story> getStories(ContentType type) {
         return getStoriesListByType(type);
     }
 
@@ -50,7 +44,7 @@ public class StoryDownloadManager {
     }
 
     @WorkerThread
-    public void uploadingAdditional(List<Story> newStories, Story.StoryType type) {
+    public void uploadingAdditional(List<Story> newStories, ContentType type) {
         addStories(newStories, type);
     }
 
@@ -61,7 +55,7 @@ public class StoryDownloadManager {
     public void getFullStoryByStringId(
             final GetStoryByIdCallback storyByIdCallback,
             final String id,
-            final Story.StoryType type,
+            final ContentType type,
             final boolean showOnce,
             final SourceType readerSource
     ) {
@@ -154,13 +148,13 @@ public class StoryDownloadManager {
         });
     }
 
-    public boolean changePriority(int storyId, List<Integer> adjacent, Story.StoryType type) {
+    public boolean changePriority(int storyId, List<Integer> adjacent, ContentType type) {
         if (slidesDownloader != null)
             return slidesDownloader.changePriority(storyId, adjacent, type);
         return false;
     }
 
-    public void changePriorityForSingle(int storyId, Story.StoryType type) {
+    public void changePriorityForSingle(int storyId, ContentType type) {
         if (slidesDownloader != null)
             slidesDownloader.changePriorityForSingle(storyId, type);
 
@@ -175,8 +169,8 @@ public class StoryDownloadManager {
     public void destroy() {
         storyDownloader.destroy();
         slidesDownloader.destroy();
-        getStoriesListByType(Story.StoryType.UGC).clear();
-        getStoriesListByType(Story.StoryType.COMMON).clear();
+        getStoriesListByType(ContentType.UGC).clear();
+        getStoriesListByType(ContentType.COMMON).clear();
         storyDownloader.cleanTasks();
         slidesDownloader.cleanTasks();
     }
@@ -187,8 +181,8 @@ public class StoryDownloadManager {
 
     public void cleanTasks(boolean cleanStories) {
         if (cleanStories) {
-            getStoriesListByType(Story.StoryType.UGC).clear();
-            getStoriesListByType(Story.StoryType.COMMON).clear();
+            getStoriesListByType(ContentType.UGC).clear();
+            getStoriesListByType(ContentType.COMMON).clear();
         }
         storyDownloader.cleanTasks();
         slidesDownloader.cleanTasks();
@@ -220,7 +214,7 @@ public class StoryDownloadManager {
     }
 
 
-    private void checkBundleResources(final ReaderPageManager subscriber, final SlideTaskData key) {
+    private void checkBundleResources(final ReaderPageManager subscriber, final SlideTaskKey key) {
         ISessionHolder sessionHolder = core.sessionManager().getSession();
         if (sessionHolder.checkIfSessionAssetsIsReadySync()) {
             subscriber.slideLoadedInCache(key.index);
@@ -235,10 +229,10 @@ public class StoryDownloadManager {
         }
     }
 
-    void slideLoaded(final SlideTaskData key) {
+    void slideLoaded(final SlideTaskKey key) {
         synchronized (lock) {
             for (ReaderPageManager subscriber : subscribers) {
-                if (subscriber.getStoryId() == key.storyId && subscriber.getStoryType() == key.storyType) {
+                if (subscriber.getStoryId() == key.storyId && subscriber.getStoryType() == key.contentType) {
                     checkBundleResources(subscriber, key);
                     return;
                 }
@@ -246,20 +240,20 @@ public class StoryDownloadManager {
         }
     }
 
-    HashMap<StoryTaskData, Long> storyErrorDelayed = new HashMap<>();
-    HashMap<SlideTaskData, Long> slideErrorDelayed = new HashMap<>();
+    HashMap<StoryTaskKey, Long> storyErrorDelayed = new HashMap<>();
+    HashMap<SlideTaskKey, Long> slideErrorDelayed = new HashMap<>();
 
-    void storyError(StoryTaskData storyTaskData) {
+    void storyError(StoryTaskKey storyTaskKey) {
         synchronized (lock) {
             if (subscribers.isEmpty()) {
                 storyErrorDelayed.put(
-                        storyTaskData,
+                        storyTaskKey,
                         System.currentTimeMillis()
                 );
                 return;
             }
             for (ReaderPageManager subscriber : subscribers) {
-                if (subscriber.getStoryId() == storyTaskData.storyId) {
+                if (subscriber.getStoryId() == storyTaskKey.storyId) {
                     subscriber.storyLoadError();
                     return;
                 }
@@ -267,25 +261,25 @@ public class StoryDownloadManager {
         }
     }
 
-    void slideError(SlideTaskData slideTaskData) {
+    void slideError(SlideTaskKey slideTaskKey) {
         synchronized (lock) {
             if (subscribers.isEmpty()) {
                 slideErrorDelayed.put(
-                        slideTaskData,
+                        slideTaskKey,
                         System.currentTimeMillis()
                 );
                 return;
             }
             for (ReaderPageManager subscriber : subscribers) {
-                if (subscriber.getStoryId() == slideTaskData.storyId) {
-                    subscriber.slideLoadError(slideTaskData.index);
+                if (subscriber.getStoryId() == slideTaskKey.storyId) {
+                    subscriber.slideLoadError(slideTaskKey.index);
                     return;
                 }
             }
         }
     }
 
-    void storyLoaded(Story story, Story.StoryType type) {
+    void storyLoaded(Story story, ContentType type) {
         synchronized (lock) {
             for (ReaderPageManager subscriber : subscribers) {
                 if (subscriber.getStoryId() == story.id && subscriber.getStoryType() == type) {
@@ -296,7 +290,7 @@ public class StoryDownloadManager {
         }
     }
 
-    public void addStories(List<Story> storiesToAdd, Story.StoryType type) {
+    public void addStories(List<Story> storiesToAdd, ContentType type) {
         List<Story> stories = getStoriesListByType(type);
         for (Story story : storiesToAdd) {
             if (story == null) continue;
@@ -324,15 +318,15 @@ public class StoryDownloadManager {
         }
     }
 
-    public List<Story> getStoriesListByType(Story.StoryType type) {
-        if (type == Story.StoryType.COMMON) {
+    public List<Story> getStoriesListByType(ContentType type) {
+        if (type == ContentType.COMMON) {
             return this.stories;
         } else {
             return this.ugcStories;
         }
     }
 
-    public void putStories(Story.StoryType type) {
+    public void putStories(ContentType type) {
         List<Story> stories = getStoriesListByType(type);
         List<Story> storiesToPut = getStoriesListByType(type);
         for (Story story : storiesToPut) {
@@ -352,9 +346,9 @@ public class StoryDownloadManager {
     }
 
 
-    public int checkIfPageLoaded(int storyId, int index, Story.StoryType type) {
+    public int checkIfPageLoaded(int storyId, int index, ContentType type) {
         try {
-            return slidesDownloader.checkIfPageLoaded(new SlideTaskData(storyId, index, type));
+            return slidesDownloader.checkIfPageLoaded(new SlideTaskKey(storyId, index, type));
         } catch (IOException e) {
             return 0;
         }
@@ -371,7 +365,7 @@ public class StoryDownloadManager {
 
         this.storyDownloader = new StoryDownloader(core, new DownloadStoryCallback() {
             @Override
-            public void onDownload(Story story, int loadType, Story.StoryType type) {
+            public void onDownload(Story story, int loadType, ContentType type) {
                 Story local = getStoryById(story.id, type);
                 if (local != null) {
                     story.isOpened = local.isOpened;
@@ -380,96 +374,32 @@ public class StoryDownloadManager {
                 setStory(story, story.id, type);
                 storyLoaded(story, type);
                 try {
-                    slidesDownloader.addStoryPages(story, loadType, type);
+                    slidesDownloader.addStoryPages(
+                            new StoryTaskKey(story.id, type),
+                            story,
+                            loadType
+                    );
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
 
             @Override
-            public void onError(StoryTaskData storyTaskData) {
-                storyError(storyTaskData);
+            public void onError(StoryTaskKey storyTaskKey) {
+                storyError(storyTaskKey);
             }
         }, StoryDownloadManager.this);
 
         this.slidesDownloader = new SlidesDownloader(
                 core,
-                new DownloadPageCallback() {
+                new SlideErrorCallback() {
                     @Override
-                    public DownloadPageFileStatus downloadFile(UrlWithAlter urlWithAlter, SlideTaskData slideTaskData) {
-                        try {
-                            Log.e("StoryResources", slideTaskData.storyId + " " + slideTaskData.index + " " + urlWithAlter);
-                            GetCacheFileUseCase<DownloadFileState> useCase =
-                                    new StoryResourceFileUseCase(
-                                            core,
-                                            urlWithAlter.getUrl()
-                                    );
-                            DownloadFileState state = useCase.getFile();
-                            if (urlWithAlter.getAlter() != null && (state == null || state.getFullFile() == null)) {
-                                //placeholders case, download full
-                                useCase =
-                                        new StoryResourceFileUseCase(
-                                                core,
-                                                urlWithAlter.getAlter()
-                                        );
-                                state = useCase.getFile();
-                                if (state != null && state.getFullFile() != null)
-                                    return DownloadPageFileStatus.SUCCESS;
-                                return DownloadPageFileStatus.SKIP;
-                            }
-                            if (state != null && state.getFullFile() != null)
-                                return DownloadPageFileStatus.SUCCESS;
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                        return DownloadPageFileStatus.ERROR;
-                    }
-
-                    @Override
-                    public DownloadPageFileStatus downloadVODFile(
-                            String url,
-                            String uniqueKey,
-                            SlideTaskData slideTaskData,
-                            long start,
-                            long end
-                    ) {
-                        try {
-                            Log.e("StoryResources", slideTaskData.storyId + " " + slideTaskData.index + " " + url);
-                            InAppStoryService service = InAppStoryService.getInstance();
-                            if (service == null) return DownloadPageFileStatus.ERROR;
-                            GetCacheFileUseCase<StoryVODResourceFileUseCaseResult> useCase =
-                                    new StoryVODResourceFileUseCase(
-                                            core,
-                                            url,
-                                            uniqueKey,
-                                            start,
-                                            end
-                                    );
-                            Log.e("UrlFile", "DownloadManager: " + start + "-" + end + " " + url);
-
-                            StoryVODResourceFileUseCaseResult state = useCase.getFile();
-                            if (state != null) {
-                                return DownloadPageFileStatus.SUCCESS;
-                            }
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                        return DownloadPageFileStatus.ERROR;
-                    }
-
-
-                    @Override
-                    public void onError(StoryTaskData storyTaskData) {
-                        storyError(storyTaskData);
-                    }
-
-                    @Override
-                    public void onSlideError(SlideTaskData taskData) {
+                    public void invoke(SlideTaskKey taskData) {
                         slideError(taskData);
                         storyDownloader.setStoryLoadType(
-                                new StoryTaskData(
+                                new StoryTaskKey(
                                         taskData.storyId,
-                                        taskData.storyType
+                                        taskData.contentType
                                 ),
                                 -2);
                     }
@@ -478,7 +408,7 @@ public class StoryDownloadManager {
         );
     }
 
-    public void addStoryTask(int storyId, ArrayList<Integer> addIds, Story.StoryType type) {
+    public void addStoryTask(int storyId, ArrayList<Integer> addIds, ContentType type) {
         try {
             storyDownloader.addStoryTask(storyId, addIds, type);
         } catch (Exception e) {
@@ -487,13 +417,13 @@ public class StoryDownloadManager {
     }
 
 
-    public void reloadStory(int storyId, Story.StoryType type) {
-        slidesDownloader.removeSlideTasks(new StoryTaskData(storyId, type));
+    public void reloadStory(int storyId, ContentType type) {
+        slidesDownloader.removeSlideTasks(new StoryTaskKey(storyId, type));
         storyDownloader.reload(storyId, new ArrayList<Integer>(), type);
     }
 
 
-    public void clearAllFavoriteStatus(Story.StoryType type) {
+    public void clearAllFavoriteStatus(ContentType type) {
         List<Story> stories = getStoriesListByType(type);
         for (Story story : stories) {
             if (story == null) continue;
@@ -501,7 +431,7 @@ public class StoryDownloadManager {
         }
     }
 
-    public Story getStoryById(int id, Story.StoryType type) {
+    public Story getStoryById(int id, ContentType type) {
         List<Story> stories = getStoriesListByType(type);
         synchronized (storiesLock) {
             for (Story story : stories) {
@@ -512,7 +442,7 @@ public class StoryDownloadManager {
         return null;
     }
 
-    public Story getCurrentStory(Story.StoryType type) {
+    public Story getCurrentStory(ContentType type) {
         return getStoryById(
                 core
                         .screensManager()
@@ -522,7 +452,7 @@ public class StoryDownloadManager {
         );
     }
 
-    public void setStory(final Story story, int id, Story.StoryType type) {
+    public void setStory(final Story story, int id, ContentType type) {
         if (story == null) return;
         List<Story> stories = getStoriesListByType(type);
         Story cur = getStoryById(id, type);
@@ -552,7 +482,7 @@ public class StoryDownloadManager {
     private StoryDownloader storyDownloader;
     private SlidesDownloader slidesDownloader;
 
-    public void cleanStoriesIndex(Story.StoryType type) {
+    public void cleanStoriesIndex(ContentType type) {
         List<Story> stories = getStoriesListByType(type);
         synchronized (storiesLock) {
             for (Story story : stories) {
@@ -563,7 +493,7 @@ public class StoryDownloadManager {
         }
     }
 
-    public void addCompletedStoryTask(Story story, Story.StoryType type) {
+    public void addCompletedStoryTask(Story story, ContentType type) {
         boolean noStory = true;
         List<Story> stories = getStoriesListByType(type);
         synchronized (storiesLock) {
@@ -585,7 +515,11 @@ public class StoryDownloadManager {
             setStory(story, story.id, type);
             storyLoaded(story, type);
             try {
-                slidesDownloader.addStoryPages(story, 3, type);
+                slidesDownloader.addStoryPages(
+                        new StoryTaskKey(story.id, type),
+                        story,
+                        3
+                );
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -598,9 +532,9 @@ public class StoryDownloadManager {
 
             @Override
             public void onSuccess(final List<Story> response, Object... args) {
-                uploadingAdditional(response, Story.StoryType.UGC);
-                List<Story> stories = getStoriesListByType(Story.StoryType.UGC);
-                setLocalsOpened(stories, Story.StoryType.UGC);
+                uploadingAdditional(response, ContentType.UGC);
+                List<Story> stories = getStoriesListByType(ContentType.UGC);
+                setLocalsOpened(stories, ContentType.UGC);
                 if (callback != null) {
                     List<Integer> ids = new ArrayList<>();
                     for (Story story : response) {
@@ -638,10 +572,10 @@ public class StoryDownloadManager {
                 for (int i = 0; i < Math.min(response.size(), 4); i++) {
                     resStories.add(response.get(i));
                 }
-                setLocalsOpened(response, Story.StoryType.COMMON);
-                uploadingAdditional(response, Story.StoryType.COMMON);
+                setLocalsOpened(response, ContentType.COMMON);
+                uploadingAdditional(response, ContentType.COMMON);
                 List<Story> newStories = new ArrayList<>();
-                List<Story> stories = getStoriesListByType(Story.StoryType.COMMON);
+                List<Story> stories = getStoriesListByType(ContentType.COMMON);
                 synchronized (storiesLock) {
                     for (Story story : response) {
                         if (story == null) continue;
@@ -652,7 +586,7 @@ public class StoryDownloadManager {
                 }
                 if (newStories.size() > 0) {
                     try {
-                        uploadingAdditional(newStories, Story.StoryType.COMMON);
+                        uploadingAdditional(newStories, ContentType.COMMON);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -675,7 +609,7 @@ public class StoryDownloadManager {
                             favStories.clear();
                             favStories.addAll(response2);
                             favoriteImages.clear();
-                            List<Story> stories = getStoriesListByType(Story.StoryType.COMMON);
+                            List<Story> stories = getStoriesListByType(ContentType.COMMON);
                             synchronized (storiesLock) {
                                 for (Story st : stories) {
                                     if (st == null) continue;
@@ -689,7 +623,7 @@ public class StoryDownloadManager {
                                 }
                             }
                             if (response2 != null && response2.size() > 0) {
-                                setLocalsOpened(response2, Story.StoryType.COMMON);
+                                setLocalsOpened(response2, ContentType.COMMON);
                                 for (Story story : response2) {
                                     favoriteImages.add(new FavoriteImage(story.id, story.image, story.backgroundColor));
                                 }
@@ -761,9 +695,9 @@ public class StoryDownloadManager {
 
             @Override
             public void onSuccess(final List<Story> response, Object... args) {
-                uploadingAdditional(response, Story.StoryType.COMMON);
+                uploadingAdditional(response, ContentType.COMMON);
                 List<Story> newStories = new ArrayList<>();
-                List<Story> stories = getStoriesListByType(Story.StoryType.COMMON);
+                List<Story> stories = getStoriesListByType(ContentType.COMMON);
                 synchronized (storiesLock) {
                     for (Story story : response) {
                         if (story == null) continue;
@@ -774,8 +708,8 @@ public class StoryDownloadManager {
                 }
                 if (newStories.size() > 0) {
                     try {
-                        setLocalsOpened(newStories, Story.StoryType.COMMON);
-                        uploadingAdditional(newStories, Story.StoryType.COMMON);
+                        setLocalsOpened(newStories, ContentType.COMMON);
+                        uploadingAdditional(newStories, ContentType.COMMON);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -805,7 +739,7 @@ public class StoryDownloadManager {
     }
 
 
-    public void refreshLocals(Story.StoryType type) {
+    public void refreshLocals(ContentType type) {
         List<Story> lStories = new ArrayList<>();
         List<Story> stories = getStoriesListByType(type);
         synchronized (storiesLock) {
@@ -819,7 +753,7 @@ public class StoryDownloadManager {
         }
     }
 
-    void setLocalsOpened(List<Story> response, Story.StoryType type) {
+    void setLocalsOpened(List<Story> response, ContentType type) {
         core.storyListCache().saveStoriesOpened(response, type);
     }
 

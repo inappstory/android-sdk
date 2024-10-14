@@ -1,10 +1,5 @@
 package com.inappstory.sdk;
 
-import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_10;
-import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_5;
-import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_50;
-
-import android.content.Context;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -12,8 +7,7 @@ import androidx.annotation.NonNull;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.externalapi.subscribers.InAppStoryAPISubscribersManager;
-import com.inappstory.sdk.lrudiskcache.LruDiskCache;
-import com.inappstory.sdk.stories.api.models.ExceptionCache;
+import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.logs.ExceptionLog;
 import com.inappstory.sdk.stories.exceptions.ExceptionManager;
@@ -81,7 +75,7 @@ public class InAppStoryService {
                         sub.changeStory(storyId, listID);
                     }
                     Story story = core.contentLoader().storyDownloadManager()
-                            .getStoryById(storyId, Story.StoryType.COMMON);
+                            .getStoryById(storyId, ContentType.COMMON);
                     if (story != null)
                         apiSubscribersManager.openStory(story.id, listID);
                 }
@@ -143,7 +137,7 @@ public class InAppStoryService {
                     List<FavoriteImage> favImages =
                             core.contentLoader().storyDownloadManager().favoriteImages();
                     Story story = core.contentLoader().storyDownloadManager()
-                            .getStoryById(id, Story.StoryType.COMMON);
+                            .getStoryById(id, ContentType.COMMON);
                     if (story == null) return;
                     if (favStatus) {
                         FavoriteImage favoriteImage = new FavoriteImage(id, story.getImage(), story.getBackgroundColor());

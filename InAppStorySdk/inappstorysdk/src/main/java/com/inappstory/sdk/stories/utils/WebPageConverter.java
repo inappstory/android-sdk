@@ -17,6 +17,7 @@ import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.game.cache.UseCaseCallback;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.stories.api.interfaces.IResourceObject;
+import com.inappstory.sdk.stories.api.interfaces.SlidesContentHolder;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderType;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
 import com.inappstory.sdk.stories.api.models.ResourceMappingObject;
@@ -44,7 +45,7 @@ public class WebPageConverter {
     private String replaceStaticResources(
             IASCore core,
             String innerWebData,
-            Story story,
+            SlidesContentHolder story,
             final int index
     ) {
         List<IResourceObject> resources = new ArrayList<>();
@@ -88,13 +89,13 @@ public class WebPageConverter {
 
     private String replaceImagePlaceholders(IASCore core,
                                             String innerWebData,
-                                            final Story story,
+                                            final SlidesContentHolder slidesContentHolder,
                                             final int index
     ) {
         final String[] newData = {innerWebData};
         Map<String, Pair<ImagePlaceholderValue, ImagePlaceholderValue>> imgPlaceholders =
                 ((IASDataSettingsHolder) core.settingsAPI()).imagePlaceholdersWithSessionDefaults();
-        Map<String, String> imgPlaceholderKeys = story.getPlaceholdersList(index);
+        Map<String, String> imgPlaceholderKeys = slidesContentHolder.placeholdersMap(index);
         for (Map.Entry<String, String> entry : imgPlaceholderKeys.entrySet()) {
             String placeholderKey = entry.getKey();
             String placeholderName = entry.getValue();
@@ -160,17 +161,21 @@ public class WebPageConverter {
         return new Pair<>(tmpData, tmpLayout);
     }
 
-    public void replaceDataAndLoad(final String innerWebData, final Story story, final int index, final String layout,
-                                   final WebPageConvertCallback callback) {
+    public void replaceDataAndLoad(
+            final String innerWebData,
+            final SlidesContentHolder slidesContentHolder,
+            final int index,
+            final WebPageConvertCallback callback
+    ) {
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
                 String localData = innerWebData;
-                String newLayout = layout;
-                localData = replaceStaticResources(core, localData, story, index);
-                core.contentLoader().addVODResources(story, index);
-                localData = replaceImagePlaceholders(core, localData, story, index);
-                newLayout = replaceLayoutAssets(core, layout);
+                String newLayout = slidesContentHolder.layout();
+                localData = replaceStaticResources(core, localData, slidesContentHolder, index);
+                core.contentLoader().addVODResources(slidesContentHolder, index);
+                localData = replaceImagePlaceholders(core, localData, slidesContentHolder, index);
+                newLayout = replaceLayoutAssets(core, newLayout);
                 Pair<String, String> replaced = replacePlaceholders(core, localData, newLayout);
                 newLayout = replaced.second;
                 localData = replaced.first;

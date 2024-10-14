@@ -20,9 +20,7 @@ import androidx.fragment.app.Fragment;
 import androidx.viewpager.widget.ViewPager;
 
 import com.inappstory.sdk.InAppStoryManager;
-import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
-import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASCallbackType;
@@ -39,6 +37,7 @@ import com.inappstory.sdk.inner.share.ShareFilesPrepareCallback;
 import com.inappstory.sdk.share.IASShareData;
 import com.inappstory.sdk.share.IASShareManager;
 import com.inappstory.sdk.share.ShareListener;
+import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.ShareCallback;
 import com.inappstory.sdk.stories.events.GameCompleteEvent;
@@ -47,7 +46,6 @@ import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.statistic.GetStatisticV1Callback;
-import com.inappstory.sdk.stories.statistic.IASStatisticV1Impl;
 import com.inappstory.sdk.stories.ui.OverlapFragmentObserver;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPagerAdapter;
@@ -225,7 +223,7 @@ public class StoriesContentFragment extends Fragment
         disableDrag(launchData.getStoriesIds().get(position), launchData.getType());
     }
 
-    public void disableDrag(int storyId, Story.StoryType type) {
+    public void disableDrag(int storyId, ContentType type) {
         LaunchStoryScreenData launchData = getLaunchData();
         if (storiesViewPager == null || launchData == null) return;
         if (launchData.getStoriesIds().get(
@@ -420,7 +418,7 @@ public class StoriesContentFragment extends Fragment
                         forceFinish();
                         return;
                     }
-                    Story.StoryType type = launchData.getType();
+                    ContentType type = launchData.getType();
                     readerManager = new ReaderManager(
                             core,
                             launchData.getListUniqueId(),
@@ -513,7 +511,7 @@ public class StoriesContentFragment extends Fragment
                 @Override
                 public void use(@NonNull IASCore core) {
                     Story story = core.contentLoader().storyDownloadManager()
-                            .getStoryById(currentIds.get(position), readerManager.storyType);
+                            .getStoryById(currentIds.get(position), readerManager.contentType);
                     if (story == null || story.disableClose) return;
                     BaseStoryScreen screen = getStoriesReader();
                     if (screen != null)
@@ -554,7 +552,7 @@ public class StoriesContentFragment extends Fragment
         InAppStoryManager manager = InAppStoryManager.getInstance();
         if (manager == null) return 0;
         Story st = manager.iasCore().contentLoader().storyDownloadManager()
-                .getStoryById(id, readerManager.storyType);
+                .getStoryById(id, readerManager.contentType);
         return st == null ? 0 : st.lastIndex;
     }
 

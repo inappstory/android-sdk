@@ -1,6 +1,5 @@
 package com.inappstory.sdk.stories.cache;
 
-import android.content.Context;
 
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.lrudiskcache.CacheSize;

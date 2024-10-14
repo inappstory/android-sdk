@@ -29,6 +29,7 @@ import com.inappstory.sdk.externalapi.storylist.IASStoryListRequestData;
 import com.inappstory.sdk.game.cache.SuccessUseCaseCallback;
 import com.inappstory.sdk.game.reader.GameStoryData;
 import com.inappstory.sdk.imageloader.CustomFileLoader;
+import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.Image;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadFavoritesCallback;
@@ -112,7 +113,7 @@ public class InAppStoryAPISubscribersManager {
             final AppearanceManager appearanceManager
     ) {
         InAppStoryService service = core.inAppStoryService();
-        final Story currentStory = core.contentLoader().storyDownloadManager().getStoryById(storyId, Story.StoryType.COMMON);
+        final Story currentStory = core.contentLoader().storyDownloadManager().getStoryById(storyId, ContentType.COMMON);
         if (currentStory == null)
             return;
         final IASStoryListRequestData requestData = requestsData.get(uniqueKey);
@@ -120,12 +121,12 @@ public class InAppStoryAPISubscribersManager {
             return;
         List<Story> stories = new ArrayList<>();
         for (StoryAPIData apiData : storyAPIDataList) {
-            Story story = core.contentLoader().storyDownloadManager().getStoryById(apiData.id, Story.StoryType.COMMON);
+            Story story = core.contentLoader().storyDownloadManager().getStoryById(apiData.id, ContentType.COMMON);
             if (story == null) return;
             stories.add(story);
         }
         currentStory.isOpened = true;
-        core.storyListCache().saveStoryOpened(currentStory.id, Story.StoryType.COMMON);
+        core.storyListCache().saveStoryOpened(currentStory.id, ContentType.COMMON);
         String sessionId = core.sessionManager().getSession().getSessionId();
         if (currentStory.getDeeplink() != null && !currentStory.getDeeplink().isEmpty()) {
             service.getListReaderConnector().changeStory(currentStory.id, uniqueKey, false);
@@ -241,7 +242,7 @@ public class InAppStoryAPISubscribersManager {
                     ShowStory.ACTION_OPEN,
                     SourceType.LIST,
                     0,
-                    Story.StoryType.COMMON,
+                    ContentType.COMMON,
                     null
             );
             core.screensManager().openScreen(context,
@@ -266,7 +267,7 @@ public class InAppStoryAPISubscribersManager {
                     public void storiesLoaded(List<Integer> storiesIds) {
                         List<Story> stories = new ArrayList<>();
                         for (Integer storyId : storiesIds) {
-                            Story story = downloadManager.getStoryById(storyId, Story.StoryType.COMMON);
+                            Story story = downloadManager.getStoryById(storyId, ContentType.COMMON);
                             if (story == null) return;
                             stories.add(story);
                         }
@@ -416,7 +417,7 @@ public class InAppStoryAPISubscribersManager {
 
     private void cacheStoryCover(final Integer storyId) {
         final Story story = core.contentLoader().storyDownloadManager()
-                .getStoryById(storyId, Story.StoryType.COMMON);
+                .getStoryById(storyId, ContentType.COMMON);
         if (story != null) {
             Image storyImage = story.getProperImage(AppearanceManager.getCommonInstance().csCoverQuality());
             final String image;
@@ -503,7 +504,7 @@ public class InAppStoryAPISubscribersManager {
     }
 
     public void openStory(final int storyId, final String uniqueId) {
-        Story story = core.contentLoader().storyDownloadManager().getStoryById(storyId, Story.StoryType.COMMON);
+        Story story = core.contentLoader().storyDownloadManager().getStoryById(storyId, ContentType.COMMON);
         if (story != null) {
             story.isOpened = true;
             updateStory(story, null, null);
@@ -594,7 +595,7 @@ public class InAppStoryAPISubscribersManager {
                     }
                     if (addNew) {
                         Story story = core.contentLoader().storyDownloadManager()
-                                .getStoryById(favoriteImage.getId(), Story.StoryType.COMMON);
+                                .getStoryById(favoriteImage.getId(), ContentType.COMMON);
                         if (story == null) return;
                         String imagePath = null;
                         Image storyImage = story.getProperImage(AppearanceManager.getCommonInstance().csCoverQuality());

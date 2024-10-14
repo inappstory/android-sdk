@@ -12,15 +12,13 @@ import android.webkit.WebViewClient;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.core.IASCore;
-import com.inappstory.sdk.lrudiskcache.LruDiskCache;
-import com.inappstory.sdk.stories.cache.Downloader;
+import com.inappstory.sdk.stories.cache.FilesDownloader;
 import com.inappstory.sdk.stories.cache.usecases.StoryVODResourceFileUseCase;
 import com.inappstory.sdk.stories.cache.usecases.StoryVODResourceFileUseCaseResult;
 import com.inappstory.sdk.stories.cache.vod.ContentRange;
 import com.inappstory.sdk.stories.cache.vod.VODCacheJournalItem;
 import com.inappstory.sdk.utils.StringsUtils;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -55,7 +53,7 @@ public class IASWebViewClient extends WebViewClient {
         if (filePath != null) {
             file = new File(filePath);
         } else if (!url.startsWith("data:") && URLUtil.isValidUrl(url)) {
-            file = getCachedFile(Downloader.deleteQueryArgumentsFromUrlOld(url, true));
+            file = getCachedFile(FilesDownloader.deleteQueryArgumentsFromUrlOld(url, true));
         }
         return file;
     }

@@ -16,12 +16,8 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.UseServiceInstanceCallback;
-import com.inappstory.sdk.stories.cache.Downloader;
-import com.inappstory.sdk.stories.cache.FileLoadProgressCallback;
 
 import java.io.File;
-import java.io.IOException;
 
 public class VideoPlayer extends TextureView implements TextureView.SurfaceTextureListener {
 

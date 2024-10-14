@@ -3,8 +3,8 @@ package com.inappstory.sdk.core.api.impl;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.IASStoriesOpenedCache;
+import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.Story;
-import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 
 import java.util.HashSet;
 import java.util.List;
@@ -19,12 +19,12 @@ public class IASStoriesOpenedCacheImpl implements IASStoriesOpenedCache {
     }
 
     @Override
-    public String getLocalOpensKey(Story.StoryType type) {
+    public String getLocalOpensKey(ContentType type) {
         IASDataSettingsHolder settingsHolder = (IASDataSettingsHolder) core.settingsAPI();
         if (localOpensKey == null && settingsHolder.userId() != null) {
             localOpensKey = "opened" + settingsHolder.userId();
         }
-        return (type == Story.StoryType.COMMON) ? localOpensKey : type.name() + localOpensKey;
+        return (type == ContentType.COMMON) ? localOpensKey : type.name() + localOpensKey;
     }
 
     @Override
@@ -33,7 +33,7 @@ public class IASStoriesOpenedCacheImpl implements IASStoriesOpenedCache {
     }
 
     @Override
-    public void saveStoriesOpened(List<Story> stories, Story.StoryType type) {
+    public void saveStoriesOpened(List<Story> stories, ContentType type) {
         String key = getLocalOpensKey(type);
         Set<String> opens = core.sharedPreferencesAPI().getStringSet(key);
         if (opens == null) opens = new HashSet<>();
@@ -48,7 +48,7 @@ public class IASStoriesOpenedCacheImpl implements IASStoriesOpenedCache {
     }
 
     @Override
-    public void saveStoryOpened(int id, Story.StoryType type) {
+    public void saveStoryOpened(int id, ContentType type) {
         String key = core.storyListCache().getLocalOpensKey(type);
         Set<String> opens = core.sharedPreferencesAPI().getStringSet(key);
         if (opens == null) opens = new HashSet<>();

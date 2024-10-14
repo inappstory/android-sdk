@@ -13,9 +13,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.inappstory.sdk.InAppStoryManager;
-import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
-import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.Story;
 
 import java.util.ArrayList;
@@ -345,7 +344,7 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
         }
     }
 
-    public Story.StoryType type = Story.StoryType.COMMON;
+    public ContentType type = ContentType.COMMON;
 
     private void swipeUpCallback() {
         if (callbacks != null && !callbacks.isEmpty()) {

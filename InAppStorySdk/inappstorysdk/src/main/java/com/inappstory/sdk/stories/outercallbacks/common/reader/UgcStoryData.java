@@ -1,5 +1,6 @@
 package com.inappstory.sdk.stories.outercallbacks.common.reader;
 
+import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.utils.StringsUtils;
 
@@ -16,7 +17,7 @@ public class UgcStoryData extends StoryData {
             HashMap<String, Object> ugcPayload,
             SourceType sourceType
     ) {
-        super(id, Story.StoryType.UGC, title, tags, slidesCount, null, sourceType);
+        super(id, ContentType.UGC, title, tags, slidesCount, null, sourceType);
         this.ugcPayload = ugcPayload;
     }
 

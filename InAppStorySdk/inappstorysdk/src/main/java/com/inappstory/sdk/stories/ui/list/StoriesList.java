@@ -28,6 +28,7 @@ import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.IASStatisticV1;
 import com.inappstory.sdk.core.stories.StoriesListVMState;
 import com.inappstory.sdk.core.ui.screens.storyreader.StoryScreenHolder;
+import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadStoriesCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
@@ -38,7 +39,6 @@ import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.outercallbacks.storieslist.ListCallback;
 import com.inappstory.sdk.stories.outercallbacks.storieslist.ListScrollCallback;
 import com.inappstory.sdk.stories.statistic.GetStatisticV1Callback;
-import com.inappstory.sdk.stories.statistic.IASStatisticProfilingImpl;
 import com.inappstory.sdk.stories.statistic.IASStatisticV2Impl;
 import com.inappstory.sdk.stories.ui.reader.ActiveStoryItem;
 import com.inappstory.sdk.ugc.list.OnUGCItemClick;
@@ -402,7 +402,7 @@ public class StoriesList extends RecyclerView {
                         InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
                         if (inAppStoryManager != null)
                             current = inAppStoryManager.iasCore().contentLoader().storyDownloadManager()
-                                    .getStoryById(adapter.getStoriesIds().get(ind), Story.StoryType.COMMON);
+                                    .getStoryById(adapter.getStoriesIds().get(ind), ContentType.COMMON);
                         if (current != null && currentPercentage > 0) {
                             scrolledItems.put(i, new ShownStoriesListItem(
                                     new StoryData(
@@ -700,7 +700,7 @@ public class StoriesList extends RecyclerView {
         if (inAppStoryManager != null)
             for (int id : storiesIds) {
                 Story story = inAppStoryManager.iasCore().contentLoader()
-                        .storyDownloadManager().getStoryById(id, Story.StoryType.COMMON);
+                        .storyDownloadManager().getStoryById(id, ContentType.COMMON);
                 if (story != null) {
                     data.add(new StoryData(story, feed, SourceType.LIST));
                 }

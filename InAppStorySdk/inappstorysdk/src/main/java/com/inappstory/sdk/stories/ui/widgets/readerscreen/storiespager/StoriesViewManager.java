@@ -22,12 +22,12 @@ import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenStrategy;
 import com.inappstory.sdk.core.utils.ConnectionCheck;
 import com.inappstory.sdk.core.utils.ConnectionCheckCallback;
 import com.inappstory.sdk.game.reader.GameStoryData;
+import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.UpdateTimelineData;
 import com.inappstory.sdk.stories.ui.widgets.LoadProgressBar;
 import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.JsonParser;
-import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.network.jsapiclient.JsApiClient;
 import com.inappstory.sdk.network.jsapiclient.JsApiResponseCallback;
@@ -45,7 +45,6 @@ import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryScreen;
 import com.inappstory.sdk.stories.ui.reader.StoriesContentFragment;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.webview.SimpleStoriesWebView;
 import com.inappstory.sdk.stories.utils.AudioModes;
-import com.inappstory.sdk.stories.utils.KeyValueStorage;
 import com.inappstory.sdk.stories.utils.WebPageConvertCallback;
 import com.inappstory.sdk.stories.utils.WebPageConverter;
 import com.inappstory.sdk.utils.ISessionHolder;
@@ -328,7 +327,6 @@ public class StoriesViewManager {
 
     void setWebViewSettings(Story story) throws IOException {
         String innerWebData = story.pages.get(index);
-        String layout = story.getLayout();//getLayoutWithFonts(story.getLayout());
         if (storiesView == null || !(storiesView instanceof SimpleStoriesWebView)) return;
 
         WebPageConvertCallback callback = new WebPageConvertCallback() {
@@ -345,8 +343,7 @@ public class StoriesViewManager {
             isVideo = false;
         }
 
-        Log.e("JS_method_call", "setWebViewSettings " + story.id + " " + index);
-        converter.replaceDataAndLoad(innerWebData, story, index, layout, callback);
+        converter.replaceDataAndLoad(innerWebData, story, index, callback);
     }
 
     WebPageConverter converter = new WebPageConverter();
@@ -522,7 +519,7 @@ public class StoriesViewManager {
 
     private GameStoryData getGameStoryData() {
         GameStoryData data = null;
-        Story.StoryType type = pageManager != null ? pageManager.getStoryType() : Story.StoryType.COMMON;
+        ContentType type = pageManager != null ? pageManager.getStoryType() : ContentType.COMMON;
         Story story = core.contentLoader().storyDownloadManager().getStoryById(storyId, type);
         if (story != null) {
             data = new GameStoryData(

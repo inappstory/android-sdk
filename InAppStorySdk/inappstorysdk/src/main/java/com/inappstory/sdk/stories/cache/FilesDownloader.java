@@ -1,28 +1,11 @@
 package com.inappstory.sdk.stories.cache;
 
-import android.os.Handler;
-import android.os.Looper;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.WorkerThread;
-
 import com.inappstory.sdk.InAppStoryManager;
-import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.core.IASCore;
-import com.inappstory.sdk.core.UseIASCoreCallback;
-import com.inappstory.sdk.game.cache.SuccessUseCaseCallback;
-import com.inappstory.sdk.lrudiskcache.FileManager;
-import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.network.utils.ConnectionHeadersMap;
 import com.inappstory.sdk.network.utils.ResponseStringFromStream;
-import com.inappstory.sdk.stories.api.models.logs.ApiLogRequest;
-import com.inappstory.sdk.stories.api.models.logs.ApiLogRequestHeader;
 import com.inappstory.sdk.stories.api.models.logs.ApiLogResponse;
-import com.inappstory.sdk.stories.cache.usecases.CustomFileUseCase;
 import com.inappstory.sdk.stories.cache.usecases.FinishDownloadFileCallback;
-import com.inappstory.sdk.stories.utils.KeyValueStorage;
-import com.inappstory.sdk.stories.utils.RunnableCallback;
-import com.inappstory.sdk.utils.StringsUtils;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -34,20 +17,16 @@ import java.nio.channels.FileLock;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 
 /**
  * Загрузчик файлов
  */
 
-public class Downloader {
+public class FilesDownloader {
     private final IASCore core;
 
-    public Downloader(IASCore core) {
+    public FilesDownloader(IASCore core) {
         this.core = core;
     }
 

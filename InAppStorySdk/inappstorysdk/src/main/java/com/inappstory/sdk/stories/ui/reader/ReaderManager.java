@@ -10,11 +10,8 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.FragmentManager;
 
 import com.inappstory.sdk.AppearanceManager;
-import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
-import com.inappstory.sdk.UseManagerInstanceCallback;
-import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.IASStatisticV1;
@@ -27,6 +24,7 @@ import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenAppearanc
 import com.inappstory.sdk.core.utils.CallbackTypesConverter;
 import com.inappstory.sdk.game.cache.SessionAssetsIsReadyCallback;
 import com.inappstory.sdk.inner.share.InnerShareData;
+import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ShowStoryCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
@@ -34,7 +32,6 @@ import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.statistic.GetStatisticV1Callback;
-import com.inappstory.sdk.stories.statistic.IASStatisticProfilingImpl;
 import com.inappstory.sdk.stories.statistic.IASStatisticV2Impl;
 import com.inappstory.sdk.stories.ui.utils.FragmentAction;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPageManager;
@@ -47,7 +44,7 @@ import java.util.List;
 public class ReaderManager {
 
     private String listID;
-    public Story.StoryType storyType;
+    public ContentType contentType;
     public StoriesContentFragment host;
 
     private final Object hostLock = new Object();
@@ -81,7 +78,7 @@ public class ReaderManager {
             String sessionId,
             String feedId,
             String feedSlug,
-            Story.StoryType storyType,
+            ContentType contentType,
             SourceType source,
             int latestShowStoryAction
     ) {
@@ -91,7 +88,7 @@ public class ReaderManager {
         this.feedId = feedId;
         this.sessionId = sessionId;
         this.feedSlug = feedSlug;
-        this.storyType = storyType;
+        this.contentType = contentType;
         this.source = source;
         this.latestShowStoryAction = latestShowStoryAction;
     }
@@ -103,7 +100,7 @@ public class ReaderManager {
     public void sendShowStoryEvents(int storyId) {
         if (lastSentId == storyId) return;
         lastSentId = storyId;
-        final Story story = core.contentLoader().storyDownloadManager().getStoryById(storyId, storyType);
+        final Story story = core.contentLoader().storyDownloadManager().getStoryById(storyId, contentType);
         if (story != null) {
             core.callbacksAPI().useCallback(
                     IASCallbackType.SHOW_STORY,
@@ -115,7 +112,7 @@ public class ReaderManager {
                                             story,
                                             feedId,
                                             source,
-                                            storyType
+                                            contentType
                                     ),
                                     new CallbackTypesConverter()
                                             .getShowStoryActionTypeFromInt(latestShowStoryAction)
@@ -251,7 +248,7 @@ public class ReaderManager {
     public void showSingleStory(final int storyId, final int slideIndex) {
         final StoriesContentFragment host = getHost();
         if (host == null) return;
-        if (storyType == Story.StoryType.COMMON)
+        if (contentType == ContentType.COMMON)
             core.statistic().v1(getSessionId(), new GetStatisticV1Callback() {
                 @Override
                 public void get(@NonNull IASStatisticV1 manager) {
@@ -262,7 +259,7 @@ public class ReaderManager {
             new Handler(Looper.getMainLooper()).post(new Runnable() {
                 @Override
                 public void run() {
-                    Story.StoryType type = Story.StoryType.COMMON;
+                    ContentType type = ContentType.COMMON;
                     Story st = core.contentLoader().storyDownloadManager()
                             .getStoryById(storyId, type);
                     if (st != null) {
@@ -289,7 +286,7 @@ public class ReaderManager {
                     storyId + "",
                     appearanceManager,
                     null,
-                    storyType,
+                    contentType,
                     slideIndex,
                     true,
                     SourceType.SINGLE,
@@ -338,7 +335,7 @@ public class ReaderManager {
         if (!core.contentLoader().storyDownloadManager().changePriority(
                 storiesIds.get(pos),
                 adds,
-                storyType
+                contentType
         )) {
             useContentFragment(new StoriesContentFragmentAction() {
                 @Override
@@ -351,7 +348,7 @@ public class ReaderManager {
         core.contentLoader().storyDownloadManager().addStoryTask(
                 storiesIds.get(pos),
                 adds,
-                storyType);
+                contentType);
 
     }
 
@@ -378,7 +375,7 @@ public class ReaderManager {
         lastSentId = 0;
         currentStoryId = storiesIds.get(position);
         Story story = core.contentLoader().storyDownloadManager()
-                .getStoryById(currentStoryId, storyType);
+                .getStoryById(currentStoryId, contentType);
         if (story != null) {
             if (firstStoryId > 0 && startedSlideInd > 0) {
                 if (story.getSlidesCount() > startedSlideInd)
@@ -447,7 +444,7 @@ public class ReaderManager {
     void changeStory() {
         final List<Integer> lst = new ArrayList<>();
         lst.add(currentStoryId);
-        if (storyType == Story.StoryType.COMMON)
+        if (contentType == ContentType.COMMON)
             core.statistic().v1(getSessionId(), new GetStatisticV1Callback() {
                 @Override
                 public void get(@NonNull IASStatisticV1 manager) {
@@ -496,12 +493,12 @@ public class ReaderManager {
     private String feedSlug;
 
     private void sendStatBlock(boolean hasCloseEvent, String whence, int id) {
-        Story story2 = core.contentLoader().storyDownloadManager().getStoryById(id, storyType);
+        Story story2 = core.contentLoader().storyDownloadManager().getStoryById(id, contentType);
         if (story2 == null) return;
         IASStatisticV2 statisticV2 = core.statistic().v2();
         statisticV2.sendCurrentState();
         if (hasCloseEvent) {
-            Story story = core.contentLoader().storyDownloadManager().getStoryById(storiesIds.get(lastPos), storyType);
+            Story story = core.contentLoader().storyDownloadManager().getStoryById(storiesIds.get(lastPos), contentType);
             statisticV2.sendCloseStory(story.id, whence, story.lastIndex, story.getSlidesCount(), feedId);
         }
         statisticV2.sendViewStory(id, whence, feedId);

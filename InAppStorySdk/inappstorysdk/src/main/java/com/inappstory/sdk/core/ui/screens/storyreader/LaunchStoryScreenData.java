@@ -1,5 +1,6 @@
 package com.inappstory.sdk.core.ui.screens.storyreader;
 
+import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.SerializableWithKey;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoryItemCoordinates;
@@ -42,7 +43,7 @@ public class LaunchStoryScreenData implements SerializableWithKey {
             int firstAction,
             SourceType sourceType,
             Integer slideIndex,
-            Story.StoryType type,
+            ContentType type,
             StoryItemCoordinates initCoordinates
     ) {
         this.listUniqueId = listUniqueId;
@@ -91,7 +92,7 @@ public class LaunchStoryScreenData implements SerializableWithKey {
         return sessionId;
     }
 
-    public Story.StoryType getType() {
+    public ContentType getType() {
         return type;
     }
 
@@ -103,7 +104,7 @@ public class LaunchStoryScreenData implements SerializableWithKey {
     private final int firstAction;
     private final Integer slideIndex;
     private final String feed;
-    private final Story.StoryType type;
+    private final ContentType type;
     private final boolean shownOnlyNewStories;
 
 

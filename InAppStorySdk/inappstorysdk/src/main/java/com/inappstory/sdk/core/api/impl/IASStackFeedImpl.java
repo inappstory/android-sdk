@@ -3,17 +3,12 @@ package com.inappstory.sdk.core.api.impl;
 import android.content.Context;
 import android.text.TextUtils;
 
-import androidx.annotation.NonNull;
-
 import com.inappstory.sdk.AppearanceManager;
-import com.inappstory.sdk.InAppStoryManager;
-import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.IASStackFeed;
 import com.inappstory.sdk.network.ApiSettings;
-import com.inappstory.sdk.network.NetworkClient;
+import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.Feed;
 import com.inappstory.sdk.stories.api.models.Image;
 import com.inappstory.sdk.stories.api.models.Story;
@@ -83,10 +78,10 @@ public class IASStackFeedImpl implements IASStackFeed {
                                 if (response == null || response.stories == null) {
                                     stackFeedResult.error();
                                 } else {
-                                    core.storyListCache().saveStoriesOpened(response.stories, Story.StoryType.COMMON);
+                                    core.storyListCache().saveStoriesOpened(response.stories, ContentType.COMMON);
                                     core.contentLoader().storyDownloadManager().uploadingAdditional(
                                             response.stories,
-                                            Story.StoryType.COMMON
+                                            ContentType.COMMON
                                     );
                                     final StackStoryObserver observer = new StackStoryObserver(
                                             core,

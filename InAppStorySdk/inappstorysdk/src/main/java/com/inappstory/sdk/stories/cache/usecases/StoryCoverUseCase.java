@@ -4,11 +4,9 @@ import android.util.Log;
 
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.lrudiskcache.CacheJournalItem;
-import com.inappstory.sdk.lrudiskcache.LruCachesHolder;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.stories.cache.DownloadFileState;
-import com.inappstory.sdk.stories.cache.Downloader;
-import com.inappstory.sdk.stories.cache.FilesDownloadManager;
+import com.inappstory.sdk.stories.cache.FilesDownloader;
 import com.inappstory.sdk.utils.StringsUtils;
 
 import java.io.File;
@@ -36,7 +34,7 @@ public class StoryCoverUseCase extends GetCacheFileUseCase<Void> {
                 "covers" +
                 File.separator +
                 uniqueKey +
-                Downloader.getFileExtensionFromUrl(url);
+                FilesDownloader.getFileExtensionFromUrl(url);
     }
 
     @Override

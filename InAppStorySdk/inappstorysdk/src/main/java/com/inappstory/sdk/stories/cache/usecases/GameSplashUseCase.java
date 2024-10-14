@@ -4,15 +4,12 @@ package com.inappstory.sdk.stories.cache.usecases;
 import androidx.annotation.WorkerThread;
 
 import com.inappstory.sdk.core.IASCore;
-import com.inappstory.sdk.game.cache.UseCaseCallback;
 import com.inappstory.sdk.lrudiskcache.CacheJournalItem;
 import com.inappstory.sdk.lrudiskcache.FileChecker;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.stories.api.interfaces.IDownloadResource;
-import com.inappstory.sdk.stories.api.models.GameSplashScreen;
 import com.inappstory.sdk.stories.cache.DownloadFileState;
-import com.inappstory.sdk.stories.cache.Downloader;
-import com.inappstory.sdk.stories.cache.FilesDownloadManager;
+import com.inappstory.sdk.stories.cache.FilesDownloader;
 import com.inappstory.sdk.utils.StringsUtils;
 
 import java.io.File;
@@ -38,7 +35,7 @@ public class GameSplashUseCase extends GetCacheFileUseCase<DownloadFileState> {
                 "splashes" +
                 File.separator +
                 uniqueKey +
-                Downloader.getFileExtensionFromUrl(splashScreen.url());
+                FilesDownloader.getFileExtensionFromUrl(splashScreen.url());
     }
 
     @WorkerThread

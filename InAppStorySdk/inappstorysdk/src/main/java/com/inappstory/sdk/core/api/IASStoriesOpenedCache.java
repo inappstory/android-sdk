@@ -1,15 +1,16 @@
 package com.inappstory.sdk.core.api;
 
+import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.Story;
 
 import java.util.List;
 
 public interface IASStoriesOpenedCache {
-    String getLocalOpensKey(Story.StoryType type);
+    String getLocalOpensKey(ContentType type);
 
     void clearLocalOpensKey();
 
-    void saveStoriesOpened(final List<Story> stories, final Story.StoryType type);
+    void saveStoriesOpened(final List<Story> stories, final ContentType type);
 
-    void saveStoryOpened(final int id, final Story.StoryType type);
+    void saveStoryOpened(final int id, final ContentType type);
 }

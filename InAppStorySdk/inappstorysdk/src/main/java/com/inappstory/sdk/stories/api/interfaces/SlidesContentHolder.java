@@ -10,4 +10,5 @@ public interface SlidesContentHolder {
     List<IResourceObject> staticResources(int index);
     List<String> placeholdersNames(int index);
     Map<String, String> placeholdersMap(int index);
+    int actualSlidesCount();
 }
