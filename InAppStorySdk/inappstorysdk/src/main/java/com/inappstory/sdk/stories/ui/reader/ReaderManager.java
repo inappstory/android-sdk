@@ -315,9 +315,14 @@ public class ReaderManager {
                 adds,
                 storyType
         )) {
-            StoriesContentFragment host = getHost();
-            if (host != null)
-                host.forceFinish();
+            new Handler(Looper.getMainLooper()).post(new Runnable() {
+                @Override
+                public void run() {
+                    StoriesContentFragment host = getHost();
+                    if (host != null)
+                        host.forceFinish();
+                }
+            });
             return;
         }
         service.getStoryDownloadManager().addStoryTask(

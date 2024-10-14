@@ -151,6 +151,7 @@ class SlidesDownloader {
             int ind = Math.min(firstPriority.size(), 2);
             for (Integer adjacent : adjacents) {
                 Story adjacentStory = manager.getStoryById(adjacent, type);
+                if (adjacentStory == null) continue;
                 if (adjacentStory.lastIndex < adjacentStory.getSlidesCount() - 1) {
                     SlideTaskData nk = new SlideTaskData(adjacent, adjacentStory.lastIndex + 1, type);
                     secondPriority.remove(nk);
