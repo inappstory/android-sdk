@@ -283,12 +283,7 @@ public class GameManager {
         logger.gameLoaded(true);
         statusHolder.setGameLoaded();
         host.gameShouldForeground();
-        new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
-            @Override
-            public void run() {
-               // host.testMethod();
-            }
-        }, 10000);
+
     }
 
     void gameShouldForegroundCallback(String data) {
