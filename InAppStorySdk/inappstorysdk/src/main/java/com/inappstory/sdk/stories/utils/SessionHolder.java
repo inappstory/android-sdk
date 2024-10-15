@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
@@ -185,45 +186,79 @@ public class SessionHolder implements ISessionHolder {
     private boolean assetsIsReady = false;
 
     @Override
-    public boolean checkIfSessionAssetsIsReady(FilesDownloadManager filesDownloadManager) {
-        final boolean[] cachesIsReady = {true};
-        HashMap<String, SessionAsset> localCacheObjects = new HashMap<>();
+    public void checkIfSessionAssetsIsReady(FilesDownloadManager filesDownloadManager) {
+        Map<String, SessionAsset> localCacheObjects = new HashMap<>();
         synchronized (cacheLock) {
             localCacheObjects.putAll(cacheObjects);
         }
         for (String key : localCacheObjects.keySet()) {
-            if (!cachesIsReady[0]) return false;
             SessionAsset asset = localCacheObjects.get(key);
-            if (asset == null) return false;
+            if (asset == null) return;
+        }
+        List<SessionAsset> assets = new ArrayList<>(localCacheObjects.values());
+        checkLocalAsset(
+                filesDownloadManager,
+                assets,
+                0,
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        Set<SessionAssetsIsReadyCallback> temp = new HashSet<>();
+                        synchronized (sessionAssetIsReadyLock) {
+                            temp.addAll(assetsIsReadyCallbacks);
+                            assetsIsReadyCallbacks.clear();
+                        }
+                        for (SessionAssetsIsReadyCallback callback : temp) {
+                            callback.isReady();
+                        }
+                        synchronized (sessionAssetIsReadyLock) {
+                            assetsIsReady = true;
+                        }
+                    }
+                },
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        synchronized (sessionAssetIsReadyLock) {
+                            assetsIsReady = false;
+                        }
+                    }
+                }
+        );
+    }
+
+    private void checkLocalAsset(
+            final FilesDownloadManager filesDownloadManager,
+            final List<SessionAsset> assets,
+            final int index,
+            final Runnable check,
+            final Runnable error
+    ) {
+        if (index >= assets.size()) {
+            check.run();
+        } else {
             new SessionAssetLocalUseCase(
                     filesDownloadManager,
                     new UseCaseCallback<File>() {
                         @Override
                         public void onError(String message) {
-                            cachesIsReady[0] = false;
+                            error.run();
                         }
 
                         @Override
                         public void onSuccess(File result) {
+                            checkLocalAsset(
+                                    filesDownloadManager,
+                                    assets,
+                                    index + 1,
+                                    check,
+                                    error
+                            );
                         }
                     },
-                    asset
+                    assets.get(index)
             ).getFile();
         }
-        if (cachesIsReady[0]) {
-            Set<SessionAssetsIsReadyCallback> temp = new HashSet<>();
-            synchronized (sessionAssetIsReadyLock) {
-                temp.addAll(assetsIsReadyCallbacks);
-                assetsIsReadyCallbacks.clear();
-            }
-            for (SessionAssetsIsReadyCallback callback : temp) {
-                callback.isReady();
-            }
-        }
-        synchronized (sessionAssetIsReadyLock) {
-            assetsIsReady = cachesIsReady[0];
-        }
-        return cachesIsReady[0];
     }
 
     @Override

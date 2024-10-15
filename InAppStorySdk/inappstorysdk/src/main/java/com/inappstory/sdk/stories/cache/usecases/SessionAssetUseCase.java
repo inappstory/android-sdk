@@ -1,5 +1,7 @@
 package com.inappstory.sdk.stories.cache.usecases;
 
+import android.util.Log;
+
 import com.inappstory.sdk.game.cache.UseCaseCallback;
 import com.inappstory.sdk.lrudiskcache.CacheJournalItem;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
@@ -43,52 +45,67 @@ public class SessionAssetUseCase extends GetCacheFileUseCase<Void> {
         }
     }
 
+    private void logSessionAsset(String logMessage) {
+        Log.e("SessionAsset", logMessage);
+
+    }
+
     private void downloadFile() {
         downloadLog.sendRequestLog();
         downloadLog.generateResponseLog(false, filePath);
-        filesDownloadManager.useBundleDownloader(new Runnable() {
+        FinishDownloadFileCallback callback = new FinishDownloadFileCallback() {
             @Override
-            public void run() {
-                try {
-                    FinishDownloadFileCallback callback = new FinishDownloadFileCallback() {
-                        @Override
-                        public void finish(DownloadFileState fileState) {
-                            downloadLog.sendResponseLog();
-                            if (fileState == null) {
-                                useCaseCallback.onError("Can't download bundle file: " + cacheObject.url);
-                                return;
-                            }
-                            CacheJournalItem cacheJournalItem = generateCacheItem();
-                            cacheJournalItem.setSize(fileState.totalSize);
-                            cacheJournalItem.setDownloadedSize(fileState.totalSize);
-                            try {
-                                getCache().put(cacheJournalItem);
-                            } catch (IOException e) {
-
-                            }
-                            useCaseCallback.onSuccess(fileState.file);
-                        }
-                    };
-                    Downloader.downloadFile(
-                            cacheObject.url,
-                            new File(filePath),
-                            null,
-                            downloadLog.responseLog,
-                            null,
-                            filesDownloadManager,
-                            callback
-                    );
-
-                } catch (Exception e) {
-                    useCaseCallback.onError(e.getMessage());
+            public void finish(DownloadFileState fileState) {
+                if (fileState == null) {
+                    useCaseCallback.onError("Can't download bundle file: " + cacheObject.url);
+                    return;
                 }
+                useCaseCallback.onSuccess(fileState.file);
             }
-        });
+        };
+        if (filesDownloadManager.addSecondFinishCallbackIfIsNew(
+                cacheObject.url,
+                callback,
+                new FinishDownloadFileCallback() {
+                    @Override
+                    public void finish(DownloadFileState fileState) {
+                        logSessionAsset(cacheObject.url + " Download finished: " + fileState);
+                        downloadLog.sendResponseLog();
+                        CacheJournalItem cacheJournalItem = generateCacheItem();
+                        cacheJournalItem.setSize(fileState.totalSize);
+                        cacheJournalItem.setDownloadedSize(fileState.totalSize);
+                        try {
+                            getCache().put(cacheJournalItem);
+                        } catch (IOException e) {
+                            logSessionAsset(cacheObject.url + " Cache put error");
+                        }
+                    }
+                }
+        )) {
+            filesDownloadManager.useBundleDownloader(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        Downloader.downloadFile(
+                                cacheObject.url,
+                                new File(filePath),
+                                null,
+                                downloadLog.responseLog,
+                                null,
+                                filesDownloadManager
+                        );
 
+                    } catch (Exception e) {
+                        useCaseCallback.onError(e.getMessage());
+                    }
+                }
+            });
+        }
     }
 
     @Override
     public Void getFile() {
+        logSessionAsset(cacheObject.url + " getFile");
         getLocalFile(new Runnable() {
             @Override
             public void run() {
@@ -99,16 +116,19 @@ public class SessionAssetUseCase extends GetCacheFileUseCase<Void> {
     }
 
     private void getLocalFile(final Runnable error) {
+        logSessionAsset(cacheObject.url + " getLocalFile");
         filesDownloadManager.useLocalFilesThread(new Runnable() {
             @Override
             public void run() {
                 downloadLog.generateRequestLog(cacheObject.url);
+
                 CacheJournalItem cached = getCache().getJournalItem(uniqueKey);
                 DownloadFileState fileState = null;
                 if (cached != null) {
                     if (Objects.equals(cached.getSha1(), cacheObject.sha1)) {
                         fileState = getCache().get(uniqueKey);
                     } else {
+                        logSessionAsset(cacheObject.url + " SHA1 problem");
                         deleteCacheKey();
                     }
                 }
@@ -118,11 +138,13 @@ public class SessionAssetUseCase extends GetCacheFileUseCase<Void> {
                         downloadLog.generateResponseLog(true, filePath);
                         downloadLog.sendRequestResponseLog();
                         useCaseCallback.onSuccess(file);
+                        logSessionAsset(cacheObject.url + " Local cache success");
                         return;
                     } else {
                         deleteCacheKey();
                     }
                 }
+                logSessionAsset(cacheObject.url + " Local cache error");
                 error.run();
             }
         });

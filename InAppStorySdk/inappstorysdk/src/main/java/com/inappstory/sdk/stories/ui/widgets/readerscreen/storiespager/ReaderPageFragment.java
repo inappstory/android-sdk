@@ -385,14 +385,16 @@ public class ReaderPageFragment extends Fragment {
 
     private void showLoaderContainerAnimated() {
         Log.e("hideLoader", "showLoaderContainerAnimated");
-        loaderContainer.clearAnimation();
-        loaderContainer.animate().alpha(1f).setStartDelay(300).setDuration(300).start();
+        loaderContainer.setAlpha(1f);
+       // loaderContainer.clearAnimation();
+       // loaderContainer.animate().alpha(1f).setStartDelay(300).setDuration(300).start();
     }
 
     private void hideLoaderContainerAnimated() {
         Log.e("hideLoader", "hideLoaderContainerAnimated");
-        loaderContainer.clearAnimation();
-        loaderContainer.animate().alpha(0f).setDuration(300).start();
+        loaderContainer.setAlpha(0f);
+      //  loaderContainer.clearAnimation();
+       // loaderContainer.animate().alpha(0f).setDuration(300).start();
     }
 
 
@@ -737,8 +739,7 @@ public class ReaderPageFragment extends Fragment {
             if (parentManager != null) {
                 parentManager.removeSubscriber(manager);
             }
-            if (InAppStoryService.getInstance() != null)
-                InAppStoryService.getInstance().getStoryDownloadManager().removeSubscriber(manager);
+            manager.unsubscribe();
             manager.host = null;
         }
         super.onDestroyView();

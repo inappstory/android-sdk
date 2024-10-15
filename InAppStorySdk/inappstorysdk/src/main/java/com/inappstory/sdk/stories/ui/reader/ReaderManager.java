@@ -669,9 +669,4 @@ public class ReaderManager {
     public void swipeRight() {
 
     }
-
-    public void slideLoadedInCache(int storyId, int slideIndex) {
-        ReaderPageManager pageManager = getSubscriberByStoryId(storyId);
-        if (pageManager != null) pageManager.slideLoadedInCache(slideIndex);
-    }
 }

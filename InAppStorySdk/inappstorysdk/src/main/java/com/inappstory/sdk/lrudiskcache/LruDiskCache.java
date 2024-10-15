@@ -12,7 +12,7 @@ import java.util.Set;
 import kotlin.NotImplementedError;
 
 public class LruDiskCache {
-
+    private final Object journalLock = new Object();
     private final CacheJournal journal;
     private FileManager manager;
     private long cacheSize;
@@ -86,15 +86,15 @@ public class LruDiskCache {
     }
 
     public void put(CacheJournalItem item, String type) throws IOException {
-        synchronized (journal) {
-            File file = new File(item.getFilePath());
-            keyIsValid(item.getUniqueKey());
-            String name = file.getAbsolutePath();
-            manager.put(file, name);
+        File file = new File(item.getFilePath());
+        keyIsValid(item.getUniqueKey());
+        String name = file.getAbsolutePath();
+        manager.put(file, name);
+        synchronized (journalLock) {
             journal.delete(item.getUniqueKey(), type, false);
             journal.put(item, cacheSize);
-            journal.writeJournal();
         }
+        journal.writeJournal();
     }
 
     public void delete(String key) throws IOException {
@@ -102,33 +102,36 @@ public class LruDiskCache {
     }
 
     private void delete(String key, boolean writeJournal) throws IOException {
-        synchronized (journal) {
-            keyIsValid(key);
-            if (journal.delete(key, true) && writeJournal) {
-                journal.writeJournal();
-            }
+        keyIsValid(key);
+        boolean needToRewrite;
+        synchronized (journalLock) {
+            needToRewrite = journal.delete(key, true) && writeJournal;
+        }
+        if (needToRewrite) {
+            journal.writeJournal();
         }
     }
 
     public void clearCache() throws IOException {
-        synchronized (journal) {
-            Set<String> keys = new HashSet<>(journal.keySet());
-            for (String key : keys) {
-                delete(key, false);
-            }
-            journal.writeJournal();
+        Set<String> keys;
+        synchronized (journalLock) {
+            keys = new HashSet<>(journal.keySet());
         }
+        for (String key : keys) {
+            delete(key, false);
+        }
+        journal.writeJournal();
         FileManager.deleteFolderRecursive(getCacheDir(), false);
     }
 
     public long getCacheSize() {
-        synchronized (journal) {
+        synchronized (journalLock) {
             return cacheSize;
         }
     }
 
     public void setCacheSize(long cacheSize) {
-        synchronized (journal) {
+        synchronized (journalLock) {
             this.cacheSize = cacheSize;
         }
     }
@@ -142,11 +145,13 @@ public class LruDiskCache {
     }
 
     public boolean hasKey(String key) {
-        synchronized (journal) {
-            keyIsValid(key);
-            CacheJournalItem item = journal.get(key);
-            return item != null;
+        CacheJournalItem item = null;
+        keyIsValid(key);
+        synchronized (journalLock) {
+            item = journal.get(key);
         }
+        return item != null;
+
     }
 
     public File getFullFile(String key) {
@@ -163,7 +168,9 @@ public class LruDiskCache {
     }
 
     public CacheJournalItem getJournalItem(String key, String type) {
-        return journal.get(key, type);
+        synchronized (journalLock) {
+            return journal.get(key, type);
+        }
     }
 
 
@@ -172,25 +179,28 @@ public class LruDiskCache {
     }
 
     public DownloadFileState get(String key, String type) {
-        synchronized (journal) {
-            try {
-                keyIsValid(key);
-                CacheJournalItem item = journal.get(key, type);
-                if (item != null) {
-                    File file = new File(item.getFilePath());
-                    if (!file.exists()) {
+        keyIsValid(key);
+        CacheJournalItem item;
+        synchronized (journalLock) {
+            item = journal.get(key, type);
+        }
+        try {
+            if (item != null) {
+                File file = new File(item.getFilePath());
+                if (!file.exists()) {
+                    synchronized (journalLock) {
                         journal.delete(key, type, false);
-                        file = null;
                     }
-                    journal.writeJournal();
-                    if (file != null)
-                        return new DownloadFileState(file, item.getSize(), item.getDownloadedSize());
+                    file = null;
                 }
-            } catch (Exception e) {
-                return null;
+                journal.writeJournal();
+                if (file != null)
+                    return new DownloadFileState(file, item.getSize(), item.getDownloadedSize());
             }
+        } catch (Exception e) {
             return null;
         }
+        return null;
     }
 
     private void keyIsValid(String key) {

@@ -2,6 +2,8 @@ package com.inappstory.sdk.game.reader;
 
 import android.content.Context;
 import android.media.AudioManager;
+import android.os.Handler;
+import android.os.Looper;
 
 import androidx.annotation.NonNull;
 
@@ -194,18 +196,22 @@ public class GameManager {
         }
     }
 
+
     private void gameCompletedWithObject(String gameState, final GameFinishOptions options, String eventData) {
         closeOrFinishGameCallback(dataModel, gameCenterId, eventData);
-        host.gameCompleted(gameState, null);
-        if (options.openStory != null
-                && options.openStory.id != null
-                && !options.openStory.id.isEmpty()) {
-            InAppStoryManager.getInstance().showStoryCustom(
-                    options.openStory.id,
-                    host.getContext(),
-                    AppearanceManager.getCommonInstance()
-            );
-
+        if (options.openGameInstance != null && options.openGameInstance.id != null) {
+            loadAnotherGame(options.openGameInstance.id);
+        } else {
+            host.gameCompleted(gameState, null);
+            if (options.openStory != null
+                    && options.openStory.id != null
+                    && !options.openStory.id.isEmpty()) {
+                InAppStoryManager.getInstance().showStoryCustom(
+                        options.openStory.id,
+                        host.getContext(),
+                        AppearanceManager.getCommonInstance()
+                );
+            }
         }
 
     }
@@ -277,6 +283,12 @@ public class GameManager {
         logger.gameLoaded(true);
         statusHolder.setGameLoaded();
         host.gameShouldForeground();
+        new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+            @Override
+            public void run() {
+               // host.testMethod();
+            }
+        }, 10000);
     }
 
     void gameShouldForegroundCallback(String data) {
@@ -315,6 +327,15 @@ public class GameManager {
         statusHolder.clearGameStatus();
         logger.gameLoaded(false);
         host.restartGame();
+    }
+
+    void loadAnotherGame(String gameId) {
+        host.clearGameView();
+        host.changeGameToAnother(gameId);
+        statusHolder.clearGameStatus();
+        logger.gameLoaded(false);
+        clearTries();
+        host.downloadGame(gameId);
     }
 
 

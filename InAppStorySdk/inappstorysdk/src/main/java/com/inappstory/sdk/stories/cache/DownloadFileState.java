@@ -1,5 +1,7 @@
 package com.inappstory.sdk.stories.cache;
 
+import androidx.annotation.NonNull;
+
 import java.io.File;
 
 public class DownloadFileState {
@@ -17,5 +19,11 @@ public class DownloadFileState {
         if (downloadedSize == totalSize && file.exists())
             return file;
         return null;
+    }
+
+    @NonNull
+    @Override
+    public String toString() {
+        return file.exists() + " " + file.getAbsolutePath() + " " + downloadedSize + " " + totalSize;
     }
 }

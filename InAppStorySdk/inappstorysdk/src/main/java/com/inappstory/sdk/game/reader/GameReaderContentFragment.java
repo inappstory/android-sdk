@@ -184,11 +184,37 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         }
     };
 
-    private void setLayout() {
-    }
 
     public void shareComplete(String id, boolean success) {
         webView.loadUrl("javascript:(function(){share_complete(\"" + id + "\", " + success + ");})()");
+    }
+
+    void clearGameView() {
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service != null) {
+            new Handler(Looper.getMainLooper()).post(new Runnable() {
+                @Override
+                public void run() {
+                    closeButton.setVisibility(View.VISIBLE);
+                    loaderContainer.setVisibility(View.VISIBLE);
+                    if (webView != null) {
+                        webView.post(
+                                new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        synchronized (initLock) {
+                                            initWithEmpty = true;
+                                        }
+                                        if (webView != null)
+                                            webView.loadUrl("about:blank");
+                                    }
+                                }
+                        );
+                    }
+
+                }
+            });
+        }
     }
 
     void restartGame() {
@@ -211,6 +237,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                                         }
                                         if (webView != null)
                                             webView.loadUrl("about:blank");
+
                                     }
                                 }
                         );
@@ -411,6 +438,34 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         }
         super.onDestroyView();
     }
+
+    void testMethod() {
+        if (manager.gameCenterId.equals("66")) {
+            webView.evaluateJavascript("window.Android.gameComplete(JSON.stringify({}), JSON.stringify({}), JSON.stringify({openUrl: null, openStory: null, openGameInstance: {id: 66}}));", null);
+        } else {
+            webView.evaluateJavascript("window.Android.gameComplete(JSON.stringify({}), JSON.stringify({}), JSON.stringify({openUrl: null, openStory: null, openGameInstance: {id: 66}}));", null);
+        }
+
+    }
+
+    public void changeGameToAnother(String newGameId) {
+        gameReaderLaunchData = new GameReaderLaunchData(
+                newGameId,
+                gameReaderLaunchData.getObservableUID(),
+                gameReaderLaunchData.getSlideData()
+        );
+        Bundle args = getArguments();
+        if (args == null) {
+            args = new Bundle();
+        }
+        args.putSerializable(GameReaderLaunchData.SERIALIZABLE_KEY, gameReaderLaunchData);
+        setArguments(args);
+        manager.logger = new GameLoggerLvl1(newGameId);
+        manager.gameCenterId = newGameId;
+        interruption.active = false;
+        //downloadGame();
+    }
+
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
@@ -863,7 +918,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         );
     }
 
-    private void downloadGame(
+    void downloadGame(
             final String gameId
     ) {
         startDownloadTime = System.currentTimeMillis();
@@ -943,7 +998,6 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                                 new Handler(Looper.getMainLooper()).post(new Runnable() {
                                     @Override
                                     public void run() {
-                                        setLayout();
                                         GameCenterData gameCenterData = (GameCenterData) iGameCenterData;
                                         progressLoader.setIndeterminate(false);
                                         manager.statusHolder.setTotalReloadTries(
@@ -984,6 +1038,10 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                                 webView.post(new Runnable() {
                                     @Override
                                     public void run() {
+                                        synchronized (initLock) {
+                                            init = false;
+                                            initWithEmpty = false;
+                                        }
                                         webView.loadDataWithBaseURL(
                                                 result.getFilePath(),
                                                 webView.setDir(
@@ -1205,7 +1263,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                         }
                     }
             ).get();
-       //     ImageLoader.getInstance().displayImage(splashFile.getAbsolutePath(), -1, loader);
+            //     ImageLoader.getInstance().displayImage(splashFile.getAbsolutePath(), -1, loader);
         }
     }
 

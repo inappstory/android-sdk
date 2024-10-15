@@ -83,7 +83,9 @@ public class IASWebViewClient extends WebViewClient {
                 HashMap<String, String> newHeaders = new HashMap<>(currentHeaders);
                 newHeaders.put("Access-Control-Allow-Origin", "*");
                 response.setResponseHeaders(newHeaders);
+                Log.e("GameInterceptRequest", "FileExist " + file.getAbsolutePath());
             } catch (Exception e) {
+                Log.e("GameInterceptRequest", "Exception :" + e.getCause() + "\n" + e.getMessage());
                 InAppStoryService.createExceptionLog(e);
             }
         }
@@ -169,6 +171,7 @@ public class IASWebViewClient extends WebViewClient {
 
     @Override
     public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
+        Log.e("GameInterceptRequest", request.getUrl().toString());
         try {
             WebResourceResponse response = parseVODRequest(request);
             if (response == null)

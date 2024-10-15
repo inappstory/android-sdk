@@ -7,4 +7,6 @@ public class GameFinishOptions {
     public String openUrl;
     @SerializedName("openStory")
     public GameFinishStoryOptions openStory;
+    @SerializedName("openGameInstance")
+    public GameFinishGameOptions openGameInstance;
 }

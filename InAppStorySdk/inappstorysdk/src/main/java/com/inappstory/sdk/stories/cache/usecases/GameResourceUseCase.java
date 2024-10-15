@@ -162,32 +162,33 @@ public class GameResourceUseCase extends GetCacheFileUseCase<Void> {
                                 }
                             }
                         };
-                Downloader.downloadFile(
-                        resource.url,
-                        new File(filePath),
-                        new FileLoadProgressCallback() {
-                            @Override
-                            public void onSuccess(File file) {
+                if (filesDownloadManager.addFinishCallback(resource.url, callback)) {
+                    Downloader.downloadFile(
+                            resource.url,
+                            new File(filePath),
+                            new FileLoadProgressCallback() {
+                                @Override
+                                public void onSuccess(File file) {
 
-                            }
+                                }
 
-                            @Override
-                            public void onError(String error) {
+                                @Override
+                                public void onError(String error) {
 
-                            }
+                                }
 
-                            @Override
-                            public void onProgress(long loadedSize, long totalSize) {
-                                progressCallback.onProgress(loadedSize, totalSize);
-                            }
-                        },
-                        downloadLog.responseLog,
-                        interruption,
-                        offset,
-                        -1,
-                        filesDownloadManager,
-                        callback
-                );
+                                @Override
+                                public void onProgress(long loadedSize, long totalSize) {
+                                    progressCallback.onProgress(loadedSize, totalSize);
+                                }
+                            },
+                            downloadLog.responseLog,
+                            interruption,
+                            offset,
+                            -1,
+                            filesDownloadManager
+                    );
+                }
             } catch (Exception e) {
                 useCaseCallback.onError(e.getMessage());
                 e.printStackTrace();

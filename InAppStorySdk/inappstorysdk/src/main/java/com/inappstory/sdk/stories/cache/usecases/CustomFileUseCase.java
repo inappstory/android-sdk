@@ -42,49 +42,49 @@ public class CustomFileUseCase extends GetCacheFileUseCase<Void> {
         Log.e("ScenarioDownload", "UniqueKey: " + uniqueKey);
         DownloadFileState fileState = getCache().get(uniqueKey);
         if (fileState == null || fileState.downloadedSize != fileState.totalSize) {
-                Log.e("ScenarioDownload", "Download: " + uniqueKey + " Url: " + url);
-                downloadLog.sendRequestLog();
-                downloadLog.generateResponseLog(false, filePath);
-                filesDownloadManager.useBundleDownloader(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            FinishDownloadFileCallback callback = new FinishDownloadFileCallback() {
-                                @Override
-                                public void finish(DownloadFileState fileState) {
-                                    downloadLog.sendResponseLog();
-                                    if (fileState == null || fileState.downloadedSize != fileState.totalSize) {
-                                        getFileCallback.onError("");
-                                        return;
-                                    }
-                                    Log.e("ScenarioDownload", "Downloaded: " + uniqueKey + " Url: " + url);
-                                    CacheJournalItem cacheJournalItem = generateCacheItem();
-                                    cacheJournalItem.setSize(fileState.totalSize);
-                                    cacheJournalItem.setDownloadedSize(fileState.totalSize);
-                                    try {
-                                        getCache().put(cacheJournalItem);
-                                    } catch (IOException e) {
-
-                                        getFileCallback.onError(e.getMessage());
-                                    }
-                                    getFileCallback.onSuccess(new File(filePath));
+            Log.e("ScenarioDownload", "Download: " + uniqueKey + " Url: " + url);
+            downloadLog.sendRequestLog();
+            downloadLog.generateResponseLog(false, filePath);
+            filesDownloadManager.useBundleDownloader(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        FinishDownloadFileCallback callback = new FinishDownloadFileCallback() {
+                            @Override
+                            public void finish(DownloadFileState fileState) {
+                                downloadLog.sendResponseLog();
+                                if (fileState == null || fileState.downloadedSize != fileState.totalSize) {
+                                    getFileCallback.onError("");
+                                    return;
                                 }
-                            };
+                                Log.e("ScenarioDownload", "Downloaded: " + uniqueKey + " Url: " + url);
+                                CacheJournalItem cacheJournalItem = generateCacheItem();
+                                cacheJournalItem.setSize(fileState.totalSize);
+                                cacheJournalItem.setDownloadedSize(fileState.totalSize);
+                                try {
+                                    getCache().put(cacheJournalItem);
+                                } catch (IOException e) {
+
+                                    getFileCallback.onError(e.getMessage());
+                                }
+                                getFileCallback.onSuccess(new File(filePath));
+                            }
+                        };
+                        if (filesDownloadManager.addFinishCallback(url, callback))
                             Downloader.downloadFile(
                                     url,
                                     new File(filePath),
                                     null,
                                     downloadLog.responseLog,
                                     null,
-                                    filesDownloadManager,
-                                    callback
+                                    filesDownloadManager
                             );
 
-                        } catch (Exception e) {
-                            getFileCallback.onError(e.getMessage());
-                        }
+                    } catch (Exception e) {
+                        getFileCallback.onError(e.getMessage());
                     }
-                });
+                }
+            });
         } else {
             Log.e("ScenarioDownload", "Cached: " + uniqueKey);
             downloadLog.generateResponseLog(true, filePath);

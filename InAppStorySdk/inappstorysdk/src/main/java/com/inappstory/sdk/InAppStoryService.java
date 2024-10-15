@@ -113,7 +113,7 @@ public class InAppStoryService {
         ).getFile();
     }
 
-    private ISessionHolder sessionHolder = new SessionHolder();
+    private final ISessionHolder sessionHolder = new SessionHolder();
 
     public ISessionHolder getSession() {
         return sessionHolder;

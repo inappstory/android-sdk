@@ -30,10 +30,8 @@ import com.inappstory.sdk.stories.cache.usecases.StoryResourceFileUseCase;
 import com.inappstory.sdk.stories.cache.usecases.StoryVODResourceFileUseCase;
 import com.inappstory.sdk.stories.cache.usecases.StoryVODResourceFileUseCaseResult;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.UgcStoryData;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 import com.inappstory.sdk.stories.ui.list.FavoriteImage;
@@ -41,7 +39,6 @@ import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPag
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
 import com.inappstory.sdk.stories.utils.SessionManager;
 import com.inappstory.sdk.utils.ISessionHolder;
-import com.inappstory.sdk.utils.StringsUtils;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -198,6 +195,7 @@ public class StoryDownloadManager {
     public void clearCache() {
         storyDownloader.cleanTasks();
         slidesDownloader.cleanTasks();
+
         KeyValueStorage.clear();
         InAppStoryService.useInstance(new UseServiceInstanceCallback() {
             @Override
@@ -208,6 +206,7 @@ public class StoryDownloadManager {
                 inAppStoryService.getInfiniteCache().clearCache();
                 inAppStoryService.getVodCache().clearCache();
                 inAppStoryService.getFilesDownloadManager().getVodCacheJournal().clear();
+                inAppStoryService.getFilesDownloadManager().clearCallbacks();
             }
         });
     }
@@ -225,39 +224,41 @@ public class StoryDownloadManager {
         }
     }
 
-    public void removeSubscriber(ReaderPageManager manager) {
+    public void removeSubscriber(
+            InAppStoryService service,
+            ReaderPageManager subscriber,
+            SessionAssetsIsReadyCallback callback
+    ) {
         synchronized (lock) {
-            subscribers.remove(manager);
+            subscribers.remove(subscriber);
+            ISessionHolder sessionHolder = service.getSession();
+            if (callback != null)
+                sessionHolder.removeSessionAssetsIsReadyCallback(callback);
         }
     }
 
 
-    private void checkBundleResources(final ReaderPageManager subscriber, final SlideTaskData key) {
-        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
-            @Override
-            public void use(@NonNull InAppStoryService service) throws Exception {
-                ISessionHolder sessionHolder = service.getSession();
-                if (sessionHolder.checkIfSessionAssetsIsReady()) {
-                    subscriber.slideLoadedInCache(key.index);
-                } else {
-                    sessionHolder.addSessionAssetsIsReadyCallback(new SessionAssetsIsReadyCallback() {
-                        @Override
-                        public void isReady() {
-                            subscriber.slideLoadedInCache(key.index);
-                        }
-                    });
-                    service.downloadSessionAssets(sessionHolder.getSessionAssets());
-                }
-
-            }
-        });
+    public void checkBundleResources(
+            InAppStoryService service,
+            SessionAssetsIsReadyCallback callback,
+            final ReaderPageManager subscriber,
+            final SlideTaskData key
+    ) {
+        ISessionHolder sessionHolder = service.getSession();
+        if (sessionHolder.checkIfSessionAssetsIsReady()) {
+            subscriber.bundleContentInCache(key.index);
+        } else {
+            sessionHolder.addSessionAssetsIsReadyCallback(callback);
+            service.downloadSessionAssets(sessionHolder.getSessionAssets());
+        }
     }
 
     void slideLoaded(final SlideTaskData key) {
         synchronized (lock) {
             for (ReaderPageManager subscriber : subscribers) {
                 if (subscriber.getStoryId() == key.storyId && subscriber.getStoryType() == key.storyType) {
-                    checkBundleResources(subscriber, key);
+                    subscriber.slideContentInCache(key.index);
+                    // checkBundleResources(subscriber, key);
                     return;
                 }
             }

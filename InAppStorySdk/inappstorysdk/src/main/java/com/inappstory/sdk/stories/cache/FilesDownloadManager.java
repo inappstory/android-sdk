@@ -1,6 +1,7 @@
 package com.inappstory.sdk.stories.cache;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.inappstory.sdk.lrudiskcache.LruCachesHolder;
 import com.inappstory.sdk.stories.cache.usecases.FinishDownloadFileCallback;
@@ -31,18 +32,55 @@ public class FilesDownloadManager {
 
     private final Object finishLock = new Object();
 
-    public boolean addFinishCallback(String url, FinishDownloadFileCallback callback) {
+    public void clearCallbacks() {
+        synchronized (finishLock) {
+            downloadFileCallbacks.clear();
+        }
+    }
+
+    public boolean addSecondFinishCallbackIfIsNew(
+            String url,
+            FinishDownloadFileCallback callback,
+            FinishDownloadFileCallback callback2
+    ) {
         boolean isNewUrl = true;
         synchronized (finishLock) {
-            if (!downloadFileCallbacks.containsKey(url)) {
+            List<FinishDownloadFileCallback> callbacksByUrl = downloadFileCallbacks.get(url);
+            if (callbacksByUrl == null) {
+                callbacksByUrl = new ArrayList<>();
+                callbacksByUrl.add(callback);
+                callbacksByUrl.add(callback2);
                 downloadFileCallbacks.put(
                         url,
-                        new ArrayList<FinishDownloadFileCallback>()
+                        callbacksByUrl
                 );
             } else {
                 isNewUrl = false;
+                callbacksByUrl.add(callback);
             }
-            downloadFileCallbacks.get(url).add(callback);
+            if (url.contains("/assets/"))
+                Log.e("InvokeFileDownload", url + " Add " + isNewUrl);
+            return isNewUrl;
+        }
+    }
+
+    public boolean addFinishCallback(String url, FinishDownloadFileCallback callback) {
+        boolean isNewUrl = true;
+        synchronized (finishLock) {
+            List<FinishDownloadFileCallback> callbacksByUrl = downloadFileCallbacks.get(url);
+            if (callbacksByUrl == null) {
+                callbacksByUrl = new ArrayList<>();
+                callbacksByUrl.add(callback);
+                downloadFileCallbacks.put(
+                        url,
+                        callbacksByUrl
+                );
+            } else {
+                isNewUrl = false;
+                callbacksByUrl.add(callback);
+            }
+            if (url.contains("/assets/"))
+                Log.e("InvokeFileDownload", url + " Add " + isNewUrl);
             return isNewUrl;
         }
     }
@@ -50,9 +88,13 @@ public class FilesDownloadManager {
     public void invokeFinishCallbacks(String url, DownloadFileState state) {
         List<FinishDownloadFileCallback> callbacks = new ArrayList<>();
         synchronized (finishLock) {
-            if (downloadFileCallbacks.containsKey(url)) {
-                callbacks.addAll(downloadFileCallbacks.remove(url));
+            if (url.contains("/assets/"))
+                Log.e("InvokeFileDownload", url + " Finish");
+            List<FinishDownloadFileCallback> localCallbacks = downloadFileCallbacks.get(url);
+            if (localCallbacks != null) {
+                callbacks.addAll(localCallbacks);
             }
+            downloadFileCallbacks.remove(url);
         }
         for (FinishDownloadFileCallback callback : callbacks) {
             callback.finish(state);
