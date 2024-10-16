@@ -32,6 +32,7 @@ import android.webkit.PermissionRequest;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
@@ -59,14 +60,11 @@ import com.inappstory.sdk.game.cache.UseCaseWarnCallback;
 import com.inappstory.sdk.game.reader.logger.GameLoggerLvl1;
 import com.inappstory.sdk.game.ui.GameProgressLoader;
 import com.inappstory.sdk.game.utils.GameConstants;
-import com.inappstory.sdk.imageloader.ImageLoader;
 import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.inner.share.InnerShareFilesPrepare;
 import com.inappstory.sdk.inner.share.ShareFilesPrepareCallback;
 import com.inappstory.sdk.memcache.GetBitmapFromCacheWithFilePath;
-import com.inappstory.sdk.memcache.IGetBitmap;
 import com.inappstory.sdk.memcache.IGetBitmapFromMemoryCache;
-import com.inappstory.sdk.memcache.IGetBitmapFromMemoryCacheError;
 import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.NetworkClient;
@@ -112,8 +110,9 @@ import java.util.regex.Pattern;
 public class GameReaderContentFragment extends Fragment implements OverlapFragmentObserver, IASBackPressHandler {
     private IASWebView webView;
     private ImageView loader;
+    private FrameLayout gameWebViewContainer;
     private View closeButton;
-    private View webViewContainer;
+    private View webViewAndLoaderContainer;
     private RelativeLayout loaderContainer;
     private GameProgressLoader progressLoader;
     private View baseContainer;
@@ -189,31 +188,52 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         webView.loadUrl("javascript:(function(){share_complete(\"" + id + "\", " + success + ");})()");
     }
 
-    void clearGameView() {
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service != null) {
-            new Handler(Looper.getMainLooper()).post(new Runnable() {
-                @Override
-                public void run() {
-                    closeButton.setVisibility(View.VISIBLE);
-                    loaderContainer.setVisibility(View.VISIBLE);
-                    if (webView != null) {
-                        webView.post(
-                                new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        synchronized (initLock) {
-                                            initWithEmpty = true;
-                                        }
-                                        if (webView != null)
-                                            webView.loadUrl("about:blank");
-                                    }
-                                }
-                        );
-                    }
+    void showLoaders(final IASWebView oldWebView) {
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                checkIntentValues(gameLoadedErrorCallback);
+                closeButton.setVisibility(View.VISIBLE);
+                loaderContainer.setVisibility(View.VISIBLE);
 
+            }
+        });
+    }
+
+    void recreateGameView(final IRecreateWebViewCallback chain) {
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                if (progressLoader != null)
+                    progressLoader.clearLoader();
+                if (loader != null) {
+                    loader.setImageBitmap(null);
+                    loader.setBackgroundColor(Color.BLACK);
                 }
-            });
+                IASWebView oldWebView = webView;
+                synchronized (initLock) {
+                    initWithEmpty = true;
+                }
+                removeOldWebView(oldWebView);
+                initWebView();
+                chain.invoke(null);
+
+            }
+        });
+
+    }
+
+    private void removeOldWebView(IASWebView webView) {
+        if (webView != null) {
+            webView.destroyView();
+            gameWebViewContainer.removeView(webView);
+            gameWebViewContainer.removeAllViews();
+        }
+    }
+
+    private void clearWebView() {
+        if (webView != null) {
+            webView.loadUrl("about:blank");
         }
     }
 
@@ -235,8 +255,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                                         synchronized (initLock) {
                                             initWithEmpty = true;
                                         }
-                                        if (webView != null)
-                                            webView.loadUrl("about:blank");
+                                        clearWebView();
 
                                     }
                                 }
@@ -440,10 +459,11 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
     }
 
     void testMethod() {
-        if (manager.gameCenterId.equals("66")) {
-            webView.evaluateJavascript("window.Android.gameComplete(JSON.stringify({}), JSON.stringify({}), JSON.stringify({openUrl: null, openStory: null, openGameInstance: {id: 66}}));", null);
-        } else {
-            webView.evaluateJavascript("window.Android.gameComplete(JSON.stringify({}), JSON.stringify({}), JSON.stringify({openUrl: null, openStory: null, openGameInstance: {id: 66}}));", null);
+        if (!webView.isAttachedToWindow()) return;
+        if (manager.gameCenterId.equals("388")) {
+            webView.evaluateJavascript("window.Android.gameComplete(JSON.stringify({}), JSON.stringify({}), JSON.stringify({openUrl: null, openStory: null, openGameInstance: {id: 217}}));", null);
+        } else if (manager.gameCenterId.equals("217")) {
+            webView.evaluateJavascript("window.Android.gameComplete(JSON.stringify({}), JSON.stringify({}), JSON.stringify({openUrl: null, openStory: null, openGameInstance: {id: 388}}));", null);
         }
 
     }
@@ -515,6 +535,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         });
         checkInsets();
         checkIntentValues(gameLoadedErrorCallback);
+        downloadGame();
     }
 
     public void closeGame() {
@@ -675,7 +696,10 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
 
     private final Object initLock = new Object();
 
-    private void initWebView() {
+    void initWebView() {
+        if (getContext() == null) return;
+        webView = new IASWebView(getContext());
+        gameWebViewContainer.addView(webView);
         final GameStoryData dataModel = getStoryDataModel();
         webView.setWebViewClient(new IASWebViewClient());
         webView.setWebChromeClient(new WebChromeClient() {
@@ -748,6 +772,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                 ),
                 "Android"
         );
+
     }
 
     public void permissionResult(
@@ -873,8 +898,9 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                 setStaticSplashScreen(staticFile);
             if (animFile != null)
                 setLoader(animFile);
+        } else {
+            setLoader(null);
         }
-        downloadGame();
     }
 
     private void setFullScreenFromOptions(GameScreenOptions options) {
@@ -917,6 +943,8 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                 manager.gameCenterId
         );
     }
+
+    String currentFilePath;
 
     void downloadGame(
             final String gameId
@@ -1042,6 +1070,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                                             init = false;
                                             initWithEmpty = false;
                                         }
+                                        currentFilePath = result.getFilePath();
                                         webView.loadDataWithBaseURL(
                                                 result.getFilePath(),
                                                 webView.setDir(
@@ -1086,6 +1115,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
 
     private String generateJsonConfig() {
         Context context = getContext();
+        if (context == null) return "";
         GameConfigOptions options = new GameConfigOptions();
         options.fullScreen = isFullscreen;
         NetworkClient networkClient = InAppStoryManager.getNetworkClient();
@@ -1097,7 +1127,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         } else {
             options.apiBaseUrl = networkClient.getBaseUrl();
         }
-        int orientation = getResources().getConfiguration().orientation;
+        int orientation = context.getResources().getConfiguration().orientation;
         options.screenOrientation =
                 (orientation == Configuration.ORIENTATION_LANDSCAPE) ? "landscape" : "portrait";
         options.userAgent = StringsUtils.getEscapedString(
@@ -1253,7 +1283,6 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         if (splashFile == null || !splashFile.exists()) {
             loader.setBackgroundColor(Color.BLACK);
         } else {
-            Log.e("Loader", "Static " + splashFile.getAbsolutePath());
             new GetBitmapFromCacheWithFilePath(
                     splashFile.getAbsolutePath(),
                     new IGetBitmapFromMemoryCache() {
@@ -1281,7 +1310,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         );
         manager = new GameManager(this);
         manager.logger = new GameLoggerLvl1(gameReaderLaunchData.getGameId());
-        webView = view.findViewById(R.id.gameWebview);
+        gameWebViewContainer = view.findViewById(R.id.gameWebviewContainer);
         loader = view.findViewById(R.id.loader);
         baseContainer = view.findViewById(R.id.draggable_frame);
         loaderContainer = view.findViewById(R.id.loaderContainer);
@@ -1293,7 +1322,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                 )
         );
         closeButton = view.findViewById(R.id.close_button);
-        webViewContainer = view.findViewById(R.id.webViewContainer);
+        webViewAndLoaderContainer = view.findViewById(R.id.webViewContainer);
         return view;
     }
 

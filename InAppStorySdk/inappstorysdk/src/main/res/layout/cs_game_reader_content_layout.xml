@@ -23,11 +23,10 @@
             android:id="@+id/webViewContainer"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
-
-            <com.inappstory.sdk.stories.ui.views.IASWebView
-                android:id="@+id/gameWebview"
+            <FrameLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent" />
+                android:id="@+id/gameWebviewContainer"
+                android:layout_height="match_parent"/>
 
             <RelativeLayout
                 android:id="@+id/loaderContainer"

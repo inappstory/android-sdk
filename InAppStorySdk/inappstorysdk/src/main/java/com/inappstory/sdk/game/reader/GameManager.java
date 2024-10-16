@@ -5,14 +5,9 @@ import android.media.AudioManager;
 import android.os.Handler;
 import android.os.Looper;
 
-import androidx.annotation.NonNull;
-
-import com.inappstory.iasutilsconnector.filepicker.DummyFilePicker;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.UseManagerInstanceCallback;
-import com.inappstory.sdk.game.cache.SetGameLoggerCallback;
 import com.inappstory.sdk.game.reader.logger.AbstractGameLogger;
 import com.inappstory.sdk.game.reader.logger.GameLoggerLvl0;
 import com.inappstory.sdk.game.reader.logger.GameLoggerLvl1;
@@ -35,6 +30,7 @@ import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickAction;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
+import com.inappstory.sdk.stories.ui.views.IASWebView;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
 import com.inappstory.sdk.utils.StringsUtils;
 
@@ -74,6 +70,7 @@ public class GameManager {
 
     void gameInstanceSetData(String gameInstanceId, String data, boolean sendToServer) {
 
+        if (host == null) return;
         InAppStoryService service = InAppStoryService.getInstance();
         if (service == null) return;
         String id = gameInstanceId;
@@ -156,11 +153,15 @@ public class GameManager {
     GameReaderContentFragment host;
 
     void showGoods(String skusString, String widgetId) {
+
+        if (host == null) return;
         host.showGoods(skusString, widgetId);
     }
 
 
     void setAudioManagerMode(String mode) {
+
+        if (host == null) return;
         host.setAudioManagerMode(mode);
     }
 
@@ -198,6 +199,7 @@ public class GameManager {
 
 
     private void gameCompletedWithObject(String gameState, final GameFinishOptions options, String eventData) {
+        if (host == null) return;
         closeOrFinishGameCallback(dataModel, gameCenterId, eventData);
         if (options.openGameInstance != null && options.openGameInstance.id != null) {
             loadAnotherGame(options.openGameInstance.id);
@@ -217,6 +219,7 @@ public class GameManager {
     }
 
     void gameCompleted(String gameState, String urlOrOptions, String eventData) {
+        if (host == null) return;
         GameFinishOptions options = JsonParser.fromJson(urlOrOptions, GameFinishOptions.class);
         if (options == null) {
             gameCompletedWithUrl(gameState, urlOrOptions, eventData);
@@ -228,11 +231,13 @@ public class GameManager {
     }
 
     private void gameCompletedWithUrl(String gameState, String link, String eventData) {
+        if (host == null) return;
         closeOrFinishGameCallback(dataModel, gameCenterId, eventData);
         host.gameCompleted(gameState, link);
     }
 
     void sendApiRequest(String data) {
+        if (host == null) return;
         new JsApiClient(
                 host.getContext(),
                 ApiSettings.getInstance().getHost()
@@ -245,11 +250,13 @@ public class GameManager {
     }
 
     private String modifyJsResult(String data) {
+
         if (data == null) return "";
         return data.replaceAll("'", "\\\\'");
     }
 
     void tapOnLink(String link, Context context) {
+        if (host == null) return;
         SlideData data = null;
         if (dataModel != null) {
             data = dataModel.slideData;
@@ -272,6 +279,7 @@ public class GameManager {
     }
 
     int pausePlaybackOtherApp() {
+        if (host == null) return 0;
         AudioManager am = (AudioManager) host.getContext().getSystemService(Context.AUDIO_SERVICE);
         return am.requestAudioFocus(host.audioFocusChangeListener,
                 AudioManager.STREAM_MUSIC,
@@ -279,11 +287,17 @@ public class GameManager {
     }
 
     void gameLoaded() {
+        if (host == null) return;
         if (statusHolder.hasGameLoadStatus()) return;
         logger.gameLoaded(true);
         statusHolder.setGameLoaded();
         host.gameShouldForeground();
-
+       /* new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                host.testMethod();
+            }
+        }, 10000);*/
     }
 
     void gameShouldForegroundCallback(String data) {
@@ -294,6 +308,7 @@ public class GameManager {
     }
 
     void gameLoadFailed(String reason, boolean canTryReload) {
+        if (host == null) return;
         if (statusHolder.hasGameLoadStatus()) return;
         statusHolder.setGameFailed();
         if (logger != null) {
@@ -310,27 +325,37 @@ public class GameManager {
     }
 
     void jsEvent(String name, String data) {
+        if (host == null) return;
         host.jsEvent(name, data);
     }
 
     void clearTries() {
+        if (host == null) return;
         statusHolder.clearGameLoadTries();
         logger.launchTryNumber(1);
     }
 
     void reloadGame() {
+        if (host == null) return;
         statusHolder.clearGameStatus();
         logger.gameLoaded(false);
         host.restartGame();
     }
 
-    void loadAnotherGame(String gameId) {
-        host.clearGameView();
-        host.changeGameToAnother(gameId);
-        statusHolder.clearGameStatus();
-        logger.gameLoaded(false);
-        clearTries();
-        host.downloadGame(gameId);
+    void loadAnotherGame(final String gameId) {
+        if (host == null) return;
+        host.recreateGameView(new IRecreateWebViewCallback() {
+            @Override
+            public void invoke(IASWebView oldWebView) {
+                host.changeGameToAnother(gameId);
+                statusHolder.clearGameStatus();
+                logger.gameLoaded(false);
+                clearTries();
+                host.showLoaders(oldWebView);
+                host.downloadGame(gameId);
+            }
+        });
+
     }
 
 
@@ -348,15 +373,18 @@ public class GameManager {
     }
 
     void openFilePicker(String data) {
+        if (host == null) return;
         host.openFilePicker(data);
     }
 
     boolean hasFilePicker() {
+        if (host == null) return false;
         InAppStoryManager manager = InAppStoryManager.getInstance();
         return (manager != null && manager.utilModulesHolder != null && manager.utilModulesHolder.hasFilePickerModule());
     }
 
     void shareData(String id, String data) {
+        if (host == null) return;
         InAppStoryService service = InAppStoryService.getInstance();
         if (service == null || service.isShareProcess())
             return;

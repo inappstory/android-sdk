@@ -55,6 +55,12 @@ public class GameProgressLoader extends RelativeLayout implements IGameProgressL
 
     IGameProgressLoader progressLoader = null;
 
+    public void clearLoader() {
+
+        removeAllViews();
+        progressLoader = null;
+    }
+
     public void launchLoaderAnimation(final File customFile) {
         post(new Runnable() {
             @Override

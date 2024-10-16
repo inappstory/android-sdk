@@ -138,7 +138,7 @@ public class GameResourceUseCase extends GetCacheFileUseCase<Void> {
                             public void finish(DownloadFileState fileState) {
                                 downloadLog.sendResponseLog();
                                 if (fileState == null || fileState.downloadedSize != fileState.totalSize) {
-                                    useCaseCallback.onError("Download interrupted");
+                                    useCaseCallback.onError(resource.url + " Download interrupted");
                                 } else {
                                     if (fileChecker.checkWithShaAndSize(
                                             fileState.file,
@@ -174,7 +174,7 @@ public class GameResourceUseCase extends GetCacheFileUseCase<Void> {
 
                                 @Override
                                 public void onError(String error) {
-
+                                    Log.e("GameResource", "Download error: " + error);
                                 }
 
                                 @Override
