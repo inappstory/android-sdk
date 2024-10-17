@@ -898,8 +898,6 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                 setStaticSplashScreen(staticFile);
             if (animFile != null)
                 setLoader(animFile);
-        } else {
-            setLoader(null);
         }
     }
 
