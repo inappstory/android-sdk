@@ -32,6 +32,7 @@ import android.webkit.PermissionRequest;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
@@ -63,6 +64,7 @@ import com.inappstory.sdk.game.cache.FilePathAndContent;
 import com.inappstory.sdk.game.cache.SetGameLoggerCallback;
 import com.inappstory.sdk.game.cache.UseCaseCallback;
 import com.inappstory.sdk.game.cache.UseCaseWarnCallback;
+import com.inappstory.sdk.game.reader.logger.GameLoggerLvl1;
 import com.inappstory.sdk.game.ui.GameProgressLoader;
 import com.inappstory.sdk.game.utils.GameConstants;
 import com.inappstory.sdk.imageloader.CustomFileLoader;
@@ -113,8 +115,8 @@ import java.util.regex.Pattern;
 public class GameReaderContentFragment extends Fragment implements OverlapFragmentObserver, IASBackPressHandler {
     private IASWebView webView;
     private ImageView loader;
+    private FrameLayout gameWebViewContainer;
     private View closeButton;
-    private View webViewContainer;
     private RelativeLayout loaderContainer;
     private GameProgressLoader progressLoader;
     private View baseContainer;
@@ -182,19 +184,12 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                     public void run() {
                         closeButton.setVisibility(View.VISIBLE);
                         loaderContainer.setVisibility(View.VISIBLE);
+                        synchronized (initLock) {
+                            initWithEmpty = true;
+                        }
+
+                        clearWebView();
                         if (webView != null) {
-                            webView.post(
-                                    new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            synchronized (initLock) {
-                                                initWithEmpty = true;
-                                            }
-                                            if (webView != null)
-                                                webView.loadUrl("about:blank");
-                                        }
-                                    }
-                            );
                             webView.postDelayed(new Runnable() {
                                 @Override
                                 public void run() {
@@ -728,6 +723,72 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         );
     }
 
+    void showLoaders(final IASWebView oldWebView, final IASCore core) {
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                checkIntentValues(core, gameLoadedErrorCallback);
+                closeButton.setVisibility(View.VISIBLE);
+                loaderContainer.setVisibility(View.VISIBLE);
+
+            }
+        });
+    }
+
+    void recreateGameView(final IRecreateWebViewCallback chain) {
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                if (progressLoader != null)
+                    progressLoader.clearLoader();
+                if (loader != null) {
+                    loader.setImageBitmap(null);
+                    loader.setBackgroundColor(Color.BLACK);
+                }
+                IASWebView oldWebView = webView;
+                synchronized (initLock) {
+                    initWithEmpty = true;
+                }
+                removeOldWebView(oldWebView);
+                initWebView();
+                chain.invoke(null);
+
+            }
+        });
+
+    }
+
+    private void removeOldWebView(IASWebView webView) {
+        if (webView != null) {
+            webView.destroyView();
+            gameWebViewContainer.removeView(webView);
+            gameWebViewContainer.removeAllViews();
+        }
+    }
+
+    private void clearWebView() {
+        if (webView != null) {
+            webView.loadUrl("about:blank");
+        }
+    }
+
+    public void changeGameToAnother(String newGameId) {
+        gameReaderLaunchData = new GameReaderLaunchData(
+                newGameId,
+                gameReaderLaunchData.getObservableUID(),
+                gameReaderLaunchData.getSlideData()
+        );
+        Bundle args = getArguments();
+        if (args == null) {
+            args = new Bundle();
+        }
+        args.putSerializable(GameReaderLaunchData.SERIALIZABLE_KEY, gameReaderLaunchData);
+        setArguments(args);
+        manager.gameCenterId = newGameId;
+        interruption.active = false;
+        //downloadGame();
+    }
+
     public void permissionResult(
             int requestCode,
             @NonNull int[] grantResults
@@ -904,7 +965,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         );
     }
 
-    private void downloadGame(
+    void downloadGame(
             final String gameId
     ) {
         startDownloadTime = System.currentTimeMillis();
@@ -1024,6 +1085,10 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                                 webView.post(new Runnable() {
                                     @Override
                                     public void run() {
+                                        synchronized (initLock) {
+                                            init = false;
+                                            initWithEmpty = false;
+                                        }
                                         webView.loadDataWithBaseURL(
                                                 result.getFilePath(),
                                                 webView.setDir(
@@ -1048,6 +1113,31 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
             }
         });
 
+    }
+
+    void clearGameView() {
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                closeButton.setVisibility(View.VISIBLE);
+                loaderContainer.setVisibility(View.VISIBLE);
+                if (webView != null) {
+                    webView.post(
+                            new Runnable() {
+                                @Override
+                                public void run() {
+                                    synchronized (initLock) {
+                                        initWithEmpty = true;
+                                    }
+                                    if (webView != null)
+                                        webView.loadUrl("about:blank");
+                                }
+                            }
+                    );
+                }
+
+            }
+        });
     }
 
     private void replaceConfigs(IASDataSettingsHolder dataSettingsHolder) {
@@ -1268,7 +1358,6 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                 )
         );
         closeButton = view.findViewById(R.id.close_button);
-        webViewContainer = view.findViewById(R.id.webViewContainer);
         return view;
     }
 

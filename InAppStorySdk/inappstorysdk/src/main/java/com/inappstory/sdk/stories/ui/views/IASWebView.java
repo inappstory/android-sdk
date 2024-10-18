@@ -91,6 +91,15 @@ public class IASWebView extends WebView {
                         "} </style>");
     }
 
+    public void destroyView() {
+        removeAllViews();
+        clearHistory();
+        clearCache(true);
+        loadUrl("about:blank");
+        removeAllViews();
+        destroyDrawingCache();
+    }
+
     public String setDir(String html) {
         try {
             int dir = getContext().getResources().getConfiguration().getLayoutDirection();

@@ -131,9 +131,9 @@ public class GameJSInterface {
     }
 
     @JavascriptInterface
-    public void gameComplete(String data, String eventData, String deeplink) {
-        manager.gameCompleted(data, deeplink, eventData);
-        logMethod("data:" + data + " | deeplink:" + deeplink + " | eventData:" + eventData);
+    public void gameComplete(String data, String eventData, String urlOrOptions) {
+        manager.gameCompleted(data, urlOrOptions, eventData);
+        logMethod("data:" + data + " | deeplink:" + urlOrOptions + " | eventData:" + eventData);
     }
 
     @JavascriptInterface

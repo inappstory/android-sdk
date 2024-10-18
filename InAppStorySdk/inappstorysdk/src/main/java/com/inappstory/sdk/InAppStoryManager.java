@@ -510,7 +510,6 @@ public class InAppStoryManager {
         core = new IASCoreImpl(context);
         core.contentLoader().storyDownloadManager().init();
         core.settingsAPI().isSoundOn(!context.getResources().getBoolean(R.bool.defaultMuted));
-        core.contentLoader().storyDownloadManager().init();
         core.inAppStoryService().onCreate();
     }
 

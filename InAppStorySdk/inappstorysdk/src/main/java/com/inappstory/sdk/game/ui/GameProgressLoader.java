@@ -54,6 +54,12 @@ public class GameProgressLoader extends RelativeLayout implements IGameProgressL
         Log.e("ProgressVisibility", visibility + "");
     }
 
+    public void clearLoader() {
+        removeAllViews();
+        progressLoader = null;
+    }
+
+
     private boolean canUseLottieAnimation = false;
 
     IGameProgressLoader progressLoader = null;

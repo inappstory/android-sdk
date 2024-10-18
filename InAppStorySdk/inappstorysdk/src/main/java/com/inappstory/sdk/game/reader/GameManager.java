@@ -2,6 +2,7 @@ package com.inappstory.sdk.game.reader;
 
 import android.content.Context;
 import android.media.AudioManager;
+import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 
@@ -32,11 +33,13 @@ import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.UrlObject;
 import com.inappstory.sdk.stories.api.models.WebResource;
 import com.inappstory.sdk.stories.outercallbacks.common.gamereader.GameReaderCallback;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.GameReaderLaunchData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.CallToActionCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickAction;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
+import com.inappstory.sdk.stories.ui.views.IASWebView;
 import com.inappstory.sdk.utils.StringsUtils;
 
 import java.lang.reflect.Type;
@@ -49,7 +52,7 @@ public class GameManager {
 
     private final IASCore core;
     String path;
-    final String gameCenterId;
+    String gameCenterId;
     List<WebResource> resources;
     final GameLoadStatusHolder statusHolder = new GameLoadStatusHolder();
     String gameConfig;
@@ -228,23 +231,43 @@ public class GameManager {
 
     private void gameCompletedWithObject(String gameState, final GameFinishOptions options, String eventData) {
         closeOrFinishGameCallback(dataModel, gameCenterId, eventData);
-        host.gameCompleted(gameState, null);
-        if (options.openStory != null
-                && options.openStory.id != null
-                && !options.openStory.id.isEmpty()) {
-            ((IASSingleStoryImpl)core.singleStoryAPI()).show(
-                    host.getContext(),
-                    options.openStory.id,
-                    AppearanceManager.getCommonInstance(),
-                    null,
-                    ContentType.COMMON,
-                    0,
-                    true,
-                    SourceType.SINGLE,
-                    ShowStory.ACTION_CUSTOM
-            );
-
+        if (options.openGameInstance != null && options.openGameInstance.id != null) {
+            loadAnotherGame(options.openGameInstance.id);
+        } else {
+            host.gameCompleted(gameState, null);
+            if (options.openStory != null
+                    && options.openStory.id != null
+                    && !options.openStory.id.isEmpty()) {
+                ((IASSingleStoryImpl) core.singleStoryAPI()).show(
+                        host.getContext(),
+                        options.openStory.id,
+                        AppearanceManager.getCommonInstance(),
+                        null,
+                        ContentType.COMMON,
+                        0,
+                        true,
+                        SourceType.SINGLE,
+                        ShowStory.ACTION_CUSTOM
+                );
+            }
         }
+    }
+
+
+
+    void loadAnotherGame(final String gameId) {
+        if (host == null) return;
+        host.recreateGameView(new IRecreateWebViewCallback() {
+            @Override
+            public void invoke(IASWebView oldWebView) {
+                host.changeGameToAnother(gameId);
+                statusHolder.clearGameStatus();
+                logger.gameLoaded(false);
+                clearTries();
+                host.showLoaders(oldWebView, core);
+                host.downloadGame(gameId);
+            }
+        });
 
     }
 
