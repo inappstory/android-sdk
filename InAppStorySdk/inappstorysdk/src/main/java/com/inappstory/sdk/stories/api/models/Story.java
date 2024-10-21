@@ -29,8 +29,6 @@ public class Story implements Parcelable, IReaderContentWithStatus, IListItemCon
     @Required
     public int id;
 
-    public int lastIndex;
-
     @SerializedName("title")
     public String title;
 
@@ -219,12 +217,6 @@ public class Story implements Parcelable, IReaderContentWithStatus, IListItemCon
         for (IResource resourceObject: imagePlaceholdersList) {
             this.imagePlaceholdersList.add((ResourceMapping) resourceObject);
         }
-    }
-
-
-
-    public boolean isScreenshotShare(int index) {
-        return shareType(index) == 1;
     }
 
 
@@ -418,7 +410,6 @@ public class Story implements Parcelable, IReaderContentWithStatus, IListItemCon
     public Story getSimpleCopy() {
         Story story = new Story();
         story.id = id;
-        story.lastIndex = lastIndex;
         story.title = title;
         story.statTitle = statTitle;
         story.backgroundColor = backgroundColor;
@@ -445,7 +436,6 @@ public class Story implements Parcelable, IReaderContentWithStatus, IListItemCon
         if (slidesShare == null) slidesShare = new ArrayList<>();
         if (pages == null) pages = new ArrayList<>();
         id = in.readInt();
-        lastIndex = in.readInt();
         title = in.readString();
         backgroundColor = in.readString();
         image = in.createTypedArrayList(Image.CREATOR);
@@ -464,7 +454,6 @@ public class Story implements Parcelable, IReaderContentWithStatus, IListItemCon
         if (slidesShare == null) slidesShare = new ArrayList<>();
         if (pages == null) pages = new ArrayList<>();
         dest.writeInt(id);
-        dest.writeInt(lastIndex);
         dest.writeString(title);
         dest.writeString(statTitle);
         dest.writeString(backgroundColor);

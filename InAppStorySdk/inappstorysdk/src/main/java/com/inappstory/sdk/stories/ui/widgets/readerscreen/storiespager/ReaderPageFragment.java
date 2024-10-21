@@ -167,30 +167,13 @@ public class ReaderPageFragment extends Fragment {
 
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
-        InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
-        if (inAppStoryManager != null) {
-            Story story = inAppStoryManager.iasCore().contentLoader().storyDownloadManager()
-                    .getStoryById(
-                            storyId,
-                            manager.getViewContentType()
-                    );
-            if (story != null)
-                this.story = story;
-        }
-        if (story != null) {
-            outState.putInt("lastIndex", story.lastIndex);
-        }
         super.onSaveInstanceState(outState);
     }
-
-    int lastIndex = -1;
 
     @Override
     public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
         super.onViewStateRestored(savedInstanceState);
-        if (savedInstanceState != null) {
-            lastIndex = savedInstanceState.getInt("lastIndex");
-        }
+
     }
 
 
@@ -217,7 +200,7 @@ public class ReaderPageFragment extends Fragment {
         }
         setOffsets(view);
         if (storiesView != null)
-            storiesView.getManager().setIndex(story.lastIndex);
+            storiesView.getManager().setIndex(manager.parentManager.getByIdAndIndex(storyId).index());
         if (storiesView instanceof View) {
             ((View) storiesView).post(new Runnable() {
                 @Override
@@ -731,11 +714,7 @@ public class ReaderPageFragment extends Fragment {
     }
 
     void loadIfStoryIsNotNull() {
-        if (lastIndex >= 0) {
-            story.lastIndex = lastIndex;
-        }
-
-        manager.setSlideIndex(story.lastIndex);
+        manager.setSlideIndex(parentManager.getByIdAndIndex(storyId).index());
         setViews(getView());
         manager.storyLoadedInCache(story);
     }

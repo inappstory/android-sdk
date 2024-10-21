@@ -8,6 +8,7 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.FragmentManager;
+import androidx.viewpager.widget.ViewPager;
 
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryService;
@@ -18,12 +19,14 @@ import com.inappstory.sdk.core.api.IASStatisticV1;
 import com.inappstory.sdk.core.api.IASStatisticV2;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.api.impl.IASSingleStoryImpl;
+import com.inappstory.sdk.core.dataholders.IReaderContent;
 import com.inappstory.sdk.core.ui.screens.ShareProcessHandler;
 import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryScreen;
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenAppearance;
 import com.inappstory.sdk.core.utils.CallbackTypesConverter;
 import com.inappstory.sdk.game.cache.SessionAssetsIsReadyCallback;
 import com.inappstory.sdk.inner.share.InnerShareData;
+import com.inappstory.sdk.stories.api.models.ContentIdWithIndex;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ShowStoryCallback;
@@ -61,6 +64,19 @@ public class ReaderManager {
         }
     }
 
+    public void onPageScrollStateChanged(int state) {
+        int index = getCurrentStoryIndex();
+        if (state == ViewPager.SCROLL_STATE_DRAGGING)
+            latestShowStoryAction = ShowStory.ACTION_SWIPE;
+        if (state == ViewPager.SCROLL_STATE_IDLE) {
+            if (index == currentSlideIndex) {
+                resumeCurrent(false);
+            }
+            clearInactiveTimers();
+        }
+        setCurrentSlideIndex(index);
+
+    }
 
     public StoriesContentFragment getHost() {
         synchronized (hostLock) {
@@ -164,7 +180,7 @@ public class ReaderManager {
 
 
     public void swipeUp(int position) {
-        int storyId = storiesIds.get(position);
+        int storyId = storiesIds.get(position).id();
         ReaderPageManager manager = getSubscriberByStoryId(storyId);
         if (manager != null)
             manager.swipeUp();
@@ -255,52 +271,46 @@ public class ReaderManager {
                     manager.addLinkOpenStatistic(storyId, slideIndex);
                 }
             });
-        if (storiesIds.contains(storyId)) {
-            new Handler(Looper.getMainLooper()).post(new Runnable() {
-                @Override
-                public void run() {
-                    ContentType type = ContentType.STORY;
-                    Story st = core.contentLoader().storyDownloadManager()
-                            .getStoryById(storyId, type);
-                    if (st != null) {
-                        if (st.slidesCount() <= slideIndex) {
-                            st.lastIndex = 0;
-                        } else {
-                            st.lastIndex = slideIndex;
-                        }
+        for (int i = 0; i < storiesIds.size(); i++) {
+            final int tempIndex = i;
+            if (storiesIds.get(tempIndex).id() == storyId) {
+                new Handler(Looper.getMainLooper()).post(new Runnable() {
+                    @Override
+                    public void run() {
+                        storiesIds.get(tempIndex).index(slideIndex);
+                        latestShowStoryAction = ShowStory.ACTION_CUSTOM;
+                        host.setCurrentItem(tempIndex);
                     }
-                    latestShowStoryAction = ShowStory.ACTION_CUSTOM;
-                    host.setCurrentItem(storiesIds.indexOf(storyId));
-                }
-            });
-        } else {
-            LaunchStoryScreenAppearance appearance = host.getAppearanceSettings();
-            final AppearanceManager appearanceManager;
-            if (appearance != null) {
-                appearanceManager = appearance.toAppearanceManager();
-            } else {
-                appearanceManager = new AppearanceManager();
+                });
+                return;
             }
-            ((IASSingleStoryImpl) core.singleStoryAPI()).show(
-                    host.getContext(),
-                    storyId + "",
-                    appearanceManager,
-                    null,
-                    contentType,
-                    slideIndex,
-                    true,
-                    SourceType.SINGLE,
-                    ShowStory.ACTION_CUSTOM
-            );
         }
 
+        LaunchStoryScreenAppearance appearance = host.getAppearanceSettings();
+        final AppearanceManager appearanceManager;
+        if (appearance != null) {
+            appearanceManager = appearance.toAppearanceManager();
+        } else {
+            appearanceManager = new AppearanceManager();
+        }
+        ((IASSingleStoryImpl) core.singleStoryAPI()).show(
+                host.getContext(),
+                storyId + "",
+                appearanceManager,
+                null,
+                contentType,
+                slideIndex,
+                true,
+                SourceType.SINGLE,
+                ShowStory.ACTION_CUSTOM
+        );
     }
 
     void sendStat(int position, SourceType source) {
         if (lastPos < position && lastPos > -1) {
-            sendStatBlock(true, IASStatisticV2Impl.NEXT, storiesIds.get(position));
+            sendStatBlock(true, IASStatisticV2Impl.NEXT, storiesIds.get(position).id());
         } else if (lastPos > position && lastPos > -1) {
-            sendStatBlock(true, IASStatisticV2Impl.PREV, storiesIds.get(position));
+            sendStatBlock(true, IASStatisticV2Impl.PREV, storiesIds.get(position).id());
         } else if (lastPos == -1) {
             String whence = IASStatisticV2Impl.DIRECT;
             switch (source) {
@@ -316,12 +326,12 @@ public class ReaderManager {
                 default:
                     break;
             }
-            sendStatBlock(false, whence, storiesIds.get(position));
+            sendStatBlock(false, whence, storiesIds.get(position).id());
         }
     }
 
     void newStoryTask(int pos) {
-        ArrayList<Integer> adds = new ArrayList<>();
+        ArrayList<ContentIdWithIndex> adds = new ArrayList<>();
         if (storiesIds.size() > 1) {
             if (pos == 0) {
                 adds.add(storiesIds.get(pos + 1));
@@ -373,27 +383,25 @@ public class ReaderManager {
 
         lastPos = position;
         lastSentId = 0;
-        currentStoryId = storiesIds.get(position);
-        Story story = core.contentLoader().storyDownloadManager()
-                .getStoryById(currentStoryId, contentType);
+        ContentIdWithIndex contentIdWithIndex = storiesIds.get(position);
+        currentStoryId = contentIdWithIndex.id();
+        IReaderContent story = core.contentHolder().readerContent()
+                .getByIdAndType(currentStoryId, contentType);
         if (story != null) {
             if (firstStoryId > 0 && startedSlideInd > 0) {
                 if (story.slidesCount() > startedSlideInd)
-                    story.lastIndex = startedSlideInd;
+                    contentIdWithIndex.index(startedSlideInd);
                 cleanFirst();
             }
-
             core.statistic().profiling().addTask("slide_show",
                     currentStoryId + "_" +
-                            story.lastIndex);
+                            contentIdWithIndex.index()
+            );
         }
         final int pos = position;
-
         service.getListReaderConnector().changeStory(currentStoryId, listID, showOnlyNewStories);
         core.screensManager().getStoryScreenHolder().currentOpenedStoryId(currentStoryId);
-        if (story != null) {
-            currentSlideIndex = story.lastIndex;
-        }
+        currentSlideIndex = contentIdWithIndex.index();
         useContentFragment(new StoriesContentFragmentAction() {
             @Override
             public void invoke(StoriesContentFragment host) {
@@ -410,12 +418,9 @@ public class ReaderManager {
 
                 }
                 newStoryTask(pos);
-
-                if (storiesIds != null && storiesIds.size() > pos) {
+                if (storiesIds.size() > pos) {
                     changeStory();
                 }
-
-
             }
         }).start();
     }
@@ -493,17 +498,33 @@ public class ReaderManager {
     private String feedSlug;
 
     private void sendStatBlock(boolean hasCloseEvent, String whence, int id) {
-        Story story2 = core.contentLoader().storyDownloadManager().getStoryById(id, contentType);
+        IReaderContent story2 = core.contentHolder().readerContent().getByIdAndType(
+                id,
+                contentType
+        );
         if (story2 == null) return;
         IASStatisticV2 statisticV2 = core.statistic().v2();
         statisticV2.sendCurrentState();
+        ContentIdWithIndex contentIdWithIndex = storiesIds.get(lastPos);
         if (hasCloseEvent) {
-            Story story = core.contentLoader().storyDownloadManager().getStoryById(storiesIds.get(lastPos), contentType);
-            statisticV2.sendCloseStory(story.id, whence, story.lastIndex, story.slidesCount(), feedId);
+            IReaderContent story = core.contentHolder().readerContent().getByIdAndType(
+                    contentIdWithIndex.id(),
+                    contentType
+            );
+            statisticV2.sendCloseStory(contentIdWithIndex.id(),
+                    whence,
+                    contentIdWithIndex.index(),
+                    story.slidesCount(),
+                    feedId
+            );
         }
         statisticV2.sendViewStory(id, whence, feedId);
         statisticV2.sendOpenStory(id, whence, feedId);
-        statisticV2.createCurrentState(story2.id, story2.lastIndex, feedId);
+        for (ContentIdWithIndex contentId : storiesIds) {
+            if (story2.id() == contentId.id()) {
+                statisticV2.createCurrentState(contentId.id(), contentId.index(), feedId);
+            }
+        }
     }
 
     void shareComplete() {
@@ -522,6 +543,10 @@ public class ReaderManager {
         return currentStoryId;
     }
 
+    public int getCurrentStoryIndex() {
+        return getByIdAndIndex(currentStoryId).index();
+    }
+
     public void setCurrentStoryId(int currentStoryId) {
         this.currentStoryId = currentStoryId;
     }
@@ -534,18 +559,42 @@ public class ReaderManager {
         this.currentSlideIndex = currentSlideIndex;
     }
 
-    public List<Integer> getStoriesIds() {
-        return storiesIds;
+    public void refreshStoriesIds() {
+        for (ContentIdWithIndex contentIdWithIndex : storiesIds) {
+            contentIdWithIndex.index(0);
+        }
     }
 
     public void setStoriesIds(List<Integer> storiesIds) {
-        this.storiesIds = storiesIds;
+        this.storiesIds.clear();
+        if (storiesIds == null) return;
+        for (int storyId : storiesIds) {
+            this.storiesIds.add(new ContentIdWithIndex(storyId, 0));
+        }
     }
 
     private int currentStoryId;
     private int currentSlideIndex;
-    private List<Integer> storiesIds;
 
+
+    public void setStoriesIdsWithIndex(List<ContentIdWithIndex> storiesIds) {
+        this.storiesIds.clear();
+        this.storiesIds.addAll(storiesIds);
+    }
+
+    public List<ContentIdWithIndex> getStoriesIdsWithIndex() {
+        return storiesIds;
+    }
+
+    private final List<ContentIdWithIndex> storiesIds = new ArrayList<>();
+
+    public ContentIdWithIndex getByIdAndIndex(int storyId) {
+        for (ContentIdWithIndex contentIdWithIndex : storiesIds) {
+            if (contentIdWithIndex.id() == storyId)
+                return contentIdWithIndex;
+        }
+        return null;
+    }
 
     public int startedSlideInd;
     public int firstStoryId = -1;

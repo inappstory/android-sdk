@@ -1,5 +1,6 @@
 package com.inappstory.sdk.stories.outercallbacks.common.reader;
 
+import com.inappstory.sdk.core.dataholders.IReaderContent;
 import com.inappstory.sdk.core.dataholders.IStatData;
 import com.inappstory.sdk.network.annotations.models.Ignore;
 import com.inappstory.sdk.stories.api.models.ContentType;
@@ -61,7 +62,7 @@ public class StoryData implements Serializable {
     }
 
     public static StoryData getStoryData(
-            Story story,
+            IStatData story,
             String feed,
             SourceType sourceType,
             ContentType contentType

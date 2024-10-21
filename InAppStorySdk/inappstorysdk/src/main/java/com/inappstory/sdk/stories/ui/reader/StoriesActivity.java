@@ -32,11 +32,13 @@ import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.IASStatisticV1;
 import com.inappstory.sdk.core.api.UseIASCallback;
+import com.inappstory.sdk.core.dataholders.IReaderContent;
 import com.inappstory.sdk.core.ui.screens.ScreenType;
 import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryScreen;
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenAppearance;
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenData;
 import com.inappstory.sdk.core.utils.CallbackTypesConverter;
+import com.inappstory.sdk.stories.api.models.ContentIdWithIndex;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoryItemCoordinates;
@@ -580,15 +582,19 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryScree
     public void closeWithAction(int action) {
         if (closing) return;
         closing = true;
-        final Story[] story = new Story[1];
+        final IReaderContent[] story = new IReaderContent[1];
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-                story[0] = core.contentLoader().storyDownloadManager()
-                        .getCurrentStory(type);
+                int storyId = core
+                        .screensManager()
+                        .getStoryScreenHolder()
+                        .currentOpenedStoryId();
+                story[0] = core.contentHolder().readerContent()
+                        .getByIdAndType(storyId, type);
+                core.inAppStoryService().getListReaderConnector().readerIsClosed();
             }
         });
-        InAppStoryService.getInstance().getListReaderConnector().readerIsClosed();
         cleanReader();
         animateFirst = true;
         new Handler(Looper.getMainLooper()).post(new Runnable() {
@@ -605,7 +611,12 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryScree
         }
     }
 
-    private void sendCloseStatistic(final @NonNull Story story, final int action) {
+    private void sendCloseStatistic(final @NonNull IReaderContent story, final int action) {
+        if (storiesContentFragment == null)
+            return;
+        final ReaderManager readerManager = storiesContentFragment.readerManager;
+        if (readerManager == null) return;
+        final ContentIdWithIndex idWithIndex = readerManager.getByIdAndIndex(story.id());
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
@@ -622,8 +633,8 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryScree
                                                         launchData.getSourceType(),
                                                         type
                                                 ),
-                                                story.lastIndex,
-                                                story.slideEventPayload(story.lastIndex)
+                                                idWithIndex.index(),
+                                                story.slideEventPayload(idWithIndex.index())
                                         ),
                                         new CallbackTypesConverter().getCloseTypeFromInt(action)
                                 );
@@ -645,9 +656,9 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryScree
                         break;
                 }
                 core.statistic().v2().sendCloseStory(
-                        story.id,
+                        idWithIndex.id(),
                         cause,
-                        story.lastIndex,
+                        idWithIndex.index(),
                         story.slidesCount(),
                         launchData.getFeed()
                 );
@@ -660,14 +671,17 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryScree
     public void forceFinish() {
         InAppStoryService service = InAppStoryService.getInstance();
 
-        final Story[] story = {null};
+        final IReaderContent[] story = {null};
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
+                int storyId = core
+                        .screensManager()
+                        .getStoryScreenHolder()
+                        .currentOpenedStoryId();
                 story[0] = core
-                        .contentLoader()
-                        .storyDownloadManager()
-                        .getCurrentStory(type);
+                        .contentHolder()
+                        .readerContent().getByIdAndType(storyId, type);
             }
         });
         if (service != null) {
@@ -710,10 +724,12 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryScree
                         }
                 );
                 core.screensManager().getStoryScreenHolder().currentOpenedStoryId(0);
-                core.contentLoader().storyDownloadManager().cleanStoriesIndex(type);
                 cleaned = true;
             }
         });
+        if (storiesContentFragment != null) {
+            storiesContentFragment.readerManager.refreshStoriesIds();
+        }
     }
 
 

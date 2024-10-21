@@ -16,6 +16,7 @@ import android.view.WindowManager;
 import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager.widget.ViewPager;
 
@@ -37,6 +38,7 @@ import com.inappstory.sdk.inner.share.ShareFilesPrepareCallback;
 import com.inappstory.sdk.share.IASShareData;
 import com.inappstory.sdk.share.IASShareManager;
 import com.inappstory.sdk.share.ShareListener;
+import com.inappstory.sdk.stories.api.models.ContentIdWithIndex;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.ShareCallback;
@@ -52,6 +54,7 @@ import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPag
 import com.inappstory.sdk.stories.utils.IASBackPressHandler;
 import com.inappstory.sdk.stories.utils.StoryShareBroadcastReceiver;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -147,6 +150,34 @@ public class StoriesContentFragment extends Fragment
                 }
             }, shareData.getFiles());
         }
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        ArrayList<Integer> ids = new ArrayList<>();
+        ArrayList<Integer> indices = new ArrayList<>();
+        List<ContentIdWithIndex> idWithIndices = readerManager.getStoriesIdsWithIndex();
+        for (ContentIdWithIndex idWithIndex: idWithIndices) {
+            ids.add(idWithIndex.id());
+            indices.add(idWithIndex.index());
+        }
+        outState.putIntegerArrayList("storyIds", ids);
+        outState.putIntegerArrayList("storyIndices", indices);
+        super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
+        super.onViewStateRestored(savedInstanceState);
+        if (savedInstanceState == null) return;
+        ArrayList<Integer> ids = savedInstanceState.getIntegerArrayList("storyIds");
+        ArrayList<Integer> indices = savedInstanceState.getIntegerArrayList("storyIndices");
+        if (ids == null) return;
+        List<ContentIdWithIndex> idWithIndices = new ArrayList<>();
+        for (int i = 0; i < ids.size(); i++) {
+            idWithIndices.add(new ContentIdWithIndex(ids.get(i), indices.get(i)));
+        }
+        readerManager.setStoriesIdsWithIndex(idWithIndices);
     }
 
     private void shareCustomOrDefault(final String slidePayload,
@@ -549,27 +580,13 @@ public class StoriesContentFragment extends Fragment
     }
 
     private int getCurIndexById(int id) {
-        InAppStoryManager manager = InAppStoryManager.getInstance();
-        if (manager == null) return 0;
-        Story st = manager.iasCore().contentLoader().storyDownloadManager()
-                .getStoryById(id, readerManager.contentType);
-        return st == null ? 0 : st.lastIndex;
+        return readerManager.getByIdAndIndex(id).index();
     }
 
 
     @Override
     public void onPageScrollStateChanged(int state) {
-        if (state == ViewPager.SCROLL_STATE_DRAGGING)
-            readerManager.latestShowStoryAction = ShowStory.ACTION_SWIPE;
-        if (state == ViewPager.SCROLL_STATE_IDLE) {
-            if (getCurIndexById(readerManager.getCurrentStoryId()) ==
-                    readerManager.getCurrentSlideIndex()) {
-                readerManager.resumeCurrent(false);
-            }
-            readerManager.clearInactiveTimers();
-        }
-        readerManager.setCurrentSlideIndex(getCurIndexById(readerManager.getCurrentStoryId()));
-
+        readerManager.onPageScrollStateChanged(state);
     }
 
     public void setCurrentItem(int ind) {

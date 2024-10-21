@@ -1,5 +1,6 @@
 package com.inappstory.sdk.externalapi;
 
+import com.inappstory.sdk.core.dataholders.IListItemContent;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 
@@ -30,12 +31,12 @@ public class StoryAPIData {
     }
 
     public StoryAPIData(
-            Story story,
+            IListItemContent story,
             StoryData storyData,
             String imageFilePath,
             String videoFilePath
     ) {
-        this.id = story.id;
+        this.id = story.id();
         this.backgroundColor = story.backgroundColor();
         this.title = story.title();
         this.storyData = storyData;

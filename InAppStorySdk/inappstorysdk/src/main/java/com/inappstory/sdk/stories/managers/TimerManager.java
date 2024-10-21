@@ -6,6 +6,7 @@ import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASStatisticV1;
+import com.inappstory.sdk.core.dataholders.IReaderContent;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
@@ -43,7 +44,6 @@ public class TimerManager {
     }
 
 
-
     public void setTimerDuration(long timerDuration) {
         this.timerDuration = timerDuration;
     }
@@ -65,7 +65,6 @@ public class TimerManager {
         scheduledFuture = null;
         executorService.shutdown();
     }
-
 
 
     public void stopTimer() {
@@ -153,14 +152,23 @@ public class TimerManager {
         InAppStoryService.useInstance(new UseServiceInstanceCallback() {
             @Override
             public void use(@NonNull InAppStoryService service) throws Exception {
-                ContentType type = (pageManager != null) ? pageManager.getViewContentType() : ContentType.STORY;
-                Story story = core
-                        .contentLoader()
-                        .storyDownloadManager()
-                        .getCurrentStory(type);
+                if (pageManager == null) return;
+                ContentType type = pageManager.getViewContentType();
+                int storyId = core
+                        .screensManager()
+                        .getStoryScreenHolder()
+                        .currentOpenedStoryId();
+                IReaderContent story = core
+                        .contentHolder()
+                        .readerContent()
+                        .getByIdAndType(storyId, type);
                 if (story != null) {
-                    core.statistic().v2().addFakeEvents(story.id, story.lastIndex, story.slidesCount(),
-                            pageManager != null ? pageManager.getFeedId() : null);
+                    core.statistic().v2().addFakeEvents(
+                            story.id(),
+                            pageManager.getParentManager().getByIdAndIndex(story.id()).index(),
+                            story.slidesCount(),
+                            pageManager != null ? pageManager.getFeedId() : null
+                    );
                 }
                 startPauseTime = System.currentTimeMillis();
             }

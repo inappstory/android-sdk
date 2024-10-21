@@ -34,6 +34,7 @@ import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.IASStatisticV1;
 import com.inappstory.sdk.core.api.UseIASCallback;
+import com.inappstory.sdk.core.dataholders.IReaderContent;
 import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryScreen;
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenAppearance;
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenData;
@@ -82,39 +83,38 @@ public class StoriesDialogFragment extends DialogFragment implements IASBackPres
                             }
                         }
                 );
-                InAppStoryService service = InAppStoryService.getInstance();
-                if (service != null) {
-                    final Story story = core
-                            .contentLoader()
-                            .storyDownloadManager()
-                            .getCurrentStory(type);
-                    if (story != null) {
-                        core.callbacksAPI().useCallback(
-                                IASCallbackType.CLOSE_STORY,
-                                new UseIASCallback<CloseStoryCallback>() {
-                                    @Override
-                                    public void use(@NonNull CloseStoryCallback callback) {
-                                        callback.closeStory(
-                                                new SlideData(
-                                                        StoryData.getStoryData(
-                                                                story,
-                                                                launchData.getFeed(),
-                                                                launchData.getSourceType(),
-                                                                type
-                                                        ),
-                                                        story.lastIndex,
-                                                        story.slideEventPayload(story.lastIndex)
-                                                ),
-                                                CloseReader.CLICK
-                                        );
-                                    }
-                                });
-                        String cause = IASStatisticV2Impl.CLICK;
-                        core.statistic().v2().sendCloseStory(story.id, cause, story.lastIndex,
-                                story.slidesCount(),
-                                launchData.getFeed());
-                    }
-
+                int storyId = storiesContentFragment.readerManager.getCurrentStoryId();
+                final IReaderContent story = core
+                        .contentHolder()
+                        .readerContent()
+                        .getByIdAndType(storyId, type);
+                final int slideIndex =
+                        storiesContentFragment.readerManager.getByIdAndIndex(storyId).index();
+                if (story != null) {
+                    core.callbacksAPI().useCallback(
+                            IASCallbackType.CLOSE_STORY,
+                            new UseIASCallback<CloseStoryCallback>() {
+                                @Override
+                                public void use(@NonNull CloseStoryCallback callback) {
+                                    callback.closeStory(
+                                            new SlideData(
+                                                    StoryData.getStoryData(
+                                                            story,
+                                                            launchData.getFeed(),
+                                                            launchData.getSourceType(),
+                                                            type
+                                                    ),
+                                                    slideIndex,
+                                                    story.slideEventPayload(slideIndex)
+                                            ),
+                                            CloseReader.CLICK
+                                    );
+                                }
+                            });
+                    String cause = IASStatisticV2Impl.CLICK;
+                    core.statistic().v2().sendCloseStory(storyId, cause, slideIndex,
+                            story.slidesCount(),
+                            launchData.getFeed());
                 }
                 cleanReader(core);
                 core.screensManager().getStoryScreenHolder()
@@ -139,7 +139,8 @@ public class StoriesDialogFragment extends DialogFragment implements IASBackPres
                 }
         );
         core.screensManager().getStoryScreenHolder().currentOpenedStoryId(0);
-        core.contentLoader().storyDownloadManager().cleanStoriesIndex(type);
+        if (storiesContentFragment != null)
+            storiesContentFragment.readerManager.refreshStoriesIds();
         cleaned = true;
     }
 

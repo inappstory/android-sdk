@@ -122,9 +122,12 @@ public class InAppStoryAPISubscribersManager {
         final IASStoryListRequestData requestData = requestsData.get(uniqueKey);
         if (requestData == null)
             return;
-        List<Story> stories = new ArrayList<>();
+        List<IListItemContent> stories = new ArrayList<>();
         for (StoryAPIData apiData : storyAPIDataList) {
-            Story story = core.contentLoader().storyDownloadManager().getStoryById(apiData.id, ContentType.STORY);
+            IListItemContent story = core.contentHolder().listsContent().getByIdAndType(
+                    apiData.id,
+                    ContentType.STORY
+            );
             if (story == null) return;
             stories.add(story);
         }
@@ -192,13 +195,16 @@ public class InAppStoryAPISubscribersManager {
                     }
             );
         } else if (currentStoryCover.gameInstanceId() != null && !currentStoryCover.gameInstanceId().isEmpty()) {
-            service.getListReaderConnector().changeStory(currentStoryCover.id, uniqueKey, false);
+            service.getListReaderConnector().changeStory(currentStoryCover.id(),
+                    uniqueKey,
+                    false
+            );
             core.statistic().v1(
                     sessionId,
                     new GetStatisticV1Callback() {
                         @Override
                         public void get(@NonNull IASStatisticV1 manager) {
-                            manager.addGameClickStatistic(currentStoryCover.id);
+                            manager.addGameClickStatistic(currentStoryCover.id());
                         }
                     }
             );
@@ -226,12 +232,12 @@ public class InAppStoryAPISubscribersManager {
             List<Integer> readerStories = new ArrayList<>();
             int j = 0;
             int correctedIndex = 0;
-            for (Story story : stories) {
+            for (IListItemContent story : stories) {
                 if (!story.hideInReader()) {
-                    if (currentStoryCover == story) {
+                    if (currentStoryCover.id() == story.id()) {
                         correctedIndex = j;
                     }
-                    readerStories.add(story.id);
+                    readerStories.add(story.id());
                     j++;
                 }
             }
@@ -268,14 +274,16 @@ public class InAppStoryAPISubscribersManager {
                 new LoadStoriesCallback() {
                     @Override
                     public void storiesLoaded(List<Integer> storiesIds) {
-                        List<Story> stories = new ArrayList<>();
+                        List<IListItemContent> stories = new ArrayList<>();
                         for (Integer storyId : storiesIds) {
-                            Story story = downloadManager.getStoryById(storyId, ContentType.STORY);
+                            IListItemContent story = core.contentHolder().listsContent().getByIdAndType(
+                                    storyId, ContentType.STORY
+                            );
                             if (story == null) return;
                             stories.add(story);
                         }
                         updateStoryList(data.uniqueId, data.feed, stories);
-                        for (Story story : stories) {
+                        for (IListItemContent story : stories) {
                             updateStory(story, null, null);
                         }
                     }
@@ -292,7 +300,7 @@ public class InAppStoryAPISubscribersManager {
                 },
                 data.hasFavorite ? new LoadFavoritesCallback() {
                     @Override
-                    public void success(List<StoryFavoriteImage> favoriteImages) {
+                    public void success(List<IFavoriteItem> favoriteImages) {
                         updateFavorites(favoriteImages);
                     }
                 } : null,
@@ -419,8 +427,8 @@ public class InAppStoryAPISubscribersManager {
 
 
     private void cacheStoryCover(final Integer storyId) {
-        final Story story = core.contentLoader().storyDownloadManager()
-                .getStoryById(storyId, ContentType.STORY);
+        final IListItemContent story = core.contentHolder().listsContent()
+                .getByIdAndType(storyId, ContentType.STORY);
         if (story != null) {
             final String image = story.imageCoverByQuality(AppearanceManager.getCommonInstance().csCoverQuality());
             String localImage = null;
@@ -473,10 +481,10 @@ public class InAppStoryAPISubscribersManager {
     public void updateStoryList(
             String uniqueId,
             String feed,
-            List<Story> stories
+            List<IListItemContent> stories
     ) {
         List<StoryAPIData> storyAPIData = new ArrayList<>();
-        for (Story story : stories) {
+        for (IListItemContent story : stories) {
             StoryData storyData = new StoryData(story, feed, SourceType.LIST);
             String imagePath = null;
             String videoPath = null;
@@ -588,8 +596,8 @@ public class InAppStoryAPISubscribersManager {
                         }
                     }
                     if (addNew) {
-                        Story story = core.contentLoader().storyDownloadManager()
-                                .getStoryById(favoriteImage.id(), ContentType.STORY);
+                        IListItemContent story = core.contentHolder().listsContent()
+                                .getByIdAndType(favoriteImage.id(), ContentType.STORY);
                         if (story == null) return;
                         String imagePath = null;
                         String imageUrl = story.imageCoverByQuality(AppearanceManager.getCommonInstance().csCoverQuality());

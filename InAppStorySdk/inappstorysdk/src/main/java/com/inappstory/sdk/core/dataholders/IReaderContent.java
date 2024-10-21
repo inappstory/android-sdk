@@ -16,4 +16,5 @@ public interface IReaderContent extends IStatData {
     String slideEventPayload(int slideIndex);
     boolean checkIfEmpty();
     boolean disableClose();
+    int shareType(int slideIndex);
 }

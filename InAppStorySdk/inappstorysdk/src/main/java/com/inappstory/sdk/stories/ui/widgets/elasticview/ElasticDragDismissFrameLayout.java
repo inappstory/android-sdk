@@ -14,6 +14,8 @@ import androidx.annotation.Nullable;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.dataholders.IReaderContent;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.Story;
 
@@ -197,13 +199,17 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
     @Override
     public void onStopNestedScroll(View child) {
         InAppStoryManager manager = InAppStoryManager.getInstance();
-        Story st = null;
+        IReaderContent st = null;
         if (manager != null) {
-            st = manager
-                    .iasCore()
-                    .contentLoader()
-                    .storyDownloadManager()
-                    .getCurrentStory(type);
+            IASCore core = manager.iasCore();
+            int storyId = core
+                    .screensManager()
+                    .getStoryScreenHolder()
+                    .currentOpenedStoryId();
+            st = core
+                    .contentHolder()
+                    .readerContent()
+                    .getByIdAndType(storyId, type);
         }
         if (totalDisabledDrag > 400) {
             swipeUpCallback();

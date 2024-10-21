@@ -535,14 +535,8 @@ public class StoriesViewManager {
         clearShowLoader();
         clearShowRefresh();
         storyIsLoaded = true;
-        Story story = core
-                .contentLoader()
-                .storyDownloadManager()
-                .getStoryById(
-                        storyId,
-                        pageManager.getViewContentType()
-                );
-        if ((slideIndex >= 0 && story.lastIndex != slideIndex)) {
+        int lastIndex = pageManager.parentManager.getByIdAndIndex(storyId).index();
+        if ((slideIndex >= 0 && lastIndex != slideIndex)) {
             stopStory();
         } else if (core
                 .screensManager()

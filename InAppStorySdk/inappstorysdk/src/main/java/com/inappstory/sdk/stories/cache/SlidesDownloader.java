@@ -5,9 +5,11 @@ import androidx.annotation.NonNull;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.UseIASCallback;
+import com.inappstory.sdk.core.dataholders.IReaderContentHolder;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.core.dataholders.IResource;
 import com.inappstory.sdk.core.dataholders.IReaderContent;
+import com.inappstory.sdk.stories.api.models.ContentIdWithIndex;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.cache.usecases.GenerateSlideTaskUseCase;
@@ -124,7 +126,7 @@ class SlidesDownloader {
     List<SlideTaskKey> secondPriority = new ArrayList<>();
 
     //adjacent - for next and prev story
-    boolean changePriority(Integer storyId, List<Integer> adjacents, ContentType type) {
+    boolean changePriority(ContentIdWithIndex current, List<ContentIdWithIndex> adjacents, ContentType type) {
         synchronized (pageTasksLock) {
             for (int i = firstPriority.size() - 1; i >= 0; i--) {
                 if (!secondPriority.contains(firstPriority.get(i))) {
@@ -132,34 +134,40 @@ class SlidesDownloader {
                 }
             }
             firstPriority.clear();
-            Story currentStory = manager.getStoryById(storyId, type);
+            int currentId = current.id();
+            int currentIndex = current.index();
+            IReaderContentHolder readerContentHolder = core.contentHolder().readerContent();
+            IReaderContent currentStory = readerContentHolder.getByIdAndType(
+                    currentId, type
+            );
             if (currentStory == null) return false;
-            ViewContentTaskKey storyTaskKey = new ViewContentTaskKey(storyId, type);
+            ViewContentTaskKey storyTaskKey = new ViewContentTaskKey(currentId, type);
             int sc = currentStory.actualSlidesCount();
             for (int i = 0; i < sc; i++) {
                 SlideTaskKey kv = new SlideTaskKey(storyTaskKey, i);
                 secondPriority.remove(kv);
-                if (i == currentStory.lastIndex || i == currentStory.lastIndex + 1)
+                if (i == currentIndex || i == currentIndex + 1)
                     continue;
                 firstPriority.add(kv);
             }
-            if (sc > currentStory.lastIndex) {
-                firstPriority.add(0, new SlideTaskKey(storyTaskKey, currentStory.lastIndex));
-                if (sc > currentStory.lastIndex + 1) {
-                    firstPriority.add(1, new SlideTaskKey(storyTaskKey, currentStory.lastIndex + 1));
+            if (sc > currentIndex) {
+                firstPriority.add(0, new SlideTaskKey(storyTaskKey, currentIndex));
+                if (sc > currentIndex + 1) {
+                    firstPriority.add(1, new SlideTaskKey(storyTaskKey, currentIndex + 1));
                 }
             }
             int ind = Math.min(firstPriority.size(), 2);
-            for (Integer adjacent : adjacents) {
-                Story adjacentStory = manager.getStoryById(adjacent, type);
-                ViewContentTaskKey adjacentTaskKey = new ViewContentTaskKey(adjacent, type);
-                if (adjacentStory.lastIndex < adjacentStory.actualSlidesCount() - 1) {
-                    SlideTaskKey nk = new SlideTaskKey(adjacentTaskKey, adjacentStory.lastIndex + 1);
+            for (ContentIdWithIndex adjacent : adjacents) {
+                if (adjacent == null) continue;
+                IReaderContent adjacentStory = readerContentHolder.getByIdAndType(adjacent.id(), type);
+                ViewContentTaskKey adjacentTaskKey = new ViewContentTaskKey(adjacent.id(), type);
+                if (adjacent.index() < adjacentStory.actualSlidesCount() - 1) {
+                    SlideTaskKey nk = new SlideTaskKey(adjacentTaskKey, adjacent.index() + 1);
                     secondPriority.remove(nk);
                     firstPriority.add(ind, nk);
                 }
 
-                SlideTaskKey ck = new SlideTaskKey(adjacentTaskKey, adjacentStory.lastIndex);
+                SlideTaskKey ck = new SlideTaskKey(adjacentTaskKey, adjacent.index());
                 secondPriority.remove(ck);
                 firstPriority.add(ind, ck);
             }
@@ -167,10 +175,15 @@ class SlidesDownloader {
         return true;
     }
 
-    void changePriorityForSingle(int contentId, ContentType type) {
+    void changePriorityForSingle(ContentIdWithIndex current, ContentType type) {
+        int currentId = current.id();
+        int currentIndex = current.index();
         synchronized (pageTasksLock) {
-            ViewContentTaskKey viewContentTaskKey = new ViewContentTaskKey(contentId, type);
-            Story currentStory = manager.getStoryById(contentId, type);
+            ViewContentTaskKey viewContentTaskKey = new ViewContentTaskKey(currentId, type);
+            IReaderContentHolder readerContentHolder = core.contentHolder().readerContent();
+            IReaderContent currentStory = readerContentHolder.getByIdAndType(
+                    currentId, type
+            );
             int sc = currentStory.actualSlidesCount();
             for (int i = 0; i < sc; i++) {
                 SlideTaskKey kv = new SlideTaskKey(viewContentTaskKey, i);
@@ -179,14 +192,14 @@ class SlidesDownloader {
 
             for (int i = 0; i < sc; i++) {
                 SlideTaskKey kv = new SlideTaskKey(viewContentTaskKey, i);
-                if (i == currentStory.lastIndex || i == currentStory.lastIndex + 1)
+                if (i == currentIndex || i == currentIndex + 1)
                     continue;
                 firstPriority.add(kv);
             }
-            if (sc > currentStory.lastIndex) {
-                firstPriority.add(0, new SlideTaskKey(viewContentTaskKey, currentStory.lastIndex));
-                if (sc > currentStory.lastIndex + 1) {
-                    firstPriority.add(1, new SlideTaskKey(viewContentTaskKey, currentStory.lastIndex + 1));
+            if (sc > currentIndex) {
+                firstPriority.add(0, new SlideTaskKey(viewContentTaskKey, currentIndex));
+                if (sc > currentIndex + 1) {
+                    firstPriority.add(1, new SlideTaskKey(viewContentTaskKey, currentIndex + 1));
                 }
             }
         }

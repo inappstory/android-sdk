@@ -2,6 +2,7 @@ package com.inappstory.sdk.core.dataholders;
 
 public interface IListItemContent extends IStatData {
     String title();
+    String titleColor();
     String backgroundColor();
     String imageCoverByQuality(int quality);
     String videoCover();

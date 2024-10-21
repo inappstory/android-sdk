@@ -20,6 +20,7 @@ import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.network.callbacks.SimpleApiCallback;
 import com.inappstory.sdk.network.models.Response;
+import com.inappstory.sdk.stories.api.models.ContentIdWithIndex;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.Feed;
 import com.inappstory.sdk.stories.api.models.Story;
@@ -86,10 +87,10 @@ class StoryDownloader {
     ArrayList<ViewContentTaskKey> firstPriority = new ArrayList<>();
     ArrayList<ViewContentTaskKey> secondPriority = new ArrayList<>();
 
-    void changePriority(ViewContentTaskKey storyId, ArrayList<Integer> addIds, ContentType type) {
+    void changePriority(ViewContentTaskKey storyId, List<ContentIdWithIndex> addIds, ContentType type) {
         secondPriority.remove(storyId);
-        for (Integer id : addIds) {
-            ViewContentTaskKey key = new ViewContentTaskKey(id, type);
+        for (ContentIdWithIndex contentId : addIds) {
+            ViewContentTaskKey key = new ViewContentTaskKey(contentId.id(), type);
             secondPriority.remove(key);
         }
         for (ViewContentTaskKey id : firstPriority) {
@@ -98,14 +99,18 @@ class StoryDownloader {
         }
         firstPriority.clear();
         firstPriority.add(storyId);
-        for (Integer id : addIds) {
-            ViewContentTaskKey key = new ViewContentTaskKey(id, type);
+        for (ContentIdWithIndex contentId : addIds) {
+            ViewContentTaskKey key = new ViewContentTaskKey(contentId.id(), type);
             firstPriority.add(key);
         }
 
     }
 
-    void addStoryTask(int storyId, ArrayList<Integer> addIds, ContentType type) {
+    void addStoryTask(
+            ContentIdWithIndex current,
+            List<ContentIdWithIndex> addIds,
+            ContentType type
+    ) {
         synchronized (storyTasksLock) {
             if (storyTasks == null) storyTasks = new HashMap<>();
             for (ViewContentTaskKey viewContentTaskKey : storyTasks.keySet()) {
@@ -118,8 +123,8 @@ class StoryDownloader {
                     storyTaskWithPriority.loadType += 3;
                 }
             }
-            for (Integer storyIntKey : addIds) {
-                ViewContentTaskKey key = new ViewContentTaskKey(storyIntKey, type);
+            for (ContentIdWithIndex storyIntKey : addIds) {
+                ViewContentTaskKey key = new ViewContentTaskKey(storyIntKey.id(), type);
                 StoryTaskWithPriority task = storyTasks.get(key);
                 if (task != null) {
                     if (task.loadType != 3 &&
@@ -131,14 +136,14 @@ class StoryDownloader {
                     storyTasks.put(key, st);
                 }
             }
-            ViewContentTaskKey keyByStoryId = new ViewContentTaskKey(storyId, type);
+            ViewContentTaskKey keyByStoryId = new ViewContentTaskKey(current.id(), type);
             StoryTaskWithPriority taskByStoryId = storyTasks.get(keyByStoryId);
             if (taskByStoryId != null) {
                 if (taskByStoryId.loadType != 3) {
                     if (taskByStoryId.loadType == 6) {
                         taskByStoryId.loadType = 3;
                         if (callback != null)
-                            callback.onDownload(manager.getStoryById(storyId, type), 3, type);
+                            callback.onDownload(manager.getStoryById(current.id(), type), 3, type);
                     } else if (taskByStoryId.loadType == 5) {
                         taskByStoryId.loadType = 2;
                     } else {
@@ -184,13 +189,13 @@ class StoryDownloader {
     }
 
 
-    void reload(int storyId, ArrayList<Integer> addIds, ContentType type) {
+    void reload(ContentIdWithIndex current, List<ContentIdWithIndex> addIds, ContentType type) {
         synchronized (storyTasksLock) {
-            ViewContentTaskKey key = new ViewContentTaskKey(storyId, type);
+            ViewContentTaskKey key = new ViewContentTaskKey(current.id(), type);
             if (storyTasks == null) storyTasks = new HashMap<>();
             storyTasks.remove(key);
         }
-        addStoryTask(storyId, addIds, type);
+        addStoryTask(current, addIds, type);
     }
 
 
@@ -296,7 +301,7 @@ class StoryDownloader {
                 storyUID = core.statistic().profiling().addTask("api_story_ugc");
                 response = core.network().execute(
                         core.network().getApi().getUgcStoryById(
-                                Integer.toString(key.storyId),
+                                Integer.toString(key.contentId),
                                 1,
                                 EXPAND_STRING
                         )
@@ -305,7 +310,7 @@ class StoryDownloader {
                 storyUID = core.statistic().profiling().addTask("api_story");
                 response = core.network().execute(
                         core.network().getApi().getStoryById(
-                                Integer.toString(key.storyId),
+                                Integer.toString(key.contentId),
                                 ApiSettings.getInstance().getTestKey(),
                                 0,
                                 1,

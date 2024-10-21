@@ -11,6 +11,7 @@ import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.IASStatisticV1;
 import com.inappstory.sdk.core.api.UseIASCallback;
+import com.inappstory.sdk.core.dataholders.IReaderContent;
 import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.ContentType;
@@ -108,15 +109,16 @@ public class ReaderPageManager {
     }
 
 
-    public StoryData getStoryData(Story story) {
+    public StoryData getStoryData(IReaderContent story) {
         return StoryData.getStoryData(story, getFeedId(), getSourceType(), getViewContentType());
     }
 
-    public SlideData getSlideData(Story story) {
+    public SlideData getSlideData(IReaderContent story) {
+        int index = parentManager.getByIdAndIndex(story.id()).index();
         return new SlideData(
                 getStoryData(story),
-                story.lastIndex,
-                story.slideEventPayload(story.lastIndex)
+                index,
+                story.slideEventPayload(index)
         );
     }
 
@@ -165,7 +167,10 @@ public class ReaderPageManager {
     }
 
     public void reloadStory() {
-        core.contentLoader().storyDownloadManager().reloadStory(storyId, getViewContentType());
+        core.contentLoader().storyDownloadManager().reloadStory(
+                parentManager.getByIdAndIndex(storyId),
+                getViewContentType()
+        );
     }
 
     public void widgetEvent(final String widgetName, String widgetData) {
@@ -329,7 +334,11 @@ public class ReaderPageManager {
     public void setStoryInfo(Story story) {
         if (checkIfManagersIsNull()) return;
         timelineManager.setSlidesCount(story.slidesCount());
-        webViewManager.loadStory(story, story.lastIndex);
+
+        webViewManager.loadStory(
+                story,
+                parentManager.getByIdAndIndex(storyId).index()
+        );
     }
 
     public void loadStoryAndSlide(Story story, int slideIndex) {
@@ -338,12 +347,12 @@ public class ReaderPageManager {
     }
 
     public void openSlideByIndex(int index) {
-        Story story = core.contentLoader().storyDownloadManager()
-                .getStoryById(storyId, getViewContentType());
+        IReaderContent story = core.contentHolder().readerContent()
+                .getByIdAndType(storyId, getViewContentType());
         if (index < 0) index = 0;
         if (story == null) return;
         if (story.slidesCount() <= index) index = 0;
-        story.lastIndex = index;
+        parentManager.getByIdAndIndex(storyId).index(index);
         if (slideIndex != index) {
             slideIndex = index;
             changeCurrentSlide(index);
@@ -401,8 +410,8 @@ public class ReaderPageManager {
 
     public void nextSlide(int action) {
         if (checkIfManagersIsNull()) return;
-        Story story = core.contentLoader().storyDownloadManager()
-                .getStoryById(storyId, getViewContentType());
+        IReaderContent story = core.contentHolder().readerContent()
+                .getByIdAndType(storyId, getViewContentType());
         if (story == null) return;
         pauseTimers();
         int lastIndex = slideIndex;
@@ -410,7 +419,7 @@ public class ReaderPageManager {
             if (webViewManager == null) return;
             webViewManager.stopStory();
             lastIndex++;
-            story.lastIndex = lastIndex;
+            parentManager.getByIdAndIndex(storyId).index(lastIndex);
             slideIndex = lastIndex;
             changeCurrentSlide(lastIndex);
         } else {
@@ -436,8 +445,10 @@ public class ReaderPageManager {
         isPaused = false;
         pauseTimers();
         core.statistic().v2().sendCurrentState();
-        core.contentLoader().storyDownloadManager().changePriorityForSingle(storyId,
-                parentManager.contentType);
+        core.contentLoader().storyDownloadManager().changePriorityForSingle(
+                parentManager.getByIdAndIndex(storyId),
+                parentManager.contentType
+        );
         if (getViewContentType() == ContentType.STORY) {
             core.statistic().v2().createCurrentState(
                     storyId,
@@ -487,8 +498,8 @@ public class ReaderPageManager {
 
     public void prevSlide(int action) {
         if (checkIfManagersIsNull()) return;
-        Story story = core.contentLoader().storyDownloadManager()
-                .getStoryById(storyId, getViewContentType());
+        IReaderContent story = core.contentHolder().readerContent()
+                .getByIdAndType(storyId, getViewContentType());
 
         if (story == null) return;
         pauseTimers();
@@ -497,16 +508,12 @@ public class ReaderPageManager {
             if (webViewManager == null) return;
             webViewManager.stopStory();
             lastIndex--;
-            story.lastIndex = lastIndex;
+            parentManager.getByIdAndIndex(storyId).index(lastIndex);
             slideIndex = lastIndex;
             changeCurrentSlide(lastIndex);
         } else {
             parentManager.prevStory(action);
         }
-    }
-
-    public void closeReader() {
-
     }
 
     public void changeSoundStatus() {

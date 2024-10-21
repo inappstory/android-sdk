@@ -9,6 +9,7 @@ import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.game.cache.SessionAssetsIsReadyCallback;
 import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
+import com.inappstory.sdk.stories.api.models.ContentIdWithIndex;
 import com.inappstory.sdk.stories.api.models.Image;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.Story;
@@ -140,13 +141,15 @@ public class StoryDownloadManager {
         });
     }
 
-    public boolean changePriority(int storyId, List<Integer> adjacent, ContentType type) {
+    public boolean changePriority(ContentIdWithIndex storyId,
+                                  List<ContentIdWithIndex> adjacent,
+                                  ContentType type) {
         if (slidesDownloader != null)
             return slidesDownloader.changePriority(storyId, adjacent, type);
         return false;
     }
 
-    public void changePriorityForSingle(int storyId, ContentType type) {
+    public void changePriorityForSingle(ContentIdWithIndex storyId, ContentType type) {
         if (slidesDownloader != null)
             slidesDownloader.changePriorityForSingle(storyId, type);
 
@@ -351,7 +354,6 @@ public class StoryDownloadManager {
                 Story local = getStoryById(story.id, type);
                 if (local != null) {
                     story.isOpened = local.isOpened;
-                    story.lastIndex = local.lastIndex;
                 }
                 setStory(story, story.id, type);
                 storyLoaded(story, type);
@@ -388,7 +390,7 @@ public class StoryDownloadManager {
         );
     }
 
-    public void addStoryTask(int storyId, ArrayList<Integer> addIds, ContentType type) {
+    public void addStoryTask(ContentIdWithIndex storyId, ArrayList<ContentIdWithIndex> addIds, ContentType type) {
         try {
             storyDownloader.addStoryTask(storyId, addIds, type);
         } catch (Exception e) {
@@ -397,9 +399,10 @@ public class StoryDownloadManager {
     }
 
 
-    public void reloadStory(int storyId, ContentType type) {
-        slidesDownloader.removeSlideTasks(new ViewContentTaskKey(storyId, type));
-        storyDownloader.reload(storyId, new ArrayList<Integer>(), type);
+    public void reloadStory(ContentIdWithIndex current, ContentType type) {
+        if (current == null) return;
+        slidesDownloader.removeSlideTasks(new ViewContentTaskKey(current.id(), type));
+        storyDownloader.reload(current, new ArrayList<ContentIdWithIndex>(), type);
     }
 
 
@@ -420,16 +423,6 @@ public class StoryDownloadManager {
             }
         }
         return null;
-    }
-
-    public Story getCurrentStory(ContentType type) {
-        return getStoryById(
-                core
-                        .screensManager()
-                        .getStoryScreenHolder()
-                        .currentOpenedStoryId(),
-                type
-        );
     }
 
     private void setStory(final Story story, int id, ContentType type) {
@@ -462,17 +455,6 @@ public class StoryDownloadManager {
     private StoryDownloader storyDownloader;
     private SlidesDownloader slidesDownloader;
 
-    public void cleanStoriesIndex(ContentType type) {
-        List<Story> stories = getStoriesListByType(type);
-        synchronized (storiesLock) {
-            for (Story story : stories) {
-                if (story == null)
-                    continue;
-                story.lastIndex = 0;
-            }
-        }
-    }
-
     public void addCompletedStoryTask(Story story, ContentType type) {
         boolean noStory = true;
         List<Story> stories = getStoriesListByType(type);
@@ -490,7 +472,6 @@ public class StoryDownloadManager {
             storyDownloader.addCompletedStoryTask(story.id, type);
             Story local = getStoryById(story.id, type);
             story.isOpened = local.isOpened;
-            story.lastIndex = local.lastIndex;
             stories.set(stories.indexOf(local), story);
             setStory(story, story.id, type);
             storyLoaded(story, type);
