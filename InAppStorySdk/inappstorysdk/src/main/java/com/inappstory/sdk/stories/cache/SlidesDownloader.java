@@ -6,8 +6,8 @@ import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
-import com.inappstory.sdk.stories.api.interfaces.IResourceObject;
-import com.inappstory.sdk.stories.api.interfaces.SlidesContentHolder;
+import com.inappstory.sdk.core.dataholders.IResource;
+import com.inappstory.sdk.core.dataholders.IReaderContent;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.cache.usecases.GenerateSlideTaskUseCase;
@@ -61,15 +61,13 @@ class SlidesDownloader {
         this.manager = manager;
     }
 
-    public void removeSlideTasks(StoryTaskKey storyTaskKey) {
+    public void removeSlideTasks(ViewContentTaskKey viewContentTaskKey) {
         synchronized (pageTasksLock) {
             Iterator<Map.Entry<SlideTaskKey, SlideTask>> i = pageTasks.entrySet().iterator();
             Map.Entry<SlideTaskKey, SlideTask> key;
             while (i.hasNext()) {
                 key = i.next();
-                if (Objects.equals(key.getKey().storyId, storyTaskKey.storyId)
-                        && key.getKey().contentType == storyTaskKey.contentType
-                ) {
+                if (Objects.equals(key.getKey().viewContentTaskKey, viewContentTaskKey)) {
                     i.remove();
                 }
             }
@@ -83,7 +81,7 @@ class SlidesDownloader {
         SlideTask slideTask = pageTasks.get(key);
         if (slideTask != null) {
             if (slideTask.loadType == 2) {
-                for (IResourceObject object : slideTask.staticResources) {
+                for (IResource object : slideTask.staticResources) {
                     String uniqueKey = StringsUtils.md5(object.getUrl());
                     if (!cache.hasKey(uniqueKey)) {
                         remove = true;
@@ -96,7 +94,7 @@ class SlidesDownloader {
                         }
                     }
                 }
-                for (IResourceObject object : slideTask.vodResources) {
+                for (IResource object : slideTask.vodResources) {
                     String uniqueKey = object.getFileName();
                     if (!vodCache.hasKey(uniqueKey)) {
                         remove = true;
@@ -121,8 +119,6 @@ class SlidesDownloader {
         return 0;
     }
 
-    private static final String VIDEO = "video";
-    private static final String IMG_PLACEHOLDER = "image-placeholder";
 
     List<SlideTaskKey> firstPriority = new ArrayList<>();
     List<SlideTaskKey> secondPriority = new ArrayList<>();
@@ -138,30 +134,32 @@ class SlidesDownloader {
             firstPriority.clear();
             Story currentStory = manager.getStoryById(storyId, type);
             if (currentStory == null) return false;
-            int sc = currentStory.getSlidesCount();
+            ViewContentTaskKey storyTaskKey = new ViewContentTaskKey(storyId, type);
+            int sc = currentStory.actualSlidesCount();
             for (int i = 0; i < sc; i++) {
-                SlideTaskKey kv = new SlideTaskKey(storyId, i, type);
+                SlideTaskKey kv = new SlideTaskKey(storyTaskKey, i);
                 secondPriority.remove(kv);
                 if (i == currentStory.lastIndex || i == currentStory.lastIndex + 1)
                     continue;
                 firstPriority.add(kv);
             }
             if (sc > currentStory.lastIndex) {
-                firstPriority.add(0, new SlideTaskKey(storyId, currentStory.lastIndex, type));
+                firstPriority.add(0, new SlideTaskKey(storyTaskKey, currentStory.lastIndex));
                 if (sc > currentStory.lastIndex + 1) {
-                    firstPriority.add(1, new SlideTaskKey(storyId, currentStory.lastIndex + 1, type));
+                    firstPriority.add(1, new SlideTaskKey(storyTaskKey, currentStory.lastIndex + 1));
                 }
             }
             int ind = Math.min(firstPriority.size(), 2);
             for (Integer adjacent : adjacents) {
                 Story adjacentStory = manager.getStoryById(adjacent, type);
-                if (adjacentStory.lastIndex < adjacentStory.getSlidesCount() - 1) {
-                    SlideTaskKey nk = new SlideTaskKey(adjacent, adjacentStory.lastIndex + 1, type);
+                ViewContentTaskKey adjacentTaskKey = new ViewContentTaskKey(adjacent, type);
+                if (adjacentStory.lastIndex < adjacentStory.actualSlidesCount() - 1) {
+                    SlideTaskKey nk = new SlideTaskKey(adjacentTaskKey, adjacentStory.lastIndex + 1);
                     secondPriority.remove(nk);
                     firstPriority.add(ind, nk);
                 }
 
-                SlideTaskKey ck = new SlideTaskKey(adjacent, adjacentStory.lastIndex, type);
+                SlideTaskKey ck = new SlideTaskKey(adjacentTaskKey, adjacentStory.lastIndex);
                 secondPriority.remove(ck);
                 firstPriority.add(ind, ck);
             }
@@ -169,46 +167,47 @@ class SlidesDownloader {
         return true;
     }
 
-    void changePriorityForSingle(Integer storyId, ContentType type) {
+    void changePriorityForSingle(int contentId, ContentType type) {
         synchronized (pageTasksLock) {
-            Story currentStory = manager.getStoryById(storyId, type);
-            int sc = currentStory.getSlidesCount();
+            ViewContentTaskKey viewContentTaskKey = new ViewContentTaskKey(contentId, type);
+            Story currentStory = manager.getStoryById(contentId, type);
+            int sc = currentStory.actualSlidesCount();
             for (int i = 0; i < sc; i++) {
-                SlideTaskKey kv = new SlideTaskKey(storyId, i, type);
+                SlideTaskKey kv = new SlideTaskKey(viewContentTaskKey, i);
                 firstPriority.remove(kv);
             }
 
             for (int i = 0; i < sc; i++) {
-                SlideTaskKey kv = new SlideTaskKey(storyId, i, type);
+                SlideTaskKey kv = new SlideTaskKey(viewContentTaskKey, i);
                 if (i == currentStory.lastIndex || i == currentStory.lastIndex + 1)
                     continue;
                 firstPriority.add(kv);
             }
             if (sc > currentStory.lastIndex) {
-                firstPriority.add(0, new SlideTaskKey(storyId, currentStory.lastIndex, type));
+                firstPriority.add(0, new SlideTaskKey(viewContentTaskKey, currentStory.lastIndex));
                 if (sc > currentStory.lastIndex + 1) {
-                    firstPriority.add(1, new SlideTaskKey(storyId, currentStory.lastIndex + 1, type));
+                    firstPriority.add(1, new SlideTaskKey(viewContentTaskKey, currentStory.lastIndex + 1));
                 }
             }
         }
     }
 
-    void addStoryPages(StoryTaskKey storyTaskKey,
-                       SlidesContentHolder slidesContentHolder,
+    void addStoryPages(ViewContentTaskKey viewContentTaskKey,
+                       IReaderContent IReaderContent,
                        int loadType) throws Exception {
         synchronized (pageTasksLock) {
             int slidesCountToCache;
             if (loadType == 3) {
-                slidesCountToCache = slidesContentHolder.actualSlidesCount();
+                slidesCountToCache = IReaderContent.actualSlidesCount();
             } else {
                 slidesCountToCache = 2;
             }
             for (int slideIndex = 0; slideIndex < slidesCountToCache; slideIndex++) {
-                SlideTaskKey slideTaskKey = new SlideTaskKey(storyTaskKey, slideIndex);
+                SlideTaskKey slideTaskKey = new SlideTaskKey(viewContentTaskKey, slideIndex);
                 if (pageTasks.get(slideTaskKey) == null) {
                     pageTasks.put(
                             slideTaskKey,
-                            (new GenerateSlideTaskUseCase(core, slidesContentHolder, slideIndex))
+                            (new GenerateSlideTaskUseCase(core, IReaderContent, slideIndex))
                                     .generate()
                     );
                 }

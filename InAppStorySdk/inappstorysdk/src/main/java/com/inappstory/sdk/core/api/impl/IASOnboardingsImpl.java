@@ -88,7 +88,7 @@ public class IASOnboardingsImpl implements IASOnboardings {
                                 if (inAppStoryManager == null) return;
                                 core.statistic().profiling().setReady(onboardUID);
                                 List<Story> notOpened = new ArrayList<>();
-                                String key = core.storyListCache().getLocalOpensKey(ContentType.COMMON);
+                                String key = core.storyListCache().getLocalOpensKey(ContentType.STORY);
                                 Set<String> opens = core.sharedPreferencesAPI().getStringSet(
                                         key
                                 );
@@ -150,7 +150,7 @@ public class IASOnboardingsImpl implements IASOnboardings {
             final String sessionId,
             final String feed
     ) {
-        ContentType contentType = ContentType.COMMON;
+        ContentType contentType = ContentType.STORY;
         if (response == null || response.size() == 0) {
             core.callbacksAPI().useCallback(IASCallbackType.ONBOARDING,
                     new UseIASCallback<OnboardingLoadCallback>() {
@@ -182,7 +182,7 @@ public class IASOnboardingsImpl implements IASOnboardings {
                 ShowStory.ACTION_OPEN,
                 SourceType.ONBOARDING,
                 0,
-                ContentType.COMMON,
+                ContentType.STORY,
                 null
         );
         core.screensManager().openScreen(

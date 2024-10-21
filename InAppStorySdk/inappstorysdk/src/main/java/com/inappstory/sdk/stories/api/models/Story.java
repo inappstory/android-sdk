@@ -1,17 +1,18 @@
 package com.inappstory.sdk.stories.api.models;
 
-import static com.inappstory.sdk.stories.api.models.ResourceMappingObject.VOD;
+import static com.inappstory.sdk.stories.api.models.ResourceMapping.VOD;
 
 import android.os.Parcel;
 import android.os.Parcelable;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
+import com.inappstory.sdk.core.dataholders.IListItemContent;
+import com.inappstory.sdk.core.dataholders.IReaderContentWithStatus;
 import com.inappstory.sdk.network.annotations.models.Required;
 import com.inappstory.sdk.network.annotations.models.SerializedName;
-import com.inappstory.sdk.stories.api.interfaces.IResourceObject;
-import com.inappstory.sdk.stories.api.interfaces.SlidesContentHolder;
-import com.inappstory.sdk.stories.api.models.slidestructure.SlideStructure;
+import com.inappstory.sdk.core.dataholders.IResource;
+import com.inappstory.sdk.core.dataholders.IReaderContent;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -24,66 +25,17 @@ import java.util.Objects;
  */
 
 
-public class Story implements Parcelable, SlidesContentHolder {
+public class Story implements Parcelable, IReaderContentWithStatus, IListItemContent {
     @Required
     public int id;
 
-    public enum ContentType {
-        COMMON, UGC
-    }
+    public int lastIndex;
 
-    public String getTitle() {
-        String tmp = title != null ? title : "";
-        return getReplacedField(tmp);
-    }
+    @SerializedName("title")
+    public String title;
 
-    public String getSlideEventPayload(int slideIndex) {
-        if (slidesPayload == null) return null;
-        for (PayloadObject payloadObject : slidesPayload) {
-            if (slideIndex == payloadObject.slideIndex) {
-                return payloadObject.getPayload();
-            }
-        }
-        return null;
-    }
-
-    public boolean checkIfEmpty() {
-        return (getLayout() == null || pages == null || pages.isEmpty());
-    }
-
-    public List<Image> getImage() {
-        return image;
-    }
-
-    public Image getProperImage(int quality) {
-        if (image == null || image.isEmpty())
-            return null;
-        String q = Image.TYPE_MEDIUM;
-        switch (quality) {
-            case Image.QUALITY_HIGH:
-                q = Image.TYPE_HIGH;
-        }
-        for (Image img : image) {
-            if (img.getType().equals(q)) return img;
-        }
-        return image.get(0);
-    }
-
-    public boolean isOpened() {
-        return isOpened;
-    }
-
-    public List<String> getPages() {
-        return pages;
-    }
-
-    public String getLayout() {
-        return layout;
-    }
-
-    public String getTitleColor() {
-        return titleColor;
-    }
+    @SerializedName("tags")
+    public String tags;
 
     @SerializedName("title_color")
     public String titleColor;
@@ -97,49 +49,8 @@ public class Story implements Parcelable, SlidesContentHolder {
     @SerializedName("slides_payload")
     public List<PayloadObject> slidesPayload;
 
-    @SerializedName("feed_info")
-    public StoryFeedInfo feedInfo;
-
     @SerializedName("payload")
     public HashMap<String, Object> ugcPayload;
-
-
-    public String getVideoUrl() {
-        return (videoUrl != null && !videoUrl.isEmpty()) ? videoUrl.get(0).getUrl() : null;
-    }
-
-
-    /**
-     * Последний открытый слайд
-     */
-    public int lastIndex;
-
-    public String title;
-
-    public String tags;
-
-    public String getSource() {
-        String tmp = source != null ? source : "";
-        return getReplacedField(tmp);
-    }
-
-    private String getReplacedField(String tmp) {
-        InAppStoryManager manager = InAppStoryManager.getInstance();
-        if (manager == null) return tmp;
-        Map<String, String> localPlaceholders =
-                ((IASDataSettingsHolder) manager.iasCore().settingsAPI()).placeholders();
-        for (String key : localPlaceholders.keySet()) {
-            String modifiedKey = "%" + key + "%";
-            String value = localPlaceholders.get(key);
-            if (value != null) {
-                tmp = tmp.replace(modifiedKey, value);
-            }
-        }
-        return tmp;
-    }
-
-    public String source;
-
 
     @SerializedName("background_color")
     public String backgroundColor;
@@ -147,33 +58,15 @@ public class Story implements Parcelable, SlidesContentHolder {
     @SerializedName("image")
     public List<Image> image;
 
-
-    public boolean hasSwipeUp() {
-        return hasSwipeUp != null ? hasSwipeUp : false;
-    }
-
     @SerializedName("has_swipe_up")
     public Boolean hasSwipeUp;
 
-    public void srcList(List<IResourceObject> srcList) {
-        this.srcList = new ArrayList<>();
-        for (IResourceObject resourceObject: srcList) {
-            this.srcList.add((ResourceMappingObject) resourceObject);
-        }
-    }
-
     @SerializedName("src_list")
-    public List<ResourceMappingObject> srcList;
+    public List<ResourceMapping> srcList;
 
-    public void imagePlaceholdersList(List<IResourceObject> imagePlaceholdersList) {
-        this.imagePlaceholdersList = new ArrayList<>();
-        for (IResourceObject resourceObject: imagePlaceholdersList) {
-            this.imagePlaceholdersList.add((ResourceMappingObject) resourceObject);
-        }
-    }
 
     @SerializedName("img_placeholder_src_list")
-    public List<ResourceMappingObject> imagePlaceholdersList;
+    public List<ResourceMapping> imagePlaceholdersList;
 
 
     @SerializedName("like")
@@ -182,57 +75,15 @@ public class Story implements Parcelable, SlidesContentHolder {
     @SerializedName("slides_screenshot_share")
     public List<Integer> slidesShare;
 
-    public List<Integer> getSlidesShare() {
-        if (slidesShare == null) {
-            slidesShare = new ArrayList<>();
-        }
-        return slidesShare;
-    }
-
-    public boolean isScreenshotShare(int index) {
-        return shareType(index) == 1;
-    }
-
-
-    public int shareType(int index) {
-        if (slidesShare == null) return 0;
-        if (slidesShare.size() <= index) return 0;
-        if (slidesShare.get(index) != null)
-            return slidesShare.get(index);
-        return 0;
-    }
-
-    public int getSlidesCount() {
-        return Math.max(slidesCount, 0);
-    }
-
-    public void setSlidesCount(int slidesCount) {
-        this.slidesCount = slidesCount;
-    }
-
     @SerializedName("slides_count")
     public int slidesCount;
-
-    public boolean isFavorite() {
-        return favorite;
-    }
 
     @SerializedName("favorite")
     public boolean favorite;
 
-
     @SerializedName("hide_in_reader")
     public Boolean hideInReader;
 
-    public String getDeeplink() {
-        return deeplink;
-    }
-
-    public String getGameInstanceId() {
-        if (gameInstance != null)
-            return gameInstance.id;
-        return null;
-    }
 
     @SerializedName("deeplink")
     public String deeplink;
@@ -246,176 +97,8 @@ public class Story implements Parcelable, SlidesContentHolder {
     @SerializedName("disable_close")
     public boolean disableClose;
 
-    public String getBackgroundColor() {
-        if (backgroundColor == null) return "#FFFFFF";
-        return backgroundColor;
-    }
-
-
-    public List<IResourceObject> getSrcList() {
-        if (srcList == null) srcList = new ArrayList<>();
-        List<IResourceObject> res = new ArrayList<>();
-        res.addAll(srcList);
-        return res;
-    }
-
-    public List<IResourceObject> getImagePlaceholdersList() {
-        if (imagePlaceholdersList == null) imagePlaceholdersList = new ArrayList<>();
-        List<IResourceObject> res = new ArrayList<>();
-        res.addAll(imagePlaceholdersList);
-        return res;
-    }
-
-    public List<IResourceObject> vodResources(int index) {
-        List<IResourceObject> res = new ArrayList<>();
-        for (IResourceObject object : getSrcList()) {
-            if (Objects.equals(VOD, object.getPurpose()) && object.getIndex() == index) {
-                res.add(object);
-            }
-        }
-        return res;
-    }
-
-    public List<IResourceObject> staticResources(int index) {
-        List<IResourceObject> res = new ArrayList<>();
-        for (IResourceObject object : getSrcList()) {
-            if (!Objects.equals(VOD, object.getPurpose()) && object.getIndex() == index) {
-                res.add(object);
-            }
-        }
-        return res;
-    }
-
-    @Override
-    public List<String> placeholdersNames(int index) {
-        List<String> res = new ArrayList<>();
-        for (IResourceObject object : getImagePlaceholdersList()) {
-            if (object.getIndex() == index && (object.getType().equals("image-placeholder"))) {
-                String name = object.getUrl();
-                if (name != null) res.add(name);
-            }
-
-        }
-        return res;
-    }
-
-    @Override
-    public Map<String, String> placeholdersMap(int index) {
-        Map<String, String> res = new HashMap<>();
-        for (IResourceObject object : getImagePlaceholdersList()) {
-            if (object.getIndex() == index && (object.getType().equals("image-placeholder"))) {
-                res.put(object.getKey(), object.getUrl());
-            }
-        }
-        return res;
-    }
-
-    @Override
-    public int actualSlidesCount() {
-        if (pages != null) return pages.size();
-        return 0;
-    }
-
-    public int getLike() {
-        return like != null ? like : 0;
-    }
-
-    public boolean liked() {
-        return getLike() == 1;
-    }
-
-    public boolean disliked() {
-        return getLike() == -1;
-    }
-
-    public boolean isHideInReader() {
-        return (hideInReader != null && hideInReader) || slidesCount <= 0;
-    }
-
-
-    public Boolean hasLike() {
-        return hasLike != null ? hasLike : false;
-    }
-
-    public Boolean hasFavorite() {
-        return hasFavorite != null ? hasFavorite : false;
-    }
-
-    public Boolean hasShare() {
-        return hasShare != null ? hasShare : false;
-    }
-
-    public Boolean hasAudio() {
-        return hasAudio != null ? hasAudio : false;
-    }
-
-    public Story(int id,
-                 String titleColor,
-                 String statTitle,
-                 List<Image> videoUrl,
-                 List<PayloadObject> slidesPayload,
-                 StoryFeedInfo feedInfo,
-                 HashMap<String, Object> ugcPayload,
-                 int lastIndex,
-                 String title,
-                 String tags,
-                 String source,
-                 String backgroundColor,
-                 List<Image> image,
-                 Boolean hasSwipeUp,
-                 List<ResourceMappingObject> srcList,
-                 List<ResourceMappingObject> imagePlaceholdersList,
-                 Integer like,
-                 List<Integer> slidesShare,
-                 int slidesCount,
-                 boolean favorite,
-                 Boolean hideInReader,
-                 String deeplink,
-                 GameInstance gameInstance,
-                 boolean isOpened,
-                 boolean disableClose,
-                 Boolean hasLike,
-                 Boolean hasAudio,
-                 Boolean hasFavorite,
-                 Boolean hasShare,
-                 List<String> pages,
-                 List<SlideStructure> slidesStructure,
-                 List<Boolean> loadedPages,
-                 String layout
-    ) {
-        this.id = id;
-        this.titleColor = titleColor;
-        this.statTitle = statTitle;
-        this.videoUrl = videoUrl;
-        this.slidesPayload = slidesPayload;
-        this.feedInfo = feedInfo;
-        this.ugcPayload = ugcPayload;
-        this.lastIndex = lastIndex;
-        this.title = title;
-        this.tags = tags;
-        this.source = source;
-        this.backgroundColor = backgroundColor;
-        this.image = image;
-        this.hasSwipeUp = hasSwipeUp;
-        this.srcList = srcList;
-        this.imagePlaceholdersList = imagePlaceholdersList;
-        this.like = like;
-        this.slidesShare = slidesShare;
-        this.slidesCount = slidesCount;
-        this.favorite = favorite;
-        this.hideInReader = hideInReader;
-        this.deeplink = deeplink;
-        this.gameInstance = gameInstance;
-        this.isOpened = isOpened;
-        this.disableClose = disableClose;
-        this.hasLike = hasLike;
-        this.hasAudio = hasAudio;
-        this.hasFavorite = hasFavorite;
-        this.hasShare = hasShare;
-        this.pages = pages;
-        this.slidesStructure = slidesStructure;
-        this.loadedPages = loadedPages;
-        this.layout = layout;
+    public boolean disableClose() {
+        return disableClose;
     }
 
     @SerializedName("like_functional")
@@ -433,14 +116,281 @@ public class Story implements Parcelable, SlidesContentHolder {
     @SerializedName("slides_html")
     public List<String> pages;
 
-    @SerializedName("slides_structure")
-    public List<SlideStructure> slidesStructure;
-
     public List<Boolean> loadedPages = new ArrayList<>();
 
     @SerializedName("layout")
     public String layout;
 
+    @Override
+    public String title() {
+        String tmp = title != null ? title : "";
+        return replacedField(tmp);
+    }
+
+    @Override
+    public String slideEventPayload(int slideIndex) {
+        if (slidesPayload == null) return null;
+        for (PayloadObject payloadObject : slidesPayload) {
+            if (slideIndex == payloadObject.slideIndex) {
+                return payloadObject.getPayload();
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public boolean checkIfEmpty() {
+        return (layout == null || pages == null || pages.isEmpty());
+    }
+
+    @Override
+    public String imageCoverByQuality(int quality) {
+        if (image == null || image.isEmpty())
+            return null;
+        String q = Image.TYPE_MEDIUM;
+        switch (quality) {
+            case Image.QUALITY_HIGH:
+                q = Image.TYPE_HIGH;
+        }
+        for (Image img : image) {
+            if (img.getType().equals(q)) return img.getUrl();
+        }
+        return image.get(0).getUrl();
+    }
+
+    @Override
+    public boolean isOpened() {
+        return isOpened;
+    }
+
+    @Override
+    public void setOpened(boolean isOpened) {
+        this.isOpened = isOpened;
+    }
+
+    public List<String> getPages() {
+        return pages;
+    }
+
+    public String titleColor() {
+        return titleColor;
+    }
+
+    @Override
+    public String videoCover() {
+        return (videoUrl != null && !videoUrl.isEmpty()) ? videoUrl.get(0).getUrl() : null;
+    }
+
+
+    /**
+     * Последний открытый слайд
+     */
+
+    private String replacedField(String tmp) {
+        InAppStoryManager manager = InAppStoryManager.getInstance();
+        if (manager == null) return tmp;
+        Map<String, String> localPlaceholders =
+                ((IASDataSettingsHolder) manager.iasCore().settingsAPI()).placeholders();
+        for (String key : localPlaceholders.keySet()) {
+            String modifiedKey = "%" + key + "%";
+            String value = localPlaceholders.get(key);
+            if (value != null) {
+                tmp = tmp.replace(modifiedKey, value);
+            }
+        }
+        return tmp;
+    }
+
+    @Override
+    public boolean hasSwipeUp() {
+        return hasSwipeUp != null ? hasSwipeUp : false;
+    }
+
+    public void srcList(List<IResource> srcList) {
+        this.srcList = new ArrayList<>();
+        for (IResource resourceObject: srcList) {
+            this.srcList.add((ResourceMapping) resourceObject);
+        }
+    }
+
+
+    public void imagePlaceholdersList(List<IResource> imagePlaceholdersList) {
+        this.imagePlaceholdersList = new ArrayList<>();
+        for (IResource resourceObject: imagePlaceholdersList) {
+            this.imagePlaceholdersList.add((ResourceMapping) resourceObject);
+        }
+    }
+
+
+
+    public boolean isScreenshotShare(int index) {
+        return shareType(index) == 1;
+    }
+
+
+    public int shareType(int index) {
+        if (slidesShare == null) return 0;
+        if (slidesShare.size() <= index) return 0;
+        if (slidesShare.get(index) != null)
+            return slidesShare.get(index);
+        return 0;
+    }
+
+    public int slidesCount() {
+        return Math.max(slidesCount, 0);
+    }
+
+
+    public String deeplink() {
+        return deeplink;
+    }
+
+    public String gameInstanceId() {
+        if (gameInstance != null)
+            return gameInstance.id;
+        return null;
+    }
+
+    public String backgroundColor() {
+        if (backgroundColor == null) return "#FFFFFF";
+        return backgroundColor;
+    }
+
+    public List<IResource> srcList() {
+        if (srcList == null) srcList = new ArrayList<>();
+        List<IResource> res = new ArrayList<>();
+        res.addAll(srcList);
+        return res;
+    }
+
+    public List<IResource> getImagePlaceholdersList() {
+        if (imagePlaceholdersList == null) imagePlaceholdersList = new ArrayList<>();
+        List<IResource> res = new ArrayList<>();
+        res.addAll(imagePlaceholdersList);
+        return res;
+    }
+
+    @Override
+    public List<IResource> vodResources(int index) {
+        List<IResource> res = new ArrayList<>();
+        for (IResource object : srcList()) {
+            if (Objects.equals(VOD, object.getPurpose()) && object.getIndex() == index) {
+                res.add(object);
+            }
+        }
+        return res;
+    }
+
+    @Override
+    public List<IResource> staticResources(int index) {
+        List<IResource> res = new ArrayList<>();
+        for (IResource object : srcList()) {
+            if (!Objects.equals(VOD, object.getPurpose()) && object.getIndex() == index) {
+                res.add(object);
+            }
+        }
+        return res;
+    }
+
+    @Override
+    public List<String> placeholdersNames(int index) {
+        List<String> res = new ArrayList<>();
+        for (IResource object : getImagePlaceholdersList()) {
+            if (object.getIndex() == index && (object.getType().equals("image-placeholder"))) {
+                String name = object.getUrl();
+                if (name != null) res.add(name);
+            }
+
+        }
+        return res;
+    }
+
+    @Override
+    public Map<String, String> placeholdersMap(int index) {
+        Map<String, String> res = new HashMap<>();
+        for (IResource object : getImagePlaceholdersList()) {
+            if (object.getIndex() == index && (object.getType().equals("image-placeholder"))) {
+                res.put(object.getKey(), object.getUrl());
+            }
+        }
+        return res;
+    }
+
+    @Override
+    public int actualSlidesCount() {
+        if (pages != null) return pages.size();
+        return 0;
+    }
+
+    @Override
+    public String tags() {
+        return tags;
+    }
+
+    @Override
+    public Map<String, Object> ugcPayload() {
+        return ugcPayload;
+    }
+
+    @Override
+    public List<Integer> slidesShare() {
+        if (slidesShare == null) {
+            slidesShare = new ArrayList<>();
+        }
+        return slidesShare;
+    }
+
+    public boolean favorite() {
+        return favorite;
+    }
+
+
+    public int like() {
+        return like != null ? like : 0;
+    }
+
+    public void like(int like) {
+        this.like = like;
+    }
+
+    public void favorite(boolean favorite) {
+        this.favorite = favorite;
+    }
+
+    @Override
+    public boolean hideInReader() {
+        return (hideInReader != null && hideInReader) || slidesCount <= 0;
+    }
+
+    public boolean hasLike() {
+        return hasLike != null ? hasLike : false;
+    }
+
+    public boolean hasFavorite() {
+        return hasFavorite != null ? hasFavorite : false;
+    }
+
+    public boolean hasShare() {
+        return hasShare != null ? hasShare : false;
+    }
+
+    public boolean hasAudio() {
+        return hasAudio != null ? hasAudio : false;
+    }
+
+
+
+    @Override
+    public int id() {
+        return id;
+    }
+
+    @Override
+    public String statTitle() {
+        return statTitle;
+    }
+
+    @Override
     public String layout() {
         return layout;
     }
@@ -471,7 +421,6 @@ public class Story implements Parcelable, SlidesContentHolder {
         story.lastIndex = lastIndex;
         story.title = title;
         story.statTitle = statTitle;
-        story.source = source;
         story.backgroundColor = backgroundColor;
         story.image = image;
         story.like = like;
@@ -498,7 +447,6 @@ public class Story implements Parcelable, SlidesContentHolder {
         id = in.readInt();
         lastIndex = in.readInt();
         title = in.readString();
-        source = in.readString();
         backgroundColor = in.readString();
         image = in.createTypedArrayList(Image.CREATOR);
         like = in.readInt();
@@ -519,7 +467,6 @@ public class Story implements Parcelable, SlidesContentHolder {
         dest.writeInt(lastIndex);
         dest.writeString(title);
         dest.writeString(statTitle);
-        dest.writeString(source);
         dest.writeString(backgroundColor);
         dest.writeTypedList(image);
         dest.writeInt(like);

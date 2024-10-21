@@ -2,12 +2,13 @@ package com.inappstory.sdk.core.api.impl;
 
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASFavorites;
+import com.inappstory.sdk.core.dataholders.IReaderContent;
+import com.inappstory.sdk.core.dataholders.IReaderContentWithStatus;
 import com.inappstory.sdk.core.ui.screens.holder.GetScreenCallback;
 import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryScreen;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.network.models.Response;
 import com.inappstory.sdk.stories.api.models.ContentType;
-import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 
 import java.lang.reflect.Type;
@@ -57,10 +58,11 @@ public class IASFavoritesImpl implements IASFavorites {
                     @Override
                     public void onSuccess(Response response) {
                         core.statistic().profiling().setReady(favUID);
-                        Story story = core.contentLoader().storyDownloadManager()
-                                .getStoryById(storyId, ContentType.COMMON);
-                        if (story != null)
-                            story.favorite = favorite;
+                        IReaderContent story =
+                                core.contentHolder().readerContent()
+                                        .getByIdAndType(storyId, ContentType.STORY);
+                        if (story instanceof IReaderContentWithStatus)
+                            ((IReaderContentWithStatus) story).favorite(favorite);
                         core.inAppStoryService().getListReaderConnector().storyFavorite(storyId, favorite);
                         core
                                 .screensManager()
@@ -106,7 +108,7 @@ public class IASFavoritesImpl implements IASFavorites {
                         core.contentLoader()
                                 .storyDownloadManager()
                                 .clearAllFavoriteStatus(
-                                        ContentType.COMMON
+                                        ContentType.STORY
                                 );
                         core.contentLoader()
                                 .storyDownloadManager()

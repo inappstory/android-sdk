@@ -172,7 +172,7 @@ public class ReaderPageFragment extends Fragment {
             Story story = inAppStoryManager.iasCore().contentLoader().storyDownloadManager()
                     .getStoryById(
                             storyId,
-                            manager.getStoryType()
+                            manager.getViewContentType()
                     );
             if (story != null)
                 this.story = story;
@@ -200,9 +200,9 @@ public class ReaderPageFragment extends Fragment {
         if (InAppStoryService.getInstance() == null) return;
         Log.e("setViews", story.id + " " + story.slidesCount);
         if (timeline != null) {
-            timeline.getTimelineManager().setSlidesCount(story.getSlidesCount());
+            timeline.getTimelineManager().setSlidesCount(story.slidesCount());
         }
-        if (story.disableClose)
+        if (story.disableClose())
             close.setVisibility(View.GONE);
         if (buttonsPanel != null) {
             buttonsPanel.setButtonsVisibility(
@@ -212,7 +212,7 @@ public class ReaderPageFragment extends Fragment {
                     story.hasShare(),
                     story.hasAudio()
             );
-            buttonsPanel.setButtonsStatus(story.getLike(), story.favorite ? 1 : 0);
+            buttonsPanel.setButtonsStatus(story.like(), story.favorite() ? 1 : 0);
             aboveButtonsPanel.setVisibility(buttonsPanel.getVisibility());
         }
         setOffsets(view);
@@ -717,7 +717,7 @@ public class ReaderPageFragment extends Fragment {
             story = inAppStoryManager.iasCore().contentLoader().storyDownloadManager()
                     .getStoryById(
                             storyId,
-                            manager.getStoryType()
+                            manager.getViewContentType()
                     );
         }
         if (story != null) {

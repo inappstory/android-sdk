@@ -1,6 +1,7 @@
 package com.inappstory.sdk.externalapi;
 
-import com.inappstory.sdk.stories.ui.list.FavoriteImage;
+import com.inappstory.sdk.core.dataholders.IFavoriteItem;
+import com.inappstory.sdk.stories.ui.list.StoryFavoriteImage;
 
 public class StoryFavoriteItemAPIData {
     private StoryFavoriteItemAPIData(
@@ -27,11 +28,11 @@ public class StoryFavoriteItemAPIData {
     }
 
     public StoryFavoriteItemAPIData(
-            FavoriteImage favoriteImage,
+            IFavoriteItem favoriteImage,
             String imageFilePath
     ) {
-        this.id = favoriteImage.getId();
-        String hexColor = String.format("#%06X", (0xFFFFFF & favoriteImage.getBackgroundColor()));
+        this.id = favoriteImage.id();
+        String hexColor = String.format("#%06X", (0xFFFFFF & favoriteImage.backgroundColor()));
         this.backgroundColor = hexColor;
         this.imageFilePath = imageFilePath;
     }

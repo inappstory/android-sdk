@@ -6,11 +6,9 @@ import androidx.annotation.WorkerThread;
 
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.lrudiskcache.FileChecker;
-import com.inappstory.sdk.stories.api.interfaces.IDownloadResource;
+import com.inappstory.sdk.core.dataholders.IDownloadResource;
 import com.inappstory.sdk.stories.cache.DownloadFileState;
-import com.inappstory.sdk.stories.cache.FilesDownloadManager;
 import com.inappstory.sdk.stories.cache.usecases.GameSplashUseCase;
-import com.inappstory.sdk.stories.utils.KeyValueStorage;
 
 import java.io.File;
 

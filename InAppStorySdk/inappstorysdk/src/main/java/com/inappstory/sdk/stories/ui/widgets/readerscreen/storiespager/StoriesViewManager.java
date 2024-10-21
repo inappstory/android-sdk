@@ -154,7 +154,7 @@ public class StoriesViewManager {
         Story story = core
                 .contentLoader()
                 .storyDownloadManager()
-                .getStoryById(storyId, pageManager.getStoryType());
+                .getStoryById(storyId, pageManager.getViewContentType());
         innerLoad(story);
     }
 
@@ -276,7 +276,7 @@ public class StoriesViewManager {
             }
             if (loadedId == story.id && loadedIndex == index)
                 return;
-            if (story.getSlidesCount() <= index) return;
+            if (story.slidesCount() <= index) return;
             storyId = story.id;
             this.index = index;
             loadedIndex = index;
@@ -285,7 +285,7 @@ public class StoriesViewManager {
         slideInCache = core.contentLoader().storyDownloadManager().checkIfPageLoaded(
                 storyId,
                 index,
-                pageManager.getStoryType());
+                pageManager.getViewContentType());
         if (slideInCache == 1) {
             slideInCache(story, index);
         } else {
@@ -453,9 +453,9 @@ public class StoriesViewManager {
                 }
         );
         Story story = core.contentLoader().storyDownloadManager()
-                .getStoryById(storyId, pageManager.getStoryType());
+                .getStoryById(storyId, pageManager.getViewContentType());
         if (story != null && shareData != null) {
-            shareData.payload = story.getSlideEventPayload(index);
+            shareData.payload = story.slideEventPayload(index);
             pageManager.getParentManager().showShareView(
                     shareData, storyId, index
             );
@@ -471,7 +471,7 @@ public class StoriesViewManager {
         final StoriesContentFragment storiesContentFragment =
                 (StoriesContentFragment) pageManager.host.getParentFragment();
         if (storiesContentFragment != null)
-            storiesContentFragment.disableDrag(storyId, pageManager.getStoryType());
+            storiesContentFragment.disableDrag(storyId, pageManager.getViewContentType());
         core.statistic().profiling().setReady(storyId + "_" + index);
     }
 
@@ -519,7 +519,7 @@ public class StoriesViewManager {
 
     private GameStoryData getGameStoryData() {
         GameStoryData data = null;
-        ContentType type = pageManager != null ? pageManager.getStoryType() : ContentType.COMMON;
+        ContentType type = pageManager != null ? pageManager.getViewContentType() : ContentType.STORY;
         Story story = core.contentLoader().storyDownloadManager().getStoryById(storyId, type);
         if (story != null) {
             data = new GameStoryData(
@@ -540,7 +540,7 @@ public class StoriesViewManager {
                 .storyDownloadManager()
                 .getStoryById(
                         storyId,
-                        pageManager.getStoryType()
+                        pageManager.getViewContentType()
                 );
         if ((slideIndex >= 0 && story.lastIndex != slideIndex)) {
             stopStory();
@@ -574,7 +574,7 @@ public class StoriesViewManager {
         final Story story = core
                 .contentLoader()
                 .storyDownloadManager()
-                .getStoryById(storyId, pageManager.getStoryType());
+                .getStoryById(storyId, pageManager.getViewContentType());
         if (story != null) {
             InAppStoryManager.useCore(new UseIASCoreCallback() {
                 @Override

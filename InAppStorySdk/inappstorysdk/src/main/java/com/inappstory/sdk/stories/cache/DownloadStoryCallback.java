@@ -5,5 +5,5 @@ import com.inappstory.sdk.stories.api.models.Story;
 
 public interface DownloadStoryCallback {
     void onDownload(Story story, int loadType, ContentType type);
-    void onError(StoryTaskKey storyTaskKey);
+    void onError(ViewContentTaskKey viewContentTaskKey);
 }

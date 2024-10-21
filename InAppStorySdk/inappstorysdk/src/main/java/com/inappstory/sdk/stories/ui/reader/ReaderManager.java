@@ -248,7 +248,7 @@ public class ReaderManager {
     public void showSingleStory(final int storyId, final int slideIndex) {
         final StoriesContentFragment host = getHost();
         if (host == null) return;
-        if (contentType == ContentType.COMMON)
+        if (contentType == ContentType.STORY)
             core.statistic().v1(getSessionId(), new GetStatisticV1Callback() {
                 @Override
                 public void get(@NonNull IASStatisticV1 manager) {
@@ -259,11 +259,11 @@ public class ReaderManager {
             new Handler(Looper.getMainLooper()).post(new Runnable() {
                 @Override
                 public void run() {
-                    ContentType type = ContentType.COMMON;
+                    ContentType type = ContentType.STORY;
                     Story st = core.contentLoader().storyDownloadManager()
                             .getStoryById(storyId, type);
                     if (st != null) {
-                        if (st.getSlidesCount() <= slideIndex) {
+                        if (st.slidesCount() <= slideIndex) {
                             st.lastIndex = 0;
                         } else {
                             st.lastIndex = slideIndex;
@@ -378,7 +378,7 @@ public class ReaderManager {
                 .getStoryById(currentStoryId, contentType);
         if (story != null) {
             if (firstStoryId > 0 && startedSlideInd > 0) {
-                if (story.getSlidesCount() > startedSlideInd)
+                if (story.slidesCount() > startedSlideInd)
                     story.lastIndex = startedSlideInd;
                 cleanFirst();
             }
@@ -444,7 +444,7 @@ public class ReaderManager {
     void changeStory() {
         final List<Integer> lst = new ArrayList<>();
         lst.add(currentStoryId);
-        if (contentType == ContentType.COMMON)
+        if (contentType == ContentType.STORY)
             core.statistic().v1(getSessionId(), new GetStatisticV1Callback() {
                 @Override
                 public void get(@NonNull IASStatisticV1 manager) {
@@ -499,7 +499,7 @@ public class ReaderManager {
         statisticV2.sendCurrentState();
         if (hasCloseEvent) {
             Story story = core.contentLoader().storyDownloadManager().getStoryById(storiesIds.get(lastPos), contentType);
-            statisticV2.sendCloseStory(story.id, whence, story.lastIndex, story.getSlidesCount(), feedId);
+            statisticV2.sendCloseStory(story.id, whence, story.lastIndex, story.slidesCount(), feedId);
         }
         statisticV2.sendViewStory(id, whence, feedId);
         statisticV2.sendOpenStory(id, whence, feedId);

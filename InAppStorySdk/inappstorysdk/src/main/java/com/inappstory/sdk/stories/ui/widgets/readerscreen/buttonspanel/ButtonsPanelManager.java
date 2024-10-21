@@ -2,14 +2,12 @@ package com.inappstory.sdk.stories.ui.widgets.readerscreen.buttonspanel;
 
 import androidx.annotation.NonNull;
 
-import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.ui.screens.ShareProcessHandler;
 import com.inappstory.sdk.inner.share.InnerShareData;
-import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.network.models.Response;
 import com.inappstory.sdk.share.IShareCompleteListener;
@@ -18,7 +16,6 @@ import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickOnShareStoryCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.FavoriteStoryCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.LikeDislikeStoryCallback;
-import com.inappstory.sdk.stories.statistic.IASStatisticProfilingImpl;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPageManager;
 
 import java.lang.reflect.Type;
@@ -71,7 +68,7 @@ public class ButtonsPanelManager {
 
         final Story story =
                 core.contentLoader().storyDownloadManager().getStoryById(
-                        storyId, pageManager.getStoryType()
+                        storyId, pageManager.getViewContentType()
                 );
         if (story == null) return;
         final int val;
@@ -83,22 +80,22 @@ public class ButtonsPanelManager {
                         if (like) {
                             callback.likeStory(
                                     pageManager.getSlideData(story),
-                                    !story.liked()
+                                    story.like() != 1
                             );
                         } else {
                             callback.dislikeStory(
                                     pageManager.getSlideData(story),
-                                    !story.disliked()
+                                    story.like() != -1
                             );
                         }
                     }
                 }
         );
-        if (like && !story.liked()) {
+        if (like && story.like() != 1) {
             core.statistic().v2().sendLikeStory(story.id, story.lastIndex,
                     pageManager != null ? pageManager.getFeedId() : null);
             val = 1;
-        } else if (!like && !story.disliked()) {
+        } else if (!like && story.like() != -1) {
             core.statistic().v2().sendDislikeStory(story.id, story.lastIndex,
                     pageManager != null ? pageManager.getFeedId() : null);
             val = -1;
@@ -117,9 +114,9 @@ public class ButtonsPanelManager {
                     public void onSuccess(Response response) {
                         core.statistic().profiling().setReady(likeUID);
                         Story story = core.contentLoader().storyDownloadManager()
-                                .getStoryById(storyId, pageManager.getStoryType());
+                                .getStoryById(storyId, pageManager.getViewContentType());
                         if (story != null)
-                            story.like = val;
+                            story.like(val);
                         if (callback != null)
                             callback.onSuccess(val);
                     }
@@ -145,10 +142,10 @@ public class ButtonsPanelManager {
     }
 
     public void favoriteClick(final ButtonClickCallback callback) {
-        final Story story = core.contentLoader().storyDownloadManager().getStoryById(storyId, pageManager.getStoryType());
+        final Story story = core.contentLoader().storyDownloadManager().getStoryById(storyId, pageManager.getViewContentType());
         if (story == null) return;
-        final boolean val = story.favorite;
-        if (!story.favorite)
+        final boolean val = story.favorite();
+        if (!val)
             core.statistic().v2().sendFavoriteStory(story.id, story.lastIndex,
                     pageManager != null ? pageManager.getFeedId() : null);
         core.callbacksAPI().useCallback(
@@ -158,7 +155,7 @@ public class ButtonsPanelManager {
                     public void use(@NonNull FavoriteStoryCallback callback) {
                         callback.favoriteStory(
                                 pageManager.getSlideData(story),
-                                !story.favorite
+                                !val
                         );
                     }
                 });
@@ -173,10 +170,10 @@ public class ButtonsPanelManager {
                     public void onSuccess(Response response) {
                         core.statistic().profiling().setReady(favUID);
                         Story story = core.contentLoader().storyDownloadManager()
-                                .getStoryById(storyId, pageManager.getStoryType());
+                                .getStoryById(storyId, pageManager.getViewContentType());
                         boolean res = !val;
                         if (story != null)
-                            story.favorite = res;
+                            story.favorite(res);
                         if (callback != null)
                             callback.onSuccess(res ? 1 : 0);
                         InAppStoryService.getInstance()
@@ -219,7 +216,7 @@ public class ButtonsPanelManager {
         final ShareProcessHandler shareProcessHandler = core.screensManager().getShareProcessHandler();
         if (shareProcessHandler == null || shareProcessHandler.isShareProcess()) return;
         final Story story = core.contentLoader().storyDownloadManager()
-                .getStoryById(storyId, pageManager.getStoryType());
+                .getStoryById(storyId, pageManager.getViewContentType());
         if (story == null) return;
         final int slideIndex = story.lastIndex;
         core.statistic().v2().sendShareStory(story.id, slideIndex,
@@ -262,7 +259,7 @@ public class ButtonsPanelManager {
                         });
                         InnerShareData shareData = new InnerShareData();
                         shareData.text = response.getUrl();
-                        shareData.payload = story.getSlideEventPayload(slideIndex);
+                        shareData.payload = story.slideEventPayload(slideIndex);
                         if (pageManager != null) {
                             pageManager.showShareView(shareData);
                         }

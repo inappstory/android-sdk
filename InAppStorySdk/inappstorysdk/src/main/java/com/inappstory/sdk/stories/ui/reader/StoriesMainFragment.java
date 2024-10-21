@@ -25,7 +25,6 @@ import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
-import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASCallbackType;
@@ -43,7 +42,6 @@ import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.statistic.GetStatisticV1Callback;
-import com.inappstory.sdk.stories.statistic.IASStatisticV1Impl;
 import com.inappstory.sdk.stories.statistic.IASStatisticV2Impl;
 import com.inappstory.sdk.stories.ui.reader.animations.DisabledReaderAnimation;
 import com.inappstory.sdk.stories.ui.reader.animations.FadeReaderAnimation;
@@ -476,7 +474,7 @@ public abstract class StoriesMainFragment extends Fragment implements
                                                             launchData.getType()
                                                     ),
                                                     story.lastIndex,
-                                                    story.getSlideEventPayload(story.lastIndex)
+                                                    story.slideEventPayload(story.lastIndex)
                                             ),
                                             new CallbackTypesConverter().getCloseTypeFromInt(action)
                                     );
@@ -501,7 +499,7 @@ public abstract class StoriesMainFragment extends Fragment implements
                             story.id,
                             cause,
                             story.lastIndex,
-                            story.getSlidesCount(),
+                            story.slidesCount(),
                             launchData.getFeed()
                     );
                 }

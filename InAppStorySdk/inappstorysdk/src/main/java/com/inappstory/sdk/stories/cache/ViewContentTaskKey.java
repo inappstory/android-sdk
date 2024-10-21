@@ -1,29 +1,28 @@
 package com.inappstory.sdk.stories.cache;
 
 import com.inappstory.sdk.stories.api.models.ContentType;
-import com.inappstory.sdk.stories.api.models.Story;
 
 import java.util.Objects;
 
-class StoryTaskKey {
-    public StoryTaskKey(Integer storyId, ContentType contentType) {
-        this.storyId = storyId;
+public class ViewContentTaskKey {
+    public ViewContentTaskKey(int contentId, ContentType contentType) {
+        this.contentId = contentId;
         this.contentType = contentType;
     }
 
-    public Integer storyId;
+    public int contentId;
     public ContentType contentType;
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        StoryTaskKey that = (StoryTaskKey) o;
-        return Objects.equals(storyId, that.storyId) && contentType == that.contentType;
+        ViewContentTaskKey that = (ViewContentTaskKey) o;
+        return contentId == that.contentId && contentType == that.contentType;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(storyId, contentType);
+        return Objects.hash(contentId, contentType);
     }
 }

@@ -1,5 +1,6 @@
 package com.inappstory.sdk.stories.outercallbacks.common.reader;
 
+import com.inappstory.sdk.core.dataholders.IStatData;
 import com.inappstory.sdk.network.annotations.models.Ignore;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.Story;
@@ -17,24 +18,13 @@ public class StoryData implements Serializable {
     @Ignore
     public ContentType contentType;
 
-    public StoryData(
-            int id,
-            String title,
-            String tags,
-            int slidesCount,
-            String feed,
-            SourceType sourceType
-    ) {
-        this(id, ContentType.COMMON, title, tags, slidesCount, feed, sourceType);
-    }
-
-    public StoryData(Story story, String feed, SourceType sourceType) {
+    public StoryData(IStatData story, String feed, SourceType sourceType) {
         this(
-                story.id,
-                ContentType.COMMON,
-                StringsUtils.getNonNull(story.statTitle),
-                StringsUtils.getNonNull(story.tags),
-                story.slidesCount,
+                story.id(),
+                ContentType.STORY,
+                StringsUtils.getNonNull(story.statTitle()),
+                StringsUtils.getNonNull(story.tags()),
+                story.slidesCount(),
                 feed,
                 sourceType
         );
@@ -76,7 +66,7 @@ public class StoryData implements Serializable {
             SourceType sourceType,
             ContentType contentType
     ) {
-        if (contentType == ContentType.COMMON) {
+        if (contentType == ContentType.STORY) {
             return new StoryData(story, feed, sourceType);
         } else {
             return new UgcStoryData(story, sourceType);

@@ -6,19 +6,19 @@ import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
+import com.inappstory.sdk.core.dataholders.IListItemContent;
 import com.inappstory.sdk.externalapi.subscribers.InAppStoryAPISubscribersManager;
+import com.inappstory.sdk.stories.api.models.Image;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.logs.ExceptionLog;
 import com.inappstory.sdk.stories.exceptions.ExceptionManager;
 import com.inappstory.sdk.stories.stackfeed.StackStoryObserver;
-import com.inappstory.sdk.stories.ui.list.FavoriteImage;
+import com.inappstory.sdk.stories.ui.list.StoryFavoriteImage;
 import com.inappstory.sdk.stories.ui.list.ListManager;
 
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 
 public class InAppStoryService {
@@ -74,10 +74,12 @@ public class InAppStoryService {
                     for (ListManager sub : service.getListSubscribers()) {
                         sub.changeStory(storyId, listID);
                     }
-                    Story story = core.contentLoader().storyDownloadManager()
-                            .getStoryById(storyId, ContentType.COMMON);
-                    if (story != null)
-                        apiSubscribersManager.openStory(story.id, listID);
+                    IListItemContent story =
+                            core.contentHolder()
+                                    .listsContent()
+                                    .getByIdAndType(storyId, ContentType.STORY);
+                    if (story instanceof Story)
+                        apiSubscribersManager.openStory(story.id(), listID);
                 }
             });
         }
@@ -134,25 +136,29 @@ public class InAppStoryService {
             useInstance(new UseServiceInstanceCallback() {
                 @Override
                 public void use(@NonNull InAppStoryService service) {
-                    List<FavoriteImage> favImages =
-                            core.contentLoader().storyDownloadManager().favoriteImages();
-                    Story story = core.contentLoader().storyDownloadManager()
-                            .getStoryById(id, ContentType.COMMON);
+                    IListItemContent story = core.contentHolder()
+                            .listsContent().getByIdAndType(
+                                    id, ContentType.STORY
+                            );
                     if (story == null) return;
                     if (favStatus) {
-                        FavoriteImage favoriteImage = new FavoriteImage(id, story.getImage(), story.getBackgroundColor());
-                        if (!favImages.contains(favoriteImage))
-                            favImages.add(0, favoriteImage);
+                        core.contentHolder().favoriteItems().setByIdAndType(
+                                new StoryFavoriteImage(
+                                        id,
+                                        story.imageCoverByQuality(Image.QUALITY_MEDIUM),
+                                        story.backgroundColor()
+                                ),
+                                id,
+                                ContentType.STORY
+                        );
                     } else {
-                        Iterator<FavoriteImage> favoriteImageIterator = favImages.iterator();
-                        while (favoriteImageIterator.hasNext()) {
-                            if (favoriteImageIterator.next().getId() == id) {
-                                favoriteImageIterator.remove();
-                                break;
-                            }
-                        }
+                        core.contentHolder().favoriteItems().setByIdAndType(
+                                null,
+                                id,
+                                ContentType.STORY
+                        );
                     }
-                    boolean isEmpty = favImages.isEmpty();
+                    boolean isEmpty = core.contentHolder().favoriteItems().isEmpty(ContentType.STORY);
                     for (ListManager sub : service.getListSubscribers()) {
                         sub.storyFavorite(id, favStatus, isEmpty);
                     }

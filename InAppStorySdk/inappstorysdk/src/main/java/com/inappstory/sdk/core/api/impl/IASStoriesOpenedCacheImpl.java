@@ -24,7 +24,7 @@ public class IASStoriesOpenedCacheImpl implements IASStoriesOpenedCache {
         if (localOpensKey == null && settingsHolder.userId() != null) {
             localOpensKey = "opened" + settingsHolder.userId();
         }
-        return (type == ContentType.COMMON) ? localOpensKey : type.name() + localOpensKey;
+        return (type == ContentType.STORY) ? localOpensKey : type.name() + localOpensKey;
     }
 
     @Override

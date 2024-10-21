@@ -1,10 +1,10 @@
 package com.inappstory.sdk.stories.api.models;
 
-import static com.inappstory.sdk.stories.api.models.ResourceMappingObject.VOD;
+import static com.inappstory.sdk.stories.api.models.ResourceMapping.VOD;
 
 import com.inappstory.sdk.network.annotations.models.Required;
 import com.inappstory.sdk.network.annotations.models.SerializedName;
-import com.inappstory.sdk.stories.api.interfaces.IResourceObject;
+import com.inappstory.sdk.core.dataholders.IResource;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -30,10 +30,10 @@ public class InAppMessageImpl implements InAppMessage {
     public int dayLimit;
 
     @SerializedName("src_list")
-    public List<ResourceMappingObject> srcList;
+    public List<ResourceMapping> srcList;
 
     @SerializedName("img_placeholder_src_list")
-    public List<ResourceMappingObject> imagePlaceholdersList;
+    public List<ResourceMapping> imagePlaceholdersList;
 
     @SerializedName("campaign_name")
     public String campaignName;
@@ -62,10 +62,10 @@ public class InAppMessageImpl implements InAppMessage {
     }
 
     @Override
-    public List<IResourceObject> vodResources(int index) {
-        List<IResourceObject> res = new ArrayList<>();
+    public List<IResource> vodResources(int index) {
+        List<IResource> res = new ArrayList<>();
         if (srcList == null) return res;
-        for (IResourceObject object : srcList) {
+        for (IResource object : srcList) {
             if (Objects.equals(VOD, object.getPurpose()) && object.getIndex() == index) {
                 res.add(object);
             }
@@ -74,10 +74,10 @@ public class InAppMessageImpl implements InAppMessage {
     }
 
     @Override
-    public List<IResourceObject> staticResources(int index) {
-        List<IResourceObject> res = new ArrayList<>();
+    public List<IResource> staticResources(int index) {
+        List<IResource> res = new ArrayList<>();
         if (srcList == null) return res;
-        for (IResourceObject object : srcList) {
+        for (IResource object : srcList) {
             if (!Objects.equals(VOD, object.getPurpose()) && object.getIndex() == index) {
                 res.add(object);
             }
@@ -89,7 +89,7 @@ public class InAppMessageImpl implements InAppMessage {
     public List<String> placeholdersNames(int index) {
         List<String> res = new ArrayList<>();
         if (imagePlaceholdersList == null) return res;
-        for (IResourceObject object : imagePlaceholdersList) {
+        for (IResource object : imagePlaceholdersList) {
             if (object.getIndex() == index && (object.getType().equals("image-placeholder"))) {
                 String name = object.getUrl();
                 if (name != null) res.add(name);
@@ -103,7 +103,7 @@ public class InAppMessageImpl implements InAppMessage {
     public Map<String, String> placeholdersMap(int index) {
         Map<String, String> res = new HashMap<>();
         if (imagePlaceholdersList == null) return res;
-        for (IResourceObject object : imagePlaceholdersList) {
+        for (IResource object : imagePlaceholdersList) {
             if (object.getIndex() == index && (object.getType().equals("image-placeholder"))) {
                 res.put(object.getKey(), object.getUrl());
             }

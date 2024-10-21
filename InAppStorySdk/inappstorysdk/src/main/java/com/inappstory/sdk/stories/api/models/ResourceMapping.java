@@ -2,13 +2,13 @@ package com.inappstory.sdk.stories.api.models;
 
 
 import com.inappstory.sdk.network.annotations.models.SerializedName;
-import com.inappstory.sdk.stories.api.interfaces.IResourceObject;
+import com.inappstory.sdk.core.dataholders.IResource;
 
 /**
  * Created by paperrose on 19.02.2018.
  */
 
-public class ResourceMappingObject implements IResourceObject {
+public class ResourceMapping implements IResource {
     @SerializedName("url")
     public String url;
     @SerializedName("key")

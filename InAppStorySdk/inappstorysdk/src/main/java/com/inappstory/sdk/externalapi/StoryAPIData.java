@@ -36,10 +36,10 @@ public class StoryAPIData {
             String videoFilePath
     ) {
         this.id = story.id;
-        this.backgroundColor = story.getBackgroundColor();
-        this.title = story.getTitle();
+        this.backgroundColor = story.backgroundColor();
+        this.title = story.title();
         this.storyData = storyData;
-        this.titleColor = story.getTitleColor();
+        this.titleColor = story.titleColor();
         this.imageFilePath = imageFilePath;
         this.videoFilePath = videoFilePath;
         this.hasAudio = story.hasAudio();

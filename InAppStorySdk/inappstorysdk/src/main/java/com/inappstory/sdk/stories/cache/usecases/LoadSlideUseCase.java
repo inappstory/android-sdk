@@ -2,7 +2,7 @@ package com.inappstory.sdk.stories.cache.usecases;
 
 
 import com.inappstory.sdk.core.IASCore;
-import com.inappstory.sdk.stories.api.interfaces.IResourceObject;
+import com.inappstory.sdk.core.dataholders.IResource;
 import com.inappstory.sdk.stories.cache.DownloadFileState;
 import com.inappstory.sdk.stories.cache.SlideTask;
 import com.inappstory.sdk.stories.cache.UrlWithAlter;
@@ -54,7 +54,7 @@ public class LoadSlideUseCase {
     }
 
     public boolean loadWithResult() throws Exception {
-        for (IResourceObject object : slideTask.vodResources()) {
+        for (IResource object : slideTask.vodResources()) {
             long rangeStart = object.getRangeStart();
             long rangeEnd = object.getRangeEnd();
             if (!
@@ -67,7 +67,7 @@ public class LoadSlideUseCase {
             )
                 return false;
         }
-        for (IResourceObject object : slideTask.staticResources()) {
+        for (IResource object : slideTask.staticResources()) {
             if (!
                     downloadStaticFile(object.getUrl())
             )

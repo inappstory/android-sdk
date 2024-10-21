@@ -62,11 +62,11 @@ class StoryDownloader {
     private DownloadStoryCallback callback;
 
     private final Object storyTasksLock = new Object();
-    private HashMap<StoryTaskKey, StoryTaskWithPriority> storyTasks = new HashMap<>();
+    private HashMap<ViewContentTaskKey, StoryTaskWithPriority> storyTasks = new HashMap<>();
 
     void addCompletedStoryTask(int storyId, ContentType type) {
         synchronized (storyTasksLock) {
-            storyTasks.put(new StoryTaskKey(storyId, type), new StoryTaskWithPriority(-1, 3));
+            storyTasks.put(new ViewContentTaskKey(storyId, type), new StoryTaskWithPriority(-1, 3));
         }
     }
 
@@ -83,23 +83,23 @@ class StoryDownloader {
         loopedExecutor.shutdown();
     }
 
-    ArrayList<StoryTaskKey> firstPriority = new ArrayList<>();
-    ArrayList<StoryTaskKey> secondPriority = new ArrayList<>();
+    ArrayList<ViewContentTaskKey> firstPriority = new ArrayList<>();
+    ArrayList<ViewContentTaskKey> secondPriority = new ArrayList<>();
 
-    void changePriority(StoryTaskKey storyId, ArrayList<Integer> addIds, ContentType type) {
+    void changePriority(ViewContentTaskKey storyId, ArrayList<Integer> addIds, ContentType type) {
         secondPriority.remove(storyId);
         for (Integer id : addIds) {
-            StoryTaskKey key = new StoryTaskKey(id, type);
+            ViewContentTaskKey key = new ViewContentTaskKey(id, type);
             secondPriority.remove(key);
         }
-        for (StoryTaskKey id : firstPriority) {
+        for (ViewContentTaskKey id : firstPriority) {
             if (!secondPriority.contains(id))
                 secondPriority.add(id);
         }
         firstPriority.clear();
         firstPriority.add(storyId);
         for (Integer id : addIds) {
-            StoryTaskKey key = new StoryTaskKey(id, type);
+            ViewContentTaskKey key = new ViewContentTaskKey(id, type);
             firstPriority.add(key);
         }
 
@@ -108,8 +108,8 @@ class StoryDownloader {
     void addStoryTask(int storyId, ArrayList<Integer> addIds, ContentType type) {
         synchronized (storyTasksLock) {
             if (storyTasks == null) storyTasks = new HashMap<>();
-            for (StoryTaskKey storyTaskKey : storyTasks.keySet()) {
-                StoryTaskWithPriority storyTaskWithPriority = storyTasks.get(storyTaskKey);
+            for (ViewContentTaskKey viewContentTaskKey : storyTasks.keySet()) {
+                StoryTaskWithPriority storyTaskWithPriority = storyTasks.get(viewContentTaskKey);
                 if (storyTaskWithPriority != null &&
                         storyTaskWithPriority.loadType > 0 &&
                         storyTaskWithPriority.loadType != 3 &&
@@ -119,7 +119,7 @@ class StoryDownloader {
                 }
             }
             for (Integer storyIntKey : addIds) {
-                StoryTaskKey key = new StoryTaskKey(storyIntKey, type);
+                ViewContentTaskKey key = new ViewContentTaskKey(storyIntKey, type);
                 StoryTaskWithPriority task = storyTasks.get(key);
                 if (task != null) {
                     if (task.loadType != 3 &&
@@ -131,7 +131,7 @@ class StoryDownloader {
                     storyTasks.put(key, st);
                 }
             }
-            StoryTaskKey keyByStoryId = new StoryTaskKey(storyId, type);
+            ViewContentTaskKey keyByStoryId = new ViewContentTaskKey(storyId, type);
             StoryTaskWithPriority taskByStoryId = storyTasks.get(keyByStoryId);
             if (taskByStoryId != null) {
                 if (taskByStoryId.loadType != 3) {
@@ -155,16 +155,16 @@ class StoryDownloader {
     }
 
 
-    private StoryTaskKey getMaxPriorityStoryTaskKey() throws Exception {
+    private ViewContentTaskKey getMaxPriorityStoryTaskKey() throws Exception {
         synchronized (storyTasksLock) {
             if (storyTasks == null || storyTasks.size() == 0) return null;
             if (firstPriority == null || secondPriority == null) return null;
-            for (StoryTaskKey key : firstPriority) {
+            for (ViewContentTaskKey key : firstPriority) {
                 if (getStoryLoadType(key) != 1 && getStoryLoadType(key) != 4)
                     continue;
                 return key;
             }
-            for (StoryTaskKey key : secondPriority) {
+            for (ViewContentTaskKey key : secondPriority) {
                 if (getStoryLoadType(key) != 1 && getStoryLoadType(key) != 4)
                     continue;
                 return key;
@@ -173,12 +173,12 @@ class StoryDownloader {
         }
     }
 
-    void setStoryLoadType(StoryTaskKey key, int loadType) {
+    void setStoryLoadType(ViewContentTaskKey key, int loadType) {
         if (!storyTasks.containsKey(key)) return;
         Objects.requireNonNull(storyTasks.get(key)).loadType = loadType;
     }
 
-    int getStoryLoadType(StoryTaskKey key) {
+    int getStoryLoadType(ViewContentTaskKey key) {
         if (!storyTasks.containsKey(key)) return -5;
         return Objects.requireNonNull(storyTasks.get(key)).loadType;
     }
@@ -186,7 +186,7 @@ class StoryDownloader {
 
     void reload(int storyId, ArrayList<Integer> addIds, ContentType type) {
         synchronized (storyTasksLock) {
-            StoryTaskKey key = new StoryTaskKey(storyId, type);
+            ViewContentTaskKey key = new ViewContentTaskKey(storyId, type);
             if (storyTasks == null) storyTasks = new HashMap<>();
             storyTasks.remove(key);
         }
@@ -194,7 +194,7 @@ class StoryDownloader {
     }
 
 
-    private void loadStoryError(final StoryTaskKey key) {
+    private void loadStoryError(final ViewContentTaskKey key) {
         core.callbacksAPI().useCallback(IASCallbackType.ERROR,
                 new UseIASCallback<ErrorCallback>() {
                     @Override
@@ -220,7 +220,7 @@ class StoryDownloader {
 
         @Override
         public void run() {
-            StoryTaskKey tKey = null;
+            ViewContentTaskKey tKey = null;
             try {
                 tKey = getMaxPriorityStoryTaskKey();
             } catch (Exception e) {
@@ -230,7 +230,7 @@ class StoryDownloader {
                 loopedExecutor.freeExecutor();
                 return;
             }
-            final StoryTaskKey key = tKey;
+            final ViewContentTaskKey key = tKey;
             synchronized (storyTasksLock) {
                 if (getStoryLoadType(key) == 4) {
                     setStoryLoadType(key, 5);
@@ -261,7 +261,7 @@ class StoryDownloader {
     };
 
 
-    void loadStoryResult(StoryTaskKey key, Response response) {
+    void loadStoryResult(ViewContentTaskKey key, Response response) {
         if (response.body != null) {
             Story story = JsonParser.fromJson(response.body, Story.class);
             int loadType;
@@ -287,7 +287,7 @@ class StoryDownloader {
     }
 
 
-    void loadStory(StoryTaskKey key) {
+    void loadStory(ViewContentTaskKey key) {
 
         try {
             String storyUID;
@@ -537,7 +537,6 @@ class StoryDownloader {
     }
 
     private void closeSessionIf424(final String sessionId) {
-        InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {

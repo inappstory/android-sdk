@@ -11,7 +11,6 @@ import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.Feed;
 import com.inappstory.sdk.stories.api.models.Image;
-import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadFeedCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.stackfeed.IStackFeedActions;
@@ -78,10 +77,10 @@ public class IASStackFeedImpl implements IASStackFeed {
                                 if (response == null || response.stories == null) {
                                     stackFeedResult.error();
                                 } else {
-                                    core.storyListCache().saveStoriesOpened(response.stories, ContentType.COMMON);
+                                    core.storyListCache().saveStoriesOpened(response.stories, ContentType.STORY);
                                     core.contentLoader().storyDownloadManager().uploadingAdditional(
                                             response.stories,
-                                            ContentType.COMMON
+                                            ContentType.STORY
                                     );
                                     final StackStoryObserver observer = new StackStoryObserver(
                                             core,

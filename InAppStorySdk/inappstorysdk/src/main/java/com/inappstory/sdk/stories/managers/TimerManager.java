@@ -153,13 +153,13 @@ public class TimerManager {
         InAppStoryService.useInstance(new UseServiceInstanceCallback() {
             @Override
             public void use(@NonNull InAppStoryService service) throws Exception {
-                ContentType type = (pageManager != null) ? pageManager.getStoryType() : ContentType.COMMON;
+                ContentType type = (pageManager != null) ? pageManager.getViewContentType() : ContentType.STORY;
                 Story story = core
                         .contentLoader()
                         .storyDownloadManager()
                         .getCurrentStory(type);
                 if (story != null) {
-                    core.statistic().v2().addFakeEvents(story.id, story.lastIndex, story.getSlidesCount(),
+                    core.statistic().v2().addFakeEvents(story.id, story.lastIndex, story.slidesCount(),
                             pageManager != null ? pageManager.getFeedId() : null);
                 }
                 startPauseTime = System.currentTimeMillis();

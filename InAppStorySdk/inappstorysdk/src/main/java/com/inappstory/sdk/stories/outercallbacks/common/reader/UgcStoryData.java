@@ -1,20 +1,22 @@
 package com.inappstory.sdk.stories.outercallbacks.common.reader;
 
+import com.inappstory.sdk.core.dataholders.IStatData;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.utils.StringsUtils;
 
 import java.util.HashMap;
+import java.util.Map;
 
 public class UgcStoryData extends StoryData {
-    public HashMap<String, Object> ugcPayload;
+    public Map<String, Object> ugcPayload;
 
-    public UgcStoryData(
+    private UgcStoryData(
             int id,
             String title,
             String tags,
             int slidesCount,
-            HashMap<String, Object> ugcPayload,
+            Map<String, Object> ugcPayload,
             SourceType sourceType
     ) {
         super(id, ContentType.UGC, title, tags, slidesCount, null, sourceType);
@@ -22,15 +24,15 @@ public class UgcStoryData extends StoryData {
     }
 
     public UgcStoryData(
-            Story story,
+            IStatData story,
             SourceType sourceType
     ) {
         this(
-                story.id,
-                StringsUtils.getNonNull(story.statTitle),
-                StringsUtils.getNonNull(story.tags),
-                story.slidesCount,
-                story.ugcPayload,
+                story.id(),
+                StringsUtils.getNonNull(story.statTitle()),
+                StringsUtils.getNonNull(story.tags()),
+                story.slidesCount(),
+                story.ugcPayload(),
                 sourceType
         );
     }

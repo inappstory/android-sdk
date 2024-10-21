@@ -42,7 +42,7 @@ public class IASSingleStoryImpl implements IASSingleStory {
         if (((IASDataSettingsHolder) core.settingsAPI()).noCorrectUserIdOrDevice()) return;
         Set<String> opens = core.sharedPreferencesAPI().getStringSet(
                 core.storyListCache().getLocalOpensKey(
-                        ContentType.COMMON
+                        ContentType.STORY
                 )
         );
         if (opens != null && opens.contains(storyId) && callback != null) {
@@ -54,14 +54,14 @@ public class IASSingleStoryImpl implements IASSingleStory {
             @Override
             public void getStory(final Story story, final String sessionId) {
                 if (story != null) {
-                    core.contentLoader().storyDownloadManager().addCompletedStoryTask(story, ContentType.COMMON);
+                    core.contentLoader().storyDownloadManager().addCompletedStoryTask(story, ContentType.STORY);
                     openStoryInReader(story,
                             sessionId,
                             context,
                             appearanceManager,
                             callback,
                             0,
-                            ContentType.COMMON,
+                            ContentType.STORY,
                             SourceType.SINGLE,
                             ShowStory.ACTION_OPEN,
                             false
@@ -80,7 +80,7 @@ public class IASSingleStoryImpl implements IASSingleStory {
                 }
             }
 
-        }, storyId, ContentType.COMMON, true, SourceType.SINGLE);
+        }, storyId, ContentType.STORY, true, SourceType.SINGLE);
     }
 
 
@@ -146,7 +146,7 @@ public class IASSingleStoryImpl implements IASSingleStory {
                 storyId,
                 appearanceManager,
                 callback,
-                ContentType.COMMON,
+                ContentType.STORY,
                 slide,
                 false,
                 SourceType.SINGLE,
@@ -166,11 +166,6 @@ public class IASSingleStoryImpl implements IASSingleStory {
             final int readerAction,
             final boolean openedFromReader
     ) {
-
-        core.contentLoader().storyDownloadManager()
-                .putStories(
-                        type
-                );
 
         ArrayList<Integer> stIds = new ArrayList<>();
         stIds.add(story.id);

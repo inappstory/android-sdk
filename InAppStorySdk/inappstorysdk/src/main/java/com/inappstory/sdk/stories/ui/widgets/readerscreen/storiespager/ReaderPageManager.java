@@ -16,6 +16,7 @@ import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.StoryLinkObject;
+import com.inappstory.sdk.stories.cache.ViewContentTaskKey;
 import com.inappstory.sdk.stories.managers.TimerManager;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.CallToActionCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickAction;
@@ -43,6 +44,11 @@ public class ReaderPageManager {
     StoriesViewManager webViewManager;
     TimerManager timerManager;
     ReaderPageFragment host;
+
+    public boolean isCorrectSubscriber(ViewContentTaskKey viewContentTaskKey) {
+        return getStoryId() == viewContentTaskKey.contentId &&
+                getViewContentType() == viewContentTaskKey.contentType;
+    }
 
     private final IASCore core;
 
@@ -97,20 +103,20 @@ public class ReaderPageManager {
         return storyId;
     }
 
-    public ContentType getStoryType() {
-        return parentManager != null ? parentManager.contentType : ContentType.COMMON;
+    public ContentType getViewContentType() {
+        return parentManager != null ? parentManager.contentType : ContentType.STORY;
     }
 
 
     public StoryData getStoryData(Story story) {
-        return StoryData.getStoryData(story, getFeedId(), getSourceType(), getStoryType());
+        return StoryData.getStoryData(story, getFeedId(), getSourceType(), getViewContentType());
     }
 
     public SlideData getSlideData(Story story) {
         return new SlideData(
                 getStoryData(story),
                 story.lastIndex,
-                story.getSlideEventPayload(story.lastIndex)
+                story.slideEventPayload(story.lastIndex)
         );
     }
 
@@ -159,12 +165,12 @@ public class ReaderPageManager {
     }
 
     public void reloadStory() {
-        core.contentLoader().storyDownloadManager().reloadStory(storyId, getStoryType());
+        core.contentLoader().storyDownloadManager().reloadStory(storyId, getViewContentType());
     }
 
     public void widgetEvent(final String widgetName, String widgetData) {
         final Story story = core.contentLoader().storyDownloadManager()
-                .getStoryById(storyId, getStoryType());
+                .getStoryById(storyId, getViewContentType());
         if (story == null) return;
         final Map<String, String> widgetEventMap = JsonParser.toMap(widgetData);
         if (widgetEventMap != null)
@@ -190,7 +196,7 @@ public class ReaderPageManager {
             ClickAction action = ClickAction.BUTTON;
             final Story story = core.contentLoader().storyDownloadManager()
                     .getStoryById(
-                            storyId, getStoryType()
+                            storyId, getViewContentType()
                     );
             switch (object.getLink().getType()) {
                 case "url":
@@ -199,7 +205,7 @@ public class ReaderPageManager {
                             action = ClickAction.SWIPE;
                         }
                     }
-                    if (getStoryType() == ContentType.COMMON)
+                    if (getViewContentType() == ContentType.STORY)
                         core.statistic().v1(
                                 parentManager.getSessionId(),
                                 new GetStatisticV1Callback() {
@@ -322,7 +328,7 @@ public class ReaderPageManager {
 
     public void setStoryInfo(Story story) {
         if (checkIfManagersIsNull()) return;
-        timelineManager.setSlidesCount(story.getSlidesCount());
+        timelineManager.setSlidesCount(story.slidesCount());
         webViewManager.loadStory(story, story.lastIndex);
     }
 
@@ -333,10 +339,10 @@ public class ReaderPageManager {
 
     public void openSlideByIndex(int index) {
         Story story = core.contentLoader().storyDownloadManager()
-                .getStoryById(storyId, getStoryType());
+                .getStoryById(storyId, getViewContentType());
         if (index < 0) index = 0;
         if (story == null) return;
-        if (story.getSlidesCount() <= index) index = 0;
+        if (story.slidesCount() <= index) index = 0;
         story.lastIndex = index;
         if (slideIndex != index) {
             slideIndex = index;
@@ -396,11 +402,11 @@ public class ReaderPageManager {
     public void nextSlide(int action) {
         if (checkIfManagersIsNull()) return;
         Story story = core.contentLoader().storyDownloadManager()
-                .getStoryById(storyId, getStoryType());
+                .getStoryById(storyId, getViewContentType());
         if (story == null) return;
         pauseTimers();
         int lastIndex = slideIndex;
-        if (lastIndex < story.getSlidesCount() - 1) {
+        if (lastIndex < story.slidesCount() - 1) {
             if (webViewManager == null) return;
             webViewManager.stopStory();
             lastIndex++;
@@ -432,7 +438,7 @@ public class ReaderPageManager {
         core.statistic().v2().sendCurrentState();
         core.contentLoader().storyDownloadManager().changePriorityForSingle(storyId,
                 parentManager.contentType);
-        if (getStoryType() == ContentType.COMMON) {
+        if (getViewContentType() == ContentType.STORY) {
             core.statistic().v2().createCurrentState(
                     storyId,
                     slideIndex,
@@ -467,7 +473,7 @@ public class ReaderPageManager {
     public void showShareView(InnerShareData shareData) {
         if (parentManager != null) {
             Story story = core.contentLoader().storyDownloadManager()
-                    .getStoryById(storyId, getStoryType());
+                    .getStoryById(storyId, getViewContentType());
             if (story != null)
                 parentManager.showShareView(shareData, storyId, slideIndex);
         }
@@ -482,7 +488,7 @@ public class ReaderPageManager {
     public void prevSlide(int action) {
         if (checkIfManagersIsNull()) return;
         Story story = core.contentLoader().storyDownloadManager()
-                .getStoryById(storyId, getStoryType());
+                .getStoryById(storyId, getViewContentType());
 
         if (story == null) return;
         pauseTimers();

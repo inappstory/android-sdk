@@ -27,7 +27,6 @@ import com.inappstory.sdk.game.cache.SuccessUseCaseCallback;
 import com.inappstory.sdk.game.reader.GameStoryData;
 import com.inappstory.sdk.imageloader.CustomFileLoader;
 import com.inappstory.sdk.stories.api.models.ContentType;
-import com.inappstory.sdk.stories.api.models.Image;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.CallToActionCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickAction;
@@ -153,11 +152,8 @@ public class StackStoryObserver implements IStackFeedActions {
         }
         final Story currentStory = stories.get(newIndex);
         Log.e("NewStackStoryData", newIndex + " " + currentStory.isOpened());
-        Image imageObject = currentStory.getProperImage(appearanceManager.csCoverQuality());
-        final String image;
-        if (imageObject != null) image = imageObject.getUrl();
-        else image = null;
-        final String video = currentStory.getVideoUrl();
+        String image = currentStory.imageCoverByQuality(appearanceManager.csCoverQuality());
+        final String video = currentStory.videoCover();
         boolean[] statuses = new boolean[stories.size()];
         StoryData[] storiesData = new StoryData[stories.size()];
         for (int i = 0; i < stories.size(); i++) {
@@ -165,11 +161,11 @@ public class StackStoryObserver implements IStackFeedActions {
             storiesData[i] = new StoryData(stories.get(i), feed, SourceType.STACK);
         }
         final int backgroundColor = Color.parseColor(
-                currentStory.getBackgroundColor()
+                currentStory.backgroundColor()
         );
         StackStoryData localStackStoryData = new StackStoryData(
-                currentStory.getTitle(),
-                Color.parseColor(currentStory.getTitleColor()),
+                currentStory.title(),
+                Color.parseColor(currentStory.titleColor()),
                 currentStory.hasAudio(),
                 backgroundColor,
                 image != null,
@@ -258,17 +254,17 @@ public class StackStoryObserver implements IStackFeedActions {
         if (manager == null) return;
         final Story currentStory = stories.get(oldIndex);
         Story current = core.contentLoader().storyDownloadManager()
-                .getStoryById(currentStory.id, ContentType.COMMON);
+                .getStoryById(currentStory.id, ContentType.STORY);
         boolean currentStoryIsOpened = true;
         if (current != null) {
             currentStoryIsOpened = current.isOpened;
         }
         boolean showOnlyNewStories = !currentStoryIsOpened && showNewStories;
-        if (currentStory.getDeeplink() != null && !currentStory.getDeeplink().isEmpty()) {
+        if (currentStory.deeplink() != null && !currentStory.deeplink().isEmpty()) {
             service.getListReaderConnector().changeStory(currentStory.id, listId, showOnlyNewStories);
             core.statistic().v2().sendDeeplinkStory(
                     currentStory.id,
-                    currentStory.getDeeplink(),
+                    currentStory.deeplink(),
                     feed
             );
             core.statistic().v1(sessionId, new GetStatisticV1Callback() {
@@ -293,7 +289,7 @@ public class StackStoryObserver implements IStackFeedActions {
                                             0,
                                             null
                                     ),
-                                    currentStory.getDeeplink(),
+                                    currentStory.deeplink(),
                                     ClickAction.DEEPLINK
                             );
                         }
@@ -307,7 +303,7 @@ public class StackStoryObserver implements IStackFeedActions {
                                         public void success() {
                                             try {
                                                 Intent i = new Intent(Intent.ACTION_VIEW);
-                                                i.setData(Uri.parse(currentStory.getDeeplink()));
+                                                i.setData(Uri.parse(currentStory.deeplink()));
                                                 i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                                                 context.startActivity(i);
                                             } catch (Exception ignored) {
@@ -321,9 +317,9 @@ public class StackStoryObserver implements IStackFeedActions {
             );
             if (current != null) {
                 current.isOpened = true;
-                core.storyListCache().saveStoryOpened(currentStory.id, ContentType.COMMON);
+                core.storyListCache().saveStoryOpened(currentStory.id, ContentType.STORY);
             }
-        } else if (currentStory.getGameInstanceId() != null && !currentStory.getGameInstanceId().isEmpty()) {
+        } else if (currentStory.gameInstanceId() != null && !currentStory.gameInstanceId().isEmpty()) {
             service.getListReaderConnector().changeStory(currentStory.id, listId, showOnlyNewStories);
             core.statistic().v1(
                     sessionId,
@@ -350,20 +346,20 @@ public class StackStoryObserver implements IStackFeedActions {
                                             )
 
                                     ),
-                                    currentStory.getGameInstanceId()
+                                    currentStory.gameInstanceId()
                             ))
             );
             if (current != null) {
                 current.isOpened = true;
-                core.storyListCache().saveStoryOpened(currentStory.id, ContentType.COMMON);
+                core.storyListCache().saveStoryOpened(currentStory.id, ContentType.STORY);
             }
-        } else if (!currentStory.isHideInReader()) {
+        } else if (!currentStory.hideInReader()) {
             List<Integer> readerStories = new ArrayList<>();
             int j = 0;
             int openIndex = 0;
             for (Story story : stories) {
                 if (showOnlyNewStories && story.isOpened()) continue;
-                if (!story.isHideInReader()) {
+                if (!story.hideInReader()) {
                     if (currentStory == story) {
                         openIndex = j;
                     }
@@ -381,7 +377,7 @@ public class StackStoryObserver implements IStackFeedActions {
                     ShowStory.ACTION_OPEN,
                     SourceType.STACK,
                     0,
-                    ContentType.COMMON,
+                    ContentType.STORY,
                     null
             );
             core.screensManager().openScreen(context,

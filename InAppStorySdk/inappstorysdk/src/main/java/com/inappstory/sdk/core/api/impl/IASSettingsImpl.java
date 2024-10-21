@@ -12,7 +12,6 @@ import com.inappstory.sdk.core.api.IASDataSettings;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
-import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.StoryPlaceholder;
 import com.inappstory.sdk.stories.ui.reader.ForceCloseReaderCallback;
 import com.inappstory.sdk.utils.StringsUtils;
@@ -74,7 +73,7 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
             }
         });
         core.contentLoader().storyDownloadManager().favoriteImages().clear();
-        core.contentLoader().storyDownloadManager().refreshLocals(ContentType.COMMON);
+        core.contentLoader().storyDownloadManager().refreshLocals(ContentType.STORY);
         core.contentLoader().storyDownloadManager().refreshLocals(ContentType.UGC);
         core.contentLoader().storyDownloadManager().cleanTasks(false);
 
@@ -109,7 +108,7 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
         });
 
         core.contentLoader().storyDownloadManager().favoriteImages().clear();
-        core.contentLoader().storyDownloadManager().refreshLocals(ContentType.COMMON);
+        core.contentLoader().storyDownloadManager().refreshLocals(ContentType.STORY);
         core.contentLoader().storyDownloadManager().refreshLocals(ContentType.UGC);
         core.contentLoader().storyDownloadManager().cleanTasks(false);
     }

@@ -2,7 +2,6 @@ package com.inappstory.sdk.game.reader;
 
 import android.content.Context;
 import android.media.AudioManager;
-import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 
@@ -29,11 +28,9 @@ import com.inappstory.sdk.network.jsapiclient.JsApiResponseCallback;
 import com.inappstory.sdk.network.models.Response;
 import com.inappstory.sdk.share.IShareCompleteListener;
 import com.inappstory.sdk.stories.api.models.ContentType;
-import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.UrlObject;
 import com.inappstory.sdk.stories.api.models.WebResource;
 import com.inappstory.sdk.stories.outercallbacks.common.gamereader.GameReaderCallback;
-import com.inappstory.sdk.stories.outercallbacks.common.objects.GameReaderLaunchData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.CallToActionCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickAction;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
@@ -243,7 +240,7 @@ public class GameManager {
                         options.openStory.id,
                         AppearanceManager.getCommonInstance(),
                         null,
-                        ContentType.COMMON,
+                        ContentType.STORY,
                         0,
                         true,
                         SourceType.SINGLE,

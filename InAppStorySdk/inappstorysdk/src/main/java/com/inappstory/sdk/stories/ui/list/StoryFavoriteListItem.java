@@ -1,7 +1,5 @@
 package com.inappstory.sdk.stories.ui.list;
 
-import android.os.Handler;
-import android.os.Looper;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -9,7 +7,6 @@ import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
-import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
@@ -43,7 +40,7 @@ public class StoryFavoriteListItem extends BaseStoryListItem {
         final int[] i = {0};
         InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
         if (inAppStoryManager == null) return;
-        final List<FavoriteImage> favoriteImages = inAppStoryManager
+        final List<StoryFavoriteImage> favoriteImages = inAppStoryManager
                 .iasCore()
                 .contentLoader()
                 .storyDownloadManager()
@@ -62,7 +59,7 @@ public class StoryFavoriteListItem extends BaseStoryListItem {
                     if (favoriteImages.size() <= i[0]) {
                         downloadFileAndSendToInterface("", this);
                     } else {
-                        downloadFileAndSendToInterface(favoriteImages.get(i[0]).getUrl(), this);
+                        downloadFileAndSendToInterface(favoriteImages.get(i[0]).imageUrl(), this);
                     }
                 }
             }
@@ -77,12 +74,12 @@ public class StoryFavoriteListItem extends BaseStoryListItem {
                     if (favoriteImages.size() <= i[0]) {
                         downloadFileAndSendToInterface("", this);
                     } else {
-                        downloadFileAndSendToInterface(favoriteImages.get(i[0]).getUrl(), this);
+                        downloadFileAndSendToInterface(favoriteImages.get(i[0]).imageUrl(), this);
                     }
                 }
             }
         };
-        downloadFileAndSendToInterface(favoriteImages.get(0).getUrl(), runnableCallback);
+        downloadFileAndSendToInterface(favoriteImages.get(0).imageUrl(), runnableCallback);
     }
 
     interface LoadFavoriteImagesCallback {
@@ -109,7 +106,7 @@ public class StoryFavoriteListItem extends BaseStoryListItem {
 
         InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
         if (inAppStoryManager == null) return;
-        List<FavoriteImage> favoriteImages = inAppStoryManager
+        List<StoryFavoriteImage> favoriteImages = inAppStoryManager
                 .iasCore()
                 .contentLoader()
                 .storyDownloadManager()
@@ -119,7 +116,7 @@ public class StoryFavoriteListItem extends BaseStoryListItem {
             int count = favoriteImages.size();
             final List<Integer> backgroundColors = new ArrayList<>();
             for (int j = 0; j < count; j++) {
-                backgroundColors.add(favoriteImages.get(j).getBackgroundColor());
+                backgroundColors.add(favoriteImages.get(j).backgroundColor());
             }
             if (viewCanBeUsed(itemView, getParent())) {
                 getFavoriteListItem.bindFavoriteItem(itemView, backgroundColors, count);

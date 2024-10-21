@@ -9,6 +9,7 @@ import androidx.annotation.NonNull;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
+import com.inappstory.sdk.stories.api.models.Image;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.cache.StoryDownloadManager;
@@ -55,10 +56,10 @@ public class StoriesListManager implements ListManager {
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-                Story st = core.contentLoader().storyDownloadManager().getStoryById(storyId, ContentType.COMMON);
+                Story st = core.contentLoader().storyDownloadManager().getStoryById(storyId, ContentType.STORY);
                 if (st == null) return;
                 st.isOpened = true;
-                core.storyListCache().saveStoryOpened(st.id, ContentType.COMMON);
+                core.storyListCache().saveStoryOpened(st.id, ContentType.STORY);
                 checkHandler();
                 post(new Runnable() {
                     @Override
@@ -127,16 +128,20 @@ public class StoriesListManager implements ListManager {
             public void use(@NonNull IASCore core) {
                 StoryDownloadManager downloadManager =
                         core.contentLoader().storyDownloadManager();
-                final List<FavoriteImage> favImages = downloadManager.favoriteImages();
-                Story story = downloadManager.getStoryById(id, ContentType.COMMON);
+                final List<StoryFavoriteImage> favImages = downloadManager.favoriteImages();
+                Story story = downloadManager.getStoryById(id, ContentType.STORY);
                 if (story == null) return;
                 if (favStatus) {
-                    FavoriteImage favoriteImage = new FavoriteImage(id, story.getImage(), story.getBackgroundColor());
+                    StoryFavoriteImage favoriteImage = new StoryFavoriteImage(
+                            id,
+                            story.imageCoverByQuality(Image.QUALITY_MEDIUM),
+                            story.backgroundColor()
+                    );
                     if (!favImages.contains(favoriteImage))
                         favImages.add(0, favoriteImage);
                 } else {
-                    for (FavoriteImage favoriteImage : favImages) {
-                        if (favoriteImage.getId() == id) {
+                    for (StoryFavoriteImage favoriteImage : favImages) {
+                        if (favoriteImage.id() == id) {
                             favImages.remove(favoriteImage);
                             break;
                         }

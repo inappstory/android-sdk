@@ -1,6 +1,6 @@
 package com.inappstory.sdk.stories.api.models;
 
-import com.inappstory.sdk.stories.ui.list.FavoriteImage;
+import com.inappstory.sdk.stories.ui.list.StoryFavoriteImage;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,10 +24,10 @@ public class ExceptionCache {
         return nonNullStories;
     }
 
-    public List<FavoriteImage> getFavoriteImages() {
-        List<FavoriteImage> nonNullFavoriteImages = new ArrayList<>();
+    public List<StoryFavoriteImage> getFavoriteImages() {
+        List<StoryFavoriteImage> nonNullFavoriteImages = new ArrayList<>();
         if (favoriteImages == null) return nonNullFavoriteImages;
-        for (FavoriteImage favoriteImage: favoriteImages) {
+        for (StoryFavoriteImage favoriteImage: favoriteImages) {
             if (favoriteImage != null) nonNullFavoriteImages.add(favoriteImage);
         }
         return nonNullFavoriteImages;
@@ -35,14 +35,14 @@ public class ExceptionCache {
 
     private List<Story> stories;
     private List<Story> favStories;
-    private List<FavoriteImage> favoriteImages;
+    private List<StoryFavoriteImage> favoriteImages;
 
-    public ExceptionCache(List<Story> stories, List<Story> favStories, List<FavoriteImage> favoriteImages) {
+    public ExceptionCache(List<Story> stories, List<Story> favStories, List<StoryFavoriteImage> favoriteImages) {
         this.stories = stories != null ? new ArrayList<>(stories)
                 : new ArrayList<Story>();
         this.favStories = favStories != null ? new ArrayList<>(favStories)
                 : new ArrayList<Story>();
         this.favoriteImages = favoriteImages != null ? new ArrayList<>(favoriteImages)
-                : new ArrayList<FavoriteImage>();
+                : new ArrayList<StoryFavoriteImage>();
     }
 }

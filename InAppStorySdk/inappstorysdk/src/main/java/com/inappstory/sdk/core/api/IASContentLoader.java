@@ -2,7 +2,7 @@ package com.inappstory.sdk.core.api;
 
 import com.inappstory.sdk.game.cache.GameCacheManager;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
-import com.inappstory.sdk.stories.api.interfaces.SlidesContentHolder;
+import com.inappstory.sdk.core.dataholders.IReaderContent;
 import com.inappstory.sdk.stories.cache.FilesDownloader;
 import com.inappstory.sdk.stories.cache.FilesDownloadManager;
 import com.inappstory.sdk.stories.cache.StoryDownloadManager;
@@ -18,7 +18,7 @@ public interface IASContentLoader {
     void clearCache();
     void clearGames();
     void setCacheSizes();
-    void addVODResources(SlidesContentHolder slidesContentHolder, int slideIndex);
+    void addVODResources(IReaderContent IReaderContent, int slideIndex);
     void runFreeSpaceCheck();
     FilesDownloader downloader();
 }

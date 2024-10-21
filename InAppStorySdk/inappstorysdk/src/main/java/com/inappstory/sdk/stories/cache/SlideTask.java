@@ -1,7 +1,6 @@
 package com.inappstory.sdk.stories.cache;
 
-import com.inappstory.sdk.stories.api.interfaces.IResourceObject;
-import com.inappstory.sdk.stories.api.models.ResourceMappingObject;
+import com.inappstory.sdk.core.dataholders.IResource;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,7 +8,7 @@ import java.util.List;
 public class SlideTask {
     int priority = 0;
 
-    public List<IResourceObject> staticResources() {
+    public List<IResource> staticResources() {
         return staticResources;
     }
 
@@ -17,18 +16,18 @@ public class SlideTask {
         return urlsWithAlter;
     }
 
-    public List<IResourceObject> vodResources() {
+    public List<IResource> vodResources() {
         return vodResources;
     }
 
-    List<IResourceObject> staticResources = new ArrayList<>();
+    List<IResource> staticResources = new ArrayList<>();
     List<UrlWithAlter> urlsWithAlter = new ArrayList<>();
-    List<IResourceObject> vodResources = new ArrayList<>();
+    List<IResource> vodResources = new ArrayList<>();
     int loadType = 0; //-1 - error, 0 - not loaded, 1 - loading, 2 - loaded
 
     public SlideTask(
-            List<IResourceObject> staticResources,
-            List<IResourceObject> vodResources,
+            List<IResource> staticResources,
+            List<IResource> vodResources,
             List<UrlWithAlter> urlsWithAlter
     ) {
         this.staticResources = staticResources;

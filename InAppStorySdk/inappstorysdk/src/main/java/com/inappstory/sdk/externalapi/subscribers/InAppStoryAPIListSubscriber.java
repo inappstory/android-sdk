@@ -3,6 +3,7 @@ package com.inappstory.sdk.externalapi.subscribers;
 
 import androidx.annotation.WorkerThread;
 
+import com.inappstory.sdk.core.dataholders.IListItemContent;
 import com.inappstory.sdk.externalapi.StoryAPIData;
 import com.inappstory.sdk.externalapi.StoryFavoriteItemAPIData;
 import com.inappstory.sdk.stories.api.models.Story;
@@ -43,12 +44,12 @@ public abstract class InAppStoryAPIListSubscriber implements
     }
 
     @Override
-    public final StoryAPIData updateStoryAPIData(Story data, String imagePath, String videoPath) {
+    public final StoryAPIData updateStoryAPIData(IListItemContent data, String imagePath, String videoPath) {
         for (StoryAPIData storyAPIDataItem : storyAPIData) {
-            if (storyAPIDataItem.id == data.id) {
+            if (storyAPIDataItem.id == data.id()) {
                 boolean needToUpdate = false;
-                if (data.isOpened != storyAPIDataItem.opened) {
-                    storyAPIDataItem.opened = data.isOpened;
+                if (data.isOpened() != storyAPIDataItem.opened) {
+                    storyAPIDataItem.opened = data.isOpened();
                     needToUpdate = true;
                 }
                 if (storyAPIDataItem.imageFilePath == null && imagePath != null) {

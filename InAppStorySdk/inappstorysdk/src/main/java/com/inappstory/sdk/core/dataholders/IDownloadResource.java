@@ -1,4 +1,4 @@
-package com.inappstory.sdk.stories.api.interfaces;
+package com.inappstory.sdk.core.dataholders;
 
 public interface IDownloadResource {
     String url();

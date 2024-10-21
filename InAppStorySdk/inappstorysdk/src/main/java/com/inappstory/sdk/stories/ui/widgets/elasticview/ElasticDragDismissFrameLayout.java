@@ -207,7 +207,7 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
         }
         if (totalDisabledDrag > 400) {
             swipeUpCallback();
-        } else if (st != null && !st.disableClose && totalDisabledDrag < -400) {
+        } else if (st != null && !st.disableClose() && totalDisabledDrag < -400) {
             swipeDownCallback();
         }
         if (Math.abs(totalDrag) >= dragDismissDistance && !disabled) {
@@ -344,7 +344,7 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
         }
     }
 
-    public ContentType type = ContentType.COMMON;
+    public ContentType type = ContentType.STORY;
 
     private void swipeUpCallback() {
         if (callbacks != null && !callbacks.isEmpty()) {

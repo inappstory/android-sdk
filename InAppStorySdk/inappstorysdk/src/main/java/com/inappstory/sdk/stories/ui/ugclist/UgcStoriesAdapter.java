@@ -144,16 +144,15 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
             final Story story = core.contentLoader().storyDownloadManager()
                     .getStoryById(storiesIds.get(position - hasUGC), ContentType.UGC);
             if (story == null) return;
-            String imgUrl = (story.getImage() != null && story.getImage().size() > 0) ?
-                    story.getProperImage(manager.csCoverQuality()).getUrl() : null;
+            String imgUrl = story.imageCoverByQuality(manager.csCoverQuality());
             holder.bind(story.id,
-                    story.getTitle(),
-                    story.getTitleColor() != null ? Color.parseColor(story.getTitleColor()) : null,
+                    story.title(),
+                    story.titleColor() != null ? Color.parseColor(story.titleColor()) : null,
                     imgUrl,
-                    Color.parseColor(story.getBackgroundColor()),
+                    Color.parseColor(story.backgroundColor()),
                     story.isOpened,
                     story.hasAudio(),
-                    story.getVideoUrl(),
+                    story.videoCover(),
                     StoryData.getStoryData(story, null, SourceType.LIST, ContentType.UGC),
                     this
             );
@@ -188,7 +187,7 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
                                 index
                         );
                     }
-                    if (current.getGameInstanceId() != null) {
+                    if (current.gameInstanceId() != null) {
 
                         core.statistic().v1(
                                 sessionId,
@@ -217,12 +216,12 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
                                                                 null
                                                         )
                                                 ),
-                                                current.getGameInstanceId()
+                                                current.gameInstanceId()
                                         ))
                         );
                         return;
-                    } else if (current.getDeeplink() != null) {
-                        core.statistic().v2().sendDeeplinkStory(current.id, current.getDeeplink(), null);
+                    } else if (current.deeplink() != null) {
+                        core.statistic().v2().sendDeeplinkStory(current.id, current.deeplink(), null);
                         core.callbacksAPI().useCallback(
                                 IASCallbackType.CALL_TO_ACTION,
                                 new UseIASCallback<CallToActionCallback>() {
@@ -238,7 +237,7 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
                                                         0,
                                                         null
                                                 ),
-                                                current.getDeeplink(),
+                                                current.deeplink(),
                                                 ClickAction.DEEPLINK
                                         );
                                     }
@@ -252,7 +251,7 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
                                                     public void success() {
                                                         try {
                                                             Intent i = new Intent(Intent.ACTION_VIEW);
-                                                            i.setData(Uri.parse(current.getDeeplink()));
+                                                            i.setData(Uri.parse(current.deeplink()));
                                                             i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                                                             context.startActivity(i);
                                                         } catch (Exception ignored) {
@@ -268,7 +267,7 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
                         core.storyListCache().saveStoryOpened(current.id, ContentType.UGC);
                         notifyItemChanged(ind);
                         return;
-                    } else if (current.isHideInReader()) {
+                    } else if (current.hideInReader()) {
                         core.callbacksAPI().useCallback(IASCallbackType.ERROR,
                                 new UseIASCallback<ErrorCallback>() {
                                     @Override
@@ -284,7 +283,7 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
                 for (Integer storyId : storiesIds) {
                     Story story = core.contentLoader().storyDownloadManager()
                             .getStoryById(storyId, ContentType.UGC);
-                    if (story == null || !story.isHideInReader())
+                    if (story == null || !story.hideInReader())
                         tempStories.add(storyId);
                 }
                 LaunchStoryScreenData launchData = new LaunchStoryScreenData(
@@ -326,7 +325,7 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
             InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
             Story story = inAppStoryManager.iasCore().contentLoader().storyDownloadManager()
                     .getStoryById(storiesIds.get(pos), ContentType.UGC);
-            if (story.getVideoUrl() != null) pref += 5;
+            if (story.videoCover() != null) pref += 5;
             return story.isOpened ? (pref + 2) : (pref + 1);
         } catch (Exception e) {
             return 0;

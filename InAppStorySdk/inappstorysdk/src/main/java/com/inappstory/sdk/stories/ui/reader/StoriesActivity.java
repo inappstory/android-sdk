@@ -320,7 +320,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryScree
     boolean closeOnSwipe = true;
     boolean closeOnOverscroll = true;
 
-    ContentType type = ContentType.COMMON;
+    ContentType type = ContentType.STORY;
 
     @Override
     public void removeStoryFromFavorite(int id) {
@@ -623,7 +623,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryScree
                                                         type
                                                 ),
                                                 story.lastIndex,
-                                                story.getSlideEventPayload(story.lastIndex)
+                                                story.slideEventPayload(story.lastIndex)
                                         ),
                                         new CallbackTypesConverter().getCloseTypeFromInt(action)
                                 );
@@ -648,7 +648,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryScree
                         story.id,
                         cause,
                         story.lastIndex,
-                        story.getSlidesCount(),
+                        story.slidesCount(),
                         launchData.getFeed()
                 );
             }

@@ -240,7 +240,7 @@ public class StoriesContentFragment extends Fragment
                 );
         if (st == null) return;
         BaseStoryScreen screen = getStoriesReader();
-        if (screen != null) screen.disableDrag(st.disableClose || st.hasSwipeUp());
+        if (screen != null) screen.disableDrag(st.disableClose() || st.hasSwipeUp());
     }
 
 
@@ -512,7 +512,7 @@ public class StoriesContentFragment extends Fragment
                 public void use(@NonNull IASCore core) {
                     Story story = core.contentLoader().storyDownloadManager()
                             .getStoryById(currentIds.get(position), readerManager.contentType);
-                    if (story == null || story.disableClose) return;
+                    if (story == null || story.disableClose()) return;
                     BaseStoryScreen screen = getStoriesReader();
                     if (screen != null)
                         screen.closeWithAction(CloseStory.SWIPE);

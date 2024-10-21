@@ -103,7 +103,7 @@ public class StoriesDialogFragment extends DialogFragment implements IASBackPres
                                                                 type
                                                         ),
                                                         story.lastIndex,
-                                                        story.getSlideEventPayload(story.lastIndex)
+                                                        story.slideEventPayload(story.lastIndex)
                                                 ),
                                                 CloseReader.CLICK
                                         );
@@ -111,7 +111,7 @@ public class StoriesDialogFragment extends DialogFragment implements IASBackPres
                                 });
                         String cause = IASStatisticV2Impl.CLICK;
                         core.statistic().v2().sendCloseStory(story.id, cause, story.lastIndex,
-                                story.getSlidesCount(),
+                                story.slidesCount(),
                                 launchData.getFeed());
                     }
 
@@ -299,7 +299,7 @@ public class StoriesDialogFragment extends DialogFragment implements IASBackPres
         // getArguments().putInt("index", index);
     }
 
-    ContentType type = ContentType.COMMON;
+    ContentType type = ContentType.STORY;
 
 
     LaunchStoryScreenAppearance appearanceSettings;

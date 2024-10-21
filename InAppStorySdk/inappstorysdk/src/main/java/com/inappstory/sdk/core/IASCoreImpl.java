@@ -33,6 +33,8 @@ import com.inappstory.sdk.core.api.impl.IASSingleStoryImpl;
 import com.inappstory.sdk.core.api.impl.IASStackFeedImpl;
 import com.inappstory.sdk.core.api.impl.IASStatisticImpl;
 import com.inappstory.sdk.core.api.impl.IASStoriesOpenedCacheImpl;
+import com.inappstory.sdk.core.dataholders.ContentHolder;
+import com.inappstory.sdk.core.dataholders.IContentHolder;
 import com.inappstory.sdk.core.dataholders.IStoriesListVMHolder;
 import com.inappstory.sdk.core.dataholders.StoriesListVMHolder;
 import com.inappstory.sdk.core.ui.screens.ScreensManager;
@@ -67,9 +69,11 @@ public class IASCoreImpl implements IASCore {
     private final NetworkClient networkClient;
     private final KeyValueStorage keyValueStorage;
     private final SharedPreferencesAPI sharedPreferencesAPI;
+    private final IContentHolder contentHolder;
 
     public IASCoreImpl(Context context) {
         this.context = context;
+        contentHolder = new ContentHolder();
         contentLoader = new IASContentLoaderImpl(this);
         externalUtilsAPI = new IASExternalUtilsAPIImpl();
         sharedPreferencesAPI = new SharedPreferencesAPI(this);
@@ -194,6 +198,11 @@ public class IASCoreImpl implements IASCore {
     @Override
     public IASContentLoader contentLoader() {
         return contentLoader;
+    }
+
+    @Override
+    public IContentHolder contentHolder() {
+        return contentHolder;
     }
 
     @Override

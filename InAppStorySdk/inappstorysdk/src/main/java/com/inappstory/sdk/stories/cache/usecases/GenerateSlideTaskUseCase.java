@@ -4,10 +4,9 @@ import android.util.Pair;
 
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
-import com.inappstory.sdk.stories.api.interfaces.SlidesContentHolder;
+import com.inappstory.sdk.core.dataholders.IReaderContent;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderType;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
-import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.cache.SlideTask;
 import com.inappstory.sdk.stories.cache.UrlWithAlter;
 
@@ -18,13 +17,13 @@ import java.util.Map;
 
 public class GenerateSlideTaskUseCase {
     private final IASCore core;
-    private final SlidesContentHolder slidesContentHolder;
+    private final IReaderContent IReaderContentHolder;
     private final int index;
 
 
-    public GenerateSlideTaskUseCase(IASCore core, SlidesContentHolder slidesContentHolder, int index) {
+    public GenerateSlideTaskUseCase(IASCore core, IReaderContent IReaderContent, int index) {
         this.core = core;
-        this.slidesContentHolder = slidesContentHolder;
+        this.IReaderContentHolder = IReaderContent;
         this.index = index;
     }
 
@@ -33,7 +32,7 @@ public class GenerateSlideTaskUseCase {
                 ((IASDataSettingsHolder) core.settingsAPI()).imagePlaceholdersWithSessionDefaults()
         );
         List<UrlWithAlter> urlWithAlters = new ArrayList<>();
-        List<String> plNames = slidesContentHolder.placeholdersNames(index);
+        List<String> plNames = IReaderContentHolder.placeholdersNames(index);
         for (String plName : plNames) {
             Pair<ImagePlaceholderValue, ImagePlaceholderValue> value =
                     imgPlaceholders.get(plName);
@@ -58,8 +57,8 @@ public class GenerateSlideTaskUseCase {
             }
         }
         return new SlideTask(
-                slidesContentHolder.staticResources(index),
-                slidesContentHolder.vodResources(index),
+                IReaderContentHolder.staticResources(index),
+                IReaderContentHolder.vodResources(index),
                 urlWithAlters
         );
     }

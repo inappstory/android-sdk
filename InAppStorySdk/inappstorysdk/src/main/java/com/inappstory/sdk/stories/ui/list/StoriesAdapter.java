@@ -80,7 +80,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
     private List<StoryData> getStoriesData(List<Integer> storiesIds) {
         List<StoryData> data = new ArrayList<>();
         for (int id : storiesIds) {
-            Story story = core.contentLoader().storyDownloadManager().getStoryById(id, ContentType.COMMON);
+            Story story = core.contentLoader().storyDownloadManager().getStoryById(id, ContentType.STORY);
             if (story != null) {
                 data.add(new StoryData(story, feed, SourceType.LIST));
             }
@@ -184,20 +184,18 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
         } else {
             int hasUGC = useUGC ? 1 : 0;
             final Story story = core.contentLoader().storyDownloadManager()
-                    .getStoryById(storiesIds.get(position - hasUGC), ContentType.COMMON);
+                    .getStoryById(storiesIds.get(position - hasUGC), ContentType.STORY);
             if (story == null) return;
-            String imgUrl = (story.getImage() != null && story.getImage().size() > 0) ?
-                    story.getProperImage(manager.csCoverQuality()).getUrl() : null;
-
+            String imgUrl = story.imageCoverByQuality(manager.csCoverQuality());
             holder.bind(story.id,
-                    story.getTitle(),
-                    story.getTitleColor() != null ? Color.parseColor(story.getTitleColor()) : null,
+                    story.title(),
+                    story.titleColor() != null ? Color.parseColor(story.titleColor()) : null,
                     imgUrl,
-                    Color.parseColor(story.getBackgroundColor()),
+                    Color.parseColor(story.backgroundColor()),
                     story.isOpened || isFavoriteList,
                     story.hasAudio(),
-                    story.getVideoUrl(),
-                    StoryData.getStoryData(story, feed, getListSourceType(), ContentType.COMMON),
+                    story.videoCover(),
+                    StoryData.getStoryData(story, feed, getListSourceType(), ContentType.STORY),
                     this
             );
         }
@@ -221,7 +219,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
         int index = ind - hasUGC;
         clickTimestamp = System.currentTimeMillis();
         final Story current = core.contentLoader().storyDownloadManager()
-                .getStoryById(storiesIds.get(index), ContentType.COMMON);
+                .getStoryById(storiesIds.get(index), ContentType.STORY);
         if (current != null) {
             if (callback != null) {
                 callback.itemClick(
@@ -233,7 +231,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
                         index
                 );
             }
-            String gameInstanceId = current.getGameInstanceId();
+            String gameInstanceId = current.gameInstanceId();
             if (gameInstanceId != null) {
                 core.statistic().v1(
                         sessionId,
@@ -265,11 +263,11 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
                 );
 
                 current.isOpened = true;
-                core.storyListCache().saveStoryOpened(current.id, ContentType.COMMON);
+                core.storyListCache().saveStoryOpened(current.id, ContentType.STORY);
                 InAppStoryService.getInstance().getListReaderConnector().changeStory(current.id, listID, false);
                 // notifyItemChanged(ind);
                 return;
-            } else if (current.getDeeplink() != null) {
+            } else if (current.deeplink() != null) {
                 core.statistic().v1(
                         sessionId,
                         new GetStatisticV1Callback() {
@@ -279,7 +277,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
                             }
                         }
                 );
-                core.statistic().v2().sendDeeplinkStory(current.id, current.getDeeplink(), feedID);
+                core.statistic().v2().sendDeeplinkStory(current.id, current.deeplink(), feedID);
                 core.callbacksAPI().useCallback(
                         IASCallbackType.CALL_TO_ACTION,
                         new UseIASCallback<CallToActionCallback>() {
@@ -296,7 +294,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
                                                 0,
                                                 null
                                         ),
-                                        current.getDeeplink(),
+                                        current.deeplink(),
                                         ClickAction.DEEPLINK
                                 );
                             }
@@ -310,7 +308,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
                                             public void success() {
                                                 try {
                                                     Intent i = new Intent(Intent.ACTION_VIEW);
-                                                    i.setData(Uri.parse(current.getDeeplink()));
+                                                    i.setData(Uri.parse(current.deeplink()));
                                                     i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                                                     context.startActivity(i);
                                                 } catch (Exception ignored) {
@@ -323,11 +321,11 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
                         }
                 );
                 current.isOpened = true;
-                core.storyListCache().saveStoryOpened(current.id, ContentType.COMMON);
+                core.storyListCache().saveStoryOpened(current.id, ContentType.STORY);
                 InAppStoryService.getInstance().getListReaderConnector().changeStory(current.id, listID, false);
                 return;
             }
-            if (current.isHideInReader()) {
+            if (current.hideInReader()) {
                 core.callbacksAPI().useCallback(IASCallbackType.ERROR,
                         new UseIASCallback<ErrorCallback>() {
                             @Override
@@ -342,8 +340,8 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
         ArrayList<Integer> tempStories = new ArrayList();
         for (Integer storyId : storiesIds) {
             Story story = core.contentLoader().storyDownloadManager()
-                    .getStoryById(storyId, ContentType.COMMON);
-            if (story == null || !story.isHideInReader())
+                    .getStoryById(storyId, ContentType.STORY);
+            if (story == null || !story.hideInReader())
                 tempStories.add(storyId);
         }
         LaunchStoryScreenData launchData = new LaunchStoryScreenData(
@@ -356,7 +354,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
                 ShowStory.ACTION_OPEN,
                 isFavoriteList ? SourceType.FAVORITE : SourceType.LIST,
                 0,
-                ContentType.COMMON,
+                ContentType.STORY,
                 coordinates
         );
         core.screensManager().openScreen(
@@ -386,9 +384,9 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
             InAppStoryService service = InAppStoryService.getInstance();
             if (service == null) return 0;
             Story story = core.contentLoader().storyDownloadManager()
-                    .getStoryById(storiesIds.get(pos), ContentType.COMMON);
+                    .getStoryById(storiesIds.get(pos), ContentType.STORY);
             if (story == null) return 0;
-            if (story.getVideoUrl() != null) pref += 5;
+            if (story.videoCover() != null) pref += 5;
             return story.isOpened ? (pref + 2) : (pref + 1);
         } catch (Exception e) {
             return 0;

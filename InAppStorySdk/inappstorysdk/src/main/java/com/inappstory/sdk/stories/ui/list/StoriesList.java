@@ -402,7 +402,7 @@ public class StoriesList extends RecyclerView {
                         InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
                         if (inAppStoryManager != null)
                             current = inAppStoryManager.iasCore().contentLoader().storyDownloadManager()
-                                    .getStoryById(adapter.getStoriesIds().get(ind), ContentType.COMMON);
+                                    .getStoryById(adapter.getStoriesIds().get(ind), ContentType.STORY);
                         if (current != null && currentPercentage > 0) {
                             scrolledItems.put(i, new ShownStoriesListItem(
                                     new StoryData(
@@ -624,7 +624,7 @@ public class StoriesList extends RecyclerView {
             adapter.notifyChanges();
     }
 
-    public void favStory(int id, boolean favStatus, List<FavoriteImage> favImages, boolean isEmpty) {
+    public void favStory(int id, boolean favStatus, List<StoryFavoriteImage> favImages, boolean isEmpty) {
         if (adapter == null) return;
 
         if (isFavoriteList) {
@@ -700,7 +700,7 @@ public class StoriesList extends RecyclerView {
         if (inAppStoryManager != null)
             for (int id : storiesIds) {
                 Story story = inAppStoryManager.iasCore().contentLoader()
-                        .storyDownloadManager().getStoryById(id, ContentType.COMMON);
+                        .storyDownloadManager().getStoryById(id, ContentType.STORY);
                 if (story != null) {
                     data.add(new StoryData(story, feed, SourceType.LIST));
                 }

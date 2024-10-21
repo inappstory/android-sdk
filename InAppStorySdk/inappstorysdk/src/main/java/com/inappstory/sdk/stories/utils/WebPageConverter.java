@@ -10,25 +10,19 @@ import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.game.cache.UseCaseCallback;
-import com.inappstory.sdk.lrudiskcache.LruDiskCache;
-import com.inappstory.sdk.stories.api.interfaces.IResourceObject;
-import com.inappstory.sdk.stories.api.interfaces.SlidesContentHolder;
+import com.inappstory.sdk.core.dataholders.IResource;
+import com.inappstory.sdk.core.dataholders.IReaderContent;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderType;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
-import com.inappstory.sdk.stories.api.models.ResourceMappingObject;
 import com.inappstory.sdk.stories.api.models.SessionAsset;
-import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.cache.usecases.SessionAssetLocalUseCase;
-import com.inappstory.sdk.stories.cache.vod.VODCacheJournal;
 import com.inappstory.sdk.utils.StringsUtils;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -45,12 +39,12 @@ public class WebPageConverter {
     private String replaceStaticResources(
             IASCore core,
             String innerWebData,
-            SlidesContentHolder story,
+            IReaderContent story,
             final int index
     ) {
-        List<IResourceObject> resources = new ArrayList<>();
+        List<IResource> resources = new ArrayList<>();
         resources.addAll(story.staticResources(index));
-        for (IResourceObject object : resources) {
+        for (IResource object : resources) {
             String resource = object.getUrl();
             String resourceKey = object.getKey();
             String key = StringsUtils.md5(resource);
@@ -89,13 +83,13 @@ public class WebPageConverter {
 
     private String replaceImagePlaceholders(IASCore core,
                                             String innerWebData,
-                                            final SlidesContentHolder slidesContentHolder,
+                                            final IReaderContent IReaderContent,
                                             final int index
     ) {
         final String[] newData = {innerWebData};
         Map<String, Pair<ImagePlaceholderValue, ImagePlaceholderValue>> imgPlaceholders =
                 ((IASDataSettingsHolder) core.settingsAPI()).imagePlaceholdersWithSessionDefaults();
-        Map<String, String> imgPlaceholderKeys = slidesContentHolder.placeholdersMap(index);
+        Map<String, String> imgPlaceholderKeys = IReaderContent.placeholdersMap(index);
         for (Map.Entry<String, String> entry : imgPlaceholderKeys.entrySet()) {
             String placeholderKey = entry.getKey();
             String placeholderName = entry.getValue();
@@ -163,7 +157,7 @@ public class WebPageConverter {
 
     public void replaceDataAndLoad(
             final String innerWebData,
-            final SlidesContentHolder slidesContentHolder,
+            final IReaderContent IReaderContent,
             final int index,
             final WebPageConvertCallback callback
     ) {
@@ -171,10 +165,10 @@ public class WebPageConverter {
             @Override
             public void use(@NonNull IASCore core) {
                 String localData = innerWebData;
-                String newLayout = slidesContentHolder.layout();
-                localData = replaceStaticResources(core, localData, slidesContentHolder, index);
-                core.contentLoader().addVODResources(slidesContentHolder, index);
-                localData = replaceImagePlaceholders(core, localData, slidesContentHolder, index);
+                String newLayout = IReaderContent.layout();
+                localData = replaceStaticResources(core, localData, IReaderContent, index);
+                core.contentLoader().addVODResources(IReaderContent, index);
+                localData = replaceImagePlaceholders(core, localData, IReaderContent, index);
                 newLayout = replaceLayoutAssets(core, newLayout);
                 Pair<String, String> replaced = replacePlaceholders(core, localData, newLayout);
                 newLayout = replaced.second;

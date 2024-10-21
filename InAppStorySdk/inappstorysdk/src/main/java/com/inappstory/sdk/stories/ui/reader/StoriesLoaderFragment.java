@@ -60,19 +60,19 @@ public class StoriesLoaderFragment extends Fragment {
         ButtonsPanel buttonsPanel = view.findViewById(R.id.ias_buttons_panel);
         View aboveButtonsPanel = view.findViewById(R.id.ias_above_buttons_panel);
         View closeButton = view.findViewById(R.id.ias_close_button);
-        if (story.disableClose)
+        if (story.disableClose())
             closeButton.setVisibility(View.GONE);
         if (buttonsPanel != null && aboveButtonsPanel != null) {
             buttonsPanel.setButtonsVisibility(appearanceSettings,
                     story.hasLike(), story.hasFavorite(), story.hasShare(), story.hasAudio());
-            buttonsPanel.setButtonsStatus(story.getLike(), story.favorite ? 1 : 0);
+            buttonsPanel.setButtonsStatus(story.like(), story.favorite() ? 1 : 0);
             aboveButtonsPanel.setVisibility(buttonsPanel.getVisibility());
         }
         StoryTimeline timeline = view.findViewById(R.id.ias_timeline);
         if (timeline != null) {
             timeline.setState(
                     new StoryTimelineState(
-                            story.getSlidesCount(), 0, 0, 0
+                            story.slidesCount(), 0, 0, 0
                     )
             );
         }
