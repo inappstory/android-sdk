@@ -1,5 +1,7 @@
 package com.inappstory.sdk.game.reader;
 
+import static com.inappstory.sdk.utils.DebugUtils.getMethodName;
+
 import android.Manifest;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -185,6 +187,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
 
 
     public void shareComplete(String id, boolean success) {
+        logMethod("");
         webView.loadUrl("javascript:(function(){share_complete(\"" + id + "\", " + success + ");})()");
     }
 
@@ -232,6 +235,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
     }
 
     private void clearWebView() {
+        logMethod("");
         if (webView != null) {
             webView.loadUrl("about:blank");
         }
@@ -289,6 +293,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
 
 
     void gameShouldForeground() {
+        logMethod("");
         long leftTime = Math.max(0, 2000 - (System.currentTimeMillis() - startDownloadTime));
         webView.postDelayed(new Runnable() {
             @Override
@@ -299,6 +304,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         webView.postDelayed(new Runnable() {
             @Override
             public void run() {
+
                 webView.evaluateJavascript("gameShouldForeground();", null);
             }
         }, leftTime + 100);
@@ -370,6 +376,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         String payload = JsonParser.mapToJsonString(payloadMap).replaceAll(Pattern.quote("'"), "\\'");
         String webString = "window." + cbName + "('" + payload + "');";
         Log.e("webString", webString);
+        logMethod("");
         webView.evaluateJavascript(webString, null);
     }
 
@@ -547,6 +554,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         closing = true;
 
         if (manager.statusHolder.gameLoaded()) {
+            logMethod("");
             webView.evaluateJavascript("closeGameReader();", new ValueCallback<String>() {
                 @Override
                 public void onReceiveValue(String s) {
@@ -628,6 +636,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
 
     private void gameReaderAudioFocusChange(int focusChange) {
         if (webView != null) {
+            logMethod("");
             webView.evaluateJavascript("('handleAudioFocusChange' in window) && handleAudioFocusChange(" + focusChange + ");", null);
         }
     }
@@ -688,6 +697,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
     }
 
     private void initGame(String data) {
+        logMethod("");
         webView.evaluateJavascript(data, null);
     }
 
@@ -812,6 +822,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
     }
 
     private void resumeGame() {
+        logMethod("");
         webView.loadUrl("javascript:(function() {" +
                 "if ('resumeUI' in window) " +
                 "{" +
@@ -821,6 +832,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
     }
 
     private void pauseGame() {
+        logMethod("");
         webView.loadUrl("javascript:(function() {" +
                 "if ('pauseUI' in window) " +
                 "{" +
@@ -828,6 +840,11 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                 "}" +
                 "})()");
         // webView.evaluateJavascript("pauseUI();", null);
+    }
+
+    private void logMethod(String payload) {
+        InAppStoryManager.showDLog("JS_game_method_call",
+                manager.gameCenterId + " " + getMethodName() + " " + payload);
     }
 
     Runnable showRefresh = new Runnable() {
@@ -1325,6 +1342,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
     }
 
     void loadJsApiResponse(String gameResponse, String cb) {
+        logMethod(cb + "('" + gameResponse + "');");
         webView.evaluateJavascript(cb + "('" + gameResponse + "');", null);
     }
 
@@ -1382,6 +1400,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
 
     private void gameReaderGestureBack() {
         if (manager.statusHolder.gameLoaded()) {
+            logMethod("");
             webView.evaluateJavascript("gameReaderGestureBack();", new ValueCallback<String>() {
                 @Override
                 public void onReceiveValue(String s) {
