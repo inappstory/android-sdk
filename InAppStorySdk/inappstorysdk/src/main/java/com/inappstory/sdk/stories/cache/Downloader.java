@@ -290,6 +290,23 @@ public class Downloader {
             DownloadInterruption interruption,
             long downloadOffset,
             long downloadLimit,
+            FilesDownloadManager manager,
+            FinishDownloadFileCallback finishDownloadFileCallback
+    ) throws Exception {
+        if (manager.addFinishCallback(url, finishDownloadFileCallback)) {
+            return downloadFile(url, outputFile, callback, apiLogResponse, interruption, downloadOffset, downloadLimit, manager);
+        }
+        return null;
+    }
+
+    public static DownloadFileState downloadFile(
+            String url,
+            File outputFile,
+            FileLoadProgressCallback callback,
+            ApiLogResponse apiLogResponse,
+            DownloadInterruption interruption,
+            long downloadOffset,
+            long downloadLimit,
             FilesDownloadManager manager
     ) throws Exception {
         try {
