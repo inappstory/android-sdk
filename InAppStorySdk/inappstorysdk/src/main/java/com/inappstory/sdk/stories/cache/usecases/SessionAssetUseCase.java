@@ -46,45 +46,52 @@ public class SessionAssetUseCase extends GetCacheFileUseCase<Void> {
     private void downloadFile() {
         downloadLog.sendRequestLog();
         downloadLog.generateResponseLog(false, filePath);
-        filesDownloadManager.useBundleDownloader(new Runnable() {
+        FinishDownloadFileCallback callback = new FinishDownloadFileCallback() {
             @Override
-            public void run() {
-                try {
-                    FinishDownloadFileCallback callback = new FinishDownloadFileCallback() {
-                        @Override
-                        public void finish(DownloadFileState fileState) {
-                            downloadLog.sendResponseLog();
-                            if (fileState == null) {
-                                useCaseCallback.onError("Can't download bundle file: " + cacheObject.url);
-                                return;
-                            }
-                            CacheJournalItem cacheJournalItem = generateCacheItem();
-                            cacheJournalItem.setSize(fileState.totalSize);
-                            cacheJournalItem.setDownloadedSize(fileState.totalSize);
-                            try {
-                                getCache().put(cacheJournalItem);
-                            } catch (IOException e) {
-
-                            }
-                            useCaseCallback.onSuccess(fileState.file);
-                        }
-                    };
-                    Downloader.downloadFile(
-                            cacheObject.url,
-                            new File(filePath),
-                            null,
-                            downloadLog.responseLog,
-                            null,
-                            filesDownloadManager,
-                            callback
-                    );
-
-                } catch (Exception e) {
-                    useCaseCallback.onError(e.getMessage());
+            public void finish(DownloadFileState fileState) {
+                if (fileState == null) {
+                    useCaseCallback.onError("Can't download bundle file: " + cacheObject.url);
+                    return;
                 }
+                useCaseCallback.onSuccess(fileState.file);
             }
-        });
+        };
+        if (filesDownloadManager.addSecondFinishCallbackIfIsNew(
+                cacheObject.url,
+                callback,
+                new FinishDownloadFileCallback() {
+                    @Override
+                    public void finish(DownloadFileState fileState) {
+                        downloadLog.sendResponseLog();
+                        CacheJournalItem cacheJournalItem = generateCacheItem();
+                        cacheJournalItem.setSize(fileState.totalSize);
+                        cacheJournalItem.setDownloadedSize(fileState.totalSize);
+                        try {
+                            getCache().put(cacheJournalItem);
+                        } catch (IOException e) {
+                        }
+                    }
+                }
+        )) {
+            filesDownloadManager.useBundleDownloader(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        Downloader.downloadFile(
+                                cacheObject.url,
+                                new File(filePath),
+                                null,
+                                downloadLog.responseLog,
+                                null,
+                                filesDownloadManager
+                        );
 
+                    } catch (Exception e) {
+                        useCaseCallback.onError(e.getMessage());
+                    }
+                }
+            });
+        }
     }
 
     @Override

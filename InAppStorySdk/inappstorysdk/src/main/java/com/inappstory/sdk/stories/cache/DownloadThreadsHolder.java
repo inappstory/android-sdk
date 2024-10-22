@@ -9,14 +9,14 @@ public class DownloadThreadsHolder {
     private final ExecutorService localFilesThread = Executors.newFixedThreadPool(1);
 
     public void useFastCacheDownloader(Runnable runnable) {
-        fastCacheFileDownloader.submit(runnable);
+        fastCacheFileDownloader.execute(runnable);
     }
 
     public void useBundleDownloader(Runnable runnable) {
-        bundleDownloader.submit(runnable);
+        bundleDownloader.execute(runnable);
     }
 
     public void useLocalFilesThread(Runnable runnable) {
-        localFilesThread.submit(runnable);
+        localFilesThread.execute(runnable);
     }
 }

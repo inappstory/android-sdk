@@ -495,10 +495,6 @@ public class ReaderManager {
         return currentStoryId;
     }
 
-    public void setCurrentStoryId(int currentStoryId) {
-        this.currentStoryId = currentStoryId;
-    }
-
     public int getCurrentSlideIndex() {
         return currentSlideIndex;
     }
@@ -644,26 +640,5 @@ public class ReaderManager {
             });
         }
         StatisticManager.getInstance().resumeStoryEvent(withBackground);
-    }
-
-    public void swipeUp() {
-
-    }
-
-    public void swipeDown() {
-
-    }
-
-    public void swipeLeft() {
-
-    }
-
-    public void swipeRight() {
-
-    }
-
-    public void slideLoadedInCache(int storyId, int slideIndex) {
-        ReaderPageManager pageManager = getSubscriberByStoryId(storyId);
-        if (pageManager != null) pageManager.slideLoadedInCache(slideIndex);
     }
 }

@@ -31,7 +31,7 @@ public interface ISessionHolder {
     void removeSessionAssetsIsReadyCallback(SessionAssetsIsReadyCallback callback);
     boolean checkIfSessionAssetsIsReady();
     void assetsIsCleared();
-    boolean checkIfSessionAssetsIsReady(FilesDownloadManager filesDownloadManager);
+    void checkIfSessionAssetsIsReady(FilesDownloadManager filesDownloadManager);
 
     OldStatisticManager currentStatisticManager();
 

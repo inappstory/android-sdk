@@ -76,15 +76,15 @@ public class GameSplashUseCase extends GetCacheFileUseCase<DownloadFileState> {
                                 }
                             }
                         };
-                Downloader.downloadFile(
-                        splashScreen.url(),
-                        new File(filePath),
-                        null,
-                        downloadLog.responseLog,
-                        null,
-                        filesDownloadManager,
-                        callback
-                );
+                if (filesDownloadManager.addFinishCallback(splashScreen.url(), callback))
+                    Downloader.downloadFile(
+                            splashScreen.url(),
+                            new File(filePath),
+                            null,
+                            downloadLog.responseLog,
+                            null,
+                            filesDownloadManager
+                    );
                 return fileState[0];
             } catch (Exception e) {
                 e.printStackTrace();

@@ -70,15 +70,15 @@ public class CustomFileUseCase extends GetCacheFileUseCase<Void> {
                                     getFileCallback.onSuccess(new File(filePath));
                                 }
                             };
-                            Downloader.downloadFile(
-                                    url,
-                                    new File(filePath),
-                                    null,
-                                    downloadLog.responseLog,
-                                    null,
-                                    filesDownloadManager,
-                                    callback
-                            );
+                            if (filesDownloadManager.addFinishCallback(url, callback))
+                                Downloader.downloadFile(
+                                        url,
+                                        new File(filePath),
+                                        null,
+                                        downloadLog.responseLog,
+                                        null,
+                                        filesDownloadManager
+                                );
 
                         } catch (Exception e) {
                             getFileCallback.onError(e.getMessage());

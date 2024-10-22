@@ -206,32 +206,32 @@ public class ArchiveUseCase extends GetCacheFileUseCase<Void> {
                     }
                 }
             };
-            Downloader.downloadFile(
-                    url,
-                    new File(filePath),
-                    new FileLoadProgressCallback() {
-                        @Override
-                        public void onProgress(long loadedSize, long totalSize) {
-                            progressCallback.onProgress(loadedSize, totalSize);
-                        }
+            if (filesDownloadManager.addFinishCallback(url, callback))
+                Downloader.downloadFile(
+                        url,
+                        new File(filePath),
+                        new FileLoadProgressCallback() {
+                            @Override
+                            public void onProgress(long loadedSize, long totalSize) {
+                                progressCallback.onProgress(loadedSize, totalSize);
+                            }
 
-                        @Override
-                        public void onSuccess(File file) {
+                            @Override
+                            public void onSuccess(File file) {
 
-                        }
+                            }
 
-                        @Override
-                        public void onError(String error) {
-                            useCaseCallback.onError(error);
-                        }
-                    },
-                    downloadLog.responseLog,
-                    interruption,
-                    offset,
-                    -1,
-                    filesDownloadManager,
-                    callback
-            );
+                            @Override
+                            public void onError(String error) {
+                                useCaseCallback.onError(error);
+                            }
+                        },
+                        downloadLog.responseLog,
+                        interruption,
+                        offset,
+                        -1,
+                        filesDownloadManager
+                );
         } catch (Exception e) {
             useCaseCallback.onError(e.getMessage());
         }

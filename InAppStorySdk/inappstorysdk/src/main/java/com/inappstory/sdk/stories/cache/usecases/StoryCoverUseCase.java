@@ -75,16 +75,16 @@ public class StoryCoverUseCase extends GetCacheFileUseCase<Void> {
                                         getStoryCoverCallback.success(filePath);
                                     }
                                 };
-                                Downloader.downloadFile(
-                                        url,
-                                        new File(filePath),
-                                        null,
-                                        downloadLog.responseLog,
-                                        null,
-                                        filesDownloadManager,
-                                        callback
-                                );
-
+                                if (filesDownloadManager.addFinishCallback(url, callback)) {
+                                    Downloader.downloadFile(
+                                            url,
+                                            new File(filePath),
+                                            null,
+                                            downloadLog.responseLog,
+                                            null,
+                                            filesDownloadManager
+                                    );
+                                }
                             } catch (Exception e) {
                                 getStoryCoverCallback.error();
                             }

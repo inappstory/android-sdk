@@ -267,8 +267,7 @@ public class Downloader {
             FileLoadProgressCallback callback,
             ApiLogResponse apiLogResponse,
             DownloadInterruption interruption,
-            FilesDownloadManager manager,
-            FinishDownloadFileCallback finishCallback
+            FilesDownloadManager manager
     ) throws Exception {
         return downloadFile(url,
                 outputFile,
@@ -277,12 +276,9 @@ public class Downloader {
                 interruption,
                 -1,
                 -1,
-                manager,
-                finishCallback
+                manager
         );
     }
-
-
 
     public static DownloadFileState downloadFile(
             String url,
@@ -295,9 +291,31 @@ public class Downloader {
             FilesDownloadManager manager,
             FinishDownloadFileCallback finishCallback
     ) throws Exception {
+        if (manager != null && manager.addFinishCallback(url, finishCallback)) {
+            return downloadFile(url,
+                    outputFile,
+                    callback,
+                    apiLogResponse,
+                    interruption,
+                    downloadOffset,
+                    downloadLimit,
+                    manager
+            );
+        }
+        return null;
+    }
+
+    public static DownloadFileState downloadFile(
+            String url,
+            File outputFile,
+            FileLoadProgressCallback callback,
+            ApiLogResponse apiLogResponse,
+            DownloadInterruption interruption,
+            long downloadOffset,
+            long downloadLimit,
+            FilesDownloadManager manager
+    ) throws Exception {
         DownloadFileState state = null;
-        if (manager != null && !manager.addFinishCallback(url, finishCallback))
-            return null;
         InAppStoryManager.showDLog("InAppStory_File", url);
         outputFile.getParentFile().mkdirs();
         if (!outputFile.exists())
