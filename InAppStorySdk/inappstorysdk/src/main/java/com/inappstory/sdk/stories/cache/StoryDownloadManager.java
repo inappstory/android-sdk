@@ -208,6 +208,7 @@ public class StoryDownloadManager {
                 inAppStoryService.getInfiniteCache().clearCache();
                 inAppStoryService.getVodCache().clearCache();
                 inAppStoryService.getFilesDownloadManager().getVodCacheJournal().clear();
+                inAppStoryService.getFilesDownloadManager().clearCallbacks();
             }
         });
     }

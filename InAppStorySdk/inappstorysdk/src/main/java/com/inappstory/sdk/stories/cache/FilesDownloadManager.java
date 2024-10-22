@@ -29,6 +29,13 @@ public class FilesDownloadManager {
 
     private final Map<String, List<FinishDownloadFileCallback>> downloadFileCallbacks = new HashMap<>();
 
+
+    public void clearCallbacks() {
+        synchronized (finishLock) {
+            downloadFileCallbacks.clear();
+        }
+    }
+
     private final Object finishLock = new Object();
 
     public boolean addFinishCallback(String url, FinishDownloadFileCallback callback) {
