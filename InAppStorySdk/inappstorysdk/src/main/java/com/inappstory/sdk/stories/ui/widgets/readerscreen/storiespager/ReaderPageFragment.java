@@ -737,9 +737,8 @@ public class ReaderPageFragment extends Fragment {
             if (parentManager != null) {
                 parentManager.removeSubscriber(manager);
             }
-            if (InAppStoryService.getInstance() != null)
-                InAppStoryService.getInstance().getStoryDownloadManager().removeSubscriber(manager);
             manager.host = null;
+            manager.unsubscribe();
         }
         super.onDestroyView();
     }
