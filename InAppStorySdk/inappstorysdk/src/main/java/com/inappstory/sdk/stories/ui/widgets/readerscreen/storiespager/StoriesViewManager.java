@@ -307,6 +307,8 @@ public class StoriesViewManager {
                 pageManager.getStoryType());
         if (slideInCache == 1) {
             slideInCache(service, story, index);
+        }  else if (slideInCache == -1) {
+            slideLoadError(index);
         } else {
             slideNotInCache(service, index);
         }
@@ -320,6 +322,7 @@ public class StoriesViewManager {
             pageManager.slideLoadedInCache(index, true);
         } else {
             slideNotInCache(service, index);
+            pageManager.slideContentInCache(index);
         }
     }
 

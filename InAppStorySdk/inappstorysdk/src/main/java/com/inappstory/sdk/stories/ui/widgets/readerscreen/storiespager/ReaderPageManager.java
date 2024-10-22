@@ -7,10 +7,13 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.UseServiceInstanceCallback;
+import com.inappstory.sdk.game.cache.SessionAssetsIsReadyCallback;
 import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.StoryLinkObject;
+import com.inappstory.sdk.stories.cache.SlideTaskData;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.managers.TimerManager;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickAction;
@@ -530,6 +533,48 @@ public class ReaderPageManager {
         webViewManager.changeSoundStatus();
     }
 
+    public void bundleContentInCache(int index) {
+        slideLoadedInCache(index, false);
+    }
+
+    void unsubscribe() {
+        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryService service) throws Exception {
+                service.getStoryDownloadManager().removeSubscriber(
+                        service,
+                        ReaderPageManager.this,
+                        sessionAssetsIsReadyCallback
+                );
+            }
+        });
+    }
+
+    public SessionAssetsIsReadyCallback sessionAssetsIsReadyCallback = null;
+
+    public void slideContentInCache(final int index) {
+        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryService service) throws Exception {
+                sessionAssetsIsReadyCallback = new SessionAssetsIsReadyCallback() {
+                    @Override
+                    public void isReady() {
+                        bundleContentInCache(index);
+                    }
+                };
+                service.getStoryDownloadManager().checkBundleResources(
+                        service,
+                        sessionAssetsIsReadyCallback,
+                        ReaderPageManager.this,
+                        new SlideTaskData(
+                                storyId,
+                                index,
+                                getStoryType()
+                        )
+                );
+            }
+        });
+    }
 
     public void slideLoadedInCache(int index) {
         slideLoadedInCache(index, false);

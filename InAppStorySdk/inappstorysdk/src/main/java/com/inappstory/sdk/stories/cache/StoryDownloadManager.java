@@ -226,6 +226,47 @@ public class StoryDownloadManager {
         }
     }
 
+    public void removeSubscriber(
+            InAppStoryService service,
+            ReaderPageManager subscriber,
+            SessionAssetsIsReadyCallback callback
+    ) {
+        synchronized (lock) {
+            subscribers.remove(subscriber);
+            ISessionHolder sessionHolder = service.getSession();
+            if (callback != null)
+                sessionHolder.removeSessionAssetsIsReadyCallback(callback);
+        }
+    }
+
+
+    public void checkBundleResources(
+            InAppStoryService service,
+            SessionAssetsIsReadyCallback callback,
+            final ReaderPageManager subscriber,
+            final SlideTaskData key
+    ) {
+        ISessionHolder sessionHolder = service.getSession();
+        if (sessionHolder.checkIfSessionAssetsIsReady()) {
+            subscriber.bundleContentInCache(key.index);
+        } else {
+            sessionHolder.addSessionAssetsIsReadyCallback(callback);
+            service.downloadSessionAssets(sessionHolder.getSessionAssets());
+        }
+    }
+
+    void slideLoaded(final SlideTaskData key) {
+        synchronized (lock) {
+            for (ReaderPageManager subscriber : subscribers) {
+                if (subscriber.getStoryId() == key.storyId && subscriber.getStoryType() == key.storyType) {
+                    subscriber.slideContentInCache(key.index);
+                    // checkBundleResources(subscriber, key);
+                    return;
+                }
+            }
+        }
+    }
+
     public void removeSubscriber(ReaderPageManager manager) {
         synchronized (lock) {
             subscribers.remove(manager);
@@ -252,17 +293,6 @@ public class StoryDownloadManager {
 
             }
         });
-    }
-
-    void slideLoaded(final SlideTaskData key) {
-        synchronized (lock) {
-            for (ReaderPageManager subscriber : subscribers) {
-                if (subscriber.getStoryId() == key.storyId && subscriber.getStoryType() == key.storyType) {
-                    checkBundleResources(subscriber, key);
-                    return;
-                }
-            }
-        }
     }
 
     HashMap<StoryTaskData, Long> storyErrorDelayed = new HashMap<>();
