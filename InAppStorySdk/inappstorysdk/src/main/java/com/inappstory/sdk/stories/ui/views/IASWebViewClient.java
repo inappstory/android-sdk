@@ -66,6 +66,7 @@ public class IASWebViewClient extends WebViewClient {
 
     protected WebResourceResponse getChangedResponse(String url) throws FileNotFoundException {
         File file = getFileByUrl(url);
+        Log.e("getChangedResponse", url);
         WebResourceResponse response = null;
         if (file != null && file.exists()) {
             try {

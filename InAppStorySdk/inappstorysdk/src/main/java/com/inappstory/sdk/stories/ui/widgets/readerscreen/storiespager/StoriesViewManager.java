@@ -763,6 +763,7 @@ public class StoriesViewManager {
         clearShowRefresh();
         clearShowLoader();
         setLatestVisibleIndex(-1);
+
         pageManager.slideLoadError(index);
     }
 

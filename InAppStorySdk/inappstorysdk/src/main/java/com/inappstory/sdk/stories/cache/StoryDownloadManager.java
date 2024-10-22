@@ -355,16 +355,29 @@ public class StoryDownloadManager {
                 Story tmp = story;
                 int ind = stories.indexOf(story);
                 if (ind >= 0) {
-                    if (tmp.pages == null & stories.get(ind).pages != null) {
+                    Story localStory = stories.get(ind);
+                    if (tmp.pages == null & localStory.pages != null) {
                         tmp.pages = new ArrayList<>();
-                        tmp.pages.addAll(stories.get(ind).pages);
+                        tmp.pages.addAll(localStory.pages);
                     }
-                    if (tmp.layout == null & stories.get(ind).layout != null) {
-                        tmp.layout = stories.get(ind).layout;
+                    if (tmp.layout == null & localStory.layout != null) {
+                        tmp.layout = localStory.layout;
                     }
-                    if (tmp.srcList == null & stories.get(ind).srcList != null) {
+                    if (tmp.srcList == null & localStory.srcList != null) {
                         tmp.srcList = new ArrayList<>();
-                        tmp.srcList.addAll(stories.get(ind).srcList);
+                        tmp.srcList.addAll(localStory.srcList);
+                    }
+                    if (tmp.imagePlaceholdersList == null && localStory.imagePlaceholdersList != null) {
+                        tmp.imagePlaceholdersList = new ArrayList<>();
+                        tmp.imagePlaceholdersList.addAll(localStory.imagePlaceholdersList);
+                    }
+                    if (tmp.slidesPayload == null && localStory.slidesPayload != null) {
+                        tmp.slidesPayload = new ArrayList<>();
+                        tmp.slidesPayload.addAll(localStory.slidesPayload);
+                    }
+                    if (tmp.slidesShare == null && localStory.slidesShare != null) {
+                        tmp.slidesShare = new ArrayList<>();
+                        tmp.slidesShare.addAll(localStory.slidesShare);
                     }
                     tmp.isOpened = tmp.isOpened || stories.get(ind).isOpened;
                 }

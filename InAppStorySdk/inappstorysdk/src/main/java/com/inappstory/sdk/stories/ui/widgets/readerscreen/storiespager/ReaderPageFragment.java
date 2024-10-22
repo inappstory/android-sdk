@@ -360,6 +360,12 @@ public class ReaderPageFragment extends Fragment {
     }
 
     public void storyLoadError() {
+        final StoriesContentFragment storiesContentFragment =
+                parentManager.getHost();
+        if (storiesContentFragment != null) {
+            storiesContentFragment.disableDrag(storyId, parentManager.storyType);
+            storiesContentFragment.enableClicksSlideChange();
+        }
         viewsHandler.post(new Runnable() {
             @Override
             public void run() {
@@ -372,6 +378,13 @@ public class ReaderPageFragment extends Fragment {
     }
 
     public void slideLoadError() {
+
+        final StoriesContentFragment storiesContentFragment =
+                parentManager.getHost();
+        if (storiesContentFragment != null) {
+            storiesContentFragment.disableDrag(storyId, parentManager.storyType);
+            storiesContentFragment.enableClicksSlideChange();
+        }
         viewsHandler.post(new Runnable() {
             @Override
             public void run() {
