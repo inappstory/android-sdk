@@ -1,5 +1,6 @@
 package com.inappstory.sdk.core.api;
 
+import com.inappstory.sdk.core.dataholders.IListItemContent;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.Story;
 
@@ -10,7 +11,7 @@ public interface IASStoriesOpenedCache {
 
     void clearLocalOpensKey();
 
-    void saveStoriesOpened(final List<Story> stories, final ContentType type);
+    void saveStoriesOpened(final List<IListItemContent> stories, final ContentType type);
 
     void saveStoryOpened(final int id, final ContentType type);
 }

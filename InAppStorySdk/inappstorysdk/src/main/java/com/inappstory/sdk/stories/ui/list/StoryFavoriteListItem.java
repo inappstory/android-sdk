@@ -10,6 +10,8 @@ import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
+import com.inappstory.sdk.core.dataholders.IFavoriteItem;
+import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.cache.usecases.IGetStoryCoverCallback;
 import com.inappstory.sdk.stories.cache.usecases.StoryCoverUseCase;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
@@ -40,11 +42,10 @@ public class StoryFavoriteListItem extends BaseStoryListItem {
         final int[] i = {0};
         InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
         if (inAppStoryManager == null) return;
-        final List<StoryFavoriteImage> favoriteImages = inAppStoryManager
+        final List<IFavoriteItem> favoriteImages = inAppStoryManager
                 .iasCore()
-                .contentLoader()
-                .storyDownloadManager()
-                .favoriteImages();
+                .contentHolder()
+                .favoriteItems().getByType(ContentType.STORY);
         if (count == 0 || favoriteImages.isEmpty()) {
             return;
         }
@@ -106,11 +107,10 @@ public class StoryFavoriteListItem extends BaseStoryListItem {
 
         InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
         if (inAppStoryManager == null) return;
-        List<StoryFavoriteImage> favoriteImages = inAppStoryManager
+        List<IFavoriteItem> favoriteImages = inAppStoryManager
                 .iasCore()
-                .contentLoader()
-                .storyDownloadManager()
-                .favoriteImages();
+                .contentHolder()
+                .favoriteItems().getByType(ContentType.STORY);
         if (getFavoriteListItem != null
                 && getFavoriteListItem.getFavoriteItem() != null) {
             int count = favoriteImages.size();

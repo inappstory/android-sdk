@@ -12,6 +12,13 @@ public class ReaderContentHolder implements IReaderContentHolder {
     }
 
     @Override
+    public List<IReaderContent> getByType(ContentType type) {
+        synchronized (contentLock) {
+            return getContentList(type);
+        }
+    }
+
+    @Override
     public IReaderContent getByIdAndType(int id, ContentType type) {
         synchronized (contentLock) {
             List<IReaderContent> content = getContentList(type);

@@ -143,7 +143,11 @@ class StoryDownloader {
                     if (taskByStoryId.loadType == 6) {
                         taskByStoryId.loadType = 3;
                         if (callback != null)
-                            callback.onDownload(manager.getStoryById(current.id(), type), 3, type);
+                            callback.onDownload(
+                                    core.contentHolder().readerContent()
+                                            .getByIdAndType(current.id(), type),
+                                    3, type
+                            );
                     } else if (taskByStoryId.loadType == 5) {
                         taskByStoryId.loadType = 2;
                     } else {

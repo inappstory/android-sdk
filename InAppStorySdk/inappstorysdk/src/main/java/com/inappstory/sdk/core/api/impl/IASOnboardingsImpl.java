@@ -14,6 +14,7 @@ import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.IASOnboardings;
 import com.inappstory.sdk.core.api.UseIASCallback;
+import com.inappstory.sdk.core.dataholders.IListItemContent;
 import com.inappstory.sdk.core.ui.screens.ScreenType;
 import com.inappstory.sdk.core.ui.screens.launcher.ILaunchScreenCallback;
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenAppearance;
@@ -168,10 +169,10 @@ public class IASOnboardingsImpl implements IASOnboardings {
         ArrayList<Story> stories = new ArrayList<Story>();
         ArrayList<Integer> storiesIds = new ArrayList<>();
         stories.addAll(response);
-        for (Story story : response) {
-            storiesIds.add(story.id);
+        for (IListItemContent story : response) {
+            storiesIds.add(story.id());
+            core.contentHolder().listsContent().setByIdAndType(story, story.id(), contentType);
         }
-        core.contentLoader().storyDownloadManager().uploadingAdditional(stories, contentType);
         LaunchStoryScreenData launchData = new LaunchStoryScreenData(
                 null,
                 feed,

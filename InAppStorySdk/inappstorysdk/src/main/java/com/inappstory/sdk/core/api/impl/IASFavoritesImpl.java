@@ -2,8 +2,7 @@ package com.inappstory.sdk.core.api.impl;
 
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASFavorites;
-import com.inappstory.sdk.core.dataholders.IReaderContent;
-import com.inappstory.sdk.core.dataholders.IReaderContentWithStatus;
+import com.inappstory.sdk.core.dataholders.IContentWithStatus;
 import com.inappstory.sdk.core.ui.screens.holder.GetScreenCallback;
 import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryScreen;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
@@ -58,11 +57,7 @@ public class IASFavoritesImpl implements IASFavorites {
                     @Override
                     public void onSuccess(Response response) {
                         core.statistic().profiling().setReady(favUID);
-                        IReaderContent story =
-                                core.contentHolder().readerContent()
-                                        .getByIdAndType(storyId, ContentType.STORY);
-                        if (story instanceof IReaderContentWithStatus)
-                            ((IReaderContentWithStatus) story).favorite(favorite);
+                        core.contentHolder().favorite(storyId, ContentType.STORY, favorite);
                         core.inAppStoryService().getListReaderConnector().storyFavorite(storyId, favorite);
                         core
                                 .screensManager()
@@ -105,17 +100,8 @@ public class IASFavoritesImpl implements IASFavorites {
                     @Override
                     public void onSuccess(Response response) {
                         core.statistic().profiling().setReady(favUID);
-                        core.contentLoader()
-                                .storyDownloadManager()
-                                .clearAllFavoriteStatus(
-                                        ContentType.STORY
-                                );
-                        core.contentLoader()
-                                .storyDownloadManager()
-                                .clearAllFavoriteStatus(
-                                        ContentType.UGC
-                                );
-                        core.contentLoader().storyDownloadManager().favoriteImages().clear();
+                        core.contentHolder().clearAllFavorites(ContentType.STORY);
+                        core.contentHolder().clearAllFavorites(ContentType.UGC);
                         core.inAppStoryService().getListReaderConnector().clearAllFavorites();
                         core.screensManager().getStoryScreenHolder()
                                 .useCurrentReader(

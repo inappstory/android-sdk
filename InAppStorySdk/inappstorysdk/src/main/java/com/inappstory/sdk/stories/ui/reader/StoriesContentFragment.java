@@ -27,6 +27,7 @@ import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.IASStatisticV1;
 import com.inappstory.sdk.core.api.UseIASCallback;
+import com.inappstory.sdk.core.dataholders.IReaderContent;
 import com.inappstory.sdk.core.ui.screens.ShareProcessHandler;
 import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryScreen;
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenAppearance;
@@ -157,7 +158,7 @@ public class StoriesContentFragment extends Fragment
         ArrayList<Integer> ids = new ArrayList<>();
         ArrayList<Integer> indices = new ArrayList<>();
         List<ContentIdWithIndex> idWithIndices = readerManager.getStoriesIdsWithIndex();
-        for (ContentIdWithIndex idWithIndex: idWithIndices) {
+        for (ContentIdWithIndex idWithIndex : idWithIndices) {
             ids.add(idWithIndex.id());
             indices.add(idWithIndex.index());
         }
@@ -264,8 +265,9 @@ public class StoriesContentFragment extends Fragment
         if (inAppStoryManager == null) {
             return;
         }
-        Story st = inAppStoryManager.iasCore().contentLoader().storyDownloadManager()
-                .getStoryById(
+        IReaderContent st = inAppStoryManager.iasCore()
+                .contentHolder()
+                .readerContent().getByIdAndType(
                         storyId,
                         type
                 );
@@ -541,8 +543,11 @@ public class StoriesContentFragment extends Fragment
             InAppStoryManager.useCore(new UseIASCoreCallback() {
                 @Override
                 public void use(@NonNull IASCore core) {
-                    Story story = core.contentLoader().storyDownloadManager()
-                            .getStoryById(currentIds.get(position), readerManager.contentType);
+                    IReaderContent story = core.contentHolder()
+                            .readerContent()
+                            .getByIdAndType(
+                                    currentIds.get(position), readerManager.contentType
+                            );
                     if (story == null || story.disableClose()) return;
                     BaseStoryScreen screen = getStoriesReader();
                     if (screen != null)

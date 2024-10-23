@@ -19,6 +19,7 @@ import com.inappstory.sdk.core.api.IASStatisticV1;
 import com.inappstory.sdk.core.api.IASStatisticV2;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.api.impl.IASSingleStoryImpl;
+import com.inappstory.sdk.core.dataholders.IListItemContent;
 import com.inappstory.sdk.core.dataholders.IReaderContent;
 import com.inappstory.sdk.core.ui.screens.ShareProcessHandler;
 import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryScreen;
@@ -116,7 +117,12 @@ public class ReaderManager {
     public void sendShowStoryEvents(int storyId) {
         if (lastSentId == storyId) return;
         lastSentId = storyId;
-        final Story story = core.contentLoader().storyDownloadManager().getStoryById(storyId, contentType);
+        final IListItemContent story = core.contentHolder()
+                .listsContent()
+                .getByIdAndType(
+                        storyId,
+                        contentType
+                );
         if (story != null) {
             core.callbacksAPI().useCallback(
                     IASCallbackType.SHOW_STORY,

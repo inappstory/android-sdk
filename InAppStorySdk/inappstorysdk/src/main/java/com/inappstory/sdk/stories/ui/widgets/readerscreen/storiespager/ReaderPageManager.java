@@ -11,6 +11,7 @@ import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.IASStatisticV1;
 import com.inappstory.sdk.core.api.UseIASCallback;
+import com.inappstory.sdk.core.dataholders.IListItemContent;
 import com.inappstory.sdk.core.dataholders.IReaderContent;
 import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.network.JsonParser;
@@ -174,8 +175,9 @@ public class ReaderPageManager {
     }
 
     public void widgetEvent(final String widgetName, String widgetData) {
-        final Story story = core.contentLoader().storyDownloadManager()
-                .getStoryById(storyId, getViewContentType());
+        final IReaderContent story = core.contentHolder().readerContent().getByIdAndType(
+                storyId, getViewContentType()
+        );
         if (story == null) return;
         final Map<String, String> widgetEventMap = JsonParser.toMap(widgetData);
         if (widgetEventMap != null)
@@ -199,10 +201,9 @@ public class ReaderPageManager {
         final StoryLinkObject object = JsonParser.fromJson(link, StoryLinkObject.class);
         if (object != null) {
             ClickAction action = ClickAction.BUTTON;
-            final Story story = core.contentLoader().storyDownloadManager()
-                    .getStoryById(
-                            storyId, getViewContentType()
-                    );
+            final IReaderContent story = core.contentHolder().readerContent().getByIdAndType(
+                    storyId, getViewContentType()
+            );
             switch (object.getLink().getType()) {
                 case "url":
                     if (object.getType() != null && !object.getType().isEmpty()) {
@@ -331,7 +332,7 @@ public class ReaderPageManager {
     }
 
 
-    public void setStoryInfo(Story story) {
+    public void setStoryInfo(IReaderContent story) {
         if (checkIfManagersIsNull()) return;
         timelineManager.setSlidesCount(story.slidesCount());
 
@@ -341,7 +342,7 @@ public class ReaderPageManager {
         );
     }
 
-    public void loadStoryAndSlide(Story story, int slideIndex) {
+    public void loadStoryAndSlide(IReaderContent story, int slideIndex) {
         if (checkIfManagersIsNull()) return;
         webViewManager.loadStory(story, slideIndex);
     }
@@ -483,8 +484,8 @@ public class ReaderPageManager {
 
     public void showShareView(InnerShareData shareData) {
         if (parentManager != null) {
-            Story story = core.contentLoader().storyDownloadManager()
-                    .getStoryById(storyId, getViewContentType());
+            IReaderContent story = core.contentHolder().readerContent()
+                    .getByIdAndType(storyId, getViewContentType());
             if (story != null)
                 parentManager.showShareView(shareData, storyId, slideIndex);
         }
@@ -589,7 +590,7 @@ public class ReaderPageManager {
         }
     }
 
-    public void storyLoadedInCache(Story story) {
+    public void storyLoadedInCache(IReaderContent story) {
         if (checkIfManagersIsNull()) return;
         host.story = story;
         setStoryInfo(story);

@@ -45,6 +45,8 @@ import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
+import com.inappstory.sdk.core.dataholders.IListItemContent;
+import com.inappstory.sdk.core.dataholders.IReaderContent;
 import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryScreen;
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenAppearance;
 import com.inappstory.sdk.stories.api.models.Story;
@@ -177,11 +179,14 @@ public class ReaderPageFragment extends Fragment {
     }
 
 
-    Story story;
+    IReaderContent story;
 
     void setViews(View view) {
         if (InAppStoryService.getInstance() == null) return;
-        Log.e("setViews", story.id + " " + story.slidesCount);
+
+        if (story == null) {
+
+        }
         if (timeline != null) {
             timeline.getTimelineManager().setSlidesCount(story.slidesCount());
         }
@@ -695,13 +700,11 @@ public class ReaderPageFragment extends Fragment {
         super.onStart();
         boolean storyIsEmpty = (story == null);
         InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
-        InAppStoryService service = InAppStoryService.getInstance();
         if (inAppStoryManager != null && storyIsEmpty) {
-            story = inAppStoryManager.iasCore().contentLoader().storyDownloadManager()
-                    .getStoryById(
-                            storyId,
-                            manager.getViewContentType()
-                    );
+            story = inAppStoryManager.iasCore().contentHolder().readerContent().getByIdAndType(
+                    storyId,
+                    manager.getViewContentType()
+            );
         }
         if (story != null) {
             loadIfStoryIsNotNull();

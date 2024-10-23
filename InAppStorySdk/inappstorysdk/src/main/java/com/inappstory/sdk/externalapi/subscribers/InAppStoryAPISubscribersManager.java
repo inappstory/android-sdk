@@ -312,8 +312,8 @@ public class InAppStoryAPISubscribersManager {
     public void showFavoriteItem(
             final String uniqueId
     ) {
-        List<StoryFavoriteImage> actualFavoriteImages = new ArrayList<>(
-                core.contentLoader().storyDownloadManager().favoriteImages()
+        List<IFavoriteItem> actualFavoriteImages = new ArrayList<>(
+                core.contentHolder().favoriteItems().getByType(ContentType.STORY)
         );
         cacheFavoriteCellImage(
                 actualFavoriteImages.iterator(),
@@ -323,12 +323,12 @@ public class InAppStoryAPISubscribersManager {
     }
 
     private void cacheFavoriteCellImage(
-            final Iterator<StoryFavoriteImage> iterator,
+            final Iterator<IFavoriteItem> iterator,
             final List<StoryFavoriteItemAPIData> favoriteItemAPIData,
             final String uniqueId
     ) {
         if (iterator.hasNext()) {
-            final StoryFavoriteImage favoriteImage = iterator.next();
+            final IFavoriteItem favoriteImage = iterator.next();
             String image = favoriteImage.imageUrl();
             if (image != null && !image.isEmpty())
                 new CustomFileLoader().getFileLinkFromUrl(image, new SuccessUseCaseCallback<String>() {
@@ -571,7 +571,7 @@ public class InAppStoryAPISubscribersManager {
 
     public void storyFavorite() {
         List<IFavoriteItem> actualFavoriteImages = core.contentHolder()
-                .favoriteItems().getContentList(ContentType.STORY);
+                .favoriteItems().getByType(ContentType.STORY);
         updateFavorites(actualFavoriteImages);
     }
 

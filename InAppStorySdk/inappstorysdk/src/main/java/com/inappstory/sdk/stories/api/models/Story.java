@@ -8,7 +8,6 @@ import android.os.Parcelable;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.dataholders.IListItemContent;
-import com.inappstory.sdk.core.dataholders.IReaderContentWithStatus;
 import com.inappstory.sdk.network.annotations.models.Required;
 import com.inappstory.sdk.network.annotations.models.SerializedName;
 import com.inappstory.sdk.core.dataholders.IResource;
@@ -25,7 +24,7 @@ import java.util.Objects;
  */
 
 
-public class Story implements Parcelable, IReaderContentWithStatus, IListItemContent {
+public class Story implements Parcelable, IReaderContent, IListItemContent {
     @Required
     public int id;
 

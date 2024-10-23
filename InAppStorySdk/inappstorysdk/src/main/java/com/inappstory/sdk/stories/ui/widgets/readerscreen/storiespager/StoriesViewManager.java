@@ -16,6 +16,8 @@ import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.UseIASCallback;
+import com.inappstory.sdk.core.dataholders.IListItemContent;
+import com.inappstory.sdk.core.dataholders.IReaderContent;
 import com.inappstory.sdk.core.ui.screens.ShareProcessHandler;
 import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenData;
 import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenStrategy;
@@ -151,10 +153,10 @@ public class StoriesViewManager {
         loadedIndex = oInd;
         loadedId = oId;
         if (alreadyLoaded) return;
-        Story story = core
-                .contentLoader()
-                .storyDownloadManager()
-                .getStoryById(storyId, pageManager.getViewContentType());
+        IReaderContent story = core
+                .contentHolder()
+                .readerContent()
+                .getByIdAndType(storyId, pageManager.getViewContentType());
         innerLoad(story);
     }
 
@@ -171,7 +173,7 @@ public class StoriesViewManager {
         this.core = core;
     }
 
-    void innerLoad(Story story) {
+    void innerLoad(IReaderContent story) {
         try {
             setWebViewSettings(story);
         } catch (IOException e) {
@@ -269,15 +271,15 @@ public class StoriesViewManager {
         ((SimpleStoriesWebView) storiesView).loadWebData(layout, webdata);
     }
 
-    public void loadStory(Story story, int index) {
+    public void loadStory(IReaderContent story, int index) {
         synchronized (this) {
             if (story == null || story.checkIfEmpty()) {
                 return;
             }
-            if (loadedId == story.id && loadedIndex == index)
+            if (loadedId == story.id() && loadedIndex == index)
                 return;
             if (story.slidesCount() <= index) return;
-            storyId = story.id;
+            storyId = story.id();
             this.index = index;
             loadedIndex = index;
             loadedId = storyId;
@@ -285,7 +287,8 @@ public class StoriesViewManager {
         slideInCache = core.contentLoader().storyDownloadManager().checkIfPageLoaded(
                 storyId,
                 index,
-                pageManager.getViewContentType());
+                pageManager.getViewContentType()
+        );
         if (slideInCache == 1) {
             slideInCache(story, index);
         } else {
@@ -293,7 +296,7 @@ public class StoriesViewManager {
         }
     }
 
-    private void slideInCache(final Story story, final int index) {
+    private void slideInCache(final IReaderContent story, final int index) {
         ISessionHolder sessionHolder = core.sessionManager().getSession();
         if (sessionHolder.checkIfSessionAssetsIsReadySync()) {
             innerLoad(story);
@@ -325,8 +328,8 @@ public class StoriesViewManager {
         }
     }
 
-    void setWebViewSettings(Story story) throws IOException {
-        String innerWebData = story.pages.get(index);
+    void setWebViewSettings(IReaderContent story) throws IOException {
+        String innerWebData = story.slideByIndex(index);
         if (storiesView == null || !(storiesView instanceof SimpleStoriesWebView)) return;
 
         WebPageConvertCallback callback = new WebPageConvertCallback() {
@@ -452,8 +455,8 @@ public class StoriesViewManager {
                     }
                 }
         );
-        Story story = core.contentLoader().storyDownloadManager()
-                .getStoryById(storyId, pageManager.getViewContentType());
+        IReaderContent story = core.contentHolder().readerContent()
+                .getByIdAndType(storyId, pageManager.getViewContentType());
         if (story != null && shareData != null) {
             shareData.payload = story.slideEventPayload(index);
             pageManager.getParentManager().showShareView(
@@ -520,7 +523,7 @@ public class StoriesViewManager {
     private GameStoryData getGameStoryData() {
         GameStoryData data = null;
         ContentType type = pageManager != null ? pageManager.getViewContentType() : ContentType.STORY;
-        Story story = core.contentLoader().storyDownloadManager().getStoryById(storyId, type);
+        IReaderContent story = core.contentHolder().readerContent().getByIdAndType(storyId, type);
         if (story != null) {
             data = new GameStoryData(
                     pageManager.getSlideData(story)
@@ -565,10 +568,9 @@ public class StoriesViewManager {
     }
 
     public void sendShowSlideEvents() {
-        final Story story = core
-                .contentLoader()
-                .storyDownloadManager()
-                .getStoryById(storyId, pageManager.getViewContentType());
+        final IReaderContent story = core
+                .contentHolder()
+                .readerContent().getByIdAndType(storyId, pageManager.getViewContentType());
         if (story != null) {
             InAppStoryManager.useCore(new UseIASCoreCallback() {
                 @Override

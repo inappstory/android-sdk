@@ -20,6 +20,7 @@ import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.IASStatisticV1;
 import com.inappstory.sdk.core.api.UseIASCallback;
+import com.inappstory.sdk.core.dataholders.IListItemContent;
 import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenData;
 import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenStrategy;
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenAppearance;
@@ -95,8 +96,14 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
         InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
         if (inAppStoryManager != null)
             for (int id : storiesIds) {
-                Story story = inAppStoryManager.iasCore().contentLoader().storyDownloadManager()
-                        .getStoryById(id, ContentType.UGC);
+                IListItemContent story = inAppStoryManager
+                        .iasCore()
+                        .contentHolder()
+                        .listsContent()
+                        .getByIdAndType(
+                                id,
+                                ContentType.UGC
+                        );
                 if (story != null) {
                     data.add(new UgcStoryData(story, SourceType.LIST));
                 }
@@ -141,16 +148,16 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
             });
         } else {
             int hasUGC = useUGC ? 1 : 0;
-            final Story story = core.contentLoader().storyDownloadManager()
-                    .getStoryById(storiesIds.get(position - hasUGC), ContentType.UGC);
+            final IListItemContent story = core.contentHolder().listsContent()
+                    .getByIdAndType(storiesIds.get(position - hasUGC), ContentType.UGC);
             if (story == null) return;
             String imgUrl = story.imageCoverByQuality(manager.csCoverQuality());
-            holder.bind(story.id,
+            holder.bind(story.id(),
                     story.title(),
                     story.titleColor() != null ? Color.parseColor(story.titleColor()) : null,
                     imgUrl,
                     Color.parseColor(story.backgroundColor()),
-                    story.isOpened,
+                    story.isOpened(),
                     story.hasAudio(),
                     story.videoCover(),
                     StoryData.getStoryData(story, null, SourceType.LIST, ContentType.UGC),
@@ -175,8 +182,8 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
                 int hasUGC = useUGC ? 1 : 0;
                 int index = ind - hasUGC;
                 clickTimestamp = System.currentTimeMillis();
-                final Story current = core.contentLoader().storyDownloadManager()
-                        .getStoryById(storiesIds.get(index), ContentType.UGC);
+                final IListItemContent current = core.contentHolder().listsContent()
+                        .getByIdAndType(storiesIds.get(index), ContentType.UGC);
                 if (current != null) {
                     if (callback != null) {
                         callback.itemClick(
@@ -194,7 +201,7 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
                                 new GetStatisticV1Callback() {
                                     @Override
                                     public void get(@NonNull IASStatisticV1 manager) {
-                                        manager.addGameClickStatistic(current.id);
+                                        manager.addGameClickStatistic(current.id());
                                     }
                                 }
                         );
@@ -221,7 +228,9 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
                         );
                         return;
                     } else if (current.deeplink() != null) {
-                        core.statistic().v2().sendDeeplinkStory(current.id, current.deeplink(), null);
+                        core.statistic().v2().sendDeeplinkStory(current.id(),
+                                current.deeplink(),
+                                null);
                         core.callbacksAPI().useCallback(
                                 IASCallbackType.CALL_TO_ACTION,
                                 new UseIASCallback<CallToActionCallback>() {
@@ -263,8 +272,8 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
                                     }
                                 }
                         );
-                        current.isOpened = true;
-                        core.storyListCache().saveStoryOpened(current.id, ContentType.UGC);
+                        current.setOpened(true);
+                        core.storyListCache().saveStoryOpened(current.id(), ContentType.UGC);
                         notifyItemChanged(ind);
                         return;
                     } else if (current.hideInReader()) {
@@ -281,8 +290,8 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
                 }
                 ArrayList<Integer> tempStories = new ArrayList();
                 for (Integer storyId : storiesIds) {
-                    Story story = core.contentLoader().storyDownloadManager()
-                            .getStoryById(storyId, ContentType.UGC);
+                    IListItemContent story = core.contentHolder().listsContent()
+                            .getByIdAndType(storyId, ContentType.UGC);
                     if (story == null || !story.hideInReader())
                         tempStories.add(storyId);
                 }
@@ -323,10 +332,10 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
             int pos = position - hasUGC;
             int pref = pos * 10;
             InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
-            Story story = inAppStoryManager.iasCore().contentLoader().storyDownloadManager()
-                    .getStoryById(storiesIds.get(pos), ContentType.UGC);
+            IListItemContent story = inAppStoryManager.iasCore().contentHolder().listsContent(
+            ).getByIdAndType(storiesIds.get(pos), ContentType.UGC);
             if (story.videoCover() != null) pref += 5;
-            return story.isOpened ? (pref + 2) : (pref + 1);
+            return story.isOpened() ? (pref + 2) : (pref + 1);
         } catch (Exception e) {
             return 0;
         }

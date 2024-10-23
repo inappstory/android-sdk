@@ -3,8 +3,8 @@ package com.inappstory.sdk.core.api.impl;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.IASStoriesOpenedCache;
+import com.inappstory.sdk.core.dataholders.IListItemContent;
 import com.inappstory.sdk.stories.api.models.ContentType;
-import com.inappstory.sdk.stories.api.models.Story;
 
 import java.util.HashSet;
 import java.util.List;
@@ -33,15 +33,15 @@ public class IASStoriesOpenedCacheImpl implements IASStoriesOpenedCache {
     }
 
     @Override
-    public void saveStoriesOpened(List<Story> stories, ContentType type) {
+    public void saveStoriesOpened(List<IListItemContent> stories, ContentType type) {
         String key = getLocalOpensKey(type);
         Set<String> opens = core.sharedPreferencesAPI().getStringSet(key);
         if (opens == null) opens = new HashSet<>();
-        for (Story story : stories) {
-            if (story.isOpened) {
-                opens.add(Integer.toString(story.id));
-            } else if (opens.contains(Integer.toString(story.id))) {
-                story.isOpened = true;
+        for (IListItemContent story : stories) {
+            if (story.isOpened()) {
+                opens.add(Integer.toString(story.id()));
+            } else if (opens.contains(Integer.toString(story.id()))) {
+                story.setOpened(true);
             }
         }
         core.sharedPreferencesAPI().saveStringSet(key, opens);

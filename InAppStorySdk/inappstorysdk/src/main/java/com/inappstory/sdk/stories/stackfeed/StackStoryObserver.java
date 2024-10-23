@@ -16,6 +16,7 @@ import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.IASStatisticV1;
 import com.inappstory.sdk.core.api.UseIASCallback;
+import com.inappstory.sdk.core.dataholders.IListItemContent;
 import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenData;
 import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenStrategy;
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenAppearance;
@@ -249,15 +250,13 @@ public class StackStoryObserver implements IStackFeedActions {
     }
 
     private void openReader(final Context context, boolean showNewStories) {
-        InAppStoryService service = InAppStoryService.getInstance();
-        InAppStoryManager manager = InAppStoryManager.getInstance();
-        if (manager == null) return;
+        InAppStoryService service = core.inAppStoryService();
         final Story currentStory = stories.get(oldIndex);
-        Story current = core.contentLoader().storyDownloadManager()
-                .getStoryById(currentStory.id, ContentType.STORY);
+        IListItemContent current = core.contentHolder().listsContent()
+                .getByIdAndType(currentStory.id, ContentType.STORY);
         boolean currentStoryIsOpened = true;
         if (current != null) {
-            currentStoryIsOpened = current.isOpened;
+            currentStoryIsOpened = current.isOpened();
         }
         boolean showOnlyNewStories = !currentStoryIsOpened && showNewStories;
         if (currentStory.deeplink() != null && !currentStory.deeplink().isEmpty()) {
@@ -316,7 +315,7 @@ public class StackStoryObserver implements IStackFeedActions {
                     }
             );
             if (current != null) {
-                current.isOpened = true;
+                current.setOpened(true);
                 core.storyListCache().saveStoryOpened(currentStory.id, ContentType.STORY);
             }
         } else if (currentStory.gameInstanceId() != null && !currentStory.gameInstanceId().isEmpty()) {
@@ -350,7 +349,7 @@ public class StackStoryObserver implements IStackFeedActions {
                             ))
             );
             if (current != null) {
-                current.isOpened = true;
+                current.setOpened(true);
                 core.storyListCache().saveStoryOpened(currentStory.id, ContentType.STORY);
             }
         } else if (!currentStory.hideInReader()) {

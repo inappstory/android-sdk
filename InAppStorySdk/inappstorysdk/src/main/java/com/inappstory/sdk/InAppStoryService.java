@@ -151,13 +151,8 @@ public class InAppStoryService {
                                 id,
                                 ContentType.STORY
                         );
-                    } else {
-                        core.contentHolder().favoriteItems().setByIdAndType(
-                                null,
-                                id,
-                                ContentType.STORY
-                        );
                     }
+                    core.contentHolder().favorite(id, ContentType.STORY, favStatus);
                     boolean isEmpty = core.contentHolder().favoriteItems().isEmpty(ContentType.STORY);
                     for (ListManager sub : service.getListSubscribers()) {
                         sub.storyFavorite(id, favStatus, isEmpty);

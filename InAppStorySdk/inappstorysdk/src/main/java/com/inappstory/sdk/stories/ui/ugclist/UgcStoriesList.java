@@ -22,6 +22,7 @@ import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.IASStatisticV1;
+import com.inappstory.sdk.core.dataholders.IListItemContent;
 import com.inappstory.sdk.core.stories.StoriesListVMState;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.ContentType;
@@ -441,8 +442,11 @@ public class UgcStoriesList extends RecyclerView {
         InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
         if (inAppStoryManager != null)
             for (int id : storiesIds) {
-                Story story = inAppStoryManager.iasCore().contentLoader().storyDownloadManager()
-                        .getStoryById(id, ContentType.UGC);
+                IListItemContent story = inAppStoryManager
+                        .iasCore()
+                        .contentHolder()
+                        .listsContent()
+                        .getByIdAndType(id, ContentType.UGC);
                 if (story != null) {
                     data.add(new UgcStoryData(story, SourceType.LIST));
                 }

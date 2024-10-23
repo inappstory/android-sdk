@@ -10,12 +10,19 @@ public class FavoriteItemsHolder implements IFavoriteItemsHolder {
     private final Object contentLock = new Object();
     private final List<IFavoriteItem> stories = new ArrayList<>();
 
-    public List<IFavoriteItem> getContentList(ContentType type) {
+    private List<IFavoriteItem> getContentList(ContentType type) {
         switch (type) {
             case STORY:
                 return stories;
             default:
                 return null;
+        }
+    }
+
+    @Override
+    public List<IFavoriteItem> getByType(ContentType type) {
+        synchronized (contentLock) {
+            return getContentList(type);
         }
     }
 

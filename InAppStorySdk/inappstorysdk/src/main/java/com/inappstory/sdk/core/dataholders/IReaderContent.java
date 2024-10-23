@@ -3,7 +3,7 @@ package com.inappstory.sdk.core.dataholders;
 import java.util.List;
 import java.util.Map;
 
-public interface IReaderContent extends IStatData {
+public interface IReaderContent extends IStatData, IContentWithStatus {
     String layout();
     String slideByIndex(int index);
     List<IResource> vodResources(int index);
@@ -12,9 +12,7 @@ public interface IReaderContent extends IStatData {
     Map<String, String> placeholdersMap(int index);
     int actualSlidesCount();
     List<Integer> slidesShare();
-    boolean hasSwipeUp();
     String slideEventPayload(int slideIndex);
     boolean checkIfEmpty();
-    boolean disableClose();
     int shareType(int slideIndex);
 }

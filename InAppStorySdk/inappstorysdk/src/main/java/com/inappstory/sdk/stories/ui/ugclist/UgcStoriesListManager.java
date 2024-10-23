@@ -5,6 +5,7 @@ import android.os.Looper;
 import android.view.View;
 
 import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.dataholders.IListItemContent;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.ui.list.ListManager;
@@ -42,10 +43,12 @@ class UgcStoriesListManager implements ListManager {
     }
 
     public void changeStory(final int storyId, final String listID) {
-        Story st = core.contentLoader().storyDownloadManager().getStoryById(storyId, ContentType.UGC);
+        IListItemContent st = core.contentHolder().listsContent().getByIdAndType(
+                storyId, ContentType.UGC
+        );
         if (st == null) return;
-        st.isOpened = true;
-        core.storyListCache().saveStoryOpened(st.id, ContentType.UGC);
+        st.setOpened(true);
+        core.storyListCache().saveStoryOpened(st.id(), ContentType.UGC);
         checkHandler();
         post(new Runnable() {
             @Override

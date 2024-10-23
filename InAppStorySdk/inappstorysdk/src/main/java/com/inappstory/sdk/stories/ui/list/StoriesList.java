@@ -26,6 +26,8 @@ import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.IASStatisticV1;
+import com.inappstory.sdk.core.dataholders.IFavoriteItem;
+import com.inappstory.sdk.core.dataholders.IListItemContent;
 import com.inappstory.sdk.core.stories.StoriesListVMState;
 import com.inappstory.sdk.core.ui.screens.storyreader.StoryScreenHolder;
 import com.inappstory.sdk.stories.api.models.ContentType;
@@ -398,11 +400,15 @@ public class StoriesList extends RecyclerView {
                         if (cachedData != null) {
                             currentPercentage = Math.max(currentPercentage, cachedData.areaPercent);
                         }
-                        Story current = null;
+                        IListItemContent current = null;
                         InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
                         if (inAppStoryManager != null)
-                            current = inAppStoryManager.iasCore().contentLoader().storyDownloadManager()
-                                    .getStoryById(adapter.getStoriesIds().get(ind), ContentType.STORY);
+                            current = inAppStoryManager
+                                    .iasCore().contentHolder().listsContent()
+                                    .getByIdAndType(
+                                            adapter.getStoriesIds().get(ind),
+                                            ContentType.STORY
+                                    );
                         if (current != null && currentPercentage > 0) {
                             scrolledItems.put(i, new ShownStoriesListItem(
                                     new StoryData(
@@ -624,7 +630,7 @@ public class StoriesList extends RecyclerView {
             adapter.notifyChanges();
     }
 
-    public void favStory(int id, boolean favStatus, List<StoryFavoriteImage> favImages, boolean isEmpty) {
+    public void favStory(int id, boolean favStatus, boolean isEmpty) {
         if (adapter == null) return;
 
         if (isFavoriteList) {
@@ -639,12 +645,12 @@ public class StoriesList extends RecyclerView {
             adapter.notifyDataSetChanged();
             updateVisibleArea(true);
         } else if (!adapter.hasFavItem) {
-            if (!favImages.isEmpty()) {
+            if (!isEmpty) {
                 adapter.hasFavItem = (getAppearanceManager().csHasFavorite());
                 // adapter.refresh();
                 adapter.notifyDataSetChanged();
             }
-        } else if (isEmpty || favImages.isEmpty()) {
+        } else if (isEmpty) {
             adapter.hasFavItem = false;
             adapter.notifyDataSetChanged();
         } else {
@@ -699,8 +705,8 @@ public class StoriesList extends RecyclerView {
         InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
         if (inAppStoryManager != null)
             for (int id : storiesIds) {
-                Story story = inAppStoryManager.iasCore().contentLoader()
-                        .storyDownloadManager().getStoryById(id, ContentType.STORY);
+                IListItemContent story = inAppStoryManager.iasCore().contentHolder()
+                        .listsContent().getByIdAndType(id, ContentType.STORY);
                 if (story != null) {
                     data.add(new StoryData(story, feed, SourceType.LIST));
                 }

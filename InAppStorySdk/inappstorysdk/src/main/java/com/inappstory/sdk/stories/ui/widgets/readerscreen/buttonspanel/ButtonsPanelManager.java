@@ -6,14 +6,18 @@ import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.UseIASCallback;
+import com.inappstory.sdk.core.dataholders.IContentWithStatus;
+import com.inappstory.sdk.core.dataholders.IListItemContent;
 import com.inappstory.sdk.core.dataholders.IReaderContent;
 import com.inappstory.sdk.core.dataholders.IReaderContentWithStatus;
+import com.inappstory.sdk.core.dataholders.IStatData;
 import com.inappstory.sdk.core.ui.screens.ShareProcessHandler;
 import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.network.models.Response;
 import com.inappstory.sdk.share.IShareCompleteListener;
 import com.inappstory.sdk.stories.api.models.ContentIdWithIndex;
+import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.ShareObject;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickOnShareStoryCallback;
@@ -69,12 +73,12 @@ public class ButtonsPanelManager {
 
     private void likeDislikeClick(final ButtonClickCallback callback, final boolean like) {
 
-        final IReaderContent story =
-                core.contentHolder().readerContent().getByIdAndType(
+        final IContentWithStatus content =
+                core.contentHolder().getByIdAndType(
                         storyId, pageManager.getViewContentType()
                 );
-        if (!(story instanceof IReaderContentWithStatus)) return;
-        final IReaderContentWithStatus storyWithStatus = (IReaderContentWithStatus) story;
+        if (!(content instanceof IReaderContent)) return;
+        final IReaderContent story = (IReaderContent) content;
         final int val;
         ContentIdWithIndex idWithIndex = pageManager.getParentManager().getByIdAndIndex(storyId);
         core.callbacksAPI().useCallback(
@@ -85,22 +89,22 @@ public class ButtonsPanelManager {
                         if (like) {
                             callback.likeStory(
                                     pageManager.getSlideData(story),
-                                    storyWithStatus.like() != 1
+                                    story.like() != 1
                             );
                         } else {
                             callback.dislikeStory(
                                     pageManager.getSlideData(story),
-                                    storyWithStatus.like() != -1
+                                    story.like() != -1
                             );
                         }
                     }
                 }
         );
-        if (like && storyWithStatus.like() != 1) {
+        if (like && story.like() != 1) {
             core.statistic().v2().sendLikeStory(idWithIndex.id(), idWithIndex.index(),
                     pageManager != null ? pageManager.getFeedId() : null);
             val = 1;
-        } else if (!like && storyWithStatus.like() != -1) {
+        } else if (!like && story.like() != -1) {
             core.statistic().v2().sendDislikeStory(idWithIndex.id(), idWithIndex.index(),
                     pageManager != null ? pageManager.getFeedId() : null);
             val = -1;
@@ -118,10 +122,9 @@ public class ButtonsPanelManager {
                     @Override
                     public void onSuccess(Response response) {
                         core.statistic().profiling().setReady(likeUID);
-                        Story story = core.contentLoader().storyDownloadManager()
-                                .getStoryById(storyId, pageManager.getViewContentType());
-                        if (story != null)
-                            story.like(val);
+                        core.contentHolder().like(
+                                storyId, pageManager.getViewContentType(), val
+                        );
                         if (callback != null)
                             callback.onSuccess(val);
                     }
@@ -147,14 +150,15 @@ public class ButtonsPanelManager {
     }
 
     public void favoriteClick(final ButtonClickCallback callback) {
-        final IReaderContent story =
-                core.contentHolder().readerContent().getByIdAndType(
+        final ContentType contentType = pageManager.getViewContentType();
+        final IContentWithStatus content =
+                core.contentHolder().getByIdAndType(
                         storyId, pageManager.getViewContentType()
                 );
-        if (!(story instanceof IReaderContentWithStatus))return;
-        final IReaderContentWithStatus storyWithStatus = (IReaderContentWithStatus) story;
+        if (!(content instanceof IReaderContent)) return;
+        final IReaderContent story = (IReaderContent) content;
         ContentIdWithIndex idWithIndex = pageManager.getParentManager().getByIdAndIndex(storyId);
-        final boolean val = storyWithStatus.favorite();
+        final boolean val = story.favorite();
         if (!val)
             core.statistic().v2().sendFavoriteStory(idWithIndex.id(), idWithIndex.index(),
                     pageManager != null ? pageManager.getFeedId() : null);
@@ -180,7 +184,7 @@ public class ButtonsPanelManager {
                     public void onSuccess(Response response) {
                         core.statistic().profiling().setReady(favUID);
                         boolean res = !val;
-                        storyWithStatus.favorite(res);
+                        core.contentHolder().favorite(storyId, contentType, res);
                         if (callback != null)
                             callback.onSuccess(res ? 1 : 0);
                         core.inAppStoryService()
@@ -223,8 +227,9 @@ public class ButtonsPanelManager {
         final ShareProcessHandler shareProcessHandler = core.screensManager().getShareProcessHandler();
         if (shareProcessHandler == null || shareProcessHandler.isShareProcess()) return;
         ContentIdWithIndex idWithIndex = pageManager.getParentManager().getByIdAndIndex(storyId);
-        final IReaderContent story = core.contentLoader().storyDownloadManager()
-                .getStoryById(storyId, pageManager.getViewContentType());
+        final IReaderContent story = core.contentHolder().readerContent().getByIdAndType(
+                storyId, pageManager.getViewContentType()
+        );
         if (story == null) return;
         final int slideIndex = idWithIndex.index();
         final int shareType = story.shareType(slideIndex);

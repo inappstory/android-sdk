@@ -11,6 +11,14 @@ public class ListContentHolder implements IListsContentHolder {
     public ListContentHolder() {
     }
 
+
+    @Override
+    public List<IListItemContent> getByType(ContentType type) {
+        synchronized (contentLock) {
+            return getContentList(type);
+        }
+    }
+
     @Override
     public IListItemContent getByIdAndType(int id, ContentType type) {
         synchronized (contentLock) {

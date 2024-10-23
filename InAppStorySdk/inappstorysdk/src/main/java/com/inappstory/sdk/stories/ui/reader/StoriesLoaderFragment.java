@@ -32,6 +32,9 @@ import androidx.fragment.app.Fragment;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.core.dataholders.IContentWithStatus;
+import com.inappstory.sdk.core.dataholders.IListItemContent;
+import com.inappstory.sdk.core.dataholders.IReaderContent;
 import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryScreen;
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenAppearance;
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenData;
@@ -50,13 +53,13 @@ public class StoriesLoaderFragment extends Fragment {
     void setViews(View view) {
         InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
         if (inAppStoryManager == null) return;
-        Story story = inAppStoryManager.iasCore().contentLoader().storyDownloadManager()
-                .getStoryById(
+        IListItemContent story = inAppStoryManager.iasCore().contentHolder().listsContent()
+                .getByIdAndType(
                         launchData.getStoriesIds().get(launchData.getListIndex()),
                         launchData.getType()
                 );
         if (story == null) return;
-        storyId = story.id;
+        storyId = story.id();
         ButtonsPanel buttonsPanel = view.findViewById(R.id.ias_buttons_panel);
         View aboveButtonsPanel = view.findViewById(R.id.ias_above_buttons_panel);
         View closeButton = view.findViewById(R.id.ias_close_button);

@@ -6,6 +6,9 @@ import androidx.annotation.WorkerThread;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.UseIASCallback;
+import com.inappstory.sdk.core.dataholders.IContentHolder;
+import com.inappstory.sdk.core.dataholders.IListItemContent;
+import com.inappstory.sdk.core.dataholders.IReaderContent;
 import com.inappstory.sdk.game.cache.SessionAssetsIsReadyCallback;
 import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
@@ -36,9 +39,9 @@ public class StoryDownloadManager {
     private final IASCore core;
 
     public void clearLocalData() {
-        favoriteImages.clear();
-        favStories.clear();
-        stories.clear();
+        core.contentHolder().favoriteItems().clear();
+        core.contentHolder().readerContent().clear();
+        core.contentHolder().listsContent().clear();
     }
 
     static final String EXPAND_STRING = "slides_html,slides_structure,layout,slides_duration,src_list,img_placeholder_src_list,slides_screenshot_share,slides_payload";
@@ -85,10 +88,7 @@ public class StoryDownloadManager {
                                             }
                                         }
                                 );
-                                ArrayList<Story> st = new ArrayList<>();
-                                st.add(response);
-                                uploadingAdditional(st, type);
-                                setStory(response, response.id, type);
+                                updateListItem(response, type);
                                 if (storyByIdCallback != null)
                                     storyByIdCallback.getStory(response, sessionId);
                             }
@@ -277,10 +277,10 @@ public class StoryDownloadManager {
         }
     }
 
-    void storyLoaded(Story story, ContentType type) {
+    void storyLoaded(IReaderContent story, ContentType type) {
         synchronized (lock) {
             for (ReaderPageManager subscriber : subscribers) {
-                if (subscriber.getStoryId() == story.id &&
+                if (subscriber.getStoryId() == story.id() &&
                         subscriber.getViewContentType() == type) {
                     subscriber.storyLoadedInCache(story);
                     return;
@@ -343,23 +343,15 @@ public class StoryDownloadManager {
             final @NonNull IASCore core
     ) {
         this.core = core;
-        this.stories = new ArrayList<>();
-        this.ugcStories = new ArrayList<>();
-        this.favStories = new ArrayList<>();
-        this.favoriteImages = new ArrayList<>();
 
         this.storyDownloader = new StoryDownloader(core, new DownloadStoryCallback() {
             @Override
-            public void onDownload(Story story, int loadType, ContentType type) {
-                Story local = getStoryById(story.id, type);
-                if (local != null) {
-                    story.isOpened = local.isOpened;
-                }
-                setStory(story, story.id, type);
+            public void onDownload(IReaderContent story, int loadType, ContentType type) {
+                updateListItem(story, type);
                 storyLoaded(story, type);
                 try {
                     slidesDownloader.addStoryPages(
-                            new ViewContentTaskKey(story.id, type),
+                            new ViewContentTaskKey(story.id(), type),
                             story,
                             loadType
                     );
@@ -406,14 +398,6 @@ public class StoryDownloadManager {
     }
 
 
-    public void clearAllFavoriteStatus(ContentType type) {
-        List<Story> stories = getStoriesListByType(type);
-        for (Story story : stories) {
-            if (story == null) continue;
-            story.favorite(false);
-        }
-    }
-
     public Story getStoryById(int id, ContentType type) {
         List<Story> stories = getStoriesListByType(type);
         synchronized (storiesLock) {
@@ -425,37 +409,30 @@ public class StoryDownloadManager {
         return null;
     }
 
-    private void setStory(final Story story, int id, ContentType type) {
-        if (story == null) return;
-        List<Story> stories = getStoriesListByType(type);
-        Story cur = getStoryById(id, type);
-        if (cur == null) {
-            stories.add(story);
-            return;
+    private void updateListItem(final IReaderContent readerContent, ContentType type) {
+        if (!(readerContent instanceof Story)) return;
+        Story story = (Story) readerContent;
+        IListItemContent listItemContent = core.contentHolder()
+                .listsContent().getByIdAndType(readerContent.id(), type);
+        if (listItemContent == null) {
+            listItemContent = story;
+            core.contentHolder().listsContent().setByIdAndType(listItemContent,
+                    readerContent.id(),
+                    type
+            );
+        } else {
+            listItemContent.setOpened(listItemContent.isOpened() || story.isOpened());
         }
-        cur.loadedPages = new ArrayList<>();
-        cur.pages = new ArrayList<>(story.pages);
-        for (int i = 0; i < cur.pages.size(); i++) {
-            cur.loadedPages.add(false);
-        }
-        cur.id = id;
-        cur.layout = story.layout;
-        cur.hasAudio = story.hasAudio;
-        cur.tags = story.tags;
-        cur.hasSwipeUp = story.hasSwipeUp();
-        cur.title = story.title;
-        cur.statTitle = story.statTitle;
-        cur.srcList(story.srcList());
-        cur.imagePlaceholdersList(story.getImagePlaceholdersList());
-        cur.slidesShare = new ArrayList<>(story.slidesShare);
-        cur.slidesPayload = new ArrayList<>(story.slidesPayload);
-        cur.slidesCount = story.slidesCount();
+    }
+
+    private void setStory(final IReaderContent story, int id, ContentType type) {
+        updateListItem(story, type);
     }
 
     private StoryDownloader storyDownloader;
     private SlidesDownloader slidesDownloader;
 
-    public void addCompletedStoryTask(Story story, ContentType type) {
+    public void addCompletedStoryTask(IReaderContent story, ContentType type) {
         boolean noStory = true;
         List<Story> stories = getStoriesListByType(type);
         synchronized (storiesLock) {
@@ -493,15 +470,21 @@ public class StoryDownloadManager {
 
             @Override
             public void onSuccess(final List<Story> response, Object... args) {
-                uploadingAdditional(response, ContentType.UGC);
-                List<Story> stories = getStoriesListByType(ContentType.UGC);
-                setLocalsOpened(stories, ContentType.UGC);
+                List<Integer> ids = new ArrayList<>();
+                for (IListItemContent story: response) {
+                    if (story == null) continue;
+                    core.contentHolder().listsContent().setByIdAndType(
+                            story,
+                            story.id(),
+                            ContentType.UGC
+                    );
+                    ids.add(story.id());
+                }
+                setLocalsOpened(
+                        core.contentHolder().listsContent().getByType(ContentType.UGC),
+                        ContentType.UGC
+                );
                 if (callback != null) {
-                    List<Integer> ids = new ArrayList<>();
-                    for (Story story : response) {
-                        if (story == null) continue;
-                        ids.add(story.id);
-                    }
                     callback.storiesLoaded(ids);
                 }
             }
@@ -567,33 +550,22 @@ public class StoryDownloadManager {
                         @Override
                         public void onSuccess(List<Story> response2) {
                             core.statistic().profiling().setReady(loadFavUID);
-                            favStories.clear();
-                            favStories.addAll(response2);
-                            favoriteImages.clear();
-                            List<Story> stories = getStoriesListByType(ContentType.STORY);
-                            synchronized (storiesLock) {
-                                for (Story st : stories) {
-                                    if (st == null) continue;
-                                    for (Story st2 : response2) {
-                                        if (st2 == null) continue;
-                                        if (st2.id == st.id) {
-                                            st.isOpened = true;
-                                            break;
-                                        }
-                                    }
-                                }
+                            IContentHolder contentHolder = core.contentHolder();
+                            contentHolder.clearAllFavorites(ContentType.STORY);
+                            for (Story story : response2) {
+                                contentHolder.favoriteItems().setByIdAndType(
+                                        new StoryFavoriteImage(
+                                                story.id,
+                                                story.imageCoverByQuality(Image.QUALITY_MEDIUM),
+                                                story.backgroundColor
+                                        ),
+                                        story.id(),
+                                        ContentType.STORY
+                                );
+                                contentHolder.favorite(story.id(), ContentType.STORY, true);
                             }
-                            if (response2 != null && response2.size() > 0) {
+                            if (response2.size() > 0) {
                                 setLocalsOpened(response2, ContentType.STORY);
-                                for (Story story : response2) {
-                                    favoriteImages.add(
-                                            new StoryFavoriteImage(
-                                                    story.id,
-                                                    story.imageCoverByQuality(Image.QUALITY_MEDIUM),
-                                                    story.backgroundColor
-                                            )
-                                    );
-                                }
                                 if (callback != null) {
                                     List<Integer> ids = new ArrayList<>();
                                     for (Story story : response) {
@@ -604,7 +576,11 @@ public class StoryDownloadManager {
                                     callback.storiesLoaded(ids);
                                 }
                                 if (favCallback != null) {
-                                    favCallback.success(favoriteImages);
+                                    favCallback.success(
+                                            contentHolder
+                                                    .favoriteItems()
+                                                    .getByType(ContentType.STORY)
+                                    );
                                 }
                             } else {
                                 if (callback != null) {
@@ -720,20 +696,12 @@ public class StoryDownloadManager {
         }
     }
 
-    void setLocalsOpened(List<Story> response, ContentType type) {
+    void setLocalsOpened(List<IListItemContent> response, ContentType type) {
         core.storyListCache().saveStoriesOpened(response, type);
     }
 
     private List<Story> stories = new ArrayList<>();
     private List<Story> ugcStories = new ArrayList<>();
-    private List<Story> favStories = new ArrayList<>();
-    private List<StoryFavoriteImage> favoriteImages = new ArrayList<>();
 
-    public List<StoryFavoriteImage> favoriteImages() {
-        return favoriteImages;
-    }
 
-    public List<Story> favStories() {
-        return favStories;
-    }
 }

@@ -9,6 +9,9 @@ import androidx.annotation.NonNull;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
+import com.inappstory.sdk.core.dataholders.IContentHolder;
+import com.inappstory.sdk.core.dataholders.IFavoriteItem;
+import com.inappstory.sdk.core.dataholders.IListItemContent;
 import com.inappstory.sdk.stories.api.models.Image;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.Story;
@@ -56,10 +59,11 @@ public class StoriesListManager implements ListManager {
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-                Story st = core.contentLoader().storyDownloadManager().getStoryById(storyId, ContentType.STORY);
+                IListItemContent st = core.contentHolder().listsContent()
+                        .getByIdAndType(storyId, ContentType.STORY);
                 if (st == null) return;
-                st.isOpened = true;
-                core.storyListCache().saveStoryOpened(st.id, ContentType.STORY);
+                st.setOpened(true);
+                core.storyListCache().saveStoryOpened(st.id(), ContentType.STORY);
                 checkHandler();
                 post(new Runnable() {
                     @Override
@@ -126,33 +130,12 @@ public class StoriesListManager implements ListManager {
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-                StoryDownloadManager downloadManager =
-                        core.contentLoader().storyDownloadManager();
-                final List<StoryFavoriteImage> favImages = downloadManager.favoriteImages();
-                Story story = downloadManager.getStoryById(id, ContentType.STORY);
-                if (story == null) return;
-                if (favStatus) {
-                    StoryFavoriteImage favoriteImage = new StoryFavoriteImage(
-                            id,
-                            story.imageCoverByQuality(Image.QUALITY_MEDIUM),
-                            story.backgroundColor()
-                    );
-                    if (!favImages.contains(favoriteImage))
-                        favImages.add(0, favoriteImage);
-                } else {
-                    for (StoryFavoriteImage favoriteImage : favImages) {
-                        if (favoriteImage.id() == id) {
-                            favImages.remove(favoriteImage);
-                            break;
-                        }
-                    }
-                }
                 post(new Runnable() {
                     @Override
                     public void run() {
                         if (list == null) return;
                         if (list.getVisibility() != View.VISIBLE) return;
-                        list.favStory(id, favStatus, favImages, isEmpty);
+                        list.favStory(id, favStatus, isEmpty);
                     }
                 });
             }

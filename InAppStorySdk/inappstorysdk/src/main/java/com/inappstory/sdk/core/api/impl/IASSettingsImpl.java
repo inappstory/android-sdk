@@ -72,7 +72,7 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
                 );
             }
         });
-        core.contentLoader().storyDownloadManager().favoriteImages().clear();
+        core.contentHolder().favoriteItems().clear();
         core.contentLoader().storyDownloadManager().refreshLocals(ContentType.STORY);
         core.contentLoader().storyDownloadManager().refreshLocals(ContentType.UGC);
         core.contentLoader().storyDownloadManager().cleanTasks(false);
@@ -107,7 +107,7 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
             }
         });
 
-        core.contentLoader().storyDownloadManager().favoriteImages().clear();
+        core.contentHolder().favoriteItems().clear();
         core.contentLoader().storyDownloadManager().refreshLocals(ContentType.STORY);
         core.contentLoader().storyDownloadManager().refreshLocals(ContentType.UGC);
         core.contentLoader().storyDownloadManager().cleanTasks(false);

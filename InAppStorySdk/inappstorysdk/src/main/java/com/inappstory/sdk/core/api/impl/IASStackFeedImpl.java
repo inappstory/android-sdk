@@ -7,10 +7,12 @@ import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.IASStackFeed;
+import com.inappstory.sdk.core.dataholders.IListItemContent;
 import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.Feed;
 import com.inappstory.sdk.stories.api.models.Image;
+import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadFeedCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.stackfeed.IStackFeedActions;
@@ -78,10 +80,11 @@ public class IASStackFeedImpl implements IASStackFeed {
                                     stackFeedResult.error();
                                 } else {
                                     core.storyListCache().saveStoriesOpened(response.stories, ContentType.STORY);
-                                    core.contentLoader().storyDownloadManager().uploadingAdditional(
-                                            response.stories,
-                                            ContentType.STORY
-                                    );
+                                    for (IListItemContent story: response.stories) {
+                                        core.contentHolder().listsContent().setByIdAndType(
+                                                story, story.id(), ContentType.STORY
+                                        );
+                                    }
                                     final StackStoryObserver observer = new StackStoryObserver(
                                             core,
                                             response.stories,
