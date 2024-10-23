@@ -18,6 +18,10 @@ public class StoryTimelineManager {
     private long timerDuration;
     private boolean isActive;
 
+    public void setCurrentIndex(int currentIndex) {
+        this.currentIndex = currentIndex;
+    }
+
     public void startTimer(long timerStart, int currentIndex, long timerDuration) {
         this.currentIndex = currentIndex;
         this.timerStart = timerStart;

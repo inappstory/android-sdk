@@ -627,6 +627,7 @@ public class ReaderPageManager {
         if (this.slideIndex == slideIndex) {
             if (host != null)
                 host.slideLoadError();
+            timelineManager.setCurrentIndex(slideIndex);
         }
     }
 

@@ -249,7 +249,6 @@ public class StoriesViewManager {
         }
 
 
-
         @Override
         public void run() {
             StoriesViewManager viewManager = viewManagerWeakReference.get();
@@ -307,8 +306,6 @@ public class StoriesViewManager {
                 pageManager.getStoryType());
         if (slideInCache == 1) {
             slideInCache(service, story, index);
-        }  else if (slideInCache == -1) {
-            slideLoadError(index);
         } else {
             slideNotInCache(service, index);
         }
@@ -328,7 +325,7 @@ public class StoriesViewManager {
 
     private void slideNotInCache(InAppStoryService service, int index) {
         if (slideInCache == -1) {
-            pageManager.slideLoadError(index);
+            slideLoadError(index);
         } else {
             if (!service.isConnected()) {
                 if (CallbackManager.getInstance().getErrorCallback() != null) {
@@ -418,7 +415,7 @@ public class StoriesViewManager {
         if (readerScreen != null) {
             Size size = null;
             if (readerScreen instanceof StoriesDialogFragment) {
-                Rect rect = ((StoriesDialogFragment)readerScreen).screenRectangle;
+                Rect rect = ((StoriesDialogFragment) readerScreen).screenRectangle;
                 size = new Size(rect.width(), rect.height());
             }
             ContactDialogCreator contactDialogCreator = new ContactDialogCreator(
@@ -777,8 +774,10 @@ public class StoriesViewManager {
                 showRefreshHandler.post(showLoader);
             }
         } else {
-            clearShowLoader();
-            pageManager.host.storyLoadedSuccess();
+            if (data.action.equals("start")) {
+                clearShowLoader();
+                pageManager.host.storyLoadedSuccess();
+            }
         }
         if (data.action.equals("start")) {
             getPageManager().startSlideTimerFromJS(data.duration, data.currentTime, data.slideIndex);

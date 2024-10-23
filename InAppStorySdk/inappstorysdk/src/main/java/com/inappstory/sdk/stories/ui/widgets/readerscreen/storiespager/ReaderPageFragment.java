@@ -398,12 +398,14 @@ public class ReaderPageFragment extends Fragment {
 
     private void showLoaderContainerAnimated() {
         Log.e("hideLoader", "showLoaderContainerAnimated");
-        loaderContainer.setAlpha(1f);
+        loaderContainer.clearAnimation();
+        loaderContainer.animate().alpha(1f).setStartDelay(300).setDuration(300).start();
     }
 
     private void hideLoaderContainerAnimated() {
         Log.e("hideLoader", "hideLoaderContainerAnimated");
-        loaderContainer.setAlpha(0f);
+        loaderContainer.clearAnimation();
+        loaderContainer.animate().alpha(0f).setDuration(300).start();
     }
 
 
