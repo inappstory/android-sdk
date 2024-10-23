@@ -308,8 +308,6 @@ public class StoriesViewManager {
                 pageManager.getStoryType());
         if (slideInCache == 1) {
             slideInCache(service, story, index);
-        } else if (slideInCache == -1) {
-            slideLoadError(index);
         } else {
             slideNotInCache(service, index);
         }
@@ -329,7 +327,7 @@ public class StoriesViewManager {
 
     private void slideNotInCache(InAppStoryService service, int index) {
         if (slideInCache == -1) {
-            pageManager.slideLoadError(index);
+            slideLoadError(index);
         } else {
             if (!service.isConnected()) {
                 if (CallbackManager.getInstance().getErrorCallback() != null) {
@@ -779,8 +777,10 @@ public class StoriesViewManager {
                 showRefreshHandler.post(showLoader);
             }
         } else {
-            clearShowLoader();
-            pageManager.host.storyLoadedSuccess();
+            if (data.action.equals("start")) {
+                clearShowLoader();
+                pageManager.host.storyLoadedSuccess();
+            }
         }
         if (data.action.equals("start")) {
             getPageManager().startSlideTimerFromJS(data.duration, data.currentTime, data.slideIndex);

@@ -360,6 +360,12 @@ public class ReaderPageFragment extends Fragment {
     }
 
     public void storyLoadError() {
+        final StoriesContentFragment storiesContentFragment =
+                parentManager.getHost();
+        if (storiesContentFragment != null) {
+            storiesContentFragment.disableDrag(storyId, parentManager.storyType);
+            storiesContentFragment.enableClicksSlideChange();
+        }
         viewsHandler.post(new Runnable() {
             @Override
             public void run() {
@@ -372,6 +378,12 @@ public class ReaderPageFragment extends Fragment {
     }
 
     public void slideLoadError() {
+        final StoriesContentFragment storiesContentFragment =
+                parentManager.getHost();
+        if (storiesContentFragment != null) {
+            storiesContentFragment.disableDrag(storyId, parentManager.storyType);
+            storiesContentFragment.enableClicksSlideChange();
+        }
         viewsHandler.post(new Runnable() {
             @Override
             public void run() {
@@ -385,16 +397,14 @@ public class ReaderPageFragment extends Fragment {
 
     private void showLoaderContainerAnimated() {
         Log.e("hideLoader", "showLoaderContainerAnimated");
-        loaderContainer.setAlpha(1f);
-       // loaderContainer.clearAnimation();
-       // loaderContainer.animate().alpha(1f).setStartDelay(300).setDuration(300).start();
+        loaderContainer.clearAnimation();
+        loaderContainer.animate().alpha(1f).setStartDelay(300).setDuration(300).start();
     }
 
     private void hideLoaderContainerAnimated() {
         Log.e("hideLoader", "hideLoaderContainerAnimated");
-        loaderContainer.setAlpha(0f);
-      //  loaderContainer.clearAnimation();
-       // loaderContainer.animate().alpha(0f).setDuration(300).start();
+        loaderContainer.clearAnimation();
+        loaderContainer.animate().alpha(0f).setDuration(300).start();
     }
 
 
