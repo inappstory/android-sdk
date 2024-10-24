@@ -592,7 +592,7 @@ public class ReaderPageManager {
 
     public void storyLoadedInCache(IReaderContent story) {
         if (checkIfManagersIsNull()) return;
-        host.story = story;
+        host.story = (Story) story;
         setStoryInfo(story);
     }
 

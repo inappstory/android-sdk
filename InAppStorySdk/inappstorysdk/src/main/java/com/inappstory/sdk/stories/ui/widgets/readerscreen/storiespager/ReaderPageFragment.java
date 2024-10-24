@@ -179,14 +179,10 @@ public class ReaderPageFragment extends Fragment {
     }
 
 
-    IReaderContent story;
+    Story story;
 
     void setViews(View view) {
         if (InAppStoryService.getInstance() == null) return;
-
-        if (story == null) {
-
-        }
         if (timeline != null) {
             timeline.getTimelineManager().setSlidesCount(story.slidesCount());
         }
@@ -701,10 +697,16 @@ public class ReaderPageFragment extends Fragment {
         boolean storyIsEmpty = (story == null);
         InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
         if (inAppStoryManager != null && storyIsEmpty) {
-            story = inAppStoryManager.iasCore().contentHolder().readerContent().getByIdAndType(
+            story = (Story) inAppStoryManager.iasCore().contentHolder().listsContent().getByIdAndType(
                     storyId,
                     manager.getViewContentType()
             );
+            if (story == null) {
+                story = (Story) inAppStoryManager.iasCore().contentHolder().readerContent().getByIdAndType(
+                        storyId,
+                        manager.getViewContentType()
+                );
+            }
         }
         if (story != null) {
             loadIfStoryIsNotNull();
