@@ -7,6 +7,16 @@ import com.inappstory.sdk.stories.api.models.StatisticSendObject;
 
 public class DummyApiInterface implements ApiInterface {
     @Override
+    public Request getInAppMessages(Integer srcList, String fields, String expand) {
+        return new DummyRequest();
+    }
+
+    @Override
+    public Request getInAppMessage(String id, Integer srcList, String fields, String expand) {
+        return new DummyRequest();
+    }
+
+    @Override
     public Request getUgcStories(String f, String fields, String expand) {
         return new DummyRequest();
     }

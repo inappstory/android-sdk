@@ -5,6 +5,9 @@ import androidx.annotation.NonNull;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.UseIASCallback;
+import com.inappstory.sdk.core.dataholders.IContentWithStatus;
+import com.inappstory.sdk.core.dataholders.IListItemContent;
+import com.inappstory.sdk.core.dataholders.IListsContentHolder;
 import com.inappstory.sdk.core.dataholders.IReaderContentHolder;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.core.dataholders.IResource;
@@ -126,7 +129,11 @@ class SlidesDownloader {
     List<SlideTaskKey> secondPriority = new ArrayList<>();
 
     //adjacent - for next and prev story
-    boolean changePriority(ContentIdWithIndex current, List<ContentIdWithIndex> adjacents, ContentType type) {
+    boolean changePriority(
+            ContentIdWithIndex current,
+            List<ContentIdWithIndex> adjacents,
+            ContentType type
+    ) {
         synchronized (pageTasksLock) {
             for (int i = firstPriority.size() - 1; i >= 0; i--) {
                 if (!secondPriority.contains(firstPriority.get(i))) {
@@ -136,13 +143,13 @@ class SlidesDownloader {
             firstPriority.clear();
             int currentId = current.id();
             int currentIndex = current.index();
-            IReaderContentHolder readerContentHolder = core.contentHolder().readerContent();
-            IReaderContent currentStory = readerContentHolder.getByIdAndType(
+            IListsContentHolder readerContentHolder = core.contentHolder().listsContent();
+            IListItemContent currentStory = readerContentHolder.getByIdAndType(
                     currentId, type
             );
             if (currentStory == null) return false;
             ViewContentTaskKey storyTaskKey = new ViewContentTaskKey(currentId, type);
-            int sc = currentStory.actualSlidesCount();
+            int sc = currentStory.slidesCount();
             for (int i = 0; i < sc; i++) {
                 SlideTaskKey kv = new SlideTaskKey(storyTaskKey, i);
                 secondPriority.remove(kv);
@@ -157,20 +164,25 @@ class SlidesDownloader {
                 }
             }
             int ind = Math.min(firstPriority.size(), 2);
-            for (ContentIdWithIndex adjacent : adjacents) {
-                if (adjacent == null) continue;
-                IReaderContent adjacentStory = readerContentHolder.getByIdAndType(adjacent.id(), type);
-                ViewContentTaskKey adjacentTaskKey = new ViewContentTaskKey(adjacent.id(), type);
-                if (adjacent.index() < adjacentStory.actualSlidesCount() - 1) {
-                    SlideTaskKey nk = new SlideTaskKey(adjacentTaskKey, adjacent.index() + 1);
-                    secondPriority.remove(nk);
-                    firstPriority.add(ind, nk);
-                }
+            try {
+                for (ContentIdWithIndex adjacent : adjacents) {
+                    if (adjacent == null) continue;
+                    IListItemContent adjacentStory = readerContentHolder.getByIdAndType(adjacent.id(), type);
+                    ViewContentTaskKey adjacentTaskKey = new ViewContentTaskKey(adjacent.id(), type);
+                    if (adjacent.index() < adjacentStory.slidesCount() - 1) {
+                        SlideTaskKey nk = new SlideTaskKey(adjacentTaskKey, adjacent.index() + 1);
+                        secondPriority.remove(nk);
+                        firstPriority.add(ind, nk);
+                    }
 
-                SlideTaskKey ck = new SlideTaskKey(adjacentTaskKey, adjacent.index());
-                secondPriority.remove(ck);
-                firstPriority.add(ind, ck);
+                    SlideTaskKey ck = new SlideTaskKey(adjacentTaskKey, adjacent.index());
+                    secondPriority.remove(ck);
+                    firstPriority.add(ind, ck);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
+
         }
         return true;
     }
@@ -206,12 +218,12 @@ class SlidesDownloader {
     }
 
     void addStoryPages(ViewContentTaskKey viewContentTaskKey,
-                       IReaderContent IReaderContent,
+                       IReaderContent readerContent,
                        int loadType) throws Exception {
         synchronized (pageTasksLock) {
             int slidesCountToCache;
             if (loadType == 3) {
-                slidesCountToCache = IReaderContent.actualSlidesCount();
+                slidesCountToCache = readerContent.actualSlidesCount();
             } else {
                 slidesCountToCache = 2;
             }
@@ -220,7 +232,7 @@ class SlidesDownloader {
                 if (pageTasks.get(slideTaskKey) == null) {
                     pageTasks.put(
                             slideTaskKey,
-                            (new GenerateSlideTaskUseCase(core, IReaderContent, slideIndex))
+                            (new GenerateSlideTaskUseCase(core, readerContent, slideIndex))
                                     .generate()
                     );
                 }

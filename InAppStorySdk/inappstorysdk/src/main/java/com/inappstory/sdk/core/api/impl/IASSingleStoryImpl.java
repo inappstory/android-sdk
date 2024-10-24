@@ -54,6 +54,7 @@ public class IASSingleStoryImpl implements IASSingleStory {
             @Override
             public void getStory(final Story story, final String sessionId) {
                 if (story != null) {
+
                     core.contentLoader().storyDownloadManager().addCompletedStoryTask(story, ContentType.STORY);
                     openStoryInReader(story,
                             sessionId,

@@ -17,13 +17,13 @@ import java.util.Map;
 
 public class GenerateSlideTaskUseCase {
     private final IASCore core;
-    private final IReaderContent IReaderContentHolder;
+    private final IReaderContent readerContent;
     private final int index;
 
 
-    public GenerateSlideTaskUseCase(IASCore core, IReaderContent IReaderContent, int index) {
+    public GenerateSlideTaskUseCase(IASCore core, IReaderContent readerContent, int index) {
         this.core = core;
-        this.IReaderContentHolder = IReaderContent;
+        this.readerContent = readerContent;
         this.index = index;
     }
 
@@ -32,7 +32,7 @@ public class GenerateSlideTaskUseCase {
                 ((IASDataSettingsHolder) core.settingsAPI()).imagePlaceholdersWithSessionDefaults()
         );
         List<UrlWithAlter> urlWithAlters = new ArrayList<>();
-        List<String> plNames = IReaderContentHolder.placeholdersNames(index);
+        List<String> plNames = readerContent.placeholdersNames(index);
         for (String plName : plNames) {
             Pair<ImagePlaceholderValue, ImagePlaceholderValue> value =
                     imgPlaceholders.get(plName);
@@ -57,8 +57,8 @@ public class GenerateSlideTaskUseCase {
             }
         }
         return new SlideTask(
-                IReaderContentHolder.staticResources(index),
-                IReaderContentHolder.vodResources(index),
+                readerContent.staticResources(index),
+                readerContent.vodResources(index),
                 urlWithAlters
         );
     }

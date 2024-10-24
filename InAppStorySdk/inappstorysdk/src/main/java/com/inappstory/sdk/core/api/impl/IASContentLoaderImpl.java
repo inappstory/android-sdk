@@ -122,9 +122,9 @@ public class IASContentLoaderImpl implements IASContentLoader {
     }
 
     @Override
-    public void addVODResources(IReaderContent IReaderContent, int slideIndex) {
+    public void addVODResources(IReaderContent readerContent, int slideIndex) {
         List<IResource> resources = new ArrayList<>();
-        resources.addAll(IReaderContent.vodResources(slideIndex));
+        resources.addAll(readerContent.vodResources(slideIndex));
         for (IResource object : resources) {
             if (filesDownloadManager.getVodCacheJournal().getItem(object.getFileName()) == null) {
                 filesDownloadManager.getVodCacheJournal().putItem(new VODCacheJournalItem(

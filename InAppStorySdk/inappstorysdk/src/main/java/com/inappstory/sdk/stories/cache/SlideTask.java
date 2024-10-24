@@ -39,6 +39,9 @@ public class SlideTask {
     public String toString() {
         return "SlideTask{" +
                 ", loadType=" + loadType +
+                ", staticResources=" + staticResources.size() +
+                ", urlsWithAlter=" + urlsWithAlter.size() +
+                ", vodResources=" + vodResources.size() +
                 '}';
     }
 }

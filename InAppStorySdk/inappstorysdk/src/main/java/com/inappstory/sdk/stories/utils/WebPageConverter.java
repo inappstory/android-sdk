@@ -83,13 +83,13 @@ public class WebPageConverter {
 
     private String replaceImagePlaceholders(IASCore core,
                                             String innerWebData,
-                                            final IReaderContent IReaderContent,
+                                            final IReaderContent readerContent,
                                             final int index
     ) {
         final String[] newData = {innerWebData};
         Map<String, Pair<ImagePlaceholderValue, ImagePlaceholderValue>> imgPlaceholders =
                 ((IASDataSettingsHolder) core.settingsAPI()).imagePlaceholdersWithSessionDefaults();
-        Map<String, String> imgPlaceholderKeys = IReaderContent.placeholdersMap(index);
+        Map<String, String> imgPlaceholderKeys = readerContent.placeholdersMap(index);
         for (Map.Entry<String, String> entry : imgPlaceholderKeys.entrySet()) {
             String placeholderKey = entry.getKey();
             String placeholderName = entry.getValue();
@@ -157,7 +157,7 @@ public class WebPageConverter {
 
     public void replaceDataAndLoad(
             final String innerWebData,
-            final IReaderContent IReaderContent,
+            final IReaderContent readerContent,
             final int index,
             final WebPageConvertCallback callback
     ) {
@@ -165,10 +165,10 @@ public class WebPageConverter {
             @Override
             public void use(@NonNull IASCore core) {
                 String localData = innerWebData;
-                String newLayout = IReaderContent.layout();
-                localData = replaceStaticResources(core, localData, IReaderContent, index);
-                core.contentLoader().addVODResources(IReaderContent, index);
-                localData = replaceImagePlaceholders(core, localData, IReaderContent, index);
+                String newLayout = readerContent.layout();
+                localData = replaceStaticResources(core, localData, readerContent, index);
+                core.contentLoader().addVODResources(readerContent, index);
+                localData = replaceImagePlaceholders(core, localData, readerContent, index);
                 newLayout = replaceLayoutAssets(core, newLayout);
                 Pair<String, String> replaced = replacePlaceholders(core, localData, newLayout);
                 newLayout = replaced.second;

@@ -77,6 +77,7 @@ public class IASWebViewClient extends WebViewClient {
                 HashMap<String, String> newHeaders = new HashMap<>(currentHeaders);
                 newHeaders.put("Access-Control-Allow-Origin", "*");
                 response.setResponseHeaders(newHeaders);
+                return response;
             } catch (Exception e) {
                 InAppStoryService.createExceptionLog(e);
             }

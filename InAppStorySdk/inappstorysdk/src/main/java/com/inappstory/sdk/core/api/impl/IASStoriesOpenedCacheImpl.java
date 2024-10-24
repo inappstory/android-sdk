@@ -33,10 +33,11 @@ public class IASStoriesOpenedCacheImpl implements IASStoriesOpenedCache {
     }
 
     @Override
-    public void saveStoriesOpened(List<IListItemContent> stories, ContentType type) {
+    public void saveStoriesOpened(ContentType type) {
         String key = getLocalOpensKey(type);
         Set<String> opens = core.sharedPreferencesAPI().getStringSet(key);
         if (opens == null) opens = new HashSet<>();
+        List<IListItemContent> stories = core.contentHolder().listsContent().getByType(type);
         for (IListItemContent story : stories) {
             if (story.isOpened()) {
                 opens.add(Integer.toString(story.id()));

@@ -38,17 +38,6 @@ public class InAppMessageImpl implements InAppMessage {
     @SerializedName("campaign_name")
     public String campaignName;
 
-
-    @Override
-    public InAppMessage copy() {
-        return null;
-    }
-
-    @Override
-    public InAppMessage mergedCopy(InAppMessage comparedObject) {
-        return null;
-    }
-
     @Override
     public String layout() {
         return layout;
@@ -119,8 +108,108 @@ public class InAppMessageImpl implements InAppMessage {
     }
 
     @Override
+    public List<Integer> slidesShare() {
+        return null;
+    }
+
+    @Override
+    public String slideEventPayload(int slideIndex) {
+        return null;
+    }
+
+    @Override
+    public boolean checkIfEmpty() {
+        return false;
+    }
+
+    @Override
+    public int shareType(int slideIndex) {
+        return 0;
+    }
+
+    @Override
     public int id() {
         return id;
+    }
+
+    @Override
+    public String statTitle() {
+        return null;
+    }
+
+    @Override
+    public int slidesCount() {
+        return 0;
+    }
+
+    @Override
+    public String tags() {
+        return null;
+    }
+
+    @Override
+    public Map<String, Object> ugcPayload() {
+        return null;
+    }
+
+    @Override
+    public boolean hasFavorite() {
+        return false;
+    }
+
+    @Override
+    public boolean hasLike() {
+        return false;
+    }
+
+    @Override
+    public boolean hasShare() {
+        return false;
+    }
+
+    @Override
+    public boolean hasAudio() {
+        return false;
+    }
+
+    @Override
+    public boolean favorite() {
+        return false;
+    }
+
+    @Override
+    public void like(int like) {
+
+    }
+
+    @Override
+    public void favorite(boolean favorite) {
+
+    }
+
+    @Override
+    public int like() {
+        return 0;
+    }
+
+    @Override
+    public boolean hasSwipeUp() {
+        return false;
+    }
+
+    @Override
+    public boolean disableClose() {
+        return false;
+    }
+
+    @Override
+    public boolean isOpened() {
+        return false;
+    }
+
+    @Override
+    public void setOpened(boolean isOpened) {
+
     }
 
     @Override

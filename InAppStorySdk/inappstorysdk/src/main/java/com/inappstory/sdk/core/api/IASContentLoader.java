@@ -18,7 +18,7 @@ public interface IASContentLoader {
     void clearCache();
     void clearGames();
     void setCacheSizes();
-    void addVODResources(IReaderContent IReaderContent, int slideIndex);
+    void addVODResources(IReaderContent readerContent, int slideIndex);
     void runFreeSpaceCheck();
     FilesDownloader downloader();
 }

@@ -51,12 +51,10 @@ public class FavoriteItemsHolder implements IFavoriteItemsHolder {
                     break;
                 }
             }
-            if (newContentItem == null) {
+            if (index != -1) {
                 content.remove(index);
-            } else {
-                if (index != -1) {
-                    content.remove(index);
-                }
+            }
+            if (newContentItem != null) {
                 content.add(0, newContentItem);
             }
         }

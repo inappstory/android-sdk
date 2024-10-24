@@ -79,12 +79,12 @@ public class IASStackFeedImpl implements IASStackFeed {
                                 if (response == null || response.stories == null) {
                                     stackFeedResult.error();
                                 } else {
-                                    core.storyListCache().saveStoriesOpened(response.stories, ContentType.STORY);
                                     for (IListItemContent story: response.stories) {
                                         core.contentHolder().listsContent().setByIdAndType(
                                                 story, story.id(), ContentType.STORY
                                         );
                                     }
+                                    core.storyListCache().saveStoriesOpened(ContentType.STORY);
                                     final StackStoryObserver observer = new StackStoryObserver(
                                             core,
                                             response.stories,

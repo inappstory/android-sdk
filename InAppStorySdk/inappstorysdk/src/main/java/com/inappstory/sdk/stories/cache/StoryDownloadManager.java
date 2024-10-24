@@ -46,7 +46,6 @@ public class StoryDownloadManager {
 
     static final String EXPAND_STRING = "slides_html,slides_structure,layout,slides_duration,src_list,img_placeholder_src_list,slides_screenshot_share,slides_payload";
 
-    final Object storiesLock = new Object();
 
     public void getFullStoryByStringId(
             final GetStoryByIdCallback storyByIdCallback,
@@ -164,8 +163,6 @@ public class StoryDownloadManager {
     public void destroy() {
         storyDownloader.destroy();
         slidesDownloader.destroy();
-        getStoriesListByType(ContentType.UGC).clear();
-        getStoriesListByType(ContentType.STORY).clear();
         storyDownloader.cleanTasks();
         slidesDownloader.cleanTasks();
     }
@@ -176,8 +173,8 @@ public class StoryDownloadManager {
 
     public void cleanTasks(boolean cleanStories) {
         if (cleanStories) {
-            getStoriesListByType(ContentType.UGC).clear();
-            getStoriesListByType(ContentType.STORY).clear();
+            core.contentHolder().readerContent().clear();
+            core.contentHolder().listsContent().clear();
         }
         storyDownloader.cleanTasks();
         slidesDownloader.cleanTasks();
@@ -289,35 +286,6 @@ public class StoryDownloadManager {
         }
     }
 
-    @WorkerThread
-    public void uploadingAdditional(List<Story> storiesToAdd, ContentType type) {
-        List<Story> stories = getStoriesListByType(type);
-        for (Story story : storiesToAdd) {
-            if (story == null) continue;
-            if (!stories.contains(story))
-                stories.add(story);
-            else {
-                Story tmp = story;
-                int ind = stories.indexOf(story);
-                if (ind >= 0) {
-                    Story byInd = stories.get(ind);
-                    if (tmp.getPages() == null & byInd.getPages() != null) {
-                        tmp.pages(byInd.pages);
-                    }
-                    if (tmp.layout() == null & byInd.layout() != null) {
-                        tmp.layout(byInd.layout());
-                    }
-                    if (tmp.srcList == null & stories.get(ind).srcList != null) {
-                        tmp.srcList = new ArrayList<>();
-                        tmp.srcList.addAll(stories.get(ind).srcList);
-                    }
-                    tmp.isOpened = tmp.isOpened || stories.get(ind).isOpened;
-                }
-                stories.set(ind, tmp);
-            }
-        }
-    }
-
     public List<Story> getStoriesListByType(ContentType type) {
         if (type == ContentType.STORY) {
             return this.stories;
@@ -348,6 +316,8 @@ public class StoryDownloadManager {
             @Override
             public void onDownload(IReaderContent story, int loadType, ContentType type) {
                 updateListItem(story, type);
+                if (story != null)
+                    core.contentHolder().readerContent().setByIdAndType(story, story.id(), type);
                 storyLoaded(story, type);
                 try {
                     slidesDownloader.addStoryPages(
@@ -397,18 +367,6 @@ public class StoryDownloadManager {
         storyDownloader.reload(current, new ArrayList<ContentIdWithIndex>(), type);
     }
 
-
-    public Story getStoryById(int id, ContentType type) {
-        List<Story> stories = getStoriesListByType(type);
-        synchronized (storiesLock) {
-            for (Story story : stories) {
-                if (story == null) continue;
-                if (story.id == id) return story;
-            }
-        }
-        return null;
-    }
-
     private void updateListItem(final IReaderContent readerContent, ContentType type) {
         if (!(readerContent instanceof Story)) return;
         Story story = (Story) readerContent;
@@ -433,28 +391,13 @@ public class StoryDownloadManager {
     private SlidesDownloader slidesDownloader;
 
     public void addCompletedStoryTask(IReaderContent story, ContentType type) {
-        boolean noStory = true;
-        List<Story> stories = getStoriesListByType(type);
-        synchronized (storiesLock) {
-            for (Story localStory : stories) {
-                if (localStory == null) continue;
-                if (localStory.id == story.id) {
-                    noStory = false;
-                    break;
-                }
-            }
-            if (noStory) stories.add(story);
-        }
+        core.contentHolder().readerContent().setByIdAndType(story, story.id(), type);
         if (storyDownloader != null) {
-            storyDownloader.addCompletedStoryTask(story.id, type);
-            Story local = getStoryById(story.id, type);
-            story.isOpened = local.isOpened;
-            stories.set(stories.indexOf(local), story);
-            setStory(story, story.id, type);
+            storyDownloader.addCompletedStoryTask(story.id(), type);
             storyLoaded(story, type);
             try {
                 slidesDownloader.addStoryPages(
-                        new ViewContentTaskKey(story.id, type),
+                        new ViewContentTaskKey(story.id(), type),
                         story,
                         3
                 );
@@ -471,7 +414,7 @@ public class StoryDownloadManager {
             @Override
             public void onSuccess(final List<Story> response, Object... args) {
                 List<Integer> ids = new ArrayList<>();
-                for (IListItemContent story: response) {
+                for (IListItemContent story : response) {
                     if (story == null) continue;
                     core.contentHolder().listsContent().setByIdAndType(
                             story,
@@ -480,10 +423,7 @@ public class StoryDownloadManager {
                     );
                     ids.add(story.id());
                 }
-                setLocalsOpened(
-                        core.contentHolder().listsContent().getByType(ContentType.UGC),
-                        ContentType.UGC
-                );
+                setLocalsOpened(ContentType.UGC);
                 if (callback != null) {
                     callback.storiesLoaded(ids);
                 }
@@ -512,29 +452,17 @@ public class StoryDownloadManager {
             public void onSuccess(final List<Story> response, Object... args) {
 
                 String feedId = null;
-                final ArrayList<Story> resStories = new ArrayList<>();
-                for (int i = 0; i < Math.min(response.size(), 4); i++) {
-                    resStories.add(response.get(i));
+                final ContentType type = ContentType.STORY;
+                final IContentHolder contentHolder = core.contentHolder();
+                for (int i = 0; i < response.size(); i++) {
+                    IListItemContent listItemContent = response.get(i);
+                    contentHolder.listsContent().setByIdAndType(
+                            listItemContent, listItemContent.id(), type
+                    );
+                    contentHolder.like(listItemContent.id(), type, listItemContent.like());
+                    contentHolder.favorite(listItemContent.id(), type, listItemContent.favorite());
                 }
-                setLocalsOpened(response, ContentType.STORY);
-                uploadingAdditional(response, ContentType.STORY);
-                List<Story> newStories = new ArrayList<>();
-                List<Story> stories = getStoriesListByType(ContentType.STORY);
-                synchronized (storiesLock) {
-                    for (Story story : response) {
-                        if (story == null) continue;
-                        if (!stories.contains(story)) {
-                            newStories.add(story);
-                        }
-                    }
-                }
-                if (newStories.size() > 0) {
-                    try {
-                        uploadingAdditional(newStories, ContentType.STORY);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
+                setLocalsOpened(ContentType.STORY);
                 boolean loadFav = loadFavorite;
                 if (args != null && args.length > 0) {
                     loadFav &= (boolean) args[0];
@@ -550,22 +478,28 @@ public class StoryDownloadManager {
                         @Override
                         public void onSuccess(List<Story> response2) {
                             core.statistic().profiling().setReady(loadFavUID);
-                            IContentHolder contentHolder = core.contentHolder();
-                            contentHolder.clearAllFavorites(ContentType.STORY);
-                            for (Story story : response2) {
+                            contentHolder.clearAllFavorites(type);
+                            for (int i = 0; i < response2.size(); i++) {
+                                IListItemContent listItemContent = response2.get(i);
+                                contentHolder.listsContent().setByIdAndType(
+                                        listItemContent, listItemContent.id(), type
+                                );
+                                contentHolder.like(listItemContent.id(), type, listItemContent.like());
                                 contentHolder.favoriteItems().setByIdAndType(
                                         new StoryFavoriteImage(
-                                                story.id,
-                                                story.imageCoverByQuality(Image.QUALITY_MEDIUM),
-                                                story.backgroundColor
+                                                listItemContent.id(),
+                                                listItemContent.imageCoverByQuality(Image.QUALITY_MEDIUM),
+                                                listItemContent.backgroundColor()
                                         ),
-                                        story.id(),
+                                        listItemContent.id(),
                                         ContentType.STORY
                                 );
-                                contentHolder.favorite(story.id(), ContentType.STORY, true);
+                                contentHolder.favorite(listItemContent.id(), type, true);
                             }
+                            setLocalsOpened(ContentType.STORY);
                             if (response2.size() > 0) {
-                                setLocalsOpened(response2, ContentType.STORY);
+
+
                                 if (callback != null) {
                                     List<Integer> ids = new ArrayList<>();
                                     for (Story story : response) {
@@ -638,25 +572,17 @@ public class StoryDownloadManager {
 
             @Override
             public void onSuccess(final List<Story> response, Object... args) {
-                uploadingAdditional(response, ContentType.STORY);
-                List<Story> newStories = new ArrayList<>();
-                List<Story> stories = getStoriesListByType(ContentType.STORY);
-                synchronized (storiesLock) {
-                    for (Story story : response) {
-                        if (story == null) continue;
-                        if (!stories.contains(story)) {
-                            newStories.add(story);
-                        }
-                    }
+                final ContentType type = ContentType.STORY;
+                final IContentHolder contentHolder = core.contentHolder();
+                for (int i = 0; i < response.size(); i++) {
+                    IListItemContent listItemContent = response.get(i);
+                    contentHolder.listsContent().setByIdAndType(
+                            listItemContent, listItemContent.id(), type
+                    );
+                    contentHolder.like(listItemContent.id(), type, listItemContent.like());
+                    contentHolder.favorite(listItemContent.id(), type, listItemContent.favorite());
                 }
-                if (newStories.size() > 0) {
-                    try {
-                        setLocalsOpened(newStories, ContentType.STORY);
-                        uploadingAdditional(newStories, ContentType.STORY);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
+                setLocalsOpened(ContentType.STORY);
                 if (callback != null) {
                     List<Integer> ids = new ArrayList<>();
                     for (Story story : response) {
@@ -681,23 +607,16 @@ public class StoryDownloadManager {
         }
     }
 
-
     public void refreshLocals(ContentType type) {
-        List<Story> lStories = new ArrayList<>();
-        List<Story> stories = getStoriesListByType(type);
-        synchronized (storiesLock) {
-            lStories.addAll(stories);
+        List<IListItemContent> listContent = core.contentHolder().listsContent().getByType(type);
+        for (IListItemContent listItemContent : listContent) {
+            listItemContent.setOpened(false);
         }
-        synchronized (storiesLock) {
-            for (Story story : lStories) {
-                story.isOpened = false;
-            }
-            setLocalsOpened(lStories, type);
-        }
+        setLocalsOpened(type);
     }
 
-    void setLocalsOpened(List<IListItemContent> response, ContentType type) {
-        core.storyListCache().saveStoriesOpened(response, type);
+    void setLocalsOpened(ContentType type) {
+        core.storyListCache().saveStoriesOpened(type);
     }
 
     private List<Story> stories = new ArrayList<>();

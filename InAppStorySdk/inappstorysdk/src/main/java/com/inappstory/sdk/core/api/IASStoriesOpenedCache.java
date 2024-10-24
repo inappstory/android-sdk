@@ -11,7 +11,7 @@ public interface IASStoriesOpenedCache {
 
     void clearLocalOpensKey();
 
-    void saveStoriesOpened(final List<IListItemContent> stories, final ContentType type);
+    void saveStoriesOpened(final ContentType type);
 
     void saveStoryOpened(final int id, final ContentType type);
 }
