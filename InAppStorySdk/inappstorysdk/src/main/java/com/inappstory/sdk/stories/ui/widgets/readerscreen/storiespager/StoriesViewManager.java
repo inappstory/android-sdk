@@ -16,7 +16,6 @@ import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.UseIASCallback;
-import com.inappstory.sdk.core.dataholders.IListItemContent;
 import com.inappstory.sdk.core.dataholders.IReaderContent;
 import com.inappstory.sdk.core.ui.screens.ShareProcessHandler;
 import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenData;
@@ -35,7 +34,6 @@ import com.inappstory.sdk.network.jsapiclient.JsApiClient;
 import com.inappstory.sdk.network.jsapiclient.JsApiResponseCallback;
 import com.inappstory.sdk.network.models.Response;
 import com.inappstory.sdk.share.IShareCompleteListener;
-import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ShowSlideCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
@@ -300,7 +298,7 @@ public class StoriesViewManager {
         ISessionHolder sessionHolder = core.sessionManager().getSession();
         if (sessionHolder.checkIfSessionAssetsIsReadySync()) {
             innerLoad(story);
-            pageManager.slideLoadedInCache(index, true);
+            pageManager.slideLoadSuccess(index, true);
         } else {
             slideNotInCache(index);
         }

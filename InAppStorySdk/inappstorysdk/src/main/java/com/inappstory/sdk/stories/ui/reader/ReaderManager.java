@@ -29,7 +29,6 @@ import com.inappstory.sdk.game.cache.SessionAssetsIsReadyCallback;
 import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.stories.api.models.ContentIdWithIndex;
 import com.inappstory.sdk.stories.api.models.ContentType;
-import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ShowStoryCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
@@ -304,7 +303,6 @@ public class ReaderManager {
                 storyId + "",
                 appearanceManager,
                 null,
-                contentType,
                 slideIndex,
                 true,
                 SourceType.SINGLE,
@@ -749,6 +747,6 @@ public class ReaderManager {
 
     public void slideLoadedInCache(int storyId, int slideIndex) {
         ReaderPageManager pageManager = getSubscriberByStoryId(storyId);
-        if (pageManager != null) pageManager.slideLoadedInCache(slideIndex);
+        if (pageManager != null) pageManager.slideLoadSuccess(slideIndex);
     }
 }

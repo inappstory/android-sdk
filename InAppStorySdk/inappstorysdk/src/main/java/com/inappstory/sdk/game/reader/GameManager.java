@@ -240,7 +240,6 @@ public class GameManager {
                         options.openStory.id,
                         AppearanceManager.getCommonInstance(),
                         null,
-                        ContentType.STORY,
                         0,
                         true,
                         SourceType.SINGLE,

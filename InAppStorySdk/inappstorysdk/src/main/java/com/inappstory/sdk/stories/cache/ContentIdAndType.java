@@ -4,8 +4,8 @@ import com.inappstory.sdk.stories.api.models.ContentType;
 
 import java.util.Objects;
 
-public class ViewContentTaskKey {
-    public ViewContentTaskKey(int contentId, ContentType contentType) {
+public class ContentIdAndType {
+    public ContentIdAndType(int contentId, ContentType contentType) {
         this.contentId = contentId;
         this.contentType = contentType;
     }
@@ -17,7 +17,7 @@ public class ViewContentTaskKey {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        ViewContentTaskKey that = (ViewContentTaskKey) o;
+        ContentIdAndType that = (ContentIdAndType) o;
         return contentId == that.contentId && contentType == that.contentType;
     }
 

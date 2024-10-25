@@ -45,8 +45,6 @@ import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
-import com.inappstory.sdk.core.dataholders.IListItemContent;
-import com.inappstory.sdk.core.dataholders.IReaderContent;
 import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryScreen;
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenAppearance;
 import com.inappstory.sdk.stories.api.models.Story;
@@ -721,7 +719,7 @@ public class ReaderPageFragment extends Fragment {
     void loadIfStoryIsNotNull() {
         manager.setSlideIndex(parentManager.getByIdAndIndex(storyId).index());
         setViews(getView());
-        manager.storyLoadedInCache(story);
+        manager.contentLoadSuccess(story);
     }
 
     @Override

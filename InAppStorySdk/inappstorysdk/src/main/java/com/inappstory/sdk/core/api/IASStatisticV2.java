@@ -2,7 +2,7 @@ package com.inappstory.sdk.core.api;
 
 import java.util.List;
 
-public interface IASStatisticV2 extends Disabled {
+public interface IASStatisticV2 extends StatDisabled {
     boolean disabled();
     void cleanTasks();
     void pauseStoryEvent(boolean withBg);

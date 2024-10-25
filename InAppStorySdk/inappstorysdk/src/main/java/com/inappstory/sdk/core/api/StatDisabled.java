@@ -1,6 +1,6 @@
 package com.inappstory.sdk.core.api;
 
-public interface Disabled {
+public interface StatDisabled {
     boolean disabled();
     void disabled(boolean disabled);
 }

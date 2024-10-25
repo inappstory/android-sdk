@@ -11,14 +11,14 @@ import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.IASStatisticV1;
 import com.inappstory.sdk.core.api.UseIASCallback;
-import com.inappstory.sdk.core.dataholders.IListItemContent;
 import com.inappstory.sdk.core.dataholders.IReaderContent;
+import com.inappstory.sdk.core.ui.screens.IReaderContentPageViewModel;
 import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.StoryLinkObject;
-import com.inappstory.sdk.stories.cache.ViewContentTaskKey;
+import com.inappstory.sdk.stories.cache.ContentIdAndType;
 import com.inappstory.sdk.stories.managers.TimerManager;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.CallToActionCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickAction;
@@ -38,7 +38,7 @@ import com.inappstory.sdk.utils.StringsUtils;
 import java.util.Map;
 import java.util.Objects;
 
-public class ReaderPageManager {
+public class ReaderPageManager implements IReaderContentPageViewModel {
 
 
     StoryTimelineManager timelineManager;
@@ -47,9 +47,9 @@ public class ReaderPageManager {
     TimerManager timerManager;
     ReaderPageFragment host;
 
-    public boolean isCorrectSubscriber(ViewContentTaskKey viewContentTaskKey) {
-        return getStoryId() == viewContentTaskKey.contentId &&
-                getViewContentType() == viewContentTaskKey.contentType;
+    public boolean isCorrectSubscriber(ContentIdAndType contentIdAndType) {
+        return getStoryId() == contentIdAndType.contentId &&
+                getViewContentType() == contentIdAndType.contentType;
     }
 
     private final IASCore core;
@@ -536,11 +536,7 @@ public class ReaderPageManager {
     }
 
 
-    public void slideLoadedInCache(int index) {
-        slideLoadedInCache(index, false);
-    }
-
-    public void slideLoadedInCache(int index, boolean alreadyLoaded) {
+    public void slideLoadSuccess(int index, boolean alreadyLoaded) {
         if (slideIndex == index) {
             if (checkIfManagersIsNull()) return;
             webViewManager.storyLoaded(storyId, index, alreadyLoaded);
@@ -578,11 +574,19 @@ public class ReaderPageManager {
             host.storyLoadStart();
     }
 
-    public void storyLoadError() {
+    @Override
+    public void contentLoadError() {
         if (host != null)
             host.storyLoadError();
     }
 
+
+    @Override
+    public void slideLoadSuccess(int index) {
+        slideLoadSuccess(index, false);
+    }
+
+    @Override
     public void slideLoadError(int slideIndex) {
         if (this.slideIndex == slideIndex) {
             if (host != null)
@@ -590,10 +594,18 @@ public class ReaderPageManager {
         }
     }
 
-    public void storyLoadedInCache(IReaderContent story) {
+    @Override
+    public void contentLoadSuccess(IReaderContent story) {
         if (checkIfManagersIsNull()) return;
         host.story = (Story) story;
         setStoryInfo(story);
     }
+
+    @Override
+    public ContentIdAndType contentIdAndType() {
+        return new ContentIdAndType(storyId, getViewContentType());
+    }
+
+
 
 }

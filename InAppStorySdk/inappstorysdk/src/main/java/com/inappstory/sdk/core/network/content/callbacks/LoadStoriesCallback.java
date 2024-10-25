@@ -1,4 +1,4 @@
-package com.inappstory.sdk.stories.api.models.callbacks;
+package com.inappstory.sdk.core.network.content.callbacks;
 
 import java.util.List;
 

@@ -13,6 +13,8 @@ import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.UseIASCallback;
+import com.inappstory.sdk.core.dataholders.IListItemContent;
+import com.inappstory.sdk.core.dataholders.IReaderContent;
 import com.inappstory.sdk.core.utils.ConnectionCheck;
 import com.inappstory.sdk.core.utils.ConnectionCheckCallback;
 import com.inappstory.sdk.network.ApiSettings;
@@ -43,15 +45,11 @@ class StoryDownloader {
 
     StoryDownloader(
             @NonNull IASCore core,
-            DownloadStoryCallback callback,
-            StoryDownloadManager manager
+            DownloadStoryCallback callback
     ) {
         this.core = core;
         this.callback = callback;
-        this.manager = manager;
     }
-
-    StoryDownloadManager manager;
 
 
     private final LoopedExecutor loopedExecutor = new LoopedExecutor(100, 100);
@@ -63,11 +61,11 @@ class StoryDownloader {
     private DownloadStoryCallback callback;
 
     private final Object storyTasksLock = new Object();
-    private HashMap<ViewContentTaskKey, StoryTaskWithPriority> storyTasks = new HashMap<>();
+    private HashMap<ContentIdAndType, StoryTaskWithPriority> storyTasks = new HashMap<>();
 
     void addCompletedStoryTask(int storyId, ContentType type) {
         synchronized (storyTasksLock) {
-            storyTasks.put(new ViewContentTaskKey(storyId, type), new StoryTaskWithPriority(-1, 3));
+            storyTasks.put(new ContentIdAndType(storyId, type), new StoryTaskWithPriority(-1, 3));
         }
     }
 
@@ -84,26 +82,43 @@ class StoryDownloader {
         loopedExecutor.shutdown();
     }
 
-    ArrayList<ViewContentTaskKey> firstPriority = new ArrayList<>();
-    ArrayList<ViewContentTaskKey> secondPriority = new ArrayList<>();
+    ArrayList<ContentIdAndType> firstPriority = new ArrayList<>();
+    ArrayList<ContentIdAndType> secondPriority = new ArrayList<>();
 
-    void changePriority(ViewContentTaskKey storyId, List<ContentIdWithIndex> addIds, ContentType type) {
+    void changePriority(ContentIdAndType storyId, List<ContentIdWithIndex> addIds, ContentType type) {
         secondPriority.remove(storyId);
         for (ContentIdWithIndex contentId : addIds) {
-            ViewContentTaskKey key = new ViewContentTaskKey(contentId.id(), type);
+            ContentIdAndType key = new ContentIdAndType(contentId.id(), type);
             secondPriority.remove(key);
         }
-        for (ViewContentTaskKey id : firstPriority) {
+        for (ContentIdAndType id : firstPriority) {
             if (!secondPriority.contains(id))
                 secondPriority.add(id);
         }
         firstPriority.clear();
         firstPriority.add(storyId);
         for (ContentIdWithIndex contentId : addIds) {
-            ViewContentTaskKey key = new ViewContentTaskKey(contentId.id(), type);
+            ContentIdAndType key = new ContentIdAndType(contentId.id(), type);
             firstPriority.add(key);
         }
 
+    }
+
+
+    private void updateListItem(final IReaderContent readerContent, ContentType type) {
+        if (!(readerContent instanceof Story)) return;
+        Story story = (Story) readerContent;
+        IListItemContent listItemContent = core.contentHolder()
+                .listsContent().getByIdAndType(readerContent.id(), type);
+        if (listItemContent == null) {
+            listItemContent = story;
+            core.contentHolder().listsContent().setByIdAndType(listItemContent,
+                    readerContent.id(),
+                    type
+            );
+        } else {
+            listItemContent.setOpened(listItemContent.isOpened() || story.isOpened());
+        }
     }
 
     void addStoryTask(
@@ -113,8 +128,8 @@ class StoryDownloader {
     ) {
         synchronized (storyTasksLock) {
             if (storyTasks == null) storyTasks = new HashMap<>();
-            for (ViewContentTaskKey viewContentTaskKey : storyTasks.keySet()) {
-                StoryTaskWithPriority storyTaskWithPriority = storyTasks.get(viewContentTaskKey);
+            for (ContentIdAndType contentIdAndType : storyTasks.keySet()) {
+                StoryTaskWithPriority storyTaskWithPriority = storyTasks.get(contentIdAndType);
                 if (storyTaskWithPriority != null &&
                         storyTaskWithPriority.loadType > 0 &&
                         storyTaskWithPriority.loadType != 3 &&
@@ -124,7 +139,7 @@ class StoryDownloader {
                 }
             }
             for (ContentIdWithIndex storyIntKey : addIds) {
-                ViewContentTaskKey key = new ViewContentTaskKey(storyIntKey.id(), type);
+                ContentIdAndType key = new ContentIdAndType(storyIntKey.id(), type);
                 StoryTaskWithPriority task = storyTasks.get(key);
                 if (task != null) {
                     if (task.loadType != 3 &&
@@ -136,7 +151,7 @@ class StoryDownloader {
                     storyTasks.put(key, st);
                 }
             }
-            ViewContentTaskKey keyByStoryId = new ViewContentTaskKey(current.id(), type);
+            ContentIdAndType keyByStoryId = new ContentIdAndType(current.id(), type);
             StoryTaskWithPriority taskByStoryId = storyTasks.get(keyByStoryId);
             if (taskByStoryId != null) {
                 if (taskByStoryId.loadType != 3) {
@@ -164,16 +179,16 @@ class StoryDownloader {
     }
 
 
-    private ViewContentTaskKey getMaxPriorityStoryTaskKey() throws Exception {
+    private ContentIdAndType getMaxPriorityStoryTaskKey() throws Exception {
         synchronized (storyTasksLock) {
             if (storyTasks == null || storyTasks.size() == 0) return null;
             if (firstPriority == null || secondPriority == null) return null;
-            for (ViewContentTaskKey key : firstPriority) {
+            for (ContentIdAndType key : firstPriority) {
                 if (getStoryLoadType(key) != 1 && getStoryLoadType(key) != 4)
                     continue;
                 return key;
             }
-            for (ViewContentTaskKey key : secondPriority) {
+            for (ContentIdAndType key : secondPriority) {
                 if (getStoryLoadType(key) != 1 && getStoryLoadType(key) != 4)
                     continue;
                 return key;
@@ -182,12 +197,12 @@ class StoryDownloader {
         }
     }
 
-    void setStoryLoadType(ViewContentTaskKey key, int loadType) {
+    void setStoryLoadType(ContentIdAndType key, int loadType) {
         if (!storyTasks.containsKey(key)) return;
         Objects.requireNonNull(storyTasks.get(key)).loadType = loadType;
     }
 
-    int getStoryLoadType(ViewContentTaskKey key) {
+    int getStoryLoadType(ContentIdAndType key) {
         if (!storyTasks.containsKey(key)) return -5;
         return Objects.requireNonNull(storyTasks.get(key)).loadType;
     }
@@ -195,7 +210,7 @@ class StoryDownloader {
 
     void reload(ContentIdWithIndex current, List<ContentIdWithIndex> addIds, ContentType type) {
         synchronized (storyTasksLock) {
-            ViewContentTaskKey key = new ViewContentTaskKey(current.id(), type);
+            ContentIdAndType key = new ContentIdAndType(current.id(), type);
             if (storyTasks == null) storyTasks = new HashMap<>();
             storyTasks.remove(key);
         }
@@ -203,7 +218,7 @@ class StoryDownloader {
     }
 
 
-    private void loadStoryError(final ViewContentTaskKey key) {
+    private void loadStoryError(final ContentIdAndType key) {
         core.callbacksAPI().useCallback(IASCallbackType.ERROR,
                 new UseIASCallback<ErrorCallback>() {
                     @Override
@@ -229,7 +244,7 @@ class StoryDownloader {
 
         @Override
         public void run() {
-            ViewContentTaskKey tKey = null;
+            ContentIdAndType tKey = null;
             try {
                 tKey = getMaxPriorityStoryTaskKey();
             } catch (Exception e) {
@@ -239,7 +254,7 @@ class StoryDownloader {
                 loopedExecutor.freeExecutor();
                 return;
             }
-            final ViewContentTaskKey key = tKey;
+            final ContentIdAndType key = tKey;
             synchronized (storyTasksLock) {
                 if (getStoryLoadType(key) == 4) {
                     setStoryLoadType(key, 5);
@@ -270,7 +285,7 @@ class StoryDownloader {
     };
 
 
-    void loadStoryResult(ViewContentTaskKey key, Response response) {
+    void loadStoryResult(ContentIdAndType key, Response response) {
         if (response.body != null) {
             Story story = JsonParser.fromJson(response.body, Story.class);
             int loadType;
@@ -285,6 +300,11 @@ class StoryDownloader {
                 secondPriority.remove(key);
             }
             if (story != null) {
+                updateListItem(story, key.contentType);
+                core.contentHolder().readerContent().setByIdAndType(
+                        story, story.id(),
+                        key.contentType
+                );
                 if (callback != null) {
                     callback.onDownload(story, loadType, key.contentType);
                 }
@@ -296,8 +316,7 @@ class StoryDownloader {
     }
 
 
-    void loadStory(ViewContentTaskKey key) {
-
+    void loadStory(ContentIdAndType key) {
         try {
             String storyUID;
             Response response;
@@ -344,7 +363,7 @@ class StoryDownloader {
     }
 
 
-    public void generateCommonLoadListError(final String feed) {
+    private void generateCommonLoadListError(final String feed) {
         core.callbacksAPI().useCallback(
                 IASCallbackType.ERROR,
                 new UseIASCallback<ErrorCallback>() {
@@ -546,18 +565,13 @@ class StoryDownloader {
     }
 
     private void closeSessionIf424(final String sessionId) {
-        InAppStoryManager.useCore(new UseIASCoreCallback() {
-            @Override
-            public void use(@NonNull IASCore core) {
-                IASDataSettingsHolder dataSettingsHolder = (IASDataSettingsHolder) core.settingsAPI();
-                core.sessionManager().closeSession(
-                        true,
-                        false,
-                        dataSettingsHolder.lang(),
-                        dataSettingsHolder.userId(),
-                        sessionId
-                );
-            }
-        });
+        IASDataSettingsHolder dataSettingsHolder = (IASDataSettingsHolder) core.settingsAPI();
+        core.sessionManager().closeSession(
+                true,
+                false,
+                dataSettingsHolder.lang(),
+                dataSettingsHolder.userId(),
+                sessionId
+        );
     }
 }

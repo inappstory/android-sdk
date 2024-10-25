@@ -4,9 +4,9 @@ import java.util.Objects;
 
 public class SlideTaskKey {
 
-    public SlideTaskKey(ViewContentTaskKey viewContentTaskKey,
+    public SlideTaskKey(ContentIdAndType contentIdAndType,
                         Integer index) {
-        this.viewContentTaskKey = viewContentTaskKey;
+        this.contentIdAndType = contentIdAndType;
         this.index = index;
     }
 
@@ -16,23 +16,23 @@ public class SlideTaskKey {
         if (o == null || getClass() != o.getClass()) return false;
         SlideTaskKey that = (SlideTaskKey) o;
         return Objects.equals(index, that.index) &&
-                Objects.equals(viewContentTaskKey, that.viewContentTaskKey);
+                Objects.equals(contentIdAndType, that.contentIdAndType);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(viewContentTaskKey.contentId, index, viewContentTaskKey.contentType);
+        return Objects.hash(contentIdAndType.contentId, index, contentIdAndType.contentType);
     }
 
     @Override
     public String toString() {
         return "SlideTaskData{" +
-                "viewContentId=" + viewContentTaskKey.contentId +
+                "viewContentId=" + contentIdAndType.contentId +
                 ", index=" + index +
-                ", contentType=" + viewContentTaskKey.contentType +
+                ", contentType=" + contentIdAndType.contentType +
                 '}';
     }
 
-    public ViewContentTaskKey viewContentTaskKey;
+    public ContentIdAndType contentIdAndType;
     public Integer index;
 }

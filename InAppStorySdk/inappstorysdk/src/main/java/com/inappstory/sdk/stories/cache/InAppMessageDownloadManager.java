@@ -36,36 +36,6 @@ public class InAppMessageDownloadManager {
     }
 
     public void getInAppMessages() {
-        core.sessionManager().useOrOpenSession(
-                new OpenSessionCallback() {
-                    @Override
-                    public void onSuccess(String sessionId) {
-                        core.network().enqueue(
-                                core.network().getApi().getInAppMessages(1, null, null),
-                                new NetworkCallback<InAppMessageFeed>() {
-                                    @Override
-                                    public void onSuccess(InAppMessageFeed inAppMessageFeed) {
-                                        if (inAppMessageFeed == null) {
-                                            return;
-                                        }
-                                        synchronized (messagesLock) {
-                                            currentMessages.addAll(inAppMessageFeed.messages());
-                                        }
-                                    }
 
-                                    @Override
-                                    public Type getType() {
-                                        return InAppMessageFeed.class;
-                                    }
-                                }
-                        );
-                    }
-
-                    @Override
-                    public void onError() {
-
-                    }
-                }
-        );
     }
 }

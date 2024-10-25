@@ -12,6 +12,7 @@ import com.inappstory.sdk.core.ui.screens.launcher.ILaunchScreenCallback;
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenAppearance;
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenData;
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenStrategy;
+import com.inappstory.sdk.core.network.content.usecase.StoryByStringIdUseCase;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.callbacks.GetStoryByIdCallback;
@@ -49,60 +50,71 @@ public class IASSingleStoryImpl implements IASSingleStory {
             callback.alreadyShown();
             return;
         }
+        new StoryByStringIdUseCase(core).get(
+                storyId,
+                new GetStoryByIdCallback() {
+                    @Override
+                    public void getStory(final Story story, final String sessionId) {
+                        if (story != null) {
+                            core.contentHolder().readerContent().setByIdAndType(story, story.id(), ContentType.STORY);
+                            core.contentLoader().storyDownloadManager().addCompletedStoryTask(story, ContentType.STORY);
+                            openStoryInReader(story,
+                                    sessionId,
+                                    context,
+                                    appearanceManager,
+                                    callback,
+                                    0,
+                                    ContentType.STORY,
+                                    SourceType.SINGLE,
+                                    ShowStory.ACTION_OPEN,
+                                    false
+                            );
+                        } else {
+                            if (callback != null) callback.onError();
+                        }
+                    }
 
-        core.contentLoader().storyDownloadManager().getFullStoryByStringId(new GetStoryByIdCallback() {
-            @Override
-            public void getStory(final Story story, final String sessionId) {
-                if (story != null) {
+                    @Override
+                    public void loadError(int type) {
+                        if (type == -2) {
+                            if (callback != null) callback.alreadyShown();
+                        } else {
+                            if (callback != null) callback.onError();
+                        }
+                    }
 
-                    core.contentLoader().storyDownloadManager().addCompletedStoryTask(story, ContentType.STORY);
-                    openStoryInReader(story,
-                            sessionId,
-                            context,
-                            appearanceManager,
-                            callback,
-                            0,
-                            ContentType.STORY,
-                            SourceType.SINGLE,
-                            ShowStory.ACTION_OPEN,
-                            false
-                    );
-                } else {
-                    if (callback != null) callback.onError();
-                }
-            }
-
-            @Override
-            public void loadError(int type) {
-                if (type == -2) {
-                    if (callback != null) callback.alreadyShown();
-                } else {
-                    if (callback != null) callback.onError();
-                }
-            }
-
-        }, storyId, ContentType.STORY, true, SourceType.SINGLE);
+                },
+                true,
+                SourceType.SINGLE
+        );
     }
-
 
     public void show(
             final Context context,
             final String storyId,
             final AppearanceManager appearanceManager,
             final IShowStoryCallback callback,
-            final ContentType type,
             final Integer slide,
             final boolean fromReader,
             final SourceType readerSource,
             final int readerAction
     ) {
         if (((IASDataSettingsHolder) core.settingsAPI()).noCorrectUserIdOrDevice()) return;
-        core.contentLoader().storyDownloadManager().getFullStoryByStringId(
+        new StoryByStringIdUseCase(core).get(
+                storyId,
                 new GetStoryByIdCallback() {
                     @Override
                     public void getStory(final Story story, final String sessionId) {
                         if (story != null) {
-                            core.contentLoader().storyDownloadManager().addCompletedStoryTask(story, type);
+                            core.contentHolder().readerContent().setByIdAndType(
+                                    story,
+                                    story.id(),
+                                    ContentType.STORY
+                            );
+                            core.contentLoader().storyDownloadManager().addCompletedStoryTask(
+                                    story,
+                                    ContentType.STORY
+                            );
                             openStoryInReader(
                                     story,
                                     sessionId,
@@ -110,7 +122,7 @@ public class IASSingleStoryImpl implements IASSingleStory {
                                     appearanceManager,
                                     callback,
                                     slide,
-                                    type,
+                                    ContentType.STORY,
                                     readerSource,
                                     readerAction,
                                     fromReader
@@ -126,8 +138,6 @@ public class IASSingleStoryImpl implements IASSingleStory {
                     }
 
                 },
-                storyId,
-                type,
                 false,
                 readerSource
         );
@@ -147,7 +157,6 @@ public class IASSingleStoryImpl implements IASSingleStory {
                 storyId,
                 appearanceManager,
                 callback,
-                ContentType.STORY,
                 slide,
                 false,
                 SourceType.SINGLE,

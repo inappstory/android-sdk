@@ -44,66 +44,79 @@ public class IASCallbacksImpl implements IASCallbacks {
                     useIASCallback.use(errorCallback);
                     return;
                 }
+                break;
             case FAVORITE:
                 if (favoriteStoryCallback != null) {
                     useIASCallback.use(favoriteStoryCallback);
                     return;
                 }
+                break;
             case SHOW_SLIDE:
                 if (showSlideCallback != null) {
                     useIASCallback.use(showSlideCallback);
                     return;
                 }
+                break;
             case STORY_WIDGET:
                 if (storyWidgetCallback != null) {
                     useIASCallback.use(storyWidgetCallback);
                     return;
                 }
+                break;
             case SHOW_STORY:
                 if (showStoryCallback != null) {
                     useIASCallback.use(showStoryCallback);
                     return;
                 }
+                break;
             case CLOSE_STORY:
                 if (closeStoryCallback != null) {
                     useIASCallback.use(closeStoryCallback);
                     return;
                 }
+                break;
             case LIKE_DISLIKE:
                 if (likeDislikeStoryCallback != null) {
                     useIASCallback.use(likeDislikeStoryCallback);
                     return;
                 }
+                break;
             case ONBOARDING:
                 if (onboardingLoadCallback != null) {
                     useIASCallback.use(onboardingLoadCallback);
                     return;
                 }
+                break;
             case SINGLE:
                 if (singleLoadCallback != null) {
                     useIASCallback.use(singleLoadCallback);
                     return;
                 }
+                break;
             case SHARE_ADDITIONAL:
                 if (shareCallback != null) {
                     useIASCallback.use(shareCallback);
                     return;
                 }
+                break;
             case GAME_READER:
                 if (gameReaderCallback != null) {
                     useIASCallback.use(gameReaderCallback);
                     return;
                 }
+                break;
             case CLICK_SHARE:
                 if (clickOnShareStoryCallback != null) {
                     useIASCallback.use(clickOnShareStoryCallback);
                     return;
                 }
+                break;
             case CALL_TO_ACTION:
                 if (callToActionCallback != null) {
                     useIASCallback.use(callToActionCallback);
                     return;
                 }
+                break;
             default:
                 break;
         }

@@ -1,4 +1,4 @@
-package com.inappstory.sdk.core.stories;
+package com.inappstory.sdk.core.storieslist;
 
 public class StoriesListVM {
 

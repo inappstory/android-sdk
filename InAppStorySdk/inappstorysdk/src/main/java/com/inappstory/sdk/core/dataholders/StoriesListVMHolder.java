@@ -1,8 +1,8 @@
 package com.inappstory.sdk.core.dataholders;
 
 import com.inappstory.sdk.core.IASCore;
-import com.inappstory.sdk.core.stories.StoriesListVM;
-import com.inappstory.sdk.core.stories.StoriesListVMState;
+import com.inappstory.sdk.core.storieslist.StoriesListVM;
+import com.inappstory.sdk.core.storieslist.StoriesListVMState;
 
 import java.util.HashMap;
 import java.util.Map;
