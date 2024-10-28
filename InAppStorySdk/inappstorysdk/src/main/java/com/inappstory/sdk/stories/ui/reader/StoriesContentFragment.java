@@ -19,6 +19,7 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager.widget.ViewPager;
 
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.inner.share.InnerShareData;
@@ -191,18 +192,21 @@ public class StoriesContentFragment extends Fragment
 
     @Override
     public void onPageSelected(int position) {
+        InAppStoryManager.showDLog("IASREADER", "storiesContentFragment onPageSelected 1");
         if (isDestroyed) return;
         readerManager.onPageSelected(source, position);
         if (getArguments() != null) {
             getArguments().putInt("index", position);
         }
         StoriesReaderLaunchData launchData = getLaunchData();
+        InAppStoryManager.showDLog("IASREADER", "storiesContentFragment onPageSelected 2");
         if (launchData == null
                 || launchData.getStoriesIds() == null
                 || launchData.getStoriesIds().size() <= position) {
             return;
         }
         disableDrag(launchData.getStoriesIds().get(position), launchData.getType());
+        InAppStoryManager.showDLog("IASREADER", "storiesContentFragment onPageSelected 3");
     }
 
     public void disableDrag(int storyId, Story.StoryType type) {
@@ -357,6 +361,7 @@ public class StoriesContentFragment extends Fragment
 
             created = true;
         } catch (Exception e) {
+            InAppStoryManager.showDLog("IASREADER", "storiesContentFragment create exception " + e.getMessage());
             forceFinish();
             return new View(context);
         }
@@ -402,6 +407,7 @@ public class StoriesContentFragment extends Fragment
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        InAppStoryManager.showDLog("IASREADER", "storiesContentFragment onViewCreated");
         if (InAppStoryService.isNull() || currentIds == null || currentIds.isEmpty()) {
             forceFinish();
             return;

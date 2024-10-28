@@ -10,6 +10,7 @@ import android.widget.LinearLayout;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatImageView;
 
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderAppearanceSettings;
@@ -92,6 +93,7 @@ public class ButtonsPanel extends LinearLayout {
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
+        InAppStoryManager.showDLog("IASREADER", "ButtonsPanel detached");
         if (manager != null)
             manager.unsubscribe(this);
     }
@@ -99,6 +101,7 @@ public class ButtonsPanel extends LinearLayout {
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
+        InAppStoryManager.showDLog("IASREADER", "ButtonsPanel attached");
         if (manager == null) manager = new ButtonsPanelManager();
         manager.subscribe(this);
     }
@@ -281,6 +284,7 @@ public class ButtonsPanel extends LinearLayout {
             }
         }*/);
     }
+
 
     public void shareClick() {
         share.setEnabled(false);

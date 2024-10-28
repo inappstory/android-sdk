@@ -29,6 +29,7 @@ import androidx.appcompat.widget.AppCompatImageView;
 import androidx.cardview.widget.CardView;
 import androidx.fragment.app.Fragment;
 
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.stories.api.models.Story;
@@ -47,12 +48,14 @@ public class StoriesLoaderFragment extends Fragment {
     int storyId = -1;
 
     void setViews(View view) {
+        InAppStoryManager.showDLog("IASREADER", "storiesLoaderFragment setViews 1");
         if (InAppStoryService.getInstance() == null) return;
         Story story = InAppStoryService.getInstance().getStoryDownloadManager().getStoryById(
                 launchData.getStoriesIds().get(launchData.getListIndex()),
                 launchData.getType()
         );
         if (story == null) return;
+        InAppStoryManager.showDLog("IASREADER", "storiesLoaderFragment setViews 2");
         storyId = story.id;
         ButtonsPanel buttonsPanel = view.findViewById(R.id.ias_buttons_panel);
         View aboveButtonsPanel = view.findViewById(R.id.ias_above_buttons_panel);
@@ -73,7 +76,9 @@ public class StoriesLoaderFragment extends Fragment {
                     )
             );
         }
+        InAppStoryManager.showDLog("IASREADER", "storiesLoaderFragment setViews 3");
         setOffsets(view);
+        InAppStoryManager.showDLog("IASREADER", "storiesLoaderFragment setViews 4");
     }
 
 
@@ -335,6 +340,7 @@ public class StoriesLoaderFragment extends Fragment {
         try {
             view = createFragmentView(container);
         } catch (Exception e) {
+            InAppStoryManager.showDLog("IASREADER", "storiesLoaderFragment create exception " + e.getMessage());
             InAppStoryService.createExceptionLog(e);
         }
         view.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {

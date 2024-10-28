@@ -262,9 +262,11 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
     }
 
     public void finishWithoutAnimation() {
+        InAppStoryManager.showDLog("IASREADER", "finishWithoutAnimation start");
         super.finish();
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
         overridePendingTransition(0, 0);
+        InAppStoryManager.showDLog("IASREADER", "finishWithoutAnimation finish");
     }
 
 
@@ -338,6 +340,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
         }
         super.onCreate(savedInstanceState1);
         setContentView(R.layout.cs_mainscreen_stories_draggable);
+        InAppStoryManager.showDLog("IASREADER", "onCreate");
         launchData = (StoriesReaderLaunchData) getIntent().
                 getSerializableExtra(StoriesReaderLaunchData.SERIALIZABLE_KEY);
         appearanceSettings = (StoriesReaderAppearanceSettings) getIntent()
@@ -463,6 +466,8 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
 
     private void setLoaderFragment(Rect readerContainer) {
         try {
+
+            InAppStoryManager.showDLog("IASREADER", "setLoaderFragment start");
             FragmentManager fragmentManager = getSupportFragmentManager();
             StoriesLoaderFragment storiesLoaderFragment = new StoriesLoaderFragment();
             Bundle bundle = new Bundle();
@@ -479,6 +484,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
                     .replace(R.id.stories_fragments_layout, storiesLoaderFragment);
             t.addToBackStack("TEST");
             t.commit();
+            InAppStoryManager.showDLog("IASREADER", "setLoaderFragment finish");
         } catch (IllegalStateException e) {
             InAppStoryService.createExceptionLog(e);
             finishWithoutAnimation();
@@ -489,11 +495,14 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
     private void setStoriesFragment() {
         if (storiesContentFragment != null) {
             try {
+                InAppStoryManager.showDLog("IASREADER", "setStoriesFragment start");
                 FragmentManager fragmentManager = getSupportFragmentManager();
                 FragmentTransaction t = fragmentManager.beginTransaction()
                         .replace(R.id.stories_fragments_layout, storiesContentFragment);
                 t.addToBackStack("STORIES_FRAGMENT");
                 t.commit();
+
+                InAppStoryManager.showDLog("IASREADER", "setStoriesFragment finish");
             } catch (IllegalStateException e) {
                 InAppStoryService.createExceptionLog(e);
                 finishWithoutAnimation();
@@ -506,6 +515,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
     }
 
     private void createStoriesFragment(Bundle savedInstanceState, Rect readerContainer) {
+        InAppStoryManager.showDLog("IASREADER", "createStoriesFragment start");
         if (savedInstanceState == null) {
             storiesContentFragment = new StoriesContentFragment();
             Bundle bundle = new Bundle();
@@ -515,6 +525,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
         } else {
             storiesContentFragment = (StoriesContentFragment) getSupportFragmentManager().findFragmentByTag("STORIES_FRAGMENT");
         }
+        InAppStoryManager.showDLog("IASREADER", "createStoriesFragment finish");
 
     }
 
