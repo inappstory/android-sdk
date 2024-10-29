@@ -1,7 +1,18 @@
 Change Log
 ==========
 
-Version *1.20.0 (950)*
+Version *1.20.2 (952)*
+----------------------------
+* Added: open a game from another game
+* Fixed: bundle resources downloads
+* Fixed: feed refresh doesn't cause to clearing full stories models
+  
+Version *1.19.8 (918)*
+----------------------------
+* Fixed: bundle resources downloads
+* Fixed: feed refresh doesn't cause to clearing full stories models
+
+Version *1.20.1 (951)*
 ----------------------------
 * Updated: changed ICustomGoodsWidget's getSkus and onItemClick signature (extended with widgetView parameter)
 * Updated: changed ShareCallback's onBackPress signature (extended with widgetView parameter)
