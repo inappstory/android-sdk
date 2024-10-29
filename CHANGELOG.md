@@ -6,11 +6,15 @@ Version *1.20.2 (952)*
 * Added: open a game from another game
 * Fixed: bundle resources downloads
 * Fixed: feed refresh doesn't cause to clearing full stories models
+* Fixed: wrong thread forceFinish
+* Fixed: changePriority Story NPE
   
 Version *1.19.8 (918)*
 ----------------------------
 * Fixed: bundle resources downloads
 * Fixed: feed refresh doesn't cause to clearing full stories models
+* Fixed: wrong thread forceFinish
+* Fixed: changePriority Story NPE
 
 Version *1.20.1 (951)*
 ----------------------------
