@@ -7,6 +7,7 @@ import com.inappstory.sdk.core.api.IASCallback;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.IASCallbacks;
 import com.inappstory.sdk.core.api.UseIASCallback;
+import com.inappstory.sdk.inappmessage.InAppMessageLoadCallback;
 import com.inappstory.sdk.stories.callbacks.ShareCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.errors.ErrorCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.gamereader.GameReaderCallback;
@@ -117,6 +118,12 @@ public class IASCallbacksImpl implements IASCallbacks {
                     return;
                 }
                 break;
+            case IN_APP_MESSAGE_LOAD:
+                if (inAppMessageLoadCallback != null) {
+                    useIASCallback.use(inAppMessageLoadCallback);
+                    return;
+                }
+                break;
             default:
                 break;
         }
@@ -165,6 +172,9 @@ public class IASCallbacksImpl implements IASCallbacks {
             case GAME_READER:
                 gameReaderCallback = (GameReaderCallback) callback;
                 return;
+            case IN_APP_MESSAGE_LOAD:
+                inAppMessageLoadCallback = (InAppMessageLoadCallback) callback;
+                return;
             default:
                 break;
         }
@@ -180,6 +190,7 @@ public class IASCallbacksImpl implements IASCallbacks {
     private CloseStoryCallback closeStoryCallback;
     private FavoriteStoryCallback favoriteStoryCallback;
     private LikeDislikeStoryCallback likeDislikeStoryCallback;
+    private InAppMessageLoadCallback inAppMessageLoadCallback;
     private ShowSlideCallback showSlideCallback;
     private ShowStoryCallback showStoryCallback;
     private SingleLoadCallback singleLoadCallback;

@@ -2,6 +2,7 @@ package com.inappstory.sdk.core;
 
 import android.content.Context;
 
+import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.core.api.IASCallbacks;
 import com.inappstory.sdk.core.api.IASContentLoader;
@@ -9,6 +10,7 @@ import com.inappstory.sdk.core.api.IASContentPreload;
 import com.inappstory.sdk.core.api.IASExternalUtilsAPI;
 import com.inappstory.sdk.core.api.IASFavorites;
 import com.inappstory.sdk.core.api.IASGames;
+import com.inappstory.sdk.core.api.IASInAppMessage;
 import com.inappstory.sdk.core.api.IASLogs;
 import com.inappstory.sdk.core.api.IASManager;
 import com.inappstory.sdk.core.api.IASOnboardings;
@@ -25,6 +27,7 @@ import com.inappstory.sdk.core.api.impl.IASContentPreloadImpl;
 import com.inappstory.sdk.core.api.impl.IASExternalUtilsAPIImpl;
 import com.inappstory.sdk.core.api.impl.IASFavoritesImpl;
 import com.inappstory.sdk.core.api.impl.IASGamesImpl;
+import com.inappstory.sdk.core.api.impl.IASInAppMessageImpl;
 import com.inappstory.sdk.core.api.impl.IASLogsImpl;
 import com.inappstory.sdk.core.api.impl.IASManagerImpl;
 import com.inappstory.sdk.core.api.impl.IASOnboardingsImpl;
@@ -46,6 +49,7 @@ import com.inappstory.sdk.utils.IVibrateUtils;
 import com.inappstory.sdk.utils.VibrateUtils;
 
 public class IASCoreImpl implements IASCore {
+    private AppearanceManager commonAppearance = null;
     private final IASCallbacks callbacks;
     private final IASFavorites favorites;
     private final IASGames games;
@@ -70,6 +74,7 @@ public class IASCoreImpl implements IASCore {
     private final KeyValueStorage keyValueStorage;
     private final SharedPreferencesAPI sharedPreferencesAPI;
     private final IContentHolder contentHolder;
+    private final IASInAppMessage inAppMessages;
 
     public IASCoreImpl(Context context) {
         this.context = context;
@@ -96,9 +101,20 @@ public class IASCoreImpl implements IASCore {
         contentPreload = new IASContentPreloadImpl(this);
         iasLogs = new IASLogsImpl(this);
         inAppStoryService = new InAppStoryService(this);
+        inAppMessages = new IASInAppMessageImpl(this);
         externalUtilsAPI.init();
     }
 
+
+    @Override
+    public AppearanceManager commonAppearance() {
+        return this.commonAppearance;
+    }
+
+    @Override
+    public void commonAppearance(AppearanceManager appearanceManager) {
+        this.commonAppearance = appearanceManager;
+    }
 
     @Override
     public Context appContext() {
@@ -133,6 +149,11 @@ public class IASCoreImpl implements IASCore {
     @Override
     public IASDataSettings settingsAPI() {
         return settings;
+    }
+
+    @Override
+    public IASInAppMessage inAppMessageAPI() {
+        return inAppMessages;
     }
 
     @Override

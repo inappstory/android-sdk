@@ -6,11 +6,11 @@ import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
-import com.inappstory.sdk.core.dataholders.IListItemContent;
+import com.inappstory.sdk.core.dataholders.models.IListItemContent;
 import com.inappstory.sdk.externalapi.subscribers.InAppStoryAPISubscribersManager;
-import com.inappstory.sdk.stories.api.models.Image;
+import com.inappstory.sdk.core.network.content.models.Image;
 import com.inappstory.sdk.stories.api.models.ContentType;
-import com.inappstory.sdk.stories.api.models.Story;
+import com.inappstory.sdk.core.network.content.models.Story;
 import com.inappstory.sdk.stories.api.models.logs.ExceptionLog;
 import com.inappstory.sdk.stories.exceptions.ExceptionManager;
 import com.inappstory.sdk.stories.stackfeed.StackStoryObserver;

@@ -4,7 +4,7 @@ import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.utils.ConnectionCheck;
 import com.inappstory.sdk.core.utils.ConnectionCheckCallback;
-import com.inappstory.sdk.inappmessage.core.models.InAppMessageFeed;
+import com.inappstory.sdk.core.network.content.models.InAppMessageFeed;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 

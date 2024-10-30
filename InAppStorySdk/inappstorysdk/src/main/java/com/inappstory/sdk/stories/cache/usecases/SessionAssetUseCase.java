@@ -4,7 +4,7 @@ import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.game.cache.UseCaseCallback;
 import com.inappstory.sdk.lrudiskcache.CacheJournalItem;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
-import com.inappstory.sdk.stories.api.models.SessionAsset;
+import com.inappstory.sdk.core.network.content.models.SessionAsset;
 import com.inappstory.sdk.stories.cache.DownloadFileState;
 import com.inappstory.sdk.utils.StringsUtils;
 

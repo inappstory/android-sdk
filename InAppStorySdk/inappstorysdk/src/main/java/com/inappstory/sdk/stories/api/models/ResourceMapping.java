@@ -2,7 +2,7 @@ package com.inappstory.sdk.stories.api.models;
 
 
 import com.inappstory.sdk.network.annotations.models.SerializedName;
-import com.inappstory.sdk.core.dataholders.IResource;
+import com.inappstory.sdk.core.dataholders.models.IResource;
 
 /**
  * Created by paperrose on 19.02.2018.

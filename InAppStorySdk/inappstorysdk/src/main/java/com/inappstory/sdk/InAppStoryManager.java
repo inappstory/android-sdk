@@ -8,16 +8,14 @@ import android.annotation.SuppressLint;
 import android.app.Application;
 import android.content.ContentProvider;
 import android.content.Context;
-import android.os.Looper;
 import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Log;
 import android.util.Pair;
 
 import androidx.annotation.NonNull;
+import androidx.fragment.app.FragmentManager;
 
-import com.inappstory.iasutilsconnector.UtilModulesHolder;
-import com.inappstory.iasutilsconnector.json.IJsonParser;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.IASCoreImpl;
 import com.inappstory.sdk.core.UseIASCoreCallback;
@@ -25,17 +23,16 @@ import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.IASDataSettings;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.IASStatisticV1;
+import com.inappstory.sdk.inappmessage.InAppMessageLoadCallback;
+import com.inappstory.sdk.inappmessage.InAppMessageScreenActions;
 import com.inappstory.sdk.lrudiskcache.CacheSize;
 import com.inappstory.sdk.network.ApiSettings;
-import com.inappstory.sdk.network.JsonParser;
-import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.utils.HostFromSecretKey;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
 import com.inappstory.sdk.stories.api.models.logs.ApiLogRequest;
 import com.inappstory.sdk.stories.api.models.logs.ApiLogResponse;
 import com.inappstory.sdk.stories.api.models.logs.ExceptionLog;
 import com.inappstory.sdk.stories.api.models.logs.WebConsoleLog;
-import com.inappstory.sdk.stories.callbacks.ExceptionCallback;
 import com.inappstory.sdk.stories.callbacks.IShowStoryCallback;
 import com.inappstory.sdk.stories.callbacks.IShowStoryOnceCallback;
 import com.inappstory.sdk.stories.callbacks.ShareCallback;
@@ -58,12 +55,9 @@ import com.inappstory.sdk.stories.outercallbacks.common.single.SingleLoadCallbac
 import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.stackfeed.IStackFeedResult;
 import com.inappstory.sdk.stories.statistic.GetStatisticV1Callback;
-import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 import com.inappstory.sdk.stories.ui.reader.ForceCloseReaderCallback;
-import com.inappstory.sdk.stories.utils.KeyValueStorage;
 import com.inappstory.sdk.utils.StringsUtils;
 
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -95,6 +89,10 @@ public class InAppStoryManager {
                 callback.use(INSTANCE.iasCore());
             }
         }
+    }
+
+    public void setCommonAppearanceManager(AppearanceManager appearanceManager) {
+
     }
 
     private static void clearLocalData() {
@@ -400,7 +398,6 @@ public class InAppStoryManager {
     public void setTags(ArrayList<String> tags) {
         core.settingsAPI().setTags(tags);
     }
-
 
 
     private final Object tagsLock = new Object();
@@ -870,6 +867,32 @@ public class InAppStoryManager {
      */
     public void showStory(String storyId, Context context, AppearanceManager manager) {
         core.singleStoryAPI().show(context, storyId, manager, null, 0);
+    }
+
+    public void preloadInAppMessages(
+            List<String> inAppMessageIds
+    ) {
+        core.inAppMessageAPI().preload(inAppMessageIds);
+    }
+
+    public void setInAppMessageLoadCallback(InAppMessageLoadCallback callback) {
+        core.inAppMessageAPI().callback(callback);
+    }
+
+    public void showInAppMessage(
+            String inAppMessageId,
+            boolean showOnlyIfLoaded,
+            FragmentManager fragmentManager,
+            int containerId,
+            InAppMessageScreenActions screenActions
+    ) {
+        core.inAppMessageAPI().show(
+                inAppMessageId,
+                showOnlyIfLoaded,
+                fragmentManager,
+                containerId,
+                screenActions
+        );
     }
 
     public static class Builder {

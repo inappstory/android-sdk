@@ -2,15 +2,11 @@ package com.inappstory.sdk.stories.ui.widgets.readerscreen.buttonspanel;
 
 import androidx.annotation.NonNull;
 
-import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.UseIASCallback;
-import com.inappstory.sdk.core.dataholders.IContentWithStatus;
-import com.inappstory.sdk.core.dataholders.IListItemContent;
-import com.inappstory.sdk.core.dataholders.IReaderContent;
-import com.inappstory.sdk.core.dataholders.IReaderContentWithStatus;
-import com.inappstory.sdk.core.dataholders.IStatData;
+import com.inappstory.sdk.core.dataholders.models.IContentWithStatus;
+import com.inappstory.sdk.core.dataholders.models.IReaderContent;
 import com.inappstory.sdk.core.ui.screens.ShareProcessHandler;
 import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
@@ -19,7 +15,6 @@ import com.inappstory.sdk.share.IShareCompleteListener;
 import com.inappstory.sdk.stories.api.models.ContentIdWithIndex;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.ShareObject;
-import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickOnShareStoryCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.FavoriteStoryCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.LikeDislikeStoryCallback;

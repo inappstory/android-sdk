@@ -13,5 +13,6 @@ public enum IASCallbackType {
     SHARE_ADDITIONAL,
     CLICK_SHARE,
     CALL_TO_ACTION,
-    GAME_READER
+    GAME_READER,
+    IN_APP_MESSAGE_LOAD
 }

@@ -8,7 +8,6 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
-import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -17,7 +16,6 @@ import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
@@ -27,16 +25,14 @@ import com.inappstory.sdk.core.api.impl.IASSettingsImpl;
 import com.inappstory.sdk.core.utils.ConnectionCheck;
 import com.inappstory.sdk.core.utils.ConnectionCheckCallback;
 import com.inappstory.sdk.network.ApiSettings;
-import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.stories.api.models.CachedSessionData;
 import com.inappstory.sdk.stories.api.models.SessionRequestFields;
-import com.inappstory.sdk.stories.api.models.SessionResponse;
+import com.inappstory.sdk.core.network.content.models.SessionResponse;
 import com.inappstory.sdk.stories.api.models.StatisticSendObject;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.errors.ErrorCallback;
 import com.inappstory.sdk.stories.statistic.GetStatisticV1Callback;
-import com.inappstory.sdk.stories.statistic.IASStatisticProfilingImpl;
 import com.inappstory.sdk.ugc.extinterfaces.IOpenSessionCallback;
 import com.inappstory.sdk.utils.ISessionHolder;
 
@@ -113,8 +109,6 @@ public class SessionManager {
         core.statistic().exceptions().disabled(
                 !(isSendStatistic && response.isAllowCrash)
         );
-        response.session.isAllowUgc = response.isAllowUgc;
-        sessionHolder.setSession(response.session, !(isSendStatistic && response.isAllowStatV1));
         ((IASSettingsImpl) core.settingsAPI()).sessionPlaceholders(response.placeholders);
         ((IASSettingsImpl) core.settingsAPI()).sessionImagePlaceholders(response.imagePlaceholders);
     }
@@ -245,7 +239,6 @@ public class SessionManager {
                                 new NetworkCallback<SessionResponse>() {
                                     @Override
                                     public void onSuccess(SessionResponse response) {
-                                        saveSession(response);
                                         String serviceUserId = dataSettingsHolder.userId();
                                         String currentSession = getSession().getSessionId();
                                         if (initialUserId == null) {
@@ -273,22 +266,27 @@ public class SessionManager {
                                                 return;
                                             }
                                         }
+                                        saveSession(response);
                                         core.network().setSessionId(currentSession);
-                                        InAppStoryService.getInstance()
-                                                .getListReaderConnector().sessionIsOpened(currentSession);
                                         core.statistic().profiling().setReady(sessionOpenUID);
                                         openStatisticSuccess(response);
                                         CachedSessionData cachedSessionData = new CachedSessionData();
                                         cachedSessionData.userId = serviceUserId;
                                         cachedSessionData.placeholders = response.placeholders;
                                         cachedSessionData.previewAspectRatio = response.getPreviewAspectRatio();
+                                        cachedSessionData.isAllowUGC = response.isAllowUgc;
                                         cachedSessionData.sessionId = response.session.id;
                                         cachedSessionData.testKey = ApiSettings.getInstance().getTestKey();
                                         cachedSessionData.token = ApiSettings.getInstance().getApiKey();
                                         cachedSessionData.tags =
                                                 TextUtils.join(",", dataSettingsHolder.tags());
-                                        sessionHolder.sessionData(cachedSessionData);
+                                        boolean isSendStatistic = false;
+                                        InAppStoryManager manager = InAppStoryManager.getInstance();
+                                        if (manager != null) isSendStatistic = manager.isSendStatistic();
+                                        sessionHolder.setSession(cachedSessionData, !(isSendStatistic && response.isAllowStatV1));
 
+                                        core.inAppStoryService()
+                                                .getListReaderConnector().sessionIsOpened(currentSession);
                                         if (response.preloadGame)
                                             core.contentPreload().restartGamePreloader();
                                     }

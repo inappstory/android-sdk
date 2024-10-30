@@ -2,6 +2,7 @@ package com.inappstory.sdk.core;
 
 import android.content.Context;
 
+import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.core.api.IASCallbacks;
 import com.inappstory.sdk.core.api.IASContentLoader;
@@ -9,6 +10,7 @@ import com.inappstory.sdk.core.api.IASContentPreload;
 import com.inappstory.sdk.core.api.IASExternalUtilsAPI;
 import com.inappstory.sdk.core.api.IASFavorites;
 import com.inappstory.sdk.core.api.IASGames;
+import com.inappstory.sdk.core.api.IASInAppMessage;
 import com.inappstory.sdk.core.api.IASLogs;
 import com.inappstory.sdk.core.api.IASManager;
 import com.inappstory.sdk.core.api.IASOnboardings;
@@ -30,6 +32,8 @@ import com.inappstory.sdk.stories.utils.SessionManager;
 import com.inappstory.sdk.utils.IVibrateUtils;
 
 public interface IASCore {
+    AppearanceManager commonAppearance();
+    void commonAppearance(AppearanceManager appearanceManager);
     Context appContext();
     IASCallbacks callbacksAPI();
     IASFavorites favoritesAPI();
@@ -37,6 +41,7 @@ public interface IASCore {
     IASManager managerAPI();
     IASOnboardings onboardingsAPI();
     IASDataSettings settingsAPI();
+    IASInAppMessage inAppMessageAPI();
     IASSingleStory singleStoryAPI();
     IASStackFeed stackFeedAPI();
     IASStoryList storyListAPI();

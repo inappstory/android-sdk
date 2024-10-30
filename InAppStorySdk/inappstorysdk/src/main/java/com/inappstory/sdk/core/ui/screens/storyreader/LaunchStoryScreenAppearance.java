@@ -4,16 +4,9 @@ import android.content.Context;
 import android.content.res.Configuration;
 
 import com.inappstory.sdk.AppearanceManager;
-import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.SerializableWithKey;
-import com.inappstory.sdk.stories.outercallbacks.common.objects.StoryItemCoordinates;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.ui.reader.StoriesGradientObject;
 import com.inappstory.sdk.stories.utils.Sizes;
-
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
 
 public class LaunchStoryScreenAppearance implements SerializableWithKey {
     public static String SERIALIZABLE_KEY = "storiesReaderAppearanceSettings";

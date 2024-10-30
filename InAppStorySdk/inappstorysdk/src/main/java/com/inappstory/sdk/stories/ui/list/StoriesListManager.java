@@ -9,15 +9,8 @@ import androidx.annotation.NonNull;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
-import com.inappstory.sdk.core.dataholders.IContentHolder;
-import com.inappstory.sdk.core.dataholders.IFavoriteItem;
-import com.inappstory.sdk.core.dataholders.IListItemContent;
-import com.inappstory.sdk.stories.api.models.Image;
+import com.inappstory.sdk.core.dataholders.models.IListItemContent;
 import com.inappstory.sdk.stories.api.models.ContentType;
-import com.inappstory.sdk.stories.api.models.Story;
-import com.inappstory.sdk.stories.cache.StoryDownloadManager;
-
-import java.util.List;
 
 public class StoriesListManager implements ListManager {
     StoriesList list;

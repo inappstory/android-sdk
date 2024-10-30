@@ -3,6 +3,8 @@ package com.inappstory.sdk.stories.api.models;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.inappstory.sdk.core.network.content.models.Story;
+
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.List;

@@ -11,7 +11,7 @@ import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.stories.ui.widgets.LoadProgressBar;
 import com.inappstory.sdk.stories.api.models.CachedSessionData;
-import com.inappstory.sdk.stories.api.models.Image;
+import com.inappstory.sdk.core.network.content.models.Image;
 import com.inappstory.sdk.stories.ui.list.StoriesList;
 import com.inappstory.sdk.stories.ui.list.StoryTouchListener;
 import com.inappstory.sdk.stories.ui.list.UGCListItemSimpleAppearance;
@@ -165,7 +165,6 @@ public class AppearanceManager {
     private Integer csListItemHeight;
     private Integer csColumnCount;
     private Float csListItemRatio;
-
 
     private boolean csListItemBorderVisibility = true;
     private int csListItemBorderColor = Color.BLACK;
@@ -335,8 +334,8 @@ public class AppearanceManager {
      * use to set quality for story covers
      *
      * @param csCoverQuality (csCoverQuality) quality for covers
-     *                       {@link com.inappstory.sdk.stories.api.models.Image#QUALITY_MEDIUM}
-     *                       {@link com.inappstory.sdk.stories.api.models.Image#QUALITY_HIGH}
+     *                       {@link Image#QUALITY_MEDIUM}
+     *                       {@link Image#QUALITY_HIGH}
      * @return {@link AppearanceManager}
      */
     public AppearanceManager csCoverQuality(int csCoverQuality) {

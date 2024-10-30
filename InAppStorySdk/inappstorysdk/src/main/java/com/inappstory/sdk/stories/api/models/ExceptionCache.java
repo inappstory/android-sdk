@@ -1,5 +1,6 @@
 package com.inappstory.sdk.stories.api.models;
 
+import com.inappstory.sdk.core.network.content.models.Story;
 import com.inappstory.sdk.stories.ui.list.StoryFavoriteImage;
 
 import java.util.ArrayList;

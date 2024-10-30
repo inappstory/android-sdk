@@ -18,7 +18,7 @@ import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.IASStatisticV1;
 import com.inappstory.sdk.core.api.UseIASCallback;
-import com.inappstory.sdk.core.dataholders.IListItemContent;
+import com.inappstory.sdk.core.dataholders.models.IListItemContent;
 import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenData;
 import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenStrategy;
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenAppearance;
@@ -26,9 +26,9 @@ import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenData;
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenStrategy;
 import com.inappstory.sdk.core.utils.ConnectionCheck;
 import com.inappstory.sdk.core.utils.ConnectionCheckCallback;
+import com.inappstory.sdk.core.utils.StringWithPlaceholders;
 import com.inappstory.sdk.game.reader.GameStoryData;
 import com.inappstory.sdk.stories.api.models.ContentType;
-import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.OnFavoriteItemClick;
 import com.inappstory.sdk.stories.outercallbacks.common.errors.ErrorCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoryItemCoordinates;
@@ -188,7 +188,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
             if (story == null) return;
             String imgUrl = story.imageCoverByQuality(manager.csCoverQuality());
             holder.bind(story.id(),
-                    story.title(),
+                    new StringWithPlaceholders().replace(story.title(), core),
                     story.titleColor() != null ? Color.parseColor(story.titleColor()) : null,
                     imgUrl,
                     Color.parseColor(story.backgroundColor()),

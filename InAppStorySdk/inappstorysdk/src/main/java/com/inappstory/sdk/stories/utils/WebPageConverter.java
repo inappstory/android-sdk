@@ -14,11 +14,11 @@ import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.game.cache.UseCaseCallback;
-import com.inappstory.sdk.core.dataholders.IResource;
-import com.inappstory.sdk.core.dataholders.IReaderContent;
+import com.inappstory.sdk.core.dataholders.models.IResource;
+import com.inappstory.sdk.core.dataholders.models.IReaderContent;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderType;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
-import com.inappstory.sdk.stories.api.models.SessionAsset;
+import com.inappstory.sdk.core.network.content.models.SessionAsset;
 import com.inappstory.sdk.stories.cache.usecases.SessionAssetLocalUseCase;
 import com.inappstory.sdk.utils.StringsUtils;
 

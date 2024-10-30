@@ -9,16 +9,16 @@ import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.dataholders.IContentHolder;
-import com.inappstory.sdk.core.dataholders.IListItemContent;
+import com.inappstory.sdk.core.dataholders.models.IListItemContent;
 import com.inappstory.sdk.core.utils.ConnectionCheck;
 import com.inappstory.sdk.core.utils.ConnectionCheckCallback;
 import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.network.callbacks.SimpleApiCallback;
 import com.inappstory.sdk.stories.api.models.ContentType;
-import com.inappstory.sdk.stories.api.models.Feed;
-import com.inappstory.sdk.stories.api.models.Image;
-import com.inappstory.sdk.stories.api.models.Story;
+import com.inappstory.sdk.core.network.content.models.Feed;
+import com.inappstory.sdk.core.network.content.models.Image;
+import com.inappstory.sdk.core.network.content.models.Story;
 import com.inappstory.sdk.stories.api.models.StoryListType;
 import com.inappstory.sdk.core.network.content.callbacks.LoadFavoritesCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadFeedCallback;
@@ -96,33 +96,13 @@ public class FeedByIdUseCase {
                                 contentHolder.favorite(listItemContent.id(), type, true);
                             }
                             core.storyListCache().saveStoriesOpened(type);
-                            if (favorites.size() > 0) {
-                                if (callback != null) {
-                                    List<Integer> ids = new ArrayList<>();
-                                    for (Story story : stories) {
-                                        if (story == null) continue;
-                                        ids.add(story.id);
-                                    }
-                                    callback.setFeedId(sFeedId);
-                                    callback.storiesLoaded(ids);
-                                }
-                                if (favCallback != null) {
-                                    favCallback.success(
-                                            contentHolder
-                                                    .favoriteItems()
-                                                    .getByType(ContentType.STORY)
-                                    );
-                                }
-                            } else {
-                                if (callback != null) {
-                                    List<Integer> ids = new ArrayList<>();
-                                    for (Story story : stories) {
-                                        if (story == null) continue;
-                                        ids.add(story.id);
-                                    }
-                                    callback.setFeedId(sFeedId);
-                                    callback.storiesLoaded(ids);
-                                }
+                            invokeStoriesCallback(stories, callback);
+                            if (favorites.size() > 0 && favCallback != null) {
+                                favCallback.success(
+                                        contentHolder
+                                                .favoriteItems()
+                                                .getByType(ContentType.STORY)
+                                );
                             }
                         }
 
@@ -134,27 +114,11 @@ public class FeedByIdUseCase {
                         @Override
                         public void errorDefault(String message) {
                             core.statistic().profiling().setReady(loadFavUID);
-                            if (callback != null) {
-                                List<Integer> ids = new ArrayList<>();
-                                for (Story story : stories) {
-                                    if (story == null) continue;
-                                    ids.add(story.id);
-                                }
-                                callback.setFeedId(sFeedId);
-                                callback.storiesLoaded(ids);
-                            }
+                            invokeStoriesCallback(stories, callback);
                         }
                     });
                 } else {
-                    if (callback != null) {
-                        List<Integer> ids = new ArrayList<>();
-                        for (Story story : stories) {
-                            if (story == null) continue;
-                            ids.add(story.id);
-                        }
-                        callback.setFeedId(sFeedId);
-                        callback.storiesLoaded(ids);
-                    }
+                    invokeStoriesCallback(stories, callback);
                 }
             }
 
@@ -166,6 +130,17 @@ public class FeedByIdUseCase {
             }
         };
         loadFeed(feed, loadCallback, true);
+    }
+
+    private void invokeStoriesCallback(List<Story> stories, LoadStoriesCallback callback) {
+        if (callback != null) {
+            List<Integer> ids = new ArrayList<>();
+            for (Story story : stories) {
+                if (story == null) continue;
+                ids.add(story.id);
+            }
+            callback.storiesLoaded(ids);
+        }
     }
 
     private void loadStoryFavoriteList(

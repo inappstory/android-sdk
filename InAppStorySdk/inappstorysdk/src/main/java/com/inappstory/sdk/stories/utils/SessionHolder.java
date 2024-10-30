@@ -5,9 +5,8 @@ import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.game.cache.SessionAssetsIsReadyCallback;
 import com.inappstory.sdk.game.cache.UseCaseCallback;
 import com.inappstory.sdk.stories.api.models.CachedSessionData;
-import com.inappstory.sdk.stories.api.models.Session;
-import com.inappstory.sdk.stories.api.models.SessionAsset;
-import com.inappstory.sdk.stories.cache.FilesDownloadManager;
+import com.inappstory.sdk.core.network.content.models.Session;
+import com.inappstory.sdk.core.network.content.models.SessionAsset;
 import com.inappstory.sdk.stories.cache.usecases.SessionAssetLocalUseCase;
 import com.inappstory.sdk.utils.ISessionHolder;
 
@@ -35,21 +34,20 @@ public class SessionHolder implements ISessionHolder {
 
     private final Object cacheLock = new Object();
 
-    private HashSet<SessionAssetsIsReadyCallback> assetsIsReadyCallbacks = new HashSet<>();
+    private final HashSet<SessionAssetsIsReadyCallback> assetsIsReadyCallbacks = new HashSet<>();
 
 
     @Override
     public boolean allowUGC() {
         synchronized (sessionLock) {
-            return session != null
-                    && session.isAllowUgc;
+            return sessionData != null && sessionData.isAllowUGC;
         }
     }
 
     @Override
     public String getSessionId() {
         synchronized (sessionLock) {
-            return session != null ? session.id : "";
+            return sessionData != null ? sessionData.sessionId : "";
         }
     }
 
@@ -59,9 +57,9 @@ public class SessionHolder implements ISessionHolder {
     }
 
     @Override
-    public void setSession(Session session, boolean v1Disabled) {
+    public void setSession(CachedSessionData sessionData, boolean v1Disabled) {
         synchronized (sessionLock) {
-            this.session = session;
+            this.sessionData = sessionData;
             if (session != null && session.id != null) {
                 core.statistic().createV1(session.id, v1Disabled);
             }

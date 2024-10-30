@@ -1,7 +1,7 @@
 package com.inappstory.sdk.core.api;
 
 import com.inappstory.sdk.game.cache.SessionAssetsIsReadyCallback;
-import com.inappstory.sdk.stories.api.models.SessionAsset;
+import com.inappstory.sdk.core.network.content.models.SessionAsset;
 import com.inappstory.sdk.stories.cache.FilesDownloadManager;
 
 import java.util.List;

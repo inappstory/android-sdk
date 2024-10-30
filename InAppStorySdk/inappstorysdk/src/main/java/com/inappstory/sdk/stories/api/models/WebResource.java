@@ -1,6 +1,6 @@
 package com.inappstory.sdk.stories.api.models;
 
-import com.inappstory.sdk.core.dataholders.IDownloadResource;
+import com.inappstory.sdk.core.dataholders.models.IDownloadResource;
 
 import java.io.Serializable;
 

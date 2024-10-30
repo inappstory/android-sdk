@@ -3,15 +3,11 @@ package com.inappstory.sdk.ugc.usecases;
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.InAppStoryManager;
-import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
-import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
-import com.inappstory.sdk.stories.api.models.Session;
-import com.inappstory.sdk.stories.api.models.SessionEditor;
+import com.inappstory.sdk.core.network.content.models.SessionEditor;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
-import com.inappstory.sdk.stories.utils.SessionManager;
 import com.inappstory.sdk.ugc.dto.SessionEditorDTO;
 import com.inappstory.sdk.ugc.extinterfaces.IGetUgcEditorCallback;
 import com.inappstory.sdk.ugc.extinterfaces.IGetUgcEditor;

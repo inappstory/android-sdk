@@ -7,7 +7,7 @@ import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.lrudiskcache.CacheJournalItem;
 import com.inappstory.sdk.lrudiskcache.FileChecker;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
-import com.inappstory.sdk.core.dataholders.IDownloadResource;
+import com.inappstory.sdk.core.dataholders.models.IDownloadResource;
 import com.inappstory.sdk.stories.cache.DownloadFileState;
 import com.inappstory.sdk.stories.cache.FilesDownloader;
 import com.inappstory.sdk.utils.StringsUtils;

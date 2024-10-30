@@ -2,7 +2,6 @@ package com.inappstory.sdk.core.api.impl;
 
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASFavorites;
-import com.inappstory.sdk.core.dataholders.IContentWithStatus;
 import com.inappstory.sdk.core.ui.screens.holder.GetScreenCallback;
 import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryScreen;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;

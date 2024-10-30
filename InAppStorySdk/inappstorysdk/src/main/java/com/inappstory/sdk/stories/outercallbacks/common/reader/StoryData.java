@@ -1,10 +1,8 @@
 package com.inappstory.sdk.stories.outercallbacks.common.reader;
 
-import com.inappstory.sdk.core.dataholders.IReaderContent;
-import com.inappstory.sdk.core.dataholders.IStatData;
+import com.inappstory.sdk.core.dataholders.models.IStatData;
 import com.inappstory.sdk.network.annotations.models.Ignore;
 import com.inappstory.sdk.stories.api.models.ContentType;
-import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.utils.StringsUtils;
 
 import java.io.Serializable;

@@ -2,7 +2,7 @@ package com.inappstory.sdk.stories.cache.usecases;
 
 
 import com.inappstory.sdk.core.IASCore;
-import com.inappstory.sdk.core.dataholders.IResource;
+import com.inappstory.sdk.core.dataholders.models.IResource;
 import com.inappstory.sdk.stories.cache.DownloadFileState;
 import com.inappstory.sdk.stories.cache.SlideTask;
 import com.inappstory.sdk.stories.cache.UrlWithAlter;

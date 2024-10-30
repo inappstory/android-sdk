@@ -5,9 +5,8 @@ import android.os.Looper;
 import android.view.View;
 
 import com.inappstory.sdk.core.IASCore;
-import com.inappstory.sdk.core.dataholders.IListItemContent;
+import com.inappstory.sdk.core.dataholders.models.IListItemContent;
 import com.inappstory.sdk.stories.api.models.ContentType;
-import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.ui.list.ListManager;
 
 class UgcStoriesListManager implements ListManager {

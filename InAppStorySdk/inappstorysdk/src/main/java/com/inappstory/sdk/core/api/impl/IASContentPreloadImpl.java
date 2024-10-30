@@ -15,7 +15,7 @@ import com.inappstory.sdk.game.cache.UseCaseCallback;
 import com.inappstory.sdk.game.preload.GamePreloader;
 import com.inappstory.sdk.game.preload.IGamePreloader;
 import com.inappstory.sdk.stories.api.interfaces.IGameCenterData;
-import com.inappstory.sdk.stories.api.models.SessionAsset;
+import com.inappstory.sdk.core.network.content.models.SessionAsset;
 import com.inappstory.sdk.stories.cache.usecases.SessionAssetUseCase;
 import com.inappstory.sdk.utils.ISessionHolder;
 

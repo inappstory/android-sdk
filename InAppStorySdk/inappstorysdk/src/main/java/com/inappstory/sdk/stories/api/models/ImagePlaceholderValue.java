@@ -23,7 +23,8 @@ public class ImagePlaceholderValue {
     public boolean equals(@Nullable Object obj) {
         if (obj instanceof ImagePlaceholderValue) {
             return
-                    url.equals(((ImagePlaceholderValue) obj).url) && type.equals(((ImagePlaceholderValue) obj).type);
+                    url.equals(((ImagePlaceholderValue) obj).url) &&
+                            type.equals(((ImagePlaceholderValue) obj).type);
         }
         return false;
     }

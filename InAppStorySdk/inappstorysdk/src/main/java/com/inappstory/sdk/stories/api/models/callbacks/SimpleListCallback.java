@@ -1,7 +1,7 @@
 package com.inappstory.sdk.stories.api.models.callbacks;
 
 import com.inappstory.sdk.network.callbacks.SimpleApiCallback;
-import com.inappstory.sdk.stories.api.models.Story;
+import com.inappstory.sdk.core.network.content.models.Story;
 import com.inappstory.sdk.stories.api.models.StoryListType;
 
 import java.lang.reflect.Type;

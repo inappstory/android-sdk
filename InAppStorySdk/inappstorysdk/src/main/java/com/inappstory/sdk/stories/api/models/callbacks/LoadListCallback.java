@@ -3,20 +3,18 @@ package com.inappstory.sdk.stories.api.models.callbacks;
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.InAppStoryManager;
-import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
-import com.inappstory.sdk.stories.api.models.Story;
+import com.inappstory.sdk.core.network.content.models.Story;
 import com.inappstory.sdk.stories.api.models.StoryListType;
 import com.inappstory.sdk.stories.outercallbacks.common.errors.ErrorCallback;
 
 import java.lang.reflect.Type;
 import java.util.List;
-import java.util.Locale;
 
 public abstract class LoadListCallback extends NetworkCallback<List<Story>> {
     @Override

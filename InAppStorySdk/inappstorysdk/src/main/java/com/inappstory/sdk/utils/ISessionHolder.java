@@ -2,9 +2,7 @@ package com.inappstory.sdk.utils;
 
 import com.inappstory.sdk.game.cache.SessionAssetsIsReadyCallback;
 import com.inappstory.sdk.stories.api.models.CachedSessionData;
-import com.inappstory.sdk.stories.api.models.Session;
-import com.inappstory.sdk.stories.api.models.SessionAsset;
-import com.inappstory.sdk.stories.cache.FilesDownloadManager;
+import com.inappstory.sdk.core.network.content.models.SessionAsset;
 
 import java.util.List;
 
@@ -12,7 +10,7 @@ public interface ISessionHolder {
     boolean allowUGC();
     String getSessionId();
     List<SessionAsset> getSessionAssets();
-    void setSession(Session session, boolean v1Disabled);
+    void setSession(CachedSessionData sessionData, boolean v1Disabled);
     void sessionData(CachedSessionData sessionData);
 
     void addSessionAssetsKeys(List<SessionAsset> cacheObjects);

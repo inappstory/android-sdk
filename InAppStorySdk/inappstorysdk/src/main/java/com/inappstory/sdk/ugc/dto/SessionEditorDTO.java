@@ -1,6 +1,6 @@
 package com.inappstory.sdk.ugc.dto;
 
-import com.inappstory.sdk.stories.api.models.SessionEditor;
+import com.inappstory.sdk.core.network.content.models.SessionEditor;
 import com.inappstory.sdk.stories.api.models.UGCVersionToSDKBuild;
 import com.inappstory.sdk.ugc.extinterfaces.IUgcEditor;
 import com.inappstory.sdk.ugc.extinterfaces.IUgcVersionToSDKBuild;
