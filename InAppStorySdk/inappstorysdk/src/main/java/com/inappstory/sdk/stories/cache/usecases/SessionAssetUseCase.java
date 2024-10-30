@@ -139,6 +139,6 @@ public class SessionAssetUseCase extends GetCacheFileUseCase<Void> {
 
     @Override
     protected LruDiskCache getCache() {
-        return core.contentLoader().getInfiniteCache();
+        return core.contentLoader().getBundleCache();
     }
 }

@@ -18,6 +18,7 @@ public class LruCachesHolder {
     private LruDiskCache fastCache;
     private LruDiskCache commonCache;
     private LruDiskCache infiniteCache;
+    private LruDiskCache bundleCache;
     private LruDiskCache vodCache;
 
     public LruCachesHolder(
@@ -60,6 +61,13 @@ public class LruCachesHolder {
                     cacheDir.getFreeSpace(),
                     CacheType.INFINITE
             );
+            this.bundleCache = new LruDiskCache(
+                    core,
+                    cacheDir,
+                    prefix + "infiniteCache",
+                    cacheDir.getFreeSpace(),
+                    CacheType.BUNDLE
+            );
             this.vodCache = new LruDiskCache(
                     core,
                     cacheDir,
@@ -82,6 +90,10 @@ public class LruCachesHolder {
 
     public LruDiskCache getVodCache() {
         return vodCache;
+    }
+
+    public LruDiskCache getBundleCache() {
+        return bundleCache;
     }
 
     public LruDiskCache getInfiniteCache() {

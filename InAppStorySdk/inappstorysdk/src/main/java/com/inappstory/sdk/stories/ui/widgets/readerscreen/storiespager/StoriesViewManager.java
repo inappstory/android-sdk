@@ -282,7 +282,7 @@ public class StoriesViewManager {
             loadedIndex = index;
             loadedId = storyId;
         }
-        slideInCache = core.contentLoader().storyDownloadManager().checkIfPageLoaded(
+        slideInCache = core.contentLoader().storyDownloadManager().isSlideLoaded(
                 storyId,
                 index,
                 pageManager.getViewContentType()

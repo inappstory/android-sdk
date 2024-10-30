@@ -6,4 +6,10 @@ public interface InAppMessageLoadCallback extends IASCallback {
     void loaded(String id);
 
     void allLoaded();
+
+    void loadError(String id);
+
+    void loadError();
+
+    void isEmpty();
 }

@@ -6,7 +6,7 @@ import com.inappstory.sdk.core.network.content.models.SessionAsset;
 import java.util.List;
 
 public interface IASContentPreload {
-    void downloadIASMessages();
+    void downloadInAppMessages();
 
     void downloadSessionAssets(
             List<SessionAsset> sessionAssets
@@ -15,6 +15,4 @@ public interface IASContentPreload {
     IGamePreloader getGamePreloader();
 
     void restartGamePreloader();
-
-
 }

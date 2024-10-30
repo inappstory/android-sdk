@@ -2,13 +2,19 @@ package com.inappstory.sdk.core.network.content.usecase;
 
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
+import com.inappstory.sdk.core.dataholders.models.IInAppMessage;
+import com.inappstory.sdk.core.inappmessages.InAppMessageFeedCallback;
 import com.inappstory.sdk.core.utils.ConnectionCheck;
 import com.inappstory.sdk.core.utils.ConnectionCheckCallback;
 import com.inappstory.sdk.core.network.content.models.InAppMessageFeed;
+import com.inappstory.sdk.inappmessage.InAppMessageLoadCallback;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
+import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 
 import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.List;
 
 public class InAppMessagesUseCase {
     private final IASCore core;
@@ -17,12 +23,16 @@ public class InAppMessagesUseCase {
         this.core = core;
     }
 
-    public void get() {
+    public void get(InAppMessageFeedCallback callback) {
         loadWithRetry(callback, true);
     }
 
-    private void loadWithRetry(final boolean retry) {
-        new ConnectionCheck().check(core.appContext(), new ConnectionCheckCallback() {
+    private void loadWithRetry(
+            final InAppMessageFeedCallback loadCallback,
+            final boolean retry
+    ) {
+        core.statistic().profiling().addTask("inAppMessages");
+        new ConnectionCheck().check(core.appContext(), new ConnectionCheckCallback(core) {
             @Override
             public void success() {
                 OpenSessionCallback openSessionCallback = new OpenSessionCallback() {
@@ -34,8 +44,19 @@ public class InAppMessagesUseCase {
                                     InAppMessageFeed inAppMessageFeed
                             ) {
                                 if (inAppMessageFeed == null) {
-                                    loadError();
+                                    loadError(loadCallback);
                                     return;
+                                }
+                                List<IInAppMessage> messages = new ArrayList<>();
+                                messages.addAll(inAppMessageFeed.messages());
+                                if (messages.isEmpty()) {
+                                    loadCallback.isEmpty();
+                                    return;
+                                }
+                                for (IInAppMessage message: messages) {
+                                    core.contentHolder().readerContent().setByIdAndType(
+                                            message, message.id(), ContentType.IN_APP_MESSAGE
+                                    );
                                 }
 
                             }
@@ -47,9 +68,7 @@ public class InAppMessagesUseCase {
 
                             @Override
                             public void error424(String message) {
-                                core.statistic().profiling().setReady(loadStoriesUID);
-                                loadError();
-
+                                core.statistic().profiling().setReady("inAppMessages");
                                 IASDataSettingsHolder dataSettingsHolder =
                                         (IASDataSettingsHolder) core.settingsAPI();
                                 core.sessionManager().closeSession(
@@ -60,18 +79,23 @@ public class InAppMessagesUseCase {
                                         sessionId
                                 );
                                 if (retry)
-                                    loadWithRetry(callback, false);
+                                    loadWithRetry(loadCallback, false);
+                                else
+                                    loadError(loadCallback);
                             }
                         };
                         core.network().enqueue(
-                                core.network().getApi().getInAppMessages(1, null, null),
+                                core.network().getApi().getInAppMessages(1,
+                                        null,
+                                        null
+                                ),
                                 networkCallback
                         );
                     }
 
                     @Override
                     public void onError() {
-                        loadError();
+                        loadError(loadCallback);
                     }
                 };
                 core.sessionManager().useOrOpenSession(
@@ -81,6 +105,9 @@ public class InAppMessagesUseCase {
         });
     }
 
-    private void loadError() {
+    private void loadError(InAppMessageFeedCallback loadCallback) {
+        if (loadCallback != null) {
+            loadCallback.error();
+        }
     }
 }

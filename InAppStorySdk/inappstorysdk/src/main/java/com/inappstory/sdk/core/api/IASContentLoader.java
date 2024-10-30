@@ -13,6 +13,7 @@ public interface IASContentLoader {
     LruDiskCache getCommonCache();
     LruDiskCache getVodCache();
     LruDiskCache getInfiniteCache();
+    LruDiskCache getBundleCache();
     StoryDownloadManager storyDownloadManager();
     GameCacheManager gameCacheManager();
     void clearCache();

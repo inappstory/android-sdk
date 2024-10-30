@@ -69,6 +69,11 @@ public class IASContentLoaderImpl implements IASContentLoader {
     }
 
     @Override
+    public LruDiskCache getBundleCache() {
+        return filesDownloadManager.getCachesHolder().getBundleCache();
+    }
+
+    @Override
     public StoryDownloadManager storyDownloadManager() {
         return storyDownloadManager;
     }
@@ -85,6 +90,7 @@ public class IASContentLoaderImpl implements IASContentLoader {
             getCommonCache().clearCache();
             getFastCache().clearCache();
             getInfiniteCache().clearCache();
+            getBundleCache().clearCache();
             getVodCache().clearCache();
             filesDownloadManager().getVodCacheJournal().clear();
             core.contentHolder().clearAll();

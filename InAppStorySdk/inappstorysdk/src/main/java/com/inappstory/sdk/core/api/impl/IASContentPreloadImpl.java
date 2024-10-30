@@ -9,13 +9,24 @@ import androidx.annotation.NonNull;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.api.IASCallback;
+import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.IASContentPreload;
+import com.inappstory.sdk.core.api.UseIASCallback;
+import com.inappstory.sdk.core.dataholders.models.IReaderContent;
+import com.inappstory.sdk.core.inappmessages.InAppMessageFeedCallback;
+import com.inappstory.sdk.core.network.content.usecase.InAppMessagesUseCase;
+import com.inappstory.sdk.core.utils.ConnectionCheck;
+import com.inappstory.sdk.core.utils.ConnectionCheckCallback;
 import com.inappstory.sdk.game.cache.SuccessUseCaseCallback;
 import com.inappstory.sdk.game.cache.UseCaseCallback;
 import com.inappstory.sdk.game.preload.GamePreloader;
 import com.inappstory.sdk.game.preload.IGamePreloader;
+import com.inappstory.sdk.inappmessage.InAppMessageLoadCallback;
 import com.inappstory.sdk.stories.api.interfaces.IGameCenterData;
 import com.inappstory.sdk.core.network.content.models.SessionAsset;
+import com.inappstory.sdk.stories.api.models.ContentType;
+import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.cache.usecases.SessionAssetUseCase;
 import com.inappstory.sdk.utils.ISessionHolder;
 
@@ -49,6 +60,55 @@ public class IASContentPreloadImpl implements IASContentPreload {
                     }
                 }
         );
+    }
+
+    @Override
+    public void downloadInAppMessages() {
+        List<IReaderContent> content = core
+                .contentHolder()
+                .readerContent()
+                .getByType(ContentType.IN_APP_MESSAGE);
+        if (!content.isEmpty()) {
+            downloadInAppMessagesContent(content);
+            return;
+        }
+        new InAppMessagesUseCase(core)
+                .get(new InAppMessageFeedCallback() {
+                    @Override
+                    public void success(List<IReaderContent> content) {
+                        downloadInAppMessagesContent(content);
+                    }
+
+                    @Override
+                    public void isEmpty() {
+                        core.callbacksAPI().useCallback(
+                                IASCallbackType.IN_APP_MESSAGE_LOAD,
+                                new UseIASCallback<InAppMessageLoadCallback>() {
+                                    @Override
+                                    public void use(@NonNull InAppMessageLoadCallback callback) {
+                                        callback.isEmpty();
+                                    }
+                                }
+                        );
+                    }
+
+                    @Override
+                    public void error() {
+                        core.callbacksAPI().useCallback(
+                                IASCallbackType.IN_APP_MESSAGE_LOAD,
+                                new UseIASCallback<InAppMessageLoadCallback>() {
+                                    @Override
+                                    public void use(@NonNull InAppMessageLoadCallback callback) {
+                                        callback.loadError();
+                                    }
+                                }
+                        );
+                    }
+                });
+    }
+
+    private void downloadInAppMessagesContent(List<IReaderContent> content) {
+
     }
 
     @Override

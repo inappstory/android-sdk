@@ -11,7 +11,7 @@ import java.util.Set;
 public class LruDiskCache {
 
     private final CacheJournal journal;
-    private FileManager manager;
+    private final FileManager manager;
     private long cacheSize;
 
     public CacheType cacheType;
