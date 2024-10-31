@@ -1,5 +1,6 @@
 package com.inappstory.sdk.core.api;
 
+import com.inappstory.sdk.core.inappmessages.InAppMessageDownloadManager;
 import com.inappstory.sdk.game.cache.GameCacheManager;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.core.dataholders.models.IReaderContent;
@@ -15,6 +16,7 @@ public interface IASContentLoader {
     LruDiskCache getInfiniteCache();
     LruDiskCache getBundleCache();
     StoryDownloadManager storyDownloadManager();
+    InAppMessageDownloadManager inAppMessageDownloadManager();
     GameCacheManager gameCacheManager();
     void clearCache();
     void clearGames();

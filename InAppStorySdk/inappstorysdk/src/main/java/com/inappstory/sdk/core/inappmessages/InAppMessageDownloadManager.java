@@ -7,21 +7,25 @@ import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.dataholders.models.IReaderContent;
 import com.inappstory.sdk.core.network.content.usecase.InAppMessageByIdUseCase;
-import com.inappstory.sdk.core.network.content.usecase.InAppMessagesUseCase;
 import com.inappstory.sdk.core.ui.screens.IReaderContentPageViewModel;
+import com.inappstory.sdk.game.cache.SessionAssetsIsReadyCallback;
 import com.inappstory.sdk.inappmessage.InAppMessageLoadCallback;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.cache.ContentIdAndType;
 import com.inappstory.sdk.stories.cache.SlideTaskKey;
 import com.inappstory.sdk.stories.cache.SlidesDownloader;
+import com.inappstory.sdk.utils.ISessionHolder;
 
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class InAppMessageDownloadManager {
     private final IASCore core;
 
     private final SlidesDownloader slidesDownloader;
+    private final Set<Integer> loadedInAppMessages = new HashSet<>();
 
     public InAppMessageDownloadManager(IASCore core) {
         this.core = core;
@@ -41,8 +45,8 @@ public class InAppMessageDownloadManager {
             new InAppMessageByIdUseCase(core, inAppMessageId).get(
                     new InAppMessageByIdCallback() {
                         @Override
-                        public void success(IReaderContent content) {
-
+                        public void success(IReaderContent readerContent) {
+                            addSlides(readerContent);
                         }
 
                         @Override
@@ -53,7 +57,7 @@ public class InAppMessageDownloadManager {
                                         @Override
                                         public void use(@NonNull InAppMessageLoadCallback callback) {
                                             callback.loadError(
-                                                    Integer.toString(inAppMessageId)
+                                                    inAppMessageId
                                             );
                                         }
                                     }
@@ -64,7 +68,78 @@ public class InAppMessageDownloadManager {
         }
     }
 
-    private void addSlides(@NonNull IReaderContent readerContent) {
+    public boolean allSlidesLoaded(IReaderContent readerContent) {
+        return slidesDownloader.allSlidesLoaded(readerContent, ContentType.IN_APP_MESSAGE);
+    }
+
+    private void addSlides(@NonNull final IReaderContent readerContent) {
+        core.contentLoader().inAppMessageDownloadManager().addSubscriber(
+                new IReaderContentPageViewModel() {
+                    @Override
+                    public ContentIdAndType contentIdAndType() {
+                        return new ContentIdAndType(
+                                readerContent.id(),
+                                ContentType.IN_APP_MESSAGE
+                        );
+                    }
+
+                    @Override
+                    public void contentLoadError() {
+                        core.callbacksAPI().useCallback(
+                                IASCallbackType.IN_APP_MESSAGE_LOAD,
+                                new UseIASCallback<InAppMessageLoadCallback>() {
+                                    @Override
+                                    public void use(@NonNull InAppMessageLoadCallback callback) {
+                                        callback.loadError(
+                                                readerContent.id()
+                                        );
+                                    }
+                                }
+                        );
+                    }
+
+                    @Override
+                    public void slideLoadError(int index) {
+                        core.callbacksAPI().useCallback(
+                                IASCallbackType.IN_APP_MESSAGE_LOAD,
+                                new UseIASCallback<InAppMessageLoadCallback>() {
+                                    @Override
+                                    public void use(@NonNull InAppMessageLoadCallback callback) {
+                                        callback.loadError(
+                                                readerContent.id()
+                                        );
+                                    }
+                                }
+                        );
+                    }
+
+                    @Override
+                    public void contentLoadSuccess(IReaderContent content) {
+
+                    }
+
+                    @Override
+                    public void slideLoadSuccess(int index) {
+                        if (core.contentLoader().inAppMessageDownloadManager()
+                                .allSlidesLoaded(readerContent)) {
+
+                            ISessionHolder sessionHolder = core.sessionManager().getSession();
+                            if (sessionHolder.checkIfSessionAssetsIsReadySync()) {
+                                contentIsLoaded(readerContent);
+                            } else {
+                                sessionHolder.addSessionAssetsIsReadyCallback(new SessionAssetsIsReadyCallback() {
+                                    @Override
+                                    public void isReady() {
+                                        contentIsLoaded(readerContent);
+                                    }
+                                });
+                            }
+                        }
+                    }
+                }
+        );
+
+
         slidesDownloader.addStorySlides(
                 new ContentIdAndType(readerContent.id(),
                         ContentType.IN_APP_MESSAGE
@@ -72,6 +147,34 @@ public class InAppMessageDownloadManager {
                 readerContent,
                 3
         );
+    }
+
+    private void contentIsLoaded(final IReaderContent readerContent) {
+        loadedInAppMessages.add(readerContent.id());
+        core.callbacksAPI().useCallback(
+                IASCallbackType.IN_APP_MESSAGE_LOAD,
+                new UseIASCallback<InAppMessageLoadCallback>() {
+                    @Override
+                    public void use(@NonNull InAppMessageLoadCallback callback) {
+                        callback.loaded(
+                                readerContent.id()
+                        );
+                        if (allContentIsLoaded()) {
+                            callback.allLoaded();
+                        }
+                    }
+                }
+        );
+
+    }
+
+    private boolean allContentIsLoaded() {
+        List<IReaderContent> readerContentList =
+                core.contentHolder().readerContent().getByType(ContentType.IN_APP_MESSAGE);
+        for (IReaderContent readerContent : readerContentList) {
+            if (!loadedInAppMessages.contains(readerContent.id())) return false;
+        }
+        return true;
     }
 
     public void addSubscriber(IReaderContentPageViewModel pageViewModel) {
@@ -98,5 +201,6 @@ public class InAppMessageDownloadManager {
 
     public void clearLocalData() {
         core.contentHolder().readerContent().clearByType(ContentType.IN_APP_MESSAGE);
+        loadedInAppMessages.clear();
     }
 }

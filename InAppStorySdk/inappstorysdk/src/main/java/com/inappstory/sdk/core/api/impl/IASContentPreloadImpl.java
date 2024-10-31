@@ -9,15 +9,14 @@ import androidx.annotation.NonNull;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.core.IASCore;
-import com.inappstory.sdk.core.api.IASCallback;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.IASContentPreload;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.dataholders.models.IReaderContent;
 import com.inappstory.sdk.core.inappmessages.InAppMessageFeedCallback;
 import com.inappstory.sdk.core.network.content.usecase.InAppMessagesUseCase;
-import com.inappstory.sdk.core.utils.ConnectionCheck;
-import com.inappstory.sdk.core.utils.ConnectionCheckCallback;
+import com.inappstory.sdk.core.ui.screens.IReaderContentPageViewModel;
+import com.inappstory.sdk.game.cache.SessionAssetsIsReadyCallback;
 import com.inappstory.sdk.game.cache.SuccessUseCaseCallback;
 import com.inappstory.sdk.game.cache.UseCaseCallback;
 import com.inappstory.sdk.game.preload.GamePreloader;
@@ -26,7 +25,7 @@ import com.inappstory.sdk.inappmessage.InAppMessageLoadCallback;
 import com.inappstory.sdk.stories.api.interfaces.IGameCenterData;
 import com.inappstory.sdk.core.network.content.models.SessionAsset;
 import com.inappstory.sdk.stories.api.models.ContentType;
-import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
+import com.inappstory.sdk.stories.cache.ContentIdAndType;
 import com.inappstory.sdk.stories.cache.usecases.SessionAssetUseCase;
 import com.inappstory.sdk.utils.ISessionHolder;
 
@@ -107,8 +106,17 @@ public class IASContentPreloadImpl implements IASContentPreload {
                 });
     }
 
-    private void downloadInAppMessagesContent(List<IReaderContent> content) {
+    private void downloadInAppMessageContent(final IReaderContent content) {
+        core.contentLoader().inAppMessageDownloadManager().addInAppMessageTask(
+                content.id(),
+                ContentType.IN_APP_MESSAGE
+        );
+    }
 
+    private void downloadInAppMessagesContent(List<IReaderContent> content) {
+        for (IReaderContent contentItem : content) {
+            downloadInAppMessageContent(contentItem);
+        }
     }
 
     @Override

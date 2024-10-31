@@ -8,6 +8,7 @@ import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASInAppMessage;
 import com.inappstory.sdk.inappmessage.InAppMessageLoadCallback;
+import com.inappstory.sdk.inappmessage.InAppMessageOpenSettings;
 import com.inappstory.sdk.inappmessage.InAppMessageScreenActions;
 
 import java.util.List;
@@ -27,8 +28,7 @@ public class IASInAppMessageAPIImpl implements IASInAppMessage {
 
     @Override
     public void show(
-            final String inAppMessageId,
-            final boolean showOnlyIfLoaded,
+            final InAppMessageOpenSettings inAppMessageOpenSettings,
             final FragmentManager fragmentManager,
             final int containerId,
             final InAppMessageScreenActions screenActions
@@ -37,8 +37,7 @@ public class IASInAppMessageAPIImpl implements IASInAppMessage {
             @Override
             public void use(@NonNull IASCore core) {
                 core.inAppMessageAPI().show(
-                        inAppMessageId,
-                        showOnlyIfLoaded,
+                        inAppMessageOpenSettings,
                         fragmentManager,
                         containerId,
                         screenActions
@@ -46,6 +45,7 @@ public class IASInAppMessageAPIImpl implements IASInAppMessage {
             }
         });
     }
+
 
     @Override
     public void callback(final InAppMessageLoadCallback callback) {

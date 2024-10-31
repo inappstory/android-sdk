@@ -25,7 +25,7 @@ public class StoryByStringIdUseCase {
         this.core = core;
     }
 
-    private final String EXPAND_STRING = "slides_html,slides_structure,layout,slides_duration,src_list,img_placeholder_src_list,slides_screenshot_share,slides_payload";
+    private final String EXPAND_STRING = "slides_html,layout,slides_duration,src_list,img_placeholder_src_list,slides_screenshot_share,slides_payload";
 
 
     public void get(

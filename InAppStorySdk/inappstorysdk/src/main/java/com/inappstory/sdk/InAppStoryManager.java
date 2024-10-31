@@ -24,6 +24,7 @@ import com.inappstory.sdk.core.api.IASDataSettings;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.IASStatisticV1;
 import com.inappstory.sdk.inappmessage.InAppMessageLoadCallback;
+import com.inappstory.sdk.inappmessage.InAppMessageOpenSettings;
 import com.inappstory.sdk.inappmessage.InAppMessageScreenActions;
 import com.inappstory.sdk.lrudiskcache.CacheSize;
 import com.inappstory.sdk.network.ApiSettings;
@@ -879,15 +880,13 @@ public class InAppStoryManager {
     }
 
     public void showInAppMessage(
-            String inAppMessageId,
-            boolean showOnlyIfLoaded,
+            InAppMessageOpenSettings openData,
             FragmentManager fragmentManager,
             int containerId,
             InAppMessageScreenActions screenActions
     ) {
         core.inAppMessageAPI().show(
-                inAppMessageId,
-                showOnlyIfLoaded,
+                openData,
                 fragmentManager,
                 containerId,
                 screenActions

@@ -44,7 +44,7 @@ public class SlidesDownloader {
     }
 
     public void cleanTasks() {
-        synchronized (pageTasksLock) {
+        synchronized (slideTasksLock) {
             slideTasks.clear();
             firstPriority.clear();
             secondPriority.clear();
@@ -52,7 +52,7 @@ public class SlidesDownloader {
     }
 
 
-    private final Object pageTasksLock = new Object();
+    private final Object slideTasksLock = new Object();
     private final IASCore core;
 
 
@@ -65,7 +65,7 @@ public class SlidesDownloader {
     }
 
     public void removeSlideTasks(ContentIdAndType contentIdAndType) {
-        synchronized (pageTasksLock) {
+        synchronized (slideTasksLock) {
             Iterator<Map.Entry<SlideTaskKey, SlideTask>> i = slideTasks.entrySet().iterator();
             Map.Entry<SlideTaskKey, SlideTask> key;
             while (i.hasNext()) {
@@ -90,7 +90,7 @@ public class SlidesDownloader {
                         remove = true;
                     } else {
                         if (cache.getFullFile(uniqueKey) == null) {
-                            synchronized (pageTasksLock) {
+                            synchronized (slideTasksLock) {
                                 slideTask.loadType = 0;
                             }
                             return 0;
@@ -103,7 +103,7 @@ public class SlidesDownloader {
                         remove = true;
                     } else {
                         if (vodCache.getFileFromKey(uniqueKey) == null) {
-                            synchronized (pageTasksLock) {
+                            synchronized (slideTasksLock) {
                                 slideTask.loadType = 0;
                             }
                             return 0;
@@ -132,7 +132,7 @@ public class SlidesDownloader {
             List<ContentIdWithIndex> adjacents,
             ContentType type
     ) {
-        synchronized (pageTasksLock) {
+        synchronized (slideTasksLock) {
             for (int i = firstPriority.size() - 1; i >= 0; i--) {
                 if (!secondPriority.contains(firstPriority.get(i))) {
                     secondPriority.add(0, firstPriority.get(i));
@@ -188,7 +188,7 @@ public class SlidesDownloader {
     public void changePriorityForSingle(ContentIdWithIndex current, ContentType type) {
         int currentId = current.id();
         int currentIndex = current.index();
-        synchronized (pageTasksLock) {
+        synchronized (slideTasksLock) {
             ContentIdAndType contentIdAndType = new ContentIdAndType(currentId, type);
             IReaderContentHolder readerContentHolder = core.contentHolder().readerContent();
             IReaderContent currentStory = readerContentHolder.getByIdAndType(
@@ -220,7 +220,7 @@ public class SlidesDownloader {
             IReaderContent readerContent,
             int loadType
     ) {
-        synchronized (pageTasksLock) {
+        synchronized (slideTasksLock) {
             int slidesCountToCache;
             if (loadType == 3) {
                 slidesCountToCache = readerContent.actualSlidesCount();
@@ -256,7 +256,7 @@ public class SlidesDownloader {
     private final SlideErrorCallback onSlideError;
 
     private void loadSlideError(SlideTaskKey slideTaskKey) {
-        synchronized (pageTasksLock) {
+        synchronized (slideTasksLock) {
             Objects.requireNonNull(slideTasks.get(slideTaskKey)).loadType = -1;
         }
         synchronized (pageViewModelsLock) {
@@ -299,7 +299,7 @@ public class SlidesDownloader {
                 loopedExecutor.freeExecutor();
                 return;
             }
-            synchronized (pageTasksLock) {
+            synchronized (slideTasksLock) {
                 Objects.requireNonNull(slideTasks.get(key)).loadType = 1;
             }
             loadSlide(key);
@@ -309,7 +309,7 @@ public class SlidesDownloader {
     private void loadSlide(SlideTaskKey slideTaskKey) {
         try {
             SlideTask slideTask;
-            synchronized (pageTasksLock) {
+            synchronized (slideTasksLock) {
                 slideTask = slideTasks.get(slideTaskKey);
             }
             if (slideTask == null) {
@@ -320,7 +320,7 @@ public class SlidesDownloader {
                 loadSlideError(slideTaskKey);
                 return;
             }
-            synchronized (pageTasksLock) {
+            synchronized (slideTasksLock) {
                 slideTask.loadType = 2;
             }
             slideLoaded(slideTaskKey);
@@ -328,6 +328,25 @@ public class SlidesDownloader {
         } catch (Throwable t) {
             loadSlideError(slideTaskKey);
         }
+    }
+
+    public boolean allSlidesLoaded(
+            IReaderContent readerContent,
+            ContentType type
+    ) {
+        int slides = readerContent.actualSlidesCount();
+        for (int i = 0; i < slides; i++) {
+            SlideTaskKey key =
+                    new SlideTaskKey(new ContentIdAndType(readerContent.id(), type), i);
+            SlideTask task;
+            synchronized (slideTasksLock) {
+                task = slideTasks.get(key);
+            }
+            if (task == null || task.loadType != 2) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private void checkBundleResources(
@@ -367,7 +386,7 @@ public class SlidesDownloader {
     }
 
     private SlideTaskKey getMaxPriorityPageTaskKey() {
-        synchronized (pageTasksLock) {
+        synchronized (slideTasksLock) {
             if (slideTasks == null || slideTasks.size() == 0) return null;
             if (firstPriority == null || secondPriority == null) return null;
             for (SlideTaskKey key : firstPriority) {

@@ -729,24 +729,4 @@ public class ReaderManager {
         core.statistic().v2().resumeStoryEvent(withBackground);
     }
 
-    public void swipeUp() {
-
-    }
-
-    public void swipeDown() {
-
-    }
-
-    public void swipeLeft() {
-
-    }
-
-    public void swipeRight() {
-
-    }
-
-    public void slideLoadedInCache(int storyId, int slideIndex) {
-        ReaderPageManager pageManager = getSubscriberByStoryId(storyId);
-        if (pageManager != null) pageManager.slideLoadSuccess(slideIndex);
-    }
 }

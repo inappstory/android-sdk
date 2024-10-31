@@ -9,6 +9,7 @@ import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_50;
 
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASContentLoader;
+import com.inappstory.sdk.core.inappmessages.InAppMessageDownloadManager;
 import com.inappstory.sdk.game.cache.GameCacheManager;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.core.dataholders.models.IResource;
@@ -31,6 +32,7 @@ public class IASContentLoaderImpl implements IASContentLoader {
     private final FilesDownloadManager filesDownloadManager;
     private final GameCacheManager gameCacheManager;
     private final FilesDownloader filesDownloader;
+    private final InAppMessageDownloadManager inAppMessageDownloadManager;
 
     private final StoryDownloadManager storyDownloadManager;
 
@@ -40,6 +42,7 @@ public class IASContentLoaderImpl implements IASContentLoader {
         this.filesDownloadManager = new FilesDownloadManager(core);
         this.storyDownloadManager = new StoryDownloadManager(core);
         this.gameCacheManager = new GameCacheManager(core);
+        this.inAppMessageDownloadManager = new InAppMessageDownloadManager(core);
         runFreeSpaceCheck();
     }
 
@@ -76,6 +79,11 @@ public class IASContentLoaderImpl implements IASContentLoader {
     @Override
     public StoryDownloadManager storyDownloadManager() {
         return storyDownloadManager;
+    }
+
+    @Override
+    public InAppMessageDownloadManager inAppMessageDownloadManager() {
+        return inAppMessageDownloadManager;
     }
 
     @Override
