@@ -64,7 +64,7 @@ public class StoryDownloadManager {
         addStories(newStories, type);
     }
 
-    static final String EXPAND_STRING = "slides_html,slides_structure,layout,slides_duration,src_list,img_placeholder_src_list,slides_screenshot_share,slides_payload";
+    static final String EXPAND_STRING = "slides,layout";
 
     final Object storiesLock = new Object();
 
@@ -326,28 +326,12 @@ public class StoryDownloadManager {
                 int ind = stories.indexOf(story);
                 if (ind >= 0) {
                     Story localStory = stories.get(ind);
-                    if (tmp.pages == null & localStory.pages != null) {
-                        tmp.pages = new ArrayList<>();
-                        tmp.pages.addAll(localStory.pages);
+                    if (tmp.slides == null & localStory.slides != null) {
+                        tmp.slides = new ArrayList<>();
+                        tmp.slides.addAll(localStory.slides);
                     }
                     if (tmp.layout == null & localStory.layout != null) {
                         tmp.layout = localStory.layout;
-                    }
-                    if (tmp.srcList == null & localStory.srcList != null) {
-                        tmp.srcList = new ArrayList<>();
-                        tmp.srcList.addAll(localStory.srcList);
-                    }
-                    if (tmp.slidesPayload == null & localStory.slidesPayload != null) {
-                        tmp.slidesPayload = new ArrayList<>();
-                        tmp.slidesPayload.addAll(localStory.slidesPayload);
-                    }
-                    if (tmp.slidesShare == null & localStory.slidesShare != null) {
-                        tmp.slidesShare = new ArrayList<>();
-                        tmp.slidesShare.addAll(localStory.slidesShare);
-                    }
-                    if (tmp.imagePlaceholdersList == null && localStory.imagePlaceholdersList != null) {
-                        tmp.imagePlaceholdersList = new ArrayList<>();
-                        tmp.imagePlaceholdersList.addAll(localStory.imagePlaceholdersList);
                     }
                     if (tmp.ugcPayload == null & localStory.ugcPayload != null) {
                         tmp.ugcPayload = new HashMap<>(localStory.ugcPayload);
@@ -562,8 +546,8 @@ public class StoryDownloadManager {
             return;
         }
         cur.loadedPages = new ArrayList<>();
-        cur.pages = new ArrayList<>(story.pages);
-        for (int i = 0; i < cur.pages.size(); i++) {
+        cur.slides = new ArrayList<>(story.slides);
+        for (int i = 0; i < cur.slides.size(); i++) {
             cur.loadedPages.add(false);
         }
         cur.id = id;
@@ -573,10 +557,6 @@ public class StoryDownloadManager {
         cur.hasSwipeUp = story.hasSwipeUp();
         cur.title = story.title;
         cur.statTitle = story.statTitle;
-        cur.srcList = new ArrayList<>(story.getSrcList());
-        cur.imagePlaceholdersList = new ArrayList<>(story.getImagePlaceholdersList());
-        cur.slidesShare = story.slidesShare;
-        cur.slidesPayload = story.slidesPayload;
         cur.setSlidesCount(story.getSlidesCount());
     }
 

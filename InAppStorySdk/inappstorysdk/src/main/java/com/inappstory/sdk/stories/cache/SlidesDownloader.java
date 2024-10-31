@@ -200,7 +200,7 @@ class SlidesDownloader {
             int key = story.id;
             int slidesCountToCache;
             if (loadType == 3) {
-                slidesCountToCache = story.pages.size();
+                slidesCountToCache = story.slides.size();
             } else {
                 slidesCountToCache = 2;
             }

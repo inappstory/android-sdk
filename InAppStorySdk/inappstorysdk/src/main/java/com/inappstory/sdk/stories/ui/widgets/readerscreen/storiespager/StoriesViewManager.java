@@ -12,6 +12,7 @@ import android.view.View;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.game.reader.GameStoryData;
+import com.inappstory.sdk.stories.api.models.StorySlide;
 import com.inappstory.sdk.stories.api.models.UpdateTimelineData;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.ui.reader.StoriesDialogFragment;
@@ -340,8 +341,10 @@ public class StoriesViewManager {
     }
 
     void setWebViewSettings(Story story) throws IOException {
-        String innerWebData = story.pages.get(index);
-        String layout = story.getLayout();//getLayoutWithFonts(story.getLayout());
+        StorySlide storySlide = story.slides.get(index);
+        if (storySlide == null) return;
+        String innerWebData = storySlide.slideContent;
+        String layout = story.getLayout();
         if (storiesView == null || !(storiesView instanceof SimpleStoriesWebView)) return;
 
         WebPageConvertCallback callback = new WebPageConvertCallback() {

@@ -47,18 +47,23 @@ public class Story implements Parcelable {
         return getReplacedField(tmp);
     }
 
-    public String getSlideEventPayload(int slideIndex) {
-        if (slidesPayload == null) return null;
-        for (PayloadObject payloadObject : slidesPayload) {
-            if (slideIndex == payloadObject.slideIndex) {
-                return payloadObject.getPayload();
-            }
+    private StorySlide getSlide(int slideIndex) {
+        if (slides == null) return null;
+        for (StorySlide storySlide : slides) {
+            if (storySlide.slideIndex == slideIndex) return storySlide;
         }
         return null;
     }
 
+    public String getSlideEventPayload(int slideIndex) {
+        StorySlide storySlide = getSlide(slideIndex);
+        if (storySlide == null) return null;
+        if (storySlide.payloadObject == null) return null;
+        return storySlide.payloadObject.getPayload();
+    }
+
     public boolean checkIfEmpty() {
-        return (getLayout() == null || pages == null || pages.isEmpty());
+        return (getLayout() == null || slides == null || slides.isEmpty());
     }
 
     public List<Image> getImage() {
@@ -83,10 +88,6 @@ public class Story implements Parcelable {
         return isOpened;
     }
 
-    public List<String> getPages() {
-        return pages;
-    }
-
     public String getLayout() {
         return layout;
     }
@@ -104,21 +105,21 @@ public class Story implements Parcelable {
     @SerializedName("video_cover")
     public List<Image> videoUrl;
 
-    @SerializedName("slides_payload")
-    public List<PayloadObject> slidesPayload;
-
-    @SerializedName("feed_info")
-    public StoryFeedInfo feedInfo;
+    @SerializedName("slides")
+    public List<StorySlide> slides;
 
     @SerializedName("payload")
     public HashMap<String, Object> ugcPayload;
-
 
     public String getVideoUrl() {
         return (videoUrl != null && !videoUrl.isEmpty()) ? videoUrl.get(0).getUrl() : null;
     }
 
-
+    public StoryTimelineSettings timelineSettings(int slideIndex) {
+        StorySlide storySlide = getSlide(slideIndex);
+        if (storySlide == null) return null;
+        return storySlide.timelineSettings;
+    }
     /**
      * Последний открытый слайд
      */
@@ -164,37 +165,20 @@ public class Story implements Parcelable {
     @SerializedName("has_swipe_up")
     public Boolean hasSwipeUp;
 
-    @SerializedName("src_list")
-    public List<ResourceMappingObject> srcList;
-
-    @SerializedName("img_placeholder_src_list")
-    public List<ImagePlaceholderMappingObject> imagePlaceholdersList;
-
 
     @SerializedName("like")
     public Integer like;
 
-    @SerializedName("slides_screenshot_share")
-    public List<Integer> slidesShare;
-
-    public List<Integer> getSlidesShare() {
-        if (slidesShare == null) {
-            slidesShare = new ArrayList<>();
-        }
-        return slidesShare;
-    }
-
     public boolean isScreenshotShare(int index) {
-        return shareType(index) == 1;
+        StorySlide storySlide = getSlide(index);
+        if (storySlide == null) return false;
+        return storySlide.isScreenshotShare;
     }
-
 
     public int shareType(int index) {
-        if (slidesShare == null) return 0;
-        if (slidesShare.size() <= index) return 0;
-        if (slidesShare.get(index) != null)
-            return slidesShare.get(index);
-        return 0;
+        StorySlide storySlide = getSlide(index);
+        if (storySlide == null) return 0;
+        return storySlide.isScreenshotShare ? 1 : 0;
     }
 
     public int getSlidesCount() {
@@ -247,20 +231,13 @@ public class Story implements Parcelable {
     }
 
 
-    public List<ResourceMappingObject> getSrcList() {
-        if (srcList == null) srcList = new ArrayList<>();
-        return srcList;
-    }
-
-    public List<ImagePlaceholderMappingObject> getImagePlaceholdersList() {
-        if (imagePlaceholdersList == null) imagePlaceholdersList = new ArrayList<>();
-        return imagePlaceholdersList;
-    }
-
     public List<String> getPlaceholdersListNames(int index) {
         ArrayList<String> res = new ArrayList<>();
-        for (ImagePlaceholderMappingObject object : getImagePlaceholdersList()) {
-            if (object.getIndex() == index && (object.getType().equals("image-placeholder"))) {
+        StorySlide storySlide = getSlide(index);
+        if (storySlide == null)
+            return res;
+        for (ImagePlaceholderMappingObject object : storySlide.placeholderResources) {
+            if (object.getType().equals("image-placeholder")) {
                 String name = object.getUrl();
                 if (name != null) res.add(name);
             }
@@ -272,8 +249,11 @@ public class Story implements Parcelable {
 
     public Map<String, String> getPlaceholdersList(int index, String type) {
         Map<String, String> res = new HashMap<>();
-        for (ImagePlaceholderMappingObject object : getImagePlaceholdersList()) {
-            if (object.getIndex() == index && (object.getType().equals("image-placeholder"))) {
+        StorySlide storySlide = getSlide(index);
+        if (storySlide == null)
+            return res;
+        for (ImagePlaceholderMappingObject object : storySlide.placeholderResources) {
+            if (object.getType().equals("image-placeholder")) {
                 res.put(object.getKey(), object.getUrl());
             }
         }
@@ -284,8 +264,11 @@ public class Story implements Parcelable {
 
     public List<ResourceMappingObject> vodResources(int index) {
         ArrayList<ResourceMappingObject> res = new ArrayList<>();
-        for (ResourceMappingObject object : getSrcList()) {
-            if (Objects.equals(VOD, object.purpose) && object.getIndex() == index) {
+        StorySlide storySlide = getSlide(index);
+        if (storySlide == null)
+            return res;
+        for (ResourceMappingObject object : storySlide.resources) {
+            if (Objects.equals(VOD, object.purpose)) {
                 res.add(object);
             }
         }
@@ -294,8 +277,11 @@ public class Story implements Parcelable {
 
     public List<ResourceMappingObject> staticResources(int index) {
         ArrayList<ResourceMappingObject> res = new ArrayList<>();
-        for (ResourceMappingObject object : getSrcList()) {
-            if (!Objects.equals(VOD, object.purpose) && object.getIndex() == index) {
+        StorySlide storySlide = getSlide(index);
+        if (storySlide == null)
+            return res;
+        for (ResourceMappingObject object : storySlide.resources) {
+            if (!Objects.equals(VOD, object.purpose)) {
                 res.add(object);
             }
         }
@@ -360,9 +346,6 @@ public class Story implements Parcelable {
     @SerializedName("slides_html")
     public List<String> pages;
 
-    @SerializedName("slides_structure")
-    public List<SlideStructure> slidesStructure;
-
     public List<Boolean> loadedPages = new ArrayList<>();
 
     @SerializedName("layout")
@@ -377,6 +360,7 @@ public class Story implements Parcelable {
         story.lastIndex = lastIndex;
         story.title = title;
         story.statTitle = statTitle;
+        story.slides = slides;
         story.source = source;
         story.backgroundColor = backgroundColor;
         story.image = image;
@@ -385,9 +369,6 @@ public class Story implements Parcelable {
         story.slidesCount = slidesCount;
         story.titleColor = titleColor;
         story.isOpened = isOpened;
-        if (slidesShare != null) {
-            story.slidesShare.addAll(slidesShare);
-        }
         story.favorite = favorite;
         //nar.pages = pages;
         return story;
@@ -399,8 +380,7 @@ public class Story implements Parcelable {
     }
 
     public void readFromParcel(Parcel in) {
-        if (slidesShare == null) slidesShare = new ArrayList<>();
-        if (pages == null) pages = new ArrayList<>();
+        if (slides == null) slides = new ArrayList<>();
         id = in.readInt();
         lastIndex = in.readInt();
         title = in.readString();
@@ -411,16 +391,13 @@ public class Story implements Parcelable {
         slidesCount = in.readInt();
         titleColor = in.readString();
         isOpened = (in.readInt() == 1);
-        in.readList(pages, String.class.getClassLoader());
+        in.readList(slides, String.class.getClassLoader());
         favorite = (in.readInt() == 1);
         layout = in.readString();
-        in.readList(slidesShare, Boolean.class.getClassLoader());
     }
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        if (slidesShare == null) slidesShare = new ArrayList<>();
-        if (pages == null) pages = new ArrayList<>();
         dest.writeInt(id);
         dest.writeInt(lastIndex);
         dest.writeString(title);
@@ -432,10 +409,8 @@ public class Story implements Parcelable {
         dest.writeInt(slidesCount);
         dest.writeString(titleColor);
         dest.writeInt(isOpened ? 1 : 0);
-        dest.writeList(pages);
         dest.writeInt(favorite ? 1 : 0);
         dest.writeString(layout);
-        dest.writeList(slidesShare);
 
     }
 
