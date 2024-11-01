@@ -24,7 +24,7 @@ public class InAppMessage implements IInAppMessage {
     public int dayLimit;
 
     @SerializedName("slides")
-    public List<StorySlide> slides;
+    public List<InAppMessageSlide> slides;
 
     @SerializedName("campaign_name")
     public String campaignName;
