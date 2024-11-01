@@ -131,4 +131,9 @@ public class StorySlide implements IReaderContentSlide {
                 slideTimeline.timelineBackgroundColor() :
                 DEFAULT_TIMELINE_BACKGROUND_COLOR;
     }
+
+    @Override
+    public boolean isTimelineHidden() {
+        return slideTimeline != null && slideTimeline.isTimelineHidden();
+    }
 }

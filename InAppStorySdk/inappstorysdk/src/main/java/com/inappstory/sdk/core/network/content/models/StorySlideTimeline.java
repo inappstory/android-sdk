@@ -8,6 +8,8 @@ public class StorySlideTimeline implements ISlideTimeline {
     public String foregroundColor;
     @SerializedName("background")
     public String backgroundColor;
+    @SerializedName("is_timeline_hidden")
+    public boolean isTimelineHidden;
 
     public static String DEFAULT_TIMELINE_BACKGROUND_COLOR = "#8affffff";
     public static String DEFAULT_TIMELINE_FOREGROUND_COLOR = "#ffffffff";
@@ -24,5 +26,10 @@ public class StorySlideTimeline implements ISlideTimeline {
         return backgroundColor != null ?
                 backgroundColor :
                 DEFAULT_TIMELINE_BACKGROUND_COLOR;
+    }
+
+    @Override
+    public boolean isTimelineHidden() {
+        return isTimelineHidden;
     }
 }

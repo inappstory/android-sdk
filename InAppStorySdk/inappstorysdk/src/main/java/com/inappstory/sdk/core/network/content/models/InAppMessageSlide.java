@@ -124,4 +124,9 @@ public class InAppMessageSlide implements IReaderContentSlide {
     public String timelineBackgroundColor() {
         throw new NotImplementedMethodException();
     }
+
+    @Override
+    public boolean isTimelineHidden() {
+        throw new NotImplementedMethodException();
+    }
 }
