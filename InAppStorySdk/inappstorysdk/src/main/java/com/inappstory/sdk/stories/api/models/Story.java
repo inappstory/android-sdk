@@ -108,6 +108,9 @@ public class Story implements Parcelable {
     @SerializedName("slides")
     public List<StorySlide> slides;
 
+    @SerializedName("hide_timeline")
+    public String isTimelineHidden;
+
     @SerializedName("payload")
     public HashMap<String, Object> ugcPayload;
 
@@ -168,6 +171,7 @@ public class Story implements Parcelable {
 
     @SerializedName("like")
     public Integer like;
+
 
     public boolean isScreenshotShare(int index) {
         StorySlide storySlide = getSlide(index);

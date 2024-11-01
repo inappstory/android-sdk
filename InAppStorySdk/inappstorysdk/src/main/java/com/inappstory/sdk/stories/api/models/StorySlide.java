@@ -5,7 +5,7 @@ import com.inappstory.sdk.network.annotations.models.SerializedName;
 import java.util.List;
 
 public class StorySlide {
-    @SerializedName("slide_index")
+    @SerializedName("index")
     public int slideIndex;
     @SerializedName("event_payload")
     public PayloadObject payloadObject;
