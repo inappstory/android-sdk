@@ -6,7 +6,7 @@ import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASStatisticV1;
-import com.inappstory.sdk.core.dataholders.models.IReaderContent;
+import com.inappstory.sdk.core.data.IReaderContent;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.statistic.GetStatisticV1Callback;

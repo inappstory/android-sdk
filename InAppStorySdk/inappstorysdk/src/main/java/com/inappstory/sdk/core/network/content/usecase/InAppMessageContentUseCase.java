@@ -1,8 +1,8 @@
 package com.inappstory.sdk.core.network.content.usecase;
 
 import com.inappstory.sdk.core.IASCore;
-import com.inappstory.sdk.core.dataholders.models.IInAppMessage;
-import com.inappstory.sdk.core.dataholders.models.IResource;
+import com.inappstory.sdk.core.data.IInAppMessage;
+import com.inappstory.sdk.core.data.IResource;
 import com.inappstory.sdk.inappmessage.InAppMessageLoadCallback;
 
 import java.util.List;

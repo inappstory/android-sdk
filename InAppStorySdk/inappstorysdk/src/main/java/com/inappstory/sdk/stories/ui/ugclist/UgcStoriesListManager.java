@@ -5,7 +5,7 @@ import android.os.Looper;
 import android.view.View;
 
 import com.inappstory.sdk.core.IASCore;
-import com.inappstory.sdk.core.dataholders.models.IListItemContent;
+import com.inappstory.sdk.core.data.IListItemContent;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.ui.list.ListManager;
 

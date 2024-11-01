@@ -1,21 +1,17 @@
 package com.inappstory.sdk.core.ui.screens.inappmessagereader;
 
 import android.content.Context;
-import android.view.ViewGroup;
 
 import androidx.fragment.app.FragmentManager;
 
 import com.inappstory.sdk.core.IASCore;
-import com.inappstory.sdk.core.dataholders.models.IReaderContent;
+import com.inappstory.sdk.core.data.IReaderContent;
 import com.inappstory.sdk.core.inappmessages.InAppMessageFeedCallback;
-import com.inappstory.sdk.core.network.content.usecase.InAppMessageByIdUseCase;
 import com.inappstory.sdk.core.network.content.usecase.InAppMessagesUseCase;
 import com.inappstory.sdk.core.ui.screens.holder.IScreensHolder;
 import com.inappstory.sdk.core.ui.screens.launcher.ILaunchScreenCallback;
 import com.inappstory.sdk.core.ui.screens.launcher.LaunchScreenStrategy;
 import com.inappstory.sdk.core.ui.screens.ScreenType;
-import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenAppearance;
-import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenData;
 import com.inappstory.sdk.inappmessage.InAppMessageAppearance;
 import com.inappstory.sdk.inappmessage.InAppMessageOpenSettings;
 import com.inappstory.sdk.stories.api.models.ContentType;

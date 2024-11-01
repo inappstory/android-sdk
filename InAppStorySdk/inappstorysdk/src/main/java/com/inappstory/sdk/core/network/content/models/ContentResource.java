@@ -1,14 +1,14 @@
-package com.inappstory.sdk.stories.api.models;
+package com.inappstory.sdk.core.network.content.models;
 
 
 import com.inappstory.sdk.network.annotations.models.SerializedName;
-import com.inappstory.sdk.core.dataholders.models.IResource;
+import com.inappstory.sdk.core.data.IResource;
 
 /**
  * Created by paperrose on 19.02.2018.
  */
 
-public class ResourceMapping implements IResource {
+public class ContentResource implements IResource {
     @SerializedName("url")
     public String url;
     @SerializedName("key")

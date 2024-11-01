@@ -3,11 +3,9 @@ package com.inappstory.sdk.stories.cache;
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.core.IASCore;
-import com.inappstory.sdk.core.api.IASCallbackType;
-import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.dataholders.IContentHolder;
-import com.inappstory.sdk.core.dataholders.models.IListItemContent;
-import com.inappstory.sdk.core.dataholders.models.IReaderContent;
+import com.inappstory.sdk.core.data.IListItemContent;
+import com.inappstory.sdk.core.data.IReaderContent;
 import com.inappstory.sdk.core.ui.screens.IReaderContentPageViewModel;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.stories.api.models.ContentIdWithIndex;
@@ -18,7 +16,6 @@ import com.inappstory.sdk.stories.api.models.StoryListType;
 import com.inappstory.sdk.core.network.content.callbacks.LoadFavoritesCallback;
 import com.inappstory.sdk.core.network.content.callbacks.LoadStoriesCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.SimpleListCallback;
-import com.inappstory.sdk.stories.outercallbacks.common.errors.ErrorCallback;
 import com.inappstory.sdk.stories.ui.list.StoryFavoriteImage;
 
 import java.io.IOException;

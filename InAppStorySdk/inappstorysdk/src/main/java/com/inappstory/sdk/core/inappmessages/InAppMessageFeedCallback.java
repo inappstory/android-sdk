@@ -1,6 +1,6 @@
 package com.inappstory.sdk.core.inappmessages;
 
-import com.inappstory.sdk.core.dataholders.models.IReaderContent;
+import com.inappstory.sdk.core.data.IReaderContent;
 
 import java.util.List;
 

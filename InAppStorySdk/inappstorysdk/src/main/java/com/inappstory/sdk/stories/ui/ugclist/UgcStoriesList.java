@@ -22,7 +22,7 @@ import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.IASStatisticV1;
-import com.inappstory.sdk.core.dataholders.models.IListItemContent;
+import com.inappstory.sdk.core.data.IListItemContent;
 import com.inappstory.sdk.core.storieslist.StoriesListVMState;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.ContentType;

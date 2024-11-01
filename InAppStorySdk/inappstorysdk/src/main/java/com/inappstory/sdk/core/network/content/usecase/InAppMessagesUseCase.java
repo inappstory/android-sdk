@@ -2,12 +2,11 @@ package com.inappstory.sdk.core.network.content.usecase;
 
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
-import com.inappstory.sdk.core.dataholders.models.IInAppMessage;
+import com.inappstory.sdk.core.data.IInAppMessage;
 import com.inappstory.sdk.core.inappmessages.InAppMessageFeedCallback;
 import com.inappstory.sdk.core.utils.ConnectionCheck;
 import com.inappstory.sdk.core.utils.ConnectionCheckCallback;
 import com.inappstory.sdk.core.network.content.models.InAppMessageFeed;
-import com.inappstory.sdk.inappmessage.InAppMessageLoadCallback;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;

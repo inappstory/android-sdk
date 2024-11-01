@@ -1,6 +1,6 @@
 package com.inappstory.sdk.stories.outercallbacks.common.reader;
 
-import com.inappstory.sdk.core.dataholders.models.IStatData;
+import com.inappstory.sdk.core.data.IStatData;
 import com.inappstory.sdk.network.annotations.models.Ignore;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.utils.StringsUtils;

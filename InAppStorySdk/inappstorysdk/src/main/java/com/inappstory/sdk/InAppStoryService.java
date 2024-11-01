@@ -6,7 +6,7 @@ import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
-import com.inappstory.sdk.core.dataholders.models.IListItemContent;
+import com.inappstory.sdk.core.data.IListItemContent;
 import com.inappstory.sdk.externalapi.subscribers.InAppStoryAPISubscribersManager;
 import com.inappstory.sdk.core.network.content.models.Image;
 import com.inappstory.sdk.stories.api.models.ContentType;

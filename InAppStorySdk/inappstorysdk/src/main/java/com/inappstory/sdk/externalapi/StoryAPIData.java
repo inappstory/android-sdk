@@ -5,7 +5,7 @@ import androidx.annotation.NonNull;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
-import com.inappstory.sdk.core.dataholders.models.IListItemContent;
+import com.inappstory.sdk.core.data.IListItemContent;
 import com.inappstory.sdk.core.utils.StringWithPlaceholders;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 

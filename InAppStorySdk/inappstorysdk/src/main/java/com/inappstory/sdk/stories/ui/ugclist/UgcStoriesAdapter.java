@@ -20,7 +20,7 @@ import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.IASStatisticV1;
 import com.inappstory.sdk.core.api.UseIASCallback;
-import com.inappstory.sdk.core.dataholders.models.IListItemContent;
+import com.inappstory.sdk.core.data.IListItemContent;
 import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenData;
 import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenStrategy;
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenAppearance;

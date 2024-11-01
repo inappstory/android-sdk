@@ -1,6 +1,6 @@
 package com.inappstory.sdk.core.ui.screens;
 
-import com.inappstory.sdk.core.dataholders.models.IReaderContent;
+import com.inappstory.sdk.core.data.IReaderContent;
 import com.inappstory.sdk.stories.cache.ContentIdAndType;
 
 public interface IReaderContentPageViewModel {

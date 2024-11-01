@@ -1,23 +1,19 @@
 package com.inappstory.sdk.core.network.content.models;
 
-import static com.inappstory.sdk.stories.api.models.ResourceMapping.VOD;
 
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import com.inappstory.sdk.core.dataholders.models.IStory;
+import com.inappstory.sdk.core.data.IReaderContentSlide;
+import com.inappstory.sdk.core.data.IStory;
 import com.inappstory.sdk.network.annotations.models.Required;
 import com.inappstory.sdk.network.annotations.models.SerializedName;
-import com.inappstory.sdk.core.dataholders.models.IResource;
+import com.inappstory.sdk.core.data.IResource;
 import com.inappstory.sdk.stories.api.models.GameInstance;
-import com.inappstory.sdk.stories.api.models.PayloadObject;
-import com.inappstory.sdk.stories.api.models.ResourceMapping;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 /**
  * Created by Paperrose on 08.07.2018.
@@ -43,8 +39,6 @@ public class Story implements Parcelable, IStory {
     @SerializedName("video_cover")
     public List<Image> videoUrl;
 
-    @SerializedName("slides_payload")
-    public List<PayloadObject> slidesPayload;
 
     @SerializedName("payload")
     public HashMap<String, Object> ugcPayload;
@@ -58,19 +52,11 @@ public class Story implements Parcelable, IStory {
     @SerializedName("has_swipe_up")
     public Boolean hasSwipeUp;
 
-    @SerializedName("src_list")
-    public List<ResourceMapping> srcList;
-
-
-    @SerializedName("img_placeholder_src_list")
-    public List<ResourceMapping> imagePlaceholdersList;
-
+    @SerializedName("slides")
+    public List<StorySlide> slides;
 
     @SerializedName("like")
     public Integer like;
-
-    @SerializedName("slides_screenshot_share")
-    public List<Integer> slidesShare;
 
     @SerializedName("slides_count")
     public int slidesCount;
@@ -110,8 +96,6 @@ public class Story implements Parcelable, IStory {
     @SerializedName("share_functional")
     public Boolean hasShare;
 
-    @SerializedName("slides_html")
-    public List<String> slides;
 
     @SerializedName("layout")
     public String layout;
@@ -122,14 +106,8 @@ public class Story implements Parcelable, IStory {
     }
 
     @Override
-    public String slideEventPayload(int slideIndex) {
-        if (slidesPayload == null) return null;
-        for (PayloadObject payloadObject : slidesPayload) {
-            if (slideIndex == payloadObject.slideIndex) {
-                return payloadObject.getPayload();
-            }
-        }
-        return null;
+    public String slideEventPayload(int index) {
+        return slide(index).slidePayload();
     }
 
     @Override
@@ -178,11 +156,7 @@ public class Story implements Parcelable, IStory {
 
     @Override
     public int shareType(int index) {
-        if (slidesShare == null) return 0;
-        if (slidesShare.size() <= index) return 0;
-        if (slidesShare.get(index) != null)
-            return slidesShare.get(index);
-        return 0;
+        return slide(index).shareType();
     }
 
     @Override
@@ -208,58 +182,33 @@ public class Story implements Parcelable, IStory {
         return backgroundColor;
     }
 
+    private IReaderContentSlide slide(int index) {
+        if (slides == null || index < 0 || slides.size() < index)
+            throw new RuntimeException("Slide index out of bounds: " + index + " from " + slides.size());
+        for (IReaderContentSlide slide : slides) {
+            if (slide.index() == index) return slide;
+        }
+        throw new RuntimeException("Slide " + index + " not in slides array of story " + id());
+    }
+
     @Override
     public List<IResource> vodResources(int index) {
-        List<IResource> res = new ArrayList<>();
-        List<IResource> input = new ArrayList<>();
-        if (srcList != null) input.addAll(srcList);
-        for (IResource object : input) {
-            if (Objects.equals(VOD, object.getPurpose()) && object.getIndex() == index) {
-                res.add(object);
-            }
-        }
-        return res;
+        return slide(index).vodResources();
     }
 
     @Override
     public List<IResource> staticResources(int index) {
-        List<IResource> res = new ArrayList<>();
-        List<IResource> input = new ArrayList<>();
-        if (srcList != null) input.addAll(srcList);
-        for (IResource object : input) {
-            if (!Objects.equals(VOD, object.getPurpose()) && object.getIndex() == index) {
-                res.add(object);
-            }
-        }
-        return res;
+        return slide(index).staticResources();
     }
 
     @Override
     public List<String> placeholdersNames(int index) {
-        List<String> res = new ArrayList<>();
-        List<IResource> input = new ArrayList<>();
-        if (imagePlaceholdersList != null) input.addAll(imagePlaceholdersList);
-        for (IResource object : input) {
-            if (object.getIndex() == index && (object.getType().equals("image-placeholder"))) {
-                String name = object.getUrl();
-                if (name != null) res.add(name);
-            }
-
-        }
-        return res;
+        return slide(index).placeholdersNames();
     }
 
     @Override
     public Map<String, String> placeholdersMap(int index) {
-        Map<String, String> res = new HashMap<>();
-        List<IResource> input = new ArrayList<>();
-        if (imagePlaceholdersList != null) input.addAll(imagePlaceholdersList);
-        for (IResource object : input) {
-            if (object.getIndex() == index && (object.getType().equals("image-placeholder"))) {
-                res.put(object.getKey(), object.getUrl());
-            }
-        }
-        return res;
+        return slide(index).placeholdersMap();
     }
 
     @Override
@@ -341,10 +290,7 @@ public class Story implements Parcelable, IStory {
 
     @Override
     public String slideByIndex(int index) {
-        if (slides != null && slides.size() > index && index >= 0) {
-            return slides.get(index);
-        }
-        return null;
+        return slide(index).html();
     }
 
     public Story() {
@@ -356,8 +302,6 @@ public class Story implements Parcelable, IStory {
     }
 
     private void readFromParcel(Parcel in) {
-        if (slidesShare == null) slidesShare = new ArrayList<>();
-        if (slides == null) slides = new ArrayList<>();
         id = in.readInt();
         title = in.readString();
         backgroundColor = in.readString();
@@ -366,16 +310,12 @@ public class Story implements Parcelable, IStory {
         slidesCount = in.readInt();
         titleColor = in.readString();
         isOpened = (in.readInt() == 1);
-        in.readList(slides, String.class.getClassLoader());
         favorite = (in.readInt() == 1);
         layout = in.readString();
-        in.readList(slidesShare, Boolean.class.getClassLoader());
     }
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        if (slidesShare == null) slidesShare = new ArrayList<>();
-        if (slides == null) slides = new ArrayList<>();
         dest.writeInt(id);
         dest.writeString(title);
         dest.writeString(statTitle);
@@ -385,10 +325,8 @@ public class Story implements Parcelable, IStory {
         dest.writeInt(slidesCount);
         dest.writeString(titleColor);
         dest.writeInt(isOpened ? 1 : 0);
-        dest.writeList(slides);
         dest.writeInt(favorite ? 1 : 0);
         dest.writeString(layout);
-        dest.writeList(slidesShare);
 
     }
 

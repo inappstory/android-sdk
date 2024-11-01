@@ -1,6 +1,6 @@
 package com.inappstory.sdk.core.dataholders;
 
-import com.inappstory.sdk.core.dataholders.models.IListItemContent;
+import com.inappstory.sdk.core.data.IListItemContent;
 import com.inappstory.sdk.stories.api.models.ContentType;
 
 import java.util.ArrayList;

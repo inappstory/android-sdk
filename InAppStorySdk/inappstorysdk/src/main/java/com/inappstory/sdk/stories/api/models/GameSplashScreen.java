@@ -1,7 +1,7 @@
 package com.inappstory.sdk.stories.api.models;
 
 import com.inappstory.sdk.network.annotations.models.SerializedName;
-import com.inappstory.sdk.core.dataholders.models.IDownloadResource;
+import com.inappstory.sdk.core.data.IDownloadResource;
 
 public class GameSplashScreen implements IDownloadResource {
     @SerializedName("url")

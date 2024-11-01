@@ -1,6 +1,6 @@
 package com.inappstory.sdk.core.network.content.callbacks;
 
-import com.inappstory.sdk.core.dataholders.models.IFavoriteItem;
+import com.inappstory.sdk.core.data.IFavoriteItem;
 
 import java.util.List;
 

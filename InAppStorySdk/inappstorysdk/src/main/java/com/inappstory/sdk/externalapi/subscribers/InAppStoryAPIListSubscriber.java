@@ -3,7 +3,7 @@ package com.inappstory.sdk.externalapi.subscribers;
 
 import androidx.annotation.WorkerThread;
 
-import com.inappstory.sdk.core.dataholders.models.IListItemContent;
+import com.inappstory.sdk.core.data.IListItemContent;
 import com.inappstory.sdk.externalapi.StoryAPIData;
 import com.inappstory.sdk.externalapi.StoryFavoriteItemAPIData;
 

@@ -15,7 +15,7 @@ import androidx.annotation.Nullable;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.IASCore;
-import com.inappstory.sdk.core.dataholders.models.IReaderContent;
+import com.inappstory.sdk.core.data.IReaderContent;
 import com.inappstory.sdk.stories.api.models.ContentType;
 
 import java.util.ArrayList;

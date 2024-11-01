@@ -1,6 +1,6 @@
 package com.inappstory.sdk.core.dataholders;
 
-import com.inappstory.sdk.core.dataholders.models.IContentWithStatus;
+import com.inappstory.sdk.core.data.IContentWithStatus;
 import com.inappstory.sdk.stories.api.models.ContentType;
 
 public interface IContentHolder {

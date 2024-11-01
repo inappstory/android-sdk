@@ -5,7 +5,7 @@ import androidx.annotation.NonNull;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.UseIASCallback;
-import com.inappstory.sdk.core.dataholders.models.IReaderContent;
+import com.inappstory.sdk.core.data.IReaderContent;
 import com.inappstory.sdk.core.network.content.usecase.InAppMessageByIdUseCase;
 import com.inappstory.sdk.core.ui.screens.IReaderContentPageViewModel;
 import com.inappstory.sdk.game.cache.SessionAssetsIsReadyCallback;

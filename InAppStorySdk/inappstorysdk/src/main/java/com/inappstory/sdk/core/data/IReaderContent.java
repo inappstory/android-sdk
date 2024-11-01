@@ -1,4 +1,4 @@
-package com.inappstory.sdk.core.dataholders.models;
+package com.inappstory.sdk.core.data;
 
 import java.util.List;
 import java.util.Map;

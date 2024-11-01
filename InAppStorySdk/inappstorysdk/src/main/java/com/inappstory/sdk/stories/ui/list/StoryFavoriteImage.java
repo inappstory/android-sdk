@@ -2,7 +2,7 @@ package com.inappstory.sdk.stories.ui.list;
 
 import android.graphics.Color;
 
-import com.inappstory.sdk.core.dataholders.models.IFavoriteItem;
+import com.inappstory.sdk.core.data.IFavoriteItem;
 
 /**
  * Defines type for story cover in favorite cell. {@link #imageUrl()}

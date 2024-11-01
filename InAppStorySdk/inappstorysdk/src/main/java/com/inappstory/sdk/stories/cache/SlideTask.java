@@ -1,6 +1,6 @@
 package com.inappstory.sdk.stories.cache;
 
-import com.inappstory.sdk.core.dataholders.models.IResource;
+import com.inappstory.sdk.core.data.IResource;
 
 import java.util.ArrayList;
 import java.util.List;

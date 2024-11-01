@@ -2,8 +2,8 @@ package com.inappstory.sdk.core.network.content.models;
 
 import androidx.annotation.NonNull;
 
-import com.inappstory.sdk.core.dataholders.models.IInAppMessage;
-import com.inappstory.sdk.core.dataholders.models.IInAppMessageFeed;
+import com.inappstory.sdk.core.data.IInAppMessage;
+import com.inappstory.sdk.core.data.IInAppMessageFeed;
 import com.inappstory.sdk.network.annotations.models.SerializedName;
 
 import java.util.ArrayList;
