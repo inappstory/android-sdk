@@ -1,8 +1,10 @@
 package com.inappstory.sdk.stories.ui.widgets.readerscreen.progresstimeline;
 
-import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
+
+import com.inappstory.sdk.stories.api.models.Story;
+import com.inappstory.sdk.stories.api.models.StoryTimelineSettings;
 
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -17,9 +19,14 @@ public class StoryTimelineManager {
 
     private long timerDuration;
     private boolean isActive;
+    private Story story;
 
     public void setCurrentIndex(int currentIndex) {
         this.currentIndex = currentIndex;
+    }
+
+    public void setStory(Story story) {
+        this.story = story;
     }
 
     public void startTimer(long timerStart, int currentIndex, long timerDuration) {
@@ -36,7 +43,7 @@ public class StoryTimelineManager {
                     host.setVisibility(View.VISIBLE);
             }
         };
-        if(Looper.myLooper() == Looper.getMainLooper()) {
+        if (Looper.myLooper() == Looper.getMainLooper()) {
             hostVisibility.run();
         } else {
             host.post(hostVisibility);
@@ -113,7 +120,21 @@ public class StoryTimelineManager {
             host.post(new Runnable() {
                 @Override
                 public void run() {
-                    host.setState(new StoryTimelineState(slidesCount, currentIndex, progress, timerDuration));
+                    if (story == null) return;
+                    StoryTimelineSettings storyTimelineSettings = story.timelineSettings(currentIndex);
+                    String foregroundColor = storyTimelineSettings.foregroundColor;
+                    String backgroundColor = storyTimelineSettings.backgroundColor;
+                    host.setState(
+                            new StoryTimelineState(
+                                    slidesCount,
+                                    currentIndex,
+                                    progress,
+                                    timerDuration,
+                                    foregroundColor,
+                                    backgroundColor,
+                                    story.isTimelineHidden
+                            )
+                    );
                 }
             });
         }
@@ -122,7 +143,21 @@ public class StoryTimelineManager {
     private void setProgressSync() {
         final StoryTimeline host = getHost();
         if (host != null) {
-            host.setState(new StoryTimelineState(slidesCount, currentIndex, 0, timerDuration));
+            if (story == null) return;
+            StoryTimelineSettings storyTimelineSettings = story.timelineSettings(currentIndex);
+            String foregroundColor = storyTimelineSettings.foregroundColor;
+            String backgroundColor = storyTimelineSettings.backgroundColor;
+            host.setState(
+                    new StoryTimelineState(
+                            slidesCount,
+                            currentIndex,
+                            0,
+                            timerDuration,
+                            foregroundColor,
+                            backgroundColor,
+                            story.isTimelineHidden
+                    )
+            );
         }
     }
 

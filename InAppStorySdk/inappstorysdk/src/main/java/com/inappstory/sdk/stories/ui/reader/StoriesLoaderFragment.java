@@ -32,6 +32,7 @@ import androidx.fragment.app.Fragment;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.stories.api.models.Story;
+import com.inappstory.sdk.stories.api.models.StoryTimelineSettings;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderAppearanceSettings;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderLaunchData;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
@@ -67,9 +68,18 @@ public class StoriesLoaderFragment extends Fragment {
         }
         StoryTimeline timeline = view.findViewById(R.id.ias_timeline);
         if (timeline != null) {
+            StoryTimelineSettings storyTimelineSettings = story.timelineSettings(0);
+            String foregroundColor = storyTimelineSettings.foregroundColor;
+            String backgroundColor = storyTimelineSettings.backgroundColor;
             timeline.setState(
                     new StoryTimelineState(
-                            story.getSlidesCount(), 0, 0, 0
+                            story.getSlidesCount(),
+                            0,
+                            0,
+                            0,
+                            foregroundColor,
+                            backgroundColor,
+                            story.isTimelineHidden
                     )
             );
         }

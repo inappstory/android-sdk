@@ -1,7 +1,11 @@
 package com.inappstory.sdk.stories.ui.widgets.readerscreen.progresstimeline;
 
+import static com.inappstory.sdk.stories.api.models.StoryTimelineSettings.DEFAULT_BG_COLOR;
+import static com.inappstory.sdk.stories.api.models.StoryTimelineSettings.DEFAULT_FG_COLOR;
+
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
 import android.util.AttributeSet;
@@ -83,10 +87,23 @@ public class StoryTimeline extends View {
     @MainThread
     public void setState(StoryTimelineState state) {
         this.state = state;
-        int localVisibility = !(state.slidesCount == 1 && state.timerDuration == 0) ? 1 : -1;
+        int localFgColor = Color.parseColor(state.getForegroundColor());
+        int localBgColor = Color.parseColor(state.getBackgroundColor());
+        int localVisibility = !(
+                (state.slidesCount == 1 && state.timerDuration == 0)
+                        || state.isHidden
+        ) ? 1 : -1;
         if (oldVisibility.get() != localVisibility) {
             oldVisibility.set(localVisibility);
             visibilityChanged.set(true);
+        }
+        if (fgColor.get() != localFgColor) {
+            fgColor.set(localFgColor);
+            fgColorChanged.set(true);
+        }
+        if (bgColor.get() != localBgColor) {
+            bgColor.set(localBgColor);
+            bgColorChanged.set(true);
         }
     }
 
@@ -101,11 +118,21 @@ public class StoryTimeline extends View {
     }
 
     private final AtomicInteger oldVisibility = new AtomicInteger(0);
+    private final AtomicInteger bgColor = new AtomicInteger(Color.parseColor(DEFAULT_BG_COLOR));
+    private final AtomicInteger fgColor = new AtomicInteger(Color.parseColor(DEFAULT_FG_COLOR));
     private final AtomicBoolean visibilityChanged = new AtomicBoolean(false);
+    private final AtomicBoolean bgColorChanged = new AtomicBoolean(false);
+    private final AtomicBoolean fgColorChanged = new AtomicBoolean(false);
 
     private void drawSegments(Canvas canvas) {
-         if (visibilityChanged.compareAndSet(true, false)) {
+        if (visibilityChanged.compareAndSet(true, false)) {
             setVisibility(oldVisibility.get() == -1 ? INVISIBLE : VISIBLE);
+        }
+        if (bgColorChanged.compareAndSet(true, false)) {
+            backgroundPaint.setColor(bgColor.get());
+        }
+        if (fgColorChanged.compareAndSet(true, false)) {
+            fillPaint.setColor(fgColor.get());
         }
         float segmentWidth = (getWidth() - parameters.gapWidth * (state.slidesCount - 1)) / state.slidesCount;
         for (int i = 0; i < state.slidesCount; i++) {

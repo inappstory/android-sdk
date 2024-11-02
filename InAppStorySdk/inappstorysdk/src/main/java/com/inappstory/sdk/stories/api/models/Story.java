@@ -109,7 +109,7 @@ public class Story implements Parcelable {
     public List<StorySlide> slides;
 
     @SerializedName("hide_timeline")
-    public String isTimelineHidden;
+    public boolean isTimelineHidden;
 
     @SerializedName("payload")
     public HashMap<String, Object> ugcPayload;

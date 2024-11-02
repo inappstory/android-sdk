@@ -14,6 +14,7 @@ import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.StoryLinkObject;
 import com.inappstory.sdk.stories.cache.SlideTaskData;
+import com.inappstory.sdk.stories.cache.StoryDownloadManager;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.managers.TimerManager;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickAction;
@@ -589,8 +590,16 @@ public class ReaderPageManager {
     boolean currentSlideIsLoaded = false;
 
 
-    public void setTimelineManager(StoryTimelineManager timelineManager) {
+    public void setTimelineManager(final StoryTimelineManager timelineManager) {
         this.timelineManager = timelineManager;
+        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryService service) throws Exception {
+                Story story = service
+                        .getStoryDownloadManager().getStoryById(storyId, Story.StoryType.COMMON);
+                if (story != null) timelineManager.setStory(story);
+            }
+        });
     }
 
     public void setButtonsPanelManager(ButtonsPanelManager buttonsPanelManager, int storyId) {

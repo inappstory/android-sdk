@@ -7,4 +7,7 @@ public class StoryTimelineSettings {
     public String foregroundColor;
     @SerializedName("background")
     public String backgroundColor;
+
+    public static final String DEFAULT_FG_COLOR = "#FFFFFFFF";
+    public static final String DEFAULT_BG_COLOR = "#8aFFFFFF";
 }
