@@ -76,7 +76,10 @@ public class StoryTimeline extends View {
     @MainThread
     public void setState(StoryTimelineState state) {
         this.state = state;
-        int localVisibility = !(state.slidesCount == 1 && state.timerDuration == 0) ? 1 : -1;
+        int localVisibility = !(
+                (state.slidesCount == 1 && state.timerDuration == 0) ||
+                        state.isHidden
+        ) ? 1 : -1;
         if (oldVisibility.get() != localVisibility) {
             oldVisibility.set(localVisibility);
             visibilityChanged.set(true);
