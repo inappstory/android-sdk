@@ -4,6 +4,7 @@ package com.inappstory.sdk.core.network.content.models;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.inappstory.sdk.core.data.IContentWithTimeline;
 import com.inappstory.sdk.core.data.IReaderContentSlide;
 import com.inappstory.sdk.core.data.IStory;
 import com.inappstory.sdk.network.annotations.models.Required;
@@ -20,7 +21,7 @@ import java.util.Map;
  */
 
 
-public class Story implements Parcelable, IStory {
+public class Story implements Parcelable, IStory, IContentWithTimeline {
     @Required
     public int id;
 
@@ -96,6 +97,8 @@ public class Story implements Parcelable, IStory {
     @SerializedName("share_functional")
     public Boolean hasShare;
 
+    @SerializedName("hide_timeline")
+    public boolean timelineIsHidden;
 
     @SerializedName("layout")
     public String layout;
@@ -361,5 +364,20 @@ public class Story implements Parcelable, IStory {
         int result = 1;
         result = prime * result + id;
         return result;
+    }
+
+    @Override
+    public boolean timelineIsHidden() {
+        return timelineIsHidden;
+    }
+
+    @Override
+    public String timelineBackgroundColor(int slideIndex) {
+        return slide(slideIndex).timelineBackgroundColor();
+    }
+
+    @Override
+    public String timelineForegroundColor(int slideIndex) {
+        return slide(slideIndex).timelineForegroundColor();
     }
 }

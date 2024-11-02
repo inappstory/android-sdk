@@ -2,6 +2,7 @@ package com.inappstory.sdk.stories.ui.widgets.readerscreen.progresstimeline;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
 import android.util.AttributeSet;
@@ -79,6 +80,16 @@ public class StoryTimeline extends View {
         if (oldVisibility.get() != localVisibility) {
             oldVisibility.set(localVisibility);
             visibilityChanged.set(true);
+        }
+        int bgColor = Color.parseColor(state.backgroundColor());
+        int fgColor = Color.parseColor(state.backgroundColor());
+        this.parameters.fillColor = fgColor;
+        this.parameters.backgroundColor = bgColor;
+        if (fillPaint != null) {
+            fillPaint.setColor(fgColor);
+        }
+        if (backgroundPaint != null) {
+            backgroundPaint.setColor(bgColor);
         }
     }
 

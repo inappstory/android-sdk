@@ -1,8 +1,9 @@
 package com.inappstory.sdk.stories.ui.widgets.readerscreen.progresstimeline;
 
-import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
+
+import com.inappstory.sdk.core.data.IContentWithTimeline;
 
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -17,6 +18,7 @@ public class StoryTimelineManager {
 
     private long timerDuration;
     private boolean isActive;
+    IContentWithTimeline contentWithTimeline;
 
     public void startTimer(long timerStart, int currentIndex, long timerDuration) {
         this.currentIndex = currentIndex;
@@ -31,7 +33,7 @@ public class StoryTimelineManager {
                     host.setVisibility(View.VISIBLE);
             }
         };
-        if(Looper.myLooper() == Looper.getMainLooper()) {
+        if (Looper.myLooper() == Looper.getMainLooper()) {
             hostVisibility.run();
         } else {
             host.post(hostVisibility);
@@ -90,7 +92,29 @@ public class StoryTimelineManager {
             host.post(new Runnable() {
                 @Override
                 public void run() {
-                    host.setState(new StoryTimelineState(slidesCount, currentIndex, progress, timerDuration));
+                    if (contentWithTimeline != null) {
+                        host.setState(
+                                new StoryTimelineState(
+                                        slidesCount,
+                                        currentIndex,
+                                        progress,
+                                        timerDuration,
+                                        contentWithTimeline.timelineIsHidden(),
+                                        contentWithTimeline.timelineForegroundColor(currentIndex),
+                                        contentWithTimeline.timelineBackgroundColor(currentIndex)
+                                )
+                        );
+                    } else {
+                        host.setState(
+                                new StoryTimelineState(
+                                        slidesCount,
+                                        currentIndex,
+                                        progress,
+                                        timerDuration
+                                )
+                        );
+                    }
+
                 }
             });
         }

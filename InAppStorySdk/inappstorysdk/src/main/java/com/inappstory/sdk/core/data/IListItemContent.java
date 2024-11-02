@@ -13,6 +13,4 @@ public interface IListItemContent extends IStatData, IContentWithStatus {
     String gameInstanceId();
 
     boolean hideInReader();
-
-
 }

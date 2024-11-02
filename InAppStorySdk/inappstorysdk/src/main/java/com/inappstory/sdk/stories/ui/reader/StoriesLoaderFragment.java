@@ -32,6 +32,7 @@ import androidx.fragment.app.Fragment;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.core.data.IContentWithTimeline;
 import com.inappstory.sdk.core.data.IListItemContent;
 import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryScreen;
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenAppearance;
@@ -70,12 +71,30 @@ public class StoriesLoaderFragment extends Fragment {
         }
         StoryTimeline timeline = view.findViewById(R.id.ias_timeline);
         if (timeline != null) {
-            timeline.setState(
-                    new StoryTimelineState(
-                            story.slidesCount(), 0, 0, 0
-                    )
-            );
+            if (story instanceof IContentWithTimeline) {
+                timeline.setState(
+                        new StoryTimelineState(
+                                story.slidesCount(),
+                                0,
+                                0,
+                                0,
+                                ((IContentWithTimeline) story).timelineIsHidden(),
+                                ((IContentWithTimeline) story).timelineForegroundColor(0),
+                                ((IContentWithTimeline) story).timelineBackgroundColor(0)
+                        )
+                );
+            } else {
+                timeline.setState(
+                        new StoryTimelineState(
+                                story.slidesCount(),
+                                0,
+                                0,
+                                0
+                        )
+                );
+            }
         }
+
         setOffsets(view);
     }
 
