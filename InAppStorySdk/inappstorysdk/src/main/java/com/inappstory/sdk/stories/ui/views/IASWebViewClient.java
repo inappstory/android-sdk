@@ -178,7 +178,7 @@ public class IASWebViewClient extends WebViewClient {
                 response = getChangedResponse(request.getUrl().toString());
             if (response != null) return response;
         } catch (Exception e) {
-
+            e.printStackTrace();
         }
         return super.shouldInterceptRequest(view, request);
     }

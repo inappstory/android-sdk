@@ -68,9 +68,11 @@ public class StoriesLoaderFragment extends Fragment {
         }
         StoryTimeline timeline = view.findViewById(R.id.ias_timeline);
         if (timeline != null) {
+
+       //     story.testMethod();
             StoryTimelineSettings storyTimelineSettings = story.timelineSettings(0);
-            String foregroundColor = storyTimelineSettings.foregroundColor;
-            String backgroundColor = storyTimelineSettings.backgroundColor;
+            String foregroundColor = storyTimelineSettings != null ? storyTimelineSettings.foregroundColor : null;
+            String backgroundColor = storyTimelineSettings != null ? storyTimelineSettings.backgroundColor : null;
             timeline.setState(
                     new StoryTimelineState(
                             story.getSlidesCount(),

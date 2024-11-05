@@ -13,8 +13,11 @@ import com.inappstory.sdk.network.models.Response;
 import com.inappstory.sdk.network.utils.RequestSender;
 import com.inappstory.sdk.network.utils.UserAgent;
 import com.inappstory.sdk.network.utils.headers.Header;
+import com.inappstory.sdk.stories.api.models.logs.ApiLogRequest;
+import com.inappstory.sdk.stories.api.models.logs.ApiLogRequestHeader;
 
 import java.lang.reflect.ParameterizedType;
+import java.net.HttpURLConnection;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.util.ArrayList;

@@ -406,6 +406,7 @@ public class StoryDownloadManager {
                 }
                 setStory(story, story.id, type);
                 storyLoaded(story, type);
+                //story.testMethod();
                 try {
                     slidesDownloader.addStoryPages(story, loadType, type);
                 } catch (Exception e) {

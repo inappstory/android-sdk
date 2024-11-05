@@ -7,10 +7,8 @@ import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.UseServiceInstanceCallback;
-import com.inappstory.sdk.network.annotations.models.Ignore;
 import com.inappstory.sdk.network.annotations.models.Required;
 import com.inappstory.sdk.network.annotations.models.SerializedName;
-import com.inappstory.sdk.stories.api.models.slidestructure.SlideStructure;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -121,6 +119,7 @@ public class Story implements Parcelable {
     public StoryTimelineSettings timelineSettings(int slideIndex) {
         StorySlide storySlide = getSlide(slideIndex);
         if (storySlide == null) return null;
+
         return storySlide.timelineSettings;
     }
     /**
@@ -234,6 +233,21 @@ public class Story implements Parcelable {
         return backgroundColor;
     }
 
+    public void testMethod() {
+        //this.isTimelineHidden = false;
+        if (slides == null) return;
+        for (int i = 0; i < slides.size(); i++) {
+            StorySlide storySlide = slides.get(i);
+            storySlide.timelineSettings = new StoryTimelineSettings();
+            if (i % 2 == 0) {
+                storySlide.timelineSettings.foregroundColor = "#FFFF0000";
+                storySlide.timelineSettings.backgroundColor = "#FF00FF00";
+            } else {
+                storySlide.timelineSettings.foregroundColor = "#FF0000FF";
+                storySlide.timelineSettings.backgroundColor = "#FFFFFFFF";
+            }
+        }
+    }
 
     public List<String> getPlaceholdersListNames(int index) {
         ArrayList<String> res = new ArrayList<>();

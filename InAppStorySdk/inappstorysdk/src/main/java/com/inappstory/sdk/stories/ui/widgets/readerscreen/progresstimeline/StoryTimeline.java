@@ -92,11 +92,8 @@ public class StoryTimeline extends View {
         int localVisibility = !(
                 (state.slidesCount == 1 && state.timerDuration == 0)
                         || state.isHidden
-        ) ? 1 : -1;
-        if (oldVisibility.get() != localVisibility) {
-            oldVisibility.set(localVisibility);
-            visibilityChanged.set(true);
-        }
+        ) ? VISIBLE : INVISIBLE;
+        oldVisibility.set(localVisibility);
         if (fgColor.get() != localFgColor) {
             fgColor.set(localFgColor);
             fgColorChanged.set(true);
@@ -117,7 +114,7 @@ public class StoryTimeline extends View {
         invalidate();
     }
 
-    private final AtomicInteger oldVisibility = new AtomicInteger(0);
+    private final AtomicInteger oldVisibility = new AtomicInteger(VISIBLE);
     private final AtomicInteger bgColor = new AtomicInteger(Color.parseColor(DEFAULT_BG_COLOR));
     private final AtomicInteger fgColor = new AtomicInteger(Color.parseColor(DEFAULT_FG_COLOR));
     private final AtomicBoolean visibilityChanged = new AtomicBoolean(false);
@@ -125,8 +122,8 @@ public class StoryTimeline extends View {
     private final AtomicBoolean fgColorChanged = new AtomicBoolean(false);
 
     private void drawSegments(Canvas canvas) {
-        if (visibilityChanged.compareAndSet(true, false)) {
-            setVisibility(oldVisibility.get() == -1 ? INVISIBLE : VISIBLE);
+        if (oldVisibility.get() != getVisibility()) {
+            setVisibility(oldVisibility.get());
         }
         if (bgColorChanged.compareAndSet(true, false)) {
             backgroundPaint.setColor(bgColor.get());

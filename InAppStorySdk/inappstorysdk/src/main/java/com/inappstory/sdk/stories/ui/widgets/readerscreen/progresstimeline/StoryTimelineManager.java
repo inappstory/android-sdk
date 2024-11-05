@@ -73,12 +73,17 @@ public class StoryTimelineManager {
 
     private int currentIndex;
 
-    public void setSlidesCount(int slidesCount, boolean isSetViews) {
+    public void setSlidesCount(final int slidesCount, boolean isSetViews) {
         this.slidesCount = slidesCount;
-        StoryTimeline host = getHost();
+        final StoryTimeline host = getHost();
         if (host != null) {
-            if (slidesCount <= 1) host.setVisibility(View.INVISIBLE);
-            else host.setVisibility(View.VISIBLE);
+            host.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (slidesCount <= 1) host.setVisibility(View.INVISIBLE);
+                    else host.setVisibility(View.VISIBLE);
+                }
+            });
         }
         if (isSetViews) {
             setProgressSync();
@@ -121,9 +126,10 @@ public class StoryTimelineManager {
                 @Override
                 public void run() {
                     if (story == null) return;
+             //       story.testMethod();
                     StoryTimelineSettings storyTimelineSettings = story.timelineSettings(currentIndex);
-                    String foregroundColor = storyTimelineSettings.foregroundColor;
-                    String backgroundColor = storyTimelineSettings.backgroundColor;
+                    String foregroundColor = storyTimelineSettings != null ? storyTimelineSettings.foregroundColor : null;
+                    String backgroundColor = storyTimelineSettings != null ? storyTimelineSettings.backgroundColor : null;
                     host.setState(
                             new StoryTimelineState(
                                     slidesCount,
@@ -144,9 +150,10 @@ public class StoryTimelineManager {
         final StoryTimeline host = getHost();
         if (host != null) {
             if (story == null) return;
+           // story.testMethod();
             StoryTimelineSettings storyTimelineSettings = story.timelineSettings(currentIndex);
-            String foregroundColor = storyTimelineSettings.foregroundColor;
-            String backgroundColor = storyTimelineSettings.backgroundColor;
+            String foregroundColor = storyTimelineSettings != null ? storyTimelineSettings.foregroundColor : null;
+            String backgroundColor = storyTimelineSettings != null ? storyTimelineSettings.backgroundColor : null;
             host.setState(
                     new StoryTimelineState(
                             slidesCount,
