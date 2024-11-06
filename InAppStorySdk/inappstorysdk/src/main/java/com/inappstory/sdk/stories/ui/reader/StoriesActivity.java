@@ -54,7 +54,7 @@ import com.inappstory.sdk.stories.ui.reader.animations.PopupReaderAnimation;
 import com.inappstory.sdk.stories.ui.reader.animations.ReaderAnimation;
 import com.inappstory.sdk.stories.ui.reader.animations.ZoomReaderCenterAnimation;
 import com.inappstory.sdk.stories.ui.reader.animations.ZoomReaderFromCellAnimation;
-import com.inappstory.sdk.stories.ui.widgets.elasticview.ElasticDragDismissFrameLayout;
+import com.inappstory.sdk.core.ui.widgets.elasticview.DraggableElasticLayout;
 import com.inappstory.sdk.stories.utils.IASBackPressHandler;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 import com.inappstory.sdk.stories.utils.Sizes;
@@ -110,11 +110,11 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryScree
     ShowGoodsCallback currentGoodsCallback = null;
 
     public void unsubscribeClicks() {
-        draggableFrame.removeListener(chromeFader);
+        draggableFrame.removeListener(fader);
     }
 
     public void subscribeClicks() {
-        draggableFrame.addListener(chromeFader);
+        draggableFrame.addListener(fader);
     }
 
 
@@ -311,12 +311,12 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryScree
     }
 
 
-    ElasticDragDismissFrameLayout draggableFrame;
+    DraggableElasticLayout draggableFrame;
     View blockView;
     View backTintView;
     View animatedContainer;
 
-    private ElasticDragDismissFrameLayout.SystemChromeFader chromeFader;
+    private DraggableElasticLayout.DraggableElasticFader fader;
 
     boolean closeOnSwipe = true;
     boolean closeOnOverscroll = true;
@@ -357,9 +357,16 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryScree
 
     @Override
     public void disableDrag(boolean disable) {
-        boolean draggable = appearanceSettings == null || appearanceSettings.csIsDraggable();
+        boolean draggable = appearanceSettings == null ||
+                appearanceSettings.csIsDraggable();
         if (draggableFrame != null)
             draggableFrame.dragIsDisabled(draggable && disable);
+    }
+
+    @Override
+    public void disableClose(boolean disable) {
+        if (draggableFrame != null)
+            draggableFrame.disableClose(true);
     }
 
     @Override
@@ -415,7 +422,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryScree
         blockView = findViewById(R.id.blockView);
         backTintView = findViewById(R.id.background);
         animatedContainer = findViewById(R.id.animatedContainer);
-        chromeFader = new ElasticDragDismissFrameLayout.SystemChromeFader(StoriesActivity.this) {
+        fader = new DraggableElasticLayout.DraggableElasticFader(StoriesActivity.this) {
             @Override
             public void onDrag(
                     float elasticOffset,
@@ -469,7 +476,6 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryScree
                 .onHideStatusBar(StoriesActivity.this);
         InAppStoryService.getInstance().getListReaderConnector().readerIsOpened();
         type = launchData.getType();
-        draggableFrame.type = type;
         draggableFrame.post(new Runnable() {
             @Override
             public void run() {

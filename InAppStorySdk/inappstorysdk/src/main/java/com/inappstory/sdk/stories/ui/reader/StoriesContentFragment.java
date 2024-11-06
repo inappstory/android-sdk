@@ -250,10 +250,10 @@ public class StoriesContentFragment extends Fragment
                 || launchData.getStoriesIds().size() <= position) {
             return;
         }
-        disableDrag(launchData.getStoriesIds().get(position), launchData.getType());
+        setDraggableAndCloseable(launchData.getStoriesIds().get(position), launchData.getType());
     }
 
-    public void disableDrag(int storyId, ContentType type) {
+    public void setDraggableAndCloseable(int storyId, ContentType type) {
         LaunchStoryScreenData launchData = getLaunchData();
         if (storiesViewPager == null || launchData == null) return;
         if (launchData.getStoriesIds().get(
@@ -271,7 +271,10 @@ public class StoriesContentFragment extends Fragment
                 );
         if (st == null) return;
         BaseStoryScreen screen = getStoriesReader();
-        if (screen != null) screen.disableDrag(st.disableClose() || st.hasSwipeUp());
+        if (screen != null) {
+            screen.disableDrag(st.disableClose() || st.hasSwipeUp());
+            screen.disableClose(st.disableClose());
+        }
     }
 
 

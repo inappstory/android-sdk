@@ -1,4 +1,4 @@
-package com.inappstory.sdk.stories.ui.widgets.elasticview;
+package com.inappstory.sdk.core.ui.widgets.elasticview;
 
 import android.animation.Animator;
 import android.animation.TimeInterpolator;

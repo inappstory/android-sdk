@@ -1,4 +1,4 @@
-package com.inappstory.sdk.stories.ui.widgets.elasticview;
+package com.inappstory.sdk.core.ui.widgets.elasticview;
 
 import android.content.Context;
 import android.graphics.Bitmap;

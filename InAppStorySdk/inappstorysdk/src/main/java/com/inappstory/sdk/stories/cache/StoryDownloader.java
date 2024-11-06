@@ -442,13 +442,14 @@ class StoryDownloader {
                             public void onSuccess(final String sessionId) {
                                 final String loadStoriesUID =
                                         core.statistic().profiling().addTask("api_story_list");
+                                String tags = TextUtils.join(",",
+                                        ((IASDataSettingsHolder) core.settingsAPI()).tags());
                                 core.network().enqueue(
                                         core.network().getApi().getFeed(
                                                 feed,
                                                 ApiSettings.getInstance().getTestKey(),
                                                 0,
-                                                TextUtils.join(",",
-                                                        ((IASDataSettingsHolder) core.settingsAPI()).tags()),
+                                                tags,
                                                 null,
                                                 null
                                         ),

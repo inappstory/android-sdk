@@ -12,5 +12,6 @@ public interface BaseStoryScreen extends BaseScreen {
     void timerIsLocked();
     void timerIsUnlocked();
     void disableDrag(boolean disable);
+    void disableClose(boolean disable);
     FragmentManager getScreenFragmentManager();
 }

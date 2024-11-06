@@ -51,7 +51,7 @@ import com.inappstory.sdk.stories.ui.reader.animations.ReaderAnimation;
 import com.inappstory.sdk.stories.ui.reader.animations.ZoomReaderCenterAnimation;
 import com.inappstory.sdk.stories.ui.reader.animations.ZoomReaderFromCellAnimation;
 import com.inappstory.sdk.stories.ui.utils.FragmentAction;
-import com.inappstory.sdk.stories.ui.widgets.elasticview.ElasticDragDismissFrameLayout;
+import com.inappstory.sdk.core.ui.widgets.elasticview.DraggableElasticLayout;
 import com.inappstory.sdk.stories.utils.IASBackPressHandler;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 import com.inappstory.sdk.stories.utils.Sizes;
@@ -71,8 +71,13 @@ public abstract class StoriesMainFragment extends Fragment implements
 
     }
 
+    @Override
+    public void disableClose(boolean disable) {
+        if (draggableFrame != null)
+            draggableFrame.disableClose(disable);
+    }
 
-    ElasticDragDismissFrameLayout draggableFrame;
+    DraggableElasticLayout draggableFrame;
     View blockView;
     View backTintView;
     View animatedContainer;
@@ -80,7 +85,7 @@ public abstract class StoriesMainFragment extends Fragment implements
 
     ShowGoodsCallback currentGoodsCallback = null;
 
-    private ElasticDragDismissFrameLayout.SystemChromeFader chromeFader;
+    private DraggableElasticLayout.DraggableElasticFader fader;
 
     @Override
     public void resumeScreen() {
@@ -159,11 +164,11 @@ public abstract class StoriesMainFragment extends Fragment implements
 
 
     public void unsubscribeClicks() {
-        draggableFrame.removeListener(chromeFader);
+        draggableFrame.removeListener(fader);
     }
 
     public void subscribeClicks() {
-        draggableFrame.addListener(chromeFader);
+        draggableFrame.addListener(fader);
     }
 
     @Override
@@ -342,7 +347,7 @@ public abstract class StoriesMainFragment extends Fragment implements
                         .onHideStatusBar(getActivity());
             }
         });
-        chromeFader = new ElasticDragDismissFrameLayout.SystemChromeFader(getActivity()) {
+        fader = new DraggableElasticLayout.DraggableElasticFader(getActivity()) {
             @Override
             public void onDrag(float elasticOffset, float elasticOffsetPixels, float rawOffset, float rawOffsetPixels) {
                 super.onDrag(elasticOffset, elasticOffsetPixels, rawOffset, rawOffsetPixels);

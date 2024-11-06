@@ -267,7 +267,7 @@ public class SessionManager {
                                             }
                                         }
                                         saveSession(response);
-                                        core.network().setSessionId(currentSession);
+                                        core.network().setSessionId(response.session.id);
                                         core.statistic().profiling().setReady(sessionOpenUID);
                                         openStatisticSuccess(response);
                                         CachedSessionData cachedSessionData = new CachedSessionData();

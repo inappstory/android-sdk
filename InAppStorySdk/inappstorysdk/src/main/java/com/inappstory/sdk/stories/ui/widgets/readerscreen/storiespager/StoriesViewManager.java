@@ -472,7 +472,7 @@ public class StoriesViewManager {
         final StoriesContentFragment storiesContentFragment =
                 (StoriesContentFragment) pageManager.host.getParentFragment();
         if (storiesContentFragment != null)
-            storiesContentFragment.disableDrag(storyId, pageManager.getViewContentType());
+            storiesContentFragment.setDraggableAndCloseable(storyId, pageManager.getViewContentType());
         core.statistic().profiling().setReady(storyId + "_" + index);
     }
 

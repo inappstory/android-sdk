@@ -63,6 +63,7 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
         core.screensManager().forceCloseAllReaders(new ForceCloseReaderCallback() {
             @Override
             public void onComplete() {
+                if (sessionId == null || sessionId.isEmpty()) return;
                 core.sessionManager().closeSession(
                         sendStatistic,
                         true,

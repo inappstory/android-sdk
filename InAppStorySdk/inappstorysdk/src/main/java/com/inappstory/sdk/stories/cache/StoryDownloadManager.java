@@ -35,7 +35,7 @@ public class StoryDownloadManager {
         core.contentHolder().listsContent().clearByType(ContentType.UGC);
     }
 
-    static final String EXPAND_STRING = "slides_html,slides_structure,layout,slides_duration,src_list,img_placeholder_src_list,slides_screenshot_share,slides_payload";
+    static final String EXPAND_STRING = "slides,layout";
 
     public boolean changePriority(ContentIdWithIndex storyId,
                                   List<ContentIdWithIndex> adjacent,

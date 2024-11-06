@@ -8,7 +8,7 @@
         android:layout_width="120dp"
         android:id="@+id/outerLayout"
         android:layout_height="120dp">
-        <com.inappstory.sdk.imageloader.RoundedCornerLayout
+        <com.inappstory.sdk.core.ui.widgets.roundedlayout.RoundedCornerLayout
             android:layout_width="match_parent"
             android:layout_margin="4dp"
             android:id="@+id/inner_cv"
@@ -27,7 +27,7 @@
                     android:layout_height="match_parent"/>
             </RelativeLayout>
 
-        </com.inappstory.sdk.imageloader.RoundedCornerLayout>
+        </com.inappstory.sdk.core.ui.widgets.roundedlayout.RoundedCornerLayout>
 
     </RelativeLayout>
 </RelativeLayout>

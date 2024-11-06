@@ -1,4 +1,4 @@
-package com.inappstory.sdk.stories.ui.widgets.elasticview;
+package com.inappstory.sdk.core.ui.widgets.elasticview;
 
 import android.app.Activity;
 import android.content.Context;
@@ -12,11 +12,7 @@ import android.widget.FrameLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.R;
-import com.inappstory.sdk.core.IASCore;
-import com.inappstory.sdk.core.data.IReaderContent;
-import com.inappstory.sdk.stories.api.models.ContentType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,7 +22,7 @@ import java.util.List;
  * Applies an elasticity factor to reduce movement as you approach the given dismiss distance.
  * Optionally also scales down content during drag.
  */
-public class ElasticDragDismissFrameLayout extends FrameLayout {
+public class DraggableElasticLayout extends FrameLayout {
 
     // configurable attribs
     private float dragDismissDistance = Float.MAX_VALUE;
@@ -48,20 +44,20 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
         this.disabled = disabled;
     }
 
-    private List<ElasticDragDismissCallback> callbacks;
+    private List<DraggableElasticCallback> callbacks;
 
-    public ElasticDragDismissFrameLayout(@NonNull Context context) {
+    public DraggableElasticLayout(@NonNull Context context) {
         super(context);
         init(null);
     }
 
-    public ElasticDragDismissFrameLayout(@NonNull Context context,
-                                         @Nullable AttributeSet attrs) {
+    public DraggableElasticLayout(@NonNull Context context,
+                                  @Nullable AttributeSet attrs) {
         super(context, attrs);
         init(attrs);
     }
 
-    public ElasticDragDismissFrameLayout(
+    public DraggableElasticLayout(
             @NonNull Context context,
             @Nullable AttributeSet attrs,
             int defStyleAttr
@@ -94,14 +90,14 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
     }
 
 
-    public ElasticDragDismissFrameLayout(Context context, AttributeSet attrs,
-                                         int defStyleAttr, int defStyleRes) {
+    public DraggableElasticLayout(Context context, AttributeSet attrs,
+                                  int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
 
         init(attrs);
     }
 
-    public static abstract class ElasticDragDismissCallback {
+    public static abstract class DraggableElasticCallback {
 
         /**
          * Called for each drag event.
@@ -147,15 +143,11 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
 
     @Override
     public boolean onStartNestedScroll(View child, View target, int nestedScrollAxes) {
-        //  Story st = InAppStoryService.getInstance().getDownloadManager().getStoryById(InAppStoryService.getInstance().getCurrentId());
-        // if (st != null && (st.disableClose || st.hasSwipeUp()))
-        //     return true;
         return (nestedScrollAxes & View.SCROLL_AXIS_VERTICAL) != 0;
     }
 
     @Override
     public void onNestedPreScroll(View target, int dx, int dy, int[] consumed) {
-        // if we're in a drag gesture and the user reverses up the we should take those events
         if (draggingDown && dy > 0 || draggingUp && dy < 0) {
             if (disabled)
                 disabledDragScale(dy);
@@ -195,24 +187,17 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
         return super.onInterceptTouchEvent(ev);
     }
 
+    boolean disableClose = false;
+
+    public void disableClose(boolean disableClose) {
+        this.disableClose = disableClose;
+    }
+
     @Override
     public void onStopNestedScroll(View child) {
-        InAppStoryManager manager = InAppStoryManager.getInstance();
-        IReaderContent st = null;
-        if (manager != null) {
-            IASCore core = manager.iasCore();
-            int storyId = core
-                    .screensManager()
-                    .getStoryScreenHolder()
-                    .currentOpenedStoryId();
-            st = core
-                    .contentHolder()
-                    .readerContent()
-                    .getByIdAndType(storyId, type);
-        }
         if (totalDisabledDrag > 400) {
             swipeUpCallback();
-        } else if (st != null && !st.disableClose() && totalDisabledDrag < -400) {
+        } else if (!disableClose && totalDisabledDrag < -400) {
             swipeDownCallback();
         }
         if (Math.abs(totalDrag) >= dragDismissDistance && !disabled) {
@@ -253,14 +238,14 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
     }
 
 
-    public void addListener(ElasticDragDismissCallback listener) {
+    public void addListener(DraggableElasticCallback listener) {
         if (callbacks == null) {
             callbacks = new ArrayList<>();
         }
         callbacks.add(listener);
     }
 
-    public void removeListener(ElasticDragDismissCallback listener) {
+    public void removeListener(DraggableElasticCallback listener) {
         if (callbacks != null && callbacks.size() > 0) {
             callbacks.remove(listener);
         }
@@ -323,7 +308,7 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
     private void dispatchDragCallback(float elasticOffset, float elasticOffsetPixels,
                                       float rawOffset, float rawOffsetPixels) {
         if (callbacks != null && !callbacks.isEmpty()) {
-            for (ElasticDragDismissCallback callback : callbacks) {
+            for (DraggableElasticCallback callback : callbacks) {
                 if (callback != null)
                     callback.onDrag(elasticOffset, elasticOffsetPixels,
                             rawOffset, rawOffsetPixels);
@@ -333,7 +318,7 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
 
     private void dispatchDismissCallback() {
         if (callbacks != null && !callbacks.isEmpty()) {
-            for (ElasticDragDismissCallback callback : callbacks) {
+            for (DraggableElasticCallback callback : callbacks) {
                 if (callback != null)
                     callback.onDragDismissed();
             }
@@ -342,18 +327,16 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
 
     private void swipeDownCallback() {
         if (callbacks != null && !callbacks.isEmpty()) {
-            for (ElasticDragDismissCallback callback : callbacks) {
+            for (DraggableElasticCallback callback : callbacks) {
                 if (callback != null)
                     callback.swipeDown();
             }
         }
     }
 
-    public ContentType type = ContentType.STORY;
-
     private void swipeUpCallback() {
         if (callbacks != null && !callbacks.isEmpty()) {
-            for (ElasticDragDismissCallback callback : callbacks) {
+            for (DraggableElasticCallback callback : callbacks) {
                 if (callback != null)
                     callback.swipeUp();
             }
@@ -362,7 +345,7 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
 
     private void touchPause() {
         if (callbacks != null && !callbacks.isEmpty()) {
-            for (ElasticDragDismissCallback callback : callbacks) {
+            for (DraggableElasticCallback callback : callbacks) {
                 if (callback != null)
                     callback.touchPause();
             }
@@ -371,7 +354,7 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
 
     private void touchResume() {
         if (callbacks != null && !callbacks.isEmpty()) {
-            for (ElasticDragDismissCallback callback : callbacks) {
+            for (DraggableElasticCallback callback : callbacks) {
                 if (callback != null)
                     callback.touchResume();
             }
@@ -381,7 +364,7 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
 
     private void dispatchDropCallback() {
         if (callbacks != null && !callbacks.isEmpty()) {
-            for (ElasticDragDismissCallback callback : callbacks) {
+            for (DraggableElasticCallback callback : callbacks) {
                 if (callback != null)
                     callback.onDragDropped();
             }
@@ -390,18 +373,18 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
 
 
     /**
-     * An {@link ElasticDragDismissCallback} which fades system chrome (i.e. status bar and
+     * An {@link DraggableElasticCallback} which fades system chrome (i.e. status bar and
      * navigation bar) whilst elastic drags are performed and
      * {@link Activity#finishAfterTransition() finishes} the activity when drag dismissed.
      */
-    public static class SystemChromeFader extends ElasticDragDismissCallback {
+    public static class DraggableElasticFader extends DraggableElasticCallback {
 
         private final Activity activity;
         private final int statusBarAlpha;
         private final int navBarAlpha;
         private final boolean fadeNavBar;
 
-        public SystemChromeFader(Activity activity) {
+        public DraggableElasticFader(Activity activity) {
             this.activity = activity;
             statusBarAlpha = Color.alpha(activity.getWindow().getStatusBarColor());
             navBarAlpha = Color.alpha(activity.getWindow().getNavigationBarColor());

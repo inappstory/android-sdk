@@ -19,7 +19,7 @@
             android:layout_height="match_parent"
             android:background="@android:color/transparent" />
 
-        <com.inappstory.sdk.stories.ui.widgets.elasticview.ElasticDragDismissFrameLayout
+        <com.inappstory.sdk.core.ui.widgets.elasticview.DraggableElasticLayout
             android:id="@+id/draggable_frame"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -41,7 +41,7 @@
                     android:layout_weight="1" />
 
             </androidx.core.widget.NestedScrollView>
-        </com.inappstory.sdk.stories.ui.widgets.elasticview.ElasticDragDismissFrameLayout>
+        </com.inappstory.sdk.core.ui.widgets.elasticview.DraggableElasticLayout>
 
         <FrameLayout
             android:id="@+id/ias_dialog_container"

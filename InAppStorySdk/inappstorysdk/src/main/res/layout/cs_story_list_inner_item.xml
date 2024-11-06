@@ -13,7 +13,7 @@
             android:id="@+id/border"
             android:background="@drawable/cs_story_border_square"
             android:layout_height="match_parent"/>
-        <com.inappstory.sdk.imageloader.RoundedCornerLayout
+        <com.inappstory.sdk.core.ui.widgets.roundedlayout.RoundedCornerLayout
             android:layout_width="match_parent"
             android:layout_margin="4dp"
             android:background="#000"
@@ -76,7 +76,7 @@
                     android:layout_height="wrap_content" />
             </RelativeLayout>
 
-        </com.inappstory.sdk.imageloader.RoundedCornerLayout>
+        </com.inappstory.sdk.core.ui.widgets.roundedlayout.RoundedCornerLayout>
 
     </RelativeLayout>
 </RelativeLayout>

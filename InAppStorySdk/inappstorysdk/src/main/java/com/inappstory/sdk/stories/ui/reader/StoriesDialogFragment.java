@@ -46,7 +46,7 @@ import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.statistic.GetStatisticV1Callback;
 import com.inappstory.sdk.stories.statistic.IASStatisticV2Impl;
-import com.inappstory.sdk.stories.ui.widgets.elasticview.ElasticDragDismissFrameLayout;
+import com.inappstory.sdk.core.ui.widgets.elasticview.DraggableElasticLayout;
 import com.inappstory.sdk.stories.utils.IASBackPressHandler;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 import com.inappstory.sdk.stories.utils.Sizes;
@@ -64,7 +64,7 @@ public class StoriesDialogFragment extends DialogFragment implements IASBackPres
         return inflater.inflate(R.layout.cs_mainscreen_stories_draggable, container, false);
     }
 
-    ElasticDragDismissFrameLayout draggableFrame;
+    DraggableElasticLayout draggableFrame;
 
     @Override
     public void onDismiss(DialogInterface dialogInterface) {
@@ -198,6 +198,12 @@ public class StoriesDialogFragment extends DialogFragment implements IASBackPres
     public void disableDrag(boolean disable) {
         if (draggableFrame != null)
             draggableFrame.dragIsDisabled(true);
+    }
+
+    @Override
+    public void disableClose(boolean disable) {
+        if (draggableFrame != null)
+            draggableFrame.disableClose(true);
     }
 
     @Override

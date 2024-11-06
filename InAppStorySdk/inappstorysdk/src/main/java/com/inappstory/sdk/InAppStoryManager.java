@@ -682,12 +682,15 @@ public class InAppStoryManager {
                         inAppStoryService.getListSubscribers().clear();
                     }
                 });
+
+                final String sessionId = core.sessionManager().getSession().getSessionId();
                 core.storiesListVMHolder().clear();
                 core.contentLoader().storyDownloadManager().cleanTasks();
                 core.screensManager().forceCloseAllReaders(
                         new ForceCloseReaderCallback() {
                             @Override
                             public void onComplete() {
+                                if (sessionId == null || sessionId.isEmpty()) return;
                                 IASDataSettingsHolder settingsHolder = ((IASDataSettingsHolder) core.settingsAPI());
                                 core.statistic().v1(new GetStatisticV1Callback() {
                                     @Override

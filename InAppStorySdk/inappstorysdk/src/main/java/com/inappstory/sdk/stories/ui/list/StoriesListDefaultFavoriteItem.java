@@ -11,7 +11,7 @@ import androidx.appcompat.widget.AppCompatImageView;
 
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.R;
-import com.inappstory.sdk.imageloader.RoundedCornerLayout;
+import com.inappstory.sdk.core.ui.widgets.roundedlayout.RoundedCornerLayout;
 import com.inappstory.sdk.memcache.IGetBitmap;
 import com.inappstory.sdk.stories.ui.views.IGetFavoriteListItem;
 
