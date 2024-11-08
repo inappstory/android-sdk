@@ -321,7 +321,8 @@ class StoryDownloader {
                         ApiSettings.getInstance().getTestKey(),
                         1,
                         null,
-                        "id, background_color, image"
+                        "id, background_color, image",
+                        null
                 ),
                 callback
         );
@@ -489,7 +490,8 @@ class StoryDownloader {
                                     ApiSettings.getInstance().getTestKey(),
                                     isFavorite ? 1 : 0,
                                     isFavorite ? null : service.getTagsString(),
-                                    null
+                                    null,
+                                    "slides"
                             ),
                             new LoadListCallback() {
                                 @Override
