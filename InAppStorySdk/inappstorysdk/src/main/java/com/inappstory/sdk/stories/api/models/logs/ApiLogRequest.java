@@ -46,6 +46,38 @@ public class ApiLogRequest {
         }
     }
 
+    private String screening(String value) {
+        if (value == null) return "''";
+        return "'" + value.replace("'", "\\'") + "'";
+    }
+
+    public String getCurl() {
+        ApiLogRequest request = this;
+        StringBuilder current = new StringBuilder();
+        String endLine = "\\\n";
+        current.append("curl --location --request ").append(request.method).append(" ").append(request.url).append(" ").append(endLine);
+
+        for (ApiLogRequestHeader entry : request.headers) {
+            if (entry.key == null || entry.value == null) continue;
+            current.append("--header ")
+                    .append(screening(
+                            entry.key + ": " + entry.value)
+                    ).append(" ").append(endLine);
+        }
+
+        if (request.bodyUrlEncoded != null) {
+            current.append("--data-urlencode ").append(screening(request.bodyUrlEncoded)).append(" ").append(endLine);
+        }
+
+        if (request.bodyRaw != null) {
+            current.append("--data-raw ").append(screening(request.bodyRaw)).append(" ").append(endLine);
+        } else if (request.body != null) {
+            current.append("--data ").append(screening(request.body)).append(" ").append(endLine);
+        }
+
+        return current.toString();
+    }
+
     public void setHeaders(Map<String,List<String>> entries) {
         for (Map.Entry<String, List<String>> entry : entries.entrySet()) {
             if (entry.getKey() != null && entry.getValue() != null && !entry.getValue().isEmpty())

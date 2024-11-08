@@ -451,7 +451,7 @@ class StoryDownloader {
                                                 0,
                                                 tags,
                                                 null,
-                                                null
+                                                "slides"
                                         ),
                                         new LoadFeedCallback() {
                                             @Override

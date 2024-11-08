@@ -80,10 +80,10 @@ public class FeedByIdUseCase {
                             contentHolder.clearAllFavorites(type);
                             for (int i = 0; i < favorites.size(); i++) {
                                 IListItemContent listItemContent = favorites.get(i);
-                                contentHolder.listsContent().setByIdAndType(
+                                /*contentHolder.listsContent().setByIdAndType(
                                         listItemContent, listItemContent.id(), type
-                                );
-                                contentHolder.like(listItemContent.id(), type, listItemContent.like());
+                                );*/
+                              //  contentHolder.like(listItemContent.id(), type, listItemContent.like());
                                 contentHolder.favoriteItems().setByIdAndType(
                                         new StoryFavoriteImage(
                                                 listItemContent.id(),

@@ -22,6 +22,7 @@ public class RequestSender {
         requestLog.buildFromRequest(req, requestId);
         requestLog.setHeaders(connectionWithProperties.second);
         InAppStoryManager.sendApiRequestLog(requestLog);
+        InAppStoryManager.showDLog("InAppStory_Network", requestLog.getCurl());
         ResponseWithRawData responseWithRawData = new RawResponseFromConnection().get(connection, requestId);
 
         ApiLogResponse responseLog = new ApiLogResponse();
