@@ -423,7 +423,7 @@ class StoryDownloader {
                                     0,
                                     service.getTagsString(),
                                     null,
-                                    null
+                                    "stories.slides"
                             ),
                             new LoadFeedCallback() {
                                 @Override
