@@ -449,9 +449,9 @@ class StoryDownloader {
                                                 feed,
                                                 ApiSettings.getInstance().getTestKey(),
                                                 0,
-                                                tags,
+                                                tags.isEmpty() ? null : tags,
                                                 null,
-                                                "slides"
+                                                null
                                         ),
                                         new LoadFeedCallback() {
                                             @Override
