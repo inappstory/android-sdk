@@ -32,7 +32,7 @@ public class DummyApiInterface implements ApiInterface {
     }
 
     @Override
-    public Request getStories(String test, Integer favorite, String tags, String fields) {
+    public Request getStories(String test, Integer favorite, String tags, String fields, String expand) {
         return new DummyRequest();
     }
 

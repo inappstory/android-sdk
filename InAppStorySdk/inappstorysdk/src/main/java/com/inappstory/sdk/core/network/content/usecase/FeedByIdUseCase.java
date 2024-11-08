@@ -151,7 +151,8 @@ public class FeedByIdUseCase {
                         ApiSettings.getInstance().getTestKey(),
                         1,
                         null,
-                        "id, background_color, image"
+                        "id, background_color, image",
+                        null
                 ),
                 callback
         );
@@ -192,7 +193,7 @@ public class FeedByIdUseCase {
                                                 TextUtils.join(",",
                                                         ((IASDataSettingsHolder) core.settingsAPI()).tags()),
                                                 null,
-                                                null
+                                                "stories.slides"
                                         ),
                                         new LoadFeedCallback() {
                                             @Override

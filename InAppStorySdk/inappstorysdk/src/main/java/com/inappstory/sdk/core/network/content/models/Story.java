@@ -187,7 +187,7 @@ public class Story implements Parcelable, IStory, IContentWithTimeline {
 
     private IReaderContentSlide slide(int index) {
         if (slides == null || index < 0 || slides.size() < index)
-            throw new RuntimeException("Slide index out of bounds: " + index + " from " + slides.size());
+            throw new RuntimeException("Slide index out of bounds: " + index + " from " + slidesCount);
         for (IReaderContentSlide slide : slides) {
             if (slide.index() == index) return slide;
         }

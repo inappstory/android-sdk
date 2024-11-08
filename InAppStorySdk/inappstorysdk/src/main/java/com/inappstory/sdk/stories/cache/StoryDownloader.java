@@ -354,7 +354,8 @@ class StoryDownloader {
                         ApiSettings.getInstance().getTestKey(),
                         1,
                         null,
-                        "id, background_color, image"
+                        "id, background_color, image",
+                        null
                 ),
                 callback
         );
@@ -451,7 +452,7 @@ class StoryDownloader {
                                                 0,
                                                 tags.isEmpty() ? null : tags,
                                                 null,
-                                                null
+                                                "stories.slides"
                                         ),
                                         new LoadFeedCallback() {
                                             @Override
@@ -521,7 +522,8 @@ class StoryDownloader {
                                 isFavorite ? null :
                                         TextUtils.join(",",
                                                 ((IASDataSettingsHolder) core.settingsAPI()).tags()),
-                                null
+                                null,
+                                "slides"
                         ),
                         new LoadListCallback() {
                             @Override

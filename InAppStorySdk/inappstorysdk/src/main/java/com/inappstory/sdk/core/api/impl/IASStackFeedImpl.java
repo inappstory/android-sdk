@@ -70,7 +70,7 @@ public class IASStackFeedImpl implements IASStackFeed {
                                 0,
                                 localTags,
                                 null,
-                                null
+                                "stories.slides"
                         ),
                         new LoadFeedCallback() {
                             @Override
