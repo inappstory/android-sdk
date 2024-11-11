@@ -8,6 +8,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
+import android.os.Looper;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
@@ -91,11 +92,20 @@ public class StoryTimeline extends View {
         this.state = state;
         int localFgColor = ColorUtils.parseColorRGBA(state.getForegroundColor());
         int localBgColor = ColorUtils.parseColorRGBA(state.getBackgroundColor());
-        int localVisibility = !(
+        final int localVisibility = !(
                 (state.slidesCount == 1 && state.timerDuration == 0)
                         || state.isHidden
         ) ? VISIBLE : INVISIBLE;
-        setVisibility(localVisibility);
+        if(Looper.myLooper() == Looper.getMainLooper()) {
+            setVisibility(localVisibility);
+        } else {
+            post(new Runnable() {
+                @Override
+                public void run() {
+                    setVisibility(localVisibility);
+                }
+            });
+        }
 
         if (fgColor.get() != localFgColor) {
             fgColor.set(localFgColor);
