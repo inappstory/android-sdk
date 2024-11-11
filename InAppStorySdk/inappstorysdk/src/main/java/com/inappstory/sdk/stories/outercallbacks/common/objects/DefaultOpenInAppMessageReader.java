@@ -1,83 +1,66 @@
 package com.inappstory.sdk.stories.outercallbacks.common.objects;
 
-import android.app.Activity;
-import android.content.Context;
-import android.content.Intent;
-import android.os.Build;
 import android.os.Bundle;
-import android.view.Window;
 
-import com.inappstory.sdk.R;
-import com.inappstory.sdk.inappmessage.ui.reader.IAMActivity;
-import com.inappstory.sdk.stories.utils.ActivityUtils;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
+
+import com.inappstory.sdk.core.data.IInAppMessage;
+import com.inappstory.sdk.inappmessage.InAppMessageScreenActions;
+import com.inappstory.sdk.inappmessage.ui.appearance.impl.InAppMessageBottomSheetSettings;
+import com.inappstory.sdk.inappmessage.ui.appearance.impl.InAppMessageFullscreenSettings;
+import com.inappstory.sdk.inappmessage.ui.appearance.impl.InAppMessageModalSettings;
+import com.inappstory.sdk.inappmessage.ui.reader.InAppMessageMainFragment;
 
 
 public class DefaultOpenInAppMessageReader implements IOpenInAppMessageReader {
 
+
     @Override
     public void onOpen(
-            Context context,
-            Bundle bundle
+            IInAppMessage inAppMessage,
+            boolean showOnlyIfLoaded,
+            FragmentManager fragmentManager,
+            int containerId,
+            InAppMessageScreenActions screenActions
     ) {
-        if (context == null) return;
-        Intent intent2 = new Intent(context, IAMActivity.class);
-        if (context instanceof Activity) {
+        InAppMessageMainFragment inAppMessageFragment =
+                new InAppMessageMainFragment();
+        Bundle arguments = new Bundle();
+        arguments.putInt("id", inAppMessage.id());
+        arguments.putInt("type", inAppMessage.screenType());
+        arguments.putBoolean("showOnlyIfLoaded", showOnlyIfLoaded);
 
-            Window window = ((Activity) context).getWindow();
-            Integer themeId = ActivityUtils.getThemeResId((Activity) context);
-            bundle.putInt("themeId",
-                    ((Activity) context).getIntent().getIntExtra(
-                            "themeId",
-                            themeId != null ? themeId : R.style.StoriesSDKAppTheme_InAppMessageActivity
-                    )
-            );
-            bundle.putInt("parentSystemUIVisibility",
-                    ((Activity) context).getIntent().getIntExtra(
-                            "parentSystemUIVisibility",
-                            window.getDecorView().getSystemUiVisibility()
-                    )
-            );
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                bundle.putInt("parentLayoutInDisplayCutoutMode",
-                        ((Activity) context).getIntent().getIntExtra(
-                                "parentLayoutInDisplayCutoutMode",
-                                window.getAttributes().layoutInDisplayCutoutMode
-                        )
+        switch (inAppMessage.screenType()) {
+            case 1:
+                arguments.putSerializable(
+                        "screenParameters",
+                        new InAppMessageBottomSheetSettings()
                 );
-            }
+                break;
+            case 2:
+                arguments.putSerializable(
+                        "screenParameters",
+                        new InAppMessageModalSettings()
+                );
+                break;
+            case 3:
+                arguments.putSerializable(
+                        "screenParameters",
+                        new InAppMessageFullscreenSettings()
+                );
+                break;
+            default:
+                break;
         }
-        intent2.putExtras(bundle);
-        if (context instanceof Activity) {
-
-            ((Activity) context).startActivity(intent2);
-            ((Activity) context).overridePendingTransition(0, 0);
-        } else {
-            try {
-                intent2.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                context.startActivity(intent2);
-            } catch (Exception e) {
-            }
-        }
+        inAppMessageFragment.setArguments(arguments);
+        FragmentTransaction t = fragmentManager.beginTransaction()
+                .add(
+                        containerId,
+                        inAppMessageFragment,
+                        "IAM_MAIN_FRAGMENT"
+                );
+        t.addToBackStack("IAM_MAIN_FRAGMENT");
+        t.commit();
     }
-
-    @Override
-    public void onHideStatusBar(Context context) {
-
-    }
-
-    @Override
-    public void onRestoreStatusBar(Context context) {
-
-    }
-
-    @Override
-    public void onShowInFullscreen(Context context) {
-
-    }
-
-    @Override
-    public void onRestoreScreen(Context context) {
-
-    }
-
 }

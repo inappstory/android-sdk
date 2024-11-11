@@ -40,6 +40,7 @@ import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenData;
 import com.inappstory.sdk.core.utils.CallbackTypesConverter;
 import com.inappstory.sdk.stories.api.models.ContentIdWithIndex;
 import com.inappstory.sdk.stories.api.models.ContentType;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenStoriesReader;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoryItemCoordinates;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.CloseStoryCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
@@ -73,9 +74,9 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryScree
             InAppStoryManager.useCore(new UseIASCoreCallback() {
                 @Override
                 public void use(@NonNull IASCore core) {
-                    core
+                    ((IOpenStoriesReader) core
                             .screensManager()
-                            .getOpenReader(ScreenType.STORY)
+                            .getOpenReader(ScreenType.STORY))
                             .onRestoreStatusBar(StoriesActivity.this);
                     core
                             .screensManager()
@@ -151,8 +152,9 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryScree
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-                core.screensManager()
-                        .getOpenReader(ScreenType.STORY)
+                ((IOpenStoriesReader) core
+                        .screensManager()
+                        .getOpenReader(ScreenType.STORY))
                         .onHideStatusBar(StoriesActivity.this);
             }
         });
@@ -470,9 +472,10 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryScree
                 }
             }
         };
-        core
+
+        ((IOpenStoriesReader) core
                 .screensManager()
-                .getOpenReader(ScreenType.STORY)
+                .getOpenReader(ScreenType.STORY))
                 .onHideStatusBar(StoriesActivity.this);
         InAppStoryService.getInstance().getListReaderConnector().readerIsOpened();
         type = launchData.getType();
@@ -747,8 +750,10 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryScree
                         .getStoryScreenHolder()
                         .unsubscribeScreen(StoriesActivity.this);
                 if (!pauseDestroyed) {
-                    core.screensManager()
-                            .getOpenReader(ScreenType.STORY)
+
+                    ((IOpenStoriesReader) core
+                            .screensManager()
+                            .getOpenReader(ScreenType.STORY))
                             .onRestoreStatusBar(StoriesActivity.this);
                     if (launchData != null) {
                         core.statistic().v1(

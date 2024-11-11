@@ -1,4 +1,6 @@
 package com.inappstory.sdk.inappmessage.ui.appearance;
 
-public interface InAppMessageAppearance {
+import java.io.Serializable;
+
+public interface InAppMessageAppearance extends Serializable {
 }

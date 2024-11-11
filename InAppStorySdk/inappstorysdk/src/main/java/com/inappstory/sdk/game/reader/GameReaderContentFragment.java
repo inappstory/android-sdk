@@ -91,6 +91,7 @@ import com.inappstory.sdk.stories.callbacks.ShareCallback;
 import com.inappstory.sdk.stories.events.GameCompleteEvent;
 import com.inappstory.sdk.stories.events.GameCompleteEventObserver;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.GameReaderLaunchData;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenGameReader;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.game.GameLoadedError;
 import com.inappstory.sdk.stories.ui.OverlapFragmentObserver;
@@ -420,8 +421,8 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                 public void use(@NonNull IASCore core) {
                     Activity activity = getActivity();
                     if (activity != null) {
-                        core.screensManager()
-                                .getOpenReader(ScreenType.GAME)
+                        ((IOpenGameReader)core.screensManager()
+                                .getOpenReader(ScreenType.GAME))
                                 .onRestoreScreen(getActivity());
                     }
                 }
@@ -926,8 +927,8 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                 public void use(@NonNull IASCore core) {
                     Activity activity = getActivity();
                     if (activity != null) {
-                        core.screensManager()
-                                .getOpenReader(ScreenType.GAME)
+                        ((IOpenGameReader)core.screensManager()
+                                .getOpenReader(ScreenType.GAME))
                                 .onShowInFullscreen(getActivity());
                     }
                 }

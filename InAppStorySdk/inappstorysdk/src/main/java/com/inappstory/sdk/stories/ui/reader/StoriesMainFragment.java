@@ -36,6 +36,7 @@ import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryScreen;
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenAppearance;
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenData;
 import com.inappstory.sdk.core.utils.CallbackTypesConverter;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenStoriesReader;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoryItemCoordinates;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.CloseStoryCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
@@ -343,7 +344,10 @@ public abstract class StoriesMainFragment extends Fragment implements
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-                core.screensManager().getOpenReader(ScreenType.STORY)
+
+                ((IOpenStoriesReader) core
+                        .screensManager()
+                        .getOpenReader(ScreenType.STORY))
                         .onHideStatusBar(getActivity());
             }
         });
@@ -587,8 +591,9 @@ public abstract class StoriesMainFragment extends Fragment implements
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-                core.screensManager()
-                        .getOpenReader(ScreenType.STORY)
+                ((IOpenStoriesReader) core
+                        .screensManager()
+                        .getOpenReader(ScreenType.STORY))
                         .onRestoreStatusBar(getActivity());
             }
         });

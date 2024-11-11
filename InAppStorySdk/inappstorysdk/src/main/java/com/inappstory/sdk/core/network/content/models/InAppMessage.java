@@ -20,8 +20,8 @@ public class InAppMessage implements IInAppMessage {
     @SerializedName("layout")
     public String layout;
 
-    @SerializedName("frequency_limit_day")
-    public int dayLimit;
+    @SerializedName("frequency_limit")
+    public int frequencyLimit;
 
     @SerializedName("slides")
     public List<InAppMessageSlide> slides;
@@ -40,6 +40,9 @@ public class InAppMessage implements IInAppMessage {
 
     @SerializedName("slides_count")
     public int slidesCount;
+
+    @SerializedName("type")
+    public int screenType;
 
     @Override
     public String layout() {
@@ -193,7 +196,13 @@ public class InAppMessage implements IInAppMessage {
     }
 
     @Override
-    public int dayLimit() {
-        return dayLimit;
+    public int frequencyLimit() {
+        return frequencyLimit;
+    }
+
+    @Override
+    public int screenType() {
+        if (screenType < 1 || screenType > 3) return 1;
+        return screenType; //1 - BSh, 2 - Md, 3 - FSc
     }
 }

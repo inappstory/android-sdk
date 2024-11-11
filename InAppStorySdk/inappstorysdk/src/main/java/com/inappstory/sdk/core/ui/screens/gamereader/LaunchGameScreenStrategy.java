@@ -14,6 +14,7 @@ import com.inappstory.sdk.core.ui.screens.launcher.LaunchScreenStrategy;
 import com.inappstory.sdk.core.ui.screens.ScreenType;
 import com.inappstory.sdk.stories.outercallbacks.common.gamereader.GameReaderCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.GameReaderAppearanceSettings;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenGameReader;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenReader;
 
 public class LaunchGameScreenStrategy implements LaunchScreenStrategy {
@@ -34,6 +35,7 @@ public class LaunchGameScreenStrategy implements LaunchScreenStrategy {
 
     @Override
     public void launch(Context context, IOpenReader openReader, IScreensHolder screensHolder) {
+        if (!(openReader instanceof IOpenGameReader)) return;
         if (core.sessionManager().getSession().getSessionId().isEmpty()) return;
         if ((!openedFromReader && screensHolder.hasActiveScreen()) ||
                 screensHolder.hasActiveScreen(screensHolder.getGameScreenHolder())
@@ -47,7 +49,7 @@ public class LaunchGameScreenStrategy implements LaunchScreenStrategy {
         );
         bundle.putSerializable(data.launchData.getSerializableKey(), data.launchData);
         bundle.putSerializable(gameReaderAppearanceSettings.getSerializableKey(), gameReaderAppearanceSettings);
-        openReader.onOpen(
+        ((IOpenGameReader) openReader).onOpen(
                 context,
                 bundle
         );

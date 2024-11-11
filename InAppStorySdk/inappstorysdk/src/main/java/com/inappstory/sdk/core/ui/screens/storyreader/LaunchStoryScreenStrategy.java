@@ -11,6 +11,7 @@ import com.inappstory.sdk.core.ui.screens.launcher.LaunchScreenStrategy;
 import com.inappstory.sdk.core.ui.screens.ScreenType;
 import com.inappstory.sdk.core.ui.screens.holder.ScreensHolder;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenReader;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenStoriesReader;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,6 +52,7 @@ public class LaunchStoryScreenStrategy implements LaunchScreenStrategy {
     ) {
         StoryScreenHolder currentScreenHolder = screensHolder.getStoryScreenHolder();
         boolean cantBeOpened = false;
+        if (!(openReader instanceof IOpenStoriesReader)) return;
         String message = "";
         if (screensHolder.hasActiveScreen(currentScreenHolder)) {
             cantBeOpened = !openedFromReader;
@@ -80,7 +82,7 @@ public class LaunchStoryScreenStrategy implements LaunchScreenStrategy {
                 readerAppearanceSettings.getSerializableKey(),
                 readerAppearanceSettings
         );
-        openReader.onOpen(
+        ((IOpenStoriesReader) openReader).onOpen(
                 context,
                 bundle
         );
