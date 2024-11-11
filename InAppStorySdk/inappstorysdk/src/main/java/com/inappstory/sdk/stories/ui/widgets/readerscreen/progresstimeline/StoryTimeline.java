@@ -96,14 +96,7 @@ public class StoryTimeline extends View {
                         || state.isHidden
         ) ? VISIBLE : INVISIBLE;
         setVisibility(localVisibility);
-        if (state.slidesCount > 2) {
-            Log.e("timelineVisibility",
-                    localVisibility + " " +
-                            state.slidesCount + " " +
-                            (state.timerDuration == 0) + " " +
-                            state.isHidden + " " + getParentForAccessibility());
-        }
-        //oldVisibility.set(localVisibility);
+
         if (fgColor.get() != localFgColor) {
             fgColor.set(localFgColor);
             fgColorChanged.set(true);
