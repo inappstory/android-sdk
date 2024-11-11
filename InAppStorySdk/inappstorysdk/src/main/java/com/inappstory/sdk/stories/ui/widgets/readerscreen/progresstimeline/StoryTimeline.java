@@ -15,6 +15,7 @@ import android.view.View;
 import androidx.annotation.MainThread;
 import androidx.annotation.Nullable;
 
+import com.inappstory.sdk.stories.ui.widgets.elasticview.ColorUtils;
 import com.inappstory.sdk.stories.utils.Sizes;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -37,6 +38,7 @@ public class StoryTimeline extends View {
     }
 
     private void init(Context context) {
+        setVisibility(INVISIBLE);
         float height = 3f;
         float gapWidth = 4f;
         float cornerRadius = 1.5f;
@@ -87,13 +89,21 @@ public class StoryTimeline extends View {
     @MainThread
     public void setState(StoryTimelineState state) {
         this.state = state;
-        int localFgColor = Color.parseColor(state.getForegroundColor());
-        int localBgColor = Color.parseColor(state.getBackgroundColor());
+        int localFgColor = ColorUtils.parseColorRGBA(state.getForegroundColor());
+        int localBgColor = ColorUtils.parseColorRGBA(state.getBackgroundColor());
         int localVisibility = !(
                 (state.slidesCount == 1 && state.timerDuration == 0)
                         || state.isHidden
         ) ? VISIBLE : INVISIBLE;
-        oldVisibility.set(localVisibility);
+        setVisibility(localVisibility);
+        if (state.slidesCount > 2) {
+            Log.e("timelineVisibility",
+                    localVisibility + " " +
+                            state.slidesCount + " " +
+                            (state.timerDuration == 0) + " " +
+                            state.isHidden + " " + getParentForAccessibility());
+        }
+        //oldVisibility.set(localVisibility);
         if (fgColor.get() != localFgColor) {
             fgColor.set(localFgColor);
             fgColorChanged.set(true);
@@ -122,9 +132,7 @@ public class StoryTimeline extends View {
     private final AtomicBoolean fgColorChanged = new AtomicBoolean(false);
 
     private void drawSegments(Canvas canvas) {
-        if (oldVisibility.get() != getVisibility()) {
-            setVisibility(oldVisibility.get());
-        }
+       // setVisibility(oldVisibility.get());
         if (bgColorChanged.compareAndSet(true, false)) {
             backgroundPaint.setColor(bgColor.get());
         }

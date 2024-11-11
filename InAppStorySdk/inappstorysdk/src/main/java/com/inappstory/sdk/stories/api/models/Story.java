@@ -233,21 +233,7 @@ public class Story implements Parcelable {
         return backgroundColor;
     }
 
-    public void testMethod() {
-        //this.isTimelineHidden = false;
-        if (slides == null) return;
-        for (int i = 0; i < slides.size(); i++) {
-            StorySlide storySlide = slides.get(i);
-            storySlide.timelineSettings = new StoryTimelineSettings();
-            if (i % 2 == 0) {
-                storySlide.timelineSettings.foregroundColor = "#FFFF0000";
-                storySlide.timelineSettings.backgroundColor = "#FF00FF00";
-            } else {
-                storySlide.timelineSettings.foregroundColor = "#FF0000FF";
-                storySlide.timelineSettings.backgroundColor = "#FFFFFFFF";
-            }
-        }
-    }
+
 
     public List<String> getPlaceholdersListNames(int index) {
         ArrayList<String> res = new ArrayList<>();

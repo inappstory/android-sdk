@@ -76,15 +76,7 @@ public class StoryTimelineManager {
     public void setSlidesCount(final int slidesCount, boolean isSetViews) {
         this.slidesCount = slidesCount;
         final StoryTimeline host = getHost();
-        if (host != null) {
-            host.post(new Runnable() {
-                @Override
-                public void run() {
-                    if (slidesCount <= 1) host.setVisibility(View.INVISIBLE);
-                    else host.setVisibility(View.VISIBLE);
-                }
-            });
-        }
+
         if (isSetViews) {
             setProgressSync();
         } else {
