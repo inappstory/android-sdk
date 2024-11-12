@@ -17,7 +17,7 @@ import java.util.Map;
 import java.util.Objects;
 
 public class StorySlide implements IReaderContentSlide {
-    @SerializedName("slide_index")
+    @SerializedName("index")
     public int slideIndex;
     @SerializedName("timeline")
     public StorySlideTimeline slideTimeline;

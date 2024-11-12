@@ -105,5 +105,6 @@ public class LruCachesHolder {
         commonCache.clearCache();
         infiniteCache.clearCache();
         vodCache.clearCache();
+        bundleCache.clearCache();
     }
 }

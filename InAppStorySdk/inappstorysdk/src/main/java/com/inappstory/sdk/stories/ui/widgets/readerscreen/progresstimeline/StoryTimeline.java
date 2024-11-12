@@ -12,6 +12,7 @@ import android.view.View;
 import androidx.annotation.MainThread;
 import androidx.annotation.Nullable;
 
+import com.inappstory.sdk.core.utils.ColorUtils;
 import com.inappstory.sdk.stories.utils.Sizes;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -84,8 +85,8 @@ public class StoryTimeline extends View {
             oldVisibility.set(localVisibility);
             visibilityChanged.set(true);
         }
-        int bgColor = Color.parseColor(state.backgroundColor());
-        int fgColor = Color.parseColor(state.backgroundColor());
+        int bgColor = ColorUtils.parseColorRGBA(state.backgroundColor());
+        int fgColor = ColorUtils.parseColorRGBA(state.foregroundColor());
         this.parameters.fillColor = fgColor;
         this.parameters.backgroundColor = bgColor;
         if (fillPaint != null) {

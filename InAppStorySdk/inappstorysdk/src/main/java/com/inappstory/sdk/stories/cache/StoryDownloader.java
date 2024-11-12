@@ -155,19 +155,19 @@ class StoryDownloader {
                 if (taskByStoryId.loadType != 3) {
                     if (taskByStoryId.loadType == 6) {
                         taskByStoryId.loadType = 3;
-                        if (callback != null)
-                            callback.onDownload(
-                                    core.contentHolder().readerContent()
-                                            .getByIdAndType(current.id(), type),
-                                    3, type
-                            );
                     } else if (taskByStoryId.loadType == 5) {
                         taskByStoryId.loadType = 2;
                     } else {
                         taskByStoryId.loadType = 1;
                     }
-                } else {
-                    return;
+                }
+                if (taskByStoryId.loadType == 3) {
+                    if (callback != null)
+                        callback.onDownload(
+                                core.contentHolder().readerContent()
+                                        .getByIdAndType(current.id(), type),
+                                3, type
+                        );
                 }
             } else {
                 storyTasks.put(keyByStoryId, new StoryTaskWithPriority(1));
@@ -355,7 +355,7 @@ class StoryDownloader {
                         1,
                         null,
                         "id, background_color, image",
-                        null
+                        "slides"
                 ),
                 callback
         );

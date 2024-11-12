@@ -3,6 +3,7 @@ package com.inappstory.sdk.stories.ui.list;
 import android.graphics.Color;
 
 import com.inappstory.sdk.core.data.IFavoriteItem;
+import com.inappstory.sdk.core.utils.ColorUtils;
 
 /**
  * Defines type for story cover in favorite cell. {@link #imageUrl()}
@@ -23,7 +24,7 @@ public class StoryFavoriteImage implements IFavoriteItem {
 
     public int backgroundColor() {
         try {
-            return Color.parseColor(backgroundColor);
+            return ColorUtils.parseColorRGBA(backgroundColor);
         } catch (Exception e) {
             return Color.BLACK;
         }

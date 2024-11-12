@@ -95,12 +95,8 @@ public class IASContentLoaderImpl implements IASContentLoader {
     public void clearCache() {
         try {
             core.storiesListVMHolder().clear();
-            getCommonCache().clearCache();
-            getFastCache().clearCache();
-            getInfiniteCache().clearCache();
-            getBundleCache().clearCache();
-            getVodCache().clearCache();
-            filesDownloadManager().getVodCacheJournal().clear();
+            filesDownloadManager.getCachesHolder().clear();
+            filesDownloadManager.getVodCacheJournal().clear();
             core.contentHolder().clearAll();
             storyDownloadManager.clearCache();
             core.keyValueStorage().clear();

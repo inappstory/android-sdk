@@ -40,6 +40,7 @@ import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
+import com.inappstory.sdk.core.utils.ColorUtils;
 import com.inappstory.sdk.stories.api.models.dialogstructure.CenterStructure;
 import com.inappstory.sdk.stories.api.models.dialogstructure.DialogStructure;
 import com.inappstory.sdk.stories.api.models.dialogstructure.SizeStructure;
@@ -76,7 +77,7 @@ public class ContactDialogFragment extends Fragment implements IASBackPressHandl
     }
 
     public static int hex2color(String colorStr) {
-        return Color.parseColor(colorStr);
+        return ColorUtils.parseColorRGBA(colorStr);
     }
 
     private int flags = 0;

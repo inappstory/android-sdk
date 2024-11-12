@@ -74,7 +74,7 @@ public class ContentHolder implements IContentHolder {
     @Override
     public void clearAll() {
         readerContentHolder.clear();
-        listsContentHolder.clear();
-        favoriteItemsHolder.clear();
+     //   listsContentHolder.clear();
+     //   favoriteItemsHolder.clear();
     }
 }

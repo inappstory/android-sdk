@@ -13,6 +13,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.core.utils.AnimUtils;
+import com.inappstory.sdk.core.utils.ColorUtils;
+import com.inappstory.sdk.core.utils.ViewUtils;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -11,7 +11,7 @@ public class StorySlideTimeline implements ISlideTimeline {
     @SerializedName("is_timeline_hidden")
     public boolean isTimelineHidden;
 
-    public static String DEFAULT_TIMELINE_BACKGROUND_COLOR = "#8affffff";
+    public static String DEFAULT_TIMELINE_BACKGROUND_COLOR = "#ffffff8a";
     public static String DEFAULT_TIMELINE_FOREGROUND_COLOR = "#ffffffff";
 
     @Override

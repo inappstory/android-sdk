@@ -225,17 +225,21 @@ public class SlidesDownloader {
             if (loadType == 3) {
                 slidesCountToCache = readerContent.actualSlidesCount();
             } else {
-                slidesCountToCache = 2;
+                slidesCountToCache = Math.min(2, readerContent.actualSlidesCount());
             }
-            for (int slideIndex = 0; slideIndex < slidesCountToCache; slideIndex++) {
-                SlideTaskKey slideTaskKey = new SlideTaskKey(contentIdAndType, slideIndex);
-                if (slideTasks.get(slideTaskKey) == null) {
-                    slideTasks.put(
-                            slideTaskKey,
-                            (new GenerateSlideTaskUseCase(core, readerContent, slideIndex))
-                                    .generate()
-                    );
+            try {
+                for (int slideIndex = 0; slideIndex < slidesCountToCache; slideIndex++) {
+                    SlideTaskKey slideTaskKey = new SlideTaskKey(contentIdAndType, slideIndex);
+                    if (slideTasks.get(slideTaskKey) == null) {
+                        slideTasks.put(
+                                slideTaskKey,
+                                (new GenerateSlideTaskUseCase(core, readerContent, slideIndex))
+                                        .generate()
+                        );
+                    }
                 }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
     }

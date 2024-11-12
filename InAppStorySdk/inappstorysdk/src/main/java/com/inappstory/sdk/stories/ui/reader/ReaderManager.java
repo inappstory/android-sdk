@@ -509,8 +509,8 @@ public class ReaderManager {
         if (story2 == null) return;
         IASStatisticV2 statisticV2 = core.statistic().v2();
         statisticV2.sendCurrentState();
-        ContentIdWithIndex contentIdWithIndex = storiesIds.get(lastPos);
         if (hasCloseEvent) {
+            ContentIdWithIndex contentIdWithIndex = storiesIds.get(lastPos);
             IReaderContent story = core.contentHolder().readerContent().getByIdAndType(
                     contentIdWithIndex.id(),
                     contentType

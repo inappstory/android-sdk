@@ -1,4 +1,4 @@
-package com.inappstory.sdk.core.ui.widgets.elasticview;
+package com.inappstory.sdk.core.utils;
 
 import android.content.Context;
 import android.content.res.ColorStateList;

@@ -28,11 +28,11 @@ public class StoryDownloadManager {
     private final IASCore core;
 
     public void clearLocalData() {
-        core.contentHolder().favoriteItems().clearByType(ContentType.STORY);
+    //    core.contentHolder().favoriteItems().clearByType(ContentType.STORY);
         core.contentHolder().readerContent().clearByType(ContentType.STORY);
         core.contentHolder().readerContent().clearByType(ContentType.UGC);
-        core.contentHolder().listsContent().clearByType(ContentType.STORY);
-        core.contentHolder().listsContent().clearByType(ContentType.UGC);
+     //   core.contentHolder().listsContent().clearByType(ContentType.STORY);
+     //   core.contentHolder().listsContent().clearByType(ContentType.UGC);
     }
 
     static final String EXPAND_STRING = "slides,layout";
@@ -66,8 +66,8 @@ public class StoryDownloadManager {
         if (cleanStories) {
             core.contentHolder().readerContent().clearByType(ContentType.STORY);
             core.contentHolder().readerContent().clearByType(ContentType.UGC);
-            core.contentHolder().listsContent().clearByType(ContentType.STORY);
-            core.contentHolder().listsContent().clearByType(ContentType.UGC);
+          //  core.contentHolder().listsContent().clearByType(ContentType.STORY);
+         //   core.contentHolder().listsContent().clearByType(ContentType.UGC);
         }
         storyDownloader.cleanTasks();
         slidesDownloader.cleanTasks();

@@ -152,7 +152,7 @@ public class FeedByIdUseCase {
                         1,
                         null,
                         "id, background_color, image",
-                        null
+                        "slides"
                 ),
                 callback
         );

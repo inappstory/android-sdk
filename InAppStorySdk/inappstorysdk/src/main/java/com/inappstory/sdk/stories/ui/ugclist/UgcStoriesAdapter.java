@@ -26,6 +26,7 @@ import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenStrategy;
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenAppearance;
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenData;
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenStrategy;
+import com.inappstory.sdk.core.utils.ColorUtils;
 import com.inappstory.sdk.core.utils.ConnectionCheck;
 import com.inappstory.sdk.core.utils.ConnectionCheckCallback;
 import com.inappstory.sdk.core.utils.StringWithPlaceholders;
@@ -154,9 +155,9 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
             String imgUrl = story.imageCoverByQuality(manager.csCoverQuality());
             holder.bind(story.id(),
                     new StringWithPlaceholders().replace(story.title(), core),
-                    story.titleColor() != null ? Color.parseColor(story.titleColor()) : null,
+                    story.titleColor() != null ? ColorUtils.parseColorRGBA(story.titleColor()) : null,
                     imgUrl,
-                    Color.parseColor(story.backgroundColor()),
+                    ColorUtils.parseColorRGBA(story.backgroundColor()),
                     story.isOpened(),
                     story.hasAudio(),
                     story.videoCover(),

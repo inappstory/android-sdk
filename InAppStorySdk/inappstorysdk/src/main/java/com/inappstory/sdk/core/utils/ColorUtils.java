@@ -1,7 +1,8 @@
-package com.inappstory.sdk.core.ui.widgets.elasticview;
+package com.inappstory.sdk.core.utils;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.util.TypedValue;
 
 import androidx.annotation.AttrRes;
@@ -159,5 +160,15 @@ public class ColorUtils {
     @Retention(RetentionPolicy.SOURCE)
     @IntDef({IS_LIGHT, IS_DARK, LIGHTNESS_UNKNOWN})
     public @interface Lightness {
+    }
+
+    public static int parseColorRGBA(String hex) {
+        if (hex.length() < 9)
+            return Color.parseColor(hex);
+        else {
+            String rgbaHex = "#" + hex.substring(7, 9) + hex.substring(1, 7);
+            return Color.parseColor(rgbaHex);
+        }
+
     }
 }

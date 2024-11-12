@@ -21,6 +21,7 @@ import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenStrategy;
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenAppearance;
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenData;
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenStrategy;
+import com.inappstory.sdk.core.utils.ColorUtils;
 import com.inappstory.sdk.core.utils.ConnectionCheck;
 import com.inappstory.sdk.core.utils.ConnectionCheckCallback;
 import com.inappstory.sdk.core.utils.StringWithPlaceholders;
@@ -161,12 +162,12 @@ public class StackStoryObserver implements IStackFeedActions {
             statuses[i] = stories.get(i).isOpened();
             storiesData[i] = new StoryData(stories.get(i), feed, SourceType.STACK);
         }
-        final int backgroundColor = Color.parseColor(
+        final int backgroundColor = ColorUtils.parseColorRGBA(
                 currentStory.backgroundColor()
         );
         StackStoryData localStackStoryData = new StackStoryData(
                 new StringWithPlaceholders().replace(currentStory.title(), core),
-                Color.parseColor(currentStory.titleColor()),
+                ColorUtils.parseColorRGBA(currentStory.titleColor()),
                 currentStory.hasAudio(),
                 backgroundColor,
                 image != null,
