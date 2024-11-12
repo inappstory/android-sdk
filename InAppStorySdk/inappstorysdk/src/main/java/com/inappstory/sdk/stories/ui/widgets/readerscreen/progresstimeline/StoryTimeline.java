@@ -96,7 +96,9 @@ public class StoryTimeline extends View {
                 (state.slidesCount == 1 && state.timerDuration == 0)
                         || state.isHidden
         ) ? VISIBLE : INVISIBLE;
-        if(Looper.myLooper() == Looper.getMainLooper()) {
+        if (localVisibility == 0)
+            Log.e("StoryTimelineState", localVisibility + " " + state);
+        if (Looper.myLooper() == Looper.getMainLooper()) {
             setVisibility(localVisibility);
         } else {
             post(new Runnable() {
@@ -135,7 +137,7 @@ public class StoryTimeline extends View {
     private final AtomicBoolean fgColorChanged = new AtomicBoolean(false);
 
     private void drawSegments(Canvas canvas) {
-       // setVisibility(oldVisibility.get());
+        // setVisibility(oldVisibility.get());
         if (bgColorChanged.compareAndSet(true, false)) {
             backgroundPaint.setColor(bgColor.get());
         }

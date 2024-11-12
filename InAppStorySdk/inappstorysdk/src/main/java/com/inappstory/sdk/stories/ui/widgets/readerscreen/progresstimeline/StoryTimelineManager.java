@@ -33,7 +33,7 @@ public class StoryTimelineManager {
         this.currentIndex = currentIndex;
         this.timerStart = timerStart;
         this.timerDuration = timerDuration;
-        final StoryTimeline host = getHost();
+       /* final StoryTimeline host = getHost();
         Runnable hostVisibility = new Runnable() {
             @Override
             public void run() {
@@ -47,7 +47,7 @@ public class StoryTimelineManager {
             hostVisibility.run();
         } else {
             host.post(hostVisibility);
-        }
+        }*/
 
         this.timerStartTimestamp = System.currentTimeMillis();
         this.isActive = true;

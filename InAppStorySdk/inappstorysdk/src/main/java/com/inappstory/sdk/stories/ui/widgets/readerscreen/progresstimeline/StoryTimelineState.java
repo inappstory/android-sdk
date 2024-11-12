@@ -40,4 +40,17 @@ public class StoryTimelineState {
         if (foregroundColor == null) return DEFAULT_FG_COLOR;
         return foregroundColor;
     }
+
+    @Override
+    public String toString() {
+        return "StoryTimelineState{" +
+                "slidesCount=" + slidesCount +
+                ", currentIndex=" + currentIndex +
+                ", foregroundColor='" + foregroundColor + '\'' +
+                ", backgroundColor='" + backgroundColor + '\'' +
+                ", isHidden=" + isHidden +
+                ", timerDuration=" + timerDuration +
+                ", currentProgress=" + currentProgress +
+                '}';
+    }
 }

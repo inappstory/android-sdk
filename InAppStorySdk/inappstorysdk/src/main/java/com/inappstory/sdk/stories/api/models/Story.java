@@ -103,6 +103,11 @@ public class Story implements Parcelable {
     @SerializedName("video_cover")
     public List<Image> videoUrl;
 
+    public List<StorySlide> slides() {
+        if (slides == null) return new ArrayList<>();
+        return slides;
+    }
+
     @SerializedName("slides")
     public List<StorySlide> slides;
 

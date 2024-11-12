@@ -20,6 +20,7 @@ import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.stories.api.models.ExceptionCache;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.StoryListType;
+import com.inappstory.sdk.stories.api.models.StorySlide;
 import com.inappstory.sdk.stories.api.models.callbacks.GetStoryByIdCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadFavoritesCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadStoriesCallback;
@@ -326,10 +327,7 @@ public class StoryDownloadManager {
                 int ind = stories.indexOf(story);
                 if (ind >= 0) {
                     Story localStory = stories.get(ind);
-                    if (tmp.slides == null & localStory.slides != null) {
-                        tmp.slides = new ArrayList<>();
-                        tmp.slides.addAll(localStory.slides);
-                    }
+                    tmp.slides = mergeSlides(tmp, localStory);
                     if (tmp.layout == null & localStory.layout != null) {
                         tmp.layout = localStory.layout;
                     }
@@ -538,6 +536,36 @@ public class StoryDownloadManager {
         return null;
     }
 
+    private StorySlide copySlide(StorySlide oldSlide, StorySlide newSlide) {
+        if (newSlide == null) return oldSlide;
+        if (oldSlide == null) return newSlide;
+        StorySlide storySlide;
+        if (newSlide.resources == null) {
+            storySlide = oldSlide;
+            storySlide.timelineSettings = newSlide.timelineSettings;
+        } else {
+            storySlide = newSlide;
+        }
+        return storySlide;
+    }
+
+    private List<StorySlide> mergeSlides(Story oldStory, Story newStory) {
+        List<StorySlide> merged = new ArrayList<>();
+        for (int i = 0; i < Math.max(oldStory.slides().size(), newStory.slides().size()); i++) {
+            StorySlide oldSlide = null;
+            StorySlide newSlide = null;
+            if (oldStory.slides().size() > i) {
+                oldSlide = oldStory.slides().get(i);
+            }
+            if (newStory.slides().size() > i) {
+                newSlide = newStory.slides().get(i);
+            }
+            StorySlide mergeSlide = copySlide(oldSlide, newSlide);
+            merged.add(mergeSlide);
+        }
+        return merged;
+    }
+
     public void setStory(final Story story, int id, Story.StoryType type) {
         if (story == null) return;
         List<Story> stories = getStoriesListByType(type);
@@ -547,10 +575,11 @@ public class StoryDownloadManager {
             return;
         }
         cur.loadedPages = new ArrayList<>();
-        cur.slides = new ArrayList<>(story.slides);
-        for (int i = 0; i < cur.slides.size(); i++) {
+        cur.slides = new ArrayList<>(story.slides());
+        for (int i = 0; i < Math.max(cur.slides().size(), story.slides().size()); i++) {
             cur.loadedPages.add(false);
         }
+        cur.slides = mergeSlides(cur, story);
         cur.id = id;
         cur.layout = story.layout;
         cur.hasAudio = story.hasAudio;
