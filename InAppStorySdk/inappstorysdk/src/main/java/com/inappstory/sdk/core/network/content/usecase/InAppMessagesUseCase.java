@@ -57,7 +57,11 @@ public class InAppMessagesUseCase {
                                             message, message.id(), ContentType.IN_APP_MESSAGE
                                     );
                                 }
-
+                                loadCallback.success(
+                                        core.contentHolder()
+                                                .readerContent()
+                                                .getByType(ContentType.IN_APP_MESSAGE)
+                                );
                             }
 
                             @Override
@@ -86,7 +90,7 @@ public class InAppMessagesUseCase {
                         core.network().enqueue(
                                 core.network().getApi().getInAppMessages(1,
                                         null,
-                                        null
+                                        "messages.slides"
                                 ),
                                 networkCallback
                         );

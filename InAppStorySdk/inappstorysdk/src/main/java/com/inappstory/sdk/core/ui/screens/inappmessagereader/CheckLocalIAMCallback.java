@@ -1,5 +1,7 @@
 package com.inappstory.sdk.core.ui.screens.inappmessagereader;
 
+import com.inappstory.sdk.core.data.IInAppMessage;
+
 public interface CheckLocalIAMCallback {
-    void success(int id);
+    void success(IInAppMessage inAppMessage);
 }

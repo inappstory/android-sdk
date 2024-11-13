@@ -38,9 +38,6 @@ public class InAppMessage implements IInAppMessage {
     @SerializedName("disable_close")
     public boolean disableClose;
 
-    @SerializedName("slides_count")
-    public int slidesCount;
-
     @SerializedName("type")
     public int screenType;
 
@@ -85,9 +82,7 @@ public class InAppMessage implements IInAppMessage {
 
     @Override
     public int actualSlidesCount() {
-        if (slides != null)
-            return slides.size();
-        return 0;
+        return slides != null ? slides.size() : 0;
     }
 
     @Override
@@ -117,7 +112,7 @@ public class InAppMessage implements IInAppMessage {
 
     @Override
     public int slidesCount() {
-        return slidesCount;
+        return actualSlidesCount();
     }
 
     @Override

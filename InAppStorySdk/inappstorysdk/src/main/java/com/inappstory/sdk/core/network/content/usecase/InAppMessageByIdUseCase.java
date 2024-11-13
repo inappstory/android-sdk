@@ -34,7 +34,7 @@ public class InAppMessageByIdUseCase {
                                 Integer.toString(id),
                                 1,
                                 null,
-                                null
+                                "slides"
                         ), new NetworkCallback<InAppMessage>() {
                             @Override
                             public void onSuccess(InAppMessage response) {

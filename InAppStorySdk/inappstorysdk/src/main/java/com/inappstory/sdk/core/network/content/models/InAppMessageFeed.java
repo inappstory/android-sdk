@@ -14,6 +14,10 @@ public class InAppMessageFeed implements IInAppMessageFeed<InAppMessage> {
     @SerializedName("messages")
     public List<InAppMessage> messages;
 
+    public InAppMessageFeed() {
+
+    }
+
     public InAppMessageFeed(IInAppMessageFeed<IInAppMessage> feed) {
         if (messages == null) messages = new ArrayList<>();
         if (feed.messages() != null) {

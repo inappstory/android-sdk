@@ -5,6 +5,7 @@ import androidx.fragment.app.FragmentManager;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.IASInAppMessage;
+import com.inappstory.sdk.core.ui.screens.inappmessagereader.LaunchIAMScreenStrategy;
 import com.inappstory.sdk.inappmessage.InAppMessageLoadCallback;
 import com.inappstory.sdk.inappmessage.InAppMessageOpenSettings;
 import com.inappstory.sdk.inappmessage.InAppMessageScreenActions;
@@ -29,13 +30,17 @@ public class IASInAppMessageImpl implements IASInAppMessage {
             InAppMessageOpenSettings openData,
             FragmentManager fragmentManager,
             int containerId,
-            InAppMessageScreenActions screenActions
+            final InAppMessageScreenActions screenActions
     ) {
-        Integer id = openData.id();
-        if (id != null) {
-
-        }
+        core.screensManager().openScreen(
+                null,
+                new LaunchIAMScreenStrategy(core)
+                        .parentContainer(fragmentManager, containerId)
+                        .inAppMessageOpenSettings(openData)
+                        .inAppMessageScreenActions(screenActions)
+        );
     }
+
 
     @Override
     public void callback(InAppMessageLoadCallback callback) {

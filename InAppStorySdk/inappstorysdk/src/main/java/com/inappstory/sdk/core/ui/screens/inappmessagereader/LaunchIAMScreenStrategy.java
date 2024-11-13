@@ -5,31 +5,49 @@ import android.content.Context;
 import androidx.fragment.app.FragmentManager;
 
 import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.data.IInAppMessage;
 import com.inappstory.sdk.core.data.IReaderContent;
+import com.inappstory.sdk.core.exceptions.NotImplementedMethodException;
 import com.inappstory.sdk.core.inappmessages.InAppMessageFeedCallback;
 import com.inappstory.sdk.core.network.content.usecase.InAppMessagesUseCase;
 import com.inappstory.sdk.core.ui.screens.holder.IScreensHolder;
 import com.inappstory.sdk.core.ui.screens.launcher.ILaunchScreenCallback;
 import com.inappstory.sdk.core.ui.screens.launcher.LaunchScreenStrategy;
 import com.inappstory.sdk.core.ui.screens.ScreenType;
+import com.inappstory.sdk.inappmessage.InAppMessageScreenActions;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageAppearance;
 import com.inappstory.sdk.inappmessage.InAppMessageOpenSettings;
 import com.inappstory.sdk.stories.api.models.ContentType;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenInAppMessageReader;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenReader;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenStoriesReader;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
     private final IASCore core;
+
     private InAppMessageOpenSettings inAppMessageOpenSettings;
-    private InAppMessageAppearance readerAppearanceSettings;
-    private List<ILaunchScreenCallback> launchScreenCallbacks = new ArrayList<>();
+
+    public LaunchIAMScreenStrategy inAppMessageScreenActions(
+            InAppMessageScreenActions inAppMessageScreenActions
+    ) {
+        this.inAppMessageScreenActions = inAppMessageScreenActions;
+        return this;
+    }
+
+    private InAppMessageScreenActions inAppMessageScreenActions;
     private FragmentManager parentContainerFM;
     private int containerId;
 
     public LaunchIAMScreenStrategy(IASCore core) {
         this.core = core;
+    }
+
+    public LaunchIAMScreenStrategy inAppMessageOpenSettings(InAppMessageOpenSettings inAppMessageOpenSettings) {
+        this.inAppMessageOpenSettings = inAppMessageOpenSettings;
+        return this;
     }
 
     public LaunchIAMScreenStrategy parentContainer(
@@ -41,24 +59,20 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
         return this;
     }
 
-    public LaunchIAMScreenStrategy readerAppearanceSettings(
-            InAppMessageAppearance readerAppearanceSettings
-    ) {
-        this.readerAppearanceSettings = readerAppearanceSettings;
-        return this;
-    }
-
 
     @Override
     public void launch(Context context,
-                       IOpenReader openReader,
-                       IScreensHolder screensHolders
+                       final IOpenReader openReader,
+                       final IScreensHolder screensHolders
     ) {
         checkIfMessageCanBeOpened(new CheckLocalIAMCallback() {
             @Override
-            public void success(int id) {
-                launchScreenSuccess();
-
+            public void success(IInAppMessage inAppMessage) {
+                launchScreenSuccess(
+                        inAppMessage,
+                        openReader,
+                        screensHolders
+                );
             }
         });
     }
@@ -72,33 +86,56 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
             );
         } else if (inAppMessageOpenSettings.event() != null) {
             readerContent = getContentByEvent();
+        } else {
+            List<IReaderContent> readerContents =
+                    core.contentHolder().readerContent().getByType(
+                            ContentType.IN_APP_MESSAGE
+                    );
+            if (readerContents != null) {
+                for (IReaderContent content: readerContents) {
+                    if (checkContentForShownFrequency((IInAppMessage) content)) {
+                        return content;
+                    }
+                }
+            }
         }
         return readerContent;
+    }
+    
+    private boolean checkContentForShownFrequency(IInAppMessage inAppMessage) {
+        return true;
     }
 
     private void checkIfMessageCanBeOpened(final CheckLocalIAMCallback loadScreen) {
         if (inAppMessageOpenSettings == null) {
-            launchScreenError("Need pass opening settings");
+            launchScreenError("Need to pass opening settings");
             return;
         }
         final IReaderContent readerContent = getLocalReaderContent();
         if (inAppMessageOpenSettings.showOnlyIfLoaded()) {
             if (readerContent != null && core.contentLoader().inAppMessageDownloadManager()
                     .allSlidesLoaded(readerContent)) {
-                loadScreen.success(readerContent.id());
+                loadScreen.success((IInAppMessage) readerContent);
             } else {
-                launchScreenError("Need to preload InAppMessage first");
-                return;
+                launchScreenError("Need to preload InAppMessages first");
             }
         } else {
             if (readerContent != null) {
-                loadScreen.success(readerContent.id());
+                loadScreen.success((IInAppMessage) readerContent);
             } else {
                 new InAppMessagesUseCase(core).get(
                         new InAppMessageFeedCallback() {
                             @Override
                             public void success(List<IReaderContent> content) {
-                                loadScreen.success(readerContent.id());
+                                IReaderContent readerContent = getLocalReaderContent();
+                                if (readerContent != null)
+                                    loadScreen.success((IInAppMessage) readerContent);
+                                else
+                                    launchScreenError(
+                                            "Can't load InAppMessage with settings: [id: "
+                                            + inAppMessageOpenSettings.id() +
+                                            ", event: " + inAppMessageOpenSettings.event() + "]"
+                                    );
                             }
 
                             @Override
@@ -117,25 +154,29 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
 
     }
 
-    private void launchScreenSuccess() {
-        for (ILaunchScreenCallback launchScreenCallback : launchScreenCallbacks) {
-            launchScreenCallback.onSuccess(
-                    ScreenType.IN_APP_MESSAGE
-            );
-        }
+    private void launchScreenSuccess(
+            IInAppMessage inAppMessage,
+            IOpenReader openReader,
+            IScreensHolder screensHolders
+    ) {
+        //check if another readers is opened
+
+        inAppMessageScreenActions.readerIsOpened();
+        ((IOpenInAppMessageReader) openReader).onOpen(
+                inAppMessage,
+                inAppMessageOpenSettings.showOnlyIfLoaded(),
+                parentContainerFM,
+                containerId,
+                inAppMessageScreenActions
+        );
     }
 
     private void launchScreenError(String message) {
-        for (ILaunchScreenCallback launchScreenCallback : launchScreenCallbacks) {
-            launchScreenCallback.onError(
-                    ScreenType.IN_APP_MESSAGE,
-                    message
-            );
-        }
+        inAppMessageScreenActions.readerOpenError(message);
     }
 
     private IReaderContent getContentByEvent() {
-        return null;
+        throw new NotImplementedMethodException();
     }
 
     @Override

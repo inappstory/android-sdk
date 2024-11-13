@@ -23,7 +23,13 @@ public class SlideTask {
     List<IResource> staticResources = new ArrayList<>();
     List<UrlWithAlter> urlsWithAlter = new ArrayList<>();
     List<IResource> vodResources = new ArrayList<>();
+    boolean forced = false;
     int loadType = 0; //-1 - error, 0 - not loaded, 1 - loading, 2 - loaded
+
+    public SlideTask forced(boolean forced) {
+        this.forced = forced;
+        return this;
+    }
 
     public SlideTask(
             List<IResource> staticResources,

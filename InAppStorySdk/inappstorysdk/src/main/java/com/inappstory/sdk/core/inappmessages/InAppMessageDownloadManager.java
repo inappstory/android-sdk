@@ -145,7 +145,8 @@ public class InAppMessageDownloadManager {
                         ContentType.IN_APP_MESSAGE
                 ),
                 readerContent,
-                3
+                3,
+                true
         );
     }
 

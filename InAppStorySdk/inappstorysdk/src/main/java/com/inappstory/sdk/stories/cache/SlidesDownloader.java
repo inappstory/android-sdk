@@ -218,7 +218,8 @@ public class SlidesDownloader {
     public void addStorySlides(
             ContentIdAndType contentIdAndType,
             IReaderContent readerContent,
-            int loadType
+            int loadType,
+            boolean forced
     ) {
         synchronized (slideTasksLock) {
             int slidesCountToCache;
@@ -235,6 +236,7 @@ public class SlidesDownloader {
                                 slideTaskKey,
                                 (new GenerateSlideTaskUseCase(core, readerContent, slideIndex))
                                         .generate()
+                                        .forced(forced)
                         );
                     }
                 }
@@ -402,6 +404,11 @@ public class SlidesDownloader {
                 if (!slideTasks.containsKey(key)) continue;
                 if (Objects.requireNonNull(slideTasks.get(key)).loadType != 0) continue;
                 return key;
+            }
+            for (Map.Entry<SlideTaskKey, SlideTask> entry : slideTasks.entrySet()) {
+                if (Objects.requireNonNull(entry.getValue()).loadType != 0) continue;
+                if (!Objects.requireNonNull(entry.getValue()).forced) continue;
+                return entry.getKey();
             }
             return null;
         }

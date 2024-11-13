@@ -162,7 +162,8 @@ public class StoryDownloadManager {
                     slidesDownloader.addStorySlides(
                             new ContentIdAndType(story.id(), type),
                             story,
-                            loadType
+                            loadType,
+                            false
                     );
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -219,7 +220,8 @@ public class StoryDownloadManager {
                 slidesDownloader.addStorySlides(
                         new ContentIdAndType(story.id(), type),
                         story,
-                        3
+                        3,
+                        false
                 );
             } catch (Exception e) {
                 e.printStackTrace();
