@@ -79,6 +79,17 @@ public class IASWebView extends WebView {
         InAppStoryManager.sendWebConsoleLog(log);
     }
 
+
+
+    public void destroyView() {
+        removeAllViews();
+        clearHistory();
+        clearCache(true);
+        loadUrl("about:blank");
+        removeAllViews();
+        destroyDrawingCache();
+    }
+
     protected String injectUnselectableStyle(String html) {
         return html.replace("<head>",
                 "<head><style>*{" +
@@ -89,15 +100,6 @@ public class IASWebView extends WebView {
                         "-ms-user-select: none;" +
                         "user-select: none;" +
                         "} </style>");
-    }
-
-    public void destroyView() {
-        removeAllViews();
-        clearHistory();
-        clearCache(true);
-        loadUrl("about:blank");
-        removeAllViews();
-        destroyDrawingCache();
     }
 
     public String setDir(String html) {

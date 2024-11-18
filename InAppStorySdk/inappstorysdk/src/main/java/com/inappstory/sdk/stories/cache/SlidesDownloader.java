@@ -8,7 +8,7 @@ import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.data.IListItemContent;
 import com.inappstory.sdk.core.dataholders.IListsContentHolder;
 import com.inappstory.sdk.core.dataholders.IReaderContentHolder;
-import com.inappstory.sdk.core.ui.screens.IReaderContentPageViewModel;
+import com.inappstory.sdk.core.ui.screens.IReaderSlideViewModel;
 import com.inappstory.sdk.game.cache.SessionAssetsIsReadyCallback;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.core.data.IResource;
@@ -246,13 +246,13 @@ public class SlidesDownloader {
         }
     }
 
-    public void addSubscriber(IReaderContentPageViewModel pageViewModel) {
+    public void addSubscriber(IReaderSlideViewModel pageViewModel) {
         synchronized (pageViewModelsLock) {
             pageViewModels.add(pageViewModel);
         }
     }
 
-    public void removeSubscriber(IReaderContentPageViewModel pageViewModel) {
+    public void removeSubscriber(IReaderSlideViewModel pageViewModel) {
         synchronized (pageViewModelsLock) {
             pageViewModels.remove(pageViewModel);
         }
@@ -274,7 +274,7 @@ public class SlidesDownloader {
                 return;
             }
             ContentIdAndType contentIdAndType = slideTaskKey.contentIdAndType;
-            for (IReaderContentPageViewModel pageViewModel : pageViewModels) {
+            for (IReaderSlideViewModel pageViewModel : pageViewModels) {
                 if (pageViewModel.contentIdAndType().equals(contentIdAndType)) {
                     pageViewModel.slideLoadError(slideTaskKey.index);
                     return;
@@ -355,18 +355,23 @@ public class SlidesDownloader {
         return true;
     }
 
-    private void checkBundleResources(
-            final IReaderContentPageViewModel pageViewModel,
-            final SlideTaskKey key
-    ) {
+    public boolean checkBundleResourcesAsync() {
         ISessionHolder sessionHolder = core.sessionManager().getSession();
-        if (sessionHolder.checkIfSessionAssetsIsReadySync()) {
-            pageViewModel.slideLoadSuccess(key.index);
+        return sessionHolder.checkIfSessionAssetsIsReadySync();
+    }
+
+    public void checkBundleResources(
+            final IReaderSlideViewModel pageViewModel,
+            final int slideIndex
+    ) {
+        if (checkBundleResourcesAsync()) {
+            pageViewModel.slideLoadSuccess(slideIndex);
         } else {
+            ISessionHolder sessionHolder = core.sessionManager().getSession();
             sessionHolder.addSessionAssetsIsReadyCallback(new SessionAssetsIsReadyCallback() {
                 @Override
                 public void isReady() {
-                    pageViewModel.slideLoadSuccess(key.index);
+                    pageViewModel.slideLoadSuccess(slideIndex);
                 }
             });
             core.contentPreload().downloadSessionAssets(sessionHolder.getSessionAssets());
@@ -377,17 +382,20 @@ public class SlidesDownloader {
 
 
     private final Object pageViewModelsLock = new Object();
-    List<IReaderContentPageViewModel> pageViewModels = new ArrayList<>();
+    List<IReaderSlideViewModel> pageViewModels = new ArrayList<>();
 
     private void slideLoaded(final SlideTaskKey key) {
         ContentIdAndType contentIdAndType = key.contentIdAndType;
+        List<IReaderSlideViewModel> checkedPageViewModels = new ArrayList<>();
         synchronized (pageViewModelsLock) {
-            for (IReaderContentPageViewModel pageViewModel : pageViewModels) {
+            for (IReaderSlideViewModel pageViewModel : pageViewModels) {
                 if (pageViewModel.contentIdAndType().equals(contentIdAndType)) {
-                    checkBundleResources(pageViewModel, key);
-                    return;
+                    checkedPageViewModels.add(pageViewModel);
                 }
             }
+        }
+        for (IReaderSlideViewModel pageViewModel : checkedPageViewModels) {
+            checkBundleResources(pageViewModel, key.index);
         }
     }
 

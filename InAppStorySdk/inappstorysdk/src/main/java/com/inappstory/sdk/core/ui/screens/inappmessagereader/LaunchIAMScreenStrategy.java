@@ -8,6 +8,7 @@ import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.data.IInAppMessage;
 import com.inappstory.sdk.core.data.IReaderContent;
 import com.inappstory.sdk.core.exceptions.NotImplementedMethodException;
+import com.inappstory.sdk.core.inappmessages.InAppMessageDownloadManager;
 import com.inappstory.sdk.core.inappmessages.InAppMessageFeedCallback;
 import com.inappstory.sdk.core.network.content.usecase.InAppMessagesUseCase;
 import com.inappstory.sdk.core.ui.screens.holder.IScreensHolder;
@@ -15,8 +16,12 @@ import com.inappstory.sdk.core.ui.screens.launcher.ILaunchScreenCallback;
 import com.inappstory.sdk.core.ui.screens.launcher.LaunchScreenStrategy;
 import com.inappstory.sdk.core.ui.screens.ScreenType;
 import com.inappstory.sdk.inappmessage.InAppMessageScreenActions;
+import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderState;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageAppearance;
 import com.inappstory.sdk.inappmessage.InAppMessageOpenSettings;
+import com.inappstory.sdk.inappmessage.ui.appearance.impl.InAppMessageBottomSheetSettings;
+import com.inappstory.sdk.inappmessage.ui.appearance.impl.InAppMessageFullscreenSettings;
+import com.inappstory.sdk.inappmessage.ui.appearance.impl.InAppMessageModalSettings;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenInAppMessageReader;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenReader;
@@ -113,11 +118,12 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
         }
         final IReaderContent readerContent = getLocalReaderContent();
         if (inAppMessageOpenSettings.showOnlyIfLoaded()) {
-            if (readerContent != null && core.contentLoader().inAppMessageDownloadManager()
-                    .allSlidesLoaded(readerContent)) {
+            InAppMessageDownloadManager downloadManager = core.contentLoader().inAppMessageDownloadManager();
+            if (readerContent != null &&
+                    downloadManager.allSlidesLoaded(readerContent) && downloadManager.allBundlesLoaded()) {
                 loadScreen.success((IInAppMessage) readerContent);
             } else {
-                launchScreenError("Need to preload InAppMessages first");
+                launchScreenError("Need to preload InAppMessages and session bundles first");
             }
         } else {
             if (readerContent != null) {
@@ -160,8 +166,28 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
             IScreensHolder screensHolders
     ) {
         //check if another readers is opened
-
+        InAppMessageAppearance appearance;
+        switch (inAppMessage.screenType()) {
+            case 1:
+                appearance = new InAppMessageBottomSheetSettings();
+                break;
+            case 2:
+                appearance = new InAppMessageBottomSheetSettings();
+                break;
+            case 3:
+                appearance = new InAppMessageBottomSheetSettings();
+                break;
+            default:
+                appearance = new InAppMessageBottomSheetSettings();
+                break;
+        }
         inAppMessageScreenActions.readerIsOpened();
+        core.screensManager().iamReaderViewModel().initState(
+                new IAMReaderState()
+                        .iamId(inAppMessage.id())
+                        .showOnlyIfLoaded(inAppMessageOpenSettings.showOnlyIfLoaded())
+                        .appearance(appearance)
+        );
         ((IOpenInAppMessageReader) openReader).onOpen(
                 inAppMessage,
                 inAppMessageOpenSettings.showOnlyIfLoaded(),

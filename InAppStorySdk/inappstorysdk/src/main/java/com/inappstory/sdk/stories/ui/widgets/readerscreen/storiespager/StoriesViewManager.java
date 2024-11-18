@@ -43,7 +43,7 @@ import com.inappstory.sdk.stories.ui.dialog.SendListener;
 import com.inappstory.sdk.stories.ui.dialog.ShowListener;
 import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryScreen;
 import com.inappstory.sdk.stories.ui.reader.StoriesContentFragment;
-import com.inappstory.sdk.stories.ui.widgets.readerscreen.webview.SimpleStoriesWebView;
+import com.inappstory.sdk.stories.ui.widgets.readerscreen.webview.StoriesWebView;
 import com.inappstory.sdk.stories.utils.AudioModes;
 import com.inappstory.sdk.stories.utils.WebPageConvertCallback;
 import com.inappstory.sdk.stories.utils.WebPageConverter;
@@ -103,8 +103,8 @@ public class StoriesViewManager {
     }
 
     void gameComplete(String data) {
-        if (storiesView instanceof SimpleStoriesWebView) {
-            ((SimpleStoriesWebView) storiesView).gameComplete(data);
+        if (storiesView instanceof StoriesWebView) {
+            ((StoriesWebView) storiesView).gameComplete(data);
         }
     }
 
@@ -255,9 +255,9 @@ public class StoriesViewManager {
 
     Handler showRefreshHandler = new Handler(Looper.getMainLooper());
 
-    public void loadWebData(String layout, String webdata) {
+    public void loadWebData(String firstData, String replaceData) {
 
-        if (!(storiesView instanceof SimpleStoriesWebView)) return;
+        if (!(storiesView instanceof StoriesWebView)) return;
         clearShowLoader();
         clearShowRefresh();
         synchronized (latestIndexLock) {
@@ -266,7 +266,7 @@ public class StoriesViewManager {
             showRefreshHandler.postDelayed(showLoader, 500);
             showRefreshHandler.postDelayed(showRefresh, 15000);
         }
-        ((SimpleStoriesWebView) storiesView).loadWebData(layout, webdata);
+        ((StoriesWebView) storiesView).loadWebData(firstData, replaceData);
     }
 
     public void loadStory(IReaderContent story, int index) {
@@ -328,16 +328,16 @@ public class StoriesViewManager {
 
     void setWebViewSettings(IReaderContent story) throws IOException {
         String innerWebData = story.slideByIndex(index);
-        if (storiesView == null || !(storiesView instanceof SimpleStoriesWebView)) return;
+        if (storiesView == null || !(storiesView instanceof StoriesWebView)) return;
 
         WebPageConvertCallback callback = new WebPageConvertCallback() {
             @Override
-            public void onConvert(String webData, String webLayout, int lastIndex) {
+            public void onConvert(String replaceData, String firstData, int lastIndex) {
                 if (index != lastIndex) return;
-                loadWebData(webLayout, webData);
+                loadWebData(firstData, replaceData);
             }
         };
-        ((SimpleStoriesWebView) storiesView).setLayerType(View.LAYER_TYPE_HARDWARE, null);
+        ((StoriesWebView) storiesView).setLayerType(View.LAYER_TYPE_HARDWARE, null);
         if (innerWebData.contains("<video")) {
             isVideo = true;
         } else {
@@ -353,7 +353,7 @@ public class StoriesViewManager {
     boolean isVideo = false;
 
 
-    public void setStoriesView(SimpleStoriesView storiesWebView) {
+    public void setStoriesView(ContentViewInteractor storiesWebView) {
         this.storiesView = storiesWebView;
         storiesWebView.checkIfClientIsSet();
     }
@@ -370,7 +370,7 @@ public class StoriesViewManager {
         this.progressBar = progressBar;
     }
 
-    SimpleStoriesView storiesView;
+    ContentViewInteractor storiesView;
 
     public void storyShowTextInput(String id, String data) {
         final StoriesContentFragment storiesContentFragment =

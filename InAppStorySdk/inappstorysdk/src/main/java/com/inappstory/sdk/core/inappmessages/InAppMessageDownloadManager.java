@@ -7,7 +7,7 @@ import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.data.IReaderContent;
 import com.inappstory.sdk.core.network.content.usecase.InAppMessageByIdUseCase;
-import com.inappstory.sdk.core.ui.screens.IReaderContentPageViewModel;
+import com.inappstory.sdk.core.ui.screens.IReaderSlideViewModel;
 import com.inappstory.sdk.game.cache.SessionAssetsIsReadyCallback;
 import com.inappstory.sdk.inappmessage.InAppMessageLoadCallback;
 import com.inappstory.sdk.stories.api.models.ContentType;
@@ -72,9 +72,22 @@ public class InAppMessageDownloadManager {
         return slidesDownloader.allSlidesLoaded(readerContent, ContentType.IN_APP_MESSAGE);
     }
 
+    public boolean checkBundleResources(
+            final IReaderSlideViewModel pageViewModel,
+            boolean sync
+    ) {
+        if (sync) return allBundlesLoaded();
+        slidesDownloader.checkBundleResources(pageViewModel, 0);
+        return true;
+    }
+
+    public boolean allBundlesLoaded() {
+        return slidesDownloader.checkBundleResourcesAsync();
+    }
+
     private void addSlides(@NonNull final IReaderContent readerContent) {
         core.contentLoader().inAppMessageDownloadManager().addSubscriber(
-                new IReaderContentPageViewModel() {
+                new IReaderSlideViewModel() {
                     @Override
                     public ContentIdAndType contentIdAndType() {
                         return new ContentIdAndType(
@@ -136,6 +149,11 @@ public class InAppMessageDownloadManager {
                             }
                         }
                     }
+
+                    @Override
+                    public void loadContent() {
+
+                    }
                 }
         );
 
@@ -178,11 +196,11 @@ public class InAppMessageDownloadManager {
         return true;
     }
 
-    public void addSubscriber(IReaderContentPageViewModel pageViewModel) {
+    public void addSubscriber(IReaderSlideViewModel pageViewModel) {
         slidesDownloader.addSubscriber(pageViewModel);
     }
 
-    public void removeSubscriber(IReaderContentPageViewModel pageViewModel) {
+    public void removeSubscriber(IReaderSlideViewModel pageViewModel) {
         slidesDownloader.removeSubscriber(pageViewModel);
     }
 

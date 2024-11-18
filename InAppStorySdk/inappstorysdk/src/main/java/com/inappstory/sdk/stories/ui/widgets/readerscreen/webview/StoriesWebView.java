@@ -9,10 +9,8 @@ import android.os.Looper;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
-import android.view.View;
 import android.view.ViewParent;
 import android.webkit.ConsoleMessage;
-import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 
@@ -21,26 +19,24 @@ import androidx.annotation.Nullable;
 import androidx.core.view.ViewCompat;
 
 import com.inappstory.sdk.InAppStoryManager;
-import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
+import com.inappstory.sdk.inappmessage.domain.reader.IIAMReaderSlideViewModel;
 import com.inappstory.sdk.stories.ui.views.IASWebView;
 import com.inappstory.sdk.stories.ui.views.IASWebViewClient;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPager;
-import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.SimpleStoriesView;
+import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ContentViewInteractor;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.StoriesViewManager;
 import com.inappstory.sdk.stories.utils.Sizes;
-
-import java.util.Map;
 
 /**
  * Created by Paperrose on 07.06.2018.
  */
 
-public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesView {
+public class StoriesWebView extends IASWebView implements ContentViewInteractor {
 
-    boolean clientIsSet = false;
+    private boolean clientIsSet = false;
 
     public void restartSlide(IASCore core) {
         boolean isSoundOn = ((IASDataSettingsHolder)core.settingsAPI()).isSoundOn();
@@ -72,23 +68,7 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
 
     String currentPage = "";
 
-    public void reloadPage() {
-        new Handler(Looper.getMainLooper()).post(new Runnable() {
-            @Override
-            public void run() {
-                loadCurrentPage(currentPage);
-            }
-        });
-    }
 
-    private void loadCurrentPage(String page) {
-        evaluateJavascript("(function(){show_slide(\"" + oldEscape(page) + "\");})()", null);
-        logMethod("show_slide");
-    }
-
-    private void replaceHtml(String page) {
-        loadCurrentPage(page);
-    }
 
     @Override
     public void clearSlide(int index) {
@@ -117,6 +97,23 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
         return escaped;
     }
 
+
+    @Override
+    public void loadSlide(String content) {
+        loadDataWithBaseURL(
+                "file:///data/",
+                content,
+                "text/html; charset=utf-8",
+                "UTF-8",
+                null
+        );
+    }
+
+    @Override
+    public void replaceSlide(String newContent) {
+        evaluateJavascript("(function(){show_slide(\"" + newContent + "\");})()", null);
+        logMethod("show_slide");
+    }
 
     public void pauseSlide() {
         loadUrl("javascript:(function(){" +
@@ -194,7 +191,7 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
-                SimpleStoriesWebView.super.loadUrl(url);
+                StoriesWebView.super.loadUrl(url);
             }
         });
     }
@@ -217,14 +214,14 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
     }
 
 
-    public SimpleStoriesWebView(final Context context) {
+    public StoriesWebView(final Context context) {
         super(context.getApplicationContext());
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-                SimpleStoriesWebView.this.context = context;
+                StoriesWebView.this.context = context;
                 manager = new StoriesViewManager(context, core);
-                manager.setStoriesView(SimpleStoriesWebView.this);
+                manager.setStoriesView(StoriesWebView.this);
             }
         });
     }
@@ -259,24 +256,22 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
 
     boolean notFirstLoading = false;
 
-    public void loadWebData(String outerLayout, String outerData) {
-        final String data = outerData;
-        final String lt = outerLayout;
-        currentPage = data;
-        if (!notFirstLoading || data.isEmpty()) {
+    public void loadWebData(String firstData, final String replaceData) {
+        currentPage = replaceData;
+        if (!notFirstLoading || replaceData.isEmpty()) {
             notFirstLoading = true;
+            final String modifiedPageAndLayout = setDir(injectUnselectableStyle(firstData));
             new Handler(Looper.getMainLooper()).post(new Runnable() {
                 @Override
                 public void run() {
-                    String s0 = setDir(injectUnselectableStyle(lt));
-                    loadDataWithBaseURL("file:///data/", s0, "text/html; charset=utf-8", "UTF-8", null);
+                    loadSlide(modifiedPageAndLayout);
                 }
             });
         } else {
             new Handler(Looper.getMainLooper()).post(new Runnable() {
                 @Override
                 public void run() {
-                    replaceHtml(data);
+                    replaceSlide(oldEscape(replaceData));
                 }
             });
         }
@@ -295,11 +290,11 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
         logMethod("share_complete " + id + " " + success);
     }
 
-    public SimpleStoriesWebView(Context context, AttributeSet attrs) {
+    public StoriesWebView(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
 
-    public SimpleStoriesWebView(Context context, AttributeSet attrs, int defStyleAttr) {
+    public StoriesWebView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
     }
 
@@ -318,11 +313,6 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
     public void screenshotShare(String shareId) {
         evaluateJavascript("share_slide_screenshot(\"" + shareId + "\");", null);
         logMethod("share_slide_screenshot");
-    }
-
-    @Override
-    public void setStoriesView(SimpleStoriesView storiesView) {
-
     }
 
     @Override
@@ -383,6 +373,11 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
         evaluateJavascript("goods_widget_complete(\"" + widgetId + "\");", null);
 
         logMethod("goods_widget_complete " + widgetId);
+    }
+
+    @Override
+    public void slideViewModel(IIAMReaderSlideViewModel slideViewModel) {
+
     }
 
     private boolean checkIfParentsHasCubeAnimation(ViewParent view) {

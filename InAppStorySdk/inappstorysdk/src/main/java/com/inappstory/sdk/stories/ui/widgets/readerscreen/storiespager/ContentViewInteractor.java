@@ -3,8 +3,12 @@ package com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager;
 import android.content.Context;
 
 import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.inappmessage.domain.reader.IIAMReaderSlideViewModel;
 
-public interface SimpleStoriesView {
+public interface ContentViewInteractor {
+    void loadSlide(String content);
+    void replaceSlide(String newContent);
+
     void pauseSlide();
     void startSlide(IASCore core);
     void restartSlide(IASCore core);
@@ -22,9 +26,9 @@ public interface SimpleStoriesView {
     float getCoordinate();
     void shareComplete(String stId, boolean success);
     void freezeUI();
-    void setStoriesView(SimpleStoriesView storiesView);
     void checkIfClientIsSet();
     void screenshotShare(String id);
     void goodsWidgetComplete(String widgetId);
-    StoriesViewManager getManager();
+
+    void slideViewModel(IIAMReaderSlideViewModel slideViewModel);
 }

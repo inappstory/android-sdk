@@ -14,21 +14,29 @@ import com.inappstory.sdk.core.ui.screens.launcher.IScreensLauncher;
 import com.inappstory.sdk.core.ui.screens.launcher.LaunchScreenStrategy;
 import com.inappstory.sdk.core.ui.screens.launcher.ScreensLauncher;
 import com.inappstory.sdk.core.ui.screens.storyreader.StoryScreenHolder;
+import com.inappstory.sdk.domain.IScreenViewModelsHolder;
+import com.inappstory.sdk.domain.ScreenViewModelsHolder;
+import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderViewModel;
+import com.inappstory.sdk.inappmessage.domain.reader.IIAMReaderViewModel;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenGameReader;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenInAppMessageReader;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenReader;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenStoriesReader;
 import com.inappstory.sdk.stories.ui.reader.ForceCloseReaderCallback;
 
-public class ScreensManager implements IScreensLauncher, IScreensHolder {
+public class ScreensManager implements IScreensLauncher,
+        IScreensHolder,
+        IScreenViewModelsHolder {
     private final IScreensHolder screensHolder;
     private final IASCore core;
     private final ScreensLauncher launcher;
+    private final IScreenViewModelsHolder screenViewModelsHolder;
 
     public ScreensManager(IASCore core) {
         this.core = core;
-        screensHolder = new ScreensHolder(core);
-        launcher = new ScreensLauncher(screensHolder);
+        this.screenViewModelsHolder = new ScreenViewModelsHolder(core);
+        this.screensHolder = new ScreensHolder(core);
+        this.launcher = new ScreensLauncher(screensHolder);
     }
 
 
@@ -95,5 +103,10 @@ public class ScreensManager implements IScreensLauncher, IScreensHolder {
     @Override
     public void setOpenInAppMessageReader(@NonNull IOpenInAppMessageReader openInAppMessageReader) {
         launcher.setOpenInAppMessageReader(openInAppMessageReader);
+    }
+
+    @Override
+    public IIAMReaderViewModel iamReaderViewModel() {
+        return screenViewModelsHolder.iamReaderViewModel();
     }
 }

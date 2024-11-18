@@ -55,7 +55,7 @@ import com.inappstory.sdk.stories.ui.reader.StoriesContentFragment;
 import com.inappstory.sdk.stories.ui.reader.StoriesGradientObject;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.buttonspanel.ButtonsPanel;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.progresstimeline.StoryTimeline;
-import com.inappstory.sdk.stories.ui.widgets.readerscreen.webview.SimpleStoriesWebView;
+import com.inappstory.sdk.stories.ui.widgets.readerscreen.webview.StoriesWebView;
 import com.inappstory.sdk.stories.utils.Sizes;
 
 import java.util.List;
@@ -63,7 +63,7 @@ import java.util.List;
 public class ReaderPageFragment extends Fragment {
     ReaderPageManager manager;
     StoryTimeline timeline;
-    SimpleStoriesView storiesView;
+    StoriesWebView storiesView;
     ButtonsPanel buttonsPanel;
     View aboveButtonsPanel;
     ReaderManager parentManager;
@@ -533,12 +533,12 @@ public class ReaderPageFragment extends Fragment {
         webViewContainer.setElevation(4);
         webViewContainer.setOrientation(LinearLayout.VERTICAL);
         webViewContainer.setLayoutParams(webViewContainerParams);
-        storiesView = new SimpleStoriesWebView(context);
-        ((SimpleStoriesWebView) storiesView).setId(R.id.ias_stories_view);
+        storiesView = new StoriesWebView(context);
+        ((StoriesWebView) storiesView).setId(R.id.ias_stories_view);
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
                 MATCH_PARENT, MATCH_PARENT);
-        ((SimpleStoriesWebView) storiesView).setLayoutParams(lp);
-        webViewContainer.addView(((SimpleStoriesWebView) storiesView));
+        ((StoriesWebView) storiesView).setLayoutParams(lp);
+        webViewContainer.addView(((StoriesWebView) storiesView));
         return webViewContainer;
     }
 

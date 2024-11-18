@@ -6,7 +6,7 @@ import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.dataholders.IContentHolder;
 import com.inappstory.sdk.core.data.IListItemContent;
 import com.inappstory.sdk.core.data.IReaderContent;
-import com.inappstory.sdk.core.ui.screens.IReaderContentPageViewModel;
+import com.inappstory.sdk.core.ui.screens.IReaderSlideViewModel;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.stories.api.models.ContentIdWithIndex;
 import com.inappstory.sdk.core.network.content.models.Image;
@@ -80,9 +80,9 @@ public class StoryDownloadManager {
     }
 
     private final Object lock = new Object();
-    List<IReaderContentPageViewModel> pageViewModels = new ArrayList<>();
+    List<IReaderSlideViewModel> pageViewModels = new ArrayList<>();
 
-    public void addSubscriber(IReaderContentPageViewModel pageViewModel) {
+    public void addSubscriber(IReaderSlideViewModel pageViewModel) {
         synchronized (lock) {
             pageViewModels.add(pageViewModel);
         }
@@ -93,7 +93,7 @@ public class StoryDownloadManager {
         slidesDownloader.addSubscriber(pageViewModel);
     }
 
-    public void removeSubscriber(IReaderContentPageViewModel pageViewModel) {
+    public void removeSubscriber(IReaderSlideViewModel pageViewModel) {
         synchronized (lock) {
             pageViewModels.remove(pageViewModel);
         }
@@ -113,7 +113,7 @@ public class StoryDownloadManager {
                 );
                 return;
             }
-            for (IReaderContentPageViewModel pageViewModel : pageViewModels) {
+            for (IReaderSlideViewModel pageViewModel : pageViewModels) {
                 if (pageViewModel.contentIdAndType().equals(contentIdAndType)) {
                     pageViewModel.contentLoadError();
                     return;
@@ -124,7 +124,7 @@ public class StoryDownloadManager {
 
     void storyLoaded(IReaderContent story, ContentType type) {
         synchronized (lock) {
-            for (IReaderContentPageViewModel pageViewModel : pageViewModels) {
+            for (IReaderSlideViewModel pageViewModel : pageViewModels) {
                 if (
                         pageViewModel.contentIdAndType().equals(
                                 new ContentIdAndType(story.id(), type)

@@ -12,7 +12,7 @@ import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.IASStatisticV1;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.data.IReaderContent;
-import com.inappstory.sdk.core.ui.screens.IReaderContentPageViewModel;
+import com.inappstory.sdk.core.ui.screens.IReaderSlideViewModel;
 import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.ContentType;
@@ -38,7 +38,7 @@ import com.inappstory.sdk.utils.StringsUtils;
 import java.util.Map;
 import java.util.Objects;
 
-public class ReaderPageManager implements IReaderContentPageViewModel {
+public class ReaderPageManager implements IReaderSlideViewModel {
 
 
     StoryTimelineManager timelineManager;
@@ -584,6 +584,11 @@ public class ReaderPageManager implements IReaderContentPageViewModel {
     @Override
     public void slideLoadSuccess(int index) {
         slideLoadSuccess(index, false);
+    }
+
+    @Override
+    public void loadContent() {
+
     }
 
     @Override
