@@ -3,22 +3,44 @@ package com.inappstory.sdk.inappmessage.domain.reader;
 
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+
 import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
+import com.inappstory.sdk.core.api.IASStatisticV1;
+import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.data.IReaderContent;
 import com.inappstory.sdk.core.exceptions.NotImplementedMethodException;
 import com.inappstory.sdk.core.inappmessages.InAppMessageDownloadManager;
+import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.ContentIdWithIndex;
 import com.inappstory.sdk.stories.api.models.ContentType;
+import com.inappstory.sdk.stories.api.models.SlideLinkObject;
 import com.inappstory.sdk.stories.cache.ContentIdAndType;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.CallToActionCallback;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickAction;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.callbackdata.CallToActionData;
+import com.inappstory.sdk.stories.outerevents.ShowStory;
+import com.inappstory.sdk.stories.statistic.GetStatisticV1Callback;
 import com.inappstory.sdk.stories.utils.Observable;
 import com.inappstory.sdk.stories.utils.Observer;
+import com.inappstory.sdk.stories.utils.SingleTimeEvent;
+import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.stories.utils.WebPageConvertCallback;
 import com.inappstory.sdk.stories.utils.WebPageConverter;
 
 public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
     private final Observable<IAMReaderSlideState> slideStateObservable =
             new Observable<>(new IAMReaderSlideState());
+
+
+    public SingleTimeEvent<CallToActionData> callToActionDataSTE() {
+        return callToActionDataSTE;
+    }
+
+    private final SingleTimeEvent<CallToActionData> callToActionDataSTE =
+            new SingleTimeEvent<>();
 
     private final IAMReaderViewModel readerViewModel;
     private final IASCore core;
@@ -41,6 +63,8 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
         this.slideStateObservable.unsubscribe(observable);
     }
 
+
+
     @Override
     public ContentIdWithIndex iamId() {
         Integer iamId = readerViewModel.getCurrentState().iamId;
@@ -50,9 +74,31 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
         return null;
     }
 
-    public void storyClick(String payload) {
-        Log.e("StoryClickPayload", payload);
+    public void slideClick(String payload) {
+        if (payload != null && !payload.isEmpty()) {
+
+            Log.e("IASClickPayload", payload);
+            final SlideLinkObject object = JsonParser.fromJson(payload, SlideLinkObject.class);
+            if (object != null) {
+                ClickAction action = ClickAction.BUTTON;
+                if (object.getLink().getType().equals("url")) {
+                    if (object.getType() != null && !object.getType().isEmpty()) {
+                        if ("swipeUpLink".equals(object.getType())) {
+                            action = ClickAction.SWIPE;
+                        }
+                    }
+                    final ClickAction finalAction = action;
+                    callToActionDataSTE.updateValue(
+                            new CallToActionData()
+                                    .slideData(null)
+                                    .link(object.getLink().getTarget())
+                                    .clickAction(finalAction)
+                    );
+                }
+            }
+        }
     }
+
 
     public void updateTimeline(String data) {
 //        throw new NotImplementedMethodException();
@@ -139,6 +185,7 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
     public void emptyLoaded() {
         throw new NotImplementedMethodException();
     }
+
     public void share(String id, String data) {
         throw new NotImplementedMethodException();
     }
@@ -165,7 +212,7 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
         synchronized (localDataLock) {
             String res = core.keyValueStorage().getString("iam" +
                     readerViewModel.getCurrentState().iamId
-                    + "__" +  ((IASDataSettingsHolder)core.settingsAPI()).userId());
+                    + "__" + ((IASDataSettingsHolder) core.settingsAPI()).userId());
             return res == null ? "" : res;
         }
     }
@@ -225,8 +272,8 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
                         slideStateObservable
                                 .getValue()
                                 .copy()
-                        .contentStatus(1)
-                        .content(firstData)
+                                .contentStatus(1)
+                                .content(firstData)
                 );
             }
         };

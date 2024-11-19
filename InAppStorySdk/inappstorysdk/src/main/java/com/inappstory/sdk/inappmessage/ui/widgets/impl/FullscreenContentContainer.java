@@ -37,23 +37,24 @@ public class FullscreenContentContainer extends IAMContentContainer<InAppMessage
         super.appearance(appearance);
     }
 
+
     @Override
-    public void showWithAnimation(IAMContainerCallback callback) {
+    public void showWithAnimation() {
 
     }
 
     @Override
-    public void showWithoutAnimation(IAMContainerCallback callback) {
+    public void showWithoutAnimation() {
 
     }
 
     @Override
-    public void closeWithAnimation(IAMContainerCallback callback) {
+    public void closeWithAnimation() {
 
     }
 
     @Override
-    public void closeWithoutAnimation(IAMContainerCallback callback) {
+    public void closeWithoutAnimation() {
 
     }
 

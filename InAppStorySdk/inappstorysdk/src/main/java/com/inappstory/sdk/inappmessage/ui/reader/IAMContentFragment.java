@@ -1,12 +1,12 @@
 package com.inappstory.sdk.inappmessage.ui.reader;
 
+import android.content.Intent;
+import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.webkit.WebView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -16,11 +16,19 @@ import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
+import com.inappstory.sdk.core.api.IASCallbackType;
+import com.inappstory.sdk.core.api.UseIASCallback;
+import com.inappstory.sdk.core.utils.ColorUtils;
 import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderSlideState;
 import com.inappstory.sdk.inappmessage.domain.reader.IIAMReaderSlideViewModel;
-import com.inappstory.sdk.stories.ui.views.IASWebView;
+import com.inappstory.sdk.inappmessage.domain.reader.IIAMReaderViewModel;
+import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageAppearance;
+import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageBottomSheetAppearance;
+import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageFullscreenAppearance;
+import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageModalAppearance;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.CallToActionCallback;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.callbackdata.CallToActionData;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ContentViewInteractor;
-import com.inappstory.sdk.stories.utils.Observable;
 import com.inappstory.sdk.stories.utils.Observer;
 
 public class IAMContentFragment extends Fragment implements Observer<IAMReaderSlideState> {
@@ -41,8 +49,10 @@ public class IAMContentFragment extends Fragment implements Observer<IAMReaderSl
 
     @Override
     public void onDestroyView() {
-        if (readerSlideViewModel != null)
+        if (readerSlideViewModel != null) {
             readerSlideViewModel.removeSubscriber(this);
+            readerSlideViewModel.callToActionDataSTE().unsubscribe(callToActionDataObserver);
+        }
         super.onDestroyView();
     }
 
@@ -58,6 +68,51 @@ public class IAMContentFragment extends Fragment implements Observer<IAMReaderSl
         contentWebView.resumeSlide();
     }
 
+    Observer<CallToActionData> callToActionDataObserver = new Observer<CallToActionData>() {
+        @Override
+        public void onUpdate(final CallToActionData newValue) {
+            if (newValue == null) return;
+            InAppStoryManager.useCore(new UseIASCoreCallback() {
+                @Override
+                public void use(@NonNull IASCore core) {
+                    core.callbacksAPI().useCallback(
+                            IASCallbackType.CALL_TO_ACTION,
+                            new UseIASCallback<CallToActionCallback>() {
+                                @Override
+                                public void use(@NonNull CallToActionCallback callback) {
+                                    callback.callToAction(
+                                            getContext(),
+                                            newValue.slideData(),
+                                            newValue.link(),
+                                            newValue.clickAction()
+                                    );
+                                }
+
+                                @Override
+                                public void onDefault() {
+                                    defaultUrlClick(newValue.link());
+                                }
+                            }
+                    );
+                }
+            });
+
+        }
+    };
+
+    private void defaultUrlClick(String url) {
+        Intent i = new Intent(Intent.ACTION_VIEW);
+        i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        i.setData(Uri.parse(url));
+        try {
+            getActivity().startActivity(i);
+            getActivity().overridePendingTransition(R.anim.popup_show, R.anim.empty_animation);
+        } catch (Exception e) {
+
+        }
+    }
+
+
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -65,8 +120,8 @@ public class IAMContentFragment extends Fragment implements Observer<IAMReaderSl
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-                readerSlideViewModel = core.screensManager()
-                        .iamReaderViewModel().slideViewModel();
+                IIAMReaderViewModel readerViewModel = core.screensManager().iamReaderViewModel();
+                readerSlideViewModel = readerViewModel.slideViewModel();
                 if (readerSlideViewModel != null) {
                     contentWebView.slideViewModel(readerSlideViewModel);
                     contentWebView.checkIfClientIsSet();
@@ -74,18 +129,43 @@ public class IAMContentFragment extends Fragment implements Observer<IAMReaderSl
                             IAMContentFragment.this
                     );
                     readerSlideViewModel.loadContent();
+                    readerSlideViewModel.callToActionDataSTE().subscribe(
+                            callToActionDataObserver
+                    );
                 }
+                setWebViewBackground(readerViewModel.getCurrentState().appearance);
             }
         });
+    }
 
+    private void setWebViewBackground(InAppMessageAppearance appearance) {
+        if (appearance != null) {
+            int backgroundColor = Color.WHITE;
+            if (appearance instanceof InAppMessageFullscreenAppearance) {
+                backgroundColor = ColorUtils.parseColorRGBA(
+                        ((InAppMessageFullscreenAppearance) appearance)
+                                .backgroundColor()
+                );
+            } else if (appearance instanceof InAppMessageModalAppearance) {
+                backgroundColor = ColorUtils.parseColorRGBA(
+                        ((InAppMessageModalAppearance) appearance)
+                                .backgroundColor()
+                );
+            } else if (appearance instanceof InAppMessageBottomSheetAppearance) {
+                backgroundColor = ColorUtils.parseColorRGBA(
+                        ((InAppMessageBottomSheetAppearance) appearance)
+                                .backgroundColor()
+                );
+            }
+            contentWebView.setBackgroundColor(backgroundColor);
+        }
     }
 
     @Override
     public void onUpdate(final IAMReaderSlideState newValue) {
         if (newValue == null) return;
-        if (
-                currentState == null ||
-                        (newValue.contentStatus() != currentState.contentStatus())
+        if (currentState == null ||
+                (newValue.contentStatus() != currentState.contentStatus())
         ) {
             switch (newValue.contentStatus()) {
                 case 0:

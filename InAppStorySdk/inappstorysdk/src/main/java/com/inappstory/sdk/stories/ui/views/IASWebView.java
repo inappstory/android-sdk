@@ -43,7 +43,7 @@ public class IASWebView extends WebView {
 
     protected void init() {
         getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE);
-        setBackgroundColor(getResources().getColor(R.color.black));
+        //setBackgroundColor(getResources().getColor(R.color.black));
 
         setVerticalScrollBarEnabled(false);
         setHorizontalScrollBarEnabled(false);
@@ -88,6 +88,11 @@ public class IASWebView extends WebView {
         loadUrl("about:blank");
         removeAllViews();
         destroyDrawingCache();
+    }
+
+    protected String updateHead(String html, String headAddition) {
+        return html.replace("<head>",
+                "<head>"+headAddition);
     }
 
     protected String injectUnselectableStyle(String html) {

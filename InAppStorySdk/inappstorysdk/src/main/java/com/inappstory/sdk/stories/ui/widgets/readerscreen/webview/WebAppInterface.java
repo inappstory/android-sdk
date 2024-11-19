@@ -5,14 +5,12 @@ import static com.inappstory.sdk.utils.DebugUtils.getMethodName;
 import android.webkit.JavascriptInterface;
 
 import com.inappstory.sdk.InAppStoryManager;
-import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.StoryLoadedData;
 import com.inappstory.sdk.stories.api.models.UpdateTimelineData;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.StoriesViewManager;
-import com.inappstory.sdk.stories.utils.KeyValueStorage;
 
 public class WebAppInterface {
     private final StoriesViewManager manager;
@@ -42,7 +40,7 @@ public class WebAppInterface {
      */
     @JavascriptInterface
     public void storyClick(String payload) {
-        manager.storyClick(payload);
+        manager.slideClick(payload);
         logMethod(payload);
     }
 

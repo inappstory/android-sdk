@@ -6,6 +6,7 @@ import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.inappmessage.domain.reader.IIAMReaderSlideViewModel;
 
 public interface ContentViewInteractor {
+    void setBackgroundColor(int color);
     void loadSlide(String content);
     void replaceSlide(String newContent);
 

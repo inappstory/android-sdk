@@ -3,15 +3,19 @@ package com.inappstory.sdk.inappmessage.domain.reader;
 
 import com.inappstory.sdk.core.ui.screens.IReaderSlideViewModel;
 import com.inappstory.sdk.stories.api.models.ContentIdWithIndex;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.callbackdata.CallToActionData;
 import com.inappstory.sdk.stories.utils.Observer;
+import com.inappstory.sdk.stories.utils.SingleTimeEvent;
 
 public interface IIAMReaderSlideViewModel extends IReaderSlideViewModel {
-    void addSubscriber(Observer<IAMReaderSlideState> observable);
-    void removeSubscriber(Observer<IAMReaderSlideState> observable);
+    void addSubscriber(Observer<IAMReaderSlideState> observer);
+    void removeSubscriber(Observer<IAMReaderSlideState> observer);
+
+    SingleTimeEvent<CallToActionData> callToActionDataSTE();
 
     ContentIdWithIndex iamId();
 
-    void storyClick(String payload);
+    void slideClick(String payload);
 
     void updateTimeline(String data);
 

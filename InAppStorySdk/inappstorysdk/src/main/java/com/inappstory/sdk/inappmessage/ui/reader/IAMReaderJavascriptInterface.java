@@ -13,7 +13,7 @@ public class IAMReaderJavascriptInterface {
 
     @JavascriptInterface
     public void storyClick(String payload) {
-        slideViewModel.storyClick(payload);
+        slideViewModel.slideClick(payload);
     }
 
     @JavascriptInterface

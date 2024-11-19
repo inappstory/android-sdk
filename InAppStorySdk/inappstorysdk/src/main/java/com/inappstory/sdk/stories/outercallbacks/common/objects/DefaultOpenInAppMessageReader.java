@@ -10,7 +10,7 @@ import com.inappstory.sdk.inappmessage.ui.reader.InAppMessageMainFragment;
 
 
 public class DefaultOpenInAppMessageReader implements IOpenInAppMessageReader {
-
+    public final static String IN_APP_MESSAGE_FRAGMENT = "IAM_MAIN_FRAGMENT";
 
     @Override
     public void onOpen(
@@ -26,9 +26,9 @@ public class DefaultOpenInAppMessageReader implements IOpenInAppMessageReader {
                 .add(
                         containerId,
                         inAppMessageFragment,
-                        "IAM_MAIN_FRAGMENT"
+                        IN_APP_MESSAGE_FRAGMENT
                 );
-        t.addToBackStack("IAM_MAIN_FRAGMENT");
+     //   t.addToBackStack(IN_APP_MESSAGE_FRAGMENT);
         t.commit();
     }
 }

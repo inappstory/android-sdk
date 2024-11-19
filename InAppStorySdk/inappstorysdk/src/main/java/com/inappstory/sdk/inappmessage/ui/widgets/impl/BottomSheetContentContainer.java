@@ -1,6 +1,8 @@
 package com.inappstory.sdk.inappmessage.ui.widgets.impl;
 
+import static com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_COLLAPSED;
 import static com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED;
+import static com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_HIDDEN;
 
 import android.content.Context;
 import android.graphics.Color;
@@ -17,6 +19,7 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.ui.widgets.roundedlayout.RoundedCornerLayout;
+import com.inappstory.sdk.core.utils.ColorUtils;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageBottomSheetAppearance;
 import com.inappstory.sdk.inappmessage.ui.widgets.IAMContentContainer;
 import com.inappstory.sdk.inappmessage.ui.widgets.IAMContainerCallback;
@@ -57,16 +60,10 @@ public final class BottomSheetContentContainer extends IAMContentContainer<InApp
                 ViewGroup.LayoutParams.MATCH_PARENT
         ));
         roundedCornerLayout = new RoundedCornerLayout(context);
-        roundedCornerLayout.setRadius(
-                Sizes.dpToPxExt(16, context),
-                Sizes.dpToPxExt(16, context),
-                0,
-                0
-
-        );
+        roundedCornerLayout.setRadius(0);
         layoutParams = new CoordinatorLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
-                Sizes.dpToPxExt(600, context)
+                ViewGroup.LayoutParams.MATCH_PARENT
         );
         layoutParams.setBehavior(new BottomSheetBehavior<RoundedCornerLayout>());
         roundedCornerLayout.setLayoutParams(
@@ -86,7 +83,13 @@ public final class BottomSheetContentContainer extends IAMContentContainer<InApp
             @Override
             public void onStateChanged(@NonNull View bottomSheet, int newState) {
                 bsState = newState;
-                Log.e("bsStates", newState + "");
+                if (callback != null) {
+                    if (newState == STATE_EXPANDED)
+                        callback.onShown();
+                    else if (newState == STATE_COLLAPSED || newState == STATE_HIDDEN) {
+                        callback.onClosed();
+                    }
+                }
             }
 
             @Override
@@ -97,18 +100,23 @@ public final class BottomSheetContentContainer extends IAMContentContainer<InApp
         coordinatorLayout.addView(roundedCornerLayout);
         addView(coordinatorLayout);
         setId(CONTAINER_ID);
+        if (appearance != null) appearance(appearance);
     }
 
     @Override
     public void appearance(InAppMessageBottomSheetAppearance appearance) {
         super.appearance(appearance);
+        if (content == null) return;
+        content.setBackgroundColor(ColorUtils.parseColorRGBA(
+                appearance.backgroundColor()
+        ));
         if (appearance.maxHeight() == -1)
             layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT;
         else
             layoutParams.height = Sizes.dpToPxExt(appearance.maxHeight(), getContext());
         roundedCornerLayout.setRadius(
-                appearance.cornerRadius(),
-                appearance.cornerRadius(),
+                Sizes.dpToPxExt(appearance.cornerRadius(), getContext()),
+                Sizes.dpToPxExt(appearance.cornerRadius(), getContext()),
                 0,
                 0
         );
@@ -121,22 +129,24 @@ public final class BottomSheetContentContainer extends IAMContentContainer<InApp
     private int bsState = 0;
 
     @Override
-    public void showWithAnimation(IAMContainerCallback callback) {
+    public void showWithAnimation() {
         bottomSheetBehavior.setState(STATE_EXPANDED);
     }
 
     @Override
-    public void showWithoutAnimation(IAMContainerCallback callback) {
+    public void showWithoutAnimation() {
         bottomSheetBehavior.setState(STATE_EXPANDED);
     }
 
+
     @Override
-    public void closeWithAnimation(IAMContainerCallback callback) {
+    public void closeWithAnimation() {
         bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
     }
 
     @Override
-    public void closeWithoutAnimation(IAMContainerCallback callback) {
+    public void closeWithoutAnimation() {
         bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
     }
+
 }

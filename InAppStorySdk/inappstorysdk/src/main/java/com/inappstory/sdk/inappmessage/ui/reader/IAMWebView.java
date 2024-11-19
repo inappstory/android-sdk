@@ -54,6 +54,11 @@ public class IAMWebView extends IASWebView implements ContentViewInteractor {
         super(context, attrs, defStyleAttr);
     }
 
+    @Override
+    protected void init() {
+        super.init();
+    }
+
     private void logMethod(String payload) {
         if (slideViewModel == null) return;
         ContentIdWithIndex contentIdWithIndex = slideViewModel.iamId();
@@ -63,13 +68,21 @@ public class IAMWebView extends IASWebView implements ContentViewInteractor {
 
     @Override
     public void loadSlide(String content) {
+        String newContent = temporaryUpdateToWhiteBackground(
+                setDir(content)
+        );
         loadDataWithBaseURL(
                 "file:///data/",
-                injectUnselectableStyle(setDir(content)),
+                newContent,
                 "text/html; charset=utf-8",
                 "UTF-8",
                 null
         );
+    }
+
+    @Deprecated
+    private String temporaryUpdateToWhiteBackground(String html) {
+        return updateHead(html, "<style> html { background: white !important; } </style>");
     }
 
     @Override
@@ -93,15 +106,10 @@ public class IAMWebView extends IASWebView implements ContentViewInteractor {
 
     @Override
     public void startSlide(IASCore core) {
-        boolean isSoundOn = ((IASDataSettingsHolder)core.settingsAPI()).isSoundOn();
-        String funAfterCheck =
-                isSoundOn ?
-                        "story_slide_start('{\"muted\": false}');" :
-                        "story_slide_start('{\"muted\": true}');";
         loadUrl("javascript:(function(){" +
                 "if ('story_slide_start' in window) " +
                 "{" +
-                " window." + funAfterCheck +
+                " window.story_slide_start('{\"muted\": false}');" +
                 "}" +
                 "})()");
         logMethod("story_slide_start");
@@ -109,15 +117,10 @@ public class IAMWebView extends IASWebView implements ContentViewInteractor {
 
     @Override
     public void restartSlide(IASCore core) {
-        boolean isSoundOn = ((IASDataSettingsHolder)core.settingsAPI()).isSoundOn();
-        String funAfterCheck =
-                isSoundOn ?
-                        "story_slide_restart('{\"muted\": false}');" :
-                        "story_slide_restart('{\"muted\": true}');";
         loadUrl("javascript:(function(){" +
                 "if ('story_slide_restart' in window) " +
                 "{" +
-                " window." + funAfterCheck +
+                " window.story_slide_restart('{\"muted\": false}');" +
                 "}" +
                 "})()");
         logMethod("story_slide_restart");
@@ -171,7 +174,7 @@ public class IAMWebView extends IASWebView implements ContentViewInteractor {
 
     @Override
     public void changeSoundStatus(IASCore core) {
-        if (((IASDataSettingsHolder)core.settingsAPI()).isSoundOn()) {
+        if (((IASDataSettingsHolder) core.settingsAPI()).isSoundOn()) {
             loadUrl("javascript:(function(){story_slide_enable_audio();})()");
         } else {
             loadUrl("javascript:(function(){story_slide_disable_audio();})()");
@@ -222,7 +225,7 @@ public class IAMWebView extends IASWebView implements ContentViewInteractor {
                     if (super.getDefaultVideoPoster() == null) {
                         Bitmap bmp = Bitmap.createBitmap(50, 50, Bitmap.Config.ARGB_8888);
                         Canvas canvas = new Canvas(bmp);
-                        canvas.drawColor(Color.BLACK);
+                        canvas.drawColor(Color.WHITE);
                         return bmp;
                     } else {
                         return super.getDefaultVideoPoster();
@@ -264,8 +267,7 @@ public class IAMWebView extends IASWebView implements ContentViewInteractor {
 
     @Override
     public void goodsWidgetComplete(String widgetId) {
-        evaluateJavascript("goods_widget_complete(\"" + widgetId + "\");", null);
-        logMethod("goods_widget_complete " + widgetId);
+        throw new NotImplementedMethodException();
     }
 
 }

@@ -5,4 +5,5 @@ public interface InAppMessageModalAppearance extends InAppMessageAppearance {
     int maxWidth();
     int horizontalOffset();
     int cornerRadius();
+    String backgroundColor();
 }

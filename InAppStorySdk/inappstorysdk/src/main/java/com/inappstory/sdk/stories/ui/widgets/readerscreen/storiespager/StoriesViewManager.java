@@ -419,7 +419,7 @@ public class StoriesViewManager {
         }
     }
 
-    public void storyClick(String payload) {
+    public void slideClick(String payload) {
         if (payload == null || payload.isEmpty() || payload.equals("test")) {
             pageManager.storyClick(null, (int) getClickCoordinate(), false);
         } else if (payload.equals("forbidden")) {

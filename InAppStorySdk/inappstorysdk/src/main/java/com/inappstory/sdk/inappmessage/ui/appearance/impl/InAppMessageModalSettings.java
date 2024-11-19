@@ -7,6 +7,7 @@ public class InAppMessageModalSettings implements InAppMessageModalAppearance {
     public Integer cornerRadius;
     public Integer horizontalOffset;
     public Integer maxWidth;
+    public String backgroundColor;
 
     @Override
     public int maxHeight() {
@@ -26,5 +27,11 @@ public class InAppMessageModalSettings implements InAppMessageModalAppearance {
     @Override
     public int cornerRadius() {
         return cornerRadius != null ? cornerRadius : 0;
+    }
+
+
+    @Override
+    public String backgroundColor() {
+        return backgroundColor != null ? backgroundColor : "#FFFFFF";
     }
 }

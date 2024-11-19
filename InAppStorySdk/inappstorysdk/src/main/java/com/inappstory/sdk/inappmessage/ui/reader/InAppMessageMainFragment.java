@@ -2,6 +2,7 @@ package com.inappstory.sdk.inappmessage.ui.reader;
 
 import static com.inappstory.sdk.inappmessage.ui.widgets.IAMContentContainer.CONTAINER_ID;
 import static com.inappstory.sdk.inappmessage.ui.widgets.IAMContentContainer.CONTENT_ID;
+import static com.inappstory.sdk.stories.outercallbacks.common.objects.DefaultOpenInAppMessageReader.IN_APP_MESSAGE_FRAGMENT;
 
 import android.os.Bundle;
 import android.os.Handler;
@@ -13,6 +14,7 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.inappstory.sdk.InAppStoryManager;
@@ -25,7 +27,6 @@ import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderState;
 import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderUIStates;
 import com.inappstory.sdk.inappmessage.domain.reader.IIAMReaderViewModel;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageAppearance;
-import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageBottomSheetAppearance;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageFullscreenAppearance;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageModalAppearance;
 import com.inappstory.sdk.inappmessage.ui.appearance.impl.InAppMessageBottomSheetSettings;
@@ -42,6 +43,22 @@ public class InAppMessageMainFragment extends Fragment implements Observer<IAMRe
     private boolean showOnlyIfLoaded;
     private InAppMessageAppearance appearance = new InAppMessageBottomSheetSettings();
     private IAMContentContainer contentContainer;
+
+    @Override
+    public void onDestroyView() {
+        if (readerViewModel != null) {
+            readerViewModel.removeSubscriber(InAppMessageMainFragment.this);
+        } else {
+            InAppStoryManager.useCore(new UseIASCoreCallback() {
+                @Override
+                public void use(@NonNull IASCore core) {
+                    core.screensManager().iamReaderViewModel()
+                            .removeSubscriber(InAppMessageMainFragment.this);
+                }
+            });
+        }
+        super.onDestroyView();
+    }
 
     @Nullable
     @Override
@@ -81,6 +98,10 @@ public class InAppMessageMainFragment extends Fragment implements Observer<IAMRe
             );
         }
         contentContainer = v.findViewById(CONTAINER_ID);
+        if (appearance != null) {
+            contentContainer.appearance(appearance);
+        }
+        contentContainer.uiContainerCallback(containerCallback);
         return v;
     }
 
@@ -97,15 +118,26 @@ public class InAppMessageMainFragment extends Fragment implements Observer<IAMRe
     };
 
     public void showContainer() {
-        contentContainer.showWithAnimation(containerCallback);
+        contentContainer.showWithAnimation();
     }
 
     public void hideContainerWithAnimation() {
-        contentContainer.closeWithAnimation(containerCallback);
+        contentContainer.closeWithAnimation();
     }
 
     public void hideContainer() {
-        contentContainer.closeWithoutAnimation(containerCallback);
+        try {
+            FragmentManager fragmentManager = getParentFragmentManager();
+            FragmentTransaction t = fragmentManager.beginTransaction()
+                    .remove(this);
+            t.commit();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        /*fragmentManager.popBackStack(
+                IN_APP_MESSAGE_FRAGMENT,
+                FragmentManager.POP_BACK_STACK_INCLUSIVE
+        );*/
     }
 
     @Override

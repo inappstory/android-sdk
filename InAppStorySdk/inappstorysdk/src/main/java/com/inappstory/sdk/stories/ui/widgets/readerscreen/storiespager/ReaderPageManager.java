@@ -17,7 +17,7 @@ import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.core.network.content.models.Story;
-import com.inappstory.sdk.stories.api.models.StoryLinkObject;
+import com.inappstory.sdk.stories.api.models.SlideLinkObject;
 import com.inappstory.sdk.stories.cache.ContentIdAndType;
 import com.inappstory.sdk.stories.managers.TimerManager;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.CallToActionCallback;
@@ -198,7 +198,7 @@ public class ReaderPageManager implements IReaderSlideViewModel {
     }
 
     private void tapOnLink(String link) {
-        final StoryLinkObject object = JsonParser.fromJson(link, StoryLinkObject.class);
+        final SlideLinkObject object = JsonParser.fromJson(link, SlideLinkObject.class);
         if (object != null) {
             ClickAction action = ClickAction.BUTTON;
             final IReaderContent story = core.contentHolder().readerContent().getByIdAndType(
