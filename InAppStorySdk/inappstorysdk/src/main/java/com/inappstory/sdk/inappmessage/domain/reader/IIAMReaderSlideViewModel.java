@@ -2,8 +2,8 @@ package com.inappstory.sdk.inappmessage.domain.reader;
 
 
 import com.inappstory.sdk.core.ui.screens.IReaderSlideViewModel;
+import com.inappstory.sdk.inappmessage.stedata.STETypeAndData;
 import com.inappstory.sdk.stories.api.models.ContentIdWithIndex;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.callbackdata.CallToActionData;
 import com.inappstory.sdk.stories.utils.Observer;
 import com.inappstory.sdk.stories.utils.SingleTimeEvent;
 
@@ -11,11 +11,19 @@ public interface IIAMReaderSlideViewModel extends IReaderSlideViewModel {
     void addSubscriber(Observer<IAMReaderSlideState> observer);
     void removeSubscriber(Observer<IAMReaderSlideState> observer);
 
-    SingleTimeEvent<CallToActionData> callToActionDataSTE();
+    SingleTimeEvent<STETypeAndData> singleTimeEvents();
 
     ContentIdWithIndex iamId();
 
     void slideClick(String payload);
+
+    void updateSlideShownTotalTime();
+
+    long slideShownTotalTime();
+
+    void resumeSlideTimer();
+
+    void clear();
 
     void updateTimeline(String data);
 
@@ -55,11 +63,6 @@ public interface IIAMReaderSlideViewModel extends IReaderSlideViewModel {
             String name,
             String data,
             String eventData
-    );
-
-    void storyStatisticEvent(
-            String name,
-            String data
     );
 
     void emptyLoaded();

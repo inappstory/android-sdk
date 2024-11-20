@@ -1,9 +1,9 @@
-package com.inappstory.sdk.stories.outercallbacks.common.reader.callbackdata;
+package com.inappstory.sdk.inappmessage.stedata;
 
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickAction;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 
-public class CallToActionData {
+public class CallToActionData implements STEData {
     public SlideData slideData() {
         return slideData;
     }

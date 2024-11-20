@@ -22,12 +22,17 @@ import com.inappstory.sdk.core.utils.ColorUtils;
 import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderSlideState;
 import com.inappstory.sdk.inappmessage.domain.reader.IIAMReaderSlideViewModel;
 import com.inappstory.sdk.inappmessage.domain.reader.IIAMReaderViewModel;
+import com.inappstory.sdk.inappmessage.stedata.JsSendApiRequestData;
+import com.inappstory.sdk.inappmessage.stedata.STETypeAndData;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageAppearance;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageBottomSheetAppearance;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageFullscreenAppearance;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageModalAppearance;
+import com.inappstory.sdk.network.ApiSettings;
+import com.inappstory.sdk.network.jsapiclient.JsApiClient;
+import com.inappstory.sdk.network.jsapiclient.JsApiResponseCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.CallToActionCallback;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.callbackdata.CallToActionData;
+import com.inappstory.sdk.inappmessage.stedata.CallToActionData;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ContentViewInteractor;
 import com.inappstory.sdk.stories.utils.Observer;
 
@@ -51,7 +56,7 @@ public class IAMContentFragment extends Fragment implements Observer<IAMReaderSl
     public void onDestroyView() {
         if (readerSlideViewModel != null) {
             readerSlideViewModel.removeSubscriber(this);
-            readerSlideViewModel.callToActionDataSTE().unsubscribe(callToActionDataObserver);
+            readerSlideViewModel.singleTimeEvents().unsubscribe(callToActionDataObserver);
         }
         super.onDestroyView();
     }
@@ -68,37 +73,72 @@ public class IAMContentFragment extends Fragment implements Observer<IAMReaderSl
         contentWebView.resumeSlide();
     }
 
-    Observer<CallToActionData> callToActionDataObserver = new Observer<CallToActionData>() {
+    Observer<STETypeAndData> callToActionDataObserver = new Observer<STETypeAndData>() {
         @Override
-        public void onUpdate(final CallToActionData newValue) {
+        public void onUpdate(final STETypeAndData newValue) {
             if (newValue == null) return;
             InAppStoryManager.useCore(new UseIASCoreCallback() {
                 @Override
                 public void use(@NonNull IASCore core) {
-                    core.callbacksAPI().useCallback(
-                            IASCallbackType.CALL_TO_ACTION,
-                            new UseIASCallback<CallToActionCallback>() {
-                                @Override
-                                public void use(@NonNull CallToActionCallback callback) {
-                                    callback.callToAction(
-                                            getContext(),
-                                            newValue.slideData(),
-                                            newValue.link(),
-                                            newValue.clickAction()
-                                    );
-                                }
-
-                                @Override
-                                public void onDefault() {
-                                    defaultUrlClick(newValue.link());
-                                }
-                            }
-                    );
+                    switch (newValue.type()) {
+                        case CALL_TO_ACTION:
+                            callToActionHandle(core,
+                                    (CallToActionData) newValue.data()
+                            );
+                            break;
+                        case JS_SEND_API_REQUEST:
+                            jsSendApiRequestHandle(
+                                    core,
+                                    (JsSendApiRequestData) newValue.data()
+                            );
+                            break;
+                    }
                 }
             });
 
         }
     };
+
+    private void jsSendApiRequestHandle(
+            IASCore core,
+            JsSendApiRequestData apiRequestData
+    ) {
+        new JsApiClient(
+                core,
+                getContext(),
+                ApiSettings.getInstance().getHost()
+        ).sendApiRequest(apiRequestData.data(), new JsApiResponseCallback() {
+            @Override
+            public void onJsApiResponse(String result, String cb) {
+                contentWebView.loadJsApiResponse(result, cb);
+            }
+        });
+    }
+
+    private void callToActionHandle(
+            IASCore core,
+            final CallToActionData data
+    ) {
+        core.callbacksAPI().useCallback(
+                IASCallbackType.CALL_TO_ACTION,
+                new UseIASCallback<CallToActionCallback>() {
+                    @Override
+                    public void use(@NonNull CallToActionCallback callback) {
+                        callback.callToAction(
+                                getContext(),
+                                data.slideData(),
+                                data.link(),
+                                data.clickAction()
+                        );
+                    }
+
+                    @Override
+                    public void onDefault() {
+                        defaultUrlClick(data.link());
+                    }
+                }
+        );
+    }
 
     private void defaultUrlClick(String url) {
         Intent i = new Intent(Intent.ACTION_VIEW);
@@ -129,7 +169,7 @@ public class IAMContentFragment extends Fragment implements Observer<IAMReaderSl
                             IAMContentFragment.this
                     );
                     readerSlideViewModel.loadContent();
-                    readerSlideViewModel.callToActionDataSTE().subscribe(
+                    readerSlideViewModel.singleTimeEvents().subscribe(
                             callToActionDataObserver
                     );
                 }

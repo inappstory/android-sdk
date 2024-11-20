@@ -114,14 +114,6 @@ public class IAMReaderJavascriptInterface {
     }
 
     @JavascriptInterface
-    public void storyStatisticEvent(
-            String name,
-            String data
-    ) {
-        slideViewModel.storyStatisticEvent(name, data);
-    }
-
-    @JavascriptInterface
     public void emptyLoaded() {
         slideViewModel.emptyLoaded();
     }

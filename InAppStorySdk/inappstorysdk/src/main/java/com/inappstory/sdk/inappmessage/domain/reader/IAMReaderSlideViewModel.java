@@ -3,43 +3,37 @@ package com.inappstory.sdk.inappmessage.domain.reader;
 
 import android.util.Log;
 
-import androidx.annotation.NonNull;
-
 import com.inappstory.sdk.core.IASCore;
-import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
-import com.inappstory.sdk.core.api.IASStatisticV1;
-import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.data.IReaderContent;
 import com.inappstory.sdk.core.exceptions.NotImplementedMethodException;
 import com.inappstory.sdk.core.inappmessages.InAppMessageDownloadManager;
+import com.inappstory.sdk.inappmessage.stedata.JsSendApiRequestData;
+import com.inappstory.sdk.inappmessage.stedata.STEDataType;
+import com.inappstory.sdk.inappmessage.stedata.STETypeAndData;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.ContentIdWithIndex;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.SlideLinkObject;
 import com.inappstory.sdk.stories.cache.ContentIdAndType;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.CallToActionCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickAction;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.callbackdata.CallToActionData;
-import com.inappstory.sdk.stories.outerevents.ShowStory;
-import com.inappstory.sdk.stories.statistic.GetStatisticV1Callback;
+import com.inappstory.sdk.inappmessage.stedata.CallToActionData;
 import com.inappstory.sdk.stories.utils.Observable;
 import com.inappstory.sdk.stories.utils.Observer;
 import com.inappstory.sdk.stories.utils.SingleTimeEvent;
-import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.stories.utils.WebPageConvertCallback;
 import com.inappstory.sdk.stories.utils.WebPageConverter;
 
 public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
     private final Observable<IAMReaderSlideState> slideStateObservable =
             new Observable<>(new IAMReaderSlideState());
+    private IAMReaderSlideStatState slideTimeState = new IAMReaderSlideStatState();
 
-
-    public SingleTimeEvent<CallToActionData> callToActionDataSTE() {
-        return callToActionDataSTE;
+    public SingleTimeEvent<STETypeAndData> singleTimeEvents() {
+        return singleTimeEvents;
     }
 
-    private final SingleTimeEvent<CallToActionData> callToActionDataSTE =
+    private final SingleTimeEvent<STETypeAndData> singleTimeEvents =
             new SingleTimeEvent<>();
 
     private final IAMReaderViewModel readerViewModel;
@@ -62,7 +56,6 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
     public void removeSubscriber(Observer<IAMReaderSlideState> observable) {
         this.slideStateObservable.unsubscribe(observable);
     }
-
 
 
     @Override
@@ -88,15 +81,37 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
                         }
                     }
                     final ClickAction finalAction = action;
-                    callToActionDataSTE.updateValue(
-                            new CallToActionData()
-                                    .slideData(null)
-                                    .link(object.getLink().getTarget())
-                                    .clickAction(finalAction)
+                    singleTimeEvents.updateValue(
+                            new STETypeAndData(STEDataType.CALL_TO_ACTION,
+                                    new CallToActionData()
+                                            .slideData(null)
+                                            .link(object.getLink().getTarget())
+                                            .clickAction(finalAction)
+                            )
                     );
                 }
             }
         }
+    }
+
+    @Override
+    public void updateSlideShownTotalTime() {
+        slideTimeState.updateTotalTime();
+    }
+
+    @Override
+    public long slideShownTotalTime() {
+        return slideTimeState.totalTime();
+    }
+
+    @Override
+    public void resumeSlideTimer() {
+        slideTimeState.resume();
+    }
+
+    @Override
+    public void clear() {
+        slideTimeState.clear();
     }
 
 
@@ -117,7 +132,12 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
     }
 
     public void sendApiRequest(String data) {
-        throw new NotImplementedMethodException();
+        singleTimeEvents.updateValue(
+                new STETypeAndData(STEDataType.JS_SEND_API_REQUEST,
+                        new JsSendApiRequestData()
+                                .data(data)
+                )
+        );
     }
 
     public void vibrate(int[] vibratePattern) {
@@ -173,13 +193,6 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
             String eventData
     ) {
 
-    }
-
-    public void storyStatisticEvent(
-            String name,
-            String data
-    ) {
-        throw new NotImplementedMethodException();
     }
 
     public void emptyLoaded() {

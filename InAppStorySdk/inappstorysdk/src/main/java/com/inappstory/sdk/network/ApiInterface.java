@@ -39,6 +39,44 @@ public interface ApiInterface {
             @Query("expand") String expand
     );
 
+    @GET("v2/inappmessaging/message/{id}/event/open")
+    Request openInAppMessageStat(
+            @Path("id") String id,
+            @Query("ei") Integer eventId,
+            @Query("ii") String iterationId,
+            @Query("si") String slideIndex,
+            @Query("st") String slideTotal
+    );
+
+    @GET("v2/inappmessaging/message/{id}/event/close")
+    Request closeInAppMessageStat(
+            @Path("id") String id,
+            @Query("ei") Integer eventId,
+            @Query("ii") String iterationId,
+            @Query("si") String slideIndex,
+            @Query("st") String slideTotal
+    );
+
+    @GET("v2/inappmessaging/message/{id}/event/{event_name}")
+    Request inAppMessageWidgetStat(
+            @Path("id") String id,
+            @Path("event_name") String eventName,
+            @Query("ei") Integer eventId,
+            @Query("ii") String iterationId,
+            @Query("si") String slideIndex,
+            @Query("st") String slideTotal,
+            @Query("d") Long durationMs,
+            @Query("wi") String widgetId,
+            @Query("wl") String widgetLabel,
+            @Query("wv") String widgetValue,
+            @Query("wa") Integer widgetAnswer,
+            @Query("wal") String widgetAnswerLabel,
+            @Query("was") Integer widgetAnswerScore,
+            @Query("li") Integer layoutIndex,
+            @Query("t") String t,
+            @Query("m") Integer type
+    );
+
     @GET("v2/ugc/feed")
     Request getUgcStories(
             @QueryObject("f") String f,
@@ -146,6 +184,8 @@ public interface ApiInterface {
             @Field("logSession") String logSession,
             @Field("gameLaunched") boolean gameLaunched
     );
+
+
 
 
     @GET("stat/{event_name}")
