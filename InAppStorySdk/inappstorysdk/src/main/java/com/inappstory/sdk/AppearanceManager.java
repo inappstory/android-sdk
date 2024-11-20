@@ -65,12 +65,17 @@ public class AppearanceManager {
     public static final int FADE = 1;
     public static final int POPUP = 2;
 
+    @Deprecated
     public static final int TOP_LEFT = 1;
+    @Deprecated
     public static final int TOP_RIGHT = 2;
+    @Deprecated
     public static final int BOTTOM_LEFT = 3;
+    @Deprecated
     public static final int BOTTOM_RIGHT = 4;
 
     public static final int TOP_START = -1;
+
     public static final int TOP_END = -2;
     public static final int BOTTOM_START = -3;
     public static final int BOTTOM_END = -4;
@@ -213,7 +218,7 @@ public class AppearanceManager {
 
 
     private int csListItemMargin = -1;
-    private int csClosePosition = BOTTOM_RIGHT; //1 - topLeft, 2 - topRight, 3 - bottomLeft, 4 - bottomRight;
+    private int csClosePosition = BOTTOM_END; //1 - topLeft, 2 - topRight, 3 - bottomLeft, 4 - bottomRight;
     private int csStoryReaderAnimation = ANIMATION_CUBE;
 
     private int csStoryReaderPresentationStyle = ZOOM;
