@@ -19,6 +19,7 @@ import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.network.ApiSettings;
+import com.inappstory.sdk.network.AppVersion;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.stories.api.models.CachedSessionData;
@@ -201,6 +202,11 @@ public class SessionManager {
         }
         String appVersion = (pInfo != null ? pInfo.versionName : "");
         String appBuild = (pInfo != null ? Integer.toString(pInfo.versionCode) : "");
+        AppVersion version = manager.appVersion;
+        if (version != null) {
+            appBuild = Integer.toString(version.versionBuild());
+            appVersion = version.versionName();
+        }
         final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
         if (!InAppStoryService.isServiceConnected() || networkClient == null) {
             synchronized (openProcessLock) {

@@ -7,6 +7,8 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 
 import com.inappstory.sdk.BuildConfig;
+import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.network.AppVersion;
 
 public class UserAgent {
     public String generate(Context context) {
@@ -15,20 +17,29 @@ public class UserAgent {
                 + " " + getSystemUA();
         String agentString = getSystemUA();
         if (!agentString.isEmpty()) {
-            int appVersion = BuildConfig.VERSION_CODE;
+            int appVersionBuild = BuildConfig.VERSION_CODE;
             String appVersionName = BuildConfig.VERSION_NAME;
             String appPackageName = "";
             PackageInfo pInfo = null;
             try {
                 pInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
-                appVersion = pInfo.versionCode;
+                appVersionBuild = pInfo.versionCode;
                 appVersionName = pInfo.versionName;
                 appPackageName = pInfo.packageName;
             } catch (PackageManager.NameNotFoundException e) {
                 e.printStackTrace();
             }
+
+            InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
+            if (inAppStoryManager != null) {
+                AppVersion version = inAppStoryManager.appVersion;
+                if (version != null) {
+                    appVersionBuild = version.versionBuild();
+                    appVersionName = version.versionName();
+                }
+            }
             userAgent = "InAppStorySDK/" + BuildConfig.VERSION_CODE
-                    + " " + agentString + " " + "Application/" + appVersion + " (" + appPackageName + " " + appVersionName + ")";
+                    + " " + agentString + " " + "Application/" + appVersionBuild + " (" + appPackageName + " " + appVersionName + ")";
         } else {
             userAgent = getDefaultUserAgentString(context);
         }

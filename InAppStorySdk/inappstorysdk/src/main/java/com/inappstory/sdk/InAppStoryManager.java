@@ -19,6 +19,7 @@ import com.inappstory.iasutilsconnector.UtilModulesHolder;
 import com.inappstory.iasutilsconnector.json.IJsonParser;
 import com.inappstory.sdk.lrudiskcache.CacheSize;
 import com.inappstory.sdk.network.ApiSettings;
+import com.inappstory.sdk.network.AppVersion;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
@@ -470,6 +471,13 @@ public class InAppStoryManager {
     public void setAppClickCallback(AppClickCallback appClickCallback) {
         CallbackManager.getInstance().setAppClickCallback(appClickCallback);
     }
+
+    public void setAppVersion(@NonNull String version, int build) {
+        if (version.isEmpty()) return;
+        this.appVersion = new AppVersion(version, build);
+    }
+
+    public AppVersion appVersion = null;
 
     //Test
 
