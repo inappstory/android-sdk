@@ -13,8 +13,10 @@ import com.inappstory.sdk.core.ui.screens.holder.AbstractScreenHolder;
 import com.inappstory.sdk.core.ui.screens.holder.IOverlapContainerData;
 import com.inappstory.sdk.core.ui.screens.holder.IOverlapContainerHolder;
 import com.inappstory.sdk.core.ui.screens.ShareProcessHandler;
+import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoryItemCoordinates;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.ui.OverlapFragmentObserver;
 import com.inappstory.sdk.stories.ui.goods.GoodsWidgetFragment;
 import com.inappstory.sdk.stories.ui.reader.ActiveStoryItem;
@@ -105,12 +107,14 @@ public class StoryScreenHolder extends AbstractScreenHolder<BaseStoryScreen, Lau
         if (widgetId != null) localTaskId = widgetId;
         else localTaskId = randomUUID().toString();
         final FragmentManager fragmentManager = getScreen().getScreenFragmentManager();
-        if (slideData != null) {
-            core.statistic().v2().sendGoodsOpen(
-                    slideData.story.id,
-                    slideData.index,
+        if (slideData != null &&
+                slideData.content() instanceof StoryData) {
+            StoryData storyData = (StoryData) slideData.content();
+            core.statistic().storiesV2().sendGoodsOpen(
+                    storyData.id(),
+                    slideData.index(),
                     widgetId,
-                    slideData.story.feed
+                    storyData.feed()
             );
         }
         try {

@@ -3,12 +3,10 @@ package com.inappstory.sdk.stories.statistic;
 import android.text.TextUtils;
 
 import com.inappstory.sdk.InAppStoryManager;
-import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
-import com.inappstory.sdk.core.api.IASStatisticV2;
+import com.inappstory.sdk.core.api.IASStatisticStoriesV2;
 import com.inappstory.sdk.network.JsonParser;
-import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.models.Response;
 import com.inappstory.sdk.stories.api.models.CurrentV2StatisticState;
 import com.inappstory.sdk.stories.utils.LoopedExecutor;
@@ -23,8 +21,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 
-public class IASStatisticV2Impl implements IASStatisticV2 {
-    private static IASStatisticV2Impl INSTANCE;
+public class IASStatisticStoriesV2Impl implements IASStatisticStoriesV2 {
+    private static IASStatisticStoriesV2Impl INSTANCE;
     private final IASCore core;
 
     public void disabled(boolean disabled) {
@@ -33,7 +31,7 @@ public class IASStatisticV2Impl implements IASStatisticV2 {
 
     private boolean disabled;
 
-    public IASStatisticV2Impl(IASCore core) {
+    public IASStatisticStoriesV2Impl(IASCore core) {
         this.core = core;
         init();
     }
@@ -58,24 +56,24 @@ public class IASStatisticV2Impl implements IASStatisticV2 {
 
     private final Object statisticTasksLock = new Object();
 
-    public ArrayList<StatisticTask> getTasks() {
+    public ArrayList<StoryStatisticV2Task> getTasks() {
         return tasks;
     }
 
-    public ArrayList<StatisticTask> getFaketasks() {
+    public ArrayList<StoryStatisticV2Task> getFaketasks() {
         return faketasks;
     }
 
-    private ArrayList<StatisticTask> tasks = new ArrayList<>();
-    private ArrayList<StatisticTask> faketasks = new ArrayList<>();
+    private ArrayList<StoryStatisticV2Task> tasks = new ArrayList<>();
+    private ArrayList<StoryStatisticV2Task> faketasks = new ArrayList<>();
 
 
-    private void addTask(StatisticTask task) {
+    private void addTask(StoryStatisticV2Task task) {
         addTask(task, false);
     }
 
 
-    private void addTask(StatisticTask task, boolean force) {
+    private void addTask(StoryStatisticV2Task task, boolean force) {
         if (!force && disabled) return;
         synchronized (statisticTasksLock) {
             tasks.add(task);
@@ -84,7 +82,7 @@ public class IASStatisticV2Impl implements IASStatisticV2 {
     }
 
 
-    private void addFakeTask(StatisticTask task) {
+    private void addFakeTask(StoryStatisticV2Task task) {
         if (disabled) return;
         synchronized (statisticTasksLock) {
             faketasks.add(task);
@@ -94,7 +92,7 @@ public class IASStatisticV2Impl implements IASStatisticV2 {
 
     private void saveTasksSP() {
         try {
-            ArrayList<StatisticTask> ltasks = new ArrayList<>();
+            ArrayList<StoryStatisticV2Task> ltasks = new ArrayList<>();
             ltasks.addAll(tasks);
             core.sharedPreferencesAPI().saveString(TASKS_KEY, JsonParser.getJson(ltasks));
         } catch (Exception e) {
@@ -104,7 +102,7 @@ public class IASStatisticV2Impl implements IASStatisticV2 {
 
     private void saveFakeTasksSP() {
         try {
-            ArrayList<StatisticTask> ltasks = new ArrayList<>();
+            ArrayList<StoryStatisticV2Task> ltasks = new ArrayList<>();
             ltasks.addAll(faketasks);
             core.sharedPreferencesAPI().saveString(FAKE_TASKS_KEY, JsonParser.getJson(ltasks));
         } catch (Exception e) {
@@ -154,7 +152,7 @@ public class IASStatisticV2Impl implements IASStatisticV2 {
         }
     }
 
-    LoopedExecutor loopedExecutor = new LoopedExecutor(100, 100);
+    private final LoopedExecutor loopedExecutor = new LoopedExecutor(100, 100);
 
 
     private void init() {
@@ -162,14 +160,14 @@ public class IASStatisticV2Impl implements IASStatisticV2 {
         String fakeTasksJson = core.sharedPreferencesAPI().getString(FAKE_TASKS_KEY);
         synchronized (statisticTasksLock) {
             if (tasksJson != null) {
-                tasks = JsonParser.listFromJson(tasksJson, StatisticTask.class);
+                tasks = JsonParser.listFromJson(tasksJson, StoryStatisticV2Task.class);
             } else {
                 tasks = new ArrayList<>();
             }
             if (fakeTasksJson != null) {
-                tasks.addAll(JsonParser.listFromJson(fakeTasksJson, StatisticTask.class));
+                tasks.addAll(JsonParser.listFromJson(fakeTasksJson, StoryStatisticV2Task.class));
             }
-            for (StatisticTask task : tasks) {
+            for (StoryStatisticV2Task task : tasks) {
                 task.isFake = false;
             }
 
@@ -193,7 +191,7 @@ public class IASStatisticV2Impl implements IASStatisticV2 {
                 loopedExecutor.freeExecutor();
                 return;
             }
-            StatisticTask task;
+            StoryStatisticV2Task task;
             synchronized (statisticTasksLock) {
                 task = tasks.get(0);
                 tasks.remove(0);
@@ -212,7 +210,7 @@ public class IASStatisticV2Impl implements IASStatisticV2 {
 
     public void sendViewStory(final int storyId, final String whence, final String feedId) {
         if (!viewed.contains(storyId)) {
-            StatisticTask task = new StatisticTask();
+            StoryStatisticV2Task task = new StoryStatisticV2Task();
             task.event = prefix + "view";
             task.storyId = Integer.toString(storyId);
             task.feedId = feedId;
@@ -228,7 +226,7 @@ public class IASStatisticV2Impl implements IASStatisticV2 {
                               final int slideIndex,
                               final String widgetId,
                               final String feedId) {
-        StatisticTask task = new StatisticTask();
+        StoryStatisticV2Task task = new StoryStatisticV2Task();
         task.event = prefix + "w-goods-open";
         task.storyId = Integer.toString(storyId);
         task.slideIndex = slideIndex;
@@ -242,7 +240,7 @@ public class IASStatisticV2Impl implements IASStatisticV2 {
     public void sendGoodsClick(final int i, final int si,
                                final String wi, final String sku,
                                final String feedId) {
-        StatisticTask task = new StatisticTask();
+        StoryStatisticV2Task task = new StoryStatisticV2Task();
         task.event = prefix + "w-goods-click";
         task.storyId = Integer.toString(i);
         task.slideIndex = si;
@@ -264,7 +262,7 @@ public class IASStatisticV2Impl implements IASStatisticV2 {
             }
         }
         if (localIds.size() > 0) {
-            StatisticTask task = new StatisticTask();
+            StoryStatisticV2Task task = new StoryStatisticV2Task();
             task.feedId = feedId;
             task.event = prefix + "view";
             task.storyId = TextUtils.join(",", localIds);
@@ -281,7 +279,7 @@ public class IASStatisticV2Impl implements IASStatisticV2 {
         if (cTimes == null) cTimes = new HashMap<>();
         cTimes.put(i, System.currentTimeMillis());
         pauseTime = 0;
-        StatisticTask task = new StatisticTask();
+        StoryStatisticV2Task task = new StoryStatisticV2Task();
         task.feedId = feedId;
         task.event = prefix + "open";
         task.storyId = Integer.toString(i);
@@ -290,7 +288,7 @@ public class IASStatisticV2Impl implements IASStatisticV2 {
         addTask(task);
     }
 
-    private void generateBase(StatisticTask task) {
+    private void generateBase(StoryStatisticV2Task task) {
 
         task.userId = ((IASDataSettingsHolder) core.settingsAPI()).userId();
         task.sessionId = core.sessionManager().getSession().getSessionId();
@@ -305,7 +303,7 @@ public class IASStatisticV2Impl implements IASStatisticV2 {
         sendCurrentState();
         if (cTimes == null) cTimes = new HashMap<>();
         Long tm = cTimes.get(i) != null ? cTimes.get(i) : 0L;
-        StatisticTask task = new StatisticTask();
+        StoryStatisticV2Task task = new StoryStatisticV2Task();
         task.event = prefix + "close";
         task.storyId = Integer.toString(i);
         task.cause = c;
@@ -351,7 +349,7 @@ public class IASStatisticV2Impl implements IASStatisticV2 {
                               final Integer si,
                               final Integer st,
                               final String feedId) {
-        StatisticTask task = new StatisticTask();
+        StoryStatisticV2Task task = new StoryStatisticV2Task();
         task.event = prefix + "slide";
         task.storyId = Integer.toString(i);
         task.slideIndex = si;
@@ -363,10 +361,10 @@ public class IASStatisticV2Impl implements IASStatisticV2 {
 
         if (cTimes == null) cTimes = new HashMap<>();
         Long tm = cTimes.get(i) != null ? cTimes.get(i) : 0L;
-        StatisticTask task2 = new StatisticTask();
+        StoryStatisticV2Task task2 = new StoryStatisticV2Task();
         task2.event = prefix + "close";
         task2.storyId = Integer.toString(i);
-        task2.cause = IASStatisticV2Impl.APPCLOSE;
+        task2.cause = IASStatisticStoriesV2Impl.APPCLOSE;
         task2.slideIndex = si;
         task2.isFake = true;
         task2.slideTotal = st;
@@ -380,7 +378,7 @@ public class IASStatisticV2Impl implements IASStatisticV2 {
                                   String link,
                                   final String feedId) {
 
-        StatisticTask task = new StatisticTask();
+        StoryStatisticV2Task task = new StoryStatisticV2Task();
         task.event = prefix + "link";
         task.storyId = Integer.toString(i);
         task.target = link;
@@ -392,7 +390,7 @@ public class IASStatisticV2Impl implements IASStatisticV2 {
 
 
     public void sendClickLink(int storyId) {
-        StatisticTask task = new StatisticTask();
+        StoryStatisticV2Task task = new StoryStatisticV2Task();
         task.event = prefix + "w-link";
 
         generateBase(task);
@@ -402,7 +400,7 @@ public class IASStatisticV2Impl implements IASStatisticV2 {
     public void sendLikeStory(final int i,
                               final int si,
                               final String feedId) {
-        StatisticTask task = new StatisticTask();
+        StoryStatisticV2Task task = new StoryStatisticV2Task();
         task.event = prefix + "like";
         task.storyId = Integer.toString(i);
         task.slideIndex = si;
@@ -416,7 +414,7 @@ public class IASStatisticV2Impl implements IASStatisticV2 {
                                  final int si,
                                  final String feedId) {
 
-        StatisticTask task = new StatisticTask();
+        StoryStatisticV2Task task = new StoryStatisticV2Task();
         task.event = prefix + "dislike";
         task.feedId = feedId;
         task.storyId = Integer.toString(i);
@@ -429,7 +427,7 @@ public class IASStatisticV2Impl implements IASStatisticV2 {
     public void sendFavoriteStory(final int i,
                                   final int si,
                                   final String feedId) {
-        StatisticTask task = new StatisticTask();
+        StoryStatisticV2Task task = new StoryStatisticV2Task();
         task.event = prefix + "favorite";
         task.storyId = Integer.toString(i);
         task.feedId = feedId;
@@ -447,7 +445,7 @@ public class IASStatisticV2Impl implements IASStatisticV2 {
                               final Long t,
                               final String feedId) {
         if (t <= 0) return;
-        StatisticTask task = new StatisticTask();
+        StoryStatisticV2Task task = new StoryStatisticV2Task();
         task.event = prefix + "slide";
         task.storyId = Integer.toString(i);
         task.slideIndex = si;
@@ -462,7 +460,7 @@ public class IASStatisticV2Impl implements IASStatisticV2 {
                                final int si,
                                int mode,
                                final String feedId) {
-        StatisticTask task = new StatisticTask();
+        StoryStatisticV2Task task = new StoryStatisticV2Task();
         task.event = prefix + "share";
         task.storyId = Integer.toString(i);
         task.slideIndex = si;
@@ -478,7 +476,7 @@ public class IASStatisticV2Impl implements IASStatisticV2 {
     public void sendStoryWidgetEvent(final String name,
                                      final String data,
                                      final String feedId) {
-        StatisticTask task = JsonParser.fromJson(data, StatisticTask.class);
+        StoryStatisticV2Task task = JsonParser.fromJson(data, StoryStatisticV2Task.class);
         task.event = name;
         task.feedId = feedId;
         generateBase(task);
@@ -487,7 +485,7 @@ public class IASStatisticV2Impl implements IASStatisticV2 {
 
     public void sendGameEvent(final String name, final String data,
                               final String feedId) {
-        StatisticTask task = JsonParser.fromJson(data, StatisticTask.class);
+        StoryStatisticV2Task task = JsonParser.fromJson(data, StoryStatisticV2Task.class);
         task.event = name;
         task.feedId = feedId;
         generateBase(task);
@@ -500,7 +498,7 @@ public class IASStatisticV2Impl implements IASStatisticV2 {
     }
 
 
-    private void sendTask(final StatisticTask task) {
+    private void sendTask(final StoryStatisticV2Task task) {
 
         try {
             final Callable<Boolean> _ff = new Callable<Boolean>() {

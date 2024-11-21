@@ -11,15 +11,14 @@ public interface IIAMReaderSlideViewModel extends IReaderSlideViewModel {
     void addSubscriber(Observer<IAMReaderSlideState> observer);
     void removeSubscriber(Observer<IAMReaderSlideState> observer);
 
+    void readerIsOpened(boolean fromScratch);
+    void readerIsClosing();
+
     SingleTimeEvent<STETypeAndData> singleTimeEvents();
 
     ContentIdWithIndex iamId();
 
     void slideClick(String payload);
-
-    void updateSlideShownTotalTime();
-
-    long slideShownTotalTime();
 
     void resumeSlideTimer();
 
@@ -59,7 +58,7 @@ public interface IIAMReaderSlideViewModel extends IReaderSlideViewModel {
 
     void storyLoaded(String data);
 
-    void storyStatisticEvent(
+    void statisticEvent(
             String name,
             String data,
             String eventData

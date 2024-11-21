@@ -2,7 +2,7 @@ package com.inappstory.sdk.core.api;
 
 import java.util.List;
 
-public interface IASStatisticV1 extends StatDisabled {
+public interface IASStatisticStoriesV1 extends StatDisabled {
     void refreshTimer();
     List<List<Object>> extractCurrentStatistic();
     void previewStatisticEvent(List<Integer> vals);

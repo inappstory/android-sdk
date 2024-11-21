@@ -3,13 +3,15 @@ package com.inappstory.sdk.core.api.impl;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASStatistic;
 import com.inappstory.sdk.core.api.IASStatisticExceptions;
+import com.inappstory.sdk.core.api.IASStatisticIAMV1;
 import com.inappstory.sdk.core.api.IASStatisticProfiling;
-import com.inappstory.sdk.core.api.IASStatisticV1;
-import com.inappstory.sdk.core.api.IASStatisticV2;
+import com.inappstory.sdk.core.api.IASStatisticStoriesV1;
+import com.inappstory.sdk.core.api.IASStatisticStoriesV2;
 import com.inappstory.sdk.stories.statistic.GetStatisticV1Callback;
+import com.inappstory.sdk.stories.statistic.IASStatisticIAMV1Impl;
 import com.inappstory.sdk.stories.statistic.IASStatisticProfilingImpl;
-import com.inappstory.sdk.stories.statistic.IASStatisticV1Impl;
-import com.inappstory.sdk.stories.statistic.IASStatisticV2Impl;
+import com.inappstory.sdk.stories.statistic.IASStatisticStoriesV1Impl;
+import com.inappstory.sdk.stories.statistic.IASStatisticStoriesV2Impl;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,51 +20,51 @@ import java.util.Map;
 
 public class IASStatisticImpl implements IASStatistic {
     private final IASCore core;
-    private final IASStatisticV2 iasStatisticV2;
-    private final Map<String, IASStatisticV1> iasStatisticV1Map = new HashMap<>();
+    private final IASStatisticStoriesV2 iasStatisticStoriesV2;
+    private final Map<String, IASStatisticStoriesV1> iasStatisticStoriesV1Map = new HashMap<>();
     private final IASStatisticProfiling iasStatisticProfiling;
     private final IASStatisticExceptions iasStatisticExceptions;
+    private final IASStatisticIAMV1 iasStatisticIAMV1;
 
 
     public IASStatisticImpl(IASCore core) {
         this.core = core;
-        iasStatisticV2 = new IASStatisticV2Impl(core);
+        iasStatisticStoriesV2 = new IASStatisticStoriesV2Impl(core);
         iasStatisticProfiling = new IASStatisticProfilingImpl(core);
         iasStatisticExceptions = new IASStatisticExceptionsImpl(core);
+        iasStatisticIAMV1 = new IASStatisticIAMV1Impl(core);
     }
-
-
 
 
     @Override
     public void createV1(String sessionId, boolean disabled) {
         synchronized (v1Lock) {
-            iasStatisticV1Map.put(sessionId, new IASStatisticV1Impl(core, disabled));
+            iasStatisticStoriesV1Map.put(sessionId, new IASStatisticStoriesV1Impl(core, disabled));
         }
     }
 
     @Override
     public void removeV1(String sessionId) {
         synchronized (v1Lock) {
-            iasStatisticV1Map.remove(sessionId);
+            iasStatisticStoriesV1Map.remove(sessionId);
         }
     }
 
     @Override
-    public IASStatisticV1 v1() {
+    public IASStatisticStoriesV1 storiesV1() {
         String sessionId = core.sessionManager().getSession().getSessionId();
         if (sessionId == null) return null;
         synchronized (v1Lock) {
-            return iasStatisticV1Map.get(sessionId);
+            return iasStatisticStoriesV1Map.get(sessionId);
         }
     }
 
     @Override
-    public void v1(String sessionId, GetStatisticV1Callback callback) {
+    public void storiesV1(String sessionId, GetStatisticV1Callback callback) {
         if (sessionId == null) return;
-        IASStatisticV1 statisticV1 = null;
+        IASStatisticStoriesV1 statisticV1 = null;
         synchronized (v1Lock) {
-            statisticV1 = iasStatisticV1Map.get(sessionId);
+            statisticV1 = iasStatisticStoriesV1Map.get(sessionId);
         }
         if (statisticV1 != null) {
             callback.get(statisticV1);
@@ -70,8 +72,8 @@ public class IASStatisticImpl implements IASStatistic {
     }
 
     @Override
-    public void v1(GetStatisticV1Callback callback) {
-        IASStatisticV1 statisticV1 = v1();
+    public void storiesV1(GetStatisticV1Callback callback) {
+        IASStatisticStoriesV1 statisticV1 = storiesV1();
         if (statisticV1 != null) {
             callback.get(statisticV1);
         }
@@ -123,8 +125,13 @@ public class IASStatisticImpl implements IASStatistic {
 
 
     @Override
-    public IASStatisticV2 v2() {
-        return iasStatisticV2;
+    public IASStatisticStoriesV2 storiesV2() {
+        return iasStatisticStoriesV2;
+    }
+
+    @Override
+    public IASStatisticIAMV1 iamV1() {
+        return iasStatisticIAMV1;
     }
 
     @Override

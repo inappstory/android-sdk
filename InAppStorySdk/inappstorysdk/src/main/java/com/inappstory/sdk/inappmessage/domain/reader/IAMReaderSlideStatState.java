@@ -3,7 +3,6 @@ package com.inappstory.sdk.inappmessage.domain.reader;
 public class IAMReaderSlideStatState {
 
     private long resumedTime = 0;
-    private long totalTime = 0;
 
     public String iterationId() {
         return iterationId;
@@ -11,13 +10,8 @@ public class IAMReaderSlideStatState {
 
     private String iterationId;
 
-    void updateTotalTime() {
-        this.totalTime =
-                (System.currentTimeMillis() - this.resumedTime);
-    }
-
     long totalTime() {
-        return this.totalTime;
+        return (System.currentTimeMillis() - this.resumedTime);
     }
 
     void create(String iterationId) {
@@ -31,7 +25,6 @@ public class IAMReaderSlideStatState {
 
     void clear() {
         this.iterationId = null;
-        this.totalTime = 0;
         this.resumedTime = 0;
     }
 }

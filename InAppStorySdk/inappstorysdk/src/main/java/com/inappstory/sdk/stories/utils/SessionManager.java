@@ -19,7 +19,7 @@ import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
-import com.inappstory.sdk.core.api.IASStatisticV1;
+import com.inappstory.sdk.core.api.IASStatisticStoriesV1;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.api.impl.IASSettingsImpl;
 import com.inappstory.sdk.core.utils.ConnectionCheck;
@@ -100,7 +100,7 @@ public class SessionManager {
     private void saveSession(final SessionResponse response) {
         if (response == null || response.session == null) return;
         boolean isSendStatistic = InAppStoryManager.getInstance().isSendStatistic();
-        core.statistic().v2().disabled(
+        core.statistic().storiesV2().disabled(
                 !(isSendStatistic && response.isAllowStatV2)
         );
         core.statistic().profiling().disabled(
@@ -109,6 +109,10 @@ public class SessionManager {
         core.statistic().exceptions().disabled(
                 !(isSendStatistic && response.isAllowCrash)
         );
+        core.statistic().iamV1().disabled(!(isSendStatistic && (
+                response.isAllowStatV1 ||
+                response.isAllowStatV2)
+        ));
         ((IASSettingsImpl) core.settingsAPI()).sessionPlaceholders(response.placeholders);
         ((IASSettingsImpl) core.settingsAPI()).sessionImagePlaceholders(response.imagePlaceholders);
     }
@@ -127,9 +131,9 @@ public class SessionManager {
 
             }
         });
-        core.statistic().v1(new GetStatisticV1Callback() {
+        core.statistic().storiesV1(new GetStatisticV1Callback() {
             @Override
-            public void get(@NonNull IASStatisticV1 manager) {
+            public void get(@NonNull IASStatisticStoriesV1 manager) {
                 manager.restartSchedule();
             }
         });
@@ -359,9 +363,9 @@ public class SessionManager {
     ) {
         if (oldSessionId == null) return;
         clearCaches();
-        core.statistic().v1(oldSessionId, new GetStatisticV1Callback() {
+        core.statistic().storiesV1(oldSessionId, new GetStatisticV1Callback() {
             @Override
-            public void get(@NonNull IASStatisticV1 manager) {
+            public void get(@NonNull IASStatisticStoriesV1 manager) {
                 List<List<Object>> stat = new ArrayList<>(
                         sendStatistic ?
                                 manager.extractCurrentStatistic() :

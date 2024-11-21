@@ -110,7 +110,7 @@ public class IAMReaderJavascriptInterface {
             String data,
             String eventData
     ) {
-        slideViewModel.storyStatisticEvent(name, data, eventData);
+        slideViewModel.statisticEvent(name, data, eventData);
     }
 
     @JavascriptInterface

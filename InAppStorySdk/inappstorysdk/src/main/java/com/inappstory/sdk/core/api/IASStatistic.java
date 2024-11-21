@@ -7,10 +7,11 @@ import java.util.List;
 public interface IASStatistic {
     void createV1(String sessionId, boolean disabled);
     void removeV1(String sessionId);
-    IASStatisticV1 v1();
-    void v1(String sessionId, GetStatisticV1Callback callback);
-    void v1(GetStatisticV1Callback callback);
-    IASStatisticV2 v2();
+    IASStatisticStoriesV1 storiesV1();
+    IASStatisticStoriesV2 storiesV2();
+    IASStatisticIAMV1 iamV1();
+    void storiesV1(String sessionId, GetStatisticV1Callback callback);
+    void storiesV1(GetStatisticV1Callback callback);
     IASStatisticProfiling profiling();
     IASStatisticExceptions exceptions();
 

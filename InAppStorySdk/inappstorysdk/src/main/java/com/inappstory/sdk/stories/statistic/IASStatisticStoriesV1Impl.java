@@ -3,7 +3,7 @@ package com.inappstory.sdk.stories.statistic;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASStatistic;
-import com.inappstory.sdk.core.api.IASStatisticV1;
+import com.inappstory.sdk.core.api.IASStatisticStoriesV1;
 import com.inappstory.sdk.core.utils.ConnectionCheck;
 import com.inappstory.sdk.core.utils.ConnectionCheckCallback;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
@@ -16,9 +16,9 @@ import java.util.List;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-public class IASStatisticV1Impl implements IASStatisticV1 {
+public class IASStatisticStoriesV1Impl implements IASStatisticStoriesV1 {
 
-    public IASStatisticV1Impl(IASCore core, boolean disabled) {
+    public IASStatisticStoriesV1Impl(IASCore core, boolean disabled) {
         this.core = core;
         this.disabled = disabled;
     }

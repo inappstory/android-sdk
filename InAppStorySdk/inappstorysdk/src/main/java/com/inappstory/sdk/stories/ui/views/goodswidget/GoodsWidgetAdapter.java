@@ -6,12 +6,13 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.UseIASCallback;
+import com.inappstory.sdk.stories.api.models.ContentType;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryWidgetCallback;
 
 import java.util.ArrayList;
@@ -70,7 +71,11 @@ public class GoodsWidgetAdapter extends RecyclerView.Adapter<GoodsWidgetItem> {
                 callback
         );
         if (data != null) {
-            if (config != null && config.slideData != null) {
+            if (config != null &&
+                    config.slideData != null &&
+                    config.slideData.content().contentType() == ContentType.STORY
+            ) {
+                final StoryData storyData = (StoryData) config.slideData.content();
                 InAppStoryManager.useCore(new UseIASCoreCallback() {
                     @Override
                     public void use(@NonNull IASCore core) {
@@ -79,21 +84,21 @@ public class GoodsWidgetAdapter extends RecyclerView.Adapter<GoodsWidgetItem> {
                                     @Override
                                     public void use(@NonNull StoryWidgetCallback callback) {
                                         Map<String, String> widgetData = new HashMap<>();
-                                        widgetData.put("story_id", "" + config.slideData.story.id);
-                                        widgetData.put("feed_id", config.slideData.story.feed);
-                                        widgetData.put("slide_index", "" + config.slideData.index);
+                                        widgetData.put("story_id", "" + storyData.id());
+                                        widgetData.put("feed_id", storyData.feed());
+                                        widgetData.put("slide_index", "" + config.slideData.index());
                                         widgetData.put("widget_id", config.widgetId);
                                         widgetData.put("widget_value", data.sku);
                                         callback.widgetEvent(config.slideData, "w-goods-click", widgetData);
                                     }
                                 }
                         );
-                        core.statistic().v2().sendGoodsClick(
-                                config.slideData.story.id,
-                                config.slideData.index,
+                        core.statistic().storiesV2().sendGoodsClick(
+                                storyData.id(),
+                                config.slideData.index(),
                                 config.widgetId,
                                 data.sku,
-                                config.slideData.story.feed
+                                storyData.feed()
                         );
                     }
                 });

@@ -93,6 +93,7 @@ import com.inappstory.sdk.stories.events.GameCompleteEventObserver;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.GameReaderLaunchData;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenGameReader;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.outercallbacks.game.GameLoadedError;
 import com.inappstory.sdk.stories.ui.OverlapFragmentObserver;
 import com.inappstory.sdk.stories.ui.views.IASWebView;
@@ -245,13 +246,15 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
             @Override
             public void use(@NonNull IASCore core) {
                 GameStoryData dataModel = getStoryDataModel();
-                if (dataModel != null)
+                if (dataModel != null && dataModel.storyData() != null) {
                     core.statistic().profiling().setReady(
                             "game_init"
-                                    + dataModel.slideData.story.id
+                                    + dataModel.storyData().id()
                                     + "_"
-                                    + dataModel.slideData.index
+                                    + dataModel.slideData.index()
                     );
+                }
+
 
             }
         });
@@ -356,9 +359,9 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                                 int storyId = -1;
                                 int slideIndex = 0;
                                 GameStoryData dataModel = getStoryDataModel();
-                                if (dataModel != null) {
-                                    storyId = dataModel.slideData.story.id;
-                                    slideIndex = dataModel.slideData.index;
+                                if (dataModel != null && dataModel.storyData() != null) {
+                                    storyId = dataModel.storyData().id();
+                                    slideIndex = dataModel.slideData.index();
                                 }
                                 core.screensManager().getGameScreenHolder()
                                         .openShareOverlapContainer(
@@ -597,7 +600,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
             if (manager != null && link != null)
                 manager.tapOnLink(link, getContext());
             final GameStoryData dataModel = getStoryDataModel();
-            if (dataModel != null) {
+            if (dataModel != null && dataModel.storyData() != null) {
                 closing = true;
                 final String observableUID = gameReaderLaunchData.getObservableUID();
                 if (observableUID != null) {
@@ -611,8 +614,8 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                                 observer.gameComplete(
                                         new GameCompleteEvent(
                                                 gameState,
-                                                dataModel.slideData.story.id,
-                                                dataModel.slideData.index
+                                                dataModel.storyData().id(),
+                                                dataModel.slideData.index()
                                         )
                                 );
                             }
@@ -673,10 +676,10 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
 
             @Override
             public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
-                if (dataModel != null && webView != null) {
+                if (dataModel != null && dataModel.storyData() != null && webView != null) {
                     webView.sendWebConsoleLog(consoleMessage,
-                            Integer.toString(dataModel.slideData.story.id),
-                            dataModel.slideData.index);
+                            Integer.toString(dataModel.storyData().id()),
+                            dataModel.slideData.index());
                 }
                 String msg = consoleMessage.message() + " -- From line "
                         + consoleMessage.lineNumber() + " of "

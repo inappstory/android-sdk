@@ -70,7 +70,7 @@ public class StoriesViewManager {
 
     public void sendStoryWidgetEvent(String name, String data, String eventData) {
         if (data != null)
-            core.statistic().v2().sendStoryWidgetEvent(name, data,
+            core.statistic().storiesV2().sendStoryWidgetEvent(name, data,
                     pageManager != null ? pageManager.getFeedId() : null);
         if (eventData != null)
             pageManager.widgetEvent(name, eventData);
@@ -605,7 +605,7 @@ public class StoriesViewManager {
     public void storySetLocalData(String data, boolean sendToServer) {
         core.keyValueStorage().saveString("story" + storyId + "__" +
                 ((IASDataSettingsHolder) core.settingsAPI()).userId(), data);
-        if (core.statistic().v1().disabled()) return;
+        if (core.statistic().storiesV1().disabled()) return;
 
         if (sendToServer) {
             core.network().enqueue(
@@ -632,7 +632,7 @@ public class StoriesViewManager {
     public SourceType source = SourceType.SINGLE;
 
     public void storySendData(String data) {
-        if (core.statistic().v1().disabled()) return;
+        if (core.statistic().storiesV1().disabled()) return;
         core.network().enqueue(
                 core.network().getApi().sendStoryData(
                         Integer.toString(storyId),

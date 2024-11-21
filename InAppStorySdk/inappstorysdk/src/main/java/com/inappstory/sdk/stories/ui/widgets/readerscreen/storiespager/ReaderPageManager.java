@@ -9,7 +9,7 @@ import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASCallbackType;
-import com.inappstory.sdk.core.api.IASStatisticV1;
+import com.inappstory.sdk.core.api.IASStatisticStoriesV1;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.data.IReaderContent;
 import com.inappstory.sdk.core.ui.screens.IReaderSlideViewModel;
@@ -212,11 +212,11 @@ public class ReaderPageManager implements IReaderSlideViewModel {
                         }
                     }
                     if (getViewContentType() == ContentType.STORY)
-                        core.statistic().v1(
+                        core.statistic().storiesV1(
                                 parentManager.getSessionId(),
                                 new GetStatisticV1Callback() {
                                     @Override
-                                    public void get(@NonNull IASStatisticV1 manager) {
+                                    public void get(@NonNull IASStatisticStoriesV1 manager) {
                                         manager.addLinkOpenStatistic(storyId, slideIndex);
                                     }
                                 }
@@ -445,20 +445,20 @@ public class ReaderPageManager implements IReaderSlideViewModel {
                 storyId + "_" + slideIndex);
         isPaused = false;
         pauseTimers();
-        core.statistic().v2().sendCurrentState();
+        core.statistic().storiesV2().sendCurrentState();
         core.contentLoader().storyDownloadManager().changePriorityForSingle(
                 parentManager.getByIdAndIndex(storyId),
                 parentManager.contentType
         );
         if (getViewContentType() == ContentType.STORY) {
-            core.statistic().v2().createCurrentState(
+            core.statistic().storiesV2().createCurrentState(
                     storyId,
                     slideIndex,
                     parentManager != null ? parentManager.getFeedId() : null
             );
-            core.statistic().v1(new GetStatisticV1Callback() {
+            core.statistic().storiesV1(new GetStatisticV1Callback() {
                 @Override
-                public void get(@NonNull IASStatisticV1 manager) {
+                public void get(@NonNull IASStatisticStoriesV1 manager) {
                     manager.addStatisticBlock(storyId, slideIndex);
                 }
             });

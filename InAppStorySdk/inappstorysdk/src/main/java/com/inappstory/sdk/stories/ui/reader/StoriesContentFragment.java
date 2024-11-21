@@ -25,7 +25,7 @@ import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASCallbackType;
-import com.inappstory.sdk.core.api.IASStatisticV1;
+import com.inappstory.sdk.core.api.IASStatisticStoriesV1;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.data.IReaderContent;
 import com.inappstory.sdk.core.ui.screens.ShareProcessHandler;
@@ -302,10 +302,10 @@ public class StoriesContentFragment extends Fragment
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-                core.statistic().v1(launchData.getSessionId(),
+                core.statistic().storiesV1(launchData.getSessionId(),
                         new GetStatisticV1Callback() {
                             @Override
-                            public void get(@NonNull IASStatisticV1 manager) {
+                            public void get(@NonNull IASStatisticStoriesV1 manager) {
                                 manager.clearCurrentState();
                             }
                         }

@@ -27,7 +27,6 @@ import com.inappstory.sdk.network.jsapiclient.JsApiClient;
 import com.inappstory.sdk.network.jsapiclient.JsApiResponseCallback;
 import com.inappstory.sdk.network.models.Response;
 import com.inappstory.sdk.share.IShareCompleteListener;
-import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.UrlObject;
 import com.inappstory.sdk.stories.api.models.WebResource;
 import com.inappstory.sdk.stories.outercallbacks.common.gamereader.GameReaderCallback;
@@ -35,6 +34,7 @@ import com.inappstory.sdk.stories.outercallbacks.common.reader.CallToActionCallb
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickAction;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.ui.views.IASWebView;
 import com.inappstory.sdk.utils.StringsUtils;
@@ -100,7 +100,7 @@ public class GameManager {
         core.keyValueStorage().saveString("gameInstance_" + gameInstanceId
                 + "__" + settingsHolder.userId(), data);
 
-        if (core.statistic().v1().disabled()) return;
+        if (core.statistic().storiesV1().disabled()) return;
         if (sendToServer) {
             core.network().enqueue(core.network().getApi().sendGameData(gameInstanceId, data),
                     new NetworkCallback<Response>() {
@@ -136,17 +136,19 @@ public class GameManager {
         IASDataSettingsHolder settingsHolder =
                 (IASDataSettingsHolder) inAppStoryManager.iasCore().settingsAPI();
         if (dataModel == null) return;
-
-
-        core.keyValueStorage().saveString("story" + dataModel.slideData.story.id
-                + "__" + settingsHolder.userId(), data);
-
+        int id;
+        if (dataModel.slideData.content() instanceof StoryData) {
+            id = ((StoryData) dataModel.slideData.content()).id();
+            core.keyValueStorage().saveString("story" + id
+                    + "__" + settingsHolder.userId(), data);
+        } else
+            return;
         String sessionId = core.sessionManager().getSession().getSessionId();
-        if (core.statistic().v1().disabled() || sessionId.isEmpty()) return;
+        if (core.statistic().storiesV1().disabled() || sessionId.isEmpty()) return;
         if (sendToServer) {
             core.network().enqueue(
                     core.network().getApi().sendStoryData(
-                            Integer.toString(dataModel.slideData.story.id),
+                            Integer.toString(id),
                             data,
                             sessionId
                     ),
@@ -176,8 +178,12 @@ public class GameManager {
     }
 
     void sendGameStat(String name, String data) {
-        if (dataModel != null)
-            core.statistic().v2().sendGameEvent(name, data, dataModel.slideData.story.feed);
+        if (dataModel != null && dataModel.slideData.content() instanceof StoryData)
+            core.statistic().storiesV2().sendGameEvent(
+                    name,
+                    data,
+                    ((StoryData) dataModel.slideData.content()).feed()
+            );
     }
 
     void closeGameReader() {

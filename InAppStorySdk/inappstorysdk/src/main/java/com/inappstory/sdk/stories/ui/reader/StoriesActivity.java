@@ -30,7 +30,7 @@ import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASCallbackType;
-import com.inappstory.sdk.core.api.IASStatisticV1;
+import com.inappstory.sdk.core.api.IASStatisticStoriesV1;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.data.IReaderContent;
 import com.inappstory.sdk.core.ui.screens.ScreenType;
@@ -47,7 +47,7 @@ import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.statistic.GetStatisticV1Callback;
-import com.inappstory.sdk.stories.statistic.IASStatisticV2Impl;
+import com.inappstory.sdk.stories.statistic.IASStatisticStoriesV2Impl;
 import com.inappstory.sdk.stories.ui.reader.animations.DisabledReaderAnimation;
 import com.inappstory.sdk.stories.ui.reader.animations.FadeReaderAnimation;
 import com.inappstory.sdk.stories.ui.reader.animations.HandlerAnimatorListenerAdapter;
@@ -84,11 +84,11 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryScree
                             .forceCloseScreen(null);
                     core
                             .statistic()
-                            .v1(
+                            .storiesV1(
                                     launchData.getSessionId(),
                                     new GetStatisticV1Callback() {
                                         @Override
-                                        public void get(@NonNull IASStatisticV1 manager) {
+                                        public void get(@NonNull IASStatisticStoriesV1 manager) {
                                             manager.sendStatistic();
                                         }
                                     }
@@ -648,22 +648,22 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryScree
                                 );
                             }
                         });
-                String cause = IASStatisticV2Impl.AUTO;
+                String cause = IASStatisticStoriesV2Impl.AUTO;
                 switch (action) {
                     case CloseStory.CLICK:
-                        cause = IASStatisticV2Impl.CLICK;
+                        cause = IASStatisticStoriesV2Impl.CLICK;
                         break;
                     case CloseStory.CUSTOM:
-                        cause = IASStatisticV2Impl.CUSTOM;
+                        cause = IASStatisticStoriesV2Impl.CUSTOM;
                         break;
                     case -1:
-                        cause = IASStatisticV2Impl.BACK;
+                        cause = IASStatisticStoriesV2Impl.BACK;
                         break;
                     case CloseStory.SWIPE:
-                        cause = IASStatisticV2Impl.SWIPE;
+                        cause = IASStatisticStoriesV2Impl.SWIPE;
                         break;
                 }
-                core.statistic().v2().sendCloseStory(
+                core.statistic().storiesV2().sendCloseStory(
                         idWithIndex.id(),
                         cause,
                         idWithIndex.index(),
@@ -722,11 +722,11 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryScree
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-                core.statistic().v1(
+                core.statistic().storiesV1(
                         launchData.getSessionId(),
                         new GetStatisticV1Callback() {
                             @Override
-                            public void get(@NonNull IASStatisticV1 manager) {
+                            public void get(@NonNull IASStatisticStoriesV1 manager) {
                                 manager.closeStatisticEvent();
                             }
                         }
@@ -756,11 +756,11 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryScree
                             .getOpenReader(ScreenType.STORY))
                             .onRestoreStatusBar(StoriesActivity.this);
                     if (launchData != null) {
-                        core.statistic().v1(
+                        core.statistic().storiesV1(
                                 launchData.getSessionId(),
                                 new GetStatisticV1Callback() {
                                     @Override
-                                    public void get(@NonNull IASStatisticV1 manager) {
+                                    public void get(@NonNull IASStatisticStoriesV1 manager) {
                                         manager.sendStatistic();
                                     }
                                 }

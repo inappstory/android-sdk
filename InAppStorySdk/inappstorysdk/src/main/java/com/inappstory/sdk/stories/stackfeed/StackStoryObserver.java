@@ -2,7 +2,6 @@ package com.inappstory.sdk.stories.stackfeed;
 
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Color;
 import android.net.Uri;
 import android.util.Log;
 
@@ -13,7 +12,7 @@ import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASCallbackType;
-import com.inappstory.sdk.core.api.IASStatisticV1;
+import com.inappstory.sdk.core.api.IASStatisticStoriesV1;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.data.IListItemContent;
 import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenData;
@@ -262,14 +261,14 @@ public class StackStoryObserver implements IStackFeedActions {
         boolean showOnlyNewStories = !currentStoryIsOpened && showNewStories;
         if (currentStory.deeplink() != null && !currentStory.deeplink().isEmpty()) {
             service.getListReaderConnector().changeStory(currentStory.id, listId, showOnlyNewStories);
-            core.statistic().v2().sendDeeplinkStory(
+            core.statistic().storiesV2().sendDeeplinkStory(
                     currentStory.id,
                     currentStory.deeplink(),
                     feed
             );
-            core.statistic().v1(sessionId, new GetStatisticV1Callback() {
+            core.statistic().storiesV1(sessionId, new GetStatisticV1Callback() {
                 @Override
-                public void get(@NonNull IASStatisticV1 manager) {
+                public void get(@NonNull IASStatisticStoriesV1 manager) {
                     manager.addDeeplinkClickStatistic(currentStory.id);
                 }
             });
@@ -321,11 +320,11 @@ public class StackStoryObserver implements IStackFeedActions {
             }
         } else if (currentStory.gameInstanceId() != null && !currentStory.gameInstanceId().isEmpty()) {
             service.getListReaderConnector().changeStory(currentStory.id, listId, showOnlyNewStories);
-            core.statistic().v1(
+            core.statistic().storiesV1(
                     sessionId,
                     new GetStatisticV1Callback() {
                         @Override
-                        public void get(@NonNull IASStatisticV1 manager) {
+                        public void get(@NonNull IASStatisticStoriesV1 manager) {
                             manager.addGameClickStatistic(currentStory.id);
                         }
                     }

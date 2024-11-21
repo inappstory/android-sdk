@@ -563,7 +563,7 @@ public class ContactDialogFragment extends Fragment implements IASBackPressHandl
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-                core.statistic().v2().pauseStoryEvent(false);
+                core.statistic().storiesV2().pauseStoryEvent(false);
             }
         });
         final int finalInttype = inttype;
@@ -623,7 +623,7 @@ public class ContactDialogFragment extends Fragment implements IASBackPressHandl
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-                core.statistic().v2().resumeStoryEvent(true);
+                core.statistic().storiesV2().resumeStoryEvent(true);
             }
         });
         getParentFragmentManager().popBackStack();

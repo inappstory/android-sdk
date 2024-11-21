@@ -24,6 +24,8 @@ import com.inappstory.sdk.stories.utils.SingleTimeEvent;
 import com.inappstory.sdk.stories.utils.WebPageConvertCallback;
 import com.inappstory.sdk.stories.utils.WebPageConverter;
 
+import java.util.UUID;
+
 public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
     private final Observable<IAMReaderSlideState> slideStateObservable =
             new Observable<>(new IAMReaderSlideState());
@@ -55,6 +57,34 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
     @Override
     public void removeSubscriber(Observer<IAMReaderSlideState> observable) {
         this.slideStateObservable.unsubscribe(observable);
+    }
+
+    @Override
+    public void readerIsOpened(boolean fromScratch) {
+        Integer iamId = readerViewModel.getCurrentState().iamId;
+        if (fromScratch)
+            slideTimeState.create(UUID.randomUUID().toString());
+        else
+            slideTimeState.resume();
+        core.statistic().iamV1().sendOpenEvent(
+                iamId,
+                0,
+                1,
+                slideTimeState.iterationId(),
+                fromScratch
+        );
+    }
+
+    @Override
+    public void readerIsClosing() {
+        Integer iamId = readerViewModel.getCurrentState().iamId;
+        core.statistic().iamV1().sendCloseEvent(
+                iamId,
+                0,
+                1,
+                slideTimeState.totalTime(),
+                slideTimeState.iterationId()
+        );
     }
 
 
@@ -92,16 +122,6 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
                 }
             }
         }
-    }
-
-    @Override
-    public void updateSlideShownTotalTime() {
-        slideTimeState.updateTotalTime();
-    }
-
-    @Override
-    public long slideShownTotalTime() {
-        return slideTimeState.totalTime();
     }
 
     @Override
@@ -187,12 +207,26 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
         readerViewModel.updateCurrentLoadState(IAMReaderLoadStates.LOADED);
     }
 
-    public void storyStatisticEvent(
+    public void statisticEvent(
             String name,
             String data,
             String eventData
     ) {
-
+        Integer iamId = readerViewModel.getCurrentState().iamId;
+        if (data != null) {
+            core.statistic().iamV1().sendWidgetEvent(
+                    name,
+                    data,
+                    iamId,
+                    0,
+                    1,
+                    slideTimeState.totalTime(),
+                    slideTimeState.iterationId()
+            );
+        }
+        if (eventData != null) {
+            //widget callback
+        }
     }
 
     public void emptyLoaded() {

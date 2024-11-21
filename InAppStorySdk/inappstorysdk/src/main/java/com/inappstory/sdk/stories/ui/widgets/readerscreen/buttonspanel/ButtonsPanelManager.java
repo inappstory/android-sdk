@@ -96,11 +96,11 @@ public class ButtonsPanelManager {
                 }
         );
         if (like && story.like() != 1) {
-            core.statistic().v2().sendLikeStory(idWithIndex.id(), idWithIndex.index(),
+            core.statistic().storiesV2().sendLikeStory(idWithIndex.id(), idWithIndex.index(),
                     pageManager != null ? pageManager.getFeedId() : null);
             val = 1;
         } else if (!like && story.like() != -1) {
-            core.statistic().v2().sendDislikeStory(idWithIndex.id(), idWithIndex.index(),
+            core.statistic().storiesV2().sendDislikeStory(idWithIndex.id(), idWithIndex.index(),
                     pageManager != null ? pageManager.getFeedId() : null);
             val = -1;
         } else {
@@ -155,7 +155,7 @@ public class ButtonsPanelManager {
         ContentIdWithIndex idWithIndex = pageManager.getParentManager().getByIdAndIndex(storyId);
         final boolean val = story.favorite();
         if (!val)
-            core.statistic().v2().sendFavoriteStory(idWithIndex.id(), idWithIndex.index(),
+            core.statistic().storiesV2().sendFavoriteStory(idWithIndex.id(), idWithIndex.index(),
                     pageManager != null ? pageManager.getFeedId() : null);
         core.callbacksAPI().useCallback(
                 IASCallbackType.FAVORITE,
@@ -228,7 +228,7 @@ public class ButtonsPanelManager {
         if (story == null) return;
         final int slideIndex = idWithIndex.index();
         final int shareType = story.shareType(slideIndex);
-        core.statistic().v2().sendShareStory(storyId, slideIndex,
+        core.statistic().storiesV2().sendShareStory(storyId, slideIndex,
                 shareType,
                 pageManager != null ? pageManager.getFeedId() : null);
         core.callbacksAPI().useCallback(

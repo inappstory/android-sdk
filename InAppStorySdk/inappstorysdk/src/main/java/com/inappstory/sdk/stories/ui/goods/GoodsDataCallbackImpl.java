@@ -8,6 +8,7 @@ import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryWidgetCallback;
 import com.inappstory.sdk.stories.ui.views.goodswidget.GetGoodsDataCallback;
 import com.inappstory.sdk.stories.ui.views.goodswidget.GoodsItemData;
@@ -37,8 +38,8 @@ public abstract class GoodsDataCallbackImpl implements GetGoodsDataCallback {
 
     @Override
     public void itemClick(final String sku) {
-        if (slideData == null) return;
-
+        if (slideData == null || !(slideData.content() instanceof StoryData)) return;
+        final StoryData storyData = (StoryData) slideData.content();
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
@@ -47,17 +48,17 @@ public abstract class GoodsDataCallbackImpl implements GetGoodsDataCallback {
                             @Override
                             public void use(@NonNull StoryWidgetCallback callback) {
                                 Map<String, String> widgetData = new HashMap<>();
-                                widgetData.put("story_id", "" + slideData.story.id);
-                                widgetData.put("feed_id", slideData.story.feed);
-                                widgetData.put("slide_index", "" + slideData.index);
+                                widgetData.put("story_id", "" + storyData.id());
+                                widgetData.put("feed_id", storyData.feed());
+                                widgetData.put("slide_index", "" + slideData.index());
                                 widgetData.put("widget_id", widgetId);
                                 widgetData.put("widget_value", sku);
                                 callback.widgetEvent(slideData, "w-goods-click", widgetData);
                             }
                         }
                 );
-                core.statistic().v2().sendGoodsClick(slideData.story.id,
-                        slideData.index, widgetId, sku, slideData.story.feed);
+                core.statistic().storiesV2().sendGoodsClick(storyData.id(),
+                        slideData.index(), widgetId, sku, storyData.feed());
             }
         });
     }

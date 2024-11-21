@@ -2,7 +2,6 @@ package com.inappstory.sdk.stories.ui.ugclist;
 
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Color;
 import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,7 +17,7 @@ import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASCallbackType;
-import com.inappstory.sdk.core.api.IASStatisticV1;
+import com.inappstory.sdk.core.api.IASStatisticStoriesV1;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.data.IListItemContent;
 import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenData;
@@ -197,11 +196,11 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
                     }
                     if (current.gameInstanceId() != null) {
 
-                        core.statistic().v1(
+                        core.statistic().storiesV1(
                                 sessionId,
                                 new GetStatisticV1Callback() {
                                     @Override
-                                    public void get(@NonNull IASStatisticV1 manager) {
+                                    public void get(@NonNull IASStatisticStoriesV1 manager) {
                                         manager.addGameClickStatistic(current.id());
                                     }
                                 }
@@ -229,7 +228,7 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
                         );
                         return;
                     } else if (current.deeplink() != null) {
-                        core.statistic().v2().sendDeeplinkStory(current.id(),
+                        core.statistic().storiesV2().sendDeeplinkStory(current.id(),
                                 current.deeplink(),
                                 null);
                         core.callbacksAPI().useCallback(

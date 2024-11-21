@@ -32,7 +32,7 @@ import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASCallbackType;
-import com.inappstory.sdk.core.api.IASStatisticV1;
+import com.inappstory.sdk.core.api.IASStatisticStoriesV1;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.data.IReaderContent;
 import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryScreen;
@@ -45,7 +45,7 @@ import com.inappstory.sdk.stories.outercallbacks.common.reader.CloseStoryCallbac
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.statistic.GetStatisticV1Callback;
-import com.inappstory.sdk.stories.statistic.IASStatisticV2Impl;
+import com.inappstory.sdk.stories.statistic.IASStatisticStoriesV2Impl;
 import com.inappstory.sdk.core.ui.widgets.elasticview.DraggableElasticLayout;
 import com.inappstory.sdk.stories.utils.IASBackPressHandler;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
@@ -73,11 +73,11 @@ public class StoriesDialogFragment extends DialogFragment implements IASBackPres
             public void use(@NonNull IASCore core) {
                 core.screensManager()
                         .getGameScreenHolder().forceCloseScreen(null);
-                core.statistic().v1(
+                core.statistic().storiesV1(
                         launchData.getSessionId(),
                         new GetStatisticV1Callback() {
                             @Override
-                            public void get(@NonNull IASStatisticV1 manager) {
+                            public void get(@NonNull IASStatisticStoriesV1 manager) {
                                 manager.sendStatistic();
                             }
                         }
@@ -110,8 +110,8 @@ public class StoriesDialogFragment extends DialogFragment implements IASBackPres
                                     );
                                 }
                             });
-                    String cause = IASStatisticV2Impl.CLICK;
-                    core.statistic().v2().sendCloseStory(storyId, cause, slideIndex,
+                    String cause = IASStatisticStoriesV2Impl.CLICK;
+                    core.statistic().storiesV2().sendCloseStory(storyId, cause, slideIndex,
                             story.slidesCount(),
                             launchData.getFeed());
                 }
@@ -128,11 +128,11 @@ public class StoriesDialogFragment extends DialogFragment implements IASBackPres
 
     public void cleanReader(IASCore core) {
         if (cleaned) return;
-        core.statistic().v1(
+        core.statistic().storiesV1(
                 launchData.getSessionId(),
                 new GetStatisticV1Callback() {
                     @Override
-                    public void get(@NonNull IASStatisticV1 manager) {
+                    public void get(@NonNull IASStatisticStoriesV1 manager) {
                         manager.closeStatisticEvent();
                     }
                 }
@@ -268,11 +268,11 @@ public class StoriesDialogFragment extends DialogFragment implements IASBackPres
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-                core.statistic().v1(
+                core.statistic().storiesV1(
                         launchData.getSessionId(),
                         new GetStatisticV1Callback() {
                             @Override
-                            public void get(@NonNull IASStatisticV1 manager) {
+                            public void get(@NonNull IASStatisticStoriesV1 manager) {
                                 manager.sendStatistic();
                             }
                         }

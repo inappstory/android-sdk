@@ -22,7 +22,7 @@ import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.IASDataSettings;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
-import com.inappstory.sdk.core.api.IASStatisticV1;
+import com.inappstory.sdk.core.api.IASStatisticStoriesV1;
 import com.inappstory.sdk.inappmessage.InAppMessageLoadCallback;
 import com.inappstory.sdk.inappmessage.InAppMessageOpenSettings;
 import com.inappstory.sdk.inappmessage.InAppMessageScreenActions;
@@ -692,9 +692,9 @@ public class InAppStoryManager {
                             public void onComplete() {
                                 if (sessionId == null || sessionId.isEmpty()) return;
                                 IASDataSettingsHolder settingsHolder = ((IASDataSettingsHolder) core.settingsAPI());
-                                core.statistic().v1(new GetStatisticV1Callback() {
+                                core.statistic().storiesV1(new GetStatisticV1Callback() {
                                     @Override
-                                    public void get(@NonNull IASStatisticV1 manager) {
+                                    public void get(@NonNull IASStatisticStoriesV1 manager) {
                                         manager.closeStatisticEvent();
                                     }
                                 });

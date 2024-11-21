@@ -7,15 +7,42 @@ import com.inappstory.sdk.utils.StringsUtils;
 
 import java.io.Serializable;
 
-public class StoryData implements Serializable {
+public class StoryData extends ContentData {
+    /**
+     * @deprecated Will be changed to private in next version
+     * Use {@link #id()} instead.
+     */
+    @Deprecated
     public int id;
+
+    /**
+     *
+     * @deprecated Will be changed to private in next version
+     * Use {@link #title()} instead.
+     */
+    @Deprecated
     public String title;
+
+    /**
+     * @deprecated Will be changed to private in next version
+     * Use {@link #tags()} instead.
+     */
+    @Deprecated
     public String tags;
+
+    /**
+     * @deprecated Will be changed to private in next version
+     * Use {@link #feed()} instead.
+     */
+    @Deprecated
     public String feed;
-    public SourceType sourceType;
+
+    /**
+     * @deprecated Will be changed to private in next version
+     * Use {@link #slidesCount()} instead.
+     */
+    @Deprecated
     public int slidesCount;
-    @Ignore
-    public ContentType contentType;
 
     public StoryData(IStatData story, String feed, SourceType sourceType) {
         this(
@@ -38,24 +65,45 @@ public class StoryData implements Serializable {
             String feed,
             SourceType sourceType
     ) {
+        super(sourceType, contentType);
         this.id = id;
         this.title = title;
         this.tags = tags;
         this.slidesCount = slidesCount;
-        this.contentType = contentType;
         this.feed = feed;
-        this.sourceType = sourceType;
+    }
+
+
+    public int id() {
+        return id;
+    }
+
+    public String title() {
+        return title;
+    }
+
+    public String tags() {
+        return tags;
+    }
+
+    public String feed() {
+        return feed;
+    }
+
+    public int slidesCount() {
+        return slidesCount;
     }
 
     @Override
     public String toString() {
         return "StoryData{" +
-                "id=" + id +
-                ", title='" + title + '\'' +
-                ", tags='" + tags + '\'' +
-                ", feed='" + feed + '\'' +
-                ", sourceType='" + sourceType.name() + '\'' +
-                ", slidesCount=" + slidesCount +
+                "id=" + id() +
+                ", title='" + title() + '\'' +
+                ", tags='" + tags() + '\'' +
+                ", feed='" + feed() + '\'' +
+                ", sourceType='" + sourceType().name() + '\'' +
+                ", contentType='" + contentType().name() + '\'' +
+                ", slidesCount=" + slidesCount() +
                 '}';
     }
 

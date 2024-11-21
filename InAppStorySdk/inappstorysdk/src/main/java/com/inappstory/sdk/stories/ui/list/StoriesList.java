@@ -25,7 +25,7 @@ import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
-import com.inappstory.sdk.core.api.IASStatisticV1;
+import com.inappstory.sdk.core.api.IASStatisticStoriesV1;
 import com.inappstory.sdk.core.data.IListItemContent;
 import com.inappstory.sdk.core.storieslist.StoriesListVMState;
 import com.inappstory.sdk.core.ui.screens.storyreader.StoryScreenHolder;
@@ -39,7 +39,7 @@ import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.outercallbacks.storieslist.ListCallback;
 import com.inappstory.sdk.stories.outercallbacks.storieslist.ListScrollCallback;
 import com.inappstory.sdk.stories.statistic.GetStatisticV1Callback;
-import com.inappstory.sdk.stories.statistic.IASStatisticV2Impl;
+import com.inappstory.sdk.stories.statistic.IASStatisticStoriesV2Impl;
 import com.inappstory.sdk.stories.ui.reader.ActiveStoryItem;
 import com.inappstory.sdk.ugc.list.OnUGCItemClick;
 import com.inappstory.sdk.utils.StringsUtils;
@@ -340,13 +340,13 @@ public class StoriesList extends RecyclerView {
                 core.sessionManager().useOrOpenSession(new OpenSessionCallback() {
                     @Override
                     public void onSuccess(String sessionId) {
-                        core.statistic().v2().sendViewStory(newIndexes,
-                                isFavoriteList ? IASStatisticV2Impl.FAVORITE : IASStatisticV2Impl.LIST, feedId);
-                        core.statistic().v1(
+                        core.statistic().storiesV2().sendViewStory(newIndexes,
+                                isFavoriteList ? IASStatisticStoriesV2Impl.FAVORITE : IASStatisticStoriesV2Impl.LIST, feedId);
+                        core.statistic().storiesV1(
                                 sessionId,
                                 new GetStatisticV1Callback() {
                                     @Override
-                                    public void get(@NonNull IASStatisticV1 manager) {
+                                    public void get(@NonNull IASStatisticStoriesV1 manager) {
                                         manager.previewStatisticEvent(newIndexes);
                                     }
                                 }
@@ -599,13 +599,13 @@ public class StoriesList extends RecyclerView {
             InAppStoryManager.useCore(new UseIASCoreCallback() {
                 @Override
                 public void use(@NonNull IASCore core) {
-                    core.statistic().v1(
+                    core.statistic().storiesV1(
                             manager != null ?
                                     manager.currentSessionId :
                                     core.sessionManager().getSession().getSessionId(),
                             new GetStatisticV1Callback() {
                                 @Override
-                                public void get(@NonNull IASStatisticV1 manager) {
+                                public void get(@NonNull IASStatisticStoriesV1 manager) {
                                     manager.sendStatistic();
                                 }
                             }

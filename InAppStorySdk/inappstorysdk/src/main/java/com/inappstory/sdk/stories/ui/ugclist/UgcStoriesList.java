@@ -21,7 +21,7 @@ import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
-import com.inappstory.sdk.core.api.IASStatisticV1;
+import com.inappstory.sdk.core.api.IASStatisticStoriesV1;
 import com.inappstory.sdk.core.data.IListItemContent;
 import com.inappstory.sdk.core.storieslist.StoriesListVMState;
 import com.inappstory.sdk.network.JsonParser;
@@ -369,13 +369,13 @@ public class UgcStoriesList extends RecyclerView {
             InAppStoryManager.useCore(new UseIASCoreCallback() {
                 @Override
                 public void use(@NonNull IASCore core) {
-                    core.statistic().v1(
+                    core.statistic().storiesV1(
                             manager != null ?
                                     manager.currentSessionId :
                                     core.sessionManager().getSession().getSessionId(),
                             new GetStatisticV1Callback() {
                                 @Override
-                                public void get(@NonNull IASStatisticV1 statisticV1) {
+                                public void get(@NonNull IASStatisticStoriesV1 statisticV1) {
                                     statisticV1.sendStatistic();
                                 }
                             }

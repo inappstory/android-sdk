@@ -14,7 +14,7 @@ import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASCallbackType;
-import com.inappstory.sdk.core.api.IASStatisticV1;
+import com.inappstory.sdk.core.api.IASStatisticStoriesV1;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.data.IFavoriteItem;
 import com.inappstory.sdk.core.data.IListItemContent;
@@ -42,7 +42,7 @@ import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.statistic.GetStatisticV1Callback;
-import com.inappstory.sdk.stories.statistic.IASStatisticV2Impl;
+import com.inappstory.sdk.stories.statistic.IASStatisticStoriesV2Impl;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -135,14 +135,14 @@ public class InAppStoryAPISubscribersManager {
         if (currentStoryCover.deeplink() != null && !currentStoryCover.deeplink().isEmpty()) {
             service.getListReaderConnector().changeStory(coverId, uniqueKey, false);
 
-            core.statistic().v2().sendDeeplinkStory(
+            core.statistic().storiesV2().sendDeeplinkStory(
                     coverId,
                     currentStoryCover.deeplink(),
                     requestData.feed
             );
-            core.statistic().v1(sessionId, new GetStatisticV1Callback() {
+            core.statistic().storiesV1(sessionId, new GetStatisticV1Callback() {
                 @Override
-                public void get(@NonNull IASStatisticV1 manager) {
+                public void get(@NonNull IASStatisticStoriesV1 manager) {
                     manager.addDeeplinkClickStatistic(coverId);
                 }
             });
@@ -197,11 +197,11 @@ public class InAppStoryAPISubscribersManager {
                     uniqueKey,
                     false
             );
-            core.statistic().v1(
+            core.statistic().storiesV1(
                     sessionId,
                     new GetStatisticV1Callback() {
                         @Override
-                        public void get(@NonNull IASStatisticV1 manager) {
+                        public void get(@NonNull IASStatisticStoriesV1 manager) {
                             manager.addGameClickStatistic(currentStoryCover.id());
                         }
                     }
@@ -366,18 +366,18 @@ public class InAppStoryAPISubscribersManager {
         final IASStoryListRequestData iasStoryListRequestData = requestsData.get(uniqueId);
         final List<Integer> newIndexes = core.statistic().newStatisticPreviews(indexes);
         if (iasStoryListRequestData != null) {
-            core.statistic().v2().sendViewStory(
+            core.statistic().storiesV2().sendViewStory(
                     newIndexes,
                     iasStoryListRequestData.isFavorite ?
-                            IASStatisticV2Impl.FAVORITE : IASStatisticV2Impl.LIST,
+                            IASStatisticStoriesV2Impl.FAVORITE : IASStatisticStoriesV2Impl.LIST,
                     iasStoryListRequestData.feed
             );
         }
-        core.statistic().v1(
+        core.statistic().storiesV1(
                 sessionId,
                 new GetStatisticV1Callback() {
                     @Override
-                    public void get(@NonNull IASStatisticV1 manager) {
+                    public void get(@NonNull IASStatisticStoriesV1 manager) {
                         manager.previewStatisticEvent(newIndexes);
                     }
                 }

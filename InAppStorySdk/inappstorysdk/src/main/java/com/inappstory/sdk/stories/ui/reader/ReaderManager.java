@@ -15,8 +15,8 @@ import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASCallbackType;
-import com.inappstory.sdk.core.api.IASStatisticV1;
-import com.inappstory.sdk.core.api.IASStatisticV2;
+import com.inappstory.sdk.core.api.IASStatisticStoriesV1;
+import com.inappstory.sdk.core.api.IASStatisticStoriesV2;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.api.impl.IASSingleStoryImpl;
 import com.inappstory.sdk.core.data.IListItemContent;
@@ -35,7 +35,7 @@ import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.statistic.GetStatisticV1Callback;
-import com.inappstory.sdk.stories.statistic.IASStatisticV2Impl;
+import com.inappstory.sdk.stories.statistic.IASStatisticStoriesV2Impl;
 import com.inappstory.sdk.stories.ui.utils.FragmentAction;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPageManager;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
@@ -270,9 +270,9 @@ public class ReaderManager {
         final StoriesContentFragment host = getHost();
         if (host == null) return;
         if (contentType == ContentType.STORY)
-            core.statistic().v1(getSessionId(), new GetStatisticV1Callback() {
+            core.statistic().storiesV1(getSessionId(), new GetStatisticV1Callback() {
                 @Override
-                public void get(@NonNull IASStatisticV1 manager) {
+                public void get(@NonNull IASStatisticStoriesV1 manager) {
                     manager.addLinkOpenStatistic(storyId, slideIndex);
                 }
             });
@@ -312,20 +312,20 @@ public class ReaderManager {
 
     void sendStat(int position, SourceType source) {
         if (lastPos < position && lastPos > -1) {
-            sendStatBlock(true, IASStatisticV2Impl.NEXT, storiesIds.get(position).id());
+            sendStatBlock(true, IASStatisticStoriesV2Impl.NEXT, storiesIds.get(position).id());
         } else if (lastPos > position && lastPos > -1) {
-            sendStatBlock(true, IASStatisticV2Impl.PREV, storiesIds.get(position).id());
+            sendStatBlock(true, IASStatisticStoriesV2Impl.PREV, storiesIds.get(position).id());
         } else if (lastPos == -1) {
-            String whence = IASStatisticV2Impl.DIRECT;
+            String whence = IASStatisticStoriesV2Impl.DIRECT;
             switch (source) {
                 case ONBOARDING:
-                    whence = IASStatisticV2Impl.ONBOARDING;
+                    whence = IASStatisticStoriesV2Impl.ONBOARDING;
                     break;
                 case LIST:
-                    whence = IASStatisticV2Impl.LIST;
+                    whence = IASStatisticStoriesV2Impl.LIST;
                     break;
                 case FAVORITE:
-                    whence = IASStatisticV2Impl.FAVORITE;
+                    whence = IASStatisticStoriesV2Impl.FAVORITE;
                     break;
                 default:
                     break;
@@ -454,9 +454,9 @@ public class ReaderManager {
         final List<Integer> lst = new ArrayList<>();
         lst.add(currentStoryId);
         if (contentType == ContentType.STORY)
-            core.statistic().v1(getSessionId(), new GetStatisticV1Callback() {
+            core.statistic().storiesV1(getSessionId(), new GetStatisticV1Callback() {
                 @Override
-                public void get(@NonNull IASStatisticV1 manager) {
+                public void get(@NonNull IASStatisticStoriesV1 manager) {
                     manager.addStatisticBlock(currentStoryId,
                             currentSlideIndex);
                     manager.previewStatisticEvent(lst);
@@ -507,7 +507,7 @@ public class ReaderManager {
                 contentType
         );
         if (story2 == null) return;
-        IASStatisticV2 statisticV2 = core.statistic().v2();
+        IASStatisticStoriesV2 statisticV2 = core.statistic().storiesV2();
         statisticV2.sendCurrentState();
         if (hasCloseEvent) {
             ContentIdWithIndex contentIdWithIndex = storiesIds.get(lastPos);
@@ -708,7 +708,7 @@ public class ReaderManager {
         if (currentSubscriber != null) {
             currentSubscriber.pauseSlide(withBackground);
         }
-        core.statistic().v2().pauseStoryEvent(withBackground);
+        core.statistic().storiesV2().pauseStoryEvent(withBackground);
     }
 
     public void resumeCurrent(boolean withBackground) {
@@ -716,17 +716,17 @@ public class ReaderManager {
         if (currentSubscriber != null)
             currentSubscriber.resumeSlide(withBackground);
         if (withBackground) {
-            core.statistic().v1(
+            core.statistic().storiesV1(
                     getSessionId(),
                     new GetStatisticV1Callback() {
                         @Override
-                        public void get(@NonNull IASStatisticV1 manager) {
+                        public void get(@NonNull IASStatisticStoriesV1 manager) {
                             manager.refreshTimer();
                         }
                     }
             );
         }
-        core.statistic().v2().resumeStoryEvent(withBackground);
+        core.statistic().storiesV2().resumeStoryEvent(withBackground);
     }
 
 }

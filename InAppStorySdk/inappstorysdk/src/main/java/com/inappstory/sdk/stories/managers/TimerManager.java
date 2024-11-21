@@ -5,7 +5,7 @@ import androidx.annotation.NonNull;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.core.IASCore;
-import com.inappstory.sdk.core.api.IASStatisticV1;
+import com.inappstory.sdk.core.api.IASStatisticStoriesV1;
 import com.inappstory.sdk.core.data.IReaderContent;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
@@ -110,21 +110,21 @@ public class TimerManager {
 
     public void resumeTimerAndRefreshStat() {
 
-        core.statistic().v2().cleanFakeEvents();
+        core.statistic().storiesV2().cleanFakeEvents();
         if (pageManager == null) return;
-        core.statistic().v1(
+        core.statistic().storiesV1(
                 pageManager.getParentManager().getSessionId(),
                 new GetStatisticV1Callback() {
                     @Override
-                    public void get(@NonNull IASStatisticV1 manager) {
+                    public void get(@NonNull IASStatisticStoriesV1 manager) {
                         manager.refreshCurrentState();
                     }
                 }
         );
         pauseTime += System.currentTimeMillis() - startPauseTime;
 
-        core.statistic().v2().cleanFakeEvents();
-        core.statistic().v2().changeV2StatePauseTime(pauseTime);
+        core.statistic().storiesV2().cleanFakeEvents();
+        core.statistic().storiesV2().changeV2StatePauseTime(pauseTime);
         startPauseTime = 0;
     }
 
@@ -137,11 +137,11 @@ public class TimerManager {
 
     public void pauseTimerAndRefreshStat() {
         if (pageManager == null) return;
-        core.statistic().v1(
+        core.statistic().storiesV1(
                 pageManager.getParentManager().getSessionId(),
                 new GetStatisticV1Callback() {
                     @Override
-                    public void get(@NonNull IASStatisticV1 manager) {
+                    public void get(@NonNull IASStatisticStoriesV1 manager) {
                         manager.closeStatisticEvent(null, true);
                         manager.sendStatistic();
                         manager.increaseEventCount();
@@ -162,7 +162,7 @@ public class TimerManager {
                         .readerContent()
                         .getByIdAndType(storyId, type);
                 if (story != null) {
-                    core.statistic().v2().addFakeEvents(
+                    core.statistic().storiesV2().addFakeEvents(
                             story.id(),
                             pageManager.getParentManager().getByIdAndIndex(story.id()).index(),
                             story.slidesCount(),
