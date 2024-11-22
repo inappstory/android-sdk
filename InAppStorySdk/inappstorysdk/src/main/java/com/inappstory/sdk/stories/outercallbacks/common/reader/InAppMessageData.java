@@ -1,13 +1,15 @@
 package com.inappstory.sdk.stories.outercallbacks.common.reader;
 
 import com.inappstory.sdk.stories.api.models.ContentType;
+import com.inappstory.sdk.inappmessage.IAMUiContainerType;
 
-public class IAMData extends ContentData {
+public class InAppMessageData extends ContentData {
     private int id;
+    private IAMUiContainerType uiContainerType;
 
     private String title;
 
-    public IAMData(
+    public InAppMessageData(
             int id,
             String campaignName,
             SourceType sourceType
@@ -17,6 +19,9 @@ public class IAMData extends ContentData {
         this.title = campaignName;
     }
 
+    public IAMUiContainerType uiContainerType() {
+        return uiContainerType;
+    }
 
     public int id() {
         return id;

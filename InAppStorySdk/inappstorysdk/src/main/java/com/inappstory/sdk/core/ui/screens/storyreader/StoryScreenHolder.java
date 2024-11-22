@@ -108,8 +108,8 @@ public class StoryScreenHolder extends AbstractScreenHolder<BaseStoryScreen, Lau
         else localTaskId = randomUUID().toString();
         final FragmentManager fragmentManager = getScreen().getScreenFragmentManager();
         if (slideData != null &&
-                slideData.content() instanceof StoryData) {
-            StoryData storyData = (StoryData) slideData.content();
+                slideData.content() != null) {
+            StoryData storyData = slideData.content();
             core.statistic().storiesV2().sendGoodsOpen(
                     storyData.id(),
                     slideData.index(),

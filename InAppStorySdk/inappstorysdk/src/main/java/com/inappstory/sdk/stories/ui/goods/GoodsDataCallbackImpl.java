@@ -38,8 +38,8 @@ public abstract class GoodsDataCallbackImpl implements GetGoodsDataCallback {
 
     @Override
     public void itemClick(final String sku) {
-        if (slideData == null || !(slideData.content() instanceof StoryData)) return;
-        final StoryData storyData = (StoryData) slideData.content();
+        if (slideData == null || slideData.content() == null) return;
+        final StoryData storyData = slideData.content();
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {

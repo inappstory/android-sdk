@@ -6,14 +6,14 @@ import com.inappstory.sdk.stories.api.models.ContentType;
 
 import java.io.Serializable;
 
-public class SlideData implements Serializable {
+public class SlideData extends ContentData implements Serializable  {
     @NonNull
     /**
      * @deprecated Will be renamed and changed to private in next version
      * Use {@link #content()} instead.
      */
     @Deprecated
-    public ContentData story;
+    public StoryData story;
 
     /**
      * @deprecated Will be changed to private in next version
@@ -29,7 +29,7 @@ public class SlideData implements Serializable {
     @Deprecated
     public String payload;
 
-    public ContentData content() {
+    public StoryData content() {
         return story;
     }
 
@@ -45,17 +45,9 @@ public class SlideData implements Serializable {
             @NonNull StoryData story,
             int index,
             String payload) {
+        super(story.sourceType(), ContentType.STORY);
         this.story = story;
         this.index = index;
-        this.payload = payload;
-    }
-
-    public SlideData(
-            @NonNull IAMData iamData,
-            String payload
-    ) {
-        this.story = iamData;
-        this.index = 0;
         this.payload = payload;
     }
 

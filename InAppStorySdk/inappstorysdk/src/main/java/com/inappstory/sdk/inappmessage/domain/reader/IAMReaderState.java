@@ -2,6 +2,7 @@ package com.inappstory.sdk.inappmessage.domain.reader;
 
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageAppearance;
 import com.inappstory.sdk.inappmessage.ui.appearance.impl.InAppMessageBottomSheetSettings;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 
 public class IAMReaderState {
     public IAMReaderUIStates uiState = IAMReaderUIStates.CLOSED;
@@ -9,9 +10,15 @@ public class IAMReaderState {
     public InAppMessageAppearance appearance = new InAppMessageBottomSheetSettings();
     public boolean showOnlyIfLoaded = false;
     public Integer iamId = null;
+    public SourceType sourceType = SourceType.IN_APP_MESSAGES;
 
     public IAMReaderState iamId(Integer iamId) {
         this.iamId = iamId;
+        return this;
+    }
+
+    public IAMReaderState sourceType(SourceType sourceType) {
+        this.sourceType = sourceType;
         return this;
     }
 
@@ -39,6 +46,7 @@ public class IAMReaderState {
     public IAMReaderState copy() {
         return new IAMReaderState()
                 .uiState(this.uiState)
+                .sourceType(this.sourceType)
                 .loadState(this.loadState)
                 .iamId(this.iamId)
                 .appearance(this.appearance)

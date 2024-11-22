@@ -6,6 +6,8 @@ import com.inappstory.sdk.core.data.IResource;
 import com.inappstory.sdk.core.exceptions.NotImplementedMethodException;
 import com.inappstory.sdk.network.annotations.models.Required;
 import com.inappstory.sdk.network.annotations.models.SerializedName;
+import com.inappstory.sdk.inappmessage.IAMUiContainerType;
+
 import java.util.List;
 import java.util.Map;
 
@@ -196,8 +198,14 @@ public class InAppMessage implements IInAppMessage {
     }
 
     @Override
-    public int screenType() {
-        if (screenType < 1 || screenType > 3) return 1;
-        return screenType; //1 - BSh, 2 - Md, 3 - FSc
+    public IAMUiContainerType screenType() {
+        switch (screenType) {
+            case 2:
+                return IAMUiContainerType.MODAL;
+            case 3:
+                return IAMUiContainerType.FULLSCREEN;
+            default:
+                return IAMUiContainerType.BOTTOM_SHEET;
+        }
     }
 }

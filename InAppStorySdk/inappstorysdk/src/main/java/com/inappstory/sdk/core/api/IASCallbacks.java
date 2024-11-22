@@ -22,4 +22,5 @@ public interface IASCallbacks {
             IASCallbackType type,
             IASCallback useIASCallback
     );
+
 }

@@ -10,5 +10,6 @@ public interface IIAMReaderViewModel {
     IAMReaderState getCurrentState();
     void updateCurrentUiState(IAMReaderUIStates newState);
     void updateCurrentLoadState(IAMReaderLoadStates newState);
+
     void clear();
 }

@@ -73,9 +73,9 @@ public class GoodsWidgetAdapter extends RecyclerView.Adapter<GoodsWidgetItem> {
         if (data != null) {
             if (config != null &&
                     config.slideData != null &&
-                    config.slideData.content().contentType() == ContentType.STORY
+                    config.slideData.content() != null
             ) {
-                final StoryData storyData = (StoryData) config.slideData.content();
+                final StoryData storyData = config.slideData.content();
                 InAppStoryManager.useCore(new UseIASCoreCallback() {
                     @Override
                     public void use(@NonNull IASCore core) {

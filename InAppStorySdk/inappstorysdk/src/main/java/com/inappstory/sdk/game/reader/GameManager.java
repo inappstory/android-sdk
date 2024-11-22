@@ -137,8 +137,8 @@ public class GameManager {
                 (IASDataSettingsHolder) inAppStoryManager.iasCore().settingsAPI();
         if (dataModel == null) return;
         int id;
-        if (dataModel.slideData.content() instanceof StoryData) {
-            id = ((StoryData) dataModel.slideData.content()).id();
+        if (dataModel.slideData.content() != null) {
+            id = dataModel.slideData.content().id();
             core.keyValueStorage().saveString("story" + id
                     + "__" + settingsHolder.userId(), data);
         } else
@@ -178,11 +178,11 @@ public class GameManager {
     }
 
     void sendGameStat(String name, String data) {
-        if (dataModel != null && dataModel.slideData.content() instanceof StoryData)
+        if (dataModel != null && dataModel.slideData.content() != null)
             core.statistic().storiesV2().sendGameEvent(
                     name,
                     data,
-                    ((StoryData) dataModel.slideData.content()).feed()
+                    dataModel.slideData.content().feed()
             );
     }
 

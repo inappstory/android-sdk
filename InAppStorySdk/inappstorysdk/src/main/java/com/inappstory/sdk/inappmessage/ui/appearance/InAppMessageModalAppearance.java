@@ -1,9 +1,10 @@
 package com.inappstory.sdk.inappmessage.ui.appearance;
 
 public interface InAppMessageModalAppearance extends InAppMessageAppearance {
-    int maxHeight();
-    int maxWidth();
-    int horizontalOffset();
+    int contentHeight();
+    int horizontalPadding();
     int cornerRadius();
+    int closeButtonPosition();
+    int animationType();
     String backgroundColor();
 }

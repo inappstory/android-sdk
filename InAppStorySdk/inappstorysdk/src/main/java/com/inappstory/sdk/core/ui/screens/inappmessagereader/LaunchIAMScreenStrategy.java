@@ -26,6 +26,7 @@ import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenInAppMessageReader;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenReader;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenStoriesReader;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -73,7 +74,11 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
         checkIfMessageCanBeOpened(new CheckLocalIAMCallback() {
             @Override
             public void success(IInAppMessage inAppMessage) {
+                SourceType sourceType = SourceType.IN_APP_MESSAGES;
+                if (inAppMessageOpenSettings.id() != null)
+                    sourceType = SourceType.SINGLE_IN_APP_MESSAGE;
                 launchScreenSuccess(
+                        sourceType,
                         inAppMessage,
                         openReader,
                         screensHolders
@@ -97,7 +102,7 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
                             ContentType.IN_APP_MESSAGE
                     );
             if (readerContents != null) {
-                for (IReaderContent content: readerContents) {
+                for (IReaderContent content : readerContents) {
                     if (checkContentForShownFrequency((IInAppMessage) content)) {
                         return content;
                     }
@@ -106,7 +111,7 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
         }
         return readerContent;
     }
-    
+
     private boolean checkContentForShownFrequency(IInAppMessage inAppMessage) {
         return true;
     }
@@ -139,8 +144,8 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
                                 else
                                     launchScreenError(
                                             "Can't load InAppMessage with settings: [id: "
-                                            + inAppMessageOpenSettings.id() +
-                                            ", event: " + inAppMessageOpenSettings.event() + "]"
+                                                    + inAppMessageOpenSettings.id() +
+                                                    ", event: " + inAppMessageOpenSettings.event() + "]"
                                     );
                             }
 
@@ -161,21 +166,19 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
     }
 
     private void launchScreenSuccess(
+            SourceType sourceType,
             IInAppMessage inAppMessage,
             IOpenReader openReader,
             IScreensHolder screensHolders
     ) {
-        //check if another readers is opened
+        //TODO check if another readers is opened
         InAppMessageAppearance appearance;
         switch (inAppMessage.screenType()) {
-            case 1:
-                appearance = new InAppMessageBottomSheetSettings();
+            case MODAL:
+                appearance = new InAppMessageModalSettings();
                 break;
-            case 2:
-                appearance = new InAppMessageBottomSheetSettings();
-                break;
-            case 3:
-                appearance = new InAppMessageBottomSheetSettings();
+            case FULLSCREEN:
+                appearance = new InAppMessageFullscreenSettings();
                 break;
             default:
                 appearance = new InAppMessageBottomSheetSettings();
@@ -184,6 +187,7 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
         inAppMessageScreenActions.readerIsOpened();
         core.screensManager().iamReaderViewModel().initState(
                 new IAMReaderState()
+                        .sourceType(sourceType)
                         .iamId(inAppMessage.id())
                         .showOnlyIfLoaded(inAppMessageOpenSettings.showOnlyIfLoaded())
                         .appearance(appearance)

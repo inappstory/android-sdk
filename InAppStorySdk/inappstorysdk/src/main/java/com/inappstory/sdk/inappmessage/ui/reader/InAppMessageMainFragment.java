@@ -108,6 +108,7 @@ public class InAppMessageMainFragment extends Fragment implements Observer<IAMRe
     IAMContainerCallback containerCallback = new IAMContainerCallback() {
         @Override
         public void onShown() {
+
             readerViewModel.updateCurrentUiState(IAMReaderUIStates.OPENED);
         }
 

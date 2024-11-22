@@ -1,6 +1,15 @@
 package com.inappstory.sdk.inappmessage.domain.reader;
 
+import androidx.annotation.NonNull;
+
 import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.api.IASCallbackType;
+import com.inappstory.sdk.core.api.UseIASCallback;
+import com.inappstory.sdk.core.data.IInAppMessage;
+import com.inappstory.sdk.stories.api.models.ContentType;
+import com.inappstory.sdk.inappmessage.ShowInAppMessageCallback;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.InAppMessageData;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.utils.Observable;
 import com.inappstory.sdk.stories.utils.Observer;
 
@@ -45,6 +54,36 @@ public class IAMReaderViewModel implements IIAMReaderViewModel {
 
     @Override
     public void updateCurrentUiState(IAMReaderUIStates newState) {
+        final IAMReaderState readerState = this.readerStateObservable.getValue();
+        IAMReaderUIStates currentUiState = readerState.uiState;
+        if (currentUiState != newState) {
+            final IInAppMessage inAppMessage =
+                    (IInAppMessage) core.contentHolder().readerContent().getByIdAndType(
+                            readerState.iamId,
+                            ContentType.IN_APP_MESSAGE
+                    );
+            if (inAppMessage != null) {
+                if (newState == IAMReaderUIStates.OPENED) {
+                    core.callbacksAPI().useCallback(
+                            IASCallbackType.SHOW_IN_APP_MESSAGE,
+                            new UseIASCallback<ShowInAppMessageCallback>() {
+                                @Override
+                                public void use(@NonNull ShowInAppMessageCallback callback) {
+                                    callback.showInAppMessage(
+                                            new InAppMessageData(
+                                                    inAppMessage.id(),
+                                                    inAppMessage.statTitle(),
+                                                    SourceType.IN_APP_MESSAGES
+                                            )
+                                    );
+                                }
+                            }
+                    );
+                } else if (newState == IAMReaderUIStates.CLOSED) {
+
+                }
+            }
+        }
         this.readerStateObservable.updateValue(
                 this.readerStateObservable.getValue()
                         .copy()
