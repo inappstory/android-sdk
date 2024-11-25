@@ -8,8 +8,8 @@ public class GameStoryData {
     public SlideData slideData;
 
     public StoryData storyData() {
-        if (slideData != null && slideData.content() != null)
-            return slideData.content();
+        if (slideData != null)
+            return slideData.story();
         return null;
     }
 

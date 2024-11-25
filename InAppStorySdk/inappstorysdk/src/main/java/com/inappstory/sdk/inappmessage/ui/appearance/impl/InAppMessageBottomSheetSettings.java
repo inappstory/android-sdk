@@ -1,21 +1,25 @@
 package com.inappstory.sdk.inappmessage.ui.appearance.impl;
 
+import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageBSLineAppearance;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageBottomSheetAppearance;
 
 public class InAppMessageBottomSheetSettings implements InAppMessageBottomSheetAppearance {
     public InAppMessageBottomSheetSettings(
-            Integer maxHeight,
+            Integer contentHeight,
             Integer cornerRadius,
-            String backgroundColor
+            String backgroundColor,
+            InAppMessageBSLineAppearance lineAppearance
     ) {
-        this.maxHeight = maxHeight;
+        this.contentHeight = contentHeight;
+        this.lineAppearance = lineAppearance;
         this.cornerRadius = cornerRadius;
         this.backgroundColor = backgroundColor;
     }
 
-    public Integer maxHeight;
+    public Integer contentHeight;
     public Integer cornerRadius;
     public String backgroundColor;
+    public InAppMessageBSLineAppearance lineAppearance;
 
     public InAppMessageBottomSheetSettings() {
     }
@@ -26,13 +30,18 @@ public class InAppMessageBottomSheetSettings implements InAppMessageBottomSheetA
     }
 
     @Override
-    public int maxHeight() {
-        return maxHeight != null ? maxHeight : 600;
+    public int contentHeight() {
+        return contentHeight != null ? contentHeight : 600;
     }
 
 
     @Override
     public String backgroundColor() {
-        return backgroundColor != null ? backgroundColor : "#FFFFFF";
+        return backgroundColor != null ? backgroundColor : "#FFFFFFFF";
+    }
+
+    @Override
+    public InAppMessageBSLineAppearance lineAppearance() {
+        return lineAppearance != null ? lineAppearance : new InAppMessageBSLineSettings();
     }
 }

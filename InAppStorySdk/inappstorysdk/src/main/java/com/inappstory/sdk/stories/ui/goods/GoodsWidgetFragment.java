@@ -130,8 +130,8 @@ public class GoodsWidgetFragment extends Fragment implements IASBackPressHandler
                 final SlideData slideData =
                         (SlideData) getArguments().getSerializable("slideData");
                 final String widgetId = getArguments().getString("widgetId");
-                if (slideData == null || slideData.content() == null) return;
-                final StoryData storyData = slideData.content();
+                if (slideData == null || slideData.story() == null) return;
+                final StoryData storyData = slideData.story();
                 InAppStoryManager.useCore(new UseIASCoreCallback() {
                     @Override
                     public void use(@NonNull IASCore core) {

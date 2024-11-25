@@ -11,7 +11,6 @@ import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.UseIASCallback;
-import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryWidgetCallback;
 
@@ -73,9 +72,9 @@ public class GoodsWidgetAdapter extends RecyclerView.Adapter<GoodsWidgetItem> {
         if (data != null) {
             if (config != null &&
                     config.slideData != null &&
-                    config.slideData.content() != null
+                    config.slideData.story() != null
             ) {
-                final StoryData storyData = config.slideData.content();
+                final StoryData storyData = config.slideData.story();
                 InAppStoryManager.useCore(new UseIASCoreCallback() {
                     @Override
                     public void use(@NonNull IASCore core) {

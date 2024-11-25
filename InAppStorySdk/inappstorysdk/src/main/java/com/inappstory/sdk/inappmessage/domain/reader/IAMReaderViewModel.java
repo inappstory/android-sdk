@@ -6,6 +6,7 @@ import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.data.IInAppMessage;
+import com.inappstory.sdk.inappmessage.CloseInAppMessageCallback;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.inappmessage.ShowInAppMessageCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.InAppMessageData;
@@ -25,6 +26,26 @@ public class IAMReaderViewModel implements IIAMReaderViewModel {
     public IAMReaderViewModel(IASCore core) {
         this.core = core;
         this.slideViewModel = new IAMReaderSlideViewModel(this, core);
+    }
+
+    @Override
+    public InAppMessageData getCurrentInAppMessageData() {
+        final IAMReaderState readerState = this.readerStateObservable.getValue();
+        if (readerState != null) {
+            final IInAppMessage inAppMessage =
+                    (IInAppMessage) core.contentHolder().readerContent().getByIdAndType(
+                            readerState.iamId,
+                            ContentType.IN_APP_MESSAGE
+                    );
+            if (inAppMessage != null) {
+                return new InAppMessageData(
+                        inAppMessage.id(),
+                        inAppMessage.statTitle(),
+                        readerState.sourceType
+                );
+            }
+        }
+        return null;
     }
 
     @Override
@@ -56,32 +77,32 @@ public class IAMReaderViewModel implements IIAMReaderViewModel {
     public void updateCurrentUiState(IAMReaderUIStates newState) {
         final IAMReaderState readerState = this.readerStateObservable.getValue();
         IAMReaderUIStates currentUiState = readerState.uiState;
-        if (currentUiState != newState) {
-            final IInAppMessage inAppMessage =
-                    (IInAppMessage) core.contentHolder().readerContent().getByIdAndType(
-                            readerState.iamId,
-                            ContentType.IN_APP_MESSAGE
-                    );
-            if (inAppMessage != null) {
-                if (newState == IAMReaderUIStates.OPENED) {
-                    core.callbacksAPI().useCallback(
-                            IASCallbackType.SHOW_IN_APP_MESSAGE,
-                            new UseIASCallback<ShowInAppMessageCallback>() {
-                                @Override
-                                public void use(@NonNull ShowInAppMessageCallback callback) {
-                                    callback.showInAppMessage(
-                                            new InAppMessageData(
-                                                    inAppMessage.id(),
-                                                    inAppMessage.statTitle(),
-                                                    SourceType.IN_APP_MESSAGES
-                                            )
-                                    );
-                                }
-                            }
-                    );
-                } else if (newState == IAMReaderUIStates.CLOSED) {
 
-                }
+        if (currentUiState != newState) {
+            if (newState == IAMReaderUIStates.OPENED) {
+                core.callbacksAPI().useCallback(
+                        IASCallbackType.SHOW_IN_APP_MESSAGE,
+                        new UseIASCallback<ShowInAppMessageCallback>() {
+                            @Override
+                            public void use(@NonNull ShowInAppMessageCallback callback) {
+                                callback.showInAppMessage(
+                                        getCurrentInAppMessageData()
+                                );
+                            }
+                        }
+                );
+            } else if (newState == IAMReaderUIStates.CLOSED) {
+                core.callbacksAPI().useCallback(
+                        IASCallbackType.CLOSE_IN_APP_MESSAGE,
+                        new UseIASCallback<CloseInAppMessageCallback>() {
+                            @Override
+                            public void use(@NonNull CloseInAppMessageCallback callback) {
+                                callback.closeInAppMessage(
+                                        getCurrentInAppMessageData()
+                                );
+                            }
+                        }
+                );
             }
         }
         this.readerStateObservable.updateValue(

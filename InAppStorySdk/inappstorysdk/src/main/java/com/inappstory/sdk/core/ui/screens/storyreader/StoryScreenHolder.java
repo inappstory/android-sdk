@@ -13,7 +13,6 @@ import com.inappstory.sdk.core.ui.screens.holder.AbstractScreenHolder;
 import com.inappstory.sdk.core.ui.screens.holder.IOverlapContainerData;
 import com.inappstory.sdk.core.ui.screens.holder.IOverlapContainerHolder;
 import com.inappstory.sdk.core.ui.screens.ShareProcessHandler;
-import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoryItemCoordinates;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
@@ -108,8 +107,8 @@ public class StoryScreenHolder extends AbstractScreenHolder<BaseStoryScreen, Lau
         else localTaskId = randomUUID().toString();
         final FragmentManager fragmentManager = getScreen().getScreenFragmentManager();
         if (slideData != null &&
-                slideData.content() != null) {
-            StoryData storyData = slideData.content();
+                slideData.story() != null) {
+            StoryData storyData = slideData.story();
             core.statistic().storiesV2().sendGoodsOpen(
                     storyData.id(),
                     slideData.index(),

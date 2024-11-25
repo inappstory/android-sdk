@@ -5,6 +5,7 @@ import android.util.Log;
 
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
+import com.inappstory.sdk.core.data.IInAppMessage;
 import com.inappstory.sdk.core.data.IReaderContent;
 import com.inappstory.sdk.core.exceptions.NotImplementedMethodException;
 import com.inappstory.sdk.core.inappmessages.InAppMessageDownloadManager;
@@ -18,6 +19,8 @@ import com.inappstory.sdk.stories.api.models.SlideLinkObject;
 import com.inappstory.sdk.stories.cache.ContentIdAndType;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickAction;
 import com.inappstory.sdk.inappmessage.stedata.CallToActionData;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.InAppMessageData;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.utils.Observable;
 import com.inappstory.sdk.stories.utils.Observer;
 import com.inappstory.sdk.stories.utils.SingleTimeEvent;
@@ -101,7 +104,7 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
         if (payload != null && !payload.isEmpty()) {
 
             Log.e("IASClickPayload", payload);
-            final SlideLinkObject object = JsonParser.fromJson(payload, SlideLinkObject.class);
+            SlideLinkObject object = JsonParser.fromJson(payload, SlideLinkObject.class);
             if (object != null) {
                 ClickAction action = ClickAction.BUTTON;
                 if (object.getLink().getType().equals("url")) {
@@ -110,13 +113,18 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
                             action = ClickAction.SWIPE;
                         }
                     }
-                    final ClickAction finalAction = action;
                     singleTimeEvents.updateValue(
-                            new STETypeAndData(STEDataType.CALL_TO_ACTION,
+                            new STETypeAndData(
+                                    STEDataType.CALL_TO_ACTION,
                                     new CallToActionData()
-                                            .slideData(null)
-                                            .link(object.getLink().getTarget())
-                                            .clickAction(finalAction)
+                                            .contentData(
+                                                    readerViewModel.
+                                                            getCurrentInAppMessageData()
+                                            )
+                                            .link(
+                                                    object.getLink().getTarget()
+                                            )
+                                            .clickAction(action)
                             )
                     );
                 }

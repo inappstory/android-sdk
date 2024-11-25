@@ -5,9 +5,8 @@ import static com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_
 import static com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_HIDDEN;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.util.AttributeSet;
-import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -17,12 +16,11 @@ import androidx.annotation.Nullable;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
-import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.ui.widgets.roundedlayout.RoundedCornerLayout;
 import com.inappstory.sdk.core.utils.ColorUtils;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageBottomSheetAppearance;
+import com.inappstory.sdk.inappmessage.ui.widgets.BottomSheetLine;
 import com.inappstory.sdk.inappmessage.ui.widgets.IAMContentContainer;
-import com.inappstory.sdk.inappmessage.ui.widgets.IAMContainerCallback;
 import com.inappstory.sdk.stories.utils.Sizes;
 
 public final class BottomSheetContentContainer extends IAMContentContainer<InAppMessageBottomSheetAppearance> {
@@ -30,6 +28,8 @@ public final class BottomSheetContentContainer extends IAMContentContainer<InApp
     RoundedCornerLayout roundedCornerLayout;
     CoordinatorLayout.LayoutParams layoutParams;
     FrameLayout content;
+    BottomSheetLine bottomSheetLine;
+    FrameLayout bottomSheetLineContainer;
 
     public BottomSheetContentContainer(
             @NonNull Context context
@@ -78,6 +78,16 @@ public final class BottomSheetContentContainer extends IAMContentContainer<InApp
         );
         content.setId(CONTENT_ID);
         roundedCornerLayout.addView(content);
+        bottomSheetLine = new BottomSheetLine(context);
+        bottomSheetLineContainer = new FrameLayout(context);
+        bottomSheetLineContainer.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                closeWithAnimation();
+            }
+        });
+        roundedCornerLayout.addView(bottomSheetLineContainer);
+        bottomSheetLineContainer.addView(bottomSheetLine);
         bottomSheetBehavior = BottomSheetBehavior.from(roundedCornerLayout);
         bottomSheetBehavior.addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
             @Override
@@ -110,10 +120,10 @@ public final class BottomSheetContentContainer extends IAMContentContainer<InApp
         content.setBackgroundColor(ColorUtils.parseColorRGBA(
                 appearance.backgroundColor()
         ));
-        if (appearance.maxHeight() == -1)
+        if (appearance.contentHeight() == -1)
             layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT;
         else
-            layoutParams.height = Sizes.dpToPxExt(appearance.maxHeight(), getContext());
+            layoutParams.height = Sizes.dpToPxExt(appearance.contentHeight(), getContext());
         roundedCornerLayout.setRadius(
                 Sizes.dpToPxExt(appearance.cornerRadius(), getContext()),
                 Sizes.dpToPxExt(appearance.cornerRadius(), getContext()),
@@ -123,7 +133,29 @@ public final class BottomSheetContentContainer extends IAMContentContainer<InApp
         roundedCornerLayout.setLayoutParams(
                 layoutParams
         );
+        FrameLayout.LayoutParams blcLp = new FrameLayout.LayoutParams(
+                Sizes.dpToPxExt(appearance.lineAppearance().width() + 16, getContext()),
+                Sizes.dpToPxExt(appearance.lineAppearance().height() +
+                        2 * appearance.lineAppearance().topMargin(),
+                        getContext()
+                )
+        );
+        FrameLayout.LayoutParams blLp = new FrameLayout.LayoutParams(
+                Sizes.dpToPxExt(appearance.lineAppearance().width(), getContext()),
+                Sizes.dpToPxExt(appearance.lineAppearance().height(),
+                        getContext()
+                )
+        );
+        blcLp.topMargin = Sizes.dpToPxExt(appearance.lineAppearance().topMargin(), getContext());
+        blcLp.gravity = Gravity.CENTER_HORIZONTAL;
+        blLp.gravity = Gravity.CENTER;
+        bottomSheetLine.setLayoutParams(blLp);
+        bottomSheetLineContainer.setElevation(8);
+        bottomSheetLineContainer.setLayoutParams(blcLp);
+        bottomSheetLine.setColor(ColorUtils.parseColorRGBA(appearance.lineAppearance().color()));
         roundedCornerLayout.requestLayout();
+        bottomSheetLine.requestLayout();
+        bottomSheetLineContainer.requestLayout();
     }
 
     private int bsState = 0;

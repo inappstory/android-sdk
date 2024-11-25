@@ -6,11 +6,14 @@ import android.util.AttributeSet;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.inappstory.sdk.core.ui.widgets.roundedlayout.RoundedCornerLayout;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageModalAppearance;
 import com.inappstory.sdk.inappmessage.ui.widgets.IAMContentContainer;
 import com.inappstory.sdk.inappmessage.ui.widgets.IAMContainerCallback;
 
 public class ModalContentContainer extends IAMContentContainer<InAppMessageModalAppearance> {
+    RoundedCornerLayout roundedCornerLayout;
+
     public ModalContentContainer(
             @NonNull Context context
     ) {
@@ -34,6 +37,7 @@ public class ModalContentContainer extends IAMContentContainer<InAppMessageModal
 
     @Override
     public void appearance(InAppMessageModalAppearance appearance) {
+
         super.appearance(appearance);
     }
 
@@ -61,5 +65,6 @@ public class ModalContentContainer extends IAMContentContainer<InAppMessageModal
     @Override
     protected void init(Context context) {
 
+        if (appearance != null) appearance(appearance);
     }
 }

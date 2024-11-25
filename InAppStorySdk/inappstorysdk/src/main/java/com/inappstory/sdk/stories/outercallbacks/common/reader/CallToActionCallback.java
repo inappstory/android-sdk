@@ -7,7 +7,7 @@ import com.inappstory.sdk.core.api.IASCallback;
 public interface CallToActionCallback extends IASCallback {
     void callToAction(
             Context context,
-            SlideData slideData,
+            ContentData slideData,
             String link,
             ClickAction action
     );

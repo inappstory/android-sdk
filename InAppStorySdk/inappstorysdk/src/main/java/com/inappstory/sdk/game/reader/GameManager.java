@@ -34,7 +34,6 @@ import com.inappstory.sdk.stories.outercallbacks.common.reader.CallToActionCallb
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickAction;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.ui.views.IASWebView;
 import com.inappstory.sdk.utils.StringsUtils;
@@ -137,8 +136,8 @@ public class GameManager {
                 (IASDataSettingsHolder) inAppStoryManager.iasCore().settingsAPI();
         if (dataModel == null) return;
         int id;
-        if (dataModel.slideData.content() != null) {
-            id = dataModel.slideData.content().id();
+        if (dataModel.slideData.story() != null) {
+            id = dataModel.slideData.story().id();
             core.keyValueStorage().saveString("story" + id
                     + "__" + settingsHolder.userId(), data);
         } else
@@ -178,11 +177,11 @@ public class GameManager {
     }
 
     void sendGameStat(String name, String data) {
-        if (dataModel != null && dataModel.slideData.content() != null)
+        if (dataModel != null && dataModel.slideData.story() != null)
             core.statistic().storiesV2().sendGameEvent(
                     name,
                     data,
-                    dataModel.slideData.content().feed()
+                    dataModel.slideData.story().feed()
             );
     }
 

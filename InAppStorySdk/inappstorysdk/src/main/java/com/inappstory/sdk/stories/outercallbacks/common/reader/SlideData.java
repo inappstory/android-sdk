@@ -10,7 +10,7 @@ public class SlideData extends ContentData implements Serializable  {
     @NonNull
     /**
      * @deprecated Will be renamed and changed to private in next version
-     * Use {@link #content()} instead.
+     * Use {@link #story()} instead.
      */
     @Deprecated
     public StoryData story;
@@ -29,7 +29,7 @@ public class SlideData extends ContentData implements Serializable  {
     @Deprecated
     public String payload;
 
-    public StoryData content() {
+    public StoryData story() {
         return story;
     }
 
@@ -54,7 +54,7 @@ public class SlideData extends ContentData implements Serializable  {
     @Override
     public String toString() {
         return "SlideData {" +
-                "content=" + content() +
+                "content=" + story() +
                 ", index='" + index() + '\'' +
                 ", payload='" + payload() + '\'' +
                 '}';

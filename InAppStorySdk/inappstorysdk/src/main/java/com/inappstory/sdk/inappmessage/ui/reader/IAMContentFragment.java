@@ -129,7 +129,7 @@ public class IAMContentFragment extends Fragment implements Observer<IAMReaderSl
                     public void use(@NonNull CallToActionCallback callback) {
                         callback.callToAction(
                                 getContext(),
-                                data.slideData(),
+                                data.contentData(),
                                 data.link(),
                                 data.clickAction()
                         );

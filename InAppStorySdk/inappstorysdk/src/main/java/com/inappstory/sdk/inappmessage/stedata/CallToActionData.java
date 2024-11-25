@@ -1,11 +1,11 @@
 package com.inappstory.sdk.inappmessage.stedata;
 
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickAction;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.ContentData;
 
 public class CallToActionData implements STEData {
-    public SlideData slideData() {
-        return slideData;
+    public ContentData contentData() {
+        return contentData;
     }
 
     public String link() {
@@ -16,8 +16,8 @@ public class CallToActionData implements STEData {
         return clickAction;
     }
 
-    public CallToActionData slideData(SlideData slideData) {
-        this.slideData = slideData;
+    public CallToActionData contentData(ContentData contentData) {
+        this.contentData = contentData;
         return this;
     }
 
@@ -34,7 +34,7 @@ public class CallToActionData implements STEData {
     public CallToActionData() {
     }
 
-    private SlideData slideData;
+    private ContentData contentData;
     private String link;
     private ClickAction clickAction;
 }
