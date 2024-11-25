@@ -46,29 +46,33 @@ public class SessionAssetUseCase extends GetCacheFileUseCase<Void> {
     }
 
     private void logSessionAsset(String logMessage) {
-        Log.e("SessionAsset", logMessage);
+      //  Log.e("SessionAsset", logMessage);
 
     }
 
     private void downloadFile() {
+     //   Log.e("SessionAssetsIsReady", cacheObject.url + " Download");
         downloadLog.sendRequestLog();
         downloadLog.generateResponseLog(false, filePath);
         FinishDownloadFileCallback callback = new FinishDownloadFileCallback() {
             @Override
             public void finish(DownloadFileState fileState) {
+               // logSessionAsset(cacheObject.url + " Download callback");
                 if (fileState == null) {
                     useCaseCallback.onError("Can't download bundle file: " + cacheObject.url);
                     return;
                 }
+
+        //        Log.e("SessionAssetsIsReady", cacheObject.url + " Success");
                 useCaseCallback.onSuccess(fileState.file);
             }
         };
         if (filesDownloadManager.addSecondFinishCallbackIfIsNew(
                 cacheObject.url,
-                callback,
                 new FinishDownloadFileCallback() {
                     @Override
                     public void finish(DownloadFileState fileState) {
+            //            Log.e("SessionAssetsIsReady", cacheObject.url + " FirstCallback");
                         logSessionAsset(cacheObject.url + " Download finished: " + fileState);
                         downloadLog.sendResponseLog();
                         CacheJournalItem cacheJournalItem = generateCacheItem();
@@ -80,7 +84,8 @@ public class SessionAssetUseCase extends GetCacheFileUseCase<Void> {
                             logSessionAsset(cacheObject.url + " Cache put error");
                         }
                     }
-                }
+                },
+                callback
         )) {
             filesDownloadManager.useBundleDownloader(new Runnable() {
                 @Override
@@ -116,7 +121,6 @@ public class SessionAssetUseCase extends GetCacheFileUseCase<Void> {
     }
 
     private void getLocalFile(final Runnable error) {
-        logSessionAsset(cacheObject.url + " getLocalFile");
         filesDownloadManager.useLocalFilesThread(new Runnable() {
             @Override
             public void run() {
@@ -138,13 +142,13 @@ public class SessionAssetUseCase extends GetCacheFileUseCase<Void> {
                         downloadLog.generateResponseLog(true, filePath);
                         downloadLog.sendRequestResponseLog();
                         useCaseCallback.onSuccess(file);
-                        logSessionAsset(cacheObject.url + " Local cache success");
+                        //logSessionAsset(cacheObject.url + " Local cache success");
                         return;
                     } else {
                         deleteCacheKey();
                     }
                 }
-                logSessionAsset(cacheObject.url + " Local cache error");
+              //  logSessionAsset(cacheObject.url + " Local cache error");
                 error.run();
             }
         });

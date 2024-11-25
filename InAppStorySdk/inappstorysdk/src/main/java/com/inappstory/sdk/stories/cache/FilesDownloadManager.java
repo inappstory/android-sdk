@@ -40,23 +40,23 @@ public class FilesDownloadManager {
 
     public boolean addSecondFinishCallbackIfIsNew(
             String url,
-            FinishDownloadFileCallback callback,
-            FinishDownloadFileCallback callback2
+            FinishDownloadFileCallback putToCache,
+            FinishDownloadFileCallback externalCallback
     ) {
         boolean isNewUrl = true;
         synchronized (finishLock) {
             List<FinishDownloadFileCallback> callbacksByUrl = downloadFileCallbacks.get(url);
             if (callbacksByUrl == null) {
                 callbacksByUrl = new ArrayList<>();
-                callbacksByUrl.add(callback);
-                callbacksByUrl.add(callback2);
+                callbacksByUrl.add(putToCache);
+                callbacksByUrl.add(externalCallback);
                 downloadFileCallbacks.put(
                         url,
                         callbacksByUrl
                 );
             } else {
                 isNewUrl = false;
-                callbacksByUrl.add(callback);
+                callbacksByUrl.add(putToCache);
             }
             if (url.contains("/assets/"))
                 Log.e("InvokeFileDownload", url + " Add " + isNewUrl);

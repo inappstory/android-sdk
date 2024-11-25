@@ -71,7 +71,8 @@ class SlidesDownloader {
     int checkIfPageLoaded(SlideTaskData key) throws IOException { //0 - not loaded, 1 - loaded, -1 - loaded with error
         boolean remove = false;
         InAppStoryService service = InAppStoryService.getInstance();
-        if (service == null) return 0;
+        if (service == null)
+            return 0;
         LruDiskCache cache = service.getCommonCache();
         LruDiskCache vodCache = service.getVodCache();
         SlideTask slideTask = pageTasks.get(key);

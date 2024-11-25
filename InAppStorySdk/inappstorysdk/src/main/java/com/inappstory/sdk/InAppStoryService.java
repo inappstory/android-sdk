@@ -89,6 +89,7 @@ public class InAppStoryService {
         if (sessionAssets != null) {
             sessionHolder.addSessionAssetsKeys(sessionAssets);
             for (SessionAsset sessionAsset : sessionAssets) {
+            //    Log.e("SessionAssetsIsReady", "Asset: " + sessionAsset);
                 downloadSessionAsset(sessionAsset);
             }
         }
@@ -106,7 +107,7 @@ public class InAppStoryService {
                     @Override
                     public void onSuccess(File result) {
                         sessionHolder.addSessionAsset(sessionAsset);
-                        sessionHolder.checkIfSessionAssetsIsReady(filesDownloadManager);
+                        sessionHolder.checkIfSessionAssetsIsReady(sessionAsset, filesDownloadManager);
                     }
                 },
                 sessionAsset

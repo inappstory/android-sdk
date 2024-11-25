@@ -375,6 +375,7 @@ public class StoryDownloadManager {
         try {
             return slidesDownloader.checkIfPageLoaded(new SlideTaskData(storyId, index, type));
         } catch (IOException e) {
+            e.printStackTrace();
             return 0;
         }
     }

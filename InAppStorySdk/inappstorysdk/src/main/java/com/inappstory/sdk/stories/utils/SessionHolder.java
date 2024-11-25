@@ -1,6 +1,8 @@
 package com.inappstory.sdk.stories.utils;
 
 
+import android.util.Log;
+
 import com.inappstory.sdk.game.cache.SessionAssetsIsReadyCallback;
 import com.inappstory.sdk.game.cache.UseCaseCallback;
 import com.inappstory.sdk.lrudiskcache.LruCachesHolder;
@@ -142,8 +144,8 @@ public class SessionHolder implements ISessionHolder {
             this.cacheObjects.clear();
             this.allObjects.clear();
             for (SessionAsset object : cacheObjects) {
-                this.cacheObjects.put(object.filename, null);
-                this.allObjects.put(object.filename, object);
+                this.cacheObjects.put(object.url, null);
+                this.allObjects.put(object.url, object);
             }
         }
     }
@@ -151,7 +153,7 @@ public class SessionHolder implements ISessionHolder {
     @Override
     public void addSessionAsset(SessionAsset object) {
         synchronized (cacheLock) {
-            cacheObjects.put(object.filename, object);
+            cacheObjects.put(object.url, object);
         }
     }
 
@@ -186,14 +188,20 @@ public class SessionHolder implements ISessionHolder {
     private boolean assetsIsReady = false;
 
     @Override
-    public void checkIfSessionAssetsIsReady(FilesDownloadManager filesDownloadManager) {
+    public void checkIfSessionAssetsIsReady(
+            SessionAsset sessionAsset,
+            FilesDownloadManager filesDownloadManager
+    ) {
         Map<String, SessionAsset> localCacheObjects = new HashMap<>();
         synchronized (cacheLock) {
             localCacheObjects.putAll(cacheObjects);
         }
         for (String key : localCacheObjects.keySet()) {
             SessionAsset asset = localCacheObjects.get(key);
-            if (asset == null) return;
+            if (asset == null) {
+        //        Log.e("SessionAssetsIsReady", sessionAsset.url + " " + key);
+                return;
+            }
         }
         List<SessionAsset> assets = new ArrayList<>(localCacheObjects.values());
         checkLocalAsset(
@@ -205,15 +213,14 @@ public class SessionHolder implements ISessionHolder {
                     public void run() {
                         Set<SessionAssetsIsReadyCallback> temp = new HashSet<>();
                         synchronized (sessionAssetIsReadyLock) {
+                            assetsIsReady = true;
                             temp.addAll(assetsIsReadyCallbacks);
                             assetsIsReadyCallbacks.clear();
                         }
                         for (SessionAssetsIsReadyCallback callback : temp) {
                             callback.isReady();
                         }
-                        synchronized (sessionAssetIsReadyLock) {
-                            assetsIsReady = true;
-                        }
+
                     }
                 },
                 new Runnable() {
