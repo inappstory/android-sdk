@@ -10,6 +10,9 @@ import com.inappstory.sdk.BuildConfig;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.network.AppVersion;
 
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+
 public class UserAgent {
     public String generate(Context context) {
         String userAgent = "";
@@ -38,8 +41,16 @@ public class UserAgent {
                     appVersionName = version.versionName();
                 }
             }
-            userAgent = "InAppStorySDK/" + BuildConfig.VERSION_CODE
-                    + " " + agentString + " " + "Application/" + appVersionBuild + " (" + appPackageName + " " + appVersionName + ")";
+            userAgent = "InAppStorySDK/" +
+                    BuildConfig.VERSION_CODE + " " +
+                    agentString + " " +
+                    "Application/" +
+                    appVersionBuild + " (" +
+                    appPackageName + " " +
+                    new String(
+                            appVersionName.getBytes(StandardCharsets.ISO_8859_1),
+                            StandardCharsets.ISO_8859_1
+                    ) + ")";
         } else {
             userAgent = getDefaultUserAgentString(context);
         }

@@ -473,7 +473,13 @@ public class InAppStoryManager {
     }
 
     public void setAppVersion(@NonNull String version, int build) {
-        if (version.isEmpty()) return;
+        if (version.isEmpty() || version.length() > 50) {
+            showELog(
+                    IAS_ERROR_TAG,
+                    "App Version must be no more than 50 symbols and not empty"
+            );
+            return;
+        }
         this.appVersion = new AppVersion(version, build);
     }
 
