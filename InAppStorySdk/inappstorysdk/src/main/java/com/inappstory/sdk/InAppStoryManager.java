@@ -151,7 +151,7 @@ public class InAppStoryManager {
             }
             initialized = initStatus;
         }
-        for (InitializedCallback callback: localCallbacks) {
+        for (InitializedCallback callback : localCallbacks) {
             callback.onCreated();
         }
     }
@@ -1149,18 +1149,13 @@ public class InAppStoryManager {
     }
 
     private void setUserIdInner(final String userId) {
-        if (userId == null || StringsUtils.getBytesLength(userId) > 255) {
-            showELog(IAS_ERROR_TAG, StringsUtils.getErrorStringFromContext(context, R.string.ias_setter_user_length_error));
-            return;
-        }
+        if (noCorrectUserIdOrDevice(userId)) return;
         if (userId.equals(this.userId)) return;
         InAppStoryService.useInstance(new UseServiceInstanceCallback() {
             @Override
             public void use(@NonNull InAppStoryService inAppStoryService) throws Exception {
                 final String sessionId = inAppStoryService.getSession().getSessionId();
-
                 clearCachedLists();
-
                 localOpensKey = null;
                 final String oldUserId = InAppStoryManager.this.userId;
                 InAppStoryManager.this.userId = userId;
@@ -1169,13 +1164,15 @@ public class InAppStoryManager {
                             @Override
                             public void onComplete() {
                                 showDLog("AdditionalLog", "closeSession: setUserId");
-                                SessionManager.getInstance().closeSession(
-                                        sendStatistic,
-                                        true,
-                                        getCurrentLocale(),
-                                        oldUserId,
-                                        sessionId
-                                );
+                                if (sessionId != null && !sessionId.isEmpty()) {
+                                    SessionManager.getInstance().closeSession(
+                                            sendStatistic,
+                                            true,
+                                            getCurrentLocale(),
+                                            oldUserId,
+                                            sessionId
+                                    );
+                                }
                             }
                         }
                 );
@@ -1185,6 +1182,9 @@ public class InAppStoryManager {
                 inAppStoryService.getStoryDownloadManager().refreshLocals(Story.StoryType.UGC);
                 inAppStoryService.getStoryDownloadManager().cleanTasks(false);
                 inAppStoryService.setUserId(userId);
+                if (sessionId == null || sessionId.isEmpty()) {
+                    service.getListReaderConnector().userIdChanged();
+                }
             }
         });
 
@@ -1492,16 +1492,20 @@ public class InAppStoryManager {
         }
     }
 
-    public boolean noCorrectUserIdOrDevice() {
-        if (this.userId == null || StringsUtils.getBytesLength(this.userId) > 255) {
+    private boolean noCorrectUserIdOrDevice(String userId) {
+        if (StringsUtils.getBytesLength(userId) > 255) {
             showELog(IAS_ERROR_TAG, StringsUtils.getErrorStringFromContext(context, R.string.ias_setter_user_length_error));
             return true;
         }
-        if (!isDeviceIDEnabled && userId.isEmpty()) {
+        if (!isDeviceIDEnabled && (userId == null || userId.isEmpty())) {
             showELog(IAS_ERROR_TAG, StringsUtils.getErrorStringFromContext(context, R.string.ias_usage_without_user_and_device));
             return true;
         }
         return false;
+    }
+
+    public boolean noCorrectUserIdOrDevice() {
+        return noCorrectUserIdOrDevice(this.userId);
     }
 
     public void getStackFeed(

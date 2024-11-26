@@ -199,10 +199,12 @@ public class SessionHolder implements ISessionHolder {
         for (String key : localCacheObjects.keySet()) {
             SessionAsset asset = localCacheObjects.get(key);
             if (asset == null) {
-        //        Log.e("SessionAssetsIsReady", sessionAsset.url + " " + key);
+               /* Log.e("SessionAssetsIsReady", sessionAsset.url + " " + sessionAsset.filename +
+                        "\n" + key);*/
                 return;
             }
         }
+       // Log.e("SessionAssetsIsReady", sessionAsset.url + " " + sessionAsset.filename + " complete");
         List<SessionAsset> assets = new ArrayList<>(localCacheObjects.values());
         checkLocalAsset(
                 filesDownloadManager,

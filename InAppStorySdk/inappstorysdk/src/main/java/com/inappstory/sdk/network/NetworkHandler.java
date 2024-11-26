@@ -54,7 +54,7 @@ public final class NetworkHandler implements InvocationHandler {
     public void setSessionId(String sessionId) {
         synchronized (sessionLock) {
             this.sessionId = sessionId;
-            InAppStoryManager.showDLog("AdditionalLog", "Session is set");
+            InAppStoryManager.showDLog("AdditionalLog", "Session is set " + sessionId);
         }
     }
 
