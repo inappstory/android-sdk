@@ -5,6 +5,7 @@ import static com.inappstory.sdk.network.JsonParser.toMap;
 import android.content.Context;
 
 import com.inappstory.sdk.network.JsonParser;
+import com.inappstory.sdk.stories.api.models.RequestLocalParameters;
 import com.inappstory.sdk.stories.api.models.Session;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
@@ -52,7 +53,7 @@ public class JsApiClient {
                                     final JsApiResponseCallback callback) {
         SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
             @Override
-            public void onSuccess(String sessionId) {
+            public void onSuccess(RequestLocalParameters requestLocalParameters) {
                 sendRequest(
                         method,
                         path,

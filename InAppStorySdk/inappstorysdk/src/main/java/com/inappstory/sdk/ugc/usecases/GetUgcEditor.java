@@ -4,6 +4,7 @@ import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
+import com.inappstory.sdk.stories.api.models.RequestLocalParameters;
 import com.inappstory.sdk.stories.api.models.Session;
 import com.inappstory.sdk.stories.api.models.SessionEditor;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
@@ -27,7 +28,7 @@ public class GetUgcEditor implements IGetUgcEditor {
         if (service == null) return;
         SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
             @Override
-            public void onSuccess(final String sessionId) {
+            public void onSuccess(final RequestLocalParameters requestLocalParameters) {
                 networkClient.enqueue(
                         networkClient.getApi().getUgcEditor(),
                         new NetworkCallback<SessionEditor>() {
@@ -36,7 +37,7 @@ public class GetUgcEditor implements IGetUgcEditor {
                                 callback.get(
                                         new SessionEditorDTO(
                                                 response,
-                                                sessionId
+                                                requestLocalParameters.sessionId
                                         )
                                 );
                             }

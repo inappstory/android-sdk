@@ -10,6 +10,7 @@ import androidx.annotation.WorkerThread;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.UseManagerInstanceCallback;
 import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.game.cache.SessionAssetsIsReadyCallback;
 import com.inappstory.sdk.listwidget.StoriesWidgetService;
@@ -18,6 +19,7 @@ import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.stories.api.models.ExceptionCache;
+import com.inappstory.sdk.stories.api.models.RequestLocalParameters;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.StoryListType;
 import com.inappstory.sdk.stories.api.models.StorySlide;
@@ -46,6 +48,7 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 
 public class StoryDownloadManager {
     public List<Story> getStories(Story.StoryType type) {
@@ -84,7 +87,7 @@ public class StoryDownloadManager {
         }
         SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
             @Override
-            public void onSuccess(final String sessionId) {
+            public void onSuccess(final RequestLocalParameters requestLocalParameters) {
                 final String storyUID = ProfilingManager.getInstance().addTask("api_story");
                 networkClient.enqueue(
                         networkClient.getApi().getStoryById(
@@ -92,7 +95,10 @@ public class StoryDownloadManager {
                                 ApiSettings.getInstance().getTestKey(),
                                 showOnce ? 1 : 0,
                                 1,
-                                EXPAND_STRING
+                                EXPAND_STRING,
+                                requestLocalParameters.userId,
+                                requestLocalParameters.sessionId,
+                                requestLocalParameters.locale
                         ),
                         new NetworkCallback<Story>() {
                             @Override
@@ -113,7 +119,7 @@ public class StoryDownloadManager {
                                 uploadingAdditional(st, type);
                                 setStory(response, response.id, type);
                                 if (storyByIdCallback != null)
-                                    storyByIdCallback.getStory(response, sessionId);
+                                    storyByIdCallback.getStory(response, requestLocalParameters.sessionId);
                             }
 
                             @Override
@@ -137,7 +143,8 @@ public class StoryDownloadManager {
                                 if (storyByIdCallback != null)
                                     storyByIdCallback.loadError(-1);
                             }
-                        });
+                        },
+                        requestLocalParameters);
             }
 
             @Override
@@ -727,85 +734,103 @@ public class StoryDownloadManager {
                     }
                 }
                 boolean loadFav = loadFavorite;
+
+                InAppStoryManager manager = InAppStoryManager.getInstance();
+                InAppStoryService service = InAppStoryService.getInstance();
+                RequestLocalParameters localParameters = new RequestLocalParameters(
+                        service != null ? service.getSession().getSessionId() : "",
+                        manager != null ? manager.getUserId() : "",
+                        manager != null ? manager.getCurrentLocale() : Locale.getDefault()
+                );
                 if (args != null && args.length > 0) {
-                    loadFav &= (boolean) args[0];
-                    if (args.length > 1) {
-                        feedId = (String) args[1];
+                    int shift = 0;
+                    if (args[0] instanceof RequestLocalParameters) {
+                        localParameters = (RequestLocalParameters) args[0];
+                        shift++;
+                    }
+                    if (args.length > shift) {
+                        loadFav &= (boolean) args[shift];
+                        if (args.length > (1 + shift)) {
+                            feedId = (String) args[1 + shift];
+                        }
                     }
                 }
                 final String sFeedId = feedId;
                 if (loadFav) {
                     final String loadFavUID = ProfilingManager.getInstance().addTask("api_favorite_item");
 
-                    storyDownloader.loadStoryFavoriteList(new NetworkCallback<List<Story>>() {
-                        @Override
-                        public void onSuccess(List<Story> response2) {
-                            ProfilingManager.getInstance().setReady(loadFavUID);
-                            favStories.clear();
-                            favStories.addAll(response2);
-                            favoriteImages.clear();
-                            List<Story> stories = getStoriesListByType(Story.StoryType.COMMON);
-                            synchronized (storiesLock) {
-                                for (Story st : stories) {
-                                    if (st == null) continue;
-                                    for (Story st2 : response2) {
-                                        if (st2 == null) continue;
-                                        if (st2.id == st.id) {
-                                            st.isOpened = true;
-                                            break;
+                    storyDownloader.loadStoryFavoriteList(
+                            new NetworkCallback<List<Story>>() {
+                                @Override
+                                public void onSuccess(List<Story> response2) {
+                                    ProfilingManager.getInstance().setReady(loadFavUID);
+                                    favStories.clear();
+                                    favStories.addAll(response2);
+                                    favoriteImages.clear();
+                                    List<Story> stories = getStoriesListByType(Story.StoryType.COMMON);
+                                    synchronized (storiesLock) {
+                                        for (Story st : stories) {
+                                            if (st == null) continue;
+                                            for (Story st2 : response2) {
+                                                if (st2 == null) continue;
+                                                if (st2.id == st.id) {
+                                                    st.isOpened = true;
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                    }
+                                    if (response2 != null && response2.size() > 0) {
+                                        setLocalsOpened(response2, Story.StoryType.COMMON);
+                                        for (Story story : response2) {
+                                            favoriteImages.add(new FavoriteImage(story.id, story.image, story.backgroundColor));
+                                        }
+                                        if (callback != null) {
+                                            List<Integer> ids = new ArrayList<>();
+                                            for (Story story : response) {
+                                                if (story == null) continue;
+                                                ids.add(story.id);
+                                            }
+                                            callback.setFeedId(sFeedId);
+                                            callback.storiesLoaded(ids);
+                                        }
+                                        if (favCallback != null) {
+                                            favCallback.success(favoriteImages);
+                                        }
+                                    } else {
+                                        if (callback != null) {
+                                            List<Integer> ids = new ArrayList<>();
+                                            for (Story story : response) {
+                                                if (story == null) continue;
+                                                ids.add(story.id);
+                                            }
+                                            callback.setFeedId(sFeedId);
+                                            callback.storiesLoaded(ids);
                                         }
                                     }
                                 }
-                            }
-                            if (response2 != null && response2.size() > 0) {
-                                setLocalsOpened(response2, Story.StoryType.COMMON);
-                                for (Story story : response2) {
-                                    favoriteImages.add(new FavoriteImage(story.id, story.image, story.backgroundColor));
-                                }
-                                if (callback != null) {
-                                    List<Integer> ids = new ArrayList<>();
-                                    for (Story story : response) {
-                                        if (story == null) continue;
-                                        ids.add(story.id);
-                                    }
-                                    callback.setFeedId(sFeedId);
-                                    callback.storiesLoaded(ids);
-                                }
-                                if (favCallback != null) {
-                                    favCallback.success(favoriteImages);
-                                }
-                            } else {
-                                if (callback != null) {
-                                    List<Integer> ids = new ArrayList<>();
-                                    for (Story story : response) {
-                                        if (story == null) continue;
-                                        ids.add(story.id);
-                                    }
-                                    callback.setFeedId(sFeedId);
-                                    callback.storiesLoaded(ids);
-                                }
-                            }
-                        }
 
-                        @Override
-                        public Type getType() {
-                            return new StoryListType();
-                        }
-
-                        @Override
-                        public void errorDefault(String message) {
-                            ProfilingManager.getInstance().setReady(loadFavUID);
-                            if (callback != null) {
-                                List<Integer> ids = new ArrayList<>();
-                                for (Story story : response) {
-                                    if (story == null) continue;
-                                    ids.add(story.id);
+                                @Override
+                                public Type getType() {
+                                    return new StoryListType();
                                 }
-                                callback.setFeedId(sFeedId);
-                                callback.storiesLoaded(ids);
-                            }
-                        }
-                    });
+
+                                @Override
+                                public void errorDefault(String message) {
+                                    ProfilingManager.getInstance().setReady(loadFavUID);
+                                    if (callback != null) {
+                                        List<Integer> ids = new ArrayList<>();
+                                        for (Story story : response) {
+                                            if (story == null) continue;
+                                            ids.add(story.id);
+                                        }
+                                        callback.setFeedId(sFeedId);
+                                        callback.storiesLoaded(ids);
+                                    }
+                                }
+                            },
+                            localParameters
+                    );
                 } else {
                     if (callback != null) {
                         List<Integer> ids = new ArrayList<>();

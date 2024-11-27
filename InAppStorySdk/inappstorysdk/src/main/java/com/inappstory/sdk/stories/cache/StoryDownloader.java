@@ -12,6 +12,7 @@ import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.network.callbacks.SimpleApiCallback;
 import com.inappstory.sdk.network.models.Response;
 import com.inappstory.sdk.stories.api.models.Feed;
+import com.inappstory.sdk.stories.api.models.RequestLocalParameters;
 import com.inappstory.sdk.stories.api.models.Session;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.StoryListType;
@@ -230,7 +231,7 @@ class StoryDownloader {
                     if (SessionManager.getInstance() != null)
                         SessionManager.getInstance().openSession(new OpenSessionCallback() {
                             @Override
-                            public void onSuccess(String sessionId) {
+                            public void onSuccess(RequestLocalParameters requestLocalParameters) {
                                 isRefreshing = false;
                             }
 
@@ -297,7 +298,10 @@ class StoryDownloader {
                                 ApiSettings.getInstance().getTestKey(),
                                 0,
                                 1,
-                                EXPAND_STRING
+                                EXPAND_STRING,
+                                null,
+                                null,
+                                null
                         )
                 );
             }
@@ -310,7 +314,7 @@ class StoryDownloader {
         }
     }
 
-    void loadStoryFavoriteList(final NetworkCallback<List<Story>> callback) {
+    void loadStoryFavoriteList(final NetworkCallback<List<Story>> callback, RequestLocalParameters requestLocalParameters) {
         NetworkClient networkClient = InAppStoryManager.getNetworkClient();
         if (networkClient == null) {
             callback.errorDefault("No network client");
@@ -322,7 +326,10 @@ class StoryDownloader {
                         1,
                         null,
                         "id, background_color, image",
-                        null
+                        null,
+                        requestLocalParameters.userId,
+                        requestLocalParameters.sessionId,
+                        requestLocalParameters.locale
                 ),
                 callback
         );
@@ -348,7 +355,7 @@ class StoryDownloader {
         if (service.isConnected()) {
             SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
                 @Override
-                public void onSuccess(final String sessionId) {
+                public void onSuccess(final RequestLocalParameters requestLocalParameters) {
                     final String loadStoriesUID = ProfilingManager.getInstance().addTask("api_ugc_story_list");
                     networkClient.enqueue(
                             networkClient.getApi().getUgcStories(
@@ -386,10 +393,11 @@ class StoryDownloader {
                                     ProfilingManager.getInstance().setReady(loadStoriesUID);
                                     generateCommonLoadListError(null);
                                     callback.onError(message);
-                                    closeSessionIf424(sessionId);
+                                    closeSessionIf424(requestLocalParameters.sessionId);
                                     loadUgcStoryList(callback, payload);
                                 }
-                            });
+                            },
+                            requestLocalParameters);
                 }
 
                 @Override
@@ -415,7 +423,7 @@ class StoryDownloader {
         if (service.isConnected()) {
             SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
                 @Override
-                public void onSuccess(final String sessionId) {
+                public void onSuccess(final RequestLocalParameters requestLocalParameters) {
                     final String loadStoriesUID = ProfilingManager.getInstance().addTask("api_story_list");
                     networkClient.enqueue(
                             networkClient.getApi().getFeed(
@@ -424,7 +432,10 @@ class StoryDownloader {
                                     0,
                                     service.getTagsString(),
                                     null,
-                                    "stories.slides"
+                                    "stories.slides",
+                                    requestLocalParameters.userId,
+                                    requestLocalParameters.sessionId,
+                                    requestLocalParameters.locale
                             ),
                             new LoadFeedCallback() {
                                 @Override
@@ -434,7 +445,12 @@ class StoryDownloader {
                                         callback.onError("");
                                     } else {
                                         ProfilingManager.getInstance().setReady(loadStoriesUID);
-                                        callback.onSuccess(response.stories, response.hasFavorite(), response.getFeedId());
+                                        callback.onSuccess(
+                                                response.stories,
+                                                requestLocalParameters,
+                                                response.hasFavorite(),
+                                                response.getFeedId()
+                                        );
                                     }
                                 }
 
@@ -451,11 +467,12 @@ class StoryDownloader {
                                     ProfilingManager.getInstance().setReady(loadStoriesUID);
                                     generateCommonLoadListError(null);
                                     callback.onError(message);
-                                    closeSessionIf424(sessionId);
+                                    closeSessionIf424(requestLocalParameters.sessionId);
                                     if (retry)
                                         loadStoryListByFeed(feed, callback, false);
                                 }
-                            });
+                            },
+                            requestLocalParameters);
                 }
 
                 @Override
@@ -482,7 +499,7 @@ class StoryDownloader {
         if (service.isConnected()) {
             SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
                 @Override
-                public void onSuccess(final String sessionId) {
+                public void onSuccess(final RequestLocalParameters requestLocalParameters) {
                     final String loadStoriesUID = ProfilingManager.getInstance().addTask(isFavorite
                             ? "api_favorite_list" : "api_story_list");
                     networkClient.enqueue(
@@ -491,7 +508,10 @@ class StoryDownloader {
                                     isFavorite ? 1 : 0,
                                     isFavorite ? null : service.getTagsString(),
                                     null,
-                                    "slides"
+                                    "slides",
+                                    requestLocalParameters.userId,
+                                    requestLocalParameters.sessionId,
+                                    requestLocalParameters.locale
                             ),
                             new LoadListCallback() {
                                 @Override
@@ -501,7 +521,7 @@ class StoryDownloader {
                                         callback.onError("");
                                     } else {
                                         ProfilingManager.getInstance().setReady(loadStoriesUID);
-                                        callback.onSuccess(response);
+                                        callback.onSuccess(response, requestLocalParameters);
                                     }
                                 }
 
@@ -518,11 +538,12 @@ class StoryDownloader {
                                     ProfilingManager.getInstance().setReady(loadStoriesUID);
                                     generateCommonLoadListError(null);
                                     callback.onError(message);
-                                    closeSessionIf424(sessionId);
+                                    closeSessionIf424(requestLocalParameters.sessionId);
                                     if (retry)
                                         loadStoryList(callback, isFavorite, false);
                                 }
-                            });
+                            },
+                            requestLocalParameters);
                 }
 
                 @Override

@@ -47,10 +47,7 @@ public class UserAgent {
                     "Application/" +
                     appVersionBuild + " (" +
                     appPackageName + " " +
-                    new String(
-                            appVersionName.getBytes(StandardCharsets.ISO_8859_1),
-                            StandardCharsets.ISO_8859_1
-                    ) + ")";
+                    new UrlEncoder().encode(appVersionName) + ")";
         } else {
             userAgent = getDefaultUserAgentString(context);
         }

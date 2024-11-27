@@ -6,6 +6,7 @@ import android.util.Pair;
 import androidx.annotation.WorkerThread;
 
 import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.network.callbacks.Callback;
 import com.inappstory.sdk.network.dummy.DummyApiInterface;
 import com.inappstory.sdk.network.models.Request;
@@ -13,6 +14,7 @@ import com.inappstory.sdk.network.models.Response;
 import com.inappstory.sdk.network.utils.RequestSender;
 import com.inappstory.sdk.network.utils.UserAgent;
 import com.inappstory.sdk.network.utils.headers.Header;
+import com.inappstory.sdk.stories.api.models.RequestLocalParameters;
 import com.inappstory.sdk.stories.api.models.logs.ApiLogRequest;
 import com.inappstory.sdk.stories.api.models.logs.ApiLogRequestHeader;
 
@@ -52,6 +54,7 @@ public class NetworkClient {
         this.networkHandler = new NetworkHandler(baseUrl, this.appContext);
         this.userAgent = new UserAgent().generate(context);
     }
+
     public void clear() {
         apiInterface = null;
     }
@@ -66,6 +69,20 @@ public class NetworkClient {
             }
         });
     }
+
+    public void enqueue(
+            final Request request,
+            final Callback callback,
+            final RequestLocalParameters requestLocalParameters
+    ) {
+        netExecutor.submit(new Callable<Response>() {
+            @Override
+            public Response call() {
+                return execute(request, callback, requestLocalParameters);
+            }
+        });
+    }
+
     @WorkerThread
     public Response execute(Request request) {
         return execute(request, null);
@@ -73,8 +90,18 @@ public class NetworkClient {
 
 
     public static final String NC_IS_UNAVAILABLE = "Network client is unavailable";
+
     @WorkerThread
     public Response execute(Request request, Callback callback) {
+        return execute(request, callback, null);
+    }
+
+    @WorkerThread
+    public Response execute(
+            Request request,
+            Callback callback,
+            RequestLocalParameters requestLocalParameters
+    ) {
         if (request != null) {
             InAppStoryManager.showDLog("AdditionalLog", request.toString());
         }
@@ -85,6 +112,26 @@ public class NetworkClient {
             response.logId = requestId;
             if (callback == null) {
                 return response;
+            }
+            InAppStoryManager manager = InAppStoryManager.getInstance();
+            InAppStoryService service = InAppStoryService.getInstance();
+            if (service == null || manager == null) {
+                response = new Response.Builder().code(-5).errorBody("IAS instance not created or destroyed").build();
+                response.logId = requestId;
+                callback.onFailure(response);
+                return response;
+            } else {
+                RequestLocalParameters currentParameters = new RequestLocalParameters(
+                        service.getSession().getSessionId(),
+                        manager.getUserId(),
+                        manager.getCurrentLocale()
+                );
+                if (requestLocalParameters != null && !requestLocalParameters.equals(currentParameters)) {
+                    response = new Response.Builder().code(-5).errorBody("User id or locale was changed").build();
+                    response.logId = requestId;
+                    callback.onFailure(response);
+                    return response;
+                }
             }
             if (response.code == 204) {
                 callback.onEmptyContent();

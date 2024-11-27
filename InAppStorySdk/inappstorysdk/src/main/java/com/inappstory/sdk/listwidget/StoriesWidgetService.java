@@ -151,6 +151,9 @@ public class StoriesWidgetService extends RemoteViewsService {
                         0,
                         cachedSessionData.tags,
                         null,
+                        null,
+                        null,
+                        null,
                         null
                 ),
                 new NetworkCallback<List<Story>>() {

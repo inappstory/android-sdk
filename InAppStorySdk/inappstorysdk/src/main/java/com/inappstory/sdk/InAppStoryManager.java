@@ -29,6 +29,7 @@ import com.inappstory.sdk.stories.api.models.ExceptionCache;
 import com.inappstory.sdk.stories.api.models.Feed;
 import com.inappstory.sdk.stories.api.models.Image;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
+import com.inappstory.sdk.stories.api.models.RequestLocalParameters;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.StoryPlaceholder;
 import com.inappstory.sdk.stories.api.models.callbacks.GetStoryByIdCallback;
@@ -937,7 +938,7 @@ public class InAppStoryManager {
     public void removeFromFavorite(final int storyId) {
         SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
             @Override
-            public void onSuccess(String sessionId) {
+            public void onSuccess(RequestLocalParameters requestLocalParameters) {
                 favoriteOrRemoveStory(storyId, false);
             }
 
@@ -951,7 +952,7 @@ public class InAppStoryManager {
     public void removeAllFavorites() {
         SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
             @Override
-            public void onSuccess(String sessionId) {
+            public void onSuccess(RequestLocalParameters requestLocalParameters) {
                 favoriteRemoveAll();
             }
 
@@ -1444,7 +1445,9 @@ public class InAppStoryManager {
         Story.StoryType storyType = Story.StoryType.COMMON;
         if (response == null || response.size() == 0) {
             if (CallbackManager.getInstance().getOnboardingLoadCallback() != null) {
-                CallbackManager.getInstance().getOnboardingLoadCallback().onboardingLoad(0, StringsUtils.getNonNull(feed));
+                CallbackManager.getInstance().getOnboardingLoadCallback().onboardingLoad(
+                        0, StringsUtils.getNonNull(feed)
+                );
             }
             return;
         }
@@ -1488,7 +1491,10 @@ public class InAppStoryManager {
                 launchData
         );
         if (CallbackManager.getInstance().getOnboardingLoadCallback() != null) {
-            CallbackManager.getInstance().getOnboardingLoadCallback().onboardingLoad(response.size(), StringsUtils.getNonNull(feed));
+            CallbackManager.getInstance().getOnboardingLoadCallback().onboardingLoad(
+                    response.size(),
+                    StringsUtils.getNonNull(feed)
+            );
         }
     }
 
@@ -1547,7 +1553,7 @@ public class InAppStoryManager {
                 }
                 SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
                     @Override
-                    public void onSuccess(final String sessionId) {
+                    public void onSuccess(final RequestLocalParameters requestLocalParameters) {
                         String localTags = null;
                         if (tags != null) {
                             localTags = TextUtils.join(",", tags);
@@ -1561,7 +1567,10 @@ public class InAppStoryManager {
                                         0,
                                         localTags == null ? getTagsString() : localTags,
                                         null,
-                                        null//"feed_info"
+                                        null,//"feed_info",
+                                        requestLocalParameters.userId,
+                                        requestLocalParameters.sessionId,
+                                        requestLocalParameters.locale
                                 ),
                                 new LoadFeedCallback() {
                                     @Override
@@ -1581,7 +1590,7 @@ public class InAppStoryManager {
                                             });
                                             final StackStoryObserver observer = new StackStoryObserver(
                                                     response.stories,
-                                                    sessionId,
+                                                    requestLocalParameters.sessionId,
                                                     localAppearanceManager,
                                                     localUniqueStackId,
                                                     localFeed,
@@ -1649,7 +1658,8 @@ public class InAppStoryManager {
                                     public void onError(int code, String message) {
                                         stackFeedResult.error();
                                     }
-                                }
+                                },
+                                requestLocalParameters
                         );
                     }
 
@@ -1685,7 +1695,7 @@ public class InAppStoryManager {
 
                 SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
                     @Override
-                    public void onSuccess(final String sessionId) {
+                    public void onSuccess(final RequestLocalParameters requestLocalParameters) {
                         String localTags = null;
                         if (tags != null) {
                             localTags = TextUtils.join(",", tags);
@@ -1703,7 +1713,10 @@ public class InAppStoryManager {
                                         localFeed,
                                         ApiSettings.getInstance().getTestKey(),
                                         limit,
-                                        localTags == null ? getTagsString() : localTags
+                                        localTags == null ? getTagsString() : localTags,
+                                        requestLocalParameters.userId,
+                                        requestLocalParameters.sessionId,
+                                        requestLocalParameters.locale
                                 ),
                                 new LoadFeedCallback() {
                                     @Override
@@ -1727,7 +1740,13 @@ public class InAppStoryManager {
                                                 if (add) notOpened.add(story);
                                             }
                                         }
-                                        showLoadedOnboardings(notOpened, outerContext, manager, sessionId, localFeed);
+                                        showLoadedOnboardings(
+                                                notOpened,
+                                                outerContext,
+                                                manager,
+                                                requestLocalParameters.sessionId,
+                                                localFeed
+                                        );
                                     }
 
                                     @Override
@@ -1741,7 +1760,9 @@ public class InAppStoryManager {
                                         ProfilingManager.getInstance().setReady(onboardUID);
                                         loadOnboardingError(localFeed);
                                     }
-                                });
+                                },
+                                requestLocalParameters
+                        );
                     }
 
                     @Override

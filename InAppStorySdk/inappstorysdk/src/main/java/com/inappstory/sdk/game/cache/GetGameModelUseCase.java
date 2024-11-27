@@ -7,6 +7,7 @@ import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.stories.api.models.GameCenterData;
 import com.inappstory.sdk.stories.api.models.GameLaunchConfigObject;
+import com.inappstory.sdk.stories.api.models.RequestLocalParameters;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.utils.SessionManager;
 
@@ -28,7 +29,7 @@ public class GetGameModelUseCase {
             demoMode = false;
         SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
             @Override
-            public void onSuccess(String sessionId) {
+            public void onSuccess(RequestLocalParameters requestLocalParameters) {
                 networkClient.enqueue(
                         networkClient.getApi().getGameByInstanceId(gameId, new GameLaunchConfigObject(demoMode)),
                         new NetworkCallback<GameCenterData>() {
@@ -60,7 +61,8 @@ public class GetGameModelUseCase {
                             public void timeoutError() {
                                 callback.onError("Game loading run out of time");
                             }
-                        }
+                        },
+                        requestLocalParameters
                 );
             }
 

@@ -23,6 +23,7 @@ import com.inappstory.sdk.network.AppVersion;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.stories.api.models.CachedSessionData;
+import com.inappstory.sdk.stories.api.models.RequestLocalParameters;
 import com.inappstory.sdk.stories.api.models.SessionRequestFields;
 import com.inappstory.sdk.stories.api.models.SessionResponse;
 import com.inappstory.sdk.stories.api.models.StatisticPermissions;
@@ -68,12 +69,17 @@ public class SessionManager {
             checkOpen = openProcess;
         }
         InAppStoryService service = InAppStoryService.getInstance();
-        if (service != null && service.isConnected()) {
+        InAppStoryManager manager = InAppStoryManager.getInstance();
+        if (service != null && service.isConnected() && manager != null) {
             String session = service.getSession().getSessionId();
             if (session.isEmpty() || checkOpen) {
                 openSession(callback);
             } else {
-                callback.onSuccess(session);
+                callback.onSuccess(new RequestLocalParameters(
+                        session,
+                        manager.getUserId(),
+                        manager.getCurrentLocale()
+                ));
             }
         } else {
             if (callback != null)
@@ -113,10 +119,18 @@ public class SessionManager {
             @Override
             public void run() {
                 synchronized (openProcessLock) {
+                    InAppStoryManager manager = InAppStoryManager.getInstance();
+
                     openProcess = false;
-                    for (OpenSessionCallback localCallback : callbacks)
-                        if (localCallback != null)
-                            localCallback.onSuccess(response.session.id);
+                    if (manager != null) {
+                        for (OpenSessionCallback localCallback : callbacks)
+                            if (localCallback != null)
+                                localCallback.onSuccess(new RequestLocalParameters(
+                                        response.session.id,
+                                        manager.getUserId(),
+                                        manager.getCurrentLocale()
+                                ));
+                    }
                     callbacks.clear();
                 }
                 InAppStoryService.useInstance(new UseServiceInstanceCallback() {

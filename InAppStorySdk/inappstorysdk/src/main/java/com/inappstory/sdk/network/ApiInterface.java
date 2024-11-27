@@ -56,7 +56,10 @@ public interface ApiInterface {
             @Query("favorite") Integer favorite,
             @Query("tags") String tags,
             @Query("fields") String fields,
-            @Query("expand") String expand);
+            @Query("expand") String expand,
+            @ReplaceHeader(HeadersKeys.USER_ID) String xUserId,
+            @ReplaceHeader(HeadersKeys.AUTH_SESSION_ID) String xSessionId,
+            @ReplaceHeader(HeadersKeys.ACCEPT_LANGUAGE) String lang);
 
 
     @GET("v2/feed/{feed}")
@@ -66,7 +69,10 @@ public interface ApiInterface {
             @Query("favorite") Integer favorite,
             @Query("tags") String tags,
             @Query("fields") String fields,
-            @Query("expand") String expand
+            @Query("expand") String expand,
+            @ReplaceHeader(HeadersKeys.USER_ID) String xUserId,
+            @ReplaceHeader(HeadersKeys.AUTH_SESSION_ID) String xSessionId,
+            @ReplaceHeader(HeadersKeys.ACCEPT_LANGUAGE) String lang
     );
 
 
@@ -75,7 +81,10 @@ public interface ApiInterface {
             @Path("feed") String feed,
             @Query("test") String test,
             @Query("limit") Integer limit,
-            @Query("tags") String tags
+            @Query("tags") String tags,
+            @ReplaceHeader(HeadersKeys.USER_ID) String xUserId,
+            @ReplaceHeader(HeadersKeys.AUTH_SESSION_ID) String xSessionId,
+            @ReplaceHeader(HeadersKeys.ACCEPT_LANGUAGE) String lang
     );
 
 
@@ -85,7 +94,10 @@ public interface ApiInterface {
             @Query("test") String test,
             @Query("once") Integer once,
             @Query("src_list") Integer srcList,
-            @Query("expand") String expand
+            @Query("expand") String expand,
+            @ReplaceHeader(HeadersKeys.USER_ID) String xUserId,
+            @ReplaceHeader(HeadersKeys.AUTH_SESSION_ID) String xSessionId,
+            @ReplaceHeader(HeadersKeys.ACCEPT_LANGUAGE) String lang
     );
 
     @GET("stat/{event_name}")

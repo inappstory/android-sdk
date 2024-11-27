@@ -169,12 +169,22 @@ public final class NetworkHandler implements InvocationHandler {
         if (!excludeList.contains(HeadersKeys.APP_PACKAGE_ID))
             resHeaders.add(new XAppPackageIdHeader(context));
         if (!excludeList.contains(HeadersKeys.AUTH_SESSION_ID)) {
-            synchronized (sessionLock) {
-                if (sessionId != null && !sessionId.isEmpty()) {
-                    resHeaders.add(new AuthSessionIdHeader(sessionId));
-                } else {
-                    InAppStoryManager.showDLog("AdditionalLog", "Session not set");
-                    throw new RuntimeException("Wrong session");
+            boolean hasSessionReplace = false;
+            for (Pair<String, String> replaceHeader : replaceHeaders) {
+                if (replaceHeader.first.equals(HeadersKeys.AUTH_SESSION_ID) && replaceHeader.second != null) {
+                    resHeaders.add(new AuthSessionIdHeader(replaceHeader.second));
+                    hasSessionReplace = true;
+                    break;
+                }
+            }
+            if (!hasSessionReplace) {
+                synchronized (sessionLock) {
+                    if (sessionId != null && !sessionId.isEmpty()) {
+                        resHeaders.add(new AuthSessionIdHeader(sessionId));
+                    } else {
+                        InAppStoryManager.showDLog("AdditionalLog", "Session not set");
+                        throw new RuntimeException("Wrong session");
+                    }
                 }
             }
         }
@@ -191,9 +201,12 @@ public final class NetworkHandler implements InvocationHandler {
         for (Header header : resHeaders) {
             if (header instanceof MutableHeader) {
                 for (Pair<String, String> replaceHeader : replaceHeaders) {
-                    if (header.getKey().equals(replaceHeader.first)) {
+                    if (header.getKey().equals(replaceHeader.first) && replaceHeader.second != null) {
                         ((MutableHeader) header).setValue(replaceHeader.second);
                     }
+                }
+                if (header.getKey().equals(HeadersKeys.USER_ID)) {
+                    ((MutableHeader) header).setValue(new UrlEncoder().encode(header.getValue()));
                 }
             }
         }
