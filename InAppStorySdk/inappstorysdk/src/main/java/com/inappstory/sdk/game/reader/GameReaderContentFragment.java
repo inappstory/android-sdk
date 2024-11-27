@@ -71,6 +71,7 @@ import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.utils.HostFromSecretKey;
+import com.inappstory.sdk.network.utils.UrlEncoder;
 import com.inappstory.sdk.network.utils.UserAgent;
 import com.inappstory.sdk.share.IASShareData;
 import com.inappstory.sdk.share.IASShareManager;
@@ -1161,7 +1162,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         if (inAppStoryManager != null) {
             options.apiKey = inAppStoryManager.getApiKey();
             options.userId = StringsUtils.getEscapedString(
-                    inAppStoryManager.getUserId()
+                    new UrlEncoder().encode(inAppStoryManager.getUserId())
             );
             options.lang = inAppStoryManager.getCurrentLocale().toLanguageTag();
         } else {

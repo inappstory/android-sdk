@@ -9,6 +9,8 @@ public class UrlEncoder {
         try {
             return URLEncoder.encode(toEncode, StandardCharsets.UTF_8.name());
         } catch (UnsupportedEncodingException e) {
+        } catch (Exception e) {
+
         }
         return toEncode;
     }
