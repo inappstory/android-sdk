@@ -46,24 +46,24 @@ public class SessionAssetUseCase extends GetCacheFileUseCase<Void> {
     }
 
     private void logSessionAsset(String logMessage) {
-      //  Log.e("SessionAsset", logMessage);
+        //  Log.e("SessionAsset", logMessage);
 
     }
 
     private void downloadFile() {
-     //   Log.e("SessionAssetsIsReady", cacheObject.url + " Download");
+        //   Log.e("SessionAssetsIsReady", cacheObject.url + " Download");
         downloadLog.sendRequestLog();
         downloadLog.generateResponseLog(false, filePath);
         FinishDownloadFileCallback callback = new FinishDownloadFileCallback() {
             @Override
             public void finish(DownloadFileState fileState) {
-               // logSessionAsset(cacheObject.url + " Download callback");
+                // logSessionAsset(cacheObject.url + " Download callback");
                 if (fileState == null) {
                     useCaseCallback.onError("Can't download bundle file: " + cacheObject.url);
                     return;
                 }
 
-        //        Log.e("SessionAssetsIsReady", cacheObject.url + " Success");
+                //        Log.e("SessionAssetsIsReady", cacheObject.url + " Success");
                 useCaseCallback.onSuccess(fileState.file);
             }
         };
@@ -72,7 +72,7 @@ public class SessionAssetUseCase extends GetCacheFileUseCase<Void> {
                 new FinishDownloadFileCallback() {
                     @Override
                     public void finish(DownloadFileState fileState) {
-            //            Log.e("SessionAssetsIsReady", cacheObject.url + " FirstCallback");
+                        //            Log.e("SessionAssetsIsReady", cacheObject.url + " FirstCallback");
                         logSessionAsset(cacheObject.url + " Download finished: " + fileState);
                         downloadLog.sendResponseLog();
                         CacheJournalItem cacheJournalItem = generateCacheItem();
@@ -87,24 +87,23 @@ public class SessionAssetUseCase extends GetCacheFileUseCase<Void> {
                 },
                 callback
         )) {
-            filesDownloadManager.useBundleDownloader(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        Downloader.downloadFile(
-                                cacheObject.url,
-                                new File(filePath),
-                                null,
-                                downloadLog.responseLog,
-                                null,
-                                filesDownloadManager
-                        );
+            try {
+                long time = System.currentTimeMillis();
+               // Log.e("SessionAssetsDownloadU", cacheObject.url + " " + System.currentTimeMillis() + " load");
+                File file = new File(filePath);
+                Downloader.downloadFileWithLogs(
+                        cacheObject.url,
+                        file,
+                        null,
+                        downloadLog.responseLog,
+                        null,
+                        filesDownloadManager
+                );
 
-                    } catch (Exception e) {
-                        useCaseCallback.onError(e.getMessage());
-                    }
-                }
-            });
+                Log.e("SessionAssetsDownloadU", cacheObject.url + " Download time: " + (System.currentTimeMillis()-time) + "; File length: " + file.length());
+            } catch (Exception e) {
+                useCaseCallback.onError(e.getMessage());
+            }
         }
     }
 
@@ -114,44 +113,41 @@ public class SessionAssetUseCase extends GetCacheFileUseCase<Void> {
         getLocalFile(new Runnable() {
             @Override
             public void run() {
+
                 downloadFile();
+
             }
         });
         return null;
     }
 
     private void getLocalFile(final Runnable error) {
-        filesDownloadManager.useLocalFilesThread(new Runnable() {
-            @Override
-            public void run() {
-                downloadLog.generateRequestLog(cacheObject.url);
+        downloadLog.generateRequestLog(cacheObject.url);
 
-                CacheJournalItem cached = getCache().getJournalItem(uniqueKey);
-                DownloadFileState fileState = null;
-                if (cached != null) {
-                    if (Objects.equals(cached.getSha1(), cacheObject.sha1)) {
-                        fileState = getCache().get(uniqueKey);
-                    } else {
-                        logSessionAsset(cacheObject.url + " SHA1 problem");
-                        deleteCacheKey();
-                    }
-                }
-                if (fileState != null) {
-                    File file = fileState.getFullFile();
-                    if (file != null) {
-                        downloadLog.generateResponseLog(true, filePath);
-                        downloadLog.sendRequestResponseLog();
-                        useCaseCallback.onSuccess(file);
-                        //logSessionAsset(cacheObject.url + " Local cache success");
-                        return;
-                    } else {
-                        deleteCacheKey();
-                    }
-                }
-              //  logSessionAsset(cacheObject.url + " Local cache error");
-                error.run();
+        CacheJournalItem cached = getCache().getJournalItem(uniqueKey);
+        DownloadFileState fileState = null;
+        if (cached != null) {
+            if (Objects.equals(cached.getSha1(), cacheObject.sha1)) {
+                fileState = getCache().get(uniqueKey);
+            } else {
+                logSessionAsset(cacheObject.url + " SHA1 problem");
+                deleteCacheKey();
             }
-        });
+        }
+        if (fileState != null) {
+            File file = fileState.getFullFile();
+            if (file != null) {
+                downloadLog.generateResponseLog(true, filePath);
+                downloadLog.sendRequestResponseLog();
+                useCaseCallback.onSuccess(file);
+                //logSessionAsset(cacheObject.url + " Local cache success");
+                return;
+            } else {
+                deleteCacheKey();
+            }
+        }
+        //  logSessionAsset(cacheObject.url + " Local cache error");
+        error.run();
     }
 
     @Override

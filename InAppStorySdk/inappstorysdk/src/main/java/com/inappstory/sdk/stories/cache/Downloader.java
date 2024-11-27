@@ -281,6 +281,25 @@ public class Downloader {
         );
     }
 
+    public static DownloadFileState downloadFileWithLogs(
+            String url,
+            File outputFile,
+            FileLoadProgressCallback callback,
+            ApiLogResponse apiLogResponse,
+            DownloadInterruption interruption,
+            FilesDownloadManager manager
+    ) throws Exception {
+        return downloadFileWithLogs(url,
+                outputFile,
+                callback,
+                apiLogResponse,
+                interruption,
+                -1,
+                -1,
+                manager
+        );
+    }
+
 
     public static DownloadFileState downloadFile(
             String url,
@@ -297,6 +316,160 @@ public class Downloader {
             return downloadFile(url, outputFile, callback, apiLogResponse, interruption, downloadOffset, downloadLimit, manager);
         }
         return null;
+    }
+
+    public static DownloadFileState downloadFileWithLogs(
+            String url,
+            File outputFile,
+            FileLoadProgressCallback callback,
+            ApiLogResponse apiLogResponse,
+            DownloadInterruption interruption,
+            long downloadOffset,
+            long downloadLimit,
+            FilesDownloadManager manager
+    ) {
+        try {
+            DownloadFileState state = null;
+            InAppStoryManager.showDLog("InAppStory_File", url);
+            outputFile.getParentFile().mkdirs();
+            if (!outputFile.exists())
+                outputFile.createNewFile();
+
+            URL urlS = new URL(url);
+            HttpURLConnection urlConnection = (HttpURLConnection) urlS.openConnection();
+            if (!url.contains("ttf"))
+                urlConnection.setRequestProperty("Accept-Encoding", "br, gzip");
+            urlConnection.setConnectTimeout(300000);
+            urlConnection.setReadTimeout(300000);
+            urlConnection.setRequestMethod("GET");
+            if (InAppStoryManager.getNetworkClient() != null) {
+                urlConnection.setRequestProperty("User-Agent", InAppStoryManager.getNetworkClient().userAgent);
+            }
+            if (downloadOffset > 0) {
+                if (downloadLimit > 0) {
+                    urlConnection.setRequestProperty("Range", "bytes=" + downloadOffset + "-" + downloadLimit);
+                } else {
+                    urlConnection.setRequestProperty("Range", "bytes=" + downloadOffset + "-");
+                }
+            } else {
+                if (downloadLimit > 0) {
+                    urlConnection.setRequestProperty("Range", "bytes=" + 0 + "-" + downloadLimit);
+                }
+            }
+            long time = System.currentTimeMillis();
+            try {
+                urlConnection.connect();
+            } catch (Exception e) {
+                if (manager != null) {
+                    manager.invokeFinishCallbacks(url, null);
+                }
+                return null;
+            }
+            int status = urlConnection.getResponseCode();
+            HashMap<String, String> headers = new HashMap<>();
+
+            long sz = urlConnection.getContentLength();
+
+            long freeSpace = outputFile.getFreeSpace();
+
+            if (freeSpace > 0 && sz > freeSpace) {
+                urlConnection.disconnect();
+                if (manager != null) {
+                    manager.invokeFinishCallbacks(url, null);
+                }
+                return null;
+            }
+            boolean allowPartial = false;
+
+            for (String headerKey : urlConnection.getHeaderFields().keySet()) {
+                if (headerKey == null) continue;
+                if (urlConnection.getHeaderFields().get(headerKey).isEmpty()) continue;
+                headers.put(headerKey, urlConnection.getHeaderFields().get(headerKey).get(0));
+                if (headerKey.equalsIgnoreCase("Content-Range")) {
+                    String rangeHeader = urlConnection.getHeaderFields().get(headerKey).get(0);
+                    if (!rangeHeader.equalsIgnoreCase("none")) {
+                        allowPartial = true;
+                        try {
+                            sz = Long.parseLong(rangeHeader.split("/")[1]);
+                        } catch (Exception e) {
+
+                        }
+                    }
+                }
+            }
+            apiLogResponse.contentLength = sz;
+            String decompression = null;
+            HashMap<String, String> responseHeaders = new ConnectionHeadersMap().get(urlConnection);
+            if (responseHeaders.containsKey("Content-Encoding")) {
+                decompression = responseHeaders.get("Content-Encoding");
+            }
+            if (responseHeaders.containsKey("content-encoding")) {
+                decompression = responseHeaders.get("content-encoding");
+            }
+            ResponseStringFromStream responseStringFromStream = new ResponseStringFromStream();
+
+            if (status > 350) {
+                String res = responseStringFromStream.get(
+                        urlConnection.getErrorStream(),
+                        decompression
+                );
+                apiLogResponse.generateFile(status, res, headers);
+                if (manager != null) {
+                    manager.invokeFinishCallbacks(url, null);
+                }
+                return null;
+            }
+
+            FileOutputStream fileOutputStream = new FileOutputStream(outputFile,
+                    allowPartial && downloadOffset > 0);
+            FileLock lock = fileOutputStream.getChannel().lock();
+            InputStream inputStream = responseStringFromStream.getInputStream(
+                    urlConnection.getInputStream(),
+                    decompression
+            );
+            String contentType = urlConnection.getHeaderField("Content-Type");
+
+            if (contentType != null)
+                KeyValueStorage.saveString(outputFile.getName(), contentType);
+            else
+                KeyValueStorage.saveString(outputFile.getName(), "image/jpeg");
+            byte[] buffer = new byte[1024];
+            int bufferLength = 0;
+            int cnt = 0;
+            try {
+                while ((bufferLength = inputStream.read(buffer)) > 0) {
+                    if (interruption != null && interruption.active) {
+                        releaseStreamAndFile(fileOutputStream, lock);
+                        if (allowPartial)
+                            state = new DownloadFileState(outputFile, sz, outputFile.length());
+                        if (manager != null) {
+                            manager.invokeFinishCallbacks(url, state);
+                        }
+                        return state;
+                    } else {
+                        fileOutputStream.write(buffer, 0, bufferLength);
+                        cnt += bufferLength;
+                        if (callback != null)
+                            callback.onProgress(downloadOffset + cnt, sz);
+                    }
+                }
+                Log.e("SADU", url + " Download time: " + (System.currentTimeMillis() - time) + "; File length: " + sz);
+                releaseStreamAndFile(fileOutputStream, lock);
+                apiLogResponse.generateFile(status, outputFile.getAbsolutePath(), headers);
+                state = new DownloadFileState(outputFile, outputFile.length(), outputFile.length());
+            } catch (Exception e) {
+                releaseStreamAndFile(fileOutputStream, lock);
+                if (allowPartial) {
+                    state = new DownloadFileState(outputFile, sz, outputFile.length());
+                }
+            }
+            if (manager != null) {
+                manager.invokeFinishCallbacks(url, state);
+            }
+            return state;
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     public static DownloadFileState downloadFile(

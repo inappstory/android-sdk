@@ -84,14 +84,21 @@ public class InAppStoryService {
     }
 
     public void downloadSessionAssets(
-            List<SessionAsset> sessionAssets
+            final List<SessionAsset> sessionAssets
     ) {
         if (sessionAssets != null) {
-            sessionHolder.addSessionAssetsKeys(sessionAssets);
-            for (SessionAsset sessionAsset : sessionAssets) {
-            //    Log.e("SessionAssetsIsReady", "Asset: " + sessionAsset);
-                downloadSessionAsset(sessionAsset);
-            }
+            filesDownloadManager.useBundleDownloader(new Runnable() {
+                @Override
+                public void run() {
+                    sessionHolder.addSessionAssetsKeys(sessionAssets);
+                    Log.e("SessionAssetsDownload", System.currentTimeMillis() + "");
+                    for (SessionAsset sessionAsset : sessionAssets) {
+                        downloadSessionAsset(sessionAsset);
+                    }
+                    Log.e("SessionAssetsDownload", System.currentTimeMillis() + " downloaded");
+                    sessionHolder.checkIfSessionAssetsIsReady(filesDownloadManager);
+                }
+            });
         }
     }
 
@@ -107,7 +114,6 @@ public class InAppStoryService {
                     @Override
                     public void onSuccess(File result) {
                         sessionHolder.addSessionAsset(sessionAsset);
-                        sessionHolder.checkIfSessionAssetsIsReady(sessionAsset, filesDownloadManager);
                     }
                 },
                 sessionAsset

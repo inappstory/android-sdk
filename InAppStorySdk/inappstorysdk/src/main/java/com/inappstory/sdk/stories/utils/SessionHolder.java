@@ -189,7 +189,6 @@ public class SessionHolder implements ISessionHolder {
 
     @Override
     public void checkIfSessionAssetsIsReady(
-            SessionAsset sessionAsset,
             FilesDownloadManager filesDownloadManager
     ) {
         Map<String, SessionAsset> localCacheObjects = new HashMap<>();
@@ -199,12 +198,9 @@ public class SessionHolder implements ISessionHolder {
         for (String key : localCacheObjects.keySet()) {
             SessionAsset asset = localCacheObjects.get(key);
             if (asset == null) {
-               /* Log.e("SessionAssetsIsReady", sessionAsset.url + " " + sessionAsset.filename +
-                        "\n" + key);*/
                 return;
             }
         }
-       // Log.e("SessionAssetsIsReady", sessionAsset.url + " " + sessionAsset.filename + " complete");
         List<SessionAsset> assets = new ArrayList<>(localCacheObjects.values());
         checkLocalAsset(
                 filesDownloadManager,
@@ -223,6 +219,7 @@ public class SessionHolder implements ISessionHolder {
                             callback.isReady();
                         }
 
+                        Log.e("SessionAssetsDownload", System.currentTimeMillis() + " stop");
                     }
                 },
                 new Runnable() {
