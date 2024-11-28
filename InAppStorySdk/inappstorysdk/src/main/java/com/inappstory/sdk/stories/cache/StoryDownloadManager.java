@@ -430,7 +430,6 @@ public class StoryDownloadManager {
             @Override
             public DownloadPageFileStatus downloadFile(UrlWithAlter urlWithAlter, SlideTaskData slideTaskData) {
                 try {
-                    Log.e("StoryResources", slideTaskData.storyId + " " + slideTaskData.index + " " + urlWithAlter);
                     InAppStoryService service = InAppStoryService.getInstance();
                     if (service == null) return DownloadPageFileStatus.ERROR;
                     GetCacheFileUseCase<DownloadFileState> useCase =
@@ -468,7 +467,6 @@ public class StoryDownloadManager {
                     long end
             ) {
                 try {
-                    Log.e("StoryResources", slideTaskData.storyId + " " + slideTaskData.index + " " + url);
                     InAppStoryService service = InAppStoryService.getInstance();
                     if (service == null) return DownloadPageFileStatus.ERROR;
                     GetCacheFileUseCase<StoryVODResourceFileUseCaseResult> useCase =
@@ -479,8 +477,6 @@ public class StoryDownloadManager {
                                     start,
                                     end
                             );
-                    Log.e("UrlFile", "DownloadManager: " + start + "-" + end + " " + url);
-
                     StoryVODResourceFileUseCaseResult state = useCase.getFile();
                     if (state != null) {
                         return DownloadPageFileStatus.SUCCESS;

@@ -376,7 +376,6 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         payloadMap.put("response", filesWithTypes);
         String payload = JsonParser.mapToJsonString(payloadMap).replaceAll(Pattern.quote("'"), "\\'");
         String webString = "window." + cbName + "('" + payload + "');";
-        Log.e("webString", webString);
         logMethod("");
         webView.evaluateJavascript(webString, null);
     }
@@ -1290,7 +1289,6 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
     }
 
     private void setLoader(File splashFile) {
-        Log.e("LoaderFile", "Anim " + (splashFile != null ? splashFile.getAbsolutePath() : "empty"));
         progressLoader.launchLoaderAnimation(splashFile);
     }
 

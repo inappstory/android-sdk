@@ -196,7 +196,6 @@ public class ReaderPageFragment extends Fragment {
 
     void setViews(View view) {
         if (InAppStoryService.getInstance() == null) return;
-        Log.e("setViews", story.id + " " + story.slidesCount);
         if (timeline != null) {
             timeline.getTimelineManager().setSlidesCount(story.getSlidesCount(), true);
         }
@@ -216,14 +215,6 @@ public class ReaderPageFragment extends Fragment {
         setOffsets(view);
         if (storiesView != null)
             storiesView.getManager().setIndex(story.lastIndex);
-        if (storiesView instanceof View) {
-            ((View) storiesView).post(new Runnable() {
-                @Override
-                public void run() {
-                    Log.e("storiesViewSize", ((View) storiesView).getHeight() + " " + ((View) storiesView).getWidth());
-                }
-            });
-        }
 
     }
 
@@ -396,13 +387,11 @@ public class ReaderPageFragment extends Fragment {
     }
 
     private void showLoaderContainerAnimated() {
-        Log.e("hideLoader", "showLoaderContainerAnimated");
         loaderContainer.clearAnimation();
         loaderContainer.animate().alpha(1f).setStartDelay(300).setDuration(300).start();
     }
 
     private void hideLoaderContainerAnimated() {
-        Log.e("hideLoader", "hideLoaderContainerAnimated");
         loaderContainer.clearAnimation();
         loaderContainer.animate().alpha(0f).setDuration(300).start();
     }

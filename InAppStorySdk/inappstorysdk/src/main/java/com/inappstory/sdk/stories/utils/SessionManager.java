@@ -382,7 +382,6 @@ public class SessionManager {
                     return;
                 }
 
-                Log.e("statisticTests", "closeSession");
                 networkClient.enqueue(
                         networkClient.getApi().sessionClose(
                                 new StatisticSendObject(

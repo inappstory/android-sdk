@@ -140,7 +140,6 @@ public class StackStoryObserver implements IStackFeedActions {
             stackStoryUpdated.onUpdate(null);
         }
         final Story currentStory = stories.get(newIndex);
-        Log.e("NewStackStoryData", newIndex + " " + currentStory.isOpened());
         Image imageObject = currentStory.getProperImage(appearanceManager.csCoverQuality());
         final String image;
         if (imageObject != null) image = imageObject.getUrl();

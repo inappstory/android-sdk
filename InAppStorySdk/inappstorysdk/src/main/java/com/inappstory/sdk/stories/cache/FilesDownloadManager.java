@@ -58,8 +58,6 @@ public class FilesDownloadManager {
                 isNewUrl = false;
                 callbacksByUrl.add(putToCache);
             }
-            if (url.contains("/assets/"))
-                Log.e("InvokeFileDownload", url + " Add " + isNewUrl);
             return isNewUrl;
         }
     }
@@ -79,8 +77,6 @@ public class FilesDownloadManager {
                 isNewUrl = false;
                 callbacksByUrl.add(callback);
             }
-            if (url.contains("/assets/"))
-                Log.e("InvokeFileDownload", url + " Add " + isNewUrl);
             return isNewUrl;
         }
     }
@@ -88,8 +84,6 @@ public class FilesDownloadManager {
     public void invokeFinishCallbacks(String url, DownloadFileState state) {
         List<FinishDownloadFileCallback> callbacks = new ArrayList<>();
         synchronized (finishLock) {
-            if (url.contains("/assets/"))
-                Log.e("InvokeFileDownload", url + " Finish");
             List<FinishDownloadFileCallback> localCallbacks = downloadFileCallbacks.get(url);
             if (localCallbacks != null) {
                 callbacks.addAll(localCallbacks);

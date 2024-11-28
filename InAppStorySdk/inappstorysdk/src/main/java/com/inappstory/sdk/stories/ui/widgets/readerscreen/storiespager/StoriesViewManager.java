@@ -361,7 +361,6 @@ public class StoriesViewManager {
             isVideo = false;
         }
 
-        Log.e("JS_method_call", "setWebViewSettings " + story.id + " " + index);
         converter.replaceDataAndLoad(innerWebData, story, index, layout, callback);
     }
 
@@ -378,7 +377,6 @@ public class StoriesViewManager {
     }
 
     public void clearStoriesView() {
-        Log.e("clearStoriesView", "clearStoriesView " + (showLoader != null) + " " + (showRefresh != null));
         this.storiesView = null;
         this.context = null;
         synchronized (latestIndexLock) {
@@ -753,13 +751,11 @@ public class StoriesViewManager {
     }
 
     public void changeIndex(int index) {
-        Log.e("changeIndex", index + "");
         pageManager.openSlideByIndex(index, false);
     }
 
 
     public void changeIndexWithStoryNavigation(int index) {
-        Log.e("changeIndex", index + "");
         pageManager.openSlideByIndex(index, true);
     }
 

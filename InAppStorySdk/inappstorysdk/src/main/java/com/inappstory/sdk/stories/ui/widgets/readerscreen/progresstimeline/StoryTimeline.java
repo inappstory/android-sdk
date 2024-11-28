@@ -68,14 +68,12 @@ public class StoryTimeline extends View {
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
-        Log.e("StoryTimeline", "Attach " + this);
         timelineManager.setHost(this);
     }
 
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
-        Log.e("StoryTimeline", "Detach " + this);
         timelineManager.setHost(null);
     }
 
@@ -96,8 +94,6 @@ public class StoryTimeline extends View {
                 (state.slidesCount == 1 && state.timerDuration == 0)
                         || state.isHidden
         ) ? VISIBLE : INVISIBLE;
-        if (localVisibility == 0)
-            Log.e("StoryTimelineState", localVisibility + " " + state);
         if (Looper.myLooper() == Looper.getMainLooper()) {
             setVisibility(localVisibility);
         } else {

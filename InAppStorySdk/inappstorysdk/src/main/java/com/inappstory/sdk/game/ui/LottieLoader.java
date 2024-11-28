@@ -68,7 +68,6 @@ public class LottieLoader implements IGameReaderLoaderView {
 
     @Override
     public void setProgress(int progress, int max) {
-        Log.e("LottieLoader", progress + " " + max + " " + lottieView.isLooped());
         if (lottieView == null) return;
         if (lottieView.isLooped()) {
             if (!launchedLoopedAnimation) {

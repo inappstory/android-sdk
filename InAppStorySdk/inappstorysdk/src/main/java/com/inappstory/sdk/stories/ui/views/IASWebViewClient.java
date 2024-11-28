@@ -83,9 +83,7 @@ public class IASWebViewClient extends WebViewClient {
                 HashMap<String, String> newHeaders = new HashMap<>(currentHeaders);
                 newHeaders.put("Access-Control-Allow-Origin", "*");
                 response.setResponseHeaders(newHeaders);
-                Log.e("GameInterceptRequest", "FileExist " + file.getAbsolutePath());
             } catch (Exception e) {
-                Log.e("GameInterceptRequest", "Exception :" + e.getCause() + "\n" + e.getMessage());
                 InAppStoryService.createExceptionLog(e);
             }
         }
@@ -98,7 +96,6 @@ public class IASWebViewClient extends WebViewClient {
         int indexOf = url.indexOf(vodAsset);
         if (indexOf > -1) {
             String key = url.substring(indexOf + vodAsset.length());
-            Log.e("VOD_req", key);
             Map<String, String> headers = request.getRequestHeaders();
             String rangeHeader = headers.get("range");
             WebResourceResponse response = getWebResourceResponse(rangeHeader, key);
@@ -125,7 +122,6 @@ public class IASWebViewClient extends WebViewClient {
             range = new ContentRange(0, item.getFullSize(), item.getFullSize());
         }
 
-        Log.e("WebProfiling", "getWebResourceResponse Req " + item.getUrl() + " " + rangeHeader + " " + System.currentTimeMillis());
         try {
             StoryVODResourceFileUseCaseResult res = new StoryVODResourceFileUseCase(
                     service.getFilesDownloadManager(),
@@ -140,9 +136,6 @@ public class IASWebViewClient extends WebViewClient {
             String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(
                     MimeTypeMap.getFileExtensionFromUrl(item.getUrl())
             );
-            Log.e("VODTest", item.getUrl() + " " + range.start() + " " + range.end());
-
-
             WebResourceResponse response = new WebResourceResponse(
                     mimeType,
                     "BINARY",
@@ -152,9 +145,6 @@ public class IASWebViewClient extends WebViewClient {
             Map<String, String> currentHeaders = response.getResponseHeaders();
             if (currentHeaders == null) currentHeaders = new HashMap<>();
             HashMap<String, String> newHeaders = new HashMap<>(currentHeaders);
-            Log.e("VOD_Resource", item.getUrl() + " " +
-                    (range.start() + "-" + range.end() + "/" + range.length())
-                    + " Cached:" + res.cached());
             if (res.cached())
                 newHeaders.put("X-VOD-From-Cache", "");
             newHeaders.put("Access-Control-Allow-Origin", "*");
@@ -171,7 +161,6 @@ public class IASWebViewClient extends WebViewClient {
 
     @Override
     public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
-        Log.e("GameInterceptRequest", request.getUrl().toString());
         try {
             WebResourceResponse response = parseVODRequest(request);
             if (response == null)

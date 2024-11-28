@@ -228,7 +228,6 @@ public class ReaderPageManager {
                 case "json":
                     if (object.getType() != null && !object.getType().isEmpty()) {
                         if ("swipeUpItems".equals(object.getType())) {
-                            Log.e("GoodsTimerCheck", "openGoodsFromJS");
                             if (story != null)
                                 showGoods(object.getLink().getTarget(), object.getElementId(),
                                         getSlideData(story)
@@ -315,7 +314,6 @@ public class ReaderPageManager {
             timerManager.pauseSlideTimer();
             timelineManager.stopTimer();
         }
-        Log.e("GoodsTimerCheck", "call slide pause");
         webViewManager.pauseStory();
     }
 
