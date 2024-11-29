@@ -54,6 +54,7 @@ public final class BottomSheetContentContainer extends IAMContentContainer<InApp
 
     @Override
     protected void init(Context context) {
+        super.init(context);
         CoordinatorLayout coordinatorLayout = new CoordinatorLayout(context);
         coordinatorLayout.setLayoutParams(new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
@@ -109,7 +110,6 @@ public final class BottomSheetContentContainer extends IAMContentContainer<InApp
         });
         coordinatorLayout.addView(roundedCornerLayout);
         addView(coordinatorLayout);
-        setId(CONTAINER_ID);
         if (appearance != null) appearance(appearance);
     }
 

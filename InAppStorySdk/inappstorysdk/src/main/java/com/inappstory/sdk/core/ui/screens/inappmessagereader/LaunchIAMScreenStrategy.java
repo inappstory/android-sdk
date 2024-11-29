@@ -175,13 +175,13 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
         InAppMessageAppearance appearance;
         switch (inAppMessage.screenType()) {
             case MODAL:
-                appearance = new InAppMessageModalSettings();
+                appearance = new InAppMessageFullscreenSettings();
                 break;
             case FULLSCREEN:
                 appearance = new InAppMessageFullscreenSettings();
                 break;
             default:
-                appearance = new InAppMessageBottomSheetSettings();
+                appearance = new InAppMessageFullscreenSettings();
                 break;
         }
         inAppMessageScreenActions.readerIsOpened();
