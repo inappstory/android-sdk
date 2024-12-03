@@ -12,6 +12,7 @@ import android.os.Looper;
 import android.text.TextUtils;
 import android.util.Log;
 import android.util.Pair;
+import android.webkit.CookieManager;
 
 import androidx.annotation.NonNull;
 
@@ -109,6 +110,15 @@ public class InAppStoryManager {
         synchronized (lock) {
             if (INSTANCE == null) return null;
             return INSTANCE.networkClient;
+        }
+    }
+
+    private static boolean isWebViewEnabled() {
+        try {
+            CookieManager.getInstance();
+            return true;
+        } catch (Exception e) {
+            return false;
         }
     }
 
@@ -868,8 +878,18 @@ public class InAppStoryManager {
                 }
             }
         if (!(context instanceof Application)) calledFromApplication = false;
-        if (!calledFromApplication)
+        if (!calledFromApplication) {
             showELog(IAS_ERROR_TAG, "Method must be called from Application class and context has to be an applicationContext");
+            return;
+        }
+        if (!isWebViewEnabled()) {
+            showELog(
+                    IAS_ERROR_TAG,
+                    "Can't find chromium WebView on current device." +
+                            " SDK can't work correctly without it and won't be initialized"
+            );
+            return;
+        }
         synchronized (lock) {
             if (INSTANCE == null) {
                 INSTANCE = new InAppStoryManager(context);
