@@ -15,6 +15,7 @@ import com.inappstory.sdk.core.ui.screens.holder.IScreensHolder;
 import com.inappstory.sdk.core.ui.screens.launcher.ILaunchScreenCallback;
 import com.inappstory.sdk.core.ui.screens.launcher.LaunchScreenStrategy;
 import com.inappstory.sdk.core.ui.screens.ScreenType;
+import com.inappstory.sdk.core.ui.screens.storyreader.StoryScreenHolder;
 import com.inappstory.sdk.inappmessage.InAppMessageScreenActions;
 import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderState;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageAppearance;
@@ -28,7 +29,6 @@ import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenReader;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenStoriesReader;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
@@ -73,13 +73,14 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
     ) {
         checkIfMessageCanBeOpened(new CheckLocalIAMCallback() {
             @Override
-            public void success(IInAppMessage inAppMessage) {
+            public void success(IInAppMessage inAppMessage, boolean contentIsPreloaded) {
                 SourceType sourceType = SourceType.IN_APP_MESSAGES;
                 if (inAppMessageOpenSettings.id() != null)
                     sourceType = SourceType.SINGLE_IN_APP_MESSAGE;
                 launchScreenSuccess(
                         sourceType,
                         inAppMessage,
+                        contentIsPreloaded,
                         openReader,
                         screensHolders
                 );
@@ -122,25 +123,30 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
             return;
         }
         final IReaderContent readerContent = getLocalReaderContent();
+        final InAppMessageDownloadManager downloadManager = core.contentLoader().inAppMessageDownloadManager();
+        boolean contentIsPreloaded = readerContent != null &&
+                downloadManager.allSlidesLoaded(readerContent) &&
+                        downloadManager.allBundlesLoaded();
         if (inAppMessageOpenSettings.showOnlyIfLoaded()) {
-            InAppMessageDownloadManager downloadManager = core.contentLoader().inAppMessageDownloadManager();
-            if (readerContent != null &&
-                    downloadManager.allSlidesLoaded(readerContent) && downloadManager.allBundlesLoaded()) {
-                loadScreen.success((IInAppMessage) readerContent);
+            if (contentIsPreloaded) {
+                loadScreen.success((IInAppMessage) readerContent, true);
             } else {
                 launchScreenError("Need to preload InAppMessages and session bundles first");
             }
         } else {
             if (readerContent != null) {
-                loadScreen.success((IInAppMessage) readerContent);
+                loadScreen.success((IInAppMessage) readerContent, contentIsPreloaded);
             } else {
                 new InAppMessagesUseCase(core).get(
                         new InAppMessageFeedCallback() {
                             @Override
                             public void success(List<IReaderContent> content) {
                                 IReaderContent readerContent = getLocalReaderContent();
+                                boolean contentIsPreloaded =
+                                        downloadManager.allSlidesLoaded(readerContent) &&
+                                                downloadManager.allBundlesLoaded();
                                 if (readerContent != null)
-                                    loadScreen.success((IInAppMessage) readerContent);
+                                    loadScreen.success((IInAppMessage) readerContent, contentIsPreloaded);
                                 else
                                     launchScreenError(
                                             "Can't load InAppMessage with settings: [id: "
@@ -168,20 +174,33 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
     private void launchScreenSuccess(
             SourceType sourceType,
             IInAppMessage inAppMessage,
+            boolean contentIsPreloaded,
             IOpenReader openReader,
             IScreensHolder screensHolders
     ) {
-        //TODO check if another readers is opened
+        boolean cantBeOpened = screensHolders.hasActiveScreen();
+        if (cantBeOpened) {
+            String message = "InAppMessage reader can't be opened. Please, close another opened reader first.";
+            launchScreenError(message);
+            return;
+        }
+        cantBeOpened = core.sessionManager().getSession().getSessionId().isEmpty();
+        if (cantBeOpened) {
+            String message = "Session is not opened.";
+            launchScreenError(message);
+            return;
+        }
+        if (!(openReader instanceof IOpenInAppMessageReader)) return;
         InAppMessageAppearance appearance;
         switch (inAppMessage.screenType()) {
             case MODAL:
-                appearance = new InAppMessageFullscreenSettings();
+                appearance = new InAppMessageModalSettings();
                 break;
             case FULLSCREEN:
-                appearance = new InAppMessageFullscreenSettings();
+                appearance = new InAppMessageModalSettings();
                 break;
             default:
-                appearance = new InAppMessageFullscreenSettings();
+                appearance = new InAppMessageModalSettings();
                 break;
         }
         inAppMessageScreenActions.readerIsOpened();
@@ -189,6 +208,7 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
                 new IAMReaderState()
                         .sourceType(sourceType)
                         .iamId(inAppMessage.id())
+                        .contentIsPreloaded(contentIsPreloaded)
                         .showOnlyIfLoaded(inAppMessageOpenSettings.showOnlyIfLoaded())
                         .appearance(appearance)
         );

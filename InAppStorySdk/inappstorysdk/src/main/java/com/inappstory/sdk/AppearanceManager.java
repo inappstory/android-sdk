@@ -3,8 +3,10 @@ package com.inappstory.sdk;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
 
 import androidx.annotation.NonNull;
@@ -1043,21 +1045,26 @@ public class AppearanceManager {
         return AppearanceManager.this;
     }
 
-    public static View getLoader(Context context) {
+    public static View getLoader(Context context, int color) {
         if (commonInstance != null) {
-            RelativeLayout.LayoutParams relativeParams;
+            FrameLayout.LayoutParams relativeParams;
             View v = null;
             if (commonInstance.csStoryLoaderView() != null) {
                 v = commonInstance.csStoryLoaderView().getView(context);
             }
             if (v != null) {
-                relativeParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-                relativeParams.addRule(RelativeLayout.CENTER_IN_PARENT);
+                relativeParams = new FrameLayout.LayoutParams(
+                        ViewGroup.LayoutParams.WRAP_CONTENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT
+                );
+                relativeParams.gravity = Gravity.CENTER;
                 v.setLayoutParams(relativeParams);
                 return v;
             }
         }
-        return new LoadProgressBar(context);
+        LoadProgressBar v = new LoadProgressBar(context);
+        v.setColor(color);
+        return v;
     }
 
 }

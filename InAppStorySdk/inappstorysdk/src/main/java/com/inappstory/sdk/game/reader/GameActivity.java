@@ -19,6 +19,7 @@ import com.inappstory.sdk.UseManagerInstanceCallback;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.ui.screens.gamereader.BaseGameScreen;
+import com.inappstory.sdk.core.utils.ColorUtils;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.GameReaderAppearanceSettings;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.GameReaderLaunchData;
 import com.inappstory.sdk.stories.ui.utils.FragmentAction;
@@ -65,12 +66,7 @@ public class GameActivity extends AppCompatActivity implements BaseGameScreen {
         getWindow().setStatusBarColor(Color.parseColor(color));
         WindowInsetsControllerCompat windowInsetsController =
                 WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
-        int rgb = getWindow().getStatusBarColor();   // convert rrggbb to decimal
-        int r = (rgb >> 16) & 0xff;  // extract red
-        int g = (rgb >> 8) & 0xff;  // extract green
-        int b = (rgb) & 0xff;  // extract blue
-
-        float bright = 0.2126f * r + 0.7152f * g + 0.0722f * b;
+        double bright = ColorUtils.getColorBright(getWindow().getStatusBarColor());
         windowInsetsController.setAppearanceLightStatusBars(bright > 40);
         /*if ((getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_NO)
             windowInsetsController.setAppearanceLightStatusBars(true);

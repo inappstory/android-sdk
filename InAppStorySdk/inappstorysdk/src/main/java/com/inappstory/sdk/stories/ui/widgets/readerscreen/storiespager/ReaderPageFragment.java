@@ -29,6 +29,7 @@ import android.view.DisplayCutout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -517,11 +518,11 @@ public class ReaderPageFragment extends Fragment {
 
     private void createLoader() {
         Context context = getContext();
-        loader = new RelativeLayout(context);
+        loader = new FrameLayout(context);
         loader.setLayoutParams(new ViewGroup.LayoutParams(MATCH_PARENT,
                 MATCH_PARENT));
         loader.setElevation(8);
-        ((ViewGroup) loader).addView(AppearanceManager.getLoader(context));
+        ((ViewGroup) loader).addView(AppearanceManager.getLoader(context, Color.WHITE));
     }
 
 

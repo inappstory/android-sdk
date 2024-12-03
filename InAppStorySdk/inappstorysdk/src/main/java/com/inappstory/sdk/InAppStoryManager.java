@@ -26,6 +26,9 @@ import com.inappstory.sdk.core.api.IASStatisticStoriesV1;
 import com.inappstory.sdk.inappmessage.InAppMessageLoadCallback;
 import com.inappstory.sdk.inappmessage.InAppMessageOpenSettings;
 import com.inappstory.sdk.inappmessage.InAppMessageScreenActions;
+import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderState;
+import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderUIStates;
+import com.inappstory.sdk.inappmessage.domain.reader.IIAMReaderViewModel;
 import com.inappstory.sdk.lrudiskcache.CacheSize;
 import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.utils.HostFromSecretKey;
@@ -246,6 +249,16 @@ public class InAppStoryManager {
                 }
             }
         });
+    }
+
+    public boolean handleBackPressed() {
+        IIAMReaderViewModel iamReaderViewModel = core.screensManager().iamReaderViewModel();
+        IAMReaderState state = iamReaderViewModel.getCurrentState();
+        if (!state.uiState.equals(IAMReaderUIStates.CLOSED)) {
+            core.screensManager().getIAMScreenHolder().closeScreen();
+            return true;
+        }
+        return false;
     }
 
 

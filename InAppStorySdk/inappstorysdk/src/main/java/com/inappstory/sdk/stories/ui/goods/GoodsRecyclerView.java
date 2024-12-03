@@ -2,6 +2,7 @@ package com.inappstory.sdk.stories.ui.goods;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.view.View;
@@ -68,7 +69,7 @@ public class GoodsRecyclerView extends FrameLayout implements GetGoodsDataCallba
                 new PorterDuffColorFilter(iGoodsWidgetAppearance.getCloseButtonColor(),
                         PorterDuff.Mode.SRC_ATOP)
         );
-        loaderContainer.addView(AppearanceManager.getLoader(context));
+        loaderContainer.addView(AppearanceManager.getLoader(context, Color.WHITE));
         loaderContainer.setVisibility(View.VISIBLE);
     }
 

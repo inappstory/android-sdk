@@ -2,7 +2,6 @@ package com.inappstory.sdk.inappmessage.ui.reader;
 
 import static com.inappstory.sdk.inappmessage.ui.widgets.IAMContentContainer.CONTAINER_ID;
 import static com.inappstory.sdk.inappmessage.ui.widgets.IAMContentContainer.CONTENT_ID;
-import static com.inappstory.sdk.stories.outercallbacks.common.objects.DefaultOpenInAppMessageReader.IN_APP_MESSAGE_FRAGMENT;
 
 import android.os.Bundle;
 import android.os.Handler;
@@ -21,8 +20,9 @@ import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
+import com.inappstory.sdk.core.ui.screens.inappmessagereader.BaseIAMScreen;
+import com.inappstory.sdk.game.reader.GameMainFragment;
 import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderLoadStates;
-import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderSlideState;
 import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderState;
 import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderUIStates;
 import com.inappstory.sdk.inappmessage.domain.reader.IIAMReaderViewModel;
@@ -33,14 +33,16 @@ import com.inappstory.sdk.inappmessage.ui.appearance.impl.InAppMessageBottomShee
 import com.inappstory.sdk.inappmessage.ui.widgets.IAMContainerCallback;
 import com.inappstory.sdk.inappmessage.ui.widgets.IAMContentContainer;
 import com.inappstory.sdk.stories.utils.Observer;
+import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 
 import java.util.Objects;
 
-public class InAppMessageMainFragment extends Fragment implements Observer<IAMReaderState> {
+public class InAppMessageMainFragment extends Fragment implements Observer<IAMReaderState>, BaseIAMScreen {
     private IAMReaderLoadStates currentLoadState = IAMReaderLoadStates.EMPTY;
     private IAMReaderUIStates currentUIState = IAMReaderUIStates.CLOSED;
     private IIAMReaderViewModel readerViewModel;
     private boolean showOnlyIfLoaded;
+    private boolean contentIsPreloaded;
     private InAppMessageAppearance appearance = new InAppMessageBottomSheetSettings();
     private IAMContentContainer contentContainer;
 
@@ -48,6 +50,7 @@ public class InAppMessageMainFragment extends Fragment implements Observer<IAMRe
     public void onDestroyView() {
         if (readerViewModel != null) {
             readerViewModel.removeSubscriber(InAppMessageMainFragment.this);
+            readerViewModel.clear();
         } else {
             InAppStoryManager.useCore(new UseIASCoreCallback() {
                 @Override
@@ -57,8 +60,16 @@ public class InAppMessageMainFragment extends Fragment implements Observer<IAMRe
                 }
             });
         }
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.screensManager().getIAMScreenHolder()
+                        .unsubscribeScreen(InAppMessageMainFragment.this);
+            }
+        });
         super.onDestroyView();
     }
+
 
     @Nullable
     @Override
@@ -74,6 +85,7 @@ public class InAppMessageMainFragment extends Fragment implements Observer<IAMRe
                 readerViewModel.addSubscriber(InAppMessageMainFragment.this);
                 IAMReaderState state = readerViewModel.getCurrentState();
                 showOnlyIfLoaded = state.showOnlyIfLoaded;
+                contentIsPreloaded = state.contentIsPreloaded;
                 appearance = state.appearance;
             }
         });
@@ -98,6 +110,7 @@ public class InAppMessageMainFragment extends Fragment implements Observer<IAMRe
             );
         }
         contentContainer = v.findViewById(CONTAINER_ID);
+        contentContainer.setVisibility(View.INVISIBLE);
         if (appearance != null) {
             contentContainer.appearance(appearance);
         }
@@ -118,6 +131,8 @@ public class InAppMessageMainFragment extends Fragment implements Observer<IAMRe
     };
 
     public void showContainer() {
+        if (!contentIsPreloaded)
+            contentContainer.showLoader();
         contentContainer.showWithAnimation();
     }
 
@@ -147,9 +162,16 @@ public class InAppMessageMainFragment extends Fragment implements Observer<IAMRe
     ) {
         super.onViewCreated(view, savedInstanceState);
         if (readerViewModel == null) return;
-        if (!showOnlyIfLoaded) {
+        if (!contentIsPreloaded) {
             readerViewModel.updateCurrentUiState(IAMReaderUIStates.OPENING);
         }
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.screensManager()
+                        .getIAMScreenHolder().subscribeScreen(InAppMessageMainFragment.this);
+            }
+        });
         IAMContentFragment contentFragment = new IAMContentFragment();
         FragmentTransaction t = getChildFragmentManager().beginTransaction()
                 .add(
@@ -201,6 +223,44 @@ public class InAppMessageMainFragment extends Fragment implements Observer<IAMRe
                     currentUIState != IAMReaderUIStates.OPENING) {
                 readerViewModel.updateCurrentUiState(IAMReaderUIStates.OPENING);
             }
+            if (!contentIsPreloaded && contentContainer != null) {
+                contentContainer.hideLoader();
+            }
         }
+    }
+
+    @Override
+    public void forceFinish() {
+        contentContainer.closeWithoutAnimation();
+    }
+
+    @Override
+    public void close() {
+        contentContainer.closeWithAnimation();
+    }
+
+    @Override
+    public void pauseScreen() {
+
+    }
+
+    @Override
+    public void resumeScreen() {
+
+    }
+
+    @Override
+    public void setShowGoodsCallback(ShowGoodsCallback callback) {
+
+    }
+
+    @Override
+    public void permissionResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+
+    }
+
+    @Override
+    public FragmentManager getScreenFragmentManager() {
+        return getParentFragmentManager();
     }
 }

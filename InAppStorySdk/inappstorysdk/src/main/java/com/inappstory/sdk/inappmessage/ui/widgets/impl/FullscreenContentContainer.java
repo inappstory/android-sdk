@@ -1,9 +1,12 @@
 package com.inappstory.sdk.inappmessage.ui.widgets.impl;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AccelerateInterpolator;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
@@ -15,12 +18,12 @@ import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.utils.ColorUtils;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageFullscreenAppearance;
 import com.inappstory.sdk.inappmessage.ui.widgets.IAMContentContainer;
-import com.inappstory.sdk.inappmessage.ui.widgets.IAMContainerCallback;
 import com.inappstory.sdk.stories.utils.Sizes;
 
 public class FullscreenContentContainer extends IAMContentContainer<InAppMessageFullscreenAppearance> {
 
     FrameLayout content;
+    RelativeLayout container;
     RelativeLayout.LayoutParams closeButtonLayoutParams;
     ImageView closeButton;
 
@@ -59,37 +62,178 @@ public class FullscreenContentContainer extends IAMContentContainer<InAppMessage
         );
         closeButton.setLayoutParams(closeButtonLayoutParams);
         closeButton.requestLayout();
+        //  showWithAnimation();
     }
 
+
+    @Override
+    public void showLoader() {
+
+    }
+
+    @Override
+    public void hideLoader() {
+
+    }
 
     @Override
     public void showWithAnimation() {
         if (appearance != null) {
-            if (callback != null) callback.onShown();
+            switch (appearance.animationType()) {
+                case 0:
+                    setVisibility(VISIBLE);
+                    showAnimationEnd();
+                    break;
+                case 1:
+                    background.setAlpha(0f);
+                    container.setTranslationY(getHeight());
+                    container.animate()
+                            .translationY(0)
+                            .setInterpolator(new AccelerateInterpolator())
+                            .setDuration(500)
+                            .setListener(
+                                    new AnimatorListenerAdapter() {
+                                        @Override
+                                        public void onAnimationStart(Animator animation) {
+                                            super.onAnimationStart(animation);
+                                            setVisibility(VISIBLE);
+                                        }
+
+                                        @Override
+                                        public void onAnimationEnd(Animator animation) {
+                                            super.onAnimationEnd(animation);
+                                            showAnimationEnd();
+                                            //   setVisibility(VISIBLE);
+                                        }
+                                    }
+                            )
+                            .start();
+                    background.animate().alpha(1f).setDuration(500).start();
+                    break;
+                case 2:
+                    background.setAlpha(0f);
+                    container.setAlpha(0f);
+                    container.setScaleX(0.7f);
+                    container.setScaleY(0.7f);
+                    container.animate()
+                            .scaleX(1f)
+                            .scaleY(1f)
+                            .alpha(1f)
+                            .setListener(
+                                    new AnimatorListenerAdapter() {
+                                        @Override
+                                        public void onAnimationStart(Animator animation) {
+                                            super.onAnimationStart(animation);
+                                            setVisibility(VISIBLE);
+                                        }
+
+                                        @Override
+                                        public void onAnimationEnd(Animator animation) {
+                                            super.onAnimationEnd(animation);
+                                            showAnimationEnd();
+                                        }
+                                    }
+                            )
+                            .setInterpolator(new AccelerateInterpolator())
+                            .setDuration(500)
+                            .start();
+                    background.animate().alpha(1f).setDuration(500).start();
+                    break;
+
+            }
+        } else {
+            setVisibility(VISIBLE);
+            showAnimationEnd();
         }
+    }
+
+    private void showAnimationEnd() {
+        if (callback != null) callback.onShown();
+    }
+
+    private void closeAnimationEnd() {
+        if (callback != null) callback.onClosed();
     }
 
     @Override
     public void showWithoutAnimation() {
-        if (callback != null) callback.onShown();
+        setVisibility(VISIBLE);
+        showAnimationEnd();
     }
 
     @Override
     public void closeWithAnimation() {
         if (appearance != null) {
-            if (callback != null) callback.onClosed();
+            switch (appearance.animationType()) {
+                case 0:
+                    closeAnimationEnd();
+                    break;
+                case 1:
+                    container.animate()
+                            .translationY(getHeight())
+                            .setInterpolator(new AccelerateInterpolator())
+                            .setDuration(500)
+                            .setListener(
+                                    new AnimatorListenerAdapter() {
+                                        @Override
+                                        public void onAnimationStart(Animator animation) {
+                                            super.onAnimationStart(animation);
+                                            setVisibility(VISIBLE);
+                                        }
+
+                                        @Override
+                                        public void onAnimationEnd(Animator animation) {
+                                            super.onAnimationEnd(animation);
+                                            closeAnimationEnd();
+                                            //   setVisibility(VISIBLE);
+                                        }
+                                    }
+                            )
+                            .start();
+                    background.animate().alpha(0f).setDuration(500).start();
+                    break;
+                case 2:
+                    container.animate()
+                            .scaleX(0.7f)
+                            .scaleY(0.7f)
+                            .alpha(0f)
+                            .setListener(
+                                    new AnimatorListenerAdapter() {
+                                        @Override
+                                        public void onAnimationStart(Animator animation) {
+                                            super.onAnimationStart(animation);
+                                            setVisibility(VISIBLE);
+                                        }
+
+                                        @Override
+                                        public void onAnimationEnd(Animator animation) {
+                                            super.onAnimationEnd(animation);
+                                            closeAnimationEnd();
+                                        }
+                                    }
+                            )
+                            .setInterpolator(new AccelerateInterpolator())
+                            .setDuration(500)
+                            .start();
+                    background.animate().alpha(0f).setDuration(500).start();
+                    break;
+
+            }
+        } else {
+            closeAnimationEnd();
         }
+
     }
 
     @Override
     public void closeWithoutAnimation() {
-        if (callback != null) callback.onClosed();
+        closeAnimationEnd();
     }
 
     @Override
     protected void init(Context context) {
         super.init(context);
-        RelativeLayout container = new RelativeLayout(context);
+        container = new RelativeLayout(context);
         container.setClickable(true);
         container.setLayoutParams(
                 new FrameLayout.LayoutParams(
@@ -130,6 +274,7 @@ public class FullscreenContentContainer extends IAMContentContainer<InAppMessage
         closeButton.setLayoutParams(closeButtonLayoutParams);
         container.addView(closeButton);
         if (appearance != null) appearance(appearance);
+        showWithAnimation();
     }
 
 }

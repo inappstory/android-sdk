@@ -26,7 +26,8 @@ import java.lang.annotation.RetentionPolicy;
  */
 public class ColorUtils {
 
-    private ColorUtils() { }
+    private ColorUtils() {
+    }
 
     public static final int IS_LIGHT = 0;
     public static final int IS_DARK = 1;
@@ -45,8 +46,9 @@ public class ColorUtils {
     /**
      * Set the alpha component of {@code color} to be {@code alpha}.
      */
-    public static @CheckResult @ColorInt int modifyAlpha(@ColorInt int color,
-                                                      @FloatRange(from = 0f, to = 1f) float alpha) {
+    public static @CheckResult
+    @ColorInt int modifyAlpha(@ColorInt int color,
+                              @FloatRange(from = 0f, to = 1f) float alpha) {
         return modifyAlpha(color, (int) (255f * alpha));
     }
 
@@ -112,14 +114,14 @@ public class ColorUtils {
      * Calculate a variant of the color to make it more suitable for overlaying information. Light
      * colors will be lightened and dark colors will be darkened
      *
-     * @param color the color to adjust
-     * @param isDark whether {@code color} is light or dark
+     * @param color               the color to adjust
+     * @param isDark              whether {@code color} is light or dark
      * @param lightnessMultiplier the amount to modify the color e.g. 0.1f will alter it by 10%
      * @return the adjusted color
      */
     public static @ColorInt int scrimify(@ColorInt int color,
-                                        boolean isDark,
-                                        @FloatRange(from = 0f, to = 1f) float lightnessMultiplier) {
+                                         boolean isDark,
+                                         @FloatRange(from = 0f, to = 1f) float lightnessMultiplier) {
         float[] hsl = new float[3];
         androidx.core.graphics.ColorUtils.colorToHSL(color, hsl);
 
@@ -129,12 +131,12 @@ public class ColorUtils {
             lightnessMultiplier = 1f - lightnessMultiplier;
         }
 
-        hsl[2] = MathUtils.clamp(hsl[2] * lightnessMultiplier,0f, 1f);
+        hsl[2] = MathUtils.clamp(hsl[2] * lightnessMultiplier, 0f, 1f);
         return androidx.core.graphics.ColorUtils.HSLToColor(hsl);
     }
 
     public static @ColorInt int scrimify(@ColorInt int color,
-                                        @FloatRange(from = 0f, to = 1f) float lightnessMultiplier) {
+                                         @FloatRange(from = 0f, to = 1f) float lightnessMultiplier) {
         return scrimify(color, isDark(color), lightnessMultiplier);
     }
 
@@ -149,7 +151,7 @@ public class ColorUtils {
      */
     @ColorInt
     public static int getThemeColor(@NonNull Context context, @AttrRes int attrResId,
-            @ColorRes int fallbackColorResId) {
+                                    @ColorRes int fallbackColorResId) {
         final TypedValue tv = new TypedValue();
         if (context.getTheme().resolveAttribute(attrResId, tv, true)) {
             return tv.data;
@@ -169,6 +171,30 @@ public class ColorUtils {
             String rgbaHex = "#" + hex.substring(7, 9) + hex.substring(1, 7);
             return Color.parseColor(rgbaHex);
         }
+    }
 
+
+
+    public static double getColorsContrast(int color1, int color2) {
+        double bright1 = getColorBright(color1);
+        double bright2 = getColorBright(color2);
+        double maxBright = Math.max(bright1, bright2) + 0.05f;
+        double minBright = Math.min(bright1, bright2) + 0.05f;
+        return maxBright / minBright;
+    }
+
+    public static double getColorBright(int rgb) {
+        double rsRGB = ((rgb >> 16) & 0xff) / 255.0;  // extract red
+        double gsRGB = ((rgb >> 8) & 0xff) / 255.0;  // extract green
+        double bsRGB = ((rgb) & 0xff) / 255.0;  // extract blue
+        double c1 = 0.03928;
+        double c2 = 12.92;
+        double c3 = 0.055;
+        double c4 = 1.055;
+        double c5 = 2.4;
+        double r = (rsRGB < c1) ? rsRGB / c2 : Math.pow((rsRGB + c3) / c4, c5);
+        double g = (gsRGB < c1) ? gsRGB / c2 : Math.pow((gsRGB + c3) / c4, c5);
+        double b = (bsRGB < c1) ? bsRGB / c2 : Math.pow((bsRGB + c3) / c4, c5);
+        return 0.2126 * r + 0.7152 * g + 0.0722 * b;
     }
 }

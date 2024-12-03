@@ -6,6 +6,7 @@ import static com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -60,6 +61,7 @@ public final class BottomSheetContentContainer extends IAMContentContainer<InApp
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT
         ));
+        background.setAlpha(0f);
         roundedCornerLayout = new RoundedCornerLayout(context);
         roundedCornerLayout.setRadius(0);
         layoutParams = new CoordinatorLayout.LayoutParams(
@@ -105,7 +107,8 @@ public final class BottomSheetContentContainer extends IAMContentContainer<InApp
 
             @Override
             public void onSlide(@NonNull View bottomSheet, float slideOffset) {
-
+                if (slideOffset >= 0 && slideOffset <= 1f)
+                    background.setAlpha(slideOffset);
             }
         });
         coordinatorLayout.addView(roundedCornerLayout);
@@ -136,7 +139,7 @@ public final class BottomSheetContentContainer extends IAMContentContainer<InApp
         FrameLayout.LayoutParams blcLp = new FrameLayout.LayoutParams(
                 Sizes.dpToPxExt(appearance.lineAppearance().width() + 16, getContext()),
                 Sizes.dpToPxExt(appearance.lineAppearance().height() +
-                        2 * appearance.lineAppearance().topMargin(),
+                                2 * appearance.lineAppearance().topMargin(),
                         getContext()
                 )
         );
@@ -161,13 +164,24 @@ public final class BottomSheetContentContainer extends IAMContentContainer<InApp
     private int bsState = 0;
 
     @Override
+    public void showLoader() {
+
+    }
+
+    @Override
+    public void hideLoader() {
+
+    }
+
+    @Override
     public void showWithAnimation() {
+        setVisibility(VISIBLE);
         bottomSheetBehavior.setState(STATE_EXPANDED);
     }
 
     @Override
     public void showWithoutAnimation() {
-        bottomSheetBehavior.setState(STATE_EXPANDED);
+        showWithAnimation();
     }
 
 

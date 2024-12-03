@@ -1,7 +1,5 @@
 package com.inappstory.sdk.stories.ui.widgets;
 
-import static android.widget.RelativeLayout.CENTER_IN_PARENT;
-
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Canvas;
@@ -12,13 +10,13 @@ import android.graphics.RectF;
 import android.graphics.Shader;
 import android.graphics.SweepGradient;
 import android.util.AttributeSet;
+import android.view.Gravity;
 import android.view.View;
-import android.widget.RelativeLayout;
+import android.widget.FrameLayout;
 
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.stories.ui.views.IProgressLoaderView;
 import com.inappstory.sdk.stories.utils.Sizes;
-
 
 
 public class LoadProgressBar extends View implements IProgressLoaderView {
@@ -43,10 +41,21 @@ public class LoadProgressBar extends View implements IProgressLoaderView {
     private static Paint COLOR_PAINT;
     private static Paint GRADIENT_PAINT;
 
+    public void setColor(int color) {
+        getColorPaint(null).setColor(color);
+        int r = ((color >> 16) & 0xff);  // extract red
+        int g = ((color >> 8) & 0xff);  // extract green
+        int b = ((color) & 0xff);  // extract blue
+        gradientColors[0] = Color.argb(0, r, g, b);
+        gradientColors[1] = Color.argb(255, r, g, b);
+        getColorGradientPaint(null).setColor(color);
+    }
+
     Paint getColorPaint(Resources resources) {
         if (COLOR_PAINT == null) {
             COLOR_PAINT = new Paint();
-            COLOR_PAINT.setColor(resources.getColor(R.color.cs_loaderColor));
+            if (resources != null)
+                COLOR_PAINT.setColor(resources.getColor(R.color.cs_loaderColor));
             COLOR_PAINT.setStyle(Paint.Style.STROKE);
             COLOR_PAINT.setStrokeWidth(STROKE_WIDTH);
             if (rounded)
@@ -60,7 +69,8 @@ public class LoadProgressBar extends View implements IProgressLoaderView {
     Paint getColorGradientPaint(Resources resources) {
         if (GRADIENT_PAINT == null) {
             GRADIENT_PAINT = new Paint();
-            GRADIENT_PAINT.setColor(resources.getColor(R.color.cs_loaderColor));
+            if (resources != null)
+                GRADIENT_PAINT.setColor(resources.getColor(R.color.cs_loaderColor));
             GRADIENT_PAINT.setStyle(Paint.Style.STROKE);
             GRADIENT_PAINT.setStrokeWidth(STROKE_WIDTH);
             if (rounded)
@@ -96,11 +106,11 @@ public class LoadProgressBar extends View implements IProgressLoaderView {
     private void initSize() {
         STROKE_WIDTH = Sizes.dpToPxExt(strokeWidthDP, getContext());
         STROKE_SIZE_HALF = STROKE_WIDTH / 2;
-        RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(
+        FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(
                 Sizes.dpToPxExt(sizeDP, getContext()),
                 Sizes.dpToPxExt(sizeDP, getContext())
         );
-        lp.addRule(CENTER_IN_PARENT);
+        lp.gravity = Gravity.CENTER;
         setLayoutParams(lp);
 
     }

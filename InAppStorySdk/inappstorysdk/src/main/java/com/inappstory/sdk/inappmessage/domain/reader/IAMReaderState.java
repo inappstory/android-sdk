@@ -9,6 +9,7 @@ public class IAMReaderState {
     public IAMReaderLoadStates loadState = IAMReaderLoadStates.EMPTY;
     public InAppMessageAppearance appearance = new InAppMessageBottomSheetSettings();
     public boolean showOnlyIfLoaded = false;
+    public boolean contentIsPreloaded = false;
     public Integer iamId = null;
     public SourceType sourceType = SourceType.IN_APP_MESSAGES;
 
@@ -38,6 +39,11 @@ public class IAMReaderState {
         return this;
     }
 
+    public IAMReaderState contentIsPreloaded(boolean contentIsPreloaded) {
+        this.contentIsPreloaded = contentIsPreloaded;
+        return this;
+    }
+
     public IAMReaderState showOnlyIfLoaded(boolean showOnlyIfLoaded) {
         this.showOnlyIfLoaded = showOnlyIfLoaded;
         return this;
@@ -50,6 +56,7 @@ public class IAMReaderState {
                 .loadState(this.loadState)
                 .iamId(this.iamId)
                 .appearance(this.appearance)
-                .showOnlyIfLoaded(this.showOnlyIfLoaded);
+                .showOnlyIfLoaded(this.showOnlyIfLoaded)
+                .contentIsPreloaded(this.contentIsPreloaded);
     }
 }
