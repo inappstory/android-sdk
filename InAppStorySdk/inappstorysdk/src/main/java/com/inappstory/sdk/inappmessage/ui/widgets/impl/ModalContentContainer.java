@@ -15,7 +15,6 @@ import android.widget.RelativeLayout;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.coordinatorlayout.widget.CoordinatorLayout;
 
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.R;
@@ -23,13 +22,11 @@ import com.inappstory.sdk.core.ui.widgets.roundedlayout.RoundedCornerLayout;
 import com.inappstory.sdk.core.utils.ColorUtils;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageModalAppearance;
 import com.inappstory.sdk.inappmessage.ui.widgets.IAMContentContainer;
-import com.inappstory.sdk.inappmessage.ui.widgets.IAMContainerCallback;
 import com.inappstory.sdk.stories.utils.Sizes;
 
 public class ModalContentContainer extends IAMContentContainer<InAppMessageModalAppearance> {
     private RoundedCornerLayout roundedCornerLayout;
     private FrameLayout content;
-    private FrameLayout loaderContainer;
     private FrameLayout.LayoutParams layoutParams;
     private RelativeLayout.LayoutParams closeButtonLayoutParams;
     private ImageView closeButton;
@@ -63,21 +60,7 @@ public class ModalContentContainer extends IAMContentContainer<InAppMessageModal
                 appearance.backgroundColor()
         );
         content.setBackgroundColor(backgroundColor);
-
-        double contrast1 = ColorUtils.getColorsContrast(backgroundColor, Color.BLACK);
-        double contrast2 = ColorUtils.getColorsContrast(backgroundColor, Color.WHITE);
-        loaderContainer = new FrameLayout(getContext());
-        loaderContainer.setClickable(true);
-        loaderContainer.setBackgroundColor(backgroundColor);
-        loaderContainer.setVisibility(GONE);
-        loaderContainer.setLayoutParams(
-                new FrameLayout.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.MATCH_PARENT
-                )
-        );
-        View loader = AppearanceManager.getLoader(getContext(), contrast1 > contrast2 ? Color.BLACK : Color.WHITE);
-        loaderContainer.addView(loader);
+        generateLoader(backgroundColor);
         roundedCornerLayout.addView(loaderContainer);
 
         if (appearance.contentHeight() == -1) {
@@ -104,28 +87,6 @@ public class ModalContentContainer extends IAMContentContainer<InAppMessageModal
         closeButton.setLayoutParams(closeButtonLayoutParams);
         roundedCornerLayout.requestLayout();
         closeButton.requestLayout();
-    }
-
-
-    @Override
-    public void showLoader() {
-        loaderContainer.setVisibility(VISIBLE);
-        loaderContainer.setAlpha(1f);
-    }
-
-    @Override
-    public void hideLoader() {
-        loaderContainer
-                .animate()
-                .alpha(0f)
-                .setDuration(500)
-                .setListener(new AnimatorListenerAdapter() {
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                super.onAnimationEnd(animation);
-                loaderContainer.setVisibility(GONE);
-            }
-        });
     }
 
     public void showWithAnimation() {

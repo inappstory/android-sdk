@@ -1,6 +1,9 @@
 package com.inappstory.sdk.inappmessage.ui.widgets;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.content.Context;
+import android.graphics.Color;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,6 +13,7 @@ import androidx.annotation.IdRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.utils.ColorUtils;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageAppearance;
@@ -18,12 +22,28 @@ public abstract class IAMContentContainer<T extends InAppMessageAppearance> exte
     public static @IdRes int CONTENT_ID = R.id.ias_iam_reader_content;
     public static @IdRes int CONTAINER_ID = R.id.ias_iam_reader_container;
     protected View background;
+    protected FrameLayout loaderContainer;
 
     protected IAMContainerCallback callback;
 
-    public abstract void showLoader();
+    public void showLoader() {
+        loaderContainer.setVisibility(VISIBLE);
+        loaderContainer.setAlpha(1f);
+    }
 
-    public abstract void hideLoader();
+    public void hideLoader() {
+        loaderContainer
+                .animate()
+                .alpha(0f)
+                .setDuration(500)
+                .setListener(new AnimatorListenerAdapter() {
+                    @Override
+                    public void onAnimationEnd(Animator animation) {
+                        super.onAnimationEnd(animation);
+                        loaderContainer.setVisibility(GONE);
+                    }
+                });
+    }
 
     public abstract void showWithAnimation();
 
@@ -35,6 +55,27 @@ public abstract class IAMContentContainer<T extends InAppMessageAppearance> exte
 
     public void uiContainerCallback(IAMContainerCallback callback) {
         this.callback = callback;
+    }
+
+    protected void generateLoader(int backgroundColor) {
+        double contrast1 = ColorUtils.getColorsContrast(backgroundColor, Color.BLACK);
+        double contrast2 = ColorUtils.getColorsContrast(backgroundColor, Color.WHITE);
+        loaderContainer = new FrameLayout(getContext());
+        loaderContainer.setClickable(true);
+        loaderContainer.setBackgroundColor(backgroundColor);
+        loaderContainer.setVisibility(GONE);
+        loaderContainer.setLayoutParams(
+                new FrameLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT
+                )
+        );
+        View loader = AppearanceManager.getLoader(
+                getContext(),
+                contrast1 > contrast2 ?
+                Color.BLACK : Color.WHITE
+        );
+        loaderContainer.addView(loader);
     }
 
     protected void init(Context context) {

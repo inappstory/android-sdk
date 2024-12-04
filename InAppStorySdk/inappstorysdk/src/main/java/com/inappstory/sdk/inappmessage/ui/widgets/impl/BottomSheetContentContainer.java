@@ -25,12 +25,12 @@ import com.inappstory.sdk.inappmessage.ui.widgets.IAMContentContainer;
 import com.inappstory.sdk.stories.utils.Sizes;
 
 public final class BottomSheetContentContainer extends IAMContentContainer<InAppMessageBottomSheetAppearance> {
-    BottomSheetBehavior<RoundedCornerLayout> bottomSheetBehavior;
-    RoundedCornerLayout roundedCornerLayout;
-    CoordinatorLayout.LayoutParams layoutParams;
-    FrameLayout content;
-    BottomSheetLine bottomSheetLine;
-    FrameLayout bottomSheetLineContainer;
+    private BottomSheetBehavior<RoundedCornerLayout> bottomSheetBehavior;
+    private RoundedCornerLayout roundedCornerLayout;
+    private CoordinatorLayout.LayoutParams layoutParams;
+    private FrameLayout content;
+    private BottomSheetLine bottomSheetLine;
+    private FrameLayout bottomSheetLineContainer;
 
     public BottomSheetContentContainer(
             @NonNull Context context
@@ -120,9 +120,12 @@ public final class BottomSheetContentContainer extends IAMContentContainer<InApp
     public void appearance(InAppMessageBottomSheetAppearance appearance) {
         super.appearance(appearance);
         if (content == null) return;
-        content.setBackgroundColor(ColorUtils.parseColorRGBA(
+        int backgroundColor = ColorUtils.parseColorRGBA(
                 appearance.backgroundColor()
-        ));
+        );
+        content.setBackgroundColor(backgroundColor);
+        generateLoader(backgroundColor);
+        roundedCornerLayout.addView(loaderContainer);
         if (appearance.contentHeight() == -1)
             layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT;
         else
@@ -162,16 +165,6 @@ public final class BottomSheetContentContainer extends IAMContentContainer<InApp
     }
 
     private int bsState = 0;
-
-    @Override
-    public void showLoader() {
-
-    }
-
-    @Override
-    public void hideLoader() {
-
-    }
 
     @Override
     public void showWithAnimation() {
