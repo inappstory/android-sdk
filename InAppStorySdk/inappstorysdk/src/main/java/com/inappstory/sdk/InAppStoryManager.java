@@ -7,14 +7,18 @@ import android.annotation.SuppressLint;
 import android.app.Application;
 import android.content.ContentProvider;
 import android.content.Context;
+import android.content.pm.PackageInfo;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
 import android.util.Log;
 import android.util.Pair;
 import android.webkit.CookieManager;
+import android.webkit.WebView;
 
 import androidx.annotation.NonNull;
+import androidx.webkit.WebViewCompat;
 
 import com.inappstory.iasutilsconnector.UtilModulesHolder;
 import com.inappstory.iasutilsconnector.json.IJsonParser;
@@ -113,10 +117,15 @@ public class InAppStoryManager {
         }
     }
 
-    private static boolean isWebViewEnabled() {
+    private static boolean isWebViewEnabled(Context context) {
         try {
-            CookieManager.getInstance();
-            return true;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                PackageInfo packageInfo = WebViewCompat.getCurrentWebViewPackage(context);
+                return packageInfo != null;
+            } else {
+                CookieManager.getInstance();
+                return true;
+            }
         } catch (Exception e) {
             return false;
         }
@@ -2478,7 +2487,7 @@ public class InAppStoryManager {
                     return null;
                 }
             }
-            if (!isWebViewEnabled()) {
+            if (!isWebViewEnabled(INSTANCE.context)) {
                 showELog(
                         IAS_ERROR_TAG,
                         "Can't find chromium WebView on current device." +
