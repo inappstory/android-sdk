@@ -882,14 +882,6 @@ public class InAppStoryManager {
             showELog(IAS_ERROR_TAG, "Method must be called from Application class and context has to be an applicationContext");
             return;
         }
-        if (!isWebViewEnabled()) {
-            showELog(
-                    IAS_ERROR_TAG,
-                    "Can't find chromium WebView on current device." +
-                            " SDK can't work correctly without it and won't be initialized"
-            );
-            return;
-        }
         synchronized (lock) {
             if (INSTANCE == null) {
                 INSTANCE = new InAppStoryManager(context);
@@ -2482,9 +2474,17 @@ public class InAppStoryManager {
         public InAppStoryManager create() {
             synchronized (lock) {
                 if (INSTANCE == null) {
-                    showELog(IAS_ERROR_TAG, "Method InAppStoryManager.init must be called from Application class");
+                    showELog(IAS_ERROR_TAG, "InAppStoryManager wasn't initialized");
                     return null;
                 }
+            }
+            if (!isWebViewEnabled()) {
+                showELog(
+                        IAS_ERROR_TAG,
+                        "Can't find chromium WebView on current device." +
+                                " SDK can't work correctly without it and won't be initialized"
+                );
+                return null;
             }
             INSTANCE.build(Builder.this);
             return INSTANCE;
