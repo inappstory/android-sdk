@@ -1,4 +1,4 @@
-package com.inappstory.sdk.network.utils;
+package com.inappstory.sdk.utils;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;

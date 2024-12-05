@@ -4,10 +4,14 @@ import android.util.Pair;
 
 import androidx.annotation.WorkerThread;
 
+import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.network.callbacks.Callback;
 import com.inappstory.sdk.network.dummy.DummyApiInterface;
 import com.inappstory.sdk.network.models.Request;
+import com.inappstory.sdk.network.models.RequestLocalParameters;
 import com.inappstory.sdk.network.models.Response;
 import com.inappstory.sdk.network.utils.RequestSender;
 import com.inappstory.sdk.network.utils.UserAgent;
@@ -28,11 +32,11 @@ public class NetworkClient {
     private NetworkHandler networkHandler;
 
     private String baseUrl;
-    public String userAgent;
 
     public String userAgent() {
-        return userAgent;
+        return new UserAgent().generate(core);
     }
+
     private final IASCore core;
 
     public String getBaseUrl() {
@@ -42,7 +46,6 @@ public class NetworkClient {
 
     public NetworkClient(IASCore core) {
         this.core = core;
-        this.userAgent = new UserAgent().generate(core.appContext());
     }
 
     public void clear() {
@@ -56,7 +59,16 @@ public class NetworkClient {
 
     ExecutorService netExecutor = Executors.newFixedThreadPool(10);
 
-    public void enqueue(final Request request, final Callback callback) {
+    public void enqueue(final Request request,
+                        final Callback callback
+    ) {
+        enqueue(request, callback, null);
+    }
+
+    public void enqueue(final Request request,
+                        final Callback callback,
+                        final RequestLocalParameters requestLocalParameters
+    ) {
         if (networkHandler == null) {
             callback.onFailure(
                     new Response
@@ -69,7 +81,7 @@ public class NetworkClient {
         netExecutor.submit(new Callable<Response>() {
             @Override
             public Response call() {
-                return execute(request, callback);
+                return execute(request, callback, requestLocalParameters);
             }
         });
     }
@@ -82,20 +94,32 @@ public class NetworkClient {
                     .errorBody("InAppStoryManager wasn't initialized")
                     .build();
         }
-        return execute(request, null);
+        return execute(request, null, null);
     }
 
 
     public static final String NC_IS_UNAVAILABLE = "Network client is unavailable";
 
     @WorkerThread
-    public Response execute(Request request, Callback callback) {
+    public Response execute(Request request, Callback callback, RequestLocalParameters requestLocalParameters) {
         Response response;
         String requestId = UUID.randomUUID().toString();
         try {
             response = new RequestSender().send(request, requestId);
             response.logId = requestId;
             if (callback == null) {
+                return response;
+            }
+            IASDataSettingsHolder dataSettingsHolder = (IASDataSettingsHolder) core.settingsAPI();
+            RequestLocalParameters currentParameters = new RequestLocalParameters(
+                    core.sessionManager().getSession().getSessionId(),
+                    dataSettingsHolder.userId(),
+                    dataSettingsHolder.lang()
+            );
+            if (requestLocalParameters != null && !requestLocalParameters.equals(currentParameters)) {
+                response = new Response.Builder().code(-5).errorBody("User id or locale was changed").build();
+                response.logId = requestId;
+                callback.onFailure(response);
                 return response;
             }
             if (response.code == 204) {

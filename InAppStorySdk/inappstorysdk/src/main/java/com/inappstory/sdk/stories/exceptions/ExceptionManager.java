@@ -4,6 +4,7 @@ import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.network.JsonParser;
+import com.inappstory.sdk.network.models.RequestLocalParameters;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.api.models.logs.ExceptionLog;
 
@@ -32,7 +33,7 @@ public class ExceptionManager {
 
         core.sessionManager().useOrOpenSession(new OpenSessionCallback() {
             @Override
-            public void onSuccess(String sessionId) {
+            public void onSuccess(RequestLocalParameters requestLocalParameters) {
                 if (core.statistic().exceptions().disabled()) {
                     core.sharedPreferencesAPI().removeString(SAVED_EX);
                     return;

@@ -61,6 +61,7 @@ import com.inappstory.sdk.stories.stackfeed.IStackFeedResult;
 import com.inappstory.sdk.stories.statistic.GetStatisticV1Callback;
 import com.inappstory.sdk.stories.ui.reader.ForceCloseReaderCallback;
 import com.inappstory.sdk.utils.StringsUtils;
+import com.inappstory.sdk.utils.WebViewUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -685,6 +686,22 @@ public class InAppStoryManager {
 
     private static final Object lock = new Object();
 
+    public void setAppVersion(@NonNull final String version, final int build) {
+        if (version.isEmpty() || version.length() > 50) {
+            showELog(
+                    IAS_ERROR_TAG,
+                    "App Version must be no more than 50 symbols and not empty"
+            );
+            return;
+        }
+        useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.settingsAPI().setExternalAppVersion(new AppVersion(version, build));
+            }
+        });
+    }
+
     public static void logout() {
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
@@ -714,7 +731,7 @@ public class InAppStoryManager {
                                 core.sessionManager().closeSession(
                                         true,
                                         false,
-                                        settingsHolder.lang(),
+                                        settingsHolder.lang().toLanguageTag(),
                                         settingsHolder.userId(),
                                         core.sessionManager().getSession().getSessionId()
                                 );
@@ -1084,6 +1101,10 @@ public class InAppStoryManager {
                     showELog(IAS_ERROR_TAG, "Method InAppStoryManager.init must be called from Application class");
                     return null;
                 }
+            }
+            if (!WebViewUtils.isWebViewEnabled(INSTANCE.core.appContext())) {
+                showELog(IAS_ERROR_TAG, "Can't find Chromium WebView on a device");
+                return null;
             }
             INSTANCE.build(Builder.this);
             return INSTANCE;

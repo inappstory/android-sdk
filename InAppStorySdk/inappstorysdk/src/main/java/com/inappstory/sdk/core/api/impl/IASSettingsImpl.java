@@ -10,6 +10,7 @@ import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASDataSettings;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
+import com.inappstory.sdk.core.data.IAppVersion;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
 import com.inappstory.sdk.core.network.content.models.StoryPlaceholder;
@@ -35,6 +36,7 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
     private String userId;
     private boolean isSandbox;
     private final Object settingsLock = new Object();
+    private IAppVersion externalAppVersion;
 
     public final static int TAG_LIMIT = 4000;
 
@@ -67,7 +69,7 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
                 core.sessionManager().closeSession(
                         sendStatistic,
                         true,
-                        currentLang,
+                        currentLang.toLanguageTag(),
                         currentUserId,
                         sessionId
                 );
@@ -79,6 +81,11 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
         core.contentLoader().storyDownloadManager().refreshLocals(ContentType.UGC);
         core.contentLoader().storyDownloadManager().cleanTasks(false);
 
+    }
+
+    @Override
+    public void setExternalAppVersion(IAppVersion externalAppVersion) {
+        this.externalAppVersion = externalAppVersion;
     }
 
     @Override
@@ -102,7 +109,7 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
                 core.sessionManager().closeSession(
                         sendStatistic,
                         true,
-                        currentLang,
+                        currentLang.toLanguageTag(),
                         currentUserId,
                         sessionId
                 );
@@ -289,6 +296,11 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
         synchronized (settingsLock) {
             this.deviceId = deviceId;
         }
+    }
+
+    @Override
+    public IAppVersion externalAppVersion() {
+        return externalAppVersion;
     }
 
     @Override

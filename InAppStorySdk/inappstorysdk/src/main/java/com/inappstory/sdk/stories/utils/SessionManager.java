@@ -26,6 +26,7 @@ import com.inappstory.sdk.core.utils.ConnectionCheck;
 import com.inappstory.sdk.core.utils.ConnectionCheckCallback;
 import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
+import com.inappstory.sdk.network.models.RequestLocalParameters;
 import com.inappstory.sdk.stories.api.models.CachedSessionData;
 import com.inappstory.sdk.stories.api.models.SessionRequestFields;
 import com.inappstory.sdk.core.network.content.models.SessionResponse;
@@ -71,6 +72,7 @@ public class SessionManager {
         synchronized (openProcessLock) {
             checkOpen = openProcess;
         }
+        final IASDataSettingsHolder settingsHolder = ((IASDataSettingsHolder) core.settingsAPI());
         new ConnectionCheck().check(core.appContext(), new ConnectionCheckCallback(core) {
             @Override
             public void success() {
@@ -78,7 +80,13 @@ public class SessionManager {
                 if (session.isEmpty() || checkOpen) {
                     openSession(callback);
                 } else {
-                    callback.onSuccess(session);
+                    callback.onSuccess(
+                            new RequestLocalParameters(
+                                    session,
+                                    settingsHolder.userId(),
+                                    settingsHolder.lang()
+                            )
+                    );
                 }
             }
 
@@ -111,7 +119,7 @@ public class SessionManager {
         );
         core.statistic().iamV1().disabled(!(isSendStatistic && (
                 response.isAllowStatV1 ||
-                response.isAllowStatV2)
+                        response.isAllowStatV2)
         ));
         ((IASSettingsImpl) core.settingsAPI()).sessionPlaceholders(response.placeholders);
         ((IASSettingsImpl) core.settingsAPI()).sessionImagePlaceholders(response.imagePlaceholders);
@@ -121,11 +129,18 @@ public class SessionManager {
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
+                final IASDataSettingsHolder settingsHolder = ((IASDataSettingsHolder) core.settingsAPI());
                 synchronized (openProcessLock) {
                     openProcess = false;
                     for (OpenSessionCallback localCallback : callbacks)
                         if (localCallback != null)
-                            localCallback.onSuccess(response.session.id);
+                            localCallback.onSuccess(
+                                    new RequestLocalParameters(
+                                            response.session.id,
+                                            settingsHolder.userId(),
+                                            settingsHolder.lang()
+                                    )
+                            );
                     callbacks.clear();
                 }
 
@@ -190,7 +205,6 @@ public class SessionManager {
             return;
         }
         Context context = core.appContext();
-
         final String platform = "android";
         final IASDataSettingsHolder dataSettingsHolder = (IASDataSettingsHolder) core.settingsAPI();
         final String deviceId = dataSettingsHolder.deviceId();
@@ -250,7 +264,7 @@ public class SessionManager {
                                                 closeSession(
                                                         false,
                                                         true,
-                                                        dataSettingsHolder.lang(),
+                                                        dataSettingsHolder.lang().toLanguageTag(),
                                                         null,
                                                         currentSession
                                                 );
@@ -262,7 +276,7 @@ public class SessionManager {
                                                 closeSession(
                                                         false,
                                                         true,
-                                                        dataSettingsHolder.lang(),
+                                                        dataSettingsHolder.lang().toLanguageTag(),
                                                         initialUserId,
                                                         currentSession
                                                 );
@@ -286,7 +300,8 @@ public class SessionManager {
                                                 TextUtils.join(",", dataSettingsHolder.tags());
                                         boolean isSendStatistic = false;
                                         InAppStoryManager manager = InAppStoryManager.getInstance();
-                                        if (manager != null) isSendStatistic = manager.isSendStatistic();
+                                        if (manager != null)
+                                            isSendStatistic = manager.isSendStatistic();
                                         sessionHolder.setSession(cachedSessionData, !(isSendStatistic && response.isAllowStatV1));
 
                                         core.inAppStoryService()
@@ -357,7 +372,7 @@ public class SessionManager {
     public void closeSession(
             final boolean sendStatistic,
             final boolean changeUserIdOrLocale,
-            final Locale oldLocale,
+            final String oldLang,
             final String oldUserId,
             final String oldSessionId
     ) {
@@ -382,7 +397,7 @@ public class SessionManager {
                                         stat
                                 ),
                                 oldUserId,
-                                oldLocale.toLanguageTag()
+                                oldLang
                         ),
                         new NetworkCallback<SessionResponse>() {
                             @Override

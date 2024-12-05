@@ -7,12 +7,12 @@ import com.inappstory.sdk.stories.api.models.StatisticSendObject;
 
 public class DummyApiInterface implements ApiInterface {
     @Override
-    public Request getInAppMessages(Integer srcList, String fields, String expand) {
+    public Request getInAppMessages(Integer srcList, String fields, String expand, String xUserId, String xSessionId, String lang) {
         return new DummyRequest();
     }
 
     @Override
-    public Request getInAppMessage(String id, Integer srcList, String fields, String expand) {
+    public Request getInAppMessage(String id, Integer srcList, String fields, String expand, String xUserId, String xSessionId, String lang) {
         return new DummyRequest();
     }
 
@@ -33,27 +33,6 @@ public class DummyApiInterface implements ApiInterface {
 
     @Override
     public Request getGameByInstanceId(String id, GameLaunchConfigObject object) {
-        return new DummyRequest();
-    }
-
-    @Override
-    public Request getStories(String test, Integer favorite, String tags, String fields, String expand) {
-        return new DummyRequest();
-    }
-
-    @Override
-    public Request getFeed(String feed, String test, Integer favorite,
-                           String tags, String fields, String expand) {
-        return new DummyRequest();
-    }
-
-    @Override
-    public Request getOnboardingFeed(String feed, String test, Integer limit, String tags) {
-        return new DummyRequest();
-    }
-
-    @Override
-    public Request getStoryById(String id, String test, Integer once, Integer srcList, String expand) {
         return new DummyRequest();
     }
 
@@ -100,6 +79,26 @@ public class DummyApiInterface implements ApiInterface {
 
     @Override
     public Request sendGameData(String id, String data) {
+        return new DummyRequest();
+    }
+
+    @Override
+    public Request getStories(String test, Integer favorite, String tags, String fields, String expand, String xUserId, String xSessionId, String lang) {
+        return new DummyRequest();
+    }
+
+    @Override
+    public Request getFeed(String feed, String test, Integer favorite, String tags, String fields, String expand, String xUserId, String xSessionId, String lang) {
+        return new DummyRequest();
+    }
+
+    @Override
+    public Request getOnboardingFeed(String feed, String test, Integer limit, String tags, String xUserId, String xSessionId, String lang) {
+        return new DummyRequest();
+    }
+
+    @Override
+    public Request getStoryById(String id, String test, Integer once, Integer srcList, String expand, String xUserId, String xSessionId, String lang) {
         return new DummyRequest();
     }
 

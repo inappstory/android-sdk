@@ -8,6 +8,7 @@ import com.inappstory.sdk.core.utils.ConnectionCheck;
 import com.inappstory.sdk.core.utils.ConnectionCheckCallback;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
+import com.inappstory.sdk.network.models.RequestLocalParameters;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 
@@ -23,47 +24,57 @@ public class InAppMessageByIdUseCase {
     }
 
     public void get(final InAppMessageByIdCallback callback) {
-        new ConnectionCheck().check(core.appContext(), new ConnectionCheckCallback(core) {
-            @Override
-            public void success() {
-                core.sessionManager().useOrOpenSession(new OpenSessionCallback() {
+        new ConnectionCheck().check(
+                core.appContext(),
+                new ConnectionCheckCallback(core) {
                     @Override
-                    public void onSuccess(String sessionId) {
-                        NetworkClient networkClient = core.network();
-                        networkClient.enqueue(networkClient.getApi().getInAppMessage(
-                                Integer.toString(id),
-                                1,
-                                null,
-                                "slides"
-                        ), new NetworkCallback<InAppMessage>() {
+                    public void success() {
+                        core.sessionManager().useOrOpenSession(new OpenSessionCallback() {
                             @Override
-                            public void onSuccess(InAppMessage response) {
-                                core.contentHolder().readerContent().setByIdAndType(
-                                        response,
-                                        response.id(),
-                                        ContentType.IN_APP_MESSAGE
+                            public void onSuccess(RequestLocalParameters requestLocalParameters) {
+                                NetworkClient networkClient = core.network();
+                                networkClient.enqueue(
+                                        networkClient.getApi().getInAppMessage(
+                                                Integer.toString(id),
+                                                1,
+                                                null,
+                                                "slides",
+                                                requestLocalParameters.userId,
+                                                requestLocalParameters.sessionId,
+                                                requestLocalParameters.locale
+                                        ),
+                                        new NetworkCallback<InAppMessage>() {
+                                            @Override
+                                            public void onSuccess(InAppMessage response) {
+                                                core.contentHolder().readerContent().setByIdAndType(
+                                                        response,
+                                                        response.id(),
+                                                        ContentType.IN_APP_MESSAGE
+                                                );
+                                                callback.success(response);
+                                            }
+
+                                            @Override
+                                            public Type getType() {
+                                                return InAppMessage.class;
+                                            }
+                                        },
+                                        requestLocalParameters
                                 );
-                                callback.success(response);
                             }
 
                             @Override
-                            public Type getType() {
-                                return InAppMessage.class;
+                            public void onError() {
+                                callback.error();
                             }
                         });
                     }
 
                     @Override
-                    public void onError() {
+                    protected void error() {
                         callback.error();
                     }
-                });
-            }
-
-            @Override
-            protected void error() {
-                callback.error();
-            }
-        });
+                }
+        );
     }
 }

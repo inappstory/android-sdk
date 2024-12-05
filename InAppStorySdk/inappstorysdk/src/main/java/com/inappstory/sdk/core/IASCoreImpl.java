@@ -36,6 +36,7 @@ import com.inappstory.sdk.core.api.impl.IASSingleStoryImpl;
 import com.inappstory.sdk.core.api.impl.IASStackFeedImpl;
 import com.inappstory.sdk.core.api.impl.IASStatisticImpl;
 import com.inappstory.sdk.core.api.impl.IASStoriesOpenedCacheImpl;
+import com.inappstory.sdk.core.data.IAppVersion;
 import com.inappstory.sdk.core.dataholders.ContentHolder;
 import com.inappstory.sdk.core.dataholders.IContentHolder;
 import com.inappstory.sdk.core.dataholders.IStoriesListVMHolder;

@@ -9,6 +9,7 @@ import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.IASStackFeed;
 import com.inappstory.sdk.core.data.IListItemContent;
 import com.inappstory.sdk.network.ApiSettings;
+import com.inappstory.sdk.network.models.RequestLocalParameters;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.core.network.content.models.Feed;
 import com.inappstory.sdk.core.network.content.models.Image;
@@ -62,7 +63,7 @@ public class IASStackFeedImpl implements IASStackFeed {
                         : AppearanceManager.getCommonInstance();
         core.sessionManager().useOrOpenSession(new OpenSessionCallback() {
             @Override
-            public void onSuccess(final String sessionId) {
+            public void onSuccess(final RequestLocalParameters requestLocalParameters) {
                 core.network().enqueue(
                         core.network().getApi().getFeed(
                                 localFeed,
@@ -70,7 +71,10 @@ public class IASStackFeedImpl implements IASStackFeed {
                                 0,
                                 localTags,
                                 null,
-                                "stories.slides"
+                                "stories.slides",
+                                requestLocalParameters.userId,
+                                requestLocalParameters.sessionId,
+                                requestLocalParameters.locale
                         ),
                         new LoadFeedCallback() {
                             @Override
@@ -87,7 +91,7 @@ public class IASStackFeedImpl implements IASStackFeed {
                                     final StackStoryObserver observer = new StackStoryObserver(
                                             core,
                                             response.stories,
-                                            sessionId,
+                                            requestLocalParameters.sessionId,
                                             localAppearanceManager,
                                             localUniqueStackId,
                                             localFeed,
@@ -141,7 +145,8 @@ public class IASStackFeedImpl implements IASStackFeed {
                             public void onError(int code, String message) {
                                 stackFeedResult.error();
                             }
-                        }
+                        },
+                        requestLocalParameters
                 );
             }
 

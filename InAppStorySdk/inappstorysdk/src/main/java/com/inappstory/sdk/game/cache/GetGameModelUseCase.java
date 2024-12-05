@@ -5,6 +5,7 @@ import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
+import com.inappstory.sdk.network.models.RequestLocalParameters;
 import com.inappstory.sdk.stories.api.models.GameCenterData;
 import com.inappstory.sdk.stories.api.models.GameLaunchConfigObject;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
@@ -27,12 +28,15 @@ public class GetGameModelUseCase {
             return;
         }
         demoMode = ((IASDataSettingsHolder) core.settingsAPI()).gameDemoMode();
-        inAppStoryManager.iasCore().sessionManager()
-                .useOrOpenSession(new OpenSessionCallback() {
+        inAppStoryManager.iasCore().sessionManager().useOrOpenSession(
+                new OpenSessionCallback() {
                     @Override
-                    public void onSuccess(String sessionId) {
+                    public void onSuccess(RequestLocalParameters requestLocalParameters) {
                         networkClient.enqueue(
-                                networkClient.getApi().getGameByInstanceId(gameId, new GameLaunchConfigObject(demoMode)),
+                                networkClient.getApi().getGameByInstanceId(
+                                        gameId,
+                                        new GameLaunchConfigObject(demoMode)
+                                ),
                                 new NetworkCallback<GameCenterData>() {
                                     @Override
                                     public void onSuccess(final GameCenterData response) {
@@ -70,6 +74,7 @@ public class GetGameModelUseCase {
                     public void onError() {
                         callback.onError("Open session error");
                     }
-                });
+                }
+        );
     }
 }

@@ -6,6 +6,7 @@ import android.content.Context;
 
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.network.JsonParser;
+import com.inappstory.sdk.network.models.RequestLocalParameters;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.statistic.IASStatisticProfilingImpl;
 import com.inappstory.sdk.stories.utils.TaskRunner;
@@ -42,37 +43,41 @@ public class JsApiClient {
                 config.data, config.id, config.cb, config.profilingKey, callback);
     }
 
-    void checkSessionAndSendRequest(final String method,
-                                    final String path,
-                                    final Map<String, String> headers,
-                                    final Map<String, String> getParams,
-                                    final String body,
-                                    final String requestId,
-                                    final String cb,
-                                    final String profilingKey,
-                                    final JsApiResponseCallback callback) {
-        core.sessionManager().useOrOpenSession(new OpenSessionCallback() {
-            @Override
-            public void onSuccess(String sessionId) {
-                sendRequest(
-                        method,
-                        path,
-                        baseUrl,
-                        headers,
-                        getParams,
-                        body,
-                        requestId,
-                        cb,
-                        profilingKey,
-                        callback
-                );
-            }
+    void checkSessionAndSendRequest(
+            final String method,
+            final String path,
+            final Map<String, String> headers,
+            final Map<String, String> getParams,
+            final String body,
+            final String requestId,
+            final String cb,
+            final String profilingKey,
+            final JsApiResponseCallback callback
+    ) {
+        core.sessionManager().useOrOpenSession(
+                new OpenSessionCallback() {
+                    @Override
+                    public void onSuccess(RequestLocalParameters requestLocalParameters) {
+                        sendRequest(
+                                method,
+                                path,
+                                baseUrl,
+                                headers,
+                                getParams,
+                                body,
+                                requestId,
+                                cb,
+                                profilingKey,
+                                callback
+                        );
+                    }
 
-            @Override
-            public void onError() {
+                    @Override
+                    public void onError() {
 
-            }
-        });
+                    }
+                }
+        );
     }
 
     String oldEscape(String raw) {

@@ -20,7 +20,7 @@ import com.inappstory.sdk.network.annotations.api.Query;
 import com.inappstory.sdk.network.annotations.api.QueryObject;
 import com.inappstory.sdk.network.annotations.api.ReplaceHeader;
 import com.inappstory.sdk.network.utils.ObjectToQuery;
-import com.inappstory.sdk.network.utils.UrlEncoder;
+import com.inappstory.sdk.utils.UrlEncoder;
 import com.inappstory.sdk.network.utils.headers.AcceptEncodingHeader;
 import com.inappstory.sdk.network.utils.headers.AcceptHeader;
 import com.inappstory.sdk.network.utils.headers.AcceptLanguageHeader;
@@ -114,7 +114,7 @@ public final class NetworkHandler implements InvocationHandler {
                 }
             }
         }
-        if (!bodyEncoded.isEmpty() && bodyEncoded.startsWith("&")) {
+        if (bodyEncoded.startsWith("&")) {
             bodyEncoded = bodyEncoded.substring(1);
         }
         body += bodyEncoded;
@@ -167,10 +167,23 @@ public final class NetworkHandler implements InvocationHandler {
         if (!excludeList.contains(HeadersKeys.APP_PACKAGE_ID))
             resHeaders.add(new XAppPackageIdHeader(core.appContext()));
         if (!excludeList.contains(HeadersKeys.AUTH_SESSION_ID)) {
-            synchronized (sessionLock) {
-                if (sessionId != null && !sessionId.isEmpty()) {
-                    resHeaders.add(new AuthSessionIdHeader(sessionId));
-                } else throw new RuntimeException("Wrong session");
+            boolean hasSessionReplace = false;
+            for (Pair<String, String> replaceHeader : replaceHeaders) {
+                if (replaceHeader.first.equals(HeadersKeys.AUTH_SESSION_ID) && replaceHeader.second != null) {
+                    resHeaders.add(new AuthSessionIdHeader(replaceHeader.second));
+                    hasSessionReplace = true;
+                    break;
+                }
+            }
+            if (!hasSessionReplace) {
+                synchronized (sessionLock) {
+                    if (sessionId != null && !sessionId.isEmpty()) {
+                        resHeaders.add(new AuthSessionIdHeader(sessionId));
+                    } else {
+                        InAppStoryManager.showDLog("AdditionalLog", "Session not set");
+                        throw new RuntimeException("Wrong session");
+                    }
+                }
             }
         }
         if (!excludeList.contains(HeadersKeys.CONTENT_TYPE))
@@ -186,9 +199,12 @@ public final class NetworkHandler implements InvocationHandler {
         for (Header header : resHeaders) {
             if (header instanceof MutableHeader) {
                 for (Pair<String, String> replaceHeader : replaceHeaders) {
-                    if (header.getKey().equals(replaceHeader.first)) {
+                    if (header.getKey().equals(replaceHeader.first) && replaceHeader.second != null) {
                         ((MutableHeader) header).setValue(replaceHeader.second);
                     }
+                }
+                if (header.getKey().equals(HeadersKeys.USER_ID)) {
+                    ((MutableHeader) header).setValue(new UrlEncoder().encode(header.getValue()));
                 }
             }
         }

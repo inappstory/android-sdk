@@ -3,6 +3,7 @@ package com.inappstory.sdk.core.api;
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.AppearanceManager;
+import com.inappstory.sdk.core.data.IAppVersion;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
 
 import java.util.List;
@@ -12,6 +13,7 @@ import java.util.Map;
 public interface IASDataSettings {
     void deviceId(String deviceId);
     void setUserId(String userId);
+    void setExternalAppVersion(IAppVersion externalAppVersion);
     void gameDemoMode(boolean gameDemoMode);
     void setLang(Locale lang);
     void isSoundOn(boolean isSoundOn);

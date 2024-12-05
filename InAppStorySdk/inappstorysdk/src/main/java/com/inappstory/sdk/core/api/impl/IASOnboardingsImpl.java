@@ -21,6 +21,7 @@ import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenAppearanc
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenData;
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenStrategy;
 import com.inappstory.sdk.network.ApiSettings;
+import com.inappstory.sdk.network.models.RequestLocalParameters;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.core.network.content.models.Feed;
 import com.inappstory.sdk.core.network.content.models.Story;
@@ -72,7 +73,7 @@ public class IASOnboardingsImpl implements IASOnboardings {
         }
         core.sessionManager().useOrOpenSession(new OpenSessionCallback() {
             @Override
-            public void onSuccess(final String sessionId) {
+            public void onSuccess(final RequestLocalParameters requestLocalParameters) {
                 final String onboardUID =
                         core.statistic().profiling().addTask("api_onboarding");
                 core.network().enqueue(
@@ -80,7 +81,10 @@ public class IASOnboardingsImpl implements IASOnboardings {
                                 usedFeed,
                                 ApiSettings.getInstance().getTestKey(),
                                 limit,
-                                localTags
+                                localTags,
+                                requestLocalParameters.userId,
+                                requestLocalParameters.sessionId,
+                                requestLocalParameters.locale
                         ),
                         new LoadFeedCallback() {
                             @Override
@@ -105,7 +109,13 @@ public class IASOnboardingsImpl implements IASOnboardings {
                                         if (add) notOpened.add(story);
                                     }
                                 }
-                                showLoadedOnboardings(notOpened, context, appearanceManager, sessionId, usedFeed);
+                                showLoadedOnboardings(
+                                        notOpened,
+                                        context,
+                                        appearanceManager,
+                                        requestLocalParameters.sessionId,
+                                        usedFeed
+                                );
                             }
 
                             @Override
@@ -119,7 +129,9 @@ public class IASOnboardingsImpl implements IASOnboardings {
                                 core.statistic().profiling().setReady(onboardUID);
                                 loadOnboardingError(usedFeed, "Can't load onboardings: timeout");
                             }
-                        });
+                        },
+                        requestLocalParameters
+                );
             }
 
             @Override

@@ -61,7 +61,7 @@ public abstract class LoadListCallback extends NetworkCallback<List<Story>> {
                 core.sessionManager().closeSession(
                         true,
                         false,
-                        settingsHolder.lang(),
+                        settingsHolder.lang().toLanguageTag(),
                         settingsHolder.userId(),
                         core.sessionManager().getSession().getSessionId()
                 );

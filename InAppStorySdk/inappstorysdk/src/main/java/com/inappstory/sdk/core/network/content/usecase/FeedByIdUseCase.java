@@ -15,6 +15,7 @@ import com.inappstory.sdk.core.utils.ConnectionCheckCallback;
 import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.network.callbacks.SimpleApiCallback;
+import com.inappstory.sdk.network.models.RequestLocalParameters;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.core.network.content.models.Feed;
 import com.inappstory.sdk.core.network.content.models.Image;
@@ -37,7 +38,10 @@ public class FeedByIdUseCase {
     private final IASCore core;
     private final String feed;
 
-    public FeedByIdUseCase(IASCore core, String feed) {
+    public FeedByIdUseCase(
+            IASCore core,
+            String feed
+    ) {
         this.core = core;
         this.feed = feed;
     }
@@ -50,8 +54,6 @@ public class FeedByIdUseCase {
         SimpleListCallback loadCallback = new SimpleListCallback() {
             @Override
             public void onSuccess(final List<Story> stories, Object... args) {
-
-                String feedId = null;
                 final ContentType type = ContentType.STORY;
                 final IContentHolder contentHolder = core.contentHolder();
                 for (int i = 0; i < stories.size(); i++) {
@@ -64,59 +66,65 @@ public class FeedByIdUseCase {
                 }
                 core.storyListCache().saveStoriesOpened(type);
                 boolean loadFav = hasFavorite;
+                IASDataSettingsHolder dataSettingsHolder = (IASDataSettingsHolder) core.settingsAPI();
+                RequestLocalParameters requestLocalParameters = new RequestLocalParameters(
+                        core.sessionManager().getSession().getSessionId(),
+                        dataSettingsHolder.userId(),
+                        dataSettingsHolder.lang()
+                );
                 if (args != null && args.length > 0) {
-                    loadFav &= (boolean) args[0];
-                    if (args.length > 1) {
-                        feedId = (String) args[1];
+                    int shift = 0;
+                    if (args[0] instanceof RequestLocalParameters) {
+                        requestLocalParameters = (RequestLocalParameters) args[0];
+                        shift = 1;
                     }
+                    loadFav &= (boolean) args[shift];
                 }
-                final String sFeedId = feedId;
                 if (loadFav) {
                     final String loadFavUID = core.statistic().profiling().addTask("api_favorite_item");
-                    loadStoryFavoriteList(new NetworkCallback<List<Story>>() {
-                        @Override
-                        public void onSuccess(List<Story> favorites) {
-                            core.statistic().profiling().setReady(loadFavUID);
-                            contentHolder.clearAllFavorites(type);
-                            for (int i = 0; i < favorites.size(); i++) {
-                                IListItemContent listItemContent = favorites.get(i);
-                                /*contentHolder.listsContent().setByIdAndType(
-                                        listItemContent, listItemContent.id(), type
-                                );*/
-                              //  contentHolder.like(listItemContent.id(), type, listItemContent.like());
-                                contentHolder.favoriteItems().setByIdAndType(
-                                        new StoryFavoriteImage(
+                    loadStoryFavoriteList(
+                            new NetworkCallback<List<Story>>() {
+                                @Override
+                                public void onSuccess(List<Story> favorites) {
+                                    core.statistic().profiling().setReady(loadFavUID);
+                                    contentHolder.clearAllFavorites(type);
+                                    for (int i = 0; i < favorites.size(); i++) {
+                                        IListItemContent listItemContent = favorites.get(i);
+                                        contentHolder.favoriteItems().setByIdAndType(
+                                                new StoryFavoriteImage(
+                                                        listItemContent.id(),
+                                                        listItemContent.imageCoverByQuality(Image.QUALITY_MEDIUM),
+                                                        listItemContent.backgroundColor()
+                                                ),
                                                 listItemContent.id(),
-                                                listItemContent.imageCoverByQuality(Image.QUALITY_MEDIUM),
-                                                listItemContent.backgroundColor()
-                                        ),
-                                        listItemContent.id(),
-                                        ContentType.STORY
-                                );
-                                contentHolder.favorite(listItemContent.id(), type, true);
-                            }
-                            core.storyListCache().saveStoriesOpened(type);
-                            invokeStoriesCallback(stories, callback);
-                            if (favorites.size() > 0 && favCallback != null) {
-                                favCallback.success(
-                                        contentHolder
-                                                .favoriteItems()
-                                                .getByType(ContentType.STORY)
-                                );
-                            }
-                        }
+                                                ContentType.STORY
+                                        );
+                                        contentHolder.favorite(listItemContent.id(), type, true);
+                                    }
+                                    core.storyListCache().saveStoriesOpened(type);
+                                    invokeStoriesCallback(stories, callback);
+                                    if (favorites.size() > 0 && favCallback != null) {
+                                        favCallback.success(
+                                                contentHolder
+                                                        .favoriteItems()
+                                                        .getByType(ContentType.STORY)
+                                        );
+                                    }
+                                }
 
-                        @Override
-                        public Type getType() {
-                            return new StoryListType();
-                        }
+                                @Override
+                                public Type getType() {
+                                    return new StoryListType();
+                                }
 
-                        @Override
-                        public void errorDefault(String message) {
-                            core.statistic().profiling().setReady(loadFavUID);
-                            invokeStoriesCallback(stories, callback);
-                        }
-                    });
+                                @Override
+                                public void errorDefault(String message) {
+                                    core.statistic().profiling().setReady(loadFavUID);
+                                    invokeStoriesCallback(stories, callback);
+                                }
+                            },
+                            requestLocalParameters
+                    );
                 } else {
                     invokeStoriesCallback(stories, callback);
                 }
@@ -144,7 +152,8 @@ public class FeedByIdUseCase {
     }
 
     private void loadStoryFavoriteList(
-            final NetworkCallback<List<Story>> callback
+            NetworkCallback<List<Story>> callback,
+            RequestLocalParameters requestLocalParameters
     ) {
         core.network().enqueue(
                 core.network().getApi().getStories(
@@ -152,9 +161,13 @@ public class FeedByIdUseCase {
                         1,
                         null,
                         "id, background_color, image",
-                        "slides"
+                        "slides",
+                        requestLocalParameters.userId,
+                        requestLocalParameters.sessionId,
+                        requestLocalParameters.locale
                 ),
-                callback
+                callback,
+                requestLocalParameters
         );
     }
 
@@ -180,73 +193,78 @@ public class FeedByIdUseCase {
                 new ConnectionCheckCallback(core) {
                     @Override
                     public void success() {
-                        core.sessionManager().useOrOpenSession(new OpenSessionCallback() {
-                            @Override
-                            public void onSuccess(final String sessionId) {
-                                final String loadStoriesUID =
-                                        core.statistic().profiling().addTask("api_story_list");
-                                core.network().enqueue(
-                                        core.network().getApi().getFeed(
-                                                feed,
-                                                ApiSettings.getInstance().getTestKey(),
-                                                0,
-                                                TextUtils.join(",",
-                                                        ((IASDataSettingsHolder) core.settingsAPI()).tags()),
-                                                null,
-                                                "stories.slides"
-                                        ),
-                                        new LoadFeedCallback() {
-                                            @Override
-                                            public void onSuccess(Feed response) {
-                                                if (response == null) {
-                                                    loadFeedError(feed);
-                                                    callback.onError("");
-                                                } else {
-                                                    core.statistic().profiling().setReady(loadStoriesUID);
-                                                    callback.onSuccess(
-                                                            response.stories,
-                                                            response.hasFavorite(),
-                                                            response.getFeedId()
-                                                    );
-                                                }
-                                            }
+                        core.sessionManager().useOrOpenSession(
+                                new OpenSessionCallback() {
+                                    @Override
+                                    public void onSuccess(final RequestLocalParameters requestLocalParameters) {
+                                        final String loadStoriesUID =
+                                                core.statistic().profiling().addTask("api_story_list");
+                                        core.network().enqueue(
+                                                core.network().getApi().getFeed(
+                                                        feed,
+                                                        ApiSettings.getInstance().getTestKey(),
+                                                        0,
+                                                        TextUtils.join(",",
+                                                                ((IASDataSettingsHolder) core.settingsAPI()).tags()),
+                                                        null,
+                                                        "stories.slides",
+                                                        requestLocalParameters.userId,
+                                                        requestLocalParameters.sessionId,
+                                                        requestLocalParameters.locale
+                                                ),
+                                                new LoadFeedCallback() {
+                                                    @Override
+                                                    public void onSuccess(Feed response) {
+                                                        if (response == null) {
+                                                            loadFeedError(feed);
+                                                            callback.onError("");
+                                                        } else {
+                                                            core.statistic().profiling().setReady(loadStoriesUID);
+                                                            callback.onSuccess(
+                                                                    response.stories,
+                                                                    requestLocalParameters,
+                                                                    response.hasFavorite(),
+                                                                    response.getFeedId()
+                                                            );
+                                                        }
+                                                    }
 
-                                            @Override
-                                            public void errorDefault(String message) {
-                                                core.statistic().profiling().setReady(loadStoriesUID);
-                                                loadFeedError(feed);
-                                                callback.onError(message);
-                                            }
+                                                    @Override
+                                                    public void errorDefault(String message) {
+                                                        core.statistic().profiling().setReady(loadStoriesUID);
+                                                        loadFeedError(feed);
+                                                        callback.onError(message);
+                                                    }
 
 
-                                            @Override
-                                            public void error424(String message) {
-                                                core.statistic().profiling().setReady(loadStoriesUID);
-                                                loadFeedError(null);
-                                                callback.onError(message);
+                                                    @Override
+                                                    public void error424(String message) {
+                                                        core.statistic().profiling().setReady(loadStoriesUID);
+                                                        loadFeedError(null);
+                                                        callback.onError(message);
+                                                        core.sessionManager().closeSession(
+                                                                true,
+                                                                false,
+                                                                requestLocalParameters.locale,
+                                                                requestLocalParameters.userId,
+                                                                requestLocalParameters.sessionId
+                                                        );
 
-                                                IASDataSettingsHolder dataSettingsHolder =
-                                                        (IASDataSettingsHolder) core.settingsAPI();
-                                                core.sessionManager().closeSession(
-                                                        true,
-                                                        false,
-                                                        dataSettingsHolder.lang(),
-                                                        dataSettingsHolder.userId(),
-                                                        sessionId
-                                                );
+                                                        if (retry)
+                                                            loadFeed(feed, callback, false);
+                                                    }
+                                                },
+                                                requestLocalParameters
+                                        );
+                                    }
 
-                                                if (retry)
-                                                    loadFeed(feed, callback, false);
-                                            }
-                                        });
-                            }
-
-                            @Override
-                            public void onError() {
-                                loadFeedError(feed);
-                                callback.onError("");
-                            }
-                        });
+                                    @Override
+                                    public void onError() {
+                                        loadFeedError(feed);
+                                        callback.onError("");
+                                    }
+                                }
+                        );
                     }
 
                     @Override

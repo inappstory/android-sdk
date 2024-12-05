@@ -21,6 +21,7 @@ import com.inappstory.sdk.core.api.IASStackFeed;
 import com.inappstory.sdk.core.api.IASStatistic;
 import com.inappstory.sdk.core.api.IASStoryList;
 import com.inappstory.sdk.core.api.IASStoriesOpenedCache;
+import com.inappstory.sdk.core.data.IAppVersion;
 import com.inappstory.sdk.core.dataholders.IContentHolder;
 import com.inappstory.sdk.core.dataholders.IStoriesListVMHolder;
 import com.inappstory.sdk.core.ui.screens.ScreensManager;

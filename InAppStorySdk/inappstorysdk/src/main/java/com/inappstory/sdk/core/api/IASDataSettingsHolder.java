@@ -2,6 +2,7 @@ package com.inappstory.sdk.core.api;
 
 import android.util.Pair;
 
+import com.inappstory.sdk.core.data.IAppVersion;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
 
 import java.util.List;
@@ -9,6 +10,7 @@ import java.util.Locale;
 import java.util.Map;
 
 public interface IASDataSettingsHolder {
+    IAppVersion externalAppVersion();
     String deviceId();
     String userId();
     Locale lang();

@@ -29,6 +29,7 @@ import com.inappstory.sdk.core.api.IASStatisticStoriesV1;
 import com.inappstory.sdk.core.data.IListItemContent;
 import com.inappstory.sdk.core.storieslist.StoriesListVMState;
 import com.inappstory.sdk.core.ui.screens.storyreader.StoryScreenHolder;
+import com.inappstory.sdk.network.models.RequestLocalParameters;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.core.network.content.callbacks.LoadStoriesCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
@@ -333,34 +334,42 @@ public class StoriesList extends RecyclerView {
                 }
             }
         }
-        InAppStoryManager.useCore(new UseIASCoreCallback() {
-            @Override
-            public void use(@NonNull final IASCore core) {
-                final List<Integer> newIndexes = core.statistic().newStatisticPreviews(indexes);
-                core.sessionManager().useOrOpenSession(new OpenSessionCallback() {
+        InAppStoryManager.useCore(
+                new UseIASCoreCallback() {
                     @Override
-                    public void onSuccess(String sessionId) {
-                        core.statistic().storiesV2().sendViewStory(newIndexes,
-                                isFavoriteList ? IASStatisticStoriesV2Impl.FAVORITE : IASStatisticStoriesV2Impl.LIST, feedId);
-                        core.statistic().storiesV1(
-                                sessionId,
-                                new GetStatisticV1Callback() {
+                    public void use(@NonNull final IASCore core) {
+                        final List<Integer> newIndexes = core.statistic().newStatisticPreviews(indexes);
+                        core.sessionManager().useOrOpenSession(
+                                new OpenSessionCallback() {
                                     @Override
-                                    public void get(@NonNull IASStatisticStoriesV1 manager) {
-                                        manager.previewStatisticEvent(newIndexes);
+                                    public void onSuccess(RequestLocalParameters requestLocalParameters) {
+                                        core.statistic().storiesV2().sendViewStory(
+                                                newIndexes,
+                                                isFavoriteList ?
+                                                        IASStatisticStoriesV2Impl.FAVORITE :
+                                                        IASStatisticStoriesV2Impl.LIST,
+                                                feedId
+                                        );
+                                        core.statistic().storiesV1(
+                                                requestLocalParameters.sessionId,
+                                                new GetStatisticV1Callback() {
+                                                    @Override
+                                                    public void get(@NonNull IASStatisticStoriesV1 manager) {
+                                                        manager.previewStatisticEvent(newIndexes);
+                                                    }
+                                                }
+                                        );
+                                    }
+
+                                    @Override
+                                    public void onError() {
+
                                     }
                                 }
                         );
                     }
-
-                    @Override
-                    public void onError() {
-
-                    }
-                });
-
-            }
-        });
+                }
+        );
 
 
     }
