@@ -4,6 +4,7 @@ import static com.inappstory.sdk.stories.api.models.Story.VOD;
 
 import android.util.Pair;
 
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderType;
@@ -76,6 +77,9 @@ class SlidesDownloader {
         LruDiskCache cache = service.getCommonCache();
         LruDiskCache vodCache = service.getVodCache();
         SlideTask slideTask = pageTasks.get(key);
+
+        InAppStoryManager.showELog("LoadSlideCheck",
+                "slideTask " + slideTask);
         if (slideTask != null) {
             if (slideTask.loadType == 2) {
                 for (ResourceMappingObject object : slideTask.staticResources) {

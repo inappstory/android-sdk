@@ -307,6 +307,8 @@ public class StoriesViewManager {
                 storyId,
                 index,
                 pageManager.getStoryType());
+        InAppStoryManager.showELog("LoadSlideCheck",
+                "slideInCache " + slideInCache);
         if (slideInCache == 1) {
             slideInCache(service, story, index);
         } else {
@@ -315,12 +317,15 @@ public class StoriesViewManager {
     }
 
     private void slideInCache(final InAppStoryService service, final Story story, final int index) {
-
         ISessionHolder sessionHolder = service.getSession();
         if (sessionHolder.checkIfSessionAssetsIsReady()) {
             innerLoad(story);
             pageManager.slideLoadedInCache(index, true);
+            InAppStoryManager.showELog("LoadSlideCheck",
+                    "assetsIsReady");
         } else {
+            InAppStoryManager.showELog("LoadSlideCheck",
+                    "assetsNotReady");
             slideNotInCache(service, index);
             pageManager.slideContentInCache(index);
         }

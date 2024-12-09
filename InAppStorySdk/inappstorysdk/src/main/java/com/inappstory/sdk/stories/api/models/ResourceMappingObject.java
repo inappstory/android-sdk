@@ -68,4 +68,13 @@ public class ResourceMappingObject {
         }
         return res;
     }
+
+    @Override
+    public String toString() {
+        return "ResourceMappingObject{" +
+                "url='" + url + '\'' +
+                ", filename='" + filename + '\'' +
+                ", index=" + index +
+                '}';
+    }
 }

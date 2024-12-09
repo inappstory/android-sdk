@@ -50,6 +50,8 @@ public class WebAppInterface {
 
     @JavascriptInterface
     public void storyLoadingFailed(String data) {
+        InAppStoryManager.showELog("LoadSlideCheck",
+                "slideLoadingFailed " + data);
         if (data != null) {
             StoryLoadedData loadedData = JsonParser.fromJson(data, StoryLoadedData.class);
             manager.slideLoadError(loadedData.index);
@@ -153,6 +155,8 @@ public class WebAppInterface {
 
     @JavascriptInterface
     public void storyLoaded() {
+        InAppStoryManager.showELog("LoadSlideCheck",
+                "slideLoaded");
         manager.storyLoaded(-1);
         logMethod("");
     }

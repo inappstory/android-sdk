@@ -24,9 +24,11 @@ public class UrlWithAlter {
         return alter;
     }
 
-    @NonNull
     @Override
     public String toString() {
-        return url + " " + alter;
+        return "UrlWithAlter{" +
+                "url='" + url + '\'' +
+                ", alter='" + alter + '\'' +
+                '}';
     }
 }

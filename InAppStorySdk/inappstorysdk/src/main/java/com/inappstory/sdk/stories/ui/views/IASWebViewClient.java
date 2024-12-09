@@ -9,6 +9,7 @@ import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.stories.cache.Downloader;
@@ -165,8 +166,14 @@ public class IASWebViewClient extends WebViewClient {
             WebResourceResponse response = parseVODRequest(request);
             if (response == null)
                 response = getChangedResponse(request.getUrl().toString());
-            if (response != null) return response;
+            if (response != null) {
+                InAppStoryManager.showELog("LoadSlideCheck",
+                        "shouldInterceptRequestSuccess " + request.getUrl().toString());
+                return response;
+            }
         } catch (Exception e) {
+            InAppStoryManager.showELog("LoadSlideCheck",
+                    "shouldInterceptRequestError " + request.getUrl().toString() + " " + e.getMessage());
             e.printStackTrace();
         }
         return super.shouldInterceptRequest(view, request);

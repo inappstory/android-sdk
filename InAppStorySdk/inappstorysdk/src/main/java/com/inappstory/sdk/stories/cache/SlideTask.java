@@ -15,6 +15,10 @@ public class SlideTask {
     @Override
     public String toString() {
         return "SlideTask{" +
+                "priority=" + priority +
+                ", staticResources=" + staticResources +
+                ", urlsWithAlter=" + urlsWithAlter +
+                ", vodResources=" + vodResources +
                 ", loadType=" + loadType +
                 '}';
     }
