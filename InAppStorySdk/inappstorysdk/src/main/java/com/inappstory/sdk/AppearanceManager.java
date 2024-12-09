@@ -148,6 +148,7 @@ public class AppearanceManager {
 
     private boolean csListItemTitleVisibility = true;
     private int csListItemTitleSize = -1;
+    @Deprecated
     private int csListItemTitleColor = Color.WHITE;
 
 
@@ -862,6 +863,7 @@ public class AppearanceManager {
      * @param csListItemTitleColor (csListItemTitleColor)
      * @return {@link AppearanceManager}
      */
+    @Deprecated
     public AppearanceManager csListItemTitleColor(int csListItemTitleColor) {
         this.csListItemTitleColor = csListItemTitleColor;
         return AppearanceManager.this;
@@ -929,6 +931,7 @@ public class AppearanceManager {
         return csListItemTitleSize;
     }
 
+    @Deprecated
     public int csListItemTitleColor() {
         return csListItemTitleColor;
     }
