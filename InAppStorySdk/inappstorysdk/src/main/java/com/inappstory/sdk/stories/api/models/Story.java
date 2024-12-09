@@ -2,6 +2,7 @@ package com.inappstory.sdk.stories.api.models;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
 
@@ -434,6 +435,14 @@ public class Story implements Parcelable {
         }
 
     };
+
+    @Override
+    public String toString() {
+        return "Story{" +
+                "id=" + id +
+                ", slides=[" + (slides != null ? TextUtils.join(",", slides) : "") +
+                "]}";
+    }
 
     @Override
     public int describeContents() {

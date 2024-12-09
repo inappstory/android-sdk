@@ -21,4 +21,13 @@ public class StorySlide {
     public List<ImagePlaceholderMappingObject> placeholderResources;
     @SerializedName("screenshot_share")
     public boolean isScreenshotShare;
+
+    @Override
+    public String toString() {
+        return "StorySlide{" +
+                "slideIndex=" + slideIndex +
+                ", resources=" + resources +
+                ", placeholderResources=" + placeholderResources +
+                '}';
+    }
 }

@@ -183,6 +183,9 @@ public class StoryDownloadManager {
         getStoriesListByType(Story.StoryType.UGC).clear();
         getStoriesListByType(Story.StoryType.COMMON).clear();
         storyDownloader.cleanTasks();
+
+        InAppStoryManager.showELog("LoadSlideCheck",
+                "cleanTasks destroy");
         slidesDownloader.cleanTasks();
     }
 
@@ -202,6 +205,8 @@ public class StoryDownloadManager {
 
     public void clearCache() {
         storyDownloader.cleanTasks();
+        InAppStoryManager.showELog("LoadSlideCheck",
+                "cleanTasks clearCache");
         slidesDownloader.cleanTasks();
 
         KeyValueStorage.clear();
@@ -382,7 +387,9 @@ public class StoryDownloadManager {
         try {
             return slidesDownloader.checkIfPageLoaded(new SlideTaskData(storyId, index, type));
         } catch (IOException e) {
-            e.printStackTrace();
+            InAppStoryManager.showELog("LoadSlideCheck",
+                    "checkIfPageLoaded error " + e.getMessage());
+            // e.printStackTrace();
             return 0;
         }
     }
@@ -611,6 +618,9 @@ public class StoryDownloadManager {
     public void addCompletedStoryTask(Story story, Story.StoryType type) {
         boolean noStory = true;
         List<Story> stories = getStoriesListByType(type);
+
+        InAppStoryManager.showELog("LoadSlideCheck",
+                "addCompletedStoryTask " + story);
         synchronized (storiesLock) {
             for (Story localStory : stories) {
                 if (localStory == null) continue;

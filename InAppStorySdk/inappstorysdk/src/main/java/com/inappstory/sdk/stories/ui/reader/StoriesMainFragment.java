@@ -393,10 +393,16 @@ public abstract class StoriesMainFragment extends Fragment implements
             }
         });
         final Context context = view.getContext();
-
+        animatedContainer.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                animatedContainer.setVisibility(View.VISIBLE);
+            }
+        }, 100);
         draggableFrame.post(new Runnable() {
             @Override
             public void run() {
+
                 final Rect readerContainer = new Rect();
                 draggableFrame.getGlobalVisibleRect(readerContainer);
                 final int height = draggableFrame.getHeight();

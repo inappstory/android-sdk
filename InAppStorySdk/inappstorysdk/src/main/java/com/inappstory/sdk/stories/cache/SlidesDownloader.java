@@ -40,6 +40,7 @@ class SlidesDownloader {
 
     void cleanTasks() {
         synchronized (pageTasksLock) {
+
             pageTasks.clear();
             firstPriority.clear();
             secondPriority.clear();
@@ -85,6 +86,8 @@ class SlidesDownloader {
                 for (ResourceMappingObject object : slideTask.staticResources) {
                     String uniqueKey = StringsUtils.md5(object.getUrl());
                     if (!cache.hasKey(uniqueKey)) {
+                        InAppStoryManager.showELog("LoadSlideCheck",
+                                "slideTask pageTasks.remove static " + uniqueKey);
                         remove = true;
                     } else {
                         if (cache.getFullFile(uniqueKey) == null) {
@@ -98,6 +101,8 @@ class SlidesDownloader {
                 for (ResourceMappingObject object : slideTask.vodResources) {
                     String uniqueKey = object.getFileName();
                     if (!vodCache.hasKey(uniqueKey)) {
+                        InAppStoryManager.showELog("LoadSlideCheck",
+                                "slideTask pageTasks.remove VOD " + uniqueKey);
                         remove = true;
                     } else {
                         if (vodCache.getFileFromKey(uniqueKey) == null) {
@@ -196,11 +201,15 @@ class SlidesDownloader {
     }
 
     void addStoryPages(Story story, int loadType, Story.StoryType type) throws Exception {
+
         Map<String, Pair<ImagePlaceholderValue, ImagePlaceholderValue>> imgPlaceholders = new HashMap<>();
         InAppStoryService service = InAppStoryService.getInstance();
         if (service != null) {
             imgPlaceholders.putAll(service.getImagePlaceholdersValuesWithDefaults());
         }
+
+        InAppStoryManager.showELog("LoadSlideCheck",
+                "addStoryPages " + story);
         synchronized (pageTasksLock) {
             int key = story.id;
             int slidesCountToCache;
@@ -239,6 +248,8 @@ class SlidesDownloader {
                             }
                         }
                     }
+
+
                     pageTasks.put(new SlideTaskData(key, slideIndex, type), spt);
                 }
             }
