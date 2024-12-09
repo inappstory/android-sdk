@@ -1,5 +1,6 @@
 package com.inappstory.sdk.network;
 
+import android.util.Log;
 import android.util.Pair;
 
 import androidx.annotation.WorkerThread;
@@ -106,6 +107,7 @@ public class NetworkClient {
         String requestId = UUID.randomUUID().toString();
         try {
             response = new RequestSender().send(request, requestId);
+
             response.logId = requestId;
             if (callback == null) {
                 return response;
@@ -117,6 +119,7 @@ public class NetworkClient {
                     dataSettingsHolder.lang()
             );
             if (requestLocalParameters != null && !requestLocalParameters.equals(currentParameters)) {
+                Log.e("StoriesLoadedCallback", "Parameters: " + requestLocalParameters + " " + currentParameters);
                 response = new Response.Builder().code(-5).errorBody("User id or locale was changed").build();
                 response.logId = requestId;
                 callback.onFailure(response);

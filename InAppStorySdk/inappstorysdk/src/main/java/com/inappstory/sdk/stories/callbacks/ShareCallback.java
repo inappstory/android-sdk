@@ -19,5 +19,7 @@ public interface ShareCallback extends IASCallback {
 
     void viewIsVisible(View view);
 
+    void onDestroyView(View shareView);
+
     boolean onBackPress(View view, @NonNull OverlappingContainerActions actions);
 }

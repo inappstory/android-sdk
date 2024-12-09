@@ -1,6 +1,8 @@
 package com.inappstory.sdk.stories.utils;
 
 
+import android.util.Log;
+
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.game.cache.SessionAssetsIsReadyCallback;
 import com.inappstory.sdk.game.cache.UseCaseCallback;
@@ -19,7 +21,6 @@ import java.util.Objects;
 import java.util.Set;
 
 public class SessionHolder implements ISessionHolder {
-    private Session session;
     private final IASCore core;
     private CachedSessionData sessionData = null;
 
@@ -60,20 +61,13 @@ public class SessionHolder implements ISessionHolder {
     public void setSession(CachedSessionData sessionData, boolean v1Disabled) {
         synchronized (sessionLock) {
             this.sessionData = sessionData;
-            if (session != null && session.id != null) {
-                core.statistic().createV1(session.id, v1Disabled);
+            if (sessionData != null && sessionData.sessionId != null) {
+                core.statistic().createV1(sessionData.sessionId, v1Disabled);
             }
             core.statistic().clearViewedIds();
         }
     }
 
-
-    @Override
-    public void sessionData(CachedSessionData sessionData) {
-        synchronized (sessionLock) {
-            this.sessionData = sessionData;
-        }
-    }
 
     @Override
     public void addSessionAssetsKeys(List<SessionAsset> cacheObjects) {
@@ -168,11 +162,11 @@ public class SessionHolder implements ISessionHolder {
     public void clear(String oldSessionId) {
         synchronized (sessionLock) {
             core.statistic().clearViewedIds();
-            if (session != null &&
+            if (sessionData != null &&
                     oldSessionId != null &&
-                    Objects.equals(session.id, oldSessionId)) {
+                    Objects.equals(sessionData.sessionId, oldSessionId)) {
                 core.statistic().removeV1(oldSessionId);
-                session = null;
+                sessionData = null;
             }
         }
     }

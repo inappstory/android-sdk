@@ -11,7 +11,6 @@ public interface ISessionHolder {
     String getSessionId();
     List<SessionAsset> getSessionAssets();
     void setSession(CachedSessionData sessionData, boolean v1Disabled);
-    void sessionData(CachedSessionData sessionData);
 
     void addSessionAssetsKeys(List<SessionAsset> cacheObjects);
     void addSessionAsset(SessionAsset cacheObject);

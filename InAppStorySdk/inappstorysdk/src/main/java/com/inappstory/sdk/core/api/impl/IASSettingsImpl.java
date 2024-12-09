@@ -46,7 +46,10 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
 
     @Override
     public void setUserId(final String newUserId) {
-        if (newUserId == null || StringsUtils.getBytesLength(newUserId) > 255) {
+        if (deviceId == null && (newUserId == null || newUserId.isEmpty())) {
+            return;
+        }
+        if (StringsUtils.getBytesLength(newUserId) > 255) {
             // showELog(IAS_ERROR_TAG, StringsUtils.getErrorStringFromContext(context, R.string.ias_setter_user_length_error));
             return;
         }
@@ -65,22 +68,24 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
         core.screensManager().forceCloseAllReaders(new ForceCloseReaderCallback() {
             @Override
             public void onComplete() {
-                if (sessionId == null || sessionId.isEmpty()) return;
-                core.sessionManager().closeSession(
-                        sendStatistic,
-                        true,
-                        currentLang.toLanguageTag(),
-                        currentUserId,
-                        sessionId
-                );
+                if (sessionId != null && !sessionId.isEmpty()) {
+                    core.contentHolder().favoriteItems().clearByType(ContentType.STORY);
+                    core.contentHolder().favoriteItems().clearByType(ContentType.UGC);
+                    core.contentLoader().storyDownloadManager().refreshLocals(ContentType.STORY);
+                    core.contentLoader().storyDownloadManager().refreshLocals(ContentType.UGC);
+                    core.contentLoader().storyDownloadManager().cleanTasks(false);
+                    core.sessionManager().closeSession(
+                            sendStatistic,
+                            true,
+                            currentLang.toLanguageTag(),
+                            currentUserId,
+                            sessionId
+                    );
+                } else {
+                    core.inAppStoryService().getListReaderConnector().userIdChanged();
+                }
             }
         });
-        core.contentHolder().favoriteItems().clearByType(ContentType.STORY);
-        core.contentHolder().favoriteItems().clearByType(ContentType.UGC);
-        core.contentLoader().storyDownloadManager().refreshLocals(ContentType.STORY);
-        core.contentLoader().storyDownloadManager().refreshLocals(ContentType.UGC);
-        core.contentLoader().storyDownloadManager().cleanTasks(false);
-
     }
 
     @Override
@@ -393,8 +398,13 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
     @Override
     public boolean noCorrectUserIdOrDevice() {
         synchronized (settingsLock) {
-            return deviceId == null &&
-                    (this.userId == null || StringsUtils.getBytesLength(this.userId) > 255);
+            if (StringsUtils.getBytesLength(userId) > 255) {
+                return true;
+            }
+            if (deviceId == null && (userId == null || userId.isEmpty())) {
+                return true;
+            }
+            return false;
         }
     }
 

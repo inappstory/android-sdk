@@ -1,13 +1,17 @@
 package com.inappstory.sdk.stories.cache;
 
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.dataholders.IContentHolder;
 import com.inappstory.sdk.core.data.IListItemContent;
 import com.inappstory.sdk.core.data.IReaderContent;
 import com.inappstory.sdk.core.ui.screens.IReaderSlideViewModel;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
+import com.inappstory.sdk.network.models.RequestLocalParameters;
 import com.inappstory.sdk.stories.api.models.ContentIdWithIndex;
 import com.inappstory.sdk.core.network.content.models.Image;
 import com.inappstory.sdk.stories.api.models.ContentType;
@@ -28,11 +32,11 @@ public class StoryDownloadManager {
     private final IASCore core;
 
     public void clearLocalData() {
-    //    core.contentHolder().favoriteItems().clearByType(ContentType.STORY);
+        //    core.contentHolder().favoriteItems().clearByType(ContentType.STORY);
         core.contentHolder().readerContent().clearByType(ContentType.STORY);
         core.contentHolder().readerContent().clearByType(ContentType.UGC);
-     //   core.contentHolder().listsContent().clearByType(ContentType.STORY);
-     //   core.contentHolder().listsContent().clearByType(ContentType.UGC);
+        //   core.contentHolder().listsContent().clearByType(ContentType.STORY);
+        //   core.contentHolder().listsContent().clearByType(ContentType.UGC);
     }
 
     static final String EXPAND_STRING = "slides,layout";
@@ -66,8 +70,8 @@ public class StoryDownloadManager {
         if (cleanStories) {
             core.contentHolder().readerContent().clearByType(ContentType.STORY);
             core.contentHolder().readerContent().clearByType(ContentType.UGC);
-          //  core.contentHolder().listsContent().clearByType(ContentType.STORY);
-         //   core.contentHolder().listsContent().clearByType(ContentType.UGC);
+            //  core.contentHolder().listsContent().clearByType(ContentType.STORY);
+            //   core.contentHolder().listsContent().clearByType(ContentType.UGC);
         }
         storyDownloader.cleanTasks();
         slidesDownloader.cleanTasks();
@@ -99,7 +103,6 @@ public class StoryDownloadManager {
         }
         slidesDownloader.removeSubscriber(pageViewModel);
     }
-
 
 
     HashMap<ContentIdAndType, Long> storyErrorDelayed = new HashMap<>();
@@ -285,88 +288,97 @@ public class StoryDownloadManager {
                 }
                 setLocalsOpened(ContentType.STORY);
                 boolean loadFav = loadFavorite;
+                IASDataSettingsHolder dataSettingsHolder = (IASDataSettingsHolder) core.settingsAPI();
+                RequestLocalParameters requestLocalParameters = new RequestLocalParameters(
+                        core.sessionManager().getSession().getSessionId(),
+                        dataSettingsHolder.userId(),
+                        dataSettingsHolder.lang()
+                );
                 if (args != null && args.length > 0) {
-                    loadFav &= (boolean) args[0];
-                    if (args.length > 1) {
-                        feedId = (String) args[1];
+                    int shift = 0;
+                    if (args[0] instanceof RequestLocalParameters) {
+                        requestLocalParameters = (RequestLocalParameters) args[0];
+                        shift = 1;
+                    }
+                    if (args.length > shift) {
+                        loadFav &= (boolean) args[shift];
                     }
                 }
                 final String sFeedId = feedId;
                 if (loadFav) {
                     final String loadFavUID = core.statistic().profiling().addTask("api_favorite_item");
 
-                    storyDownloader.loadStoryFavoriteList(new NetworkCallback<List<Story>>() {
-                        @Override
-                        public void onSuccess(List<Story> favorites) {
-                            core.statistic().profiling().setReady(loadFavUID);
-                            contentHolder.clearAllFavorites(type);
-                            for (int i = 0; i < favorites.size(); i++) {
-                                IListItemContent listItemContent = favorites.get(i);
-                          /*      contentHolder.listsContent().setByIdAndType(
-                                        listItemContent, listItemContent.id(), type
-                                );
-                                contentHolder.like(listItemContent.id(), type, listItemContent.like());*/
-                                contentHolder.favoriteItems().setByIdAndType(
-                                        new StoryFavoriteImage(
+                    storyDownloader.loadStoryFavoriteList(
+                            new NetworkCallback<List<Story>>() {
+                                @Override
+                                public void onSuccess(List<Story> favorites) {
+                                    core.statistic().profiling().setReady(loadFavUID);
+                                    contentHolder.clearAllFavorites(type);
+                                    for (int i = 0; i < favorites.size(); i++) {
+                                        IListItemContent listItemContent = favorites.get(i);
+                                        contentHolder.favoriteItems().setByIdAndType(
+                                                new StoryFavoriteImage(
+                                                        listItemContent.id(),
+                                                        listItemContent.imageCoverByQuality(Image.QUALITY_MEDIUM),
+                                                        listItemContent.backgroundColor()
+                                                ),
                                                 listItemContent.id(),
-                                                listItemContent.imageCoverByQuality(Image.QUALITY_MEDIUM),
-                                                listItemContent.backgroundColor()
-                                        ),
-                                        listItemContent.id(),
-                                        ContentType.STORY
-                                );
-                                contentHolder.favorite(listItemContent.id(), type, true);
-                            }
-                            setLocalsOpened(ContentType.STORY);
-                            if (favorites.size() > 0) {
-                                if (callback != null) {
-                                    List<Integer> ids = new ArrayList<>();
-                                    for (Story story : stories) {
-                                        if (story == null) continue;
-                                        ids.add(story.id);
+                                                ContentType.STORY
+                                        );
+                                        contentHolder.favorite(listItemContent.id(), type, true);
                                     }
-                                    callback.setFeedId(sFeedId);
-                                    callback.storiesLoaded(ids);
-                                }
-                                if (favCallback != null) {
-                                    favCallback.success(
-                                            contentHolder
-                                                    .favoriteItems()
-                                                    .getByType(ContentType.STORY)
-                                    );
-                                }
-                            } else {
-                                if (callback != null) {
-                                    List<Integer> ids = new ArrayList<>();
-                                    for (Story story : stories) {
-                                        if (story == null) continue;
-                                        ids.add(story.id);
+                                    setLocalsOpened(ContentType.STORY);
+                                    if (favorites.size() > 0) {
+                                        if (callback != null) {
+                                            List<Integer> ids = new ArrayList<>();
+                                            for (Story story : stories) {
+                                                if (story == null) continue;
+                                                ids.add(story.id);
+                                            }
+                                            callback.setFeedId(sFeedId);
+                                            callback.storiesLoaded(ids);
+                                        }
+                                        if (favCallback != null) {
+                                            favCallback.success(
+                                                    contentHolder
+                                                            .favoriteItems()
+                                                            .getByType(ContentType.STORY)
+                                            );
+                                        }
+                                    } else {
+                                        if (callback != null) {
+                                            List<Integer> ids = new ArrayList<>();
+                                            for (Story story : stories) {
+                                                if (story == null) continue;
+                                                ids.add(story.id);
+                                            }
+                                            callback.setFeedId(sFeedId);
+                                            callback.storiesLoaded(ids);
+                                        }
                                     }
-                                    callback.setFeedId(sFeedId);
-                                    callback.storiesLoaded(ids);
                                 }
-                            }
-                        }
 
-                        @Override
-                        public Type getType() {
-                            return new StoryListType();
-                        }
-
-                        @Override
-                        public void errorDefault(String message) {
-                            core.statistic().profiling().setReady(loadFavUID);
-                            if (callback != null) {
-                                List<Integer> ids = new ArrayList<>();
-                                for (Story story : stories) {
-                                    if (story == null) continue;
-                                    ids.add(story.id);
+                                @Override
+                                public Type getType() {
+                                    return new StoryListType();
                                 }
-                                callback.setFeedId(sFeedId);
-                                callback.storiesLoaded(ids);
-                            }
-                        }
-                    });
+
+                                @Override
+                                public void errorDefault(String message) {
+                                    core.statistic().profiling().setReady(loadFavUID);
+                                    if (callback != null) {
+                                        List<Integer> ids = new ArrayList<>();
+                                        for (Story story : stories) {
+                                            if (story == null) continue;
+                                            ids.add(story.id);
+                                        }
+                                        callback.setFeedId(sFeedId);
+                                        callback.storiesLoaded(ids);
+                                    }
+                                }
+                            },
+                            requestLocalParameters
+                    );
                 } else {
                     if (callback != null) {
                         List<Integer> ids = new ArrayList<>();

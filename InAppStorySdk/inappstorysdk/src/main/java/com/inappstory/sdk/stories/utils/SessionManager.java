@@ -284,10 +284,7 @@ public class SessionManager {
                                                 return;
                                             }
                                         }
-                                        saveSession(response);
-                                        core.network().setSessionId(response.session.id);
                                         core.statistic().profiling().setReady(sessionOpenUID);
-                                        openStatisticSuccess(response);
                                         CachedSessionData cachedSessionData = new CachedSessionData();
                                         cachedSessionData.userId = serviceUserId;
                                         cachedSessionData.placeholders = response.placeholders;
@@ -303,7 +300,9 @@ public class SessionManager {
                                         if (manager != null)
                                             isSendStatistic = manager.isSendStatistic();
                                         sessionHolder.setSession(cachedSessionData, !(isSendStatistic && response.isAllowStatV1));
-
+                                        core.network().setSessionId(response.session.id);
+                                        saveSession(response);
+                                        openStatisticSuccess(response);
                                         core.inAppStoryService()
                                                 .getListReaderConnector().sessionIsOpened(currentSession);
                                         if (response.preloadGame)

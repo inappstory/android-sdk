@@ -32,4 +32,13 @@ public class RequestLocalParameters {
     public String sessionId;
     public String userId;
     public String locale;
+
+    @Override
+    public String toString() {
+        return "RequestLocalParameters{" +
+                "sessionId='" + sessionId + '\'' +
+                ", userId='" + userId + '\'' +
+                ", locale='" + locale + '\'' +
+                '}';
+    }
 }

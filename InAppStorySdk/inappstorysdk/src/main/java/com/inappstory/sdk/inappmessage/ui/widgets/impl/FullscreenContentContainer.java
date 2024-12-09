@@ -7,6 +7,7 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AccelerateInterpolator;
+import android.view.animation.DecelerateInterpolator;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
@@ -19,6 +20,8 @@ import com.inappstory.sdk.core.utils.ColorUtils;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageFullscreenAppearance;
 import com.inappstory.sdk.inappmessage.ui.widgets.IAMContentContainer;
 import com.inappstory.sdk.stories.utils.Sizes;
+import com.inappstory.sdk.utils.animation.IndependentAnimator;
+import com.inappstory.sdk.utils.animation.IndependentAnimatorListener;
 
 public class FullscreenContentContainer extends IAMContentContainer<InAppMessageFullscreenAppearance> {
 
@@ -78,58 +81,69 @@ public class FullscreenContentContainer extends IAMContentContainer<InAppMessage
                     break;
                 case 1:
                     background.setAlpha(0f);
-                    container.setTranslationY(getHeight());
-                    container.animate()
-                            .translationY(0)
-                            .setInterpolator(new AccelerateInterpolator())
-                            .setDuration(500)
-                            .setListener(
-                                    new AnimatorListenerAdapter() {
-                                        @Override
-                                        public void onAnimationStart(Animator animation) {
-                                            super.onAnimationStart(animation);
-                                            setVisibility(VISIBLE);
-                                        }
+                    final float height = getHeight();
+                    container.setTranslationY(height);
+                    new IndependentAnimator(new IndependentAnimatorListener() {
+                        @Override
+                        public void onStart() {
+                            setVisibility(VISIBLE);
+                        }
 
-                                        @Override
-                                        public void onAnimationEnd(Animator animation) {
-                                            super.onAnimationEnd(animation);
-                                            showAnimationEnd();
-                                            //   setVisibility(VISIBLE);
-                                        }
-                                    }
-                            )
-                            .start();
-                    background.animate().alpha(1f).setDuration(500).start();
+                        @Override
+                        public void onUpdate(final float progress) {
+                            container.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    container.setTranslationY((1f - progress) * height);
+                                    background.setAlpha(progress);
+                                }
+                            });
+
+                        }
+
+                        @Override
+                        public void onEnd() {
+                            showAnimationEnd();
+                        }
+                    }).start(
+                            200,
+                            new DecelerateInterpolator()
+                    );
                     break;
                 case 2:
                     background.setAlpha(0f);
                     container.setAlpha(0f);
                     container.setScaleX(0.7f);
                     container.setScaleY(0.7f);
-                    container.animate()
-                            .scaleX(1f)
-                            .scaleY(1f)
-                            .alpha(1f)
-                            .setListener(
-                                    new AnimatorListenerAdapter() {
-                                        @Override
-                                        public void onAnimationStart(Animator animation) {
-                                            super.onAnimationStart(animation);
-                                            setVisibility(VISIBLE);
-                                        }
 
-                                        @Override
-                                        public void onAnimationEnd(Animator animation) {
-                                            super.onAnimationEnd(animation);
-                                            showAnimationEnd();
-                                        }
-                                    }
-                            )
-                            .setInterpolator(new AccelerateInterpolator())
-                            .setDuration(500)
-                            .start();
-                    background.animate().alpha(1f).setDuration(500).start();
+                    new IndependentAnimator(new IndependentAnimatorListener() {
+                        @Override
+                        public void onStart() {
+                            setVisibility(VISIBLE);
+                        }
+
+                        @Override
+                        public void onUpdate(final float progress) {
+                            container.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    container.setScaleX((0.3f * progress) + 0.7f);
+                                    container.setScaleY((0.3f * progress) + 0.7f);
+                                    container.setAlpha(progress);
+                                    background.setAlpha(progress);
+                                }
+                            });
+
+                        }
+
+                        @Override
+                        public void onEnd() {
+                            showAnimationEnd();
+                        }
+                    }).start(
+                            200,
+                            new DecelerateInterpolator()
+                    );
                     break;
 
             }
@@ -161,53 +175,57 @@ public class FullscreenContentContainer extends IAMContentContainer<InAppMessage
                     closeAnimationEnd();
                     break;
                 case 1:
-                    container.animate()
-                            .translationY(getHeight())
-                            .setInterpolator(new AccelerateInterpolator())
-                            .setDuration(500)
-                            .setListener(
-                                    new AnimatorListenerAdapter() {
-                                        @Override
-                                        public void onAnimationStart(Animator animation) {
-                                            super.onAnimationStart(animation);
-                                            setVisibility(VISIBLE);
-                                        }
+                    final float height = getHeight();
+                    new IndependentAnimator(new IndependentAnimatorListener() {
+                        @Override
+                        public void onStart() {
+                            setVisibility(VISIBLE);
+                        }
 
-                                        @Override
-                                        public void onAnimationEnd(Animator animation) {
-                                            super.onAnimationEnd(animation);
-                                            closeAnimationEnd();
-                                            //   setVisibility(VISIBLE);
-                                        }
-                                    }
-                            )
-                            .start();
-                    background.animate().alpha(0f).setDuration(500).start();
+                        @Override
+                        public void onUpdate(final float progress) {
+                            container.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    container.setTranslationY(progress * height);
+                                    background.setAlpha(1f - progress);
+                                }
+                            });
+
+                        }
+
+                        @Override
+                        public void onEnd() {
+                            closeAnimationEnd();
+                        }
+                    }).start(200, new AccelerateInterpolator());
                     break;
                 case 2:
-                    container.animate()
-                            .scaleX(0.7f)
-                            .scaleY(0.7f)
-                            .alpha(0f)
-                            .setListener(
-                                    new AnimatorListenerAdapter() {
-                                        @Override
-                                        public void onAnimationStart(Animator animation) {
-                                            super.onAnimationStart(animation);
-                                            setVisibility(VISIBLE);
-                                        }
+                    new IndependentAnimator(new IndependentAnimatorListener() {
+                        @Override
+                        public void onStart() {
+                            setVisibility(VISIBLE);
+                        }
 
-                                        @Override
-                                        public void onAnimationEnd(Animator animation) {
-                                            super.onAnimationEnd(animation);
-                                            closeAnimationEnd();
-                                        }
-                                    }
-                            )
-                            .setInterpolator(new AccelerateInterpolator())
-                            .setDuration(500)
-                            .start();
-                    background.animate().alpha(0f).setDuration(500).start();
+                        @Override
+                        public void onUpdate(final float progress) {
+                            container.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    container.setScaleX(1f - (0.3f * progress));
+                                    container.setScaleY(1f - (0.3f * progress));
+                                    container.setAlpha(1f - progress);
+                                    background.setAlpha(1f - progress);
+                                }
+                            });
+
+                        }
+
+                        @Override
+                        public void onEnd() {
+                            closeAnimationEnd();
+                        }
+                    }).start(300, new AccelerateInterpolator());
                     break;
 
             }

@@ -62,8 +62,8 @@ public abstract class BaseStoryListItem extends RecyclerView.ViewHolder {
             getUGCListItem = new StoriesListDefaultUgcEditorItem(manager, context);
         if (manager.csListItemMargin(context) >= 0) {
             RecyclerView.LayoutParams lp = (RecyclerView.LayoutParams) itemView.getLayoutParams();
-            lp.setMargins(Sizes.dpToPxExt(manager.csListItemMargin(context) / 2, context), 0,
-                    Sizes.dpToPxExt(manager.csListItemMargin(context) / 2, context), 0);
+            lp.setMargins(manager.csListItemMargin(context) / 2, 0,
+                    manager.csListItemMargin(context) / 2, 0);
             itemView.setLayoutParams(lp);
         }
 

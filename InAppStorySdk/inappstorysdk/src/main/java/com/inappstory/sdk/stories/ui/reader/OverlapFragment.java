@@ -36,7 +36,7 @@ public class OverlapFragment extends Fragment implements IASBackPressHandler {
     }
 
     FrameLayout readerTopContainer;
-
+    View shareView;
 
     OverlappingContainerActions shareActions = new OverlappingContainerActions() {
         @Override
@@ -107,6 +107,31 @@ public class OverlapFragment extends Fragment implements IASBackPressHandler {
 
     }
 
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.callbacksAPI().useCallback(IASCallbackType.SHARE_ADDITIONAL,
+                        new UseIASCallback<ShareCallback>() {
+                            @Override
+                            public void use(@NonNull ShareCallback callback) {
+                                if (shareView != null)
+                                    callback.onDestroyView(shareView);
+                            }
+
+                            @Override
+                            public void onDefault() {
+                                getParentFragmentManager().popBackStack();
+                            }
+                        }
+                );
+            }
+        });
+    }
+
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -129,8 +154,7 @@ public class OverlapFragment extends Fragment implements IASBackPressHandler {
                                         (IASShareData) getArguments().getSerializable("shareData")
                                 );
                                 readerTopContainer.removeAllViews();
-                                View shareView = callback.getView(context, content, shareActions);
-                                shareViewRef = new WeakReference<>(shareView);
+                                shareView = callback.getView(context, content, shareActions);
                                 shareView.setLayoutParams(
                                         new FrameLayout.LayoutParams(
                                                 ViewGroup.LayoutParams.MATCH_PARENT,
@@ -151,30 +175,27 @@ public class OverlapFragment extends Fragment implements IASBackPressHandler {
 
     @Override
     public boolean onBackPressed() {
-        if (shareViewRef != null) {
-            final View shareView = shareViewRef.get();
-            if (shareView != null) {
-                final boolean[] res = {true};
-                InAppStoryManager.useCore(new UseIASCoreCallback() {
-                    @Override
-                    public void use(@NonNull IASCore core) {
-                        core.callbacksAPI().useCallback(IASCallbackType.SHARE_ADDITIONAL,
-                                new UseIASCallback<ShareCallback>() {
-                                    @Override
-                                    public void use(@NonNull ShareCallback callback) {
-                                        res[0] = callback.onBackPress(shareView, shareActions);
-                                    }
-
-                                    @Override
-                                    public void onDefault() {
-                                        getParentFragmentManager().popBackStack();
-                                    }
+        if (shareView != null) {
+            final boolean[] res = {false};
+            InAppStoryManager.useCore(new UseIASCoreCallback() {
+                @Override
+                public void use(@NonNull IASCore core) {
+                    core.callbacksAPI().useCallback(IASCallbackType.SHARE_ADDITIONAL,
+                            new UseIASCallback<ShareCallback>() {
+                                @Override
+                                public void use(@NonNull ShareCallback callback) {
+                                    res[0] = callback.onBackPress(shareView, shareActions);
                                 }
-                        );
-                    }
-                });
-                return res[0];
-            }
+
+                                @Override
+                                public void onDefault() {
+                                    getParentFragmentManager().popBackStack();
+                                }
+                            }
+                    );
+                }
+            });
+            return res[0];
         }
         getParentFragmentManager().popBackStack();
         return true;

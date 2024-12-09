@@ -4,6 +4,7 @@ import static com.inappstory.sdk.stories.cache.StoryDownloadManager.EXPAND_STRIN
 
 
 import android.text.TextUtils;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 
@@ -486,6 +487,7 @@ class StoryDownloader {
                                                     core.statistic().profiling().setReady(loadStoriesUID);
                                                     callback.onSuccess(
                                                             response.stories,
+                                                            requestLocalParameters,
                                                             response.hasFavorite(),
                                                             response.getFeedId()
                                                     );
@@ -568,7 +570,7 @@ class StoryDownloader {
                                             callback.onError("");
                                         } else {
                                             core.statistic().profiling().setReady(loadStoriesUID);
-                                            callback.onSuccess(response);
+                                            callback.onSuccess(response, requestLocalParameters);
                                         }
                                     }
 

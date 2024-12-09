@@ -23,6 +23,8 @@ import com.inappstory.sdk.core.utils.ColorUtils;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageModalAppearance;
 import com.inappstory.sdk.inappmessage.ui.widgets.IAMContentContainer;
 import com.inappstory.sdk.stories.utils.Sizes;
+import com.inappstory.sdk.utils.animation.IndependentAnimator;
+import com.inappstory.sdk.utils.animation.IndependentAnimatorListener;
 
 public class ModalContentContainer extends IAMContentContainer<InAppMessageModalAppearance> {
     private RoundedCornerLayout roundedCornerLayout;
@@ -98,58 +100,68 @@ public class ModalContentContainer extends IAMContentContainer<InAppMessageModal
                     break;
                 case 1:
                     background.setAlpha(0f);
-                    roundedCornerLayout.setTranslationY(getHeight());
-                    roundedCornerLayout.animate()
-                            .translationY(0)
-                            .setInterpolator(new AccelerateInterpolator())
-                            .setDuration(500)
-                            .setListener(
-                                    new AnimatorListenerAdapter() {
-                                        @Override
-                                        public void onAnimationStart(Animator animation) {
-                                            super.onAnimationStart(animation);
-                                            setVisibility(VISIBLE);
-                                        }
+                    final int height = getHeight();
+                    roundedCornerLayout.setTranslationY(height);
+                    new IndependentAnimator(new IndependentAnimatorListener() {
+                        @Override
+                        public void onStart() {
+                            setVisibility(VISIBLE);
+                        }
 
-                                        @Override
-                                        public void onAnimationEnd(Animator animation) {
-                                            super.onAnimationEnd(animation);
-                                            showAnimationEnd();
-                                            //   setVisibility(VISIBLE);
-                                        }
-                                    }
-                            )
-                            .start();
-                    background.animate().alpha(1f).setDuration(500).start();
+                        @Override
+                        public void onUpdate(final float progress) {
+                            roundedCornerLayout.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    roundedCornerLayout.setTranslationY((1f - progress) * height);
+                                    background.setAlpha(progress);
+                                }
+                            });
+
+                        }
+
+                        @Override
+                        public void onEnd() {
+                            showAnimationEnd();
+                        }
+                    }).start(
+                            200,
+                            new AccelerateInterpolator()
+                    );
                     break;
                 case 2:
                     background.setAlpha(0f);
                     roundedCornerLayout.setAlpha(0f);
                     roundedCornerLayout.setScaleX(0.7f);
                     roundedCornerLayout.setScaleY(0.7f);
-                    roundedCornerLayout.animate()
-                            .scaleX(1f)
-                            .scaleY(1f)
-                            .alpha(1f)
-                            .setListener(
-                                    new AnimatorListenerAdapter() {
-                                        @Override
-                                        public void onAnimationStart(Animator animation) {
-                                            super.onAnimationStart(animation);
-                                            setVisibility(VISIBLE);
-                                        }
+                    new IndependentAnimator(new IndependentAnimatorListener() {
+                        @Override
+                        public void onStart() {
+                            setVisibility(VISIBLE);
+                        }
 
-                                        @Override
-                                        public void onAnimationEnd(Animator animation) {
-                                            super.onAnimationEnd(animation);
-                                            showAnimationEnd();
-                                        }
-                                    }
-                            )
-                            .setInterpolator(new AccelerateInterpolator())
-                            .setDuration(500)
-                            .start();
-                    background.animate().alpha(1f).setDuration(500).start();
+                        @Override
+                        public void onUpdate(final float progress) {
+                            roundedCornerLayout.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    roundedCornerLayout.setScaleX((0.3f * progress) + 0.7f);
+                                    roundedCornerLayout.setScaleY((0.3f * progress) + 0.7f);
+                                    roundedCornerLayout.setAlpha(progress);
+                                    background.setAlpha(progress);
+                                }
+                            });
+
+                        }
+
+                        @Override
+                        public void onEnd() {
+                            showAnimationEnd();
+                        }
+                    }).start(
+                            200,
+                            new AccelerateInterpolator()
+                    );
                     break;
 
             }
@@ -181,53 +193,57 @@ public class ModalContentContainer extends IAMContentContainer<InAppMessageModal
                     closeAnimationEnd();
                     break;
                 case 1:
-                    roundedCornerLayout.animate()
-                            .translationY(getHeight())
-                            .setInterpolator(new AccelerateInterpolator())
-                            .setDuration(500)
-                            .setListener(
-                                    new AnimatorListenerAdapter() {
-                                        @Override
-                                        public void onAnimationStart(Animator animation) {
-                                            super.onAnimationStart(animation);
-                                            setVisibility(VISIBLE);
-                                        }
+                    final float height = getHeight();
+                    new IndependentAnimator(new IndependentAnimatorListener() {
+                        @Override
+                        public void onStart() {
+                            setVisibility(VISIBLE);
+                        }
 
-                                        @Override
-                                        public void onAnimationEnd(Animator animation) {
-                                            super.onAnimationEnd(animation);
-                                            closeAnimationEnd();
-                                            //   setVisibility(VISIBLE);
-                                        }
-                                    }
-                            )
-                            .start();
-                    background.animate().alpha(0f).setDuration(500).start();
+                        @Override
+                        public void onUpdate(final float progress) {
+                            roundedCornerLayout.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    roundedCornerLayout.setTranslationY(progress * height);
+                                    background.setAlpha(1f - progress);
+                                }
+                            });
+
+                        }
+
+                        @Override
+                        public void onEnd() {
+                            closeAnimationEnd();
+                        }
+                    }).start(200, new AccelerateInterpolator());
                     break;
                 case 2:
-                    roundedCornerLayout.animate()
-                            .scaleX(0.7f)
-                            .scaleY(0.7f)
-                            .alpha(0f)
-                            .setListener(
-                                    new AnimatorListenerAdapter() {
-                                        @Override
-                                        public void onAnimationStart(Animator animation) {
-                                            super.onAnimationStart(animation);
-                                            setVisibility(VISIBLE);
-                                        }
+                    new IndependentAnimator(new IndependentAnimatorListener() {
+                        @Override
+                        public void onStart() {
+                            setVisibility(VISIBLE);
+                        }
 
-                                        @Override
-                                        public void onAnimationEnd(Animator animation) {
-                                            super.onAnimationEnd(animation);
-                                            closeAnimationEnd();
-                                        }
-                                    }
-                            )
-                            .setInterpolator(new AccelerateInterpolator())
-                            .setDuration(500)
-                            .start();
-                    background.animate().alpha(0f).setDuration(500).start();
+                        @Override
+                        public void onUpdate(final float progress) {
+                            roundedCornerLayout.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    roundedCornerLayout.setScaleX(1f - (0.3f * progress));
+                                    roundedCornerLayout.setScaleY(1f - (0.3f * progress));
+                                    roundedCornerLayout.setAlpha(1f - progress);
+                                    background.setAlpha(1f - progress);
+                                }
+                            });
+
+                        }
+
+                        @Override
+                        public void onEnd() {
+                            closeAnimationEnd();
+                        }
+                    }).start(200, new AccelerateInterpolator());
                     break;
 
             }
