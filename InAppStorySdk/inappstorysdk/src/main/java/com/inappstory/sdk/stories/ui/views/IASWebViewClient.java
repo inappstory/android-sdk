@@ -99,7 +99,7 @@ public class IASWebViewClient extends WebViewClient {
         String vodAsset = "vod-asset/";
         int indexOf = url.indexOf(vodAsset);
         if (indexOf > -1) {
-            /*  if (request.getMethod().equalsIgnoreCase("OPTIONS")) {
+              if (request.getMethod().equalsIgnoreCase("OPTIONS")) {
                 Map<String, String> headers = new HashMap<String, String>() {{
                     SimpleDateFormat formatter = new SimpleDateFormat(
                             "E, dd MMM yyyy kk:mm:ss",
@@ -111,11 +111,11 @@ public class IASWebViewClient extends WebViewClient {
                     put("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT, OPTIONS");
                     put("Access-Control-Max-Age", "600");
                     put("Access-Control-Allow-Credentials", "true");
-                    put("Access-Control-Allow-Headers", "accept, authorization, Content-Type");
+                    put("Access-Control-Allow-Headers", "accept, authorization, Content-Type, range");
                     put("Via", "1.1 vegur");
                 }};
                 return new WebResourceResponse("text/plain", "UTF-8", 200, "OK", headers, null);
-            }*/
+            }
             String key = url.substring(indexOf + vodAsset.length());
             Map<String, String> headers = request.getRequestHeaders();
             String rangeHeader = headers.get("range");
