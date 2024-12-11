@@ -7,11 +7,11 @@ import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.stories.api.models.SessionResponse;
 import com.inappstory.sdk.stories.api.models.StatisticSendObject;
 import com.inappstory.sdk.utils.ISessionHolder;
+import com.inappstory.sdk.utils.ScheduledTPEManager;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 public class OldStatisticManager {
@@ -33,7 +33,6 @@ public class OldStatisticManager {
 
     public void refreshCallbacks() {
         statisticScheduledThread.shutdownNow();
-        statisticScheduledThread = new ScheduledThreadPoolExecutor(1);
         submitRunnable();
     }
 
@@ -88,8 +87,8 @@ public class OldStatisticManager {
         );
     }
 
-    private ScheduledThreadPoolExecutor statisticScheduledThread =
-            new ScheduledThreadPoolExecutor(1);
+    private ScheduledTPEManager statisticScheduledThread =
+            new ScheduledTPEManager();
 
 
     public void clear() {

@@ -61,6 +61,7 @@ import com.inappstory.sdk.stories.ui.list.ListManager;
 import com.inappstory.sdk.stories.utils.SessionHolder;
 import com.inappstory.sdk.stories.utils.SessionManager;
 import com.inappstory.sdk.utils.ISessionHolder;
+import com.inappstory.sdk.utils.ScheduledTPEManager;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -370,9 +371,13 @@ public class InAppStoryService {
 
     private int currentIndex;
 
+    private final Object checkSpaceThreadLock = new Object();
+
 
     public void onDestroy() {
-        checkSpaceThread.shutdown();
+        synchronized (checkSpaceThreadLock) {
+            checkSpaceThread.shutdown();
+        }
         getStoryDownloadManager().destroy();
         if (INSTANCE == this)
             INSTANCE = null;
@@ -846,7 +851,7 @@ public class InAppStoryService {
         }
     };
 
-    private ScheduledExecutorService checkSpaceThread = new ScheduledThreadPoolExecutor(1);
+    private ScheduledTPEManager checkSpaceThread = new ScheduledTPEManager();
 
 
     public void createDownloadManager(ExceptionCache cache) {
@@ -877,11 +882,10 @@ public class InAppStoryService {
         synchronized (lock) {
             INSTANCE = this;
         }
-        if (checkSpaceThread.isShutdown()) {
-            checkSpaceThread = new ScheduledThreadPoolExecutor(1);
-        }
         filesDownloadManager = new FilesDownloadManager(context, cacheSize);
-        checkSpaceThread.scheduleAtFixedRate(checkFreeSpace, 1L, 60000L, TimeUnit.MILLISECONDS);
+        synchronized (checkSpaceThreadLock) {
+            checkSpaceThread.scheduleAtFixedRate(checkFreeSpace, 1L, 60000L, TimeUnit.MILLISECONDS);
+        }
         getStoryDownloadManager().initDownloaders();
 
         logSaver = new GameLogSaver();

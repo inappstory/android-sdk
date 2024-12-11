@@ -12,6 +12,7 @@ import com.inappstory.sdk.stories.statistic.GetOldStatisticManagerCallback;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPageManager;
+import com.inappstory.sdk.utils.ScheduledTPEManager;
 
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -32,7 +33,7 @@ public class TimerManager {
 
     ReaderPageManager pageManager;
 
-    private ScheduledExecutorService executorService = new ScheduledThreadPoolExecutor(1);
+    private ScheduledTPEManager executorService = new ScheduledTPEManager();
 
     public void setPageManager(ReaderPageManager pageManager) {
         this.pageManager = pageManager;
@@ -84,9 +85,6 @@ public class TimerManager {
         }
         timerStartTimestamp = System.currentTimeMillis();
         this.timerDuration = timerDuration;
-        if (executorService.isShutdown()) {
-            executorService = new ScheduledThreadPoolExecutor(1);
-        }
         scheduledFuture = executorService.scheduleAtFixedRate(
                 timerTask,
                 1L,

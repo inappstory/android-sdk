@@ -5,6 +5,7 @@ import android.view.View;
 
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.StoryTimelineSettings;
+import com.inappstory.sdk.utils.ScheduledTPEManager;
 
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -12,7 +13,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 public class StoryTimelineManager {
-    private ScheduledExecutorService executorService = new ScheduledThreadPoolExecutor(1);
+    private ScheduledTPEManager executorService = new ScheduledTPEManager();
 
     private long timerStart;
     private long timerStartTimestamp;
@@ -51,9 +52,6 @@ public class StoryTimelineManager {
 
         this.timerStartTimestamp = System.currentTimeMillis();
         this.isActive = true;
-        if (executorService.isShutdown()) {
-            executorService = new ScheduledThreadPoolExecutor(1);
-        }
         scheduledFuture = executorService.scheduleAtFixedRate(
                 timerTask,
                 1L,

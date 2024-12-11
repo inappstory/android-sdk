@@ -1,5 +1,7 @@
 package com.inappstory.sdk.stories.utils;
 
+import com.inappstory.sdk.utils.ScheduledTPEManager;
+
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -16,16 +18,11 @@ public class LoopedExecutor {
     private long startDelay;
     private long period;
 
+    private final Object exThreadLock = new Object();
+
     public void init(final Runnable runnable) {
         freeExecutor();
-        if (statisticScheduledThread.isShutdown()) {
-            statisticScheduledThread =
-                    new ScheduledThreadPoolExecutor(1);
-        }
-        if (executorThread.isShutdown()) {
-            executorThread =
-                    Executors.newSingleThreadExecutor();
-        }
+
         statisticScheduledThread.scheduleAtFixedRate(new Runnable() {
             int count = 0;
             @Override
@@ -39,7 +36,13 @@ public class LoopedExecutor {
                         if (taskLaunched) return;
                         taskLaunched = true;
                     }
-                    executorThread.submit(runnable);
+                    synchronized (exThreadLock) {
+                        if (executorThread.isShutdown()) {
+                            executorThread =
+                                    Executors.newSingleThreadExecutor();
+                        }
+                        executorThread.submit(runnable);
+                    }
                 }
             }
         }, startDelay, period, TimeUnit.MILLISECONDS);
@@ -55,13 +58,15 @@ public class LoopedExecutor {
     }
 
     public void shutdown() {
-        executorThread.shutdown();
+        synchronized (exThreadLock) {
+            executorThread.shutdown();
+        }
         statisticScheduledThread.shutdown();
     }
 
 
-    private ScheduledExecutorService statisticScheduledThread =
-            new ScheduledThreadPoolExecutor(1);
+    private ScheduledTPEManager statisticScheduledThread =
+            new ScheduledTPEManager();
 
 
     private ExecutorService executorThread = Executors.newSingleThreadExecutor();

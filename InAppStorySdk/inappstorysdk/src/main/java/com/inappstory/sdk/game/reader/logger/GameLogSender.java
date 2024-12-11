@@ -8,6 +8,7 @@ import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.network.models.Response;
+import com.inappstory.sdk.utils.ScheduledTPEManager;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -49,8 +50,9 @@ public class GameLogSender implements IGameLogSender {
         );
     }
 
-    private final ScheduledThreadPoolExecutor statisticScheduledThread =
-            new ScheduledThreadPoolExecutor(1);
+
+    private ScheduledTPEManager statisticScheduledThread =
+            new ScheduledTPEManager();
 
     private void sendLogs() {
         if (service != InAppStoryService.getInstance()) {
