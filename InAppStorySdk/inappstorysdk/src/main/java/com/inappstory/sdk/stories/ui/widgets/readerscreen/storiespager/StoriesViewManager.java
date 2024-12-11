@@ -581,9 +581,11 @@ public class StoriesViewManager {
             uniqueId = storiesContentFragment.getReaderUniqueId();
             storiesContentFragment.observeGameReader();
         }
-        if (service != null && context != null) {
+        Context localContext = pageManager.host.getContext();
+        if (localContext == null) localContext = context;
+        if (service != null && localContext != null) {
             service.openGameReaderWithGC(
-                    context,
+                    localContext,
                     getGameStoryData(),
                     gameId,
                     uniqueId,

@@ -211,7 +211,7 @@ public abstract class StoriesMainFragment extends Fragment implements
             t.commitAllowingStateLoss();
         }
 
-        disableDrag(false);
+        disableDrag(appearanceSettings != null && !appearanceSettings.csCloseOnSwipe());
     }
 
     @Override

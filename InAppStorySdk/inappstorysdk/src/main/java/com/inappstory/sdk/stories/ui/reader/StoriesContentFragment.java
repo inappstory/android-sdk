@@ -221,7 +221,7 @@ public class StoriesContentFragment extends Fragment
         );
         if (st == null) return;
         BaseReaderScreen screen = getStoriesReader();
-        if (screen != null) screen.disableDrag(st.disableClose || st.hasSwipeUp());
+        if (screen != null) screen.disableDrag(!appearanceSettings.csCloseOnSwipe() || st.disableClose || st.hasSwipeUp());
     }
 
 

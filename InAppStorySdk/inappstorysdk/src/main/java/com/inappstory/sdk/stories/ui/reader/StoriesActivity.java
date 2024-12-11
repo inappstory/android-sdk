@@ -345,10 +345,10 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
         InAppStoryManager manager = InAppStoryManager.getInstance();
         if (
                 manager == null
-                || !manager.isInitialized()
-                || InAppStoryService.getInstance() == null
-                || launchData == null
-                || appearanceSettings == null
+                        || !manager.isInitialized()
+                        || InAppStoryService.getInstance() == null
+                        || launchData == null
+                        || appearanceSettings == null
         ) {
             finish();
             return;
@@ -502,7 +502,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
             finishWithoutAnimation();
         }
 
-        disableDrag(false);
+        disableDrag(!closeOnSwipe);
     }
 
     private void createStoriesFragment(Bundle savedInstanceState, Rect readerContainer) {
