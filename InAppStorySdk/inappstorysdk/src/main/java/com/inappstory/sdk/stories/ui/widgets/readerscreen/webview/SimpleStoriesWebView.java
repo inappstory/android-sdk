@@ -74,8 +74,8 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
     }
 
     private void loadCurrentPage(String page) {
-        evaluateJavascript("(function(){show_slide(\"" + oldEscape(page) + "\");})()", null);
         logMethod("show_slide");
+        evaluateJavascript("(function(){show_slide(\"" + oldEscape(page) + "\");})()", null);
     }
 
     private void replaceHtml(String page) {
