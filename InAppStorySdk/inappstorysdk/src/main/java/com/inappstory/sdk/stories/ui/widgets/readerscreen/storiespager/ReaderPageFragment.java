@@ -515,7 +515,7 @@ public class ReaderPageFragment extends Fragment {
                         MATCH_PARENT
                 )
         );
-        loaderContainer.setBackgroundColor(Color.BLACK);
+        loaderContainer.setBackgroundColor(Color.parseColor("#60000000"));
         //   loaderContainer.addView(loader);
         loaderContainer.addView(refresh);
         readerContainer.addView(loaderContainer);
