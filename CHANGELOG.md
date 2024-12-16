@@ -5,7 +5,7 @@ Version *1.20.4 (954)*
 ----------------------------
 * Added: external app version
 * Added: check if webView is installed
-* Updated: set csListItemTitleColor as deprecated (will be removed in 1.21.x)
+* Updated: mark csListItemTitleColor as deprecated (will be removed in 1.21.x)
 * Updated: pass session local parameters to requests
 * Updated: encode user id in requests
 * Fixed: bundle resources downloads (change keys)
