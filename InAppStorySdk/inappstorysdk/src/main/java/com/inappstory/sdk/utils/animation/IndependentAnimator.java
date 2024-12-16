@@ -1,12 +1,9 @@
 package com.inappstory.sdk.utils.animation;
 
 import android.animation.TimeInterpolator;
-import android.util.Log;
-import android.view.View;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 public class IndependentAnimator {

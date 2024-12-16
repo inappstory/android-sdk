@@ -19,6 +19,7 @@ import com.inappstory.sdk.stories.cache.FilesDownloadManager;
 import com.inappstory.sdk.stories.cache.StoryDownloadManager;
 import com.inappstory.sdk.stories.cache.vod.VODCacheItemPart;
 import com.inappstory.sdk.stories.cache.vod.VODCacheJournalItem;
+import com.inappstory.sdk.utils.ScheduledTPEManager;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -152,7 +153,7 @@ public class IASContentLoaderImpl implements IASContentLoader {
         }
     }
 
-    private ScheduledExecutorService checkSpaceThread = new ScheduledThreadPoolExecutor(1);
+    private ScheduledTPEManager checkSpaceThread = new ScheduledTPEManager();
 
     Runnable checkFreeSpace = new Runnable() {
         @Override
@@ -178,9 +179,6 @@ public class IASContentLoaderImpl implements IASContentLoader {
 
     @Override
     public void runFreeSpaceCheck() {
-        if (checkSpaceThread.isShutdown()) {
-            checkSpaceThread = new ScheduledThreadPoolExecutor(1);
-        }
         checkSpaceThread.scheduleAtFixedRate(checkFreeSpace, 1L, 60000L, TimeUnit.MILLISECONDS);
     }
 

@@ -1,5 +1,7 @@
 package com.inappstory.sdk.stories.utils;
 
+import com.inappstory.sdk.utils.ScheduledTPEManager;
+
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -18,10 +20,6 @@ public class LoopedExecutor {
 
     public void init(final Runnable runnable) {
         freeExecutor();
-        if (statisticScheduledThread.isShutdown()) {
-            statisticScheduledThread =
-                    new ScheduledThreadPoolExecutor(1);
-        }
         if (executorThread.isShutdown()) {
             executorThread =
                     Executors.newSingleThreadExecutor();
@@ -60,8 +58,8 @@ public class LoopedExecutor {
     }
 
 
-    private ScheduledExecutorService statisticScheduledThread =
-            new ScheduledThreadPoolExecutor(1);
+    private ScheduledTPEManager statisticScheduledThread =
+            new ScheduledTPEManager();
 
 
     private ExecutorService executorThread = Executors.newSingleThreadExecutor();

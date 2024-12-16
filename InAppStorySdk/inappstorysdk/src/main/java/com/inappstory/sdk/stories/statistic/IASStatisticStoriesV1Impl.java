@@ -9,6 +9,7 @@ import com.inappstory.sdk.core.utils.ConnectionCheckCallback;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.core.network.content.models.SessionResponse;
 import com.inappstory.sdk.stories.api.models.StatisticSendObject;
+import com.inappstory.sdk.utils.ScheduledTPEManager;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -44,7 +45,6 @@ public class IASStatisticStoriesV1Impl implements IASStatisticStoriesV1 {
     @Override
     public void restartSchedule() {
         statisticScheduledThread.shutdownNow();
-        statisticScheduledThread = new ScheduledThreadPoolExecutor(1);
         submitRunnable();
     }
 
@@ -104,8 +104,8 @@ public class IASStatisticStoriesV1Impl implements IASStatisticStoriesV1 {
         );
     }
 
-    private ScheduledThreadPoolExecutor statisticScheduledThread =
-            new ScheduledThreadPoolExecutor(1);
+    private ScheduledTPEManager statisticScheduledThread =
+            new ScheduledTPEManager();
 
 
     @Override
