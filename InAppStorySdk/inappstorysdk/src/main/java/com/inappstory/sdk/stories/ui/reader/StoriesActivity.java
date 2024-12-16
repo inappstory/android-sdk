@@ -340,7 +340,6 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
         super.onCreate(savedInstanceState1);
         setContentView(R.layout.cs_mainscreen_stories_draggable);
 
-        WebView.setWebContentsDebuggingEnabled(true);
         launchData = (StoriesReaderLaunchData) getIntent().
                 getSerializableExtra(StoriesReaderLaunchData.SERIALIZABLE_KEY);
         appearanceSettings = (StoriesReaderAppearanceSettings) getIntent()

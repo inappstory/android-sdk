@@ -16,6 +16,7 @@ import android.util.Log;
 import android.util.Pair;
 import android.webkit.CookieManager;
 import android.webkit.WebView;
+import android.webkit.WebViewClient;
 
 import androidx.annotation.NonNull;
 import androidx.webkit.WebViewCompat;

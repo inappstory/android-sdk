@@ -99,7 +99,7 @@ public class IASWebViewClient extends WebViewClient {
         String vodAsset = "vod-asset/";
         int indexOf = url.indexOf(vodAsset);
         if (indexOf > -1) {
-              if (request.getMethod().equalsIgnoreCase("OPTIONS")) {
+            if (request.getMethod().equalsIgnoreCase("OPTIONS")) {
                 Map<String, String> headers = new HashMap<String, String>() {{
                     SimpleDateFormat formatter = new SimpleDateFormat(
                             "E, dd MMM yyyy kk:mm:ss",
