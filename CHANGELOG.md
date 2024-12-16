@@ -1,6 +1,26 @@
 Change Log
 ==========
 
+Version *1.20.4 (954)*
+----------------------------
+* Added: external app version
+* Added: check if webView is installed
+* Updated: set csListItemTitleColor as deprecated (will be removed in 1.21.x)
+* Updated: pass session local parameters to requests
+* Updated: encode user id in requests
+* Fixed: bundle resources downloads (change keys)
+* Fixed: video options header (emulator bug)
+* Fixed: sync around ScheduleThreadPoolExecutors
+* Fixed: closeOnSwipe option usage
+* Fixed: story opening in fragments (container visibility)
+* Fixed: game opening in fragments (from story)
+* Fixed: recreate session on setUserId if deviceId is disabled
+
+Version *1.20.3 (953)*
+----------------------------
+* Added: timeline color and visibility management from console
+* Update: changed internal logic in slide model
+
 Version *1.20.2 (952)*
 ----------------------------
 * Added: open a game from another game
