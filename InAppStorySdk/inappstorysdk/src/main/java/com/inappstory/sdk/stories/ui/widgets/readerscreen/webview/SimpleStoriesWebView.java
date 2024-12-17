@@ -263,12 +263,19 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
     boolean notFirstLoading = false;
 
     public void loadWebData(String outerLayout, String outerData) {
-        View view = (View) getParentForAccessibility();
-        view.requestFocus();
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                View view = (View) getParentForAccessibility();
+                view.requestFocus();
+                requestFocus();
+                setBackgroundColor(Color.RED);
+            }
+        });
+
         final String data = outerData;
         final String lt = outerLayout;
         currentPage = data;
-        setBackgroundColor(Color.RED);
         if (!notFirstLoading || data.isEmpty()) {
             InAppStoryManager.showELog("LoadSlideCheck",
                     "loadWebData new " + this);
