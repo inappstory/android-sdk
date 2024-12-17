@@ -211,6 +211,7 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
     public SimpleStoriesWebView(Context context) {
         super(context.getApplicationContext());
         this.context = context;
+        this.setFocusable(true);
         manager = new StoriesViewManager(context.getApplicationContext());
         manager.setStoriesView(this, context.getApplicationContext());
     }
@@ -260,6 +261,7 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
     boolean notFirstLoading = false;
 
     public void loadWebData(String outerLayout, String outerData) {
+        requestFocus();
         final String data = outerData;
         final String lt = outerLayout;
         currentPage = data;
