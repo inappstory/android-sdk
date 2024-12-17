@@ -60,9 +60,9 @@ public abstract class StoriesMainFragment extends Fragment implements
     @Override
     public void disableDrag(boolean disable) {
         boolean draggable = !Sizes.isTablet(getContext()) &&
-                (appearanceSettings == null || appearanceSettings.csIsDraggable());
+                (appearanceSettings == null || appearanceSettings.csIsDraggable() );
         if (draggableFrame != null)
-            draggableFrame.dragIsDisabled(draggable && disable);
+            draggableFrame.dragIsDisabled(!draggable || disable);
 
     }
 

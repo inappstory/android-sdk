@@ -488,11 +488,16 @@ public class StatisticManager {
     public void sendStoryWidgetEvent(final String name,
                                      final String data,
                                      final String feedId) {
-        StatisticTask task = JsonParser.fromJson(data, StatisticTask.class);
-        task.event = name;
-        task.feedId = feedId;
-        generateBase(task);
-        addTask(task);
+        try {
+            StatisticTask task = JsonParser.fromJson(data, StatisticTask.class);
+            task.event = name;
+            task.feedId = feedId;
+            generateBase(task);
+            addTask(task);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
     }
 
     public void sendGameEvent(final String name, final String data,
