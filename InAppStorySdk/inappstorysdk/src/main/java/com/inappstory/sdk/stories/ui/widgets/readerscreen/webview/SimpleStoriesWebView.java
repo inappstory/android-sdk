@@ -9,6 +9,7 @@ import android.os.Looper;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
+import android.view.View;
 import android.view.ViewParent;
 import android.webkit.ConsoleMessage;
 import android.webkit.WebChromeClient;
@@ -77,6 +78,7 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
         logMethod("show_slide");
         evaluateJavascript("(function(){show_slide(\"" + oldEscape(page) + "\");})()", null);
     }
+
 
     private void replaceHtml(String page) {
         loadCurrentPage(page);
@@ -261,7 +263,8 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
     boolean notFirstLoading = false;
 
     public void loadWebData(String outerLayout, String outerData) {
-        requestFocus();
+        View view = (View) getParentForAccessibility();
+        view.requestFocus();
         final String data = outerData;
         final String lt = outerLayout;
         currentPage = data;
@@ -274,6 +277,7 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
                 public void run() {
                     String s0 = setDir(injectUnselectableStyle(lt));
                     loadDataWithBaseURL("file:///data/", s0, "text/html; charset=utf-8", "UTF-8", null);
+                    evaluateJavascript("window.setTimeout(() => console.log('125'), 100)", null);
                 }
             });
         } else {
@@ -283,6 +287,7 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
                 @Override
                 public void run() {
                     replaceHtml(data);
+                    evaluateJavascript("window.setTimeout(() => console.log('125'), 100)", null);
                 }
             });
         }
