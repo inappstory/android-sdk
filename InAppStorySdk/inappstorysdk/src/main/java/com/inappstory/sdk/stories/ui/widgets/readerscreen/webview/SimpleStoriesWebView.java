@@ -268,28 +268,31 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
         final String data = outerData;
         final String lt = outerLayout;
         currentPage = data;
+        setBackgroundColor(Color.RED);
         if (!notFirstLoading || data.isEmpty()) {
             InAppStoryManager.showELog("LoadSlideCheck",
                     "loadWebData new " + this);
             notFirstLoading = true;
-            new Handler(Looper.getMainLooper()).post(new Runnable() {
+            new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
                 @Override
                 public void run() {
+                    setBackgroundColor(Color.BLACK);
                     String s0 = setDir(injectUnselectableStyle(lt));
                     loadDataWithBaseURL("file:///data/", s0, "text/html; charset=utf-8", "UTF-8", null);
-                    evaluateJavascript("window.setTimeout(() => console.log('125'), 100)", null);
+                  //  evaluateJavascript("window.setTimeout(() => console.log('125'), 100)", null);
                 }
-            });
+            }, 1000);
         } else {
             InAppStoryManager.showELog("LoadSlideCheck",
                     "loadWebData replace " + this);
-            new Handler(Looper.getMainLooper()).post(new Runnable() {
+            new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
                 @Override
                 public void run() {
+                    setBackgroundColor(Color.BLACK);
                     replaceHtml(data);
-                    evaluateJavascript("window.setTimeout(() => console.log('125'), 100)", null);
+                   // evaluateJavascript("window.setTimeout(() => console.log('125'), 100)", null);
                 }
-            });
+            }, 1000);
         }
     }
 

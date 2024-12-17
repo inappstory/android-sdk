@@ -37,7 +37,7 @@ public class IASWebView extends WebView {
 
     @Override
     public void evaluateJavascript(@NonNull String script, @Nullable ValueCallback<String> resultCallback) {
-        Log.d("InAppStory_SDK_Game", script);
+        Log.d("InAppStory_SDK", script);
         super.evaluateJavascript(script, resultCallback);
     }
 
