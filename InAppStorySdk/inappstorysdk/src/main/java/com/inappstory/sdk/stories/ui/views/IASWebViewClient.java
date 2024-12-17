@@ -32,6 +32,21 @@ import java.util.Map;
 
 public class IASWebViewClient extends WebViewClient {
 
+    private IASWebView webView;
+
+    public IASWebViewClient() {
+        InAppStoryManager.showELog("LoadSlideCheck",
+                this + " IASWebViewClient create");
+
+    }
+
+    public IASWebViewClient(IASWebView webView) {
+        this.webView = webView;
+        InAppStoryManager.showELog("LoadSlideCheck",
+                this + " " + webView + " IASWebViewClient create");
+
+    }
+
     private File getCachedFile(String url, String key) {
         InAppStoryService service = InAppStoryService.getInstance();
         if (service == null) return null;
@@ -188,7 +203,7 @@ public class IASWebViewClient extends WebViewClient {
                 response = getChangedResponse(request.getUrl().toString());
             if (response != null) {
                 InAppStoryManager.showELog("LoadSlideCheck",
-                        "shouldInterceptRequestSuccess " + request.getUrl().toString());
+                        this + " " + webView + " shouldInterceptRequestSuccess " + request.getUrl().toString());
                 return response;
             }
         } catch (Exception e) {

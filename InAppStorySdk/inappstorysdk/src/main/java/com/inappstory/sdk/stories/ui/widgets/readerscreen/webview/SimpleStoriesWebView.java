@@ -264,6 +264,8 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
         final String lt = outerLayout;
         currentPage = data;
         if (!notFirstLoading || data.isEmpty()) {
+            InAppStoryManager.showELog("LoadSlideCheck",
+                    "loadWebData new " + this);
             notFirstLoading = true;
             new Handler(Looper.getMainLooper()).post(new Runnable() {
                 @Override
@@ -273,6 +275,8 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
                 }
             });
         } else {
+            InAppStoryManager.showELog("LoadSlideCheck",
+                    "loadWebData replace " + this);
             new Handler(Looper.getMainLooper()).post(new Runnable() {
                 @Override
                 public void run() {
@@ -337,7 +341,7 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
                     new WebAppInterface(
                             getManager()
                     ), "Android");
-            setWebViewClient(new IASWebViewClient());
+            setWebViewClient(new IASWebViewClient(this));
             setWebChromeClient(new WebChromeClient() {
                 @Nullable
                 @Override

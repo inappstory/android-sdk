@@ -282,6 +282,7 @@ public class StoriesDialogFragment extends DialogFragment implements IASBackPres
 
     StoriesReaderAppearanceSettings appearanceSettings;
     StoriesReaderLaunchData launchData;
+    View backTintView;
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
@@ -291,6 +292,8 @@ public class StoriesDialogFragment extends DialogFragment implements IASBackPres
         view.setBackgroundColor(color);
         type = launchData.getType();
         draggableFrame = view.findViewById(R.id.draggable_frame);
+
+        backTintView = view.findViewById(R.id.background);
         if (savedInstanceState == null) {
             storiesContentFragment = new StoriesContentFragment();
             Bundle args = new Bundle();
@@ -319,6 +322,8 @@ public class StoriesDialogFragment extends DialogFragment implements IASBackPres
 
     private void setAppearanceSettings(Bundle bundle) {
         try {
+            backTintView.setBackgroundColor(appearanceSettings.csReaderBackgroundColor());
+
             Bundle fragmentArgs = requireArguments();
             StoriesReaderSettings storiesReaderSettings = new StoriesReaderSettings(fragmentArgs);
             bundle.putSerializable(CS_TIMER_GRADIENT,
