@@ -213,7 +213,6 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
     public SimpleStoriesWebView(Context context) {
         super(context.getApplicationContext());
         this.context = context;
-        this.setFocusable(true);
         manager = new StoriesViewManager(context.getApplicationContext());
         manager.setStoriesView(this, context.getApplicationContext());
     }
@@ -263,43 +262,25 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
     boolean notFirstLoading = false;
 
     public void loadWebData(String outerLayout, String outerData) {
-        new Handler(Looper.getMainLooper()).post(new Runnable() {
-            @Override
-            public void run() {
-                View view = (View) getParentForAccessibility();
-                view.requestFocus();
-                requestFocus();
-                setBackgroundColor(Color.RED);
-            }
-        });
-
         final String data = outerData;
         final String lt = outerLayout;
         currentPage = data;
         if (!notFirstLoading || data.isEmpty()) {
-            InAppStoryManager.showELog("LoadSlideCheck",
-                    "loadWebData new " + this);
             notFirstLoading = true;
-            new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+            new Handler(Looper.getMainLooper()).post(new Runnable() {
                 @Override
                 public void run() {
-                    setBackgroundColor(Color.BLACK);
                     String s0 = setDir(injectUnselectableStyle(lt));
                     loadDataWithBaseURL("file:///data/", s0, "text/html; charset=utf-8", "UTF-8", null);
-                  //  evaluateJavascript("window.setTimeout(() => console.log('125'), 100)", null);
                 }
-            }, 1000);
+            });
         } else {
-            InAppStoryManager.showELog("LoadSlideCheck",
-                    "loadWebData replace " + this);
-            new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+            new Handler(Looper.getMainLooper()).post(new Runnable() {
                 @Override
                 public void run() {
-                    setBackgroundColor(Color.BLACK);
                     replaceHtml(data);
-                   // evaluateJavascript("window.setTimeout(() => console.log('125'), 100)", null);
                 }
-            }, 1000);
+            });
         }
     }
 
@@ -358,7 +339,7 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
                     new WebAppInterface(
                             getManager()
                     ), "Android");
-            setWebViewClient(new IASWebViewClient(this));
+            setWebViewClient(new IASWebViewClient());
             setWebChromeClient(new WebChromeClient() {
                 @Nullable
                 @Override

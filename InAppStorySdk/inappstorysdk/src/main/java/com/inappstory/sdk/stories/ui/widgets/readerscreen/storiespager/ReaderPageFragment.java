@@ -711,6 +711,9 @@ public class ReaderPageFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+        if (storiesView != null) {
+            ((SimpleStoriesWebView) storiesView).resumeTimers();
+        }
     }
 
     void loadIfStoryIsNotNull() {

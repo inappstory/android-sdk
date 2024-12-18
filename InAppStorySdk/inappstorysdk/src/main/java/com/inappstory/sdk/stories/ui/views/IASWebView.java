@@ -60,6 +60,7 @@ public class IASWebView extends WebView {
 
         setClickable(true);
         getSettings().setJavaScriptEnabled(true);
+        resumeTimers();
     }
 
     public void sendWebConsoleLog(

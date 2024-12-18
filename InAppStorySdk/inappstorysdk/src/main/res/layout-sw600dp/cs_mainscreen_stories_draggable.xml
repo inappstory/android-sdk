@@ -3,65 +3,74 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:background="@android:color/transparent"
     android:layout_height="match_parent"
+    android:background="@android:color/transparent"
     tools:context="com.inappstory.sdk.stories.ui.reader.StoriesActivity">
 
-    <View
-        android:id="@+id/background"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@android:color/transparent" />
-
     <FrameLayout
+        android:id="@+id/shrinkableDialogContainer"
         android:layout_width="match_parent"
-        android:id="@+id/animatedContainer"
+        android:layout_gravity="center"
         android:layout_height="match_parent">
 
-
-        <com.inappstory.sdk.stories.ui.widgets.elasticview.ElasticDragDismissFrameLayout
-            android:id="@+id/draggable_frame"
-            android:layout_gravity="center"
+        <View
+            android:id="@+id/background"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@android:color/transparent"
-            android:fitsSystemWindows="false"
-            app:dragDismissDistance="250dp"
-            android:clickable="true"
-            app:dragDismissEnableBottomDrag="true"
-            app:dragDismissScale="0.90">
-
-            <androidx.core.widget.NestedScrollView
-                android:id="@+id/scrollContainer"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:fillViewport="true">
-                <FrameLayout
-                    android:id="@+id/stories_fragments_layout"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1" />
-
-            </androidx.core.widget.NestedScrollView>
-        </com.inappstory.sdk.stories.ui.widgets.elasticview.ElasticDragDismissFrameLayout>
+            android:background="@android:color/transparent" />
 
         <FrameLayout
-            android:id="@+id/ias_dialog_container"
-            android:layout_gravity="center"
+            android:id="@+id/animatedContainer"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent">
 
-        <View
-            android:id="@+id/blockView"
+
+            <com.inappstory.sdk.stories.ui.widgets.elasticview.ElasticDragDismissFrameLayout
+                android:id="@+id/draggable_frame"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:background="@android:color/transparent"
+                android:clickable="true"
+                android:fitsSystemWindows="false"
+                app:dragDismissDistance="250dp"
+                app:dragDismissEnableBottomDrag="true"
+                app:dragDismissScale="0.90">
+
+                <androidx.core.widget.NestedScrollView
+                    android:id="@+id/scrollContainer"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:fillViewport="true">
+
+                    <FrameLayout
+                        android:id="@+id/stories_fragments_layout"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1" />
+
+                </androidx.core.widget.NestedScrollView>
+            </com.inappstory.sdk.stories.ui.widgets.elasticview.ElasticDragDismissFrameLayout>
+
+            <FrameLayout
+                android:id="@+id/ias_dialog_container"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="center" />
+
+            <View
+                android:id="@+id/blockView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:visibility="gone" />
+
+
+        </FrameLayout>
+
+        <FrameLayout
+            android:id="@+id/ias_outer_top_container"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:visibility="gone" />
-
-
+            android:layout_gravity="center" />
     </FrameLayout>
-    <FrameLayout
-        android:id="@+id/ias_outer_top_container"
-        android:layout_gravity="center"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
 </FrameLayout>

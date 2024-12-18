@@ -17,9 +17,13 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.view.WindowInsets;
+import android.view.WindowManager;
+import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
+import androidx.core.graphics.ColorUtils;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -60,6 +64,7 @@ public class StoriesDialogFragment extends DialogFragment implements IASBackPres
     }
 
     ElasticDragDismissFrameLayout draggableFrame;
+    FrameLayout dialogContainer;
 
     @Override
     public void onDismiss(DialogInterface dialogInterface) {
@@ -223,8 +228,29 @@ public class StoriesDialogFragment extends DialogFragment implements IASBackPres
         dialogHeight = Math.min(dialogHeight, size.y);
         int dialogWidth = Math.round(dialogHeight / 1.78f);
         screenRectangle = new Rect(0, 0, dialogWidth, dialogHeight);
-        getDialog().getWindow().setLayout(dialogWidth, dialogHeight);
-        getDialog().getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        if (dialogContainer != null) {
+            FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) dialogContainer.getLayoutParams();
+            layoutParams.width = dialogWidth;
+            layoutParams.height = dialogHeight;
+            dialogContainer.requestLayout();
+            /*dialogContainer.setLayoutParams(
+                    new FrameLayout.LayoutParams(
+                            dialogWidth, dialogHeight
+                    )
+            );*/
+        }
+        Window window = getDialog().getWindow();
+        if (window == null) return;
+        WindowManager.LayoutParams windowParams = window.getAttributes();
+        window.setLayout(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+        );
+        windowParams.dimAmount = 0f;
+        windowParams.flags |= WindowManager.LayoutParams.FLAG_DIM_BEHIND;
+        window.setAttributes(windowParams);
+        window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        //getDialog().getWindow().setBackgroundDrawable(new ColorDrawable(Color.BLUE));
 
     }
 
@@ -274,7 +300,7 @@ public class StoriesDialogFragment extends DialogFragment implements IASBackPres
 
 
     public void changeStory(int index) {
-       // getArguments().putInt("index", index);
+        // getArguments().putInt("index", index);
     }
 
     Story.StoryType type = Story.StoryType.COMMON;
@@ -282,18 +308,29 @@ public class StoriesDialogFragment extends DialogFragment implements IASBackPres
 
     StoriesReaderAppearanceSettings appearanceSettings;
     StoriesReaderLaunchData launchData;
-    View backTintView;
+
+    public static int adjustAlpha(int color, float factor) {
+        int alpha = Math.round(Color.alpha(color) * factor);
+        int red = Color.red(color);
+        int green = Color.green(color);
+        int blue = Color.blue(color);
+        return Color.argb(alpha, red, green, blue);
+    }
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         cleaned = false;
-        int color = getArguments().getInt(AppearanceManager.CS_READER_BACKGROUND_COLOR, Color.BLACK);
-        view.setBackgroundColor(color);
+        view.setBackgroundColor(
+                adjustAlpha(
+                        appearanceSettings.csReaderBackgroundColor(),
+                        0.3f
+                )
+        );
         type = launchData.getType();
         draggableFrame = view.findViewById(R.id.draggable_frame);
+        dialogContainer = view.findViewById(R.id.shrinkableDialogContainer);
 
-        backTintView = view.findViewById(R.id.background);
         if (savedInstanceState == null) {
             storiesContentFragment = new StoriesContentFragment();
             Bundle args = new Bundle();
@@ -322,8 +359,6 @@ public class StoriesDialogFragment extends DialogFragment implements IASBackPres
 
     private void setAppearanceSettings(Bundle bundle) {
         try {
-            backTintView.setBackgroundColor(appearanceSettings.csReaderBackgroundColor());
-
             Bundle fragmentArgs = requireArguments();
             StoriesReaderSettings storiesReaderSettings = new StoriesReaderSettings(fragmentArgs);
             bundle.putSerializable(CS_TIMER_GRADIENT,
