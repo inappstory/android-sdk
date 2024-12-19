@@ -341,6 +341,10 @@ public class InAppStoryManager {
 
     @Deprecated
     public void openGame(String gameId) {
+        if (idIsIncorrect(gameId)) {
+            showELog(IAS_ERROR_TAG, "Incorrect game id. It must be non-empty and can't be longer than 255 characters");
+            return;
+        }
         InAppStoryService service = InAppStoryService.getInstance();
         if (service != null && context != null) {
             service.openGameReaderWithGC(context, null, gameId, null, false);
@@ -348,6 +352,10 @@ public class InAppStoryManager {
     }
 
     public void openGame(String gameId, @NonNull Context context) {
+        if (idIsIncorrect(gameId)) {
+            showELog(IAS_ERROR_TAG, "Incorrect game id. It must be non-empty and can't be longer than 255 characters");
+            return;
+        }
         InAppStoryService service = InAppStoryService.getInstance();
         GameReaderCallback callback = CallbackManager.getInstance().getGameReaderCallback();
         if (noCorrectUserIdOrDevice()) {
@@ -1559,6 +1567,10 @@ public class InAppStoryManager {
         final String localFeed;
         if (feed != null && !feed.isEmpty()) localFeed = feed;
         else localFeed = "default";
+        if (idIsIncorrect(localFeed)) {
+            showELog(IAS_ERROR_TAG, "Incorrect feed. It must be non-empty and can't be longer than 255 characters");
+            return;
+        }
         final String localUniqueStackId = (uniqueStackId != null) ? uniqueStackId : localFeed;
         final AppearanceManager localAppearanceManager =
                 appearanceManager != null ? appearanceManager
@@ -1703,6 +1715,10 @@ public class InAppStoryManager {
     }
 
     private void showOnboardingStoriesInner(final Integer limit, final String feed, final List<String> tags, final Context outerContext, final AppearanceManager manager) {
+        if (idIsIncorrect(feed)) {
+            showELog(IAS_ERROR_TAG, "Incorrect feed. It must be non-empty and can't be longer than 255 characters");
+            return;
+        }
         InAppStoryService service = InAppStoryService.getInstance();
         if (service == null) {
             localHandler.postDelayed(new Runnable() {
@@ -2092,6 +2108,11 @@ public class InAppStoryManager {
         if (inited) callback.onCreated();
     }
 
+    private boolean idIsIncorrect(String id) {
+        if (id == null || id.isEmpty() || id.length() > 255) return true;
+        return false;
+    }
+
     private void showStoryInner(final String storyId,
                                 final Context context,
                                 final AppearanceManager manager,
@@ -2100,6 +2121,10 @@ public class InAppStoryManager {
                                 final Story.StoryType type,
                                 final SourceType readerSource,
                                 final int readerAction) {
+        if (idIsIncorrect(storyId)) {
+            showELog(IAS_ERROR_TAG, "Incorrect story id. It must be non-empty and can't be longer than 255 characters");
+            return;
+        }
         final InAppStoryService service = InAppStoryService.getInstance();
         if (service == null) {
             localHandler.postDelayed(new Runnable() {

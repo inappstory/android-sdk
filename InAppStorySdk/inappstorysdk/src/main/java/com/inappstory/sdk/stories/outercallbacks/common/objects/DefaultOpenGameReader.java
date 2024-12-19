@@ -30,28 +30,42 @@ public class DefaultOpenGameReader implements IOpenGameReader {
         if (context == null) return;
         Intent intent2 = new Intent(context, GameActivity.class);
         if (context instanceof Activity) {
-
             Window window = ((Activity) context).getWindow();
             Integer themeId = ActivityUtils.getThemeResId((Activity) context);
-            bundle.putInt("themeId",
-                    ((Activity) context).getIntent().getIntExtra(
-                            "themeId",
-                            themeId != null ? themeId : R.style.StoriesSDKAppTheme_GameActivity
-                    )
-            );
-            bundle.putInt("parentSystemUIVisibility",
-                    ((Activity) context).getIntent().getIntExtra(
-                            "parentSystemUIVisibility",
-                            window.getDecorView().getSystemUiVisibility()
-                    )
-            );
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                bundle.putInt("parentLayoutInDisplayCutoutMode",
-                        ((Activity) context).getIntent().getIntExtra(
-                                "parentLayoutInDisplayCutoutMode",
-                                window.getAttributes().layoutInDisplayCutoutMode
+            Intent currentActivityIntent = ((Activity) context).getIntent();
+            if (currentActivityIntent != null) {
+                bundle.putInt("themeId",
+                        currentActivityIntent.getIntExtra(
+                                "themeId",
+                                themeId != null ? themeId : R.style.StoriesSDKAppTheme_GameActivity
                         )
                 );
+                bundle.putInt("parentSystemUIVisibility",
+                        currentActivityIntent.getIntExtra(
+                                "parentSystemUIVisibility",
+                                window.getDecorView().getSystemUiVisibility()
+                        )
+                );
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                    bundle.putInt("parentLayoutInDisplayCutoutMode",
+                            currentActivityIntent.getIntExtra(
+                                    "parentLayoutInDisplayCutoutMode",
+                                    window.getAttributes().layoutInDisplayCutoutMode
+                            )
+                    );
+                }
+            } else {
+                bundle.putInt("themeId",
+                        themeId != null ? themeId : R.style.StoriesSDKAppTheme_GameActivity
+                );
+                bundle.putInt("parentSystemUIVisibility",
+                        window.getDecorView().getSystemUiVisibility()
+                );
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                    bundle.putInt("parentLayoutInDisplayCutoutMode",
+                            window.getAttributes().layoutInDisplayCutoutMode
+                    );
+                }
             }
         }
         intent2.putExtras(bundle);

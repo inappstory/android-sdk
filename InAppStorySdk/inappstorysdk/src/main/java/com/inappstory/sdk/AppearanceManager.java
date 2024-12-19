@@ -300,7 +300,9 @@ public class AppearanceManager {
     }
 
     public int csReaderRadius(Context context) {
-        if (csReaderRadius == -1) return Sizes.dpToPxExt(4, context);
+        if (csReaderRadius == -1) {
+            return Sizes.dpToPxExt(8, context);
+        }
         return csReaderRadius;
     }
 

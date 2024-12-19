@@ -1,6 +1,7 @@
 package com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager;
 
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
+import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 import static com.inappstory.sdk.AppearanceManager.BOTTOM_END;
 import static com.inappstory.sdk.AppearanceManager.BOTTOM_LEFT;
 import static com.inappstory.sdk.AppearanceManager.BOTTOM_RIGHT;
@@ -43,6 +44,7 @@ import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.imageloader.RoundedCornerLayout;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.managers.TimerManager;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderAppearanceSettings;
@@ -418,6 +420,11 @@ public class ReaderPageFragment extends Fragment {
         res.setLayoutParams(new ViewGroup.LayoutParams(MATCH_PARENT,
                 MATCH_PARENT));
 
+        RoundedCornerLayout roundedCornerLayout = new RoundedCornerLayout(context);
+        roundedCornerLayout.setLayoutParams(new ViewGroup.LayoutParams(MATCH_PARENT,
+                MATCH_PARENT));
+        int externalRadius = (Sizes.isTablet(getContext()) ? appearanceSettings.csReaderRadius() : 0);
+        roundedCornerLayout.setRadius(externalRadius);
         linearLayout = new LinearLayout(context);
         linearLayout.setOrientation(LinearLayout.VERTICAL);
         linearLayout.setLayoutParams(new ViewGroup.LayoutParams(MATCH_PARENT,
@@ -427,7 +434,9 @@ public class ReaderPageFragment extends Fragment {
             linearLayout.setBackgroundColor(Color.BLACK);
         }
         setLinearContainer(context, linearLayout);
-        res.addView(linearLayout);
+
+        roundedCornerLayout.addView(linearLayout);
+        res.addView(roundedCornerLayout);
 
         return res;
     }
@@ -464,14 +473,14 @@ public class ReaderPageFragment extends Fragment {
         aboveButtonsPanel = new View(context);
         aboveButtonsPanel.setBackgroundColor(Color.BLACK);
         aboveButtonsPanel.setVisibility(View.GONE);
-        RelativeLayout.LayoutParams aboveLp = new RelativeLayout.LayoutParams(MATCH_PARENT,
-                Sizes.dpToPxExt(appearanceSettings.csReaderRadius(), context));
+        int radius = appearanceSettings.csReaderRadius();
+        RelativeLayout.LayoutParams aboveLp = new RelativeLayout.LayoutParams(MATCH_PARENT, radius);
         aboveLp.addRule(RelativeLayout.ABOVE, R.id.ias_buttons_panel);
         aboveButtonsPanel.setLayoutParams(aboveLp);
 
         main = new CardView(context);
         main.setLayoutParams(contentLP);
-        ((CardView) main).setRadius(Sizes.dpToPxExt(appearanceSettings.csReaderRadius(), getContext()));
+        ((CardView) main).setRadius(radius);
         ((CardView) main).setCardBackgroundColor(Color.TRANSPARENT);
         main.setElevation(0);
 
@@ -480,6 +489,8 @@ public class ReaderPageFragment extends Fragment {
                 MATCH_PARENT));
         cardContent.addView(createReaderContainer(context));
         cardContent.addView(createTimelineContainer(context));
+
+
         main.addView(cardContent);
         createButtonsPanel(context);
         content.addView(buttonsPanel);
@@ -487,6 +498,8 @@ public class ReaderPageFragment extends Fragment {
         content.addView(main);
         linearLayout.addView(blackTop);
         linearLayout.addView(content);
+
+
     }
 
     private RelativeLayout createReaderContainer(Context context) {

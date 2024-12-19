@@ -1,6 +1,8 @@
 package com.inappstory.sdk.stories.ui.reader;
 
 
+import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
+import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 import static com.inappstory.sdk.AppearanceManager.BOTTOM_END;
 import static com.inappstory.sdk.AppearanceManager.BOTTOM_LEFT;
 import static com.inappstory.sdk.AppearanceManager.BOTTOM_RIGHT;
@@ -31,6 +33,7 @@ import androidx.fragment.app.Fragment;
 
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.imageloader.RoundedCornerLayout;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.StoryTimelineSettings;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderAppearanceSettings;
@@ -136,7 +139,7 @@ public class StoriesLoaderFragment extends Fragment {
                     View view1 = view.findViewById(R.id.ias_timeline_container);
                     if (view1 != null) {
                         RelativeLayout.LayoutParams lp1 = (RelativeLayout.LayoutParams) view1.getLayoutParams();
-                        lp1.topMargin += Math.max(cutout.getSafeInsetTop() - minusOffset, 0);
+                        lp1.topMargin = Math.max(cutout.getSafeInsetTop() - minusOffset, 0);
                         view1.setLayoutParams(lp1);
                     }
                 }
@@ -224,7 +227,19 @@ public class StoriesLoaderFragment extends Fragment {
             linearLayout.setBackgroundColor(Color.BLACK);
         }
         setLinearContainer(context, linearLayout);
-        res.addView(linearLayout);
+        RoundedCornerLayout roundedCornerLayout = new RoundedCornerLayout(context);
+        roundedCornerLayout.setLayoutParams(new ViewGroup.LayoutParams(MATCH_PARENT,
+                MATCH_PARENT));
+
+        if (!Sizes.isTablet(getContext()) && appearanceSettings.csReaderBackgroundColor() != Color.BLACK) {
+            linearLayout.setBackgroundColor(Color.BLACK);
+        }
+        int externalRadius = (Sizes.isTablet(getContext()) ?
+                appearanceSettings.csReaderRadius() : 0
+        );
+        roundedCornerLayout.setRadius(externalRadius);
+        roundedCornerLayout.addView(linearLayout);
+        res.addView(roundedCornerLayout);
         View emptyView = new View(context);
         emptyView.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT));
@@ -256,26 +271,35 @@ public class StoriesLoaderFragment extends Fragment {
         aboveButtonsPanel.setId(R.id.ias_above_buttons_panel);
         aboveButtonsPanel.setBackgroundColor(Color.BLACK);
         aboveButtonsPanel.setVisibility(View.GONE);
-        RelativeLayout.LayoutParams aboveLp = new RelativeLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
-                Sizes.dpToPxExt(appearanceSettings.csReaderRadius(), context));
+        RelativeLayout.LayoutParams aboveLp =
+                new RelativeLayout.LayoutParams(
+                        LinearLayout.LayoutParams.MATCH_PARENT,
+                appearanceSettings.csReaderRadius()
+                );
         aboveLp.addRule(RelativeLayout.ABOVE, R.id.ias_buttons_panel);
         aboveButtonsPanel.setLayoutParams(aboveLp);
         main = new CardView(context);
         main.setLayoutParams(contentLP);
-        ((CardView) main).setRadius(Sizes.dpToPxExt(appearanceSettings.csReaderRadius(), getContext()));
+        ((CardView) main).setRadius(appearanceSettings.csReaderRadius());
         ((CardView) main).setCardBackgroundColor(Color.BLACK);
         main.setElevation(0);
 
         RelativeLayout cardContent = new RelativeLayout(context);
+
+
         cardContent.setLayoutParams(new CardView.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
                 CardView.LayoutParams.MATCH_PARENT));
         cardContent.addView(createTimelineContainer(context));
+
+
         main.addView(cardContent);
         content.addView(createButtonsPanel(context));
         content.addView(aboveButtonsPanel);
         content.addView(main);
         linearLayout.addView(blackTop);
         linearLayout.addView(content);
+
+
     }
 
     private RelativeLayout createTimelineContainer(Context context) {
