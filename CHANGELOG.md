@@ -1,6 +1,13 @@
 Change Log
 ==========
 
+Version *1.20.5 (955)*
+----------------------------
+* Updated: check for ids (single stories, onbording feeds and games)
+* Updated: resumeTimers for webViews
+* Updated: default radius for story reader 
+* Fixed: csReaderBackgroundColor option usage on tablets
+
 Version *1.20.4 (954)*
 ----------------------------
 * Added: external app version
