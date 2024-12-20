@@ -4,6 +4,7 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.content.Context;
 import android.graphics.Color;
+import android.graphics.Point;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.View;
@@ -65,10 +66,11 @@ public class ModalContentContainer extends IAMContentContainer<InAppMessageModal
         generateLoader(backgroundColor);
         roundedCornerLayout.addView(loaderContainer);
 
-        if (appearance.contentHeight() == -1) {
+        if (appearance.contentRatio() == 0)
             layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT;
-        } else {
-            layoutParams.height = Sizes.dpToPxExt(appearance.contentHeight(), getContext());
+        else {
+            Point size = Sizes.getScreenSize(getContext());
+            layoutParams.height = Math.min(size.y, Math.round(size.x * appearance.contentRatio()));
         }
 
         int horizontalPadding = Sizes.dpToPxExt(appearance.horizontalPadding(), getContext());

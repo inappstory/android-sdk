@@ -5,6 +5,7 @@ import static com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_
 import static com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_HIDDEN;
 
 import android.content.Context;
+import android.graphics.Point;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.Gravity;
@@ -126,10 +127,12 @@ public final class BottomSheetContentContainer extends IAMContentContainer<InApp
         content.setBackgroundColor(backgroundColor);
         generateLoader(backgroundColor);
         roundedCornerLayout.addView(loaderContainer);
-        if (appearance.contentHeight() == -1)
+        if (appearance.contentRatio() == 0)
             layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT;
-        else
-            layoutParams.height = Sizes.dpToPxExt(appearance.contentHeight(), getContext());
+        else {
+            Point size = Sizes.getScreenSize(getContext());
+            layoutParams.height = Math.min(size.y, Math.round(size.x * appearance.contentRatio()));
+        }
         roundedCornerLayout.setRadius(
                 Sizes.dpToPxExt(appearance.cornerRadius(), getContext()),
                 Sizes.dpToPxExt(appearance.cornerRadius(), getContext()),

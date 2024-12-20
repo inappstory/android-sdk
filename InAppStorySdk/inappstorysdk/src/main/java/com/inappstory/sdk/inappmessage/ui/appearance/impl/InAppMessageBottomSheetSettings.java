@@ -5,18 +5,18 @@ import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageBottomSheetAppe
 
 public class InAppMessageBottomSheetSettings implements InAppMessageBottomSheetAppearance {
     public InAppMessageBottomSheetSettings(
-            Integer contentHeight,
+            Float contentRatio,
             Integer cornerRadius,
             String backgroundColor,
             InAppMessageBSLineAppearance lineAppearance
     ) {
-        this.contentHeight = contentHeight;
+        this.contentRatio = contentRatio;
         this.lineAppearance = lineAppearance;
         this.cornerRadius = cornerRadius;
         this.backgroundColor = backgroundColor;
     }
 
-    public Integer contentHeight;
+    public Float contentRatio;
     public Integer cornerRadius;
     public String backgroundColor;
     public InAppMessageBSLineAppearance lineAppearance;
@@ -30,8 +30,8 @@ public class InAppMessageBottomSheetSettings implements InAppMessageBottomSheetA
     }
 
     @Override
-    public int contentHeight() {
-        return contentHeight != null ? contentHeight : 600;
+    public float contentRatio() {
+        return contentRatio != null ? contentRatio : (2/3f);
     }
 
 

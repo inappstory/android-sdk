@@ -3,7 +3,7 @@ package com.inappstory.sdk.inappmessage.ui.appearance;
 
 public interface InAppMessageBottomSheetAppearance extends InAppMessageAppearance {
     int cornerRadius();
-    int contentHeight();
+    float contentRatio();
     String backgroundColor();
     InAppMessageBSLineAppearance lineAppearance();
 }

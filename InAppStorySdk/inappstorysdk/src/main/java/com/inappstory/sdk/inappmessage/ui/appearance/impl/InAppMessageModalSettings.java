@@ -4,14 +4,14 @@ import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageModalAppearance
 
 public class InAppMessageModalSettings implements InAppMessageModalAppearance {
     public InAppMessageModalSettings(
-            Integer contentHeight,
+            Float contentRatio,
             Integer cornerRadius,
             Integer horizontalPadding,
             Integer closeButtonPosition,
             Integer animationType,
             String backgroundColor
     ) {
-        this.contentHeight = contentHeight;
+        this.contentRatio = contentRatio;
         this.cornerRadius = cornerRadius;
         this.horizontalPadding = horizontalPadding;
         this.closeButtonPosition = closeButtonPosition;
@@ -21,7 +21,7 @@ public class InAppMessageModalSettings implements InAppMessageModalAppearance {
 
     public InAppMessageModalSettings() {}
 
-    public Integer contentHeight;
+    public Float contentRatio;
     public Integer cornerRadius;
     public Integer horizontalPadding;
     public Integer closeButtonPosition;
@@ -29,8 +29,8 @@ public class InAppMessageModalSettings implements InAppMessageModalAppearance {
     public String backgroundColor;
 
     @Override
-    public int contentHeight() {
-        return contentHeight != null ? contentHeight : 600;
+    public float contentRatio() {
+        return contentRatio != null ? contentRatio : (2/3f);
     }
 
     @Override
