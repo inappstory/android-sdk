@@ -18,7 +18,7 @@ buildscript {
         exif_version = "1.3.6"
         gradle_version = "4.2.2"
         gradle_plugin_version = "1.7.20"
-        utils_connector_version = "1f1a1925cb3e7f03e08040683213d5bfdfc46bcc"
+        utils_connector_version = "4dcdd54344f75239009d0ac4bbb350acf70c6b44"
     }
     repositories {
         google()

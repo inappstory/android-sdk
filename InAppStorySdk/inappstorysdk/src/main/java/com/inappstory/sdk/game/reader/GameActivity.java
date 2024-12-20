@@ -12,6 +12,7 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
+import com.inappstory.iasutilsconnector.filepicker.IFilePicker;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
@@ -31,6 +32,7 @@ public class GameActivity extends AppCompatActivity implements BaseGameReaderScr
         int theme = getIntent().getIntExtra("themeId", R.style.StoriesSDKAppTheme_GameActivity);
         setTheme(theme);
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.cs_game_reader_layout);
         GameReaderAppearanceSettings appearanceSettings = (GameReaderAppearanceSettings) getIntent()
                 .getSerializableExtra(GameReaderAppearanceSettings.SERIALIZABLE_KEY);
@@ -38,7 +40,16 @@ public class GameActivity extends AppCompatActivity implements BaseGameReaderScr
             setNavBarColor(appearanceSettings.navBarColor);
             setStatusBarColor(appearanceSettings.statusBarColor);
         }
-
+        InAppStoryManager.useInstance(
+                new UseManagerInstanceCallback() {
+                    @Override
+                    public void use(@NonNull InAppStoryManager manager) throws Exception {
+                        if (manager.utilModulesHolder == null) return;
+                        IFilePicker filePicker = manager.utilModulesHolder.getFilePicker();
+                        filePicker.filePickerParentShown(GameActivity.this);
+                    }
+                }
+        );
         ScreensManager.getInstance().subscribeGameScreen(this);
         createGameContentFragment(
                 savedInstanceState,
