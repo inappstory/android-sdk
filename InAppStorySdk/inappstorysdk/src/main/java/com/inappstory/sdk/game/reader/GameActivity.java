@@ -32,15 +32,15 @@ public class GameActivity extends AppCompatActivity implements BaseGameReaderScr
         int theme = getIntent().getIntExtra("themeId", R.style.StoriesSDKAppTheme_GameActivity);
         setTheme(theme);
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.cs_game_reader_layout);
+        ScreensManager.getInstance().setGameOpenProcessLaunched(false);
         GameReaderAppearanceSettings appearanceSettings = (GameReaderAppearanceSettings) getIntent()
                 .getSerializableExtra(GameReaderAppearanceSettings.SERIALIZABLE_KEY);
         if (appearanceSettings != null) {
             setNavBarColor(appearanceSettings.navBarColor);
             setStatusBarColor(appearanceSettings.statusBarColor);
         }
-        InAppStoryManager.useInstance(
+    /*    InAppStoryManager.useInstance(
                 new UseManagerInstanceCallback() {
                     @Override
                     public void use(@NonNull InAppStoryManager manager) throws Exception {
@@ -49,7 +49,7 @@ public class GameActivity extends AppCompatActivity implements BaseGameReaderScr
                         filePicker.filePickerParentShown(GameActivity.this);
                     }
                 }
-        );
+        );*/
         ScreensManager.getInstance().subscribeGameScreen(this);
         createGameContentFragment(
                 savedInstanceState,

@@ -497,6 +497,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        ScreensManager.getInstance().setGameOpenProcessLaunched(false);
         if (InAppStoryManager.isNull()) {
             forceFinish();
             return;
@@ -987,6 +988,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                         new UseCaseWarnCallback<File>() {
                             @Override
                             public void onWarn(String message) {
+                                if (!isAdded()) return;
                                 if (manager != null && manager.logger != null) {
                                     manager.logger.sendSdkWarn(message);
                                 }
@@ -1006,6 +1008,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                         new UseCaseWarnCallback<File>() {
                             @Override
                             public void onWarn(String message) {
+                                if (!isAdded()) return;
                                 if (manager != null && manager.logger != null) {
                                     manager.logger.sendSdkWarn(message);
                                 }
@@ -1014,6 +1017,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
 
                             @Override
                             public void onError(String message) {
+                                if (!isAdded()) return;
                                 progressLoader.launchLoaderAnimation(null);
                                 InAppStoryManager.showDLog("Game_Loading", message);
                             }
@@ -1037,10 +1041,12 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                             public void onSuccess(final IGameCenterData iGameCenterData) {
                                 if (manager == null) return;
 
+                                if (!isAdded()) return;
 
                                 new Handler(Looper.getMainLooper()).post(new Runnable() {
                                     @Override
                                     public void run() {
+                                        if (!isAdded()) return;
                                         GameCenterData gameCenterData = (GameCenterData) iGameCenterData;
                                         progressLoader.setIndeterminate(false);
                                         manager.statusHolder.setTotalReloadTries(
@@ -1064,6 +1070,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                         new UseCaseCallback<FilePathAndContent>() {
                             @Override
                             public void onError(final String message) {
+                                if (!isAdded()) return;
                                 webView.post(new Runnable() {
                                     @Override
                                     public void run() {
@@ -1077,6 +1084,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
 
                             @Override
                             public void onSuccess(final FilePathAndContent result) {
+                                if (!isAdded()) return;
                                 service.getGamePreloader().restart();
                                 webView.post(new Runnable() {
                                     @Override

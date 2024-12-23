@@ -6,6 +6,7 @@ import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 
 import androidx.annotation.MainThread;
 import androidx.fragment.app.FragmentManager;
@@ -74,6 +75,7 @@ public class ScreensManager {
             currentGameScreen = screen;
         }
         synchronized (gameReaderScreenLock) {
+            Log.e("gameOpenProcessLaunched", "setToFalse");
             gameOpenProcessLaunched = false;
         }
     }
@@ -287,6 +289,13 @@ public class ScreensManager {
     }
 
     private final Object gameOpenProcessLock = new Object();
+
+    public void setGameOpenProcessLaunched(boolean gameOpenProcessLaunched) {
+        /*synchronized (gameReaderScreenLock) {
+            this.gameOpenProcessLaunched = gameOpenProcessLaunched;
+        }*/
+    }
+
     private boolean gameOpenProcessLaunched = false;
 
     public void openGameReader(final Context context,
@@ -294,10 +303,7 @@ public class ScreensManager {
                                final String gameId,
                                final String observableId,
                                final boolean openedFromStoriesReader) {
-        synchronized (gameReaderScreenLock) {
-            if (gameOpenProcessLaunched) return;
-            gameOpenProcessLaunched = true;
-        }
+
         InAppStoryService service = InAppStoryService.getInstance();
         if (service == null) return;
         synchronized (gameReaderScreenLock) {
@@ -306,13 +312,22 @@ public class ScreensManager {
                 return;
             }
         }
+
+        InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
+        if (inAppStoryManager == null) {
+            return;
+        }
+
+        synchronized (gameReaderScreenLock) {
+            if (gameOpenProcessLaunched) return;
+            Log.e("gameOpenProcessLaunched", "setToTrue");
+            gameOpenProcessLaunched = true;
+        }
         if (CallbackManager.getInstance().getGameReaderCallback() != null) {
             CallbackManager.getInstance().getGameReaderCallback().startGame(
                     data, gameId
             );
         }
-        InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
-        if (inAppStoryManager == null) return;
         GameReaderLaunchData gameReaderLaunchData = new GameReaderLaunchData(
                 gameId,
                 observableId,
@@ -329,10 +344,17 @@ public class ScreensManager {
         );
         bundle.putSerializable(gameReaderLaunchData.getSerializableKey(), gameReaderLaunchData);
         bundle.putSerializable(gameReaderAppearanceSettings.getSerializableKey(), gameReaderAppearanceSettings);
-        inAppStoryManager.getOpenGameReader().onOpen(
-                context,
-                bundle
-        );
+        try {
+            inAppStoryManager.getOpenGameReader().onOpen(
+                    context,
+                    bundle
+            );
+        } catch (Exception e) {
+            synchronized (gameReaderScreenLock) {
+                gameOpenProcessLaunched = false;
+            }
+        }
+
     }
 
     private Long lastOpenTry = -1L;
