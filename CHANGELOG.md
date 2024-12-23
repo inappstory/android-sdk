@@ -1,6 +1,11 @@
 Change Log
 ==========
 
+Version *1.20.6 (956)*
+----------------------------
+* Fixed: change game load status (if game loading wasn't successful)
+* Fixed: check if game fragment is attached before game rendering
+
 Version *1.20.5 (955)*
 ----------------------------
 * Updated: check for ids (single stories, onbording feeds and games)
