@@ -551,6 +551,10 @@ public class ReaderPageManager implements IReaderSlideViewModel {
 
     public void setTimelineManager(StoryTimelineManager timelineManager) {
         this.timelineManager = timelineManager;
+
+        Story story = (Story) core.contentHolder().listsContent()
+                .getByIdAndType(storyId, getViewContentType());
+        timelineManager.setContentWithTimeline(story);
     }
 
     public void setButtonsPanelManager(ButtonsPanelManager buttonsPanelManager, int storyId) {

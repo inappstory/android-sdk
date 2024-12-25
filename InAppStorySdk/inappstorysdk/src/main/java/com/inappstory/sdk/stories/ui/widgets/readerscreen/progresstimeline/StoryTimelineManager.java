@@ -1,6 +1,7 @@
 package com.inappstory.sdk.stories.ui.widgets.readerscreen.progresstimeline;
 
 import android.os.Looper;
+import android.util.Log;
 import android.view.View;
 
 import com.inappstory.sdk.core.data.IContentWithTimeline;
@@ -19,6 +20,11 @@ public class StoryTimelineManager {
 
     private long timerDuration;
     private boolean isActive;
+
+    public void setContentWithTimeline(IContentWithTimeline contentWithTimeline) {
+        this.contentWithTimeline = contentWithTimeline;
+    }
+
     IContentWithTimeline contentWithTimeline;
 
     public void startTimer(long timerStart, int currentIndex, long timerDuration) {
@@ -91,6 +97,7 @@ public class StoryTimelineManager {
                 @Override
                 public void run() {
                     if (contentWithTimeline != null) {
+                        Log.e("timelineColors", contentWithTimeline.timelineBackgroundColor(currentIndex));
                         host.setState(
                                 new StoryTimelineState(
                                         slidesCount,

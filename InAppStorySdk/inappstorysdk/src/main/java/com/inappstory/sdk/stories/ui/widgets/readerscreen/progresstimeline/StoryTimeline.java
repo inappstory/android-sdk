@@ -97,14 +97,8 @@ public class StoryTimeline extends View {
         }
         int localFgColor = ColorUtils.parseColorRGBA(state.foregroundColor());
         int localBgColor = ColorUtils.parseColorRGBA(state.backgroundColor());
-        if (fgColor.get() != localFgColor) {
-            fgColor.set(localFgColor);
-            fgColorChanged.set(true);
-        }
-        if (bgColor.get() != localBgColor) {
-            bgColor.set(localBgColor);
-            bgColorChanged.set(true);
-        }
+        backgroundPaint.setColor(localBgColor);
+        fillPaint.setColor(localFgColor);
     }
 
     @Override
@@ -123,12 +117,6 @@ public class StoryTimeline extends View {
     private final AtomicBoolean fgColorChanged = new AtomicBoolean(false);
 
     private void drawSegments(Canvas canvas) {
-        if (bgColorChanged.compareAndSet(true, false)) {
-            backgroundPaint.setColor(bgColor.get());
-        }
-        if (fgColorChanged.compareAndSet(true, false)) {
-            fillPaint.setColor(fgColor.get());
-        }
         float segmentWidth = (getWidth() - parameters.gapWidth * (state.slidesCount - 1)) / state.slidesCount;
         for (int i = 0; i < state.slidesCount; i++) {
             drawSegment(canvas, i, segmentWidth);
