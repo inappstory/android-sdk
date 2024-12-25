@@ -47,6 +47,7 @@ public class GoodsWidgetAdapter extends RecyclerView.Adapter<GoodsWidgetItem> {
             GoodsWidget.GoodsWidgetConfig config,
             GetGoodsDataCallback callback
     ) {
+        this.customGoodsWidget = customGoodsWidget;
         this.callback = callback;
         if (items != null)
             this.items.addAll(items);
