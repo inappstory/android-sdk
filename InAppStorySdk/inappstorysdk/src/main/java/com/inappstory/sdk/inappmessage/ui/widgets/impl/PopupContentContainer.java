@@ -1,9 +1,6 @@
 package com.inappstory.sdk.inappmessage.ui.widgets.impl;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
 import android.content.Context;
-import android.graphics.Color;
 import android.graphics.Point;
 import android.util.AttributeSet;
 import android.view.Gravity;
@@ -17,37 +14,36 @@ import android.widget.RelativeLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.ui.widgets.roundedlayout.RoundedCornerLayout;
 import com.inappstory.sdk.core.utils.ColorUtils;
-import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageModalAppearance;
+import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessagePopupAppearance;
 import com.inappstory.sdk.inappmessage.ui.widgets.IAMContentContainer;
 import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.utils.animation.IndependentAnimator;
 import com.inappstory.sdk.utils.animation.IndependentAnimatorListener;
 
-public class ModalContentContainer extends IAMContentContainer<InAppMessageModalAppearance> {
+public class PopupContentContainer extends IAMContentContainer<InAppMessagePopupAppearance> {
     private RoundedCornerLayout roundedCornerLayout;
     private FrameLayout content;
     private FrameLayout.LayoutParams layoutParams;
     private RelativeLayout.LayoutParams closeButtonLayoutParams;
     private ImageView closeButton;
 
-    public ModalContentContainer(
+    public PopupContentContainer(
             @NonNull Context context
     ) {
         super(context);
     }
 
-    public ModalContentContainer(
+    public PopupContentContainer(
             @NonNull Context context,
             @Nullable AttributeSet attrs
     ) {
         super(context, attrs);
     }
 
-    public ModalContentContainer(
+    public PopupContentContainer(
             @NonNull Context context,
             @Nullable AttributeSet attrs,
             int defStyleAttr
@@ -56,7 +52,7 @@ public class ModalContentContainer extends IAMContentContainer<InAppMessageModal
     }
 
     @Override
-    public void appearance(InAppMessageModalAppearance appearance) {
+    public void appearance(InAppMessagePopupAppearance appearance) {
         super.appearance(appearance);
         if (content == null) return;
         int backgroundColor = ColorUtils.parseColorRGBA(
@@ -66,17 +62,16 @@ public class ModalContentContainer extends IAMContentContainer<InAppMessageModal
         generateLoader(backgroundColor);
         roundedCornerLayout.addView(loaderContainer);
 
-        if (appearance.contentRatio() == 0)
-            layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT;
-        else {
-            Point size = Sizes.getScreenSize(getContext());
-            layoutParams.height = Math.min(size.y, Math.round(size.x * appearance.contentRatio()));
-        }
 
         int horizontalPadding = Sizes.dpToPxExt(appearance.horizontalPadding(), getContext());
         layoutParams.leftMargin = horizontalPadding;
         layoutParams.rightMargin = horizontalPadding;
-
+        if (appearance.contentRatio() == 0)
+            layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT;
+        else {
+            Point size = Sizes.getScreenSize(getContext());
+            layoutParams.height = Math.min(size.y, Math.round((size.x - 2 * horizontalPadding) * appearance.contentRatio()));
+        }
         roundedCornerLayout.setRadius(
                 Sizes.dpToPxExt(appearance.cornerRadius(), getContext())
         );

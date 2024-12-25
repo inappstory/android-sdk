@@ -1,15 +1,23 @@
 package com.inappstory.sdk.core.network.content.models;
 
+import androidx.annotation.NonNull;
+
 import com.inappstory.sdk.core.data.IInAppMessage;
 import com.inappstory.sdk.core.data.IReaderContentSlide;
 import com.inappstory.sdk.core.data.IResource;
 import com.inappstory.sdk.core.exceptions.NotImplementedMethodException;
+import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageAppearance;
+import com.inappstory.sdk.inappmessage.ui.appearance.impl.InAppMessageBottomSheetSettings;
+import com.inappstory.sdk.inappmessage.ui.appearance.impl.InAppMessageFullscreenSettings;
+import com.inappstory.sdk.inappmessage.ui.appearance.impl.InAppMessagePopupSettings;
 import com.inappstory.sdk.network.annotations.models.Required;
 import com.inappstory.sdk.network.annotations.models.SerializedName;
 import com.inappstory.sdk.inappmessage.IAMUiContainerType;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class InAppMessage implements IInAppMessage {
     @Required
@@ -42,6 +50,13 @@ public class InAppMessage implements IInAppMessage {
 
     @SerializedName("type")
     public int screenType;
+
+    @SerializedName("appearance")
+    public Map<String, Object> appearance;
+
+
+    @SerializedName("events")
+    public List<InAppMessageEvent> events;
 
     @Override
     public String layout() {
@@ -201,11 +216,35 @@ public class InAppMessage implements IInAppMessage {
     public IAMUiContainerType screenType() {
         switch (screenType) {
             case 2:
-                return IAMUiContainerType.MODAL;
+                return IAMUiContainerType.POPUP;
             case 3:
                 return IAMUiContainerType.FULLSCREEN;
             default:
                 return IAMUiContainerType.BOTTOM_SHEET;
         }
+    }
+
+    @Override
+    public InAppMessageAppearance inAppMessageAppearance() {
+        switch (screenType) {
+            case 2:
+                return new InAppMessagePopupSettings(appearance);
+            case 3:
+                return new InAppMessageFullscreenSettings(appearance);
+            default:
+                return new InAppMessageBottomSheetSettings(appearance);
+        }
+    }
+
+    @Override
+    public boolean belongsToEvent(@NonNull String eventToCompare) {
+        if (events != null) {
+            for (InAppMessageEvent event: events) {
+                if (Objects.equals(event.name, eventToCompare)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }

@@ -1,5 +1,7 @@
 package com.inappstory.sdk.stories.cache;
 
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.core.IASCore;
@@ -364,13 +366,17 @@ public class SlidesDownloader {
             final IReaderSlideViewModel pageViewModel,
             final int slideIndex
     ) {
+        final String page = pageViewModel.contentIdAndType() + " " + slideIndex;
+        Log.e("slidesDownloader", "checkBundleResources " + page);
         if (checkBundleResourcesAsync()) {
             pageViewModel.slideLoadSuccess(slideIndex);
+            Log.e("slidesDownloader", "slideLoadSuccess " + page);
         } else {
             ISessionHolder sessionHolder = core.sessionManager().getSession();
             sessionHolder.addSessionAssetsIsReadyCallback(new SessionAssetsIsReadyCallback() {
                 @Override
                 public void isReady() {
+                    Log.e("slidesDownloader", "slideLoadSuccess " + page);
                     pageViewModel.slideLoadSuccess(slideIndex);
                 }
             });

@@ -15,4 +15,6 @@ public interface IScreensHolder {
     boolean hasActiveScreen(IScreenHolder holder);
     ShareProcessHandler getShareProcessHandler();
     void forceCloseAllReaders(final ForceCloseReaderCallback callback);
+
+
 }

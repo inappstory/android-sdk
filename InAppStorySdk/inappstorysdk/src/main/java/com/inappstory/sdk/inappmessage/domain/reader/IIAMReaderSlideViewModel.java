@@ -18,6 +18,8 @@ public interface IIAMReaderSlideViewModel extends IReaderSlideViewModel {
 
     ContentIdWithIndex iamId();
 
+    String modifyContent(String content);
+
     void slideClick(String payload);
 
     void resumeSlideTimer();
@@ -72,9 +74,9 @@ public interface IIAMReaderSlideViewModel extends IReaderSlideViewModel {
 
     void storySendData(String data);
 
-    void storySetLocalData(String data, boolean sendToServer);
+    void setLocalUserData(String data, boolean sendToServer);
 
-    String storyGetLocalData();
+    String getLocalUserData();
 
     void shareSlideScreenshotCb(String shareId, boolean result);
 

@@ -61,22 +61,24 @@ public class WebPageConverter {
         final String[] newLayout = {layout};
         List<SessionAsset> assets = core.sessionManager().getSession().getSessionAssets();
         for (final SessionAsset asset : assets) {
-            new SessionAssetLocalUseCase(
-                    core,
-                    new UseCaseCallback<File>() {
-                        @Override
-                        public void onError(String message) {
+            if (newLayout[0].contains(asset.replaceKey)) {
+                new SessionAssetLocalUseCase(
+                        core,
+                        new UseCaseCallback<File>() {
+                            @Override
+                            public void onError(String message) {
 
-                        }
+                            }
 
-                        @Override
-                        public void onSuccess(File result) {
-                            newLayout[0] = newLayout[0].replace(asset.replaceKey,
-                                    "file://" + result.getAbsolutePath());
-                        }
-                    },
-                    asset
-            ).getFile();
+                            @Override
+                            public void onSuccess(File result) {
+                                newLayout[0] = newLayout[0].replace(asset.replaceKey,
+                                        "file://" + result.getAbsolutePath());
+                            }
+                        },
+                        asset
+                ).getFile();
+            }
         }
         return newLayout[0];
     }

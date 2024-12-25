@@ -121,8 +121,11 @@ public class IASContentPreloadImpl implements IASContentPreload {
         if (sessionAssets != null) {
             ISessionHolder sessionHolder = core.sessionManager().getSession();
             sessionHolder.addSessionAssetsKeys(sessionAssets);
+            Log.e("slidesDownloader", "downloadSessionAssets " + sessionAssets.size());
+            int i = 0;
             for (SessionAsset sessionAsset : sessionAssets) {
                 downloadSessionAsset(sessionAsset, sessionHolder);
+                i++;
             }
         }
     }
@@ -135,7 +138,6 @@ public class IASContentPreloadImpl implements IASContentPreload {
                         new UseCaseCallback<File>() {
                             @Override
                             public void onError(String message) {
-
                             }
 
                             @Override

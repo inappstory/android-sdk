@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
@@ -75,8 +76,8 @@ public class SessionHolder implements ISessionHolder {
             this.cacheObjects.clear();
             this.allObjects.clear();
             for (SessionAsset object : cacheObjects) {
-                this.cacheObjects.put(object.filename, null);
-                this.allObjects.put(object.filename, object);
+                this.cacheObjects.put(object.url, null);
+                this.allObjects.put(object.url, object);
             }
         }
     }
@@ -84,7 +85,7 @@ public class SessionHolder implements ISessionHolder {
     @Override
     public void addSessionAsset(SessionAsset object) {
         synchronized (cacheLock) {
-            cacheObjects.put(object.filename, object);
+            cacheObjects.put(object.url, object);
         }
     }
 
@@ -120,10 +121,9 @@ public class SessionHolder implements ISessionHolder {
     public boolean checkIfSessionAssetsIsReadyAsync() {
         final boolean[] cachesIsReady = {true};
         synchronized (cacheLock) {
-            for (String key : cacheObjects.keySet()) {
+            for (Map.Entry<String, SessionAsset> entry : cacheObjects.entrySet()) {
                 if (!cachesIsReady[0]) return false;
-                SessionAsset asset = cacheObjects.get(key);
-                if (asset == null) return false;
+                if (entry.getValue() == null) return false;
                 new SessionAssetLocalUseCase(
                         core,
                         new UseCaseCallback<File>() {
@@ -136,7 +136,7 @@ public class SessionHolder implements ISessionHolder {
                             public void onSuccess(File result) {
                             }
                         },
-                        asset
+                        entry.getValue()
                 ).getFile();
             }
 

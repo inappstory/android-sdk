@@ -27,7 +27,7 @@ import com.inappstory.sdk.inappmessage.stedata.STETypeAndData;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageAppearance;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageBottomSheetAppearance;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageFullscreenAppearance;
-import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageModalAppearance;
+import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessagePopupAppearance;
 import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.jsapiclient.JsApiClient;
 import com.inappstory.sdk.network.jsapiclient.JsApiResponseCallback;
@@ -190,9 +190,9 @@ public class IAMContentFragment extends Fragment implements Observer<IAMReaderSl
                         ((InAppMessageFullscreenAppearance) appearance)
                                 .backgroundColor()
                 );
-            } else if (appearance instanceof InAppMessageModalAppearance) {
+            } else if (appearance instanceof InAppMessagePopupAppearance) {
                 backgroundColor = ColorUtils.parseColorRGBA(
-                        ((InAppMessageModalAppearance) appearance)
+                        ((InAppMessagePopupAppearance) appearance)
                                 .backgroundColor()
                 );
             } else if (appearance instanceof InAppMessageBottomSheetAppearance) {

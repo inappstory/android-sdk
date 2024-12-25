@@ -21,14 +21,13 @@ import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.ui.screens.inappmessagereader.BaseIAMScreen;
-import com.inappstory.sdk.game.reader.GameMainFragment;
 import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderLoadStates;
 import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderState;
 import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderUIStates;
 import com.inappstory.sdk.inappmessage.domain.reader.IIAMReaderViewModel;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageAppearance;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageFullscreenAppearance;
-import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageModalAppearance;
+import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessagePopupAppearance;
 import com.inappstory.sdk.inappmessage.ui.appearance.impl.InAppMessageBottomSheetSettings;
 import com.inappstory.sdk.inappmessage.ui.widgets.IAMContainerCallback;
 import com.inappstory.sdk.inappmessage.ui.widgets.IAMContentContainer;
@@ -90,9 +89,9 @@ public class InAppMessageMainFragment extends Fragment implements Observer<IAMRe
             }
         });
         View v;
-        if (appearance instanceof InAppMessageModalAppearance) {
+        if (appearance instanceof InAppMessagePopupAppearance) {
             v = inflater.inflate(
-                    R.layout.cs_inappmessage_modal_layout,
+                    R.layout.cs_inappmessage_popup_layout,
                     container,
                     false
             );

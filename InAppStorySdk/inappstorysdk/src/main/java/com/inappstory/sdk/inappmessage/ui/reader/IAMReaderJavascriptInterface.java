@@ -136,13 +136,13 @@ public class IAMReaderJavascriptInterface {
 
     @JavascriptInterface
     public void storySetLocalData(String data, boolean sendToServer) {
-        slideViewModel.storySetLocalData(data, sendToServer);
+        slideViewModel.setLocalUserData(data, sendToServer);
     }
 
 
     @JavascriptInterface
     public String storyGetLocalData() {
-        return slideViewModel.storyGetLocalData();
+        return slideViewModel.getLocalUserData();
     }
 
     @JavascriptInterface

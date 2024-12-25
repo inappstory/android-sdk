@@ -13,6 +13,8 @@ import com.inappstory.sdk.inappmessage.stedata.JsSendApiRequestData;
 import com.inappstory.sdk.inappmessage.stedata.STEDataType;
 import com.inappstory.sdk.inappmessage.stedata.STETypeAndData;
 import com.inappstory.sdk.network.JsonParser;
+import com.inappstory.sdk.network.callbacks.NetworkCallback;
+import com.inappstory.sdk.network.models.Response;
 import com.inappstory.sdk.stories.api.models.ContentIdWithIndex;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.SlideLinkObject;
@@ -27,6 +29,7 @@ import com.inappstory.sdk.stories.utils.SingleTimeEvent;
 import com.inappstory.sdk.stories.utils.WebPageConvertCallback;
 import com.inappstory.sdk.stories.utils.WebPageConverter;
 
+import java.lang.reflect.Type;
 import java.util.UUID;
 
 public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
@@ -98,6 +101,13 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
             return new ContentIdWithIndex(iamId, 0);
         }
         return null;
+    }
+
+    @Override
+    public String modifyContent(String content) {
+        String backgroundColor = readerViewModel.getCurrentState().appearance.backgroundColor();
+        return content.replace("<head>",
+                "<head>" + "<style> html { background: " + backgroundColor + " !important; } </style>");
     }
 
     public void slideClick(String payload) {
@@ -253,17 +263,38 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
         throw new NotImplementedMethodException();
     }
 
-    public void storySetLocalData(String data, boolean sendToServer) {
+    public void setLocalUserData(String data, boolean sendToServer) {
+        IAMReaderState readerState = readerViewModel.getCurrentState();
+        if (readerState == null) return;
         synchronized (localDataLock) {
             core.keyValueStorage().saveString("iam" +
-                    readerViewModel.getCurrentState().iamId + "__" +
+                    readerState.iamId + "__" +
                     ((IASDataSettingsHolder) core.settingsAPI()).userId(), data);
+        }
+        if (sendToServer) {
+            core.network().enqueue(
+                    core.network().getApi().sendIAMUserData(
+                            Integer.toString(readerState.iamId),
+                            data
+                    ),
+                    new NetworkCallback<Response>() {
+                        @Override
+                        public void onSuccess(Response response) {
+
+                        }
+
+                        @Override
+                        public Type getType() {
+                            return null;
+                        }
+                    }
+            );
         }
     }
 
     private final Object localDataLock = new Object();
 
-    public String storyGetLocalData() {
+    public String getLocalUserData() {
         synchronized (localDataLock) {
             String res = core.keyValueStorage().getString("iam" +
                     readerViewModel.getCurrentState().iamId

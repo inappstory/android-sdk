@@ -38,7 +38,7 @@ public class InAppMessageByIdUseCase {
                                                 Integer.toString(id),
                                                 1,
                                                 null,
-                                                "slides",
+                                                "slides,layout",
                                                 requestLocalParameters.userId,
                                                 requestLocalParameters.sessionId,
                                                 requestLocalParameters.locale

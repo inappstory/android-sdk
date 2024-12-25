@@ -60,6 +60,7 @@ import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.stackfeed.IStackFeedResult;
 import com.inappstory.sdk.stories.statistic.GetStatisticV1Callback;
 import com.inappstory.sdk.stories.ui.reader.ForceCloseReaderCallback;
+import com.inappstory.sdk.stories.utils.IASBackPressHandler;
 import com.inappstory.sdk.utils.StringsUtils;
 import com.inappstory.sdk.utils.WebViewUtils;
 
@@ -76,7 +77,7 @@ import java.util.Map;
  * Singleton class, can be available with {@link #getInstance()}.
  * Can be reinitialized.
  */
-public class InAppStoryManager {
+public class InAppStoryManager implements IASBackPressHandler {
 
     private static InAppStoryManager INSTANCE;
 
@@ -252,14 +253,9 @@ public class InAppStoryManager {
         });
     }
 
-    public boolean handleBackPressed() {
-        IIAMReaderViewModel iamReaderViewModel = core.screensManager().iamReaderViewModel();
-        IAMReaderState state = iamReaderViewModel.getCurrentState();
-        if (!state.uiState.equals(IAMReaderUIStates.CLOSED)) {
-            core.screensManager().getIAMScreenHolder().closeScreen();
-            return true;
-        }
-        return false;
+    public boolean onBackPressed() {
+        if (core == null) return false;
+        return core.screensManager().onBackPressed();
     }
 
 

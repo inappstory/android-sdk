@@ -68,7 +68,8 @@ public class IAMWebView extends IASWebView implements ContentViewInteractor {
 
     @Override
     public void loadSlide(String content) {
-        String newContent = temporaryUpdateToWhiteBackground(
+        if (slideViewModel == null) return;
+        String newContent = slideViewModel.modifyContent(
                 setDir(content)
         );
         loadDataWithBaseURL(
@@ -216,7 +217,9 @@ public class IAMWebView extends IASWebView implements ContentViewInteractor {
         if (!clientIsSet) {
             if (slideViewModel == null) return;
             addJavascriptInterface(
-                    new IAMReaderJavascriptInterface(slideViewModel), "Android");
+                    new IAMReaderJavascriptInterface(slideViewModel),
+                    "Android"
+            );
             setWebViewClient(new IASWebViewClient());
             setWebChromeClient(new WebChromeClient() {
                 @Nullable

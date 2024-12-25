@@ -25,9 +25,13 @@ public class SessionAsset {
     @SerializedName("mimeType")
     public String mimeType;
 
-    @NonNull
     @Override
     public String toString() {
-        return "SessionCacheObject {" + "\nUrl: " + url + "\nType: " + type + "\n}";
+        return "SessionAsset{" +
+                "url='" + url + '\'' +
+                ", type='" + type + '\'' +
+                ", replaceKey='" + replaceKey + '\'' +
+                ", filename='" + filename + '\'' +
+                '}';
     }
 }

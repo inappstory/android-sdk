@@ -25,4 +25,12 @@ public class ContentIdAndType {
     public int hashCode() {
         return Objects.hash(contentId, contentType);
     }
+
+    @Override
+    public String toString() {
+        return "ContentIdAndType{" +
+                "contentId=" + contentId +
+                ", contentType=" + contentType +
+                '}';
+    }
 }

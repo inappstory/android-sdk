@@ -63,6 +63,12 @@ public interface ApiInterface {
             @Field("was") Integer widgetAnswerScore
     );
 
+    @FormUrlEncoded
+    @PUT("v2/inappmessaging/message/{id}/data")
+    Request sendIAMUserData(
+            @Path("id") String id,
+            @Field("data") String data);
+
     @GET("v2/ugc/feed")
     Request getUgcStories(
             @QueryObject("f") String f,
@@ -223,6 +229,8 @@ public interface ApiInterface {
             @Path("id") String id,
             @Field("data") String data,
             @Query("session_id") String sessionId);
+
+
 
     @POST("v2/story-like/{id}")
     Request storyLike(

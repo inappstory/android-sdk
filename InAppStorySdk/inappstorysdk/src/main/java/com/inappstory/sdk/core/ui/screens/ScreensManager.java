@@ -16,6 +16,8 @@ import com.inappstory.sdk.core.ui.screens.launcher.ScreensLauncher;
 import com.inappstory.sdk.core.ui.screens.storyreader.StoryScreenHolder;
 import com.inappstory.sdk.domain.IScreenViewModelsHolder;
 import com.inappstory.sdk.domain.ScreenViewModelsHolder;
+import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderState;
+import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderUIStates;
 import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderViewModel;
 import com.inappstory.sdk.inappmessage.domain.reader.IIAMReaderViewModel;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenGameReader;
@@ -23,10 +25,12 @@ import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenInAppMessag
 import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenReader;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenStoriesReader;
 import com.inappstory.sdk.stories.ui.reader.ForceCloseReaderCallback;
+import com.inappstory.sdk.stories.utils.IASBackPressHandler;
 
 public class ScreensManager implements IScreensLauncher,
         IScreensHolder,
-        IScreenViewModelsHolder {
+        IScreenViewModelsHolder,
+        IASBackPressHandler {
     private final IScreensHolder screensHolder;
     private final IASCore core;
     private final ScreensLauncher launcher;
@@ -108,5 +112,16 @@ public class ScreensManager implements IScreensLauncher,
     @Override
     public IIAMReaderViewModel iamReaderViewModel() {
         return screenViewModelsHolder.iamReaderViewModel();
+    }
+
+    @Override
+    public boolean onBackPressed() {
+        IIAMReaderViewModel iamReaderViewModel = iamReaderViewModel();
+        IAMReaderState state = iamReaderViewModel.getCurrentState();
+        if (!state.uiState.equals(IAMReaderUIStates.CLOSED)) {
+            getIAMScreenHolder().closeScreen();
+            return true;
+        }
+        return false;
     }
 }

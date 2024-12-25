@@ -1,6 +1,9 @@
 package com.inappstory.sdk.inappmessage.ui.appearance.impl;
 
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageBSLineAppearance;
+import com.inappstory.sdk.utils.NumberUtils;
+
+import java.util.Map;
 
 public class InAppMessageBSLineSettings implements InAppMessageBSLineAppearance {
     public InAppMessageBSLineSettings(
@@ -15,12 +18,33 @@ public class InAppMessageBSLineSettings implements InAppMessageBSLineAppearance 
         this.color = color;
     }
 
+    public InAppMessageBSLineSettings(Map<String, Object> appearance) {
+        if (appearance == null) return;
+        String topMarginKey = "top_margin";
+        String widthKey = "width";
+        String heightKey = "height";
+        String colorKey = "color";
+        NumberUtils numberUtils = new NumberUtils();
+        if (appearance.containsKey(topMarginKey)) {
+            topMargin = numberUtils.convertNumberToInt(appearance.get(topMarginKey));
+        }
+        if (appearance.containsKey(widthKey)) {
+            width = numberUtils.convertNumberToInt(appearance.get(widthKey));
+        }
+        if (appearance.containsKey(heightKey)) {
+            height = numberUtils.convertNumberToInt(appearance.get(heightKey));
+        }
+        if (appearance.containsKey(colorKey)) {
+            color = (String) appearance.get(colorKey);
+        }
+    }
+
     public InAppMessageBSLineSettings() {}
 
-    public Integer topMargin;
-    public Integer width;
-    public Integer height;
-    public String color;
+    private Integer topMargin;
+    private Integer width;
+    private Integer height;
+    private String color;
 
     @Override
     public int topMargin() {

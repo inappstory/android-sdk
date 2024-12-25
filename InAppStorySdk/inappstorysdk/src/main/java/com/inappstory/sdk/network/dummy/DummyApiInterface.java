@@ -22,6 +22,11 @@ public class DummyApiInterface implements ApiInterface {
     }
 
     @Override
+    public Request sendIAMUserData(String id, String data) {
+        return new DummyRequest();
+    }
+
+    @Override
     public Request getUgcStories(String f, String fields, String expand) {
         return new DummyRequest();
     }
