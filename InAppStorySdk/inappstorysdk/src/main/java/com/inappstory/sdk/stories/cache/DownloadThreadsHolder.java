@@ -5,7 +5,7 @@ import java.util.concurrent.Executors;
 
 public class DownloadThreadsHolder {
     private final ExecutorService fastCacheFileDownloader = Executors.newFixedThreadPool(1);
-    private final ExecutorService bundleDownloader = Executors.newFixedThreadPool(1);
+    private final ExecutorService bundleDownloader = Executors.newFixedThreadPool(5);
 
     public void useFastCacheDownloader(Runnable runnable) {
         fastCacheFileDownloader.submit(runnable);

@@ -46,21 +46,21 @@ public interface ApiInterface {
     );
 
 
-    @GET("v2/inappmessaging/message/{id}/event/{event_name}")
+    @POST("v2/inappmessaging/message/{id}/event/{event_name}")
     Request sendInAppMessageStat(
             @Path("id") String id,
             @Path("event_name") String eventName,
-            @Field("ei") String eventId,
-            @Field("ii") String iterationId,
-            @Field("si") Integer slideIndex,
-            @Field("st") Integer slideTotal,
-            @Field("d") Long durationMs,
-            @Field("wi") String widgetId,
-            @Field("wl") String widgetLabel,
-            @Field("wv") String widgetValue,
-            @Field("wa") Integer widgetAnswer,
-            @Field("wal") String widgetAnswerLabel,
-            @Field("was") Integer widgetAnswerScore
+            @Query("ei") String eventId,
+            @Query("ii") String iterationId,
+            @Query("si") Integer slideIndex,
+            @Query("st") Integer slideTotal,
+            @Query("d") Long durationMs,
+            @Query("wi") String widgetId,
+            @Query("wl") String widgetLabel,
+            @Query("wv") String widgetValue,
+            @Query("wa") Integer widgetAnswer,
+            @Query("wal") String widgetAnswerLabel,
+            @Query("was") Integer widgetAnswerScore
     );
 
     @FormUrlEncoded

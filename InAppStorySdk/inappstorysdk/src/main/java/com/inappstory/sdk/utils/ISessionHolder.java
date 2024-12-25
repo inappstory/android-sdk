@@ -19,6 +19,8 @@ public interface ISessionHolder {
     void removeSessionAssetsIsReadyCallback(SessionAssetsIsReadyCallback callback);
     boolean checkIfSessionAssetsIsReadySync();
     void assetsIsCleared();
+    boolean assetsIsLoading();
+    void assetsIsLoading(boolean isLoading);
     boolean checkIfSessionAssetsIsReadyAsync();
 
     void clear(String oldSessionId);

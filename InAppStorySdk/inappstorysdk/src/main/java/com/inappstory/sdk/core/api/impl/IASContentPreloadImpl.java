@@ -120,12 +120,12 @@ public class IASContentPreloadImpl implements IASContentPreload {
     public void downloadSessionAssets(List<SessionAsset> sessionAssets) {
         if (sessionAssets != null) {
             ISessionHolder sessionHolder = core.sessionManager().getSession();
+            if (sessionHolder.assetsIsLoading()) return;
+            sessionHolder.assetsIsLoading(true);
             sessionHolder.addSessionAssetsKeys(sessionAssets);
             Log.e("slidesDownloader", "downloadSessionAssets " + sessionAssets.size());
-            int i = 0;
             for (SessionAsset sessionAsset : sessionAssets) {
                 downloadSessionAsset(sessionAsset, sessionHolder);
-                i++;
             }
         }
     }

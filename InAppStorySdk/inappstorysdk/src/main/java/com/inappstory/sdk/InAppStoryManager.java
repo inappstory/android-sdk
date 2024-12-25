@@ -634,7 +634,7 @@ public class InAppStoryManager implements IASBackPressHandler {
         return sendStatistic;
     }
 
-    private boolean sendStatistic = false;
+    private boolean sendStatistic = true;
 
     private void initManager(
             Context context,

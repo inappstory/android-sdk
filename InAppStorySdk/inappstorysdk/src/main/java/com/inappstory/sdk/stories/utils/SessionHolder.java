@@ -111,11 +111,26 @@ public class SessionHolder implements ISessionHolder {
     }
 
     @Override
+    public boolean assetsIsLoading() {
+        synchronized (cacheLock) {
+            return assetsIsLoading;
+        }
+    }
+
+    @Override
+    public void assetsIsLoading(boolean isLoading) {
+        synchronized (cacheLock) {
+            assetsIsLoading = isLoading;
+        }
+    }
+
+    @Override
     public void assetsIsCleared() {
         this.assetsIsReady = false;
     }
 
     private boolean assetsIsReady = false;
+    private boolean assetsIsLoading = false;
 
     @Override
     public boolean checkIfSessionAssetsIsReadyAsync() {
@@ -144,6 +159,7 @@ public class SessionHolder implements ISessionHolder {
         if (cachesIsReady[0]) {
             Set<SessionAssetsIsReadyCallback> temp = new HashSet<>();
             synchronized (cacheLock) {
+                assetsIsLoading = false;
                 temp.addAll(assetsIsReadyCallbacks);
                 assetsIsReadyCallbacks.clear();
             }
