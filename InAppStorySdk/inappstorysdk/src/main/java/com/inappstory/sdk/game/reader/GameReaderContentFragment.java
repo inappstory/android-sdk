@@ -112,6 +112,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
     private ImageView loader;
     private FrameLayout gameWebViewContainer;
     private View closeButton;
+    private View webViewAndLoaderContainer;
     private RelativeLayout loaderContainer;
     private GameProgressLoader progressLoader;
     private View baseContainer;
@@ -480,6 +481,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                 });
                 checkInsets();
                 checkIntentValues(core, gameLoadedErrorCallback);
+                downloadGame();
             }
 
             @Override
@@ -646,6 +648,9 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
     private final Object initLock = new Object();
 
     private void initWebView() {
+        if (getContext() == null) return;
+        webView = new IASWebView(getContext());
+        gameWebViewContainer.addView(webView);
         final GameStoryData dataModel = getStoryDataModel();
         webView.setWebViewClient(new IASWebViewClient());
         webView.setWebChromeClient(new WebChromeClient() {
@@ -885,7 +890,6 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
             return;
         }
 
-        InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
         Map<String, String> splashKeys = GameConstants.getSplashesKeys(
                 core.externalUtilsAPI().hasLottieAnimation()
         );
@@ -910,7 +914,6 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
             if (animFile != null)
                 setLoader(animFile);
         }
-        downloadGame();
     }
 
     private void setFullScreenFromOptions(GameScreenOptions options) {
@@ -1343,7 +1346,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         gameReaderLaunchData = (GameReaderLaunchData) getArguments().getSerializable(
                 GameReaderLaunchData.SERIALIZABLE_KEY
         );
-        webView = view.findViewById(R.id.gameWebview);
+        gameWebViewContainer = view.findViewById(R.id.gameWebviewContainer);
         loader = view.findViewById(R.id.loader);
         baseContainer = view.findViewById(R.id.draggable_frame);
         loaderContainer = view.findViewById(R.id.loaderContainer);
