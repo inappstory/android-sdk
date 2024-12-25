@@ -312,8 +312,8 @@ public class StoriesWebView extends IASWebView implements ContentViewInteractor 
     @Override
     public void unfreezeUI() {
         touchSlider = false;
-
         getParentForAccessibility().requestDisallowInterceptTouchEvent(false);
+        getManager().getPageManager().resumeSlide(false);
     }
 
     @Override
