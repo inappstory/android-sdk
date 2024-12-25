@@ -78,7 +78,7 @@ public class FilesDownloadManager {
         downloadThreadsHolder.useFastCacheDownloader(runnable);
     }
 
-    public void useBundleDownloader(Runnable runnable) {
-        downloadThreadsHolder.useBundleDownloader(runnable);
+    public void useCustomDownloader(Runnable runnable) {
+        downloadThreadsHolder.useCustomDownloader(runnable);
     }
 }

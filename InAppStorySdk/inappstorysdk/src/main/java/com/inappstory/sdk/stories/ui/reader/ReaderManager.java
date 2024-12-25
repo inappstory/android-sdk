@@ -631,11 +631,11 @@ public class ReaderManager {
     };
 
     public void subscribeToAssets() {
-        core.sessionManager().getSession().addSessionAssetsIsReadyCallback(assetsIsReadyCallback);
+        core.assetsHolder().addAssetsIsReadyCallback(assetsIsReadyCallback);
     }
 
     public void unsubscribeFromAssets() {
-        core.sessionManager().getSession().removeSessionAssetsIsReadyCallback(assetsIsReadyCallback);
+        core.assetsHolder().removeAssetsIsReadyCallback(assetsIsReadyCallback);
     }
 
     public void addSubscriber(ReaderPageManager manager) {

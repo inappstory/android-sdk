@@ -11,18 +11,6 @@ public interface ISessionHolder {
     String getSessionId();
     List<SessionAsset> getSessionAssets();
     void setSession(CachedSessionData sessionData, boolean v1Disabled);
-
-    void addSessionAssetsKeys(List<SessionAsset> cacheObjects);
-    void addSessionAsset(SessionAsset cacheObject);
-
-    void addSessionAssetsIsReadyCallback(SessionAssetsIsReadyCallback callback);
-    void removeSessionAssetsIsReadyCallback(SessionAssetsIsReadyCallback callback);
-    boolean checkIfSessionAssetsIsReadySync();
-    void assetsIsCleared();
-    boolean assetsIsLoading();
-    void assetsIsLoading(boolean isLoading);
-    boolean checkIfSessionAssetsIsReadyAsync();
-
     void clear(String oldSessionId);
     CachedSessionData sessionData();
 }

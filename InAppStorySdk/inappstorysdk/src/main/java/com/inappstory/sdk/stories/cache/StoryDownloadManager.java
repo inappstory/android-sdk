@@ -108,34 +108,38 @@ public class StoryDownloadManager {
     HashMap<ContentIdAndType, Long> storyErrorDelayed = new HashMap<>();
 
     void storyError(ContentIdAndType contentIdAndType) {
+        List<IReaderSlideViewModel> locals = new ArrayList<>();
         synchronized (lock) {
-            if (pageViewModels.isEmpty()) {
-                storyErrorDelayed.put(
-                        contentIdAndType,
-                        System.currentTimeMillis()
-                );
+            locals.addAll(pageViewModels);
+        }
+        if (locals.isEmpty()) {
+            storyErrorDelayed.put(
+                    contentIdAndType,
+                    System.currentTimeMillis()
+            );
+            return;
+        }
+        for (IReaderSlideViewModel pageViewModel : locals) {
+            if (pageViewModel.contentIdAndType().equals(contentIdAndType)) {
+                pageViewModel.contentLoadError();
                 return;
-            }
-            for (IReaderSlideViewModel pageViewModel : pageViewModels) {
-                if (pageViewModel.contentIdAndType().equals(contentIdAndType)) {
-                    pageViewModel.contentLoadError();
-                    return;
-                }
             }
         }
     }
 
     void storyLoaded(IReaderContent story, ContentType type) {
+        List<IReaderSlideViewModel> locals = new ArrayList<>();
         synchronized (lock) {
-            for (IReaderSlideViewModel pageViewModel : pageViewModels) {
-                if (
-                        pageViewModel.contentIdAndType().equals(
-                                new ContentIdAndType(story.id(), type)
-                        )
-                ) {
-                    pageViewModel.contentLoadSuccess(story);
-                    return;
-                }
+            locals.addAll(pageViewModels);
+        }
+        for (IReaderSlideViewModel pageViewModel : locals) {
+            if (
+                    pageViewModel.contentIdAndType().equals(
+                            new ContentIdAndType(story.id(), type)
+                    )
+            ) {
+                pageViewModel.contentLoadSuccess(story);
+                return;
             }
         }
     }

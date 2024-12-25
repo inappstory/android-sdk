@@ -152,7 +152,8 @@ public class SessionManager {
                 manager.restartSchedule();
             }
         });
-        core.contentPreload().downloadSessionAssets(response.sessionAssets);
+        core.assetsHolder().setAssets(response.sessionAssets);
+        core.assetsHolder().downloadAssets();
     }
 
     public void openStatisticSuccess(SessionResponse response) {

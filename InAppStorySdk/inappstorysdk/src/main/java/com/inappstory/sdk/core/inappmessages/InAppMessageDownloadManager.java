@@ -3,6 +3,7 @@ package com.inappstory.sdk.core.inappmessages;
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.api.IASAssetsHolder;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.data.IReaderContent;
@@ -82,7 +83,7 @@ public class InAppMessageDownloadManager {
     }
 
     public boolean allBundlesLoaded() {
-        return slidesDownloader.checkBundleResourcesAsync();
+        return core.assetsHolder().assetsIsDownloaded();
     }
 
     private void addSlides(@NonNull final IReaderContent readerContent) {
@@ -136,11 +137,11 @@ public class InAppMessageDownloadManager {
                         if (core.contentLoader().inAppMessageDownloadManager()
                                 .allSlidesLoaded(readerContent)) {
 
-                            ISessionHolder sessionHolder = core.sessionManager().getSession();
-                            if (sessionHolder.checkIfSessionAssetsIsReadySync()) {
+                            IASAssetsHolder assetsHolder = core.assetsHolder();
+                            if (assetsHolder.assetsIsDownloaded()) {
                                 contentIsLoaded(readerContent);
                             } else {
-                                sessionHolder.addSessionAssetsIsReadyCallback(new SessionAssetsIsReadyCallback() {
+                                assetsHolder.addAssetsIsReadyCallback(new SessionAssetsIsReadyCallback() {
                                     @Override
                                     public void isReady() {
                                         contentIsLoaded(readerContent);

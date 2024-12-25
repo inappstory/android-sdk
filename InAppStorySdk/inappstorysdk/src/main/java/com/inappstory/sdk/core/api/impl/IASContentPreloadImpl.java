@@ -117,42 +117,6 @@ public class IASContentPreloadImpl implements IASContentPreload {
     }
 
     @Override
-    public void downloadSessionAssets(List<SessionAsset> sessionAssets) {
-        if (sessionAssets != null) {
-            ISessionHolder sessionHolder = core.sessionManager().getSession();
-            if (sessionHolder.assetsIsLoading()) return;
-            sessionHolder.assetsIsLoading(true);
-            sessionHolder.addSessionAssetsKeys(sessionAssets);
-            Log.e("slidesDownloader", "downloadSessionAssets " + sessionAssets.size());
-            for (SessionAsset sessionAsset : sessionAssets) {
-                downloadSessionAsset(sessionAsset, sessionHolder);
-            }
-        }
-    }
-
-    private void downloadSessionAsset(final SessionAsset sessionAsset, final ISessionHolder sessionHolder) {
-        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
-            @Override
-            public void use(@NonNull final InAppStoryService service) throws Exception {
-                new SessionAssetUseCase(core,
-                        new UseCaseCallback<File>() {
-                            @Override
-                            public void onError(String message) {
-                            }
-
-                            @Override
-                            public void onSuccess(File result) {
-                                sessionHolder.addSessionAsset(sessionAsset);
-                                sessionHolder.checkIfSessionAssetsIsReadyAsync();
-                            }
-                        },
-                        sessionAsset
-                ).getFile();
-            }
-        });
-    }
-
-    @Override
     public void restartGamePreloader() {
         gamePreloader.pause();
         gamePreloader.active(true);

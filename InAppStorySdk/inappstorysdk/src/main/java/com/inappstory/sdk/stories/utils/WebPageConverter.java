@@ -59,7 +59,7 @@ public class WebPageConverter {
 
     private String replaceLayoutAssets(IASCore core, String layout) {
         final String[] newLayout = {layout};
-        List<SessionAsset> assets = core.sessionManager().getSession().getSessionAssets();
+        List<SessionAsset> assets = core.assetsHolder().assets();
         for (final SessionAsset asset : assets) {
             if (newLayout[0].contains(asset.replaceKey)) {
                 new SessionAssetLocalUseCase(

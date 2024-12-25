@@ -48,7 +48,7 @@ public class CustomFileUseCase extends GetCacheFileUseCase<Void> {
             core
                     .contentLoader()
                     .filesDownloadManager()
-                    .useBundleDownloader(new Runnable() {
+                    .useCustomDownloader(new Runnable() {
                         @Override
                         public void run() {
                             try {

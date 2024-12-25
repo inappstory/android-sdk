@@ -150,6 +150,7 @@ public class StoriesViewManager {
         this.index = oInd;
         loadedIndex = oInd;
         loadedId = oId;
+
         if (alreadyLoaded) return;
         IReaderContent story = core
                 .contentHolder()
@@ -295,8 +296,7 @@ public class StoriesViewManager {
     }
 
     private void slideInCache(final IReaderContent story, final int index) {
-        ISessionHolder sessionHolder = core.sessionManager().getSession();
-        if (sessionHolder.checkIfSessionAssetsIsReadySync()) {
+        if (core.assetsHolder().assetsIsDownloaded()) {
             innerLoad(story);
             pageManager.slideLoadSuccess(index, true);
         } else {
@@ -503,10 +503,11 @@ public class StoriesViewManager {
             uniqueId = storiesContentFragment.getReaderUniqueId();
             storiesContentFragment.observeGameReader();
         }
-        Context context = this.context;
-        if (context != null)
+        Context localContext = pageManager.host.getContext();
+        if (localContext == null) localContext = context;
+        if (localContext != null)
             core.screensManager().openScreen(
-                    context,
+                    localContext,
                     new LaunchGameScreenStrategy(core, true)
                             .data(new LaunchGameScreenData(
                                     uniqueId,

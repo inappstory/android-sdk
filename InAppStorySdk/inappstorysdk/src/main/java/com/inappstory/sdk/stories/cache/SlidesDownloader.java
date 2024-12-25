@@ -5,6 +5,7 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.api.IASAssetsHolder;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.data.IListItemContent;
@@ -267,20 +268,22 @@ public class SlidesDownloader {
         synchronized (slideTasksLock) {
             Objects.requireNonNull(slideTasks.get(slideTaskKey)).loadType = -1;
         }
+        List<IReaderSlideViewModel> pageViewModelsCopy = new ArrayList<>();
         synchronized (pageViewModelsLock) {
-            if (pageViewModels.isEmpty()) {
-                slideErrorDelayed.put(
-                        slideTaskKey,
-                        System.currentTimeMillis()
-                );
+            pageViewModelsCopy.addAll(pageViewModels);
+        }
+        if (pageViewModelsCopy.isEmpty()) {
+            slideErrorDelayed.put(
+                    slideTaskKey,
+                    System.currentTimeMillis()
+            );
+            return;
+        }
+        ContentIdAndType contentIdAndType = slideTaskKey.contentIdAndType;
+        for (IReaderSlideViewModel pageViewModel : pageViewModelsCopy) {
+            if (pageViewModel.contentIdAndType().equals(contentIdAndType)) {
+                pageViewModel.slideLoadError(slideTaskKey.index);
                 return;
-            }
-            ContentIdAndType contentIdAndType = slideTaskKey.contentIdAndType;
-            for (IReaderSlideViewModel pageViewModel : pageViewModels) {
-                if (pageViewModel.contentIdAndType().equals(contentIdAndType)) {
-                    pageViewModel.slideLoadError(slideTaskKey.index);
-                    return;
-                }
             }
         }
         core.callbacksAPI().useCallback(
@@ -320,20 +323,25 @@ public class SlidesDownloader {
             synchronized (slideTasksLock) {
                 slideTask = slideTasks.get(slideTaskKey);
             }
+            Log.e("slidesDownloader", "loadSlide start " + slideTaskKey + " " + slideTask);
             if (slideTask == null) {
                 loopedExecutor.freeExecutor();
                 return;
             }
             if (!(new LoadSlideUseCase(slideTask, core).loadWithResult())) {
+                Log.e("slidesDownloader", "loadSlide error " + slideTaskKey);
                 loadSlideError(slideTaskKey);
                 return;
             }
+            Log.e("slidesDownloader", "loadSlide end sync " + slideTaskKey);
             synchronized (slideTasksLock) {
                 slideTask.loadType = 2;
             }
+            Log.e("slidesDownloader", "loadSlide end unsync " + slideTaskKey);
             slideLoaded(slideTaskKey);
             loopedExecutor.freeExecutor();
         } catch (Throwable t) {
+            Log.e("slidesDownloader", "loadSlide error " + slideTaskKey + " " + t.getMessage());
             loadSlideError(slideTaskKey);
         }
     }
@@ -357,30 +365,26 @@ public class SlidesDownloader {
         return true;
     }
 
-    public boolean checkBundleResourcesAsync() {
-        ISessionHolder sessionHolder = core.sessionManager().getSession();
-        return sessionHolder.checkIfSessionAssetsIsReadySync();
-    }
 
     public void checkBundleResources(
             final IReaderSlideViewModel pageViewModel,
             final int slideIndex
     ) {
         final String page = pageViewModel.contentIdAndType() + " " + slideIndex;
-        Log.e("slidesDownloader", "checkBundleResources " + page);
-        if (checkBundleResourcesAsync()) {
+        if (core.assetsHolder().assetsIsDownloaded()) {
+            Log.e("slidesDownloader", "slideLoadSuccess sync " + page);
             pageViewModel.slideLoadSuccess(slideIndex);
-            Log.e("slidesDownloader", "slideLoadSuccess " + page);
         } else {
-            ISessionHolder sessionHolder = core.sessionManager().getSession();
-            sessionHolder.addSessionAssetsIsReadyCallback(new SessionAssetsIsReadyCallback() {
+            IASAssetsHolder assetsHolder = core.assetsHolder();
+            Log.e("slidesDownloader", "checkBundleResources add async callback " + page);
+            assetsHolder.addAssetsIsReadyCallback(new SessionAssetsIsReadyCallback() {
                 @Override
                 public void isReady() {
-                    Log.e("slidesDownloader", "slideLoadSuccess " + page);
                     pageViewModel.slideLoadSuccess(slideIndex);
+                    Log.e("slidesDownloader", "slideLoadSuccess async " + page);
                 }
             });
-            core.contentPreload().downloadSessionAssets(sessionHolder.getSessionAssets());
+            assetsHolder.downloadAssets();
         }
     }
 

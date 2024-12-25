@@ -272,7 +272,7 @@ public class StoriesContentFragment extends Fragment
         if (st == null) return;
         BaseStoryScreen screen = getStoriesReader();
         if (screen != null) {
-            screen.disableDrag(st.disableClose() || st.hasSwipeUp());
+            screen.disableDrag(!appearanceSettings.csCloseOnSwipe() || st.disableClose() || st.hasSwipeUp());
             screen.disableClose(st.disableClose());
         }
     }

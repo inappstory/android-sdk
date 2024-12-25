@@ -5,6 +5,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
+import android.os.Looper;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
@@ -12,6 +13,7 @@ import android.view.View;
 import androidx.annotation.MainThread;
 import androidx.annotation.Nullable;
 
+import com.inappstory.sdk.core.network.content.models.StorySlideTimeline;
 import com.inappstory.sdk.core.utils.ColorUtils;
 import com.inappstory.sdk.stories.utils.Sizes;
 
@@ -35,6 +37,7 @@ public class StoryTimeline extends View {
     }
 
     private void init(Context context) {
+        setVisibility(INVISIBLE);
         float height = 3f;
         float gapWidth = 4f;
         float cornerRadius = 1.5f;
@@ -77,23 +80,30 @@ public class StoryTimeline extends View {
     @MainThread
     public void setState(StoryTimelineState state) {
         this.state = state;
-        int localVisibility = !(
+
+        final int localVisibility = !(
                 (state.slidesCount == 1 && state.timerDuration == 0) ||
                         state.isHidden
-        ) ? 1 : -1;
-        if (oldVisibility.get() != localVisibility) {
-            oldVisibility.set(localVisibility);
-            visibilityChanged.set(true);
+        ) ? VISIBLE : INVISIBLE;
+        if (Looper.myLooper() == Looper.getMainLooper()) {
+            setVisibility(localVisibility);
+        } else {
+            post(new Runnable() {
+                @Override
+                public void run() {
+                    setVisibility(localVisibility);
+                }
+            });
         }
-        int bgColor = ColorUtils.parseColorRGBA(state.backgroundColor());
-        int fgColor = ColorUtils.parseColorRGBA(state.foregroundColor());
-        this.parameters.fillColor = fgColor;
-        this.parameters.backgroundColor = bgColor;
-        if (fillPaint != null) {
-            fillPaint.setColor(fgColor);
+        int localFgColor = ColorUtils.parseColorRGBA(state.foregroundColor());
+        int localBgColor = ColorUtils.parseColorRGBA(state.backgroundColor());
+        if (fgColor.get() != localFgColor) {
+            fgColor.set(localFgColor);
+            fgColorChanged.set(true);
         }
-        if (backgroundPaint != null) {
-            backgroundPaint.setColor(bgColor);
+        if (bgColor.get() != localBgColor) {
+            bgColor.set(localBgColor);
+            bgColorChanged.set(true);
         }
     }
 
@@ -107,13 +117,17 @@ public class StoryTimeline extends View {
         invalidate();
     }
 
-    private final AtomicInteger oldVisibility = new AtomicInteger(0);
-    private final AtomicBoolean visibilityChanged = new AtomicBoolean(false);
+    private final AtomicInteger bgColor = new AtomicInteger(Color.parseColor(StorySlideTimeline.DEFAULT_TIMELINE_BACKGROUND_COLOR));
+    private final AtomicInteger fgColor = new AtomicInteger(Color.parseColor(StorySlideTimeline.DEFAULT_TIMELINE_FOREGROUND_COLOR));
+    private final AtomicBoolean bgColorChanged = new AtomicBoolean(false);
+    private final AtomicBoolean fgColorChanged = new AtomicBoolean(false);
 
     private void drawSegments(Canvas canvas) {
-        Log.e("oldVisibility", oldVisibility.get() + "");
-        if (visibilityChanged.compareAndSet(true, false)) {
-            setVisibility(oldVisibility.get() == -1 ? INVISIBLE : VISIBLE);
+        if (bgColorChanged.compareAndSet(true, false)) {
+            backgroundPaint.setColor(bgColor.get());
+        }
+        if (fgColorChanged.compareAndSet(true, false)) {
+            fillPaint.setColor(fgColor.get());
         }
         float segmentWidth = (getWidth() - parameters.gapWidth * (state.slidesCount - 1)) / state.slidesCount;
         for (int i = 0; i < state.slidesCount; i++) {

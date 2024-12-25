@@ -190,7 +190,13 @@ public class IASWebViewClient extends WebViewClient {
             WebResourceResponse response = parseVODRequest(request);
             if (response == null)
                 response = getChangedResponse(request.getUrl().toString());
-            if (response != null) return response;
+            if (response != null) {
+                Log.e("shouldInterceptRequest", request.getUrl().toString() + " success");
+                return response;
+            } else {
+
+                Log.e("shouldInterceptRequest", request.getUrl().toString() + " error");
+            }
         } catch (Exception e) {
 
         }

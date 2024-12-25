@@ -4,6 +4,7 @@ import android.content.Context;
 
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.core.api.IASAssetsHolder;
 import com.inappstory.sdk.core.api.IASCallbacks;
 import com.inappstory.sdk.core.api.IASContentLoader;
 import com.inappstory.sdk.core.api.IASContentPreload;
@@ -62,4 +63,5 @@ public interface IASCore {
     KeyValueStorage keyValueStorage();
     SharedPreferencesAPI sharedPreferencesAPI();
     InAppStoryService inAppStoryService();
+    IASAssetsHolder assetsHolder();
 }

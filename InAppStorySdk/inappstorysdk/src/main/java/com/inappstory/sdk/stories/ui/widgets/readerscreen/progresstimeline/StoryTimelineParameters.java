@@ -10,9 +10,9 @@ public class StoryTimelineParameters {
         this.lineRadius = lineRadius;
     }
 
-    float gapWidth;
-    float lineHeight;
-    float lineRadius;
-    int fillColor = Color.parseColor("#ffffffff");
-    int backgroundColor = Color.parseColor("#8affffff");
+    public float gapWidth;
+    public float lineHeight;
+    public float lineRadius;
+    public int fillColor = Color.parseColor("#ffffffff");
+    public int backgroundColor = Color.parseColor("#8affffff");
 }

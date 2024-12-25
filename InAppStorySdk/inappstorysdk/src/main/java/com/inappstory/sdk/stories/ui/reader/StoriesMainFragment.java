@@ -68,8 +68,7 @@ public abstract class StoriesMainFragment extends Fragment implements
         boolean draggable = !Sizes.isTablet(getContext()) &&
                 (appearanceSettings == null || appearanceSettings.csIsDraggable());
         if (draggableFrame != null)
-            draggableFrame.dragIsDisabled(draggable && disable);
-
+            draggableFrame.dragIsDisabled(!draggable || disable);
     }
 
     @Override
@@ -229,7 +228,7 @@ public abstract class StoriesMainFragment extends Fragment implements
             t.commitAllowingStateLoss();
         }
 
-        disableDrag(false);
+        disableDrag(appearanceSettings != null && !appearanceSettings.csCloseOnSwipe());
     }
 
     @Override
@@ -417,8 +416,12 @@ public abstract class StoriesMainFragment extends Fragment implements
                 outsideClick();
             }
         });
-        final Context context = view.getContext();
-
+        animatedContainer.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                animatedContainer.setVisibility(View.VISIBLE);
+            }
+        }, 100);
         draggableFrame.post(new Runnable() {
             @Override
             public void run() {

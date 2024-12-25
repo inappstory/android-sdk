@@ -103,14 +103,8 @@ public class SessionAssetUseCase extends GetCacheFileUseCase<Void> {
 
     @Override
     public Void getFile() {
-        core.contentLoader().filesDownloadManager()
-                .useBundleDownloader(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (!getLocalFile())
-                            downloadFile();
-                    }
-                });
+        if (!getLocalFile())
+            downloadFile();
         return null;
     }
 

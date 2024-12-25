@@ -31,12 +31,7 @@ public class SessionHolder implements ISessionHolder {
 
     private final Object sessionLock = new Object();
 
-    private final HashMap<String, SessionAsset> cacheObjects = new HashMap<>();
     private final HashMap<String, SessionAsset> allObjects = new HashMap<>();
-
-    private final Object cacheLock = new Object();
-
-    private final HashSet<SessionAssetsIsReadyCallback> assetsIsReadyCallbacks = new HashSet<>();
 
 
     @Override
@@ -68,111 +63,6 @@ public class SessionHolder implements ISessionHolder {
             core.statistic().clearViewedIds();
         }
     }
-
-
-    @Override
-    public void addSessionAssetsKeys(List<SessionAsset> cacheObjects) {
-        synchronized (cacheLock) {
-            this.cacheObjects.clear();
-            this.allObjects.clear();
-            for (SessionAsset object : cacheObjects) {
-                this.cacheObjects.put(object.url, null);
-                this.allObjects.put(object.url, object);
-            }
-        }
-    }
-
-    @Override
-    public void addSessionAsset(SessionAsset object) {
-        synchronized (cacheLock) {
-            cacheObjects.put(object.url, object);
-        }
-    }
-
-    @Override
-    public void addSessionAssetsIsReadyCallback(SessionAssetsIsReadyCallback callback) {
-        synchronized (cacheLock) {
-            assetsIsReadyCallbacks.add(callback);
-        }
-    }
-
-    @Override
-    public void removeSessionAssetsIsReadyCallback(SessionAssetsIsReadyCallback callback) {
-        synchronized (cacheLock) {
-            assetsIsReadyCallbacks.remove(callback);
-        }
-    }
-
-    @Override
-    public boolean checkIfSessionAssetsIsReadySync() {
-        synchronized (cacheLock) {
-            return assetsIsReady;
-        }
-    }
-
-    @Override
-    public boolean assetsIsLoading() {
-        synchronized (cacheLock) {
-            return assetsIsLoading;
-        }
-    }
-
-    @Override
-    public void assetsIsLoading(boolean isLoading) {
-        synchronized (cacheLock) {
-            assetsIsLoading = isLoading;
-        }
-    }
-
-    @Override
-    public void assetsIsCleared() {
-        this.assetsIsReady = false;
-    }
-
-    private boolean assetsIsReady = false;
-    private boolean assetsIsLoading = false;
-
-    @Override
-    public boolean checkIfSessionAssetsIsReadyAsync() {
-        final boolean[] cachesIsReady = {true};
-        synchronized (cacheLock) {
-            for (Map.Entry<String, SessionAsset> entry : cacheObjects.entrySet()) {
-                if (!cachesIsReady[0]) return false;
-                if (entry.getValue() == null) return false;
-                new SessionAssetLocalUseCase(
-                        core,
-                        new UseCaseCallback<File>() {
-                            @Override
-                            public void onError(String message) {
-                                cachesIsReady[0] = false;
-                            }
-
-                            @Override
-                            public void onSuccess(File result) {
-                            }
-                        },
-                        entry.getValue()
-                ).getFile();
-            }
-
-        }
-        if (cachesIsReady[0]) {
-            Set<SessionAssetsIsReadyCallback> temp = new HashSet<>();
-            synchronized (cacheLock) {
-                assetsIsLoading = false;
-                temp.addAll(assetsIsReadyCallbacks);
-                assetsIsReadyCallbacks.clear();
-            }
-            for (SessionAssetsIsReadyCallback callback : temp) {
-                callback.isReady();
-            }
-        }
-        synchronized (cacheLock) {
-            assetsIsReady = cachesIsReady[0];
-        }
-        return cachesIsReady[0];
-    }
-
 
     @Override
     public void clear(String oldSessionId) {

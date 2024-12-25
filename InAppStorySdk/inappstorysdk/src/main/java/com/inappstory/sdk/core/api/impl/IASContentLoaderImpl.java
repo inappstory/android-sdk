@@ -104,7 +104,7 @@ public class IASContentLoaderImpl implements IASContentLoader {
         } catch (IOException ignored) {
 
         }
-        core.sessionManager().getSession().assetsIsCleared();
+        core.assetsHolder().clear();
     }
 
     @Override

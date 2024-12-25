@@ -2,6 +2,7 @@ package com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager;
 
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 
@@ -539,6 +540,7 @@ public class ReaderPageManager implements IReaderSlideViewModel {
     public void slideLoadSuccess(int index, boolean alreadyLoaded) {
         if (slideIndex == index) {
             if (checkIfManagersIsNull()) return;
+            Log.e("slidesDownloader", "RPM " + storyId +  " " + index + " " + alreadyLoaded);
             webViewManager.storyLoaded(storyId, index, alreadyLoaded);
             //host.storyLoadedSuccess();
         }

@@ -8,10 +8,6 @@ import java.util.List;
 public interface IASContentPreload {
     void downloadInAppMessages();
 
-    void downloadSessionAssets(
-            List<SessionAsset> sessionAssets
-    );
-
     IGamePreloader getGamePreloader();
 
     void restartGamePreloader();

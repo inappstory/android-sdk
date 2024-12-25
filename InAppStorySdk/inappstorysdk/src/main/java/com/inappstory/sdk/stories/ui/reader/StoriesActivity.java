@@ -541,7 +541,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryScree
             finishWithoutAnimation();
         }
 
-        disableDrag(false);
+        disableDrag(!closeOnSwipe);
     }
 
     private void createStoriesFragment(Bundle savedInstanceState, Rect readerContainer) {
