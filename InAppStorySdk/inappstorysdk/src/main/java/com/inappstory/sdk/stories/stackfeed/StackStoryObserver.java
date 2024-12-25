@@ -260,6 +260,10 @@ public class StackStoryObserver implements IStackFeedActions {
         }
         boolean showOnlyNewStories = !currentStoryIsOpened && showNewStories;
         if (currentStory.deeplink() != null && !currentStory.deeplink().isEmpty()) {
+            if (current != null) {
+                current.setOpened(true);
+                core.storyListCache().saveStoryOpened(currentStory.id, ContentType.STORY);
+            }
             service.getListReaderConnector().changeStory(currentStory.id, listId, showOnlyNewStories);
             core.statistic().storiesV2().sendDeeplinkStory(
                     currentStory.id,
@@ -314,11 +318,11 @@ public class StackStoryObserver implements IStackFeedActions {
                         }
                     }
             );
+        } else if (currentStory.gameInstanceId() != null && !currentStory.gameInstanceId().isEmpty()) {
             if (current != null) {
                 current.setOpened(true);
                 core.storyListCache().saveStoryOpened(currentStory.id, ContentType.STORY);
             }
-        } else if (currentStory.gameInstanceId() != null && !currentStory.gameInstanceId().isEmpty()) {
             service.getListReaderConnector().changeStory(currentStory.id, listId, showOnlyNewStories);
             core.statistic().storiesV1(
                     sessionId,
@@ -348,10 +352,7 @@ public class StackStoryObserver implements IStackFeedActions {
                                     currentStory.gameInstanceId()
                             ))
             );
-            if (current != null) {
-                current.setOpened(true);
-                core.storyListCache().saveStoryOpened(currentStory.id, ContentType.STORY);
-            }
+
         } else if (!currentStory.hideInReader()) {
             List<Integer> readerStories = new ArrayList<>();
             int j = 0;

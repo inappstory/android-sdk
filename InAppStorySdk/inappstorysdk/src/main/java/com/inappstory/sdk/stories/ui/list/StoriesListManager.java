@@ -56,7 +56,6 @@ public class StoriesListManager implements ListManager {
                         .getByIdAndType(storyId, ContentType.STORY);
                 if (st == null) return;
                 st.setOpened(true);
-                core.storyListCache().saveStoryOpened(st.id(), ContentType.STORY);
                 checkHandler();
                 post(new Runnable() {
                     @Override

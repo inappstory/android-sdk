@@ -403,6 +403,7 @@ public class ReaderManager {
             );
         }
         final int pos = position;
+        core.storyListCache().saveStoryOpened(currentStoryId, ContentType.STORY);
         service.getListReaderConnector().changeStory(currentStoryId, listID, showOnlyNewStories);
         core.screensManager().getStoryScreenHolder().currentOpenedStoryId(currentStoryId);
         currentSlideIndex = contentIdWithIndex.index();

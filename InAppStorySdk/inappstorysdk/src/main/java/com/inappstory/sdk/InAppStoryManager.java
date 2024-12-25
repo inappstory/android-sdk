@@ -107,6 +107,7 @@ public class InAppStoryManager implements IASBackPressHandler {
             public void use(@NonNull IASCore core) {
                 core.storiesListVMHolder().clear();
                 core.contentLoader().storyDownloadManager().clearLocalData();
+                core.contentLoader().inAppMessageDownloadManager().clearLocalData();
             }
         });
     }
@@ -406,7 +407,7 @@ public class InAppStoryManager implements IASBackPressHandler {
      */
 
 
-    public void setTags(ArrayList<String> tags) {
+    public void setTags(List<String> tags) {
         core.settingsAPI().setTags(tags);
     }
 
@@ -419,7 +420,7 @@ public class InAppStoryManager implements IASBackPressHandler {
      * @param newTags (newTags) - list of additional tags
      */
 
-    public void addTags(ArrayList<String> newTags) {
+    public void addTags(List<String> newTags) {
         core.settingsAPI().addTags(newTags);
     }
 
@@ -429,7 +430,7 @@ public class InAppStoryManager implements IASBackPressHandler {
      * @param removedTags (removedTags) - list of removing tags
      */
 
-    public void removeTags(ArrayList<String> removedTags) {
+    public void removeTags(List<String> removedTags) {
         core.settingsAPI().removeTags(removedTags);
     }
 
