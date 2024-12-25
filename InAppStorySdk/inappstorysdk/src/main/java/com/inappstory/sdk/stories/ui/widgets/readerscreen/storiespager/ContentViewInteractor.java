@@ -27,6 +27,7 @@ public interface ContentViewInteractor {
     float getCoordinate();
     void shareComplete(String stId, boolean success);
     void freezeUI();
+    void unfreezeUI();
     void checkIfClientIsSet();
     void screenshotShare(String id);
     void goodsWidgetComplete(String widgetId);

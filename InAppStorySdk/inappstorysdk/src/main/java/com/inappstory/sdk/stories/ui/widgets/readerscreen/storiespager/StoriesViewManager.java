@@ -600,6 +600,12 @@ public class StoriesViewManager {
             pageManager.resumeSlide(false);
     }
 
+
+    public void unfreezeUI() {
+        if (storiesView != null)
+            storiesView.unfreezeUI();
+    }
+
     public void freezeUI() {
         storiesView.freezeUI();
     }

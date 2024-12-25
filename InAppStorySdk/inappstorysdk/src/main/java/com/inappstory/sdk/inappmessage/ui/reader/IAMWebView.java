@@ -213,6 +213,11 @@ public class IAMWebView extends IASWebView implements ContentViewInteractor {
     }
 
     @Override
+    public void unfreezeUI() {
+        throw new NotImplementedMethodException();
+    }
+
+    @Override
     public void checkIfClientIsSet() {
         if (!clientIsSet) {
             if (slideViewModel == null) return;
