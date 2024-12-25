@@ -25,6 +25,7 @@ import com.inappstory.sdk.core.utils.ConnectionCheckCallback;
 import com.inappstory.sdk.game.reader.GameStoryData;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.UpdateTimelineData;
+import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.ui.widgets.LoadProgressBar;
 import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.network.ApiSettings;
@@ -601,6 +602,22 @@ public class StoriesViewManager {
 
     public void freezeUI() {
         storiesView.freezeUI();
+    }
+
+    public void closeStory(String reason) {
+        int closeStoryAction = CloseStory.CLICK;
+        switch (reason) {
+            case "custom":
+                closeStoryAction = CloseStory.CUSTOM;
+                break;
+            case "swipe":
+                closeStoryAction = CloseStory.SWIPE;
+                break;
+            case "auto":
+                closeStoryAction = CloseStory.AUTO;
+                break;
+        }
+        core.screensManager().getStoryScreenHolder().closeScreenWithAction(closeStoryAction);
     }
 
     public void storySetLocalData(String data, boolean sendToServer) {

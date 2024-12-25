@@ -476,11 +476,13 @@ public class IASStatisticStoriesV2Impl implements IASStatisticStoriesV2 {
     public void sendStoryWidgetEvent(final String name,
                                      final String data,
                                      final String feedId) {
-        StoryStatisticV2Task task = JsonParser.fromJson(data, StoryStatisticV2Task.class);
-        task.event = name;
-        task.feedId = feedId;
-        generateBase(task);
-        addTask(task);
+        try {
+            StoryStatisticV2Task task = JsonParser.fromJson(data, StoryStatisticV2Task.class);
+            task.event = name;
+            task.feedId = feedId;
+            generateBase(task);
+            addTask(task);
+        } catch (Exception e) {}
     }
 
     public void sendGameEvent(final String name, final String data,
