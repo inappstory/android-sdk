@@ -2,8 +2,8 @@
 
 buildscript {
     ext {
-        inappstory_output_version = "1.20.3"
-        inappstory_output_build = 953
+        inappstory_output_version = "1.21.0"
+        inappstory_output_build = 1000
         inappstory_target_sdk = 31
         inappstory_min_sdk = 21
 
@@ -24,11 +24,13 @@ buildscript {
         google()
         jcenter()
         maven { url "https://jitpack.io" }
+        maven { url 'https://plugins.gradle.org/m2' }
         
     }
     dependencies {
+
+
         classpath 'com.android.tools.build:gradle:3.6.1'
-        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.0'
         classpath 'com.github.dcendents:android-maven-gradle-plugin:1.5'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$gradle_plugin_version"
         // NOTE: Do not place your application dependencies here; they belong

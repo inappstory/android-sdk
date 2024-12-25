@@ -98,7 +98,7 @@ public class InAppStoryManager implements IASBackPressHandler {
     }
 
     public void setCommonAppearanceManager(AppearanceManager appearanceManager) {
-
+        AppearanceManager.setCommonInstance(appearanceManager);
     }
 
     private static void clearLocalData() {
