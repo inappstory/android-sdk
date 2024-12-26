@@ -8,6 +8,7 @@ import androidx.annotation.NonNull;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASCallbackType;
+import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.ui.screens.holder.IScreensHolder;
 import com.inappstory.sdk.core.ui.screens.launcher.LaunchScreenStrategy;
@@ -36,7 +37,21 @@ public class LaunchGameScreenStrategy implements LaunchScreenStrategy {
     @Override
     public void launch(Context context, IOpenReader openReader, IScreensHolder screensHolder) {
         if (!(openReader instanceof IOpenGameReader)) return;
-        if (core.sessionManager().getSession().getSessionId().isEmpty()) return;
+        IASDataSettingsHolder settingsHolder = (IASDataSettingsHolder) core.settingsAPI();
+        if (settingsHolder.noCorrectUserIdOrDevice()) {
+            core.callbacksAPI().useCallback(
+                    IASCallbackType.GAME_READER,
+                    new UseIASCallback<GameReaderCallback>() {
+                        @Override
+                        public void use(@NonNull GameReaderCallback callback) {
+                            callback.gameOpenError(
+                                    data.gameStoryData, data.gameId
+                            );
+                        }
+                    }
+            );
+            return;
+        }
         if ((!openedFromReader && screensHolder.hasActiveScreen()) ||
                 screensHolder.hasActiveScreen(screensHolder.getGameScreenHolder())
         ) {
