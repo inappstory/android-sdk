@@ -98,7 +98,7 @@ public class WebPageConverter {
             if (placeholderKey != null && placeholderName != null) {
                 Pair<ImagePlaceholderValue, ImagePlaceholderValue> placeholderValue
                         = imgPlaceholders.get(placeholderName);
-                if (placeholderValue != null) {
+                if (placeholderValue != null && placeholderValue.first != null) {
                     String path = "";
                     if (placeholderValue.first.getType() == ImagePlaceholderType.URL) {
                         String uniqueKey = StringsUtils.md5(placeholderValue.first.getUrl());

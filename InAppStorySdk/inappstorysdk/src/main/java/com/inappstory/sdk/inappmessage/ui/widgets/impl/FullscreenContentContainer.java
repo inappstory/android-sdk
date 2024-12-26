@@ -2,8 +2,13 @@ package com.inappstory.sdk.inappmessage.ui.widgets.impl;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
+import android.app.Activity;
 import android.content.Context;
+import android.graphics.Point;
+import android.graphics.Rect;
+import android.os.Build;
 import android.util.AttributeSet;
+import android.view.DisplayCutout;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AccelerateInterpolator;
@@ -69,6 +74,34 @@ public class FullscreenContentContainer extends IAMContentContainer<InAppMessage
         closeButton.setLayoutParams(closeButtonLayoutParams);
         closeButton.requestLayout();
         //  showWithAnimation();
+    }
+
+    private void setCloseButtonOffset(final Context context) {
+        closeButton.post(new Runnable() {
+            @Override
+            public void run() {
+                final Rect readerContainer = new Rect();
+                closeButton.getGlobalVisibleRect(readerContainer);
+                int topOffset = readerContainer.top;
+                Activity activity = null;
+                if (context instanceof Activity) {
+                    activity = (Activity) context;
+                }
+                if (Build.VERSION.SDK_INT >= 28) {
+                    if (activity != null && activity.getWindow() != null) {
+                        if (activity.getWindow().getDecorView().getRootWindowInsets() != null) {
+                            DisplayCutout cutout = activity.getWindow().getDecorView().getRootWindowInsets().getDisplayCutout();
+                            if (cutout != null) {
+                                closeButtonLayoutParams.topMargin = Math.max(cutout.getSafeInsetTop() - topOffset, 0) +
+                                        Sizes.dpToPxExt(16, context);
+                                closeButton.setLayoutParams(closeButtonLayoutParams);
+                            }
+                        }
+                    }
+                }
+
+            }
+        });
     }
 
     @Override
@@ -282,6 +315,7 @@ public class FullscreenContentContainer extends IAMContentContainer<InAppMessage
                 closeButtonMargin
         );
         closeButton.setLayoutParams(closeButtonLayoutParams);
+        setCloseButtonOffset(context);
         container.addView(closeButton);
         if (appearance != null) appearance(appearance);
         showWithAnimation();

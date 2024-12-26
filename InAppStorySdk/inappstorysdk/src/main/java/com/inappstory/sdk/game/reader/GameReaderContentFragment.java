@@ -418,7 +418,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                 public void use(@NonNull IASCore core) {
                     Activity activity = getActivity();
                     if (activity != null) {
-                        ((IOpenGameReader)core.screensManager()
+                        ((IOpenGameReader) core.screensManager()
                                 .getOpenReader(ScreenType.GAME))
                                 .onRestoreScreen(getActivity());
                     }
@@ -926,7 +926,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                 public void use(@NonNull IASCore core) {
                     Activity activity = getActivity();
                     if (activity != null) {
-                        ((IOpenGameReader)core.screensManager()
+                        ((IOpenGameReader) core.screensManager()
                                 .getOpenReader(ScreenType.GAME))
                                 .onShowInFullscreen(getActivity());
                     }
@@ -1167,9 +1167,12 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
             IASDataSettingsHolder dataSettingsHolder = ((IASDataSettingsHolder) core.settingsAPI());
             options.apiBaseUrl = core.network().getBaseUrl();
             options.deviceId = dataSettingsHolder.deviceId();
-            options.userId = StringsUtils.getEscapedString(
-                    new UrlEncoder().encode(dataSettingsHolder.userId())
-            );
+            if (dataSettingsHolder.userId() != null)
+                options.userId = StringsUtils.getEscapedString(
+                        new UrlEncoder().encode(dataSettingsHolder.userId())
+                );
+            else
+                options.userId = "";
             options.lang = dataSettingsHolder.lang().toLanguageTag();
             options.userAgent = StringsUtils.getEscapedString(
                     core.network().userAgent()
