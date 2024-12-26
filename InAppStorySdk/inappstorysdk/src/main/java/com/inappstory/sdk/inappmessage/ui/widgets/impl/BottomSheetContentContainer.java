@@ -128,10 +128,11 @@ public final class BottomSheetContentContainer extends IAMContentContainer<InApp
         generateLoader(backgroundColor);
         roundedCornerLayout.addView(loaderContainer);
         float contentRatio = 1.33f;
-        if (appearance.contentRatio() < 5f && appearance.contentRatio() > 0.2f ) {
+        Point size = Sizes.getScreenSize(getContext());
+        float minContentRatio = (1f * size.x) / size.y;
+        if (appearance.contentRatio() < 5f && appearance.contentRatio() > minContentRatio) {
             contentRatio = appearance.contentRatio();
         }
-        Point size = Sizes.getScreenSize(getContext());
         layoutParams.height = Math.min(size.y, Math.round(size.x / contentRatio));
         roundedCornerLayout.setRadius(
                 Sizes.dpToPxExt(appearance.cornerRadius(), getContext()),

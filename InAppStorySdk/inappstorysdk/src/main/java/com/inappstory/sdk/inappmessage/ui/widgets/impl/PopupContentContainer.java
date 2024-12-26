@@ -66,11 +66,12 @@ public class PopupContentContainer extends IAMContentContainer<InAppMessagePopup
         int horizontalPadding = Sizes.dpToPxExt(appearance.horizontalPadding(), getContext());
         layoutParams.leftMargin = horizontalPadding;
         layoutParams.rightMargin = horizontalPadding;
+        Point size = Sizes.getScreenSize(getContext());
         float contentRatio = 1.33f;
-        if (appearance.contentRatio() < 5f && appearance.contentRatio() > 0.2f) {
+        float minContentRatio = (1f * size.x) / size.y;
+        if (appearance.contentRatio() < 5f && appearance.contentRatio() > minContentRatio) {
             contentRatio = appearance.contentRatio();
         }
-        Point size = Sizes.getScreenSize(getContext());
         layoutParams.height = Math.min(size.y, Math.round((size.x - 2 * horizontalPadding) / contentRatio));
         roundedCornerLayout.setRadius(
                 Sizes.dpToPxExt(appearance.cornerRadius(), getContext())
