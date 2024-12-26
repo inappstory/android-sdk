@@ -20,6 +20,8 @@ import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.utils.ColorUtils;
 import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderSlideState;
+import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderState;
+import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderUIStates;
 import com.inappstory.sdk.inappmessage.domain.reader.IIAMReaderSlideViewModel;
 import com.inappstory.sdk.inappmessage.domain.reader.IIAMReaderViewModel;
 import com.inappstory.sdk.inappmessage.stedata.JsSendApiRequestData;
@@ -165,6 +167,7 @@ public class IAMContentFragment extends Fragment implements Observer<IAMReaderSl
             @Override
             public void use(@NonNull IASCore core) {
                 IIAMReaderViewModel readerViewModel = core.screensManager().iamReaderViewModel();
+                IAMReaderState readerState = readerViewModel.getCurrentState();
                 readerSlideViewModel = readerViewModel.slideViewModel();
                 if (readerSlideViewModel != null) {
                     contentWebView.slideViewModel(readerSlideViewModel);
@@ -172,12 +175,16 @@ public class IAMContentFragment extends Fragment implements Observer<IAMReaderSl
                     readerSlideViewModel.addSubscriber(
                             IAMContentFragment.this
                     );
-                    readerSlideViewModel.loadContent();
                     readerSlideViewModel.singleTimeEvents().subscribe(
                             callToActionDataObserver
                     );
+                    if (!readerSlideViewModel.loadContent()) {
+                        readerViewModel.updateCurrentUiState(IAMReaderUIStates.CLOSED);
+                        return;
+                    }
                 }
-                setWebViewBackground(readerViewModel.getCurrentState().appearance);
+                if (readerState != null)
+                    setWebViewBackground(readerState.appearance);
             }
         });
     }

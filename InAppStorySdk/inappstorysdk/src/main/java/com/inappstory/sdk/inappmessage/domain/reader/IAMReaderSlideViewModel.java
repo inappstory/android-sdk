@@ -68,6 +68,7 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
     @Override
     public void readerIsOpened(boolean fromScratch) {
         Integer iamId = readerViewModel.getCurrentState().iamId;
+        if (iamId == null) return;
         if (fromScratch)
             slideTimeState.create(UUID.randomUUID().toString());
         else
@@ -84,6 +85,7 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
     @Override
     public void readerIsClosing() {
         Integer iamId = readerViewModel.getCurrentState().iamId;
+        if (iamId == null) return;
         core.statistic().iamV1().sendCloseEvent(
                 iamId,
                 0,
@@ -368,8 +370,9 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
     }
 
     @Override
-    public void loadContent() {
+    public boolean loadContent() {
         IAMReaderState state = readerViewModel.getCurrentState();
+        if (state == null || state.iamId == null) return false;
         IReaderContent readerContent =
                 core.contentHolder().readerContent().getByIdAndType(
                         state.iamId,
@@ -392,5 +395,6 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
                 downloadManager.addInAppMessageTask(state.iamId, ContentType.IN_APP_MESSAGE);
             }
         }
+        return true;
     }
 }

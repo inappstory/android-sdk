@@ -152,8 +152,8 @@ public class InAppMessageDownloadManager {
                     }
 
                     @Override
-                    public void loadContent() {
-
+                    public boolean loadContent() {
+                        return true;
                     }
                 }
         );

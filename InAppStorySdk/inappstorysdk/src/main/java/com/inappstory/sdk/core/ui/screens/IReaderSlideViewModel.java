@@ -10,5 +10,5 @@ public interface IReaderSlideViewModel {
     void contentLoadSuccess(IReaderContent content);
     void slideLoadSuccess(int index);
 
-    void loadContent();
+    boolean loadContent();
 }

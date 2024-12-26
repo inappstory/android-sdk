@@ -62,8 +62,9 @@ public class IAMWebView extends IASWebView implements ContentViewInteractor {
     private void logMethod(String payload) {
         if (slideViewModel == null) return;
         ContentIdWithIndex contentIdWithIndex = slideViewModel.iamId();
-        InAppStoryManager.showDLog("JS_method_call",
-                contentIdWithIndex.id() + " " + contentIdWithIndex.index() + " " + payload);
+        if (contentIdWithIndex != null)
+            InAppStoryManager.showDLog("JS_method_call",
+                    contentIdWithIndex.id() + " " + contentIdWithIndex.index() + " " + payload);
     }
 
     @Override
