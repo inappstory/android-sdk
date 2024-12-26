@@ -79,11 +79,7 @@ public abstract class AbstractScreenHolder<T extends BaseScreen, K> implements I
 
     @Override
     public void closeScreen() {
-        T screen = null;
-        synchronized (screenLock) {
-            screen = getScreen();
-        }
-        final T finalScreen = screen;
+        final T finalScreen = getScreen();
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
@@ -95,18 +91,16 @@ public abstract class AbstractScreenHolder<T extends BaseScreen, K> implements I
     }
 
     @Override
-    public void forceCloseScreen(ForceCloseReaderCallback callback) {
-        T screen = null;
-        synchronized (screenLock) {
-            screen = getScreen();
-        }
-        final T finalScreen = screen;
+    public void forceCloseScreen(final ForceCloseReaderCallback callback) {
+        final T finalScreen = getScreen();
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
                 if (finalScreen != null) {
                     finalScreen.forceFinish();
                 }
+                if (callback != null)
+                    callback.onComplete();
             }
         });
     }
