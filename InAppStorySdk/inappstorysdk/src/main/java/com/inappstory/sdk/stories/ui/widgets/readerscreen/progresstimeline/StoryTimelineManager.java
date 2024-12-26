@@ -99,35 +99,37 @@ public class StoryTimelineManager {
         executorService.shutdown();
     }
 
+    private void setProgressSync(float progress) {
+        if (contentWithTimeline != null) {
+            host.setState(
+                    new StoryTimelineState(
+                            slidesCount,
+                            currentIndex,
+                            progress,
+                            timerDuration,
+                            contentWithTimeline.timelineIsHidden(),
+                            contentWithTimeline.timelineForegroundColor(currentIndex),
+                            contentWithTimeline.timelineBackgroundColor(currentIndex)
+                    )
+            );
+        } else {
+            host.setState(
+                    new StoryTimelineState(
+                            slidesCount,
+                            currentIndex,
+                            progress,
+                            timerDuration
+                    )
+            );
+        }
+    }
+
     private void setProgress(final float progress) {
         if (host != null) {
             host.post(new Runnable() {
                 @Override
                 public void run() {
-                    if (contentWithTimeline != null) {
-                        Log.e("timelineColors", contentWithTimeline.timelineBackgroundColor(currentIndex));
-                        host.setState(
-                                new StoryTimelineState(
-                                        slidesCount,
-                                        currentIndex,
-                                        progress,
-                                        timerDuration,
-                                        contentWithTimeline.timelineIsHidden(),
-                                        contentWithTimeline.timelineForegroundColor(currentIndex),
-                                        contentWithTimeline.timelineBackgroundColor(currentIndex)
-                                )
-                        );
-                    } else {
-                        host.setState(
-                                new StoryTimelineState(
-                                        slidesCount,
-                                        currentIndex,
-                                        progress,
-                                        timerDuration
-                                )
-                        );
-                    }
-
+                    setProgressSync(progress);
                 }
             });
         }
