@@ -204,7 +204,8 @@ public final class NetworkHandler implements InvocationHandler {
                     }
                 }
                 if (header.getKey().equals(HeadersKeys.USER_ID)) {
-                    ((MutableHeader) header).setValue(new UrlEncoder().encode(header.getValue()));
+                    if (header.getValue() != null)
+                        ((MutableHeader) header).setValue(new UrlEncoder().encode(header.getValue()));
                 }
             }
         }
