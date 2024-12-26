@@ -22,6 +22,7 @@ import com.inappstory.sdk.stories.api.models.ContentIdWithIndex;
 import com.inappstory.sdk.stories.ui.views.IASWebView;
 import com.inappstory.sdk.stories.ui.views.IASWebViewClient;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ContentViewInteractor;
+import com.inappstory.sdk.utils.OnSwipeTouchListener;
 
 public class IAMWebView extends IASWebView implements ContentViewInteractor {
     private boolean clientIsSet = false;
@@ -57,6 +58,12 @@ public class IAMWebView extends IASWebView implements ContentViewInteractor {
     @Override
     protected void init() {
         super.init();
+        setOnTouchListener(new OnSwipeTouchListener(getContext()) {
+            @Override
+            public void onSwipeUp() {
+                swipeUp();
+            }
+        });
     }
 
     private void logMethod(String payload) {
