@@ -2,6 +2,8 @@ package com.inappstory.sdk.core.ui.screens.storyreader;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.core.IASCore;
@@ -46,9 +48,9 @@ public class LaunchStoryScreenStrategy implements LaunchScreenStrategy {
 
     @Override
     public void launch(
-            Context context,
-            IOpenReader openReader,
-            IScreensHolder screensHolder
+            final Context context,
+            final IOpenReader openReader,
+            final IScreensHolder screensHolder
     ) {
         StoryScreenHolder currentScreenHolder = screensHolder.getStoryScreenHolder();
         boolean cantBeOpened = false;
@@ -67,25 +69,36 @@ public class LaunchStoryScreenStrategy implements LaunchScreenStrategy {
             }
             return;
         }
+
+        Runnable openNewScreenInstance = new Runnable() {
+            @Override
+            public void run() {
+                for (ILaunchScreenCallback callback : launchScreenCallbacks) {
+                    if (callback != null) callback.onSuccess(getType());
+                }
+                Bundle bundle = new Bundle();
+                bundle.putSerializable(
+                        launchStoryScreenData.getSerializableKey(),
+                        launchStoryScreenData
+                );
+                bundle.putSerializable(
+                        readerAppearanceSettings.getSerializableKey(),
+                        readerAppearanceSettings
+                );
+                ((IOpenStoriesReader) openReader).onOpen(
+                        context,
+                        bundle
+                );
+            }
+        };
         if (openedFromReader) {
-            currentScreenHolder.closeScreen();
+            if (currentScreenHolder.isOpened()) {
+                currentScreenHolder.closeScreen();
+                new Handler(Looper.getMainLooper()).postDelayed(openNewScreenInstance, 500);
+                return;
+            }
         }
-        for (ILaunchScreenCallback callback : launchScreenCallbacks) {
-            if (callback != null) callback.onSuccess(getType());
-        }
-        Bundle bundle = new Bundle();
-        bundle.putSerializable(
-                launchStoryScreenData.getSerializableKey(),
-                launchStoryScreenData
-        );
-        bundle.putSerializable(
-                readerAppearanceSettings.getSerializableKey(),
-                readerAppearanceSettings
-        );
-        ((IOpenStoriesReader) openReader).onOpen(
-                context,
-                bundle
-        );
+        openNewScreenInstance.run();
     }
 
 
