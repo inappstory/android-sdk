@@ -67,10 +67,18 @@ public class StoryTimelineManager {
 
     private int currentIndex;
 
-    public void setSlidesCount(int slidesCount) {
+    public void setSlidesCount(final int slidesCount) {
         this.slidesCount = slidesCount;
-        if (slidesCount <= 1) host.setVisibility(View.INVISIBLE);
-        else host.setVisibility(View.VISIBLE);
+        if (host != null) {
+            host.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (slidesCount <= 1) host.setVisibility(View.INVISIBLE);
+                    else host.setVisibility(View.VISIBLE);
+                }
+            });
+        } ;
+
         setProgress(0);
     }
 

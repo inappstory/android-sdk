@@ -46,6 +46,7 @@ import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
+import com.inappstory.sdk.core.data.IReaderContent;
 import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryScreen;
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenAppearance;
 import com.inappstory.sdk.core.network.content.models.Story;
@@ -180,8 +181,7 @@ public class ReaderPageFragment extends Fragment {
 
     Story story;
 
-    void setViews(View view) {
-        if (InAppStoryService.getInstance() == null) return;
+    void setViews(IReaderContent story) {
         if (timeline != null) {
             timeline.getTimelineManager().setSlidesCount(story.slidesCount());
         }
@@ -198,17 +198,8 @@ public class ReaderPageFragment extends Fragment {
             buttonsPanel.setButtonsStatus(story.like(), story.favorite() ? 1 : 0);
             aboveButtonsPanel.setVisibility(buttonsPanel.getVisibility());
         }
-        setOffsets(view);
         if (storiesView != null)
             storiesView.getManager().setIndex(manager.parentManager.getByIdAndIndex(storyId).index());
-        if (storiesView instanceof View) {
-            ((View) storiesView).post(new Runnable() {
-                @Override
-                public void run() {
-                    Log.e("storiesViewSize", ((View) storiesView).getHeight() + " " + ((View) storiesView).getWidth());
-                }
-            });
-        }
 
     }
 
@@ -656,6 +647,7 @@ public class ReaderPageFragment extends Fragment {
     @Override
     public void onViewCreated(final @NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        setOffsets(view);
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
@@ -674,6 +666,20 @@ public class ReaderPageFragment extends Fragment {
                 setActions();
                 if (setManagers(core)) {
                     core.contentLoader().storyDownloadManager().addSubscriber(manager);
+                    Story story = (Story) core.contentHolder().readerContent().getByIdAndType(
+                            storyId,
+                            manager.getViewContentType()
+                    );
+                    if (story != null) {
+                        manager.setSlideIndex(parentManager.getByIdAndIndex(storyId).index());
+                        manager.contentLoadSuccess(story);
+                    }
+                    if (story == null) {
+                        story = (Story) core.contentHolder().getByIdAndType(storyId, manager.getViewContentType());
+                    }
+                    if (story != null) {
+                        setViews(story);
+                    }
                 } else {
                     InAppStoryManager.closeStoryReader();
                 }
@@ -693,7 +699,7 @@ public class ReaderPageFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
-        boolean storyIsEmpty = (story == null);
+       /* boolean storyIsEmpty = (story == null);
         InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
         if (inAppStoryManager != null && storyIsEmpty) {
             story = (Story) inAppStoryManager.iasCore().contentHolder().listsContent().getByIdAndType(
@@ -709,7 +715,7 @@ public class ReaderPageFragment extends Fragment {
         }
         if (story != null) {
             loadIfStoryIsNotNull();
-        }
+        }*/
     }
 
     @Override
@@ -717,11 +723,6 @@ public class ReaderPageFragment extends Fragment {
         super.onResume();
     }
 
-    void loadIfStoryIsNotNull() {
-        manager.setSlideIndex(parentManager.getByIdAndIndex(storyId).index());
-        setViews(getView());
-        manager.contentLoadSuccess(story);
-    }
 
     @Override
     public void onDestroyView() {
