@@ -30,7 +30,6 @@ public class IASInAppMessageImpl implements IASInAppMessage {
     @Override
     public void show(
             InAppMessageOpenSettings openData,
-            Context context,
             FragmentManager fragmentManager,
             int containerId,
             final InAppMessageScreenActions screenActions

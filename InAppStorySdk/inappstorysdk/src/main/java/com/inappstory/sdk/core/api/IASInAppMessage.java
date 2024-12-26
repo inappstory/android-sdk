@@ -17,7 +17,6 @@ public interface IASInAppMessage {
 
     void show(
             InAppMessageOpenSettings inAppMessageOpenSettings,
-            Context context,
             FragmentManager fragmentManager,
             int containerId,
             InAppMessageScreenActions screenActions
