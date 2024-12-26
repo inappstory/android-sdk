@@ -183,7 +183,7 @@ public class ReaderPageFragment extends Fragment {
 
     void setViews(IReaderContent story) {
         if (timeline != null) {
-            timeline.getTimelineManager().setSlidesCount(story.slidesCount());
+            timeline.getTimelineManager().setSlidesCount(story.slidesCount(), true);
         }
         if (story.disableClose())
             close.setVisibility(View.GONE);

@@ -31,7 +31,7 @@ public class StoryTimelineManager {
         this.currentIndex = currentIndex;
         this.timerStart = timerStart;
         this.timerDuration = timerDuration;
-        Runnable hostVisibility = new Runnable() {
+        /*Runnable hostVisibility = new Runnable() {
             @Override
             public void run() {
                 if (slidesCount <= 1 && StoryTimelineManager.this.timerDuration == 0)
@@ -44,7 +44,7 @@ public class StoryTimelineManager {
             hostVisibility.run();
         } else {
             host.post(hostVisibility);
-        }
+        }*/
 
         this.timerStartTimestamp = System.currentTimeMillis();
         this.isActive = true;
@@ -67,19 +67,10 @@ public class StoryTimelineManager {
 
     private int currentIndex;
 
-    public void setSlidesCount(final int slidesCount) {
+    public void setSlidesCount(final int slidesCount, boolean isSetViews) {
         this.slidesCount = slidesCount;
-        if (host != null) {
-            host.post(new Runnable() {
-                @Override
-                public void run() {
-                    if (slidesCount <= 1) host.setVisibility(View.INVISIBLE);
-                    else host.setVisibility(View.VISIBLE);
-                }
-            });
-        } ;
-
-        setProgress(0);
+        if (isSetViews) setProgressSync(0);
+        else setProgress(0);
     }
 
     private int slidesCount;

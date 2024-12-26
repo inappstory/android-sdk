@@ -335,7 +335,7 @@ public class ReaderPageManager implements IReaderSlideViewModel {
 
     public void setStoryInfo(IReaderContent story) {
         if (checkIfManagersIsNull()) return;
-        timelineManager.setSlidesCount(story.slidesCount());
+        timelineManager.setSlidesCount(story.slidesCount(), false);
 
         webViewManager.loadStory(
                 story,
@@ -616,7 +616,5 @@ public class ReaderPageManager implements IReaderSlideViewModel {
     public ContentIdAndType contentIdAndType() {
         return new ContentIdAndType(storyId, getViewContentType());
     }
-
-
 
 }
