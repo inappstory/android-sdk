@@ -454,8 +454,7 @@ public abstract class StoriesMainFragment extends Fragment implements
     boolean animateFirst = true;
     boolean isAnimation = false;
 
-    @Override
-    public void closeWithAction(final int action) {
+    private void closeInMainThread(final int action) {
         if (closing) return;
         closing = true;
         requireActivity().getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
@@ -527,12 +526,23 @@ public abstract class StoriesMainFragment extends Fragment implements
         });
         cleanReader();
         animateFirst = true;
-        new Handler(Looper.getMainLooper()).post(new Runnable() {
-            @Override
-            public void run() {
-                finishAfterTransition();
-            }
-        });
+
+        finishAfterTransition();
+    }
+
+    @Override
+    public void closeWithAction(final int action) {
+        if (Looper.myLooper() == Looper.getMainLooper()) {
+            closeInMainThread(action);
+        } else {
+            new Handler(Looper.getMainLooper()).post(new Runnable() {
+                @Override
+                public void run() {
+                    closeInMainThread(action);
+                }
+            });
+        }
+
     }
 
     void finishAfterTransition() {
