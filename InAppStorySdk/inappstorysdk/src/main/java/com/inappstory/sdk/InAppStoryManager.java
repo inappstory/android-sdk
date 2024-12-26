@@ -23,6 +23,7 @@ import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.IASDataSettings;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.IASStatisticStoriesV1;
+import com.inappstory.sdk.core.exceptions.NotImplementedMethodException;
 import com.inappstory.sdk.inappmessage.InAppMessageLoadCallback;
 import com.inappstory.sdk.inappmessage.InAppMessageOpenSettings;
 import com.inappstory.sdk.inappmessage.InAppMessageScreenActions;
@@ -899,10 +900,16 @@ public class InAppStoryManager implements IASBackPressHandler {
         core.singleStoryAPI().show(context, storyId, manager, null, 0);
     }
 
-    public void preloadInAppMessages(
+    private void preloadInAppMessages(
             List<String> inAppMessageIds
     ) {
-        core.inAppMessageAPI().preload(inAppMessageIds);
+        throw new NotImplementedMethodException();
+        //core.inAppMessageAPI().preload(inAppMessageIds);
+    }
+
+    public void preloadInAppMessages(
+    ) {
+        core.inAppMessageAPI().preload(null);
     }
 
     public void setInAppMessageLoadCallback(InAppMessageLoadCallback callback) {

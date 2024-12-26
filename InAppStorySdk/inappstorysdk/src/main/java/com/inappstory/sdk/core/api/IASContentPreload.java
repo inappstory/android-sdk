@@ -6,7 +6,7 @@ import com.inappstory.sdk.core.network.content.models.SessionAsset;
 import java.util.List;
 
 public interface IASContentPreload {
-    void downloadInAppMessages();
+    void downloadInAppMessages(List<String> inAppMessageIds);
 
     IGamePreloader getGamePreloader();
 

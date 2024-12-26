@@ -24,7 +24,7 @@ public class IASInAppMessageImpl implements IASInAppMessage {
 
     @Override
     public void preload(List<String> inAppMessageIds) {
-        core.contentPreload().downloadInAppMessages();
+        core.contentPreload().downloadInAppMessages(inAppMessageIds);
     }
 
     @Override
