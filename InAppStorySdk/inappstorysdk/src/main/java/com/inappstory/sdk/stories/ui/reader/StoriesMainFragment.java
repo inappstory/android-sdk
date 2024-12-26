@@ -536,15 +536,15 @@ public abstract class StoriesMainFragment extends Fragment implements
     }
 
     void finishAfterTransition() {
-        if (animateFirst) {
-            animateFirst = false;
-            closeAnim();
-        } else {
-            try {
+        try {
+            if (animateFirst) {
+                animateFirst = false;
+                closeAnim();
+            } else {
                 requireActivity().getSupportFragmentManager().popBackStack();
-            } catch (Exception ignored) {
-
             }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
