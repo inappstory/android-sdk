@@ -19,13 +19,11 @@ import com.inappstory.sdk.inappmessage.InAppMessageScreenActions;
 import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderState;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageAppearance;
 import com.inappstory.sdk.inappmessage.InAppMessageOpenSettings;
-import com.inappstory.sdk.inappmessage.ui.appearance.impl.InAppMessageBottomSheetSettings;
-import com.inappstory.sdk.inappmessage.ui.appearance.impl.InAppMessageFullscreenSettings;
-import com.inappstory.sdk.inappmessage.ui.appearance.impl.InAppMessagePopupSettings;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenInAppMessageReader;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenReader;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
+import com.inappstory.sdk.stories.utils.Sizes;
 
 import java.util.List;
 
@@ -69,21 +67,24 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
                        final IOpenReader openReader,
                        final IScreensHolder screensHolders
     ) {
-        checkIfMessageCanBeOpened(new CheckLocalIAMCallback() {
-            @Override
-            public void success(IInAppMessage inAppMessage, boolean contentIsPreloaded) {
-                SourceType sourceType = SourceType.IN_APP_MESSAGES;
-                if (inAppMessageOpenSettings.id() != null)
-                    sourceType = SourceType.SINGLE_IN_APP_MESSAGE;
-                launchScreenSuccess(
-                        sourceType,
-                        inAppMessage,
-                        contentIsPreloaded,
-                        openReader,
-                        screensHolders
-                );
-            }
-        });
+        checkIfMessageCanBeOpened(
+                new CheckLocalIAMCallback() {
+                    @Override
+                    public void success(IInAppMessage inAppMessage, boolean contentIsPreloaded) {
+                        SourceType sourceType = SourceType.IN_APP_MESSAGES;
+                        if (inAppMessageOpenSettings.id() != null)
+                            sourceType = SourceType.SINGLE_IN_APP_MESSAGE;
+                        launchScreenSuccess(
+                                sourceType,
+                                inAppMessage,
+                                contentIsPreloaded,
+                                openReader,
+                                screensHolders
+                        );
+                    }
+                },
+                Sizes.isTablet(context)
+        );
     }
 
     private IReaderContent getLocalReaderContent() {
@@ -115,16 +116,20 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
         return true;
     }
 
-    private void checkIfMessageCanBeOpened(final CheckLocalIAMCallback loadScreen) {
+    private void checkIfMessageCanBeOpened(final CheckLocalIAMCallback loadScreen, boolean isTablet) {
         if (inAppMessageOpenSettings == null) {
             launchScreenError("Need to pass opening settings");
+            return;
+        }
+        if (isTablet) {
+            launchScreenError("Can't be opened in tablet. Will be added in future releases");
             return;
         }
         final IReaderContent readerContent = getLocalReaderContent();
         final InAppMessageDownloadManager downloadManager = core.contentLoader().inAppMessageDownloadManager();
         boolean contentIsPreloaded = readerContent != null &&
                 downloadManager.allSlidesLoaded(readerContent) &&
-                        downloadManager.allBundlesLoaded();
+                downloadManager.allBundlesLoaded();
         if (inAppMessageOpenSettings.showOnlyIfLoaded()) {
             if (contentIsPreloaded) {
                 loadScreen.success((IInAppMessage) readerContent, true);

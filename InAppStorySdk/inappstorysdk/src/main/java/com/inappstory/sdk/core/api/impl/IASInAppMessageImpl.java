@@ -1,5 +1,7 @@
 package com.inappstory.sdk.core.api.impl;
 
+import android.content.Context;
+
 import androidx.fragment.app.FragmentManager;
 
 import com.inappstory.sdk.core.IASCore;
@@ -28,6 +30,7 @@ public class IASInAppMessageImpl implements IASInAppMessage {
     @Override
     public void show(
             InAppMessageOpenSettings openData,
+            Context context,
             FragmentManager fragmentManager,
             int containerId,
             final InAppMessageScreenActions screenActions

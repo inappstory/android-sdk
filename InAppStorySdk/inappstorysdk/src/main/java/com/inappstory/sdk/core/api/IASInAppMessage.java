@@ -1,5 +1,7 @@
 package com.inappstory.sdk.core.api;
 
+import android.content.Context;
+
 import androidx.fragment.app.FragmentManager;
 
 import com.inappstory.sdk.inappmessage.InAppMessageLoadCallback;
@@ -15,6 +17,7 @@ public interface IASInAppMessage {
 
     void show(
             InAppMessageOpenSettings inAppMessageOpenSettings,
+            Context context,
             FragmentManager fragmentManager,
             int containerId,
             InAppMessageScreenActions screenActions

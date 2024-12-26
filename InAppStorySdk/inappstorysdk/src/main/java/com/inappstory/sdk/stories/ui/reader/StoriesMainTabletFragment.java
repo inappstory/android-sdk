@@ -37,10 +37,6 @@ public class StoriesMainTabletFragment extends StoriesMainFragment {
         closeWithAction(-1);
     }
 
-    @Override
-    public void close() {
-
-    }
 
     @Override
     public void permissionResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {

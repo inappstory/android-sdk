@@ -64,6 +64,11 @@ public abstract class StoriesMainFragment extends Fragment implements
         ShowGoodsCallback {
 
     @Override
+    public void close() {
+        closeWithAction(CloseStory.CUSTOM);
+    }
+
+    @Override
     public void disableDrag(boolean disable) {
         boolean draggable = !Sizes.isTablet(getContext()) &&
                 (appearanceSettings == null || appearanceSettings.csIsDraggable());
