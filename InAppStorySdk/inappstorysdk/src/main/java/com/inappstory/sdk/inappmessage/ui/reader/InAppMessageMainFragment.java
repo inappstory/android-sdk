@@ -225,6 +225,8 @@ public class InAppMessageMainFragment extends Fragment implements Observer<IAMRe
             if (!contentIsPreloaded && contentContainer != null) {
                 contentContainer.hideLoader();
             }
+        } else if (Objects.requireNonNull(newState) == IAMReaderLoadStates.FAILED) {
+            readerViewModel.updateCurrentUiState(IAMReaderUIStates.CLOSING);
         }
     }
 

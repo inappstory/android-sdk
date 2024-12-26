@@ -12,12 +12,17 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASCallbackType;
+import com.inappstory.sdk.core.api.IASGames;
 import com.inappstory.sdk.core.api.UseIASCallback;
+import com.inappstory.sdk.core.api.impl.IASSingleStoryImpl;
+import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenData;
+import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenStrategy;
 import com.inappstory.sdk.core.utils.ColorUtils;
 import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderSlideState;
 import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderState;
@@ -33,8 +38,12 @@ import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessagePopupAppearance
 import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.jsapiclient.JsApiClient;
 import com.inappstory.sdk.network.jsapiclient.JsApiResponseCallback;
+import com.inappstory.sdk.stories.api.models.ContentId;
+import com.inappstory.sdk.stories.api.models.ContentIdWithIndex;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.CallToActionCallback;
 import com.inappstory.sdk.inappmessage.stedata.CallToActionData;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
+import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ContentViewInteractor;
 import com.inappstory.sdk.stories.utils.Observer;
 
@@ -97,12 +106,64 @@ public class IAMContentFragment extends Fragment implements Observer<IAMReaderSl
                                     (JsSendApiRequestData) newValue.data()
                             );
                             break;
+                        case OPEN_STORY:
+                            openStoryHandle((ContentIdWithIndex) newValue.data());
+                            break;
+                        case OPEN_GAME:
+                            openGameHandle((ContentId) newValue.data());
+                            break;
+
                     }
                 }
             });
-
         }
     };
+
+
+    private void openStoryHandle(final ContentIdWithIndex contentIdWithIndex) {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                final AppearanceManager appearanceManager = AppearanceManager.checkOrCreateAppearanceManager(null);
+                try {
+                    ((IASSingleStoryImpl) core.singleStoryAPI()).show(
+                            requireActivity(),
+                            contentIdWithIndex.id() + "",
+                            appearanceManager,
+                            null,
+                            contentIdWithIndex.index(),
+                            true,
+                            SourceType.SINGLE,
+                            ShowStory.ACTION_CUSTOM
+                    );
+                } catch (Exception e) {
+
+                }
+            }
+        });
+
+    }
+
+    private void openGameHandle(final ContentId contentId) {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                try {
+                    core.screensManager().openScreen(
+                            requireActivity(),
+                            new LaunchGameScreenStrategy(core, true)
+                                    .data(new LaunchGameScreenData(
+                                            null,
+                                            null,
+                                            contentId.id()
+                                    ))
+                    );
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
 
     private void jsSendApiRequestHandle(
             IASCore core,

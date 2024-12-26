@@ -131,7 +131,7 @@ public class IAMReaderJavascriptInterface {
 
     @JavascriptInterface
     public void storySendData(String data) {
-        slideViewModel.storyLoadingFailed(data);
+        slideViewModel.storySendData(data);
     }
 
     @JavascriptInterface

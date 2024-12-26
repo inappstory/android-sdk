@@ -1,8 +1,10 @@
 package com.inappstory.sdk.stories.api.models;
 
+import com.inappstory.sdk.inappmessage.stedata.STEData;
+
 import java.io.Serializable;
 
-public class ContentIdWithIndex implements Serializable {
+public class ContentIdWithIndex implements Serializable, STEData {
     private final int id;
 
     public int id() {

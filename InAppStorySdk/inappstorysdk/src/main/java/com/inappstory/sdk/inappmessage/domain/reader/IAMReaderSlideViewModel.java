@@ -3,18 +3,22 @@ package com.inappstory.sdk.inappmessage.domain.reader;
 
 import android.util.Log;
 
+import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
+import com.inappstory.sdk.core.api.impl.IASSingleStoryImpl;
 import com.inappstory.sdk.core.data.IInAppMessage;
 import com.inappstory.sdk.core.data.IReaderContent;
 import com.inappstory.sdk.core.exceptions.NotImplementedMethodException;
 import com.inappstory.sdk.core.inappmessages.InAppMessageDownloadManager;
+import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenAppearance;
 import com.inappstory.sdk.inappmessage.stedata.JsSendApiRequestData;
 import com.inappstory.sdk.inappmessage.stedata.STEDataType;
 import com.inappstory.sdk.inappmessage.stedata.STETypeAndData;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.network.models.Response;
+import com.inappstory.sdk.stories.api.models.ContentId;
 import com.inappstory.sdk.stories.api.models.ContentIdWithIndex;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.SlideLinkObject;
@@ -23,6 +27,7 @@ import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickAction;
 import com.inappstory.sdk.inappmessage.stedata.CallToActionData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.InAppMessageData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
+import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.utils.Observable;
 import com.inappstory.sdk.stories.utils.Observer;
 import com.inappstory.sdk.stories.utils.SingleTimeEvent;
@@ -156,19 +161,22 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
 
 
     public void updateTimeline(String data) {
-//        throw new NotImplementedMethodException();
     }
 
     public void storyLoadingFailed(String data) {
-        throw new NotImplementedMethodException();
+        readerViewModel.updateCurrentLoadState(IAMReaderLoadStates.FAILED);
     }
 
     public void storyShowSlide(int index) {
-        throw new NotImplementedMethodException();
+
     }
 
     public void showSingleStory(int id, int index) {
-        throw new NotImplementedMethodException();
+        singleTimeEvents.updateValue(
+                new STETypeAndData(STEDataType.OPEN_STORY,
+                        new ContentIdWithIndex(id, index)
+                )
+        );
     }
 
     public void sendApiRequest(String data) {
@@ -181,42 +189,45 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
     }
 
     public void vibrate(int[] vibratePattern) {
-        throw new NotImplementedMethodException();
+
     }
 
     public void openGame(String gameInstanceId) {
-        throw new NotImplementedMethodException();
+        singleTimeEvents.updateValue(
+                new STETypeAndData(STEDataType.OPEN_GAME,
+                        new ContentId(gameInstanceId)
+                )
+        );
     }
 
     public void setAudioManagerMode(String mode) {
-        throw new NotImplementedMethodException();
+
     }
 
     public void storyShowNext() {
-        throw new NotImplementedMethodException();
+
     }
 
     public void storyShowPrev() {
-        throw new NotImplementedMethodException();
+
     }
 
     public void storyShowNextSlide(long delay) {
-        throw new NotImplementedMethodException();
     }
 
     public void storyShowNextSlide() {
-        throw new NotImplementedMethodException();
+
     }
 
     public void storyShowTextInput(String id, String data) {
-        throw new NotImplementedMethodException();
+
     }
 
     public void storyStarted() {
     }
 
     public void storyStarted(double startTime) {
-        throw new NotImplementedMethodException();
+
     }
 
     public void storyLoaded() {
@@ -250,19 +261,37 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
     }
 
     public void emptyLoaded() {
-        throw new NotImplementedMethodException();
+
     }
 
     public void share(String id, String data) {
-        throw new NotImplementedMethodException();
+
     }
 
     public void storyFreezeUI() {
-        throw new NotImplementedMethodException();
     }
 
     public void storySendData(String data) {
-        throw new NotImplementedMethodException();
+        IAMReaderState readerState = readerViewModel.getCurrentState();
+        if (readerState == null) return;
+        if (core.statistic().iamV1().disabled()) return;
+        core.network().enqueue(
+                core.network().getApi().sendIAMUserData(
+                        Integer.toString(readerState.iamId),
+                        data
+                ),
+                new NetworkCallback<Response>() {
+                    @Override
+                    public void onSuccess(Response response) {
+
+                    }
+
+                    @Override
+                    public Type getType() {
+                        return null;
+                    }
+                }
+        );
     }
 
     public void setLocalUserData(String data, boolean sendToServer) {
@@ -273,6 +302,7 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
                     readerState.iamId + "__" +
                     ((IASDataSettingsHolder) core.settingsAPI()).userId(), data);
         }
+        if (core.statistic().iamV1().disabled()) return;
         if (sendToServer) {
             core.network().enqueue(
                     core.network().getApi().sendIAMUserData(
@@ -306,11 +336,9 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
     }
 
     public void shareSlideScreenshotCb(String shareId, boolean result) {
-        throw new NotImplementedMethodException();
     }
 
     public void defaultTap(String val) {
-        throw new NotImplementedMethodException();
     }
 
     @Override
