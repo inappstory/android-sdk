@@ -8,6 +8,9 @@ public class InAppMessageOpenSettings {
     private String event;
 
     public InAppMessageOpenSettings(
+    ) {}
+
+    public InAppMessageOpenSettings(
             Integer id,
             boolean showOnlyIfLoaded,
             String event
