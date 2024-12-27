@@ -908,9 +908,9 @@ public class InAppStoryManager implements IASBackPressHandler {
         //core.inAppMessageAPI().preload(inAppMessageIds);
     }
 
-    public void preloadInAppMessages(
+    public void preloadInAppMessages(InAppMessageLoadCallback callback
     ) {
-        core.inAppMessageAPI().preload(null);
+        core.inAppMessageAPI().preload(null, callback);
     }
 
     public void setInAppMessageLoadCallback(InAppMessageLoadCallback callback) {

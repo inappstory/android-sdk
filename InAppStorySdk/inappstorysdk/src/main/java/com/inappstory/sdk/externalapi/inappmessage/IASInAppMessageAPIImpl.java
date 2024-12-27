@@ -15,12 +15,12 @@ import java.util.List;
 
 public class IASInAppMessageAPIImpl implements IASInAppMessage {
     @Override
-    public void preload(final List<String> inAppMessageIds) {
+    public void preload(final List<String> inAppMessageIds, final InAppMessageLoadCallback callback) {
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
                 core.inAppMessageAPI().preload(
-                        inAppMessageIds
+                        inAppMessageIds, callback
                 );
             }
         });

@@ -12,7 +12,7 @@ import java.util.List;
 
 public interface IASInAppMessage {
     void preload(
-            List<String> inAppMessageIds
+            List<String> inAppMessageIds, InAppMessageLoadCallback callback
     );
 
     void show(

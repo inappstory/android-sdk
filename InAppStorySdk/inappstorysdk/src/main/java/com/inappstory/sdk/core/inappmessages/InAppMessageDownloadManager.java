@@ -37,21 +37,27 @@ public class InAppMessageDownloadManager {
         this.slidesDownloader.init();
     }
 
-    public void addInAppMessageTask(final int inAppMessageId, ContentType type) {
+    public void addInAppMessageTask(
+            final int inAppMessageId,
+            ContentType type,
+            final InAppMessageLoadCallback callback
+    ) {
         IReaderContent readerContent =
                 core.contentHolder().readerContent().getByIdAndType(inAppMessageId, type);
         if (readerContent != null) {
-            addSlides(readerContent);
+            addSlides(readerContent, callback);
         } else {
             new InAppMessageByIdUseCase(core, inAppMessageId).get(
                     new InAppMessageByIdCallback() {
                         @Override
                         public void success(IReaderContent readerContent) {
-                            addSlides(readerContent);
+                            addSlides(readerContent, callback);
                         }
 
                         @Override
                         public void error() {
+                            if (callback != null)
+                                callback.loadError(inAppMessageId);
                             core.callbacksAPI().useCallback(
                                     IASCallbackType.IN_APP_MESSAGE_LOAD,
                                     new UseIASCallback<InAppMessageLoadCallback>() {
@@ -86,20 +92,9 @@ public class InAppMessageDownloadManager {
         return core.assetsHolder().assetsIsDownloaded();
     }
 
-    private void addSlides(@NonNull final IReaderContent readerContent) {
-        if (slidesDownloader.allSlidesLoaded(readerContent, ContentType.IN_APP_MESSAGE)) {
-            IASAssetsHolder assetsHolder = core.assetsHolder();
-            if (assetsHolder.assetsIsDownloaded()) {
-                contentIsLoaded(readerContent);
-            } else {
-                assetsHolder.addAssetsIsReadyCallback(new SessionAssetsIsReadyCallback() {
-                    @Override
-                    public void isReady() {
-                        contentIsLoaded(readerContent);
-                    }
-                });
-            }
-            return;
+    private void addSlides(@NonNull final IReaderContent readerContent, final InAppMessageLoadCallback callback) {
+        if (allSlidesLoaded(readerContent)) {
+            contentIsLoaded(readerContent, callback);
         }
         core.contentLoader().inAppMessageDownloadManager().addSubscriber(
                 new IReaderSlideViewModel() {
@@ -155,18 +150,7 @@ public class InAppMessageDownloadManager {
                     public void slideLoadSuccess(int index) {
                         if (core.contentLoader().inAppMessageDownloadManager()
                                 .allSlidesLoaded(readerContent)) {
-
-                            IASAssetsHolder assetsHolder = core.assetsHolder();
-                            if (assetsHolder.assetsIsDownloaded()) {
-                                contentIsLoaded(readerContent);
-                            } else {
-                                assetsHolder.addAssetsIsReadyCallback(new SessionAssetsIsReadyCallback() {
-                                    @Override
-                                    public void isReady() {
-                                        contentIsLoaded(readerContent);
-                                    }
-                                });
-                            }
+                            contentIsLoaded(readerContent, callback);
                         }
                     }
 
@@ -188,8 +172,14 @@ public class InAppMessageDownloadManager {
         );
     }
 
-    private void contentIsLoaded(final IReaderContent readerContent) {
+    private void contentIsLoaded(final IReaderContent readerContent, InAppMessageLoadCallback callback) {
         loadedInAppMessages.add(readerContent.id());
+        if (callback != null) {
+            callback.loaded(readerContent.id());
+            if (allContentIsLoaded()) {
+                callback.allLoaded();
+            }
+        }
         core.callbacksAPI().useCallback(
                 IASCallbackType.IN_APP_MESSAGE_LOAD,
                 new UseIASCallback<InAppMessageLoadCallback>() {
@@ -207,7 +197,7 @@ public class InAppMessageDownloadManager {
 
     }
 
-    private boolean allContentIsLoaded() {
+    public boolean allContentIsLoaded() {
         List<IReaderContent> readerContentList =
                 core.contentHolder().readerContent().getByType(ContentType.IN_APP_MESSAGE);
         for (IReaderContent readerContent : readerContentList) {

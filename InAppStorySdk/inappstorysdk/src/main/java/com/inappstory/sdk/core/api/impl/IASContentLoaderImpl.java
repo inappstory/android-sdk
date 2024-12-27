@@ -102,6 +102,7 @@ public class IASContentLoaderImpl implements IASContentLoader {
             core.contentHolder().readerContent().clearByType(ContentType.IN_APP_MESSAGE);
             core.contentHolder().readerContent().clearByType(ContentType.STORY);
             core.contentLoader().inAppMessageDownloadManager().clearSlidesDownloader();
+            core.contentLoader().inAppMessageDownloadManager().clearLocalData();
             storyDownloadManager.clearCache();
             core.keyValueStorage().clear();
         } catch (IOException ignored) {

@@ -9,12 +9,14 @@ import androidx.annotation.NonNull;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.api.IASAssetsHolder;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.IASContentPreload;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.data.IReaderContent;
 import com.inappstory.sdk.core.inappmessages.InAppMessageFeedCallback;
 import com.inappstory.sdk.core.network.content.usecase.InAppMessagesUseCase;
+import com.inappstory.sdk.game.cache.SessionAssetsIsReadyCallback;
 import com.inappstory.sdk.game.cache.SuccessUseCaseCallback;
 import com.inappstory.sdk.game.cache.UseCaseCallback;
 import com.inappstory.sdk.game.preload.GamePreloader;
@@ -59,24 +61,27 @@ public class IASContentPreloadImpl implements IASContentPreload {
     }
 
     @Override
-    public void downloadInAppMessages(List<String> inAppMessageIds) {
-        /*  List<IReaderContent> content = core
-                .contentHolder()
-                .readerContent()
-                .getByType(ContentType.IN_APP_MESSAGE);*/
-      /*  if (!content.isEmpty()) {
-            downloadInAppMessagesContent(content);
-            return;
-        }*/
+    public void downloadInAppMessages(List<String> inAppMessageIds, final InAppMessageLoadCallback callback) {
         new InAppMessagesUseCase(core)
                 .get(new InAppMessageFeedCallback() {
                     @Override
-                    public void success(List<IReaderContent> content) {
-                        downloadInAppMessagesContent(content);
+                    public void success(final List<IReaderContent> content) {
+                        IASAssetsHolder assetsHolder = core.assetsHolder();
+                        if (assetsHolder.assetsIsDownloaded()) {
+                            downloadInAppMessagesContent(content, callback);
+                        } else {
+                            assetsHolder.addAssetsIsReadyCallback(new SessionAssetsIsReadyCallback() {
+                                @Override
+                                public void isReady() {
+                                    downloadInAppMessagesContent(content, callback);
+                                }
+                            });
+                        }
                     }
 
                     @Override
                     public void isEmpty() {
+                        if (callback != null) callback.isEmpty();
                         core.callbacksAPI().useCallback(
                                 IASCallbackType.IN_APP_MESSAGE_LOAD,
                                 new UseIASCallback<InAppMessageLoadCallback>() {
@@ -90,6 +95,7 @@ public class IASContentPreloadImpl implements IASContentPreload {
 
                     @Override
                     public void error() {
+                        if (callback != null) callback.loadError();
                         core.callbacksAPI().useCallback(
                                 IASCallbackType.IN_APP_MESSAGE_LOAD,
                                 new UseIASCallback<InAppMessageLoadCallback>() {
@@ -103,16 +109,33 @@ public class IASContentPreloadImpl implements IASContentPreload {
                 });
     }
 
-    private void downloadInAppMessageContent(final IReaderContent content) {
+    private void downloadInAppMessageContent(final IReaderContent content, final InAppMessageLoadCallback callback) {
+
         core.contentLoader().inAppMessageDownloadManager().addInAppMessageTask(
                 content.id(),
-                ContentType.IN_APP_MESSAGE
+                ContentType.IN_APP_MESSAGE,
+                callback
         );
     }
 
-    private void downloadInAppMessagesContent(List<IReaderContent> content) {
+    private void downloadInAppMessagesContent(List<IReaderContent> content, InAppMessageLoadCallback callback) {
+        if (core.contentLoader().inAppMessageDownloadManager().allContentIsLoaded()) {
+            if (callback != null) {
+                callback.allLoaded();
+            }
+            core.callbacksAPI().useCallback(
+                    IASCallbackType.IN_APP_MESSAGE_LOAD,
+                    new UseIASCallback<InAppMessageLoadCallback>() {
+                        @Override
+                        public void use(@NonNull InAppMessageLoadCallback callback) {
+                            callback.allLoaded();
+                        }
+                    }
+            );
+            return;
+        }
         for (IReaderContent contentItem : content) {
-            downloadInAppMessageContent(contentItem);
+            downloadInAppMessageContent(contentItem, callback);
         }
     }
 
