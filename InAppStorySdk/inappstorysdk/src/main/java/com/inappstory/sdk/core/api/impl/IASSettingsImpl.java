@@ -65,8 +65,6 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
 
         core.storiesListVMHolder().clear();
         core.storyListCache().clearLocalOpensKey();
-        core.contentHolder().clearAll();
-        core.contentLoader().inAppMessageDownloadManager().clearSubscribers();
         core.screensManager().forceCloseAllReaders(new ForceCloseReaderCallback() {
             @Override
             public void onComplete() {
@@ -76,6 +74,9 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
                     core.contentLoader().storyDownloadManager().refreshLocals(ContentType.STORY);
                     core.contentLoader().storyDownloadManager().refreshLocals(ContentType.UGC);
                     core.contentLoader().storyDownloadManager().cleanTasks(false);
+                    core.contentHolder().readerContent().clearByType(ContentType.IN_APP_MESSAGE);
+                    core.contentHolder().readerContent().clearByType(ContentType.STORY);
+                    core.contentLoader().inAppMessageDownloadManager().clearSlidesDownloader();
                     core.sessionManager().closeSession(
                             sendStatistic,
                             true,
