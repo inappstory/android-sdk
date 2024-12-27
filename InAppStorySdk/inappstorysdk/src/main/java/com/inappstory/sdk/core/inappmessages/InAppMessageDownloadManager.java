@@ -174,6 +174,7 @@ public class InAppMessageDownloadManager {
                     }
                 });
             }
+            return;
         }
 
         slidesDownloader.addStorySlides(
