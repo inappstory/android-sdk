@@ -62,7 +62,7 @@ public class InAppMessagePopupSettings implements InAppMessagePopupAppearance {
 
     @Override
     public float contentRatio() {
-        return contentRatio != null ? contentRatio : (2/3f);
+        return contentRatio != null ? contentRatio : (4 / 3f);
     }
 
     @Override

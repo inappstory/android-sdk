@@ -50,12 +50,12 @@ public class InAppMessageBottomSheetSettings implements InAppMessageBottomSheetA
 
     @Override
     public int cornerRadius() {
-        return cornerRadius != null ? cornerRadius : 32;
+        return cornerRadius != null ? cornerRadius : 16;
     }
 
     @Override
     public float contentRatio() {
-        return contentRatio != null ? contentRatio : (2 / 3f);
+        return contentRatio != null ? contentRatio : (4 / 3f);
     }
 
 
