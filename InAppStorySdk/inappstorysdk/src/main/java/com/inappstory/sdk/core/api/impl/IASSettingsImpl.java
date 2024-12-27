@@ -379,8 +379,8 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
                 result.put(
                         key,
                         new Pair<>(
-                                userImagePlaceholders.get(key),
-                                sessionImagePlaceholders.get(key)
+                                sessionImagePlaceholders.get(key),
+                                userImagePlaceholders.get(key)
                         )
                 );
             }

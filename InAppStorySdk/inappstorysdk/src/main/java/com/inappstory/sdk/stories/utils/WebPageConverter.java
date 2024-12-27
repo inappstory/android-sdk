@@ -98,20 +98,21 @@ public class WebPageConverter {
             if (placeholderKey != null && placeholderName != null) {
                 Pair<ImagePlaceholderValue, ImagePlaceholderValue> placeholderValue
                         = imgPlaceholders.get(placeholderName);
-                if (placeholderValue != null && placeholderValue.first != null) {
+                if (placeholderValue != null) {
                     String path = "";
-                    if (placeholderValue.first.getType() == ImagePlaceholderType.URL) {
+                    if (placeholderValue.first != null && placeholderValue.first.getType() == ImagePlaceholderType.URL) {
                         String uniqueKey = StringsUtils.md5(placeholderValue.first.getUrl());
                         File file = core.contentLoader().getCommonCache().getFullFile(uniqueKey);
                         if (file != null && file.exists() && file.length() > 0) {
                             path = "file://" + file.getAbsolutePath();
-                        } else {
-                            if (placeholderValue.second.getType() == ImagePlaceholderType.URL) {
-                                uniqueKey = StringsUtils.md5(placeholderValue.second.getUrl());
-                                file = core.contentLoader().getCommonCache().getFullFile(uniqueKey);
-                                if (file != null && file.exists() && file.length() > 0) {
-                                    path = "file://" + file.getAbsolutePath();
-                                }
+                        }
+                    }
+                    if (path.isEmpty()) {
+                        if (placeholderValue.second != null && placeholderValue.second.getType() == ImagePlaceholderType.URL) {
+                            String uniqueKey = StringsUtils.md5(placeholderValue.second.getUrl());
+                            File file = core.contentLoader().getCommonCache().getFullFile(uniqueKey);
+                            if (file != null && file.exists() && file.length() > 0) {
+                                path = "file://" + file.getAbsolutePath();
                             }
                         }
                     }
@@ -170,7 +171,7 @@ public class WebPageConverter {
                 String newLayout = readerContent.layout();
                 localData = replaceStaticResources(core, localData, readerContent, index);
                 core.contentLoader().addVODResources(readerContent, index);
-                localData = replaceImagePlaceholders(core, localData, readerContent, index);
+        //        localData = replaceImagePlaceholders(core, localData, readerContent, index);
                 newLayout = replaceLayoutAssets(core, newLayout);
                 Pair<String, String> replaced = replacePlaceholders(core, localData, newLayout);
                 newLayout = replaced.second;
