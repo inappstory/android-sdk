@@ -14,6 +14,7 @@ import com.inappstory.sdk.game.cache.GameCacheManager;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.core.data.IResource;
 import com.inappstory.sdk.core.data.IReaderContent;
+import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.cache.FilesDownloader;
 import com.inappstory.sdk.stories.cache.FilesDownloadManager;
 import com.inappstory.sdk.stories.cache.StoryDownloadManager;
@@ -98,8 +99,9 @@ public class IASContentLoaderImpl implements IASContentLoader {
             core.storiesListVMHolder().clear();
             filesDownloadManager.getCachesHolder().clear();
             filesDownloadManager.getVodCacheJournal().clear();
-            core.contentHolder().clearAll();
-            core.contentLoader().inAppMessageDownloadManager().clearSubscribers();
+            core.contentHolder().readerContent().clearByType(ContentType.IN_APP_MESSAGE);
+            core.contentHolder().readerContent().clearByType(ContentType.STORY);
+            core.contentLoader().inAppMessageDownloadManager().clearSlidesDownloader();
             storyDownloadManager.clearCache();
             core.keyValueStorage().clear();
         } catch (IOException ignored) {

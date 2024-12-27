@@ -10,7 +10,7 @@ import com.inappstory.sdk.core.api.IASInAppMessage;
 import com.inappstory.sdk.core.ui.screens.inappmessagereader.LaunchIAMScreenStrategy;
 import com.inappstory.sdk.inappmessage.InAppMessageLoadCallback;
 import com.inappstory.sdk.inappmessage.InAppMessageOpenSettings;
-import com.inappstory.sdk.inappmessage.InAppMessageScreenActions;
+import com.inappstory.sdk.inappmessage.InAppMessageScreenActions;import com.inappstory.sdk.stories.api.models.ContentType;
 
 import java.util.List;
 
@@ -24,6 +24,7 @@ public class IASInAppMessageImpl implements IASInAppMessage {
 
     @Override
     public void preload(List<String> inAppMessageIds) {
+        core.contentHolder().readerContent().clearByType(ContentType.IN_APP_MESSAGE);
         core.contentPreload().downloadInAppMessages(inAppMessageIds);
     }
 

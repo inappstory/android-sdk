@@ -162,7 +162,19 @@ public class InAppMessageDownloadManager {
                     }
                 }
         );
-
+        if (slidesDownloader.allSlidesLoaded(readerContent, ContentType.IN_APP_MESSAGE)) {
+            IASAssetsHolder assetsHolder = core.assetsHolder();
+            if (assetsHolder.assetsIsDownloaded()) {
+                contentIsLoaded(readerContent);
+            } else {
+                assetsHolder.addAssetsIsReadyCallback(new SessionAssetsIsReadyCallback() {
+                    @Override
+                    public void isReady() {
+                        contentIsLoaded(readerContent);
+                    }
+                });
+            }
+        }
 
         slidesDownloader.addStorySlides(
                 new ContentIdAndType(readerContent.id(),
@@ -200,6 +212,11 @@ public class InAppMessageDownloadManager {
             if (!loadedInAppMessages.contains(readerContent.id())) return false;
         }
         return true;
+    }
+
+    public void clearSlidesDownloader() {
+        slidesDownloader.cleanTasks();
+        slidesDownloader.clearSubscribers();
     }
 
     public void addSubscriber(IReaderSlideViewModel pageViewModel) {

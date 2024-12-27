@@ -60,14 +60,14 @@ public class IASContentPreloadImpl implements IASContentPreload {
 
     @Override
     public void downloadInAppMessages(List<String> inAppMessageIds) {
-        List<IReaderContent> content = core
+        /*  List<IReaderContent> content = core
                 .contentHolder()
                 .readerContent()
-                .getByType(ContentType.IN_APP_MESSAGE);
-        if (!content.isEmpty()) {
+                .getByType(ContentType.IN_APP_MESSAGE);*/
+      /*  if (!content.isEmpty()) {
             downloadInAppMessagesContent(content);
             return;
-        }
+        }*/
         new InAppMessagesUseCase(core)
                 .get(new InAppMessageFeedCallback() {
                     @Override
