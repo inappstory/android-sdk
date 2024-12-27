@@ -210,6 +210,9 @@ public class InAppMessageDownloadManager {
         slidesDownloader.removeSubscriber(pageViewModel);
     }
 
+    public void clearSubscribers() {
+        slidesDownloader.clearSubscribers();
+    }
 
     public int isSlideLoaded(int id, int index, ContentType type) {
         try {

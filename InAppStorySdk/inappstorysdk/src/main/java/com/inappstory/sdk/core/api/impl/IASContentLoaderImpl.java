@@ -99,6 +99,7 @@ public class IASContentLoaderImpl implements IASContentLoader {
             filesDownloadManager.getCachesHolder().clear();
             filesDownloadManager.getVodCacheJournal().clear();
             core.contentHolder().clearAll();
+            core.contentLoader().inAppMessageDownloadManager().clearSubscribers();
             storyDownloadManager.clearCache();
             core.keyValueStorage().clear();
         } catch (IOException ignored) {

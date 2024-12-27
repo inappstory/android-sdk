@@ -66,6 +66,7 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
         core.storiesListVMHolder().clear();
         core.storyListCache().clearLocalOpensKey();
         core.contentHolder().clearAll();
+        core.contentLoader().inAppMessageDownloadManager().clearSubscribers();
         core.screensManager().forceCloseAllReaders(new ForceCloseReaderCallback() {
             @Override
             public void onComplete() {

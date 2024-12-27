@@ -251,7 +251,7 @@ public class SlidesDownloader {
 
     public void addSubscriber(IReaderSlideViewModel pageViewModel) {
         synchronized (pageViewModelsLock) {
-            for (IReaderSlideViewModel readerSlideViewModel: pageViewModels) {
+            for (IReaderSlideViewModel readerSlideViewModel : pageViewModels) {
                 if (readerSlideViewModel.externalSubscriber() != null &&
                         readerSlideViewModel.externalSubscriber() == pageViewModel.contentIdAndType().contentId) {
                     return;
@@ -264,6 +264,17 @@ public class SlidesDownloader {
     public void removeSubscriber(IReaderSlideViewModel pageViewModel) {
         synchronized (pageViewModelsLock) {
             pageViewModels.remove(pageViewModel);
+        }
+    }
+
+    public void clearSubscribers() {
+        synchronized (pageViewModelsLock) {
+            Iterator<IReaderSlideViewModel> i = pageViewModels.iterator();
+            while (i.hasNext()) {
+                IReaderSlideViewModel viewModel = i.next();
+                if (viewModel.externalSubscriber() != null)
+                    i.remove();
+            }
         }
     }
 
