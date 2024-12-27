@@ -87,6 +87,20 @@ public class InAppMessageDownloadManager {
     }
 
     private void addSlides(@NonNull final IReaderContent readerContent) {
+        if (slidesDownloader.allSlidesLoaded(readerContent, ContentType.IN_APP_MESSAGE)) {
+            IASAssetsHolder assetsHolder = core.assetsHolder();
+            if (assetsHolder.assetsIsDownloaded()) {
+                contentIsLoaded(readerContent);
+            } else {
+                assetsHolder.addAssetsIsReadyCallback(new SessionAssetsIsReadyCallback() {
+                    @Override
+                    public void isReady() {
+                        contentIsLoaded(readerContent);
+                    }
+                });
+            }
+            return;
+        }
         core.contentLoader().inAppMessageDownloadManager().addSubscriber(
                 new IReaderSlideViewModel() {
                     @Override
@@ -162,20 +176,7 @@ public class InAppMessageDownloadManager {
                     }
                 }
         );
-        if (slidesDownloader.allSlidesLoaded(readerContent, ContentType.IN_APP_MESSAGE)) {
-            IASAssetsHolder assetsHolder = core.assetsHolder();
-            if (assetsHolder.assetsIsDownloaded()) {
-                contentIsLoaded(readerContent);
-            } else {
-                assetsHolder.addAssetsIsReadyCallback(new SessionAssetsIsReadyCallback() {
-                    @Override
-                    public void isReady() {
-                        contentIsLoaded(readerContent);
-                    }
-                });
-            }
-            return;
-        }
+
 
         slidesDownloader.addStorySlides(
                 new ContentIdAndType(readerContent.id(),
