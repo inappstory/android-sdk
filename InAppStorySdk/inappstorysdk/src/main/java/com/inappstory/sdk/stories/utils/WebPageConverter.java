@@ -171,7 +171,7 @@ public class WebPageConverter {
                 String newLayout = readerContent.layout();
                 localData = replaceStaticResources(core, localData, readerContent, index);
                 core.contentLoader().addVODResources(readerContent, index);
-        //        localData = replaceImagePlaceholders(core, localData, readerContent, index);
+                localData = replaceImagePlaceholders(core, localData, readerContent, index);
                 newLayout = replaceLayoutAssets(core, newLayout);
                 Pair<String, String> replaced = replacePlaceholders(core, localData, newLayout);
                 newLayout = replaced.second;

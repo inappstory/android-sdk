@@ -25,6 +25,11 @@ public class StoryTimelineManager {
         this.contentWithTimeline = contentWithTimeline;
     }
 
+    public void setCurrentIndex(int currentIndex) {
+        this.currentIndex = currentIndex;
+        setProgress(0);
+    }
+
     IContentWithTimeline contentWithTimeline;
 
     public void startTimer(long timerStart, int currentIndex, long timerDuration) {

@@ -602,6 +602,7 @@ public class ReaderPageManager implements IReaderSlideViewModel {
         if (this.slideIndex == slideIndex) {
             if (host != null)
                 host.slideLoadError();
+            timelineManager.setCurrentIndex(slideIndex);
         }
     }
 
