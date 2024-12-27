@@ -9,6 +9,6 @@ public interface IReaderSlideViewModel {
     void slideLoadError(int index);
     void contentLoadSuccess(IReaderContent content);
     void slideLoadSuccess(int index);
-
+    Integer externalSubscriber();
     boolean loadContent();
 }

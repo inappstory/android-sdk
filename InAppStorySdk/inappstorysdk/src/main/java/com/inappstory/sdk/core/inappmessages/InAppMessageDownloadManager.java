@@ -98,6 +98,11 @@ public class InAppMessageDownloadManager {
                     }
 
                     @Override
+                    public Integer externalSubscriber() {
+                        return readerContent.id();
+                    }
+
+                    @Override
                     public void contentLoadError() {
                         core.callbacksAPI().useCallback(
                                 IASCallbackType.IN_APP_MESSAGE_LOAD,

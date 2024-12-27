@@ -593,6 +593,11 @@ public class ReaderPageManager implements IReaderSlideViewModel {
     }
 
     @Override
+    public Integer externalSubscriber() {
+        return null;
+    }
+
+    @Override
     public boolean loadContent() {
         return true;
     }
