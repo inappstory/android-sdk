@@ -13,6 +13,7 @@ import com.inappstory.sdk.core.ui.screens.inappmessagereader.IAMScreenHolder;
 import com.inappstory.sdk.core.ui.screens.launcher.IScreensLauncher;
 import com.inappstory.sdk.core.ui.screens.launcher.LaunchScreenStrategy;
 import com.inappstory.sdk.core.ui.screens.launcher.ScreensLauncher;
+import com.inappstory.sdk.core.ui.screens.outsideapi.CloseUgcReaderCallback;
 import com.inappstory.sdk.core.ui.screens.storyreader.StoryScreenHolder;
 import com.inappstory.sdk.domain.IScreenViewModelsHolder;
 import com.inappstory.sdk.domain.ScreenViewModelsHolder;
@@ -26,6 +27,7 @@ import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenReader;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenStoriesReader;
 import com.inappstory.sdk.stories.ui.reader.ForceCloseReaderCallback;
 import com.inappstory.sdk.stories.utils.IASBackPressHandler;
+import com.inappstory.sdk.stories.utils.Sizes;
 
 public class ScreensManager implements IScreensLauncher,
         IScreensHolder,
@@ -43,6 +45,18 @@ public class ScreensManager implements IScreensLauncher,
         this.launcher = new ScreensLauncher(screensHolder);
     }
 
+    public boolean isTablet() {
+        return Sizes.isTablet(core.appContext());
+    }
+
+    public boolean isPhone() {
+        return !isTablet();
+    }
+
+    @Override
+    public void setUgcCloseCallback(CloseUgcReaderCallback ugcCloseCallback) {
+        this.screensHolder.setUgcCloseCallback(ugcCloseCallback);
+    }
 
     @Override
     public GameScreenHolder getGameScreenHolder() {

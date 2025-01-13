@@ -6,8 +6,10 @@ import com.inappstory.sdk.stories.api.models.GameLaunchConfigObject;
 import com.inappstory.sdk.stories.api.models.StatisticSendObject;
 
 public class DummyApiInterface implements ApiInterface {
+
+
     @Override
-    public Request getInAppMessages(Integer srcList, String fields, String expand, String xUserId, String xSessionId, String lang) {
+    public Request getInAppMessages(Integer srcList, String ids, String tags, String fields, String expand, String xUserId, String xSessionId, String lang) {
         return new DummyRequest();
     }
 

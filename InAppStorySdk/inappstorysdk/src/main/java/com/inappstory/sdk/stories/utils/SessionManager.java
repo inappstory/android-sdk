@@ -367,6 +367,7 @@ public class SessionManager {
     private void clearCaches() {
         core.storiesListVMHolder().clear();
         core.contentLoader().clearGames();
+        core.contentLoader().iamWereLoaded(false);
     }
 
     public void closeSession(

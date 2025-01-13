@@ -636,7 +636,7 @@ public class InAppStoryManager implements IASBackPressHandler {
         return sendStatistic;
     }
 
-    private boolean sendStatistic = true;
+    private boolean sendStatistic = false;
 
     private void initManager(
             Context context,
@@ -901,14 +901,15 @@ public class InAppStoryManager implements IASBackPressHandler {
         core.singleStoryAPI().show(context, storyId, manager, null, 0);
     }
 
-    private void preloadInAppMessages(
-            List<String> inAppMessageIds
+    public void preloadInAppMessages(
+            List<String> inAppMessageIds,
+            InAppMessageLoadCallback callback
     ) {
-        throw new NotImplementedMethodException();
-        //core.inAppMessageAPI().preload(inAppMessageIds);
+        core.inAppMessageAPI().preload(inAppMessageIds, callback);
     }
 
-    public void preloadInAppMessages(InAppMessageLoadCallback callback
+    public void preloadInAppMessages(
+            InAppMessageLoadCallback callback
     ) {
         core.inAppMessageAPI().preload(null, callback);
     }

@@ -15,6 +15,7 @@ import com.inappstory.sdk.core.network.content.usecase.InAppMessagesUseCase;
 import com.inappstory.sdk.core.ui.screens.holder.IScreensHolder;
 import com.inappstory.sdk.core.ui.screens.launcher.LaunchScreenStrategy;
 import com.inappstory.sdk.core.ui.screens.ScreenType;
+import com.inappstory.sdk.inappmessage.IAMUiContainerType;
 import com.inappstory.sdk.inappmessage.InAppMessageScreenActions;
 import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderState;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageAppearance;
@@ -121,10 +122,7 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
             launchScreenError("Need to pass opening settings");
             return;
         }
-        if (isTablet) {
-            launchScreenError("Can't be opened in tablet. Will be added in future releases");
-            return;
-        }
+
         final IReaderContent readerContent = getLocalReaderContent();
         final InAppMessageDownloadManager downloadManager = core.contentLoader().inAppMessageDownloadManager();
         boolean contentIsPreloaded = readerContent != null &&
@@ -165,6 +163,14 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
                         }
                     });
                 } else {
+                    if (core.contentLoader().iamWereLoaded()) {
+                        launchScreenError(
+                                "Can't load InAppMessage with settings: [id: "
+                                        + inAppMessageOpenSettings.id() +
+                                        ", event: " + inAppMessageOpenSettings.event() + "]"
+                        );
+                        return;
+                    }
                     new InAppMessagesUseCase(core).get(
                             new InAppMessageFeedCallback() {
                                 @Override
@@ -252,6 +258,11 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
 
     private void launchScreenError(String message) {
         inAppMessageScreenActions.readerOpenError(message);
+    }
+
+    private boolean deviceIsSupported(IInAppMessage message, boolean isTablet) {
+        if (message.screenType().equals(IAMUiContainerType.POPUP)) return true;
+        return !isTablet;
     }
 
     private IReaderContent getContentByEvent() {

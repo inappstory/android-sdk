@@ -1,5 +1,7 @@
 package com.inappstory.sdk.core.network.content.usecase;
 
+import android.text.TextUtils;
+
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.data.IInAppMessage;
@@ -7,6 +9,7 @@ import com.inappstory.sdk.core.inappmessages.InAppMessageFeedCallback;
 import com.inappstory.sdk.core.utils.ConnectionCheck;
 import com.inappstory.sdk.core.utils.ConnectionCheckCallback;
 import com.inappstory.sdk.core.network.content.models.InAppMessageFeed;
+import com.inappstory.sdk.inappmessage.IAMUiContainerType;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.network.models.RequestLocalParameters;
 import com.inappstory.sdk.stories.api.models.ContentType;
@@ -18,9 +21,16 @@ import java.util.List;
 
 public class InAppMessagesUseCase {
     private final IASCore core;
+    private final String ids;
 
     public InAppMessagesUseCase(IASCore core) {
         this.core = core;
+        this.ids = null;
+    }
+
+    public InAppMessagesUseCase(IASCore core,String ids) {
+        this.core = core;
+        this.ids = ids;
     }
 
     public void get(InAppMessageFeedCallback callback) {
@@ -49,16 +59,22 @@ public class InAppMessagesUseCase {
                                             loadError(loadCallback);
                                             return;
                                         }
-                                        List<IInAppMessage> messages = new ArrayList<>();
-                                        messages.addAll(inAppMessageFeed.messages());
-                                        if (messages.isEmpty()) {
+                                        core.contentLoader().iamWereLoaded(true);
+                                        boolean hasDeviceSupportedMessage = false;
+                                        for (IInAppMessage message : inAppMessageFeed.messages()) {
+                                            if (
+                                                    core.screensManager().isPhone() ||
+                                                            message.screenType().equals(IAMUiContainerType.POPUP)
+                                            ) {
+                                                hasDeviceSupportedMessage = true;
+                                                core.contentHolder().readerContent().setByIdAndType(
+                                                        message, message.id(), ContentType.IN_APP_MESSAGE
+                                                );
+                                            }
+                                        }
+                                        if (!hasDeviceSupportedMessage) {
                                             loadCallback.isEmpty();
                                             return;
-                                        }
-                                        for (IInAppMessage message : messages) {
-                                            core.contentHolder().readerContent().setByIdAndType(
-                                                    message, message.id(), ContentType.IN_APP_MESSAGE
-                                            );
                                         }
                                         loadCallback.success(
                                                 core.contentHolder()
@@ -91,6 +107,9 @@ public class InAppMessagesUseCase {
                                 core.network().enqueue(
                                         core.network().getApi().getInAppMessages(
                                                 1,
+                                                ids,
+                                                TextUtils.join(",",
+                                                        ((IASDataSettingsHolder) core.settingsAPI()).tags()),
                                                 null,
                                                 "messages.slides",
                                                 sessionParameters.userId,

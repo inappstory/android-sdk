@@ -6,6 +6,7 @@ import com.inappstory.sdk.core.inappmessages.InAppMessageFeedCallback;
 import com.inappstory.sdk.core.network.content.models.InAppMessage;
 import com.inappstory.sdk.core.utils.ConnectionCheck;
 import com.inappstory.sdk.core.utils.ConnectionCheckCallback;
+import com.inappstory.sdk.inappmessage.IAMUiContainerType;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.network.models.RequestLocalParameters;
@@ -46,12 +47,19 @@ public class InAppMessageByIdUseCase {
                                         new NetworkCallback<InAppMessage>() {
                                             @Override
                                             public void onSuccess(InAppMessage response) {
-                                                core.contentHolder().readerContent().setByIdAndType(
-                                                        response,
-                                                        response.id(),
-                                                        ContentType.IN_APP_MESSAGE
-                                                );
-                                                callback.success(response);
+                                                if (
+                                                        core.screensManager().isPhone() ||
+                                                        response.screenType().equals(IAMUiContainerType.POPUP)
+                                                ) {
+                                                    core.contentHolder().readerContent().setByIdAndType(
+                                                            response,
+                                                            response.id(),
+                                                            ContentType.IN_APP_MESSAGE
+                                                    );
+                                                    callback.success(response);
+                                                } else {
+                                                    callback.error();
+                                                }
                                             }
 
                                             @Override

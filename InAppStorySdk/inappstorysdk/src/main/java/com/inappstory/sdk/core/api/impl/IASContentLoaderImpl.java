@@ -35,6 +35,7 @@ public class IASContentLoaderImpl implements IASContentLoader {
     private final GameCacheManager gameCacheManager;
     private final FilesDownloader filesDownloader;
     private final InAppMessageDownloadManager inAppMessageDownloadManager;
+    private boolean iamWereLoaded = false;
 
     private final StoryDownloadManager storyDownloadManager;
 
@@ -91,6 +92,20 @@ public class IASContentLoaderImpl implements IASContentLoader {
     @Override
     public GameCacheManager gameCacheManager() {
         return gameCacheManager;
+    }
+
+    @Override
+    public boolean iamWereLoaded() {
+        synchronized (this) {
+            return iamWereLoaded;
+        }
+    }
+
+    @Override
+    public void iamWereLoaded(boolean loaded) {
+        synchronized (this) {
+            iamWereLoaded = loaded;
+        }
     }
 
     @Override

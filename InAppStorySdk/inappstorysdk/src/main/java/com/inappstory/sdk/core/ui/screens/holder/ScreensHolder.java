@@ -4,6 +4,7 @@ import android.os.Handler;
 import android.os.Looper;
 
 import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.exceptions.NotImplementedMethodException;
 import com.inappstory.sdk.core.ui.screens.ShareProcessHandler;
 import com.inappstory.sdk.core.ui.screens.gamereader.GameScreenHolder;
 import com.inappstory.sdk.core.ui.screens.inappmessagereader.IAMScreenHolder;
@@ -45,7 +46,8 @@ public class ScreensHolder implements IScreensHolder {
     }
 
     public void setUgcCloseCallback(CloseUgcReaderCallback ugcCloseCallback) {
-        this.ugcCloseCallback = ugcCloseCallback;
+        throw new NotImplementedMethodException();
+        //this.ugcCloseCallback = ugcCloseCallback;
     }
 
     private CloseUgcReaderCallback ugcCloseCallback;

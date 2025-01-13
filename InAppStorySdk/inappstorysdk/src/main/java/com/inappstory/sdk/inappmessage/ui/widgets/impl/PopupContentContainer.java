@@ -61,31 +61,12 @@ public class PopupContentContainer extends IAMContentContainer<InAppMessagePopup
         content.setBackgroundColor(backgroundColor);
         generateLoader(backgroundColor);
         roundedCornerLayout.addView(loaderContainer);
-
-
-        int horizontalPadding = Sizes.dpToPxExt(appearance.horizontalPadding(), getContext());
-        layoutParams.leftMargin = horizontalPadding;
-        layoutParams.rightMargin = horizontalPadding;
-        Point size = Sizes.getScreenSize(getContext());
-        float contentRatio = 1.33f;
-        float minContentRatio = (1f * size.x) / size.y;
-        if (appearance.contentRatio() < 5f && appearance.contentRatio() > minContentRatio) {
-            contentRatio = appearance.contentRatio();
-        }
-        layoutParams.height = Math.min(size.y, Math.round((size.x - 2 * horizontalPadding) / contentRatio));
-        roundedCornerLayout.setRadius(
-                Sizes.dpToPxExt(appearance.cornerRadius(), getContext())
-        );
-        roundedCornerLayout.setLayoutParams(
-                layoutParams
-        );
         closeButtonLayoutParams.addRule(
                 appearance.closeButtonPosition() == 1 ?
                         RelativeLayout.ALIGN_PARENT_START :
                         RelativeLayout.ALIGN_PARENT_END
         );
         closeButton.setLayoutParams(closeButtonLayoutParams);
-        roundedCornerLayout.requestLayout();
         closeButton.requestLayout();
     }
 
@@ -251,6 +232,41 @@ public class PopupContentContainer extends IAMContentContainer<InAppMessagePopup
 
     }
 
+    @Override
+    protected void visibleRectIsCalculated() {
+        int horizontalPadding = Sizes.dpToPxExt(appearance.horizontalPadding(), getContext());
+        layoutParams.leftMargin = horizontalPadding;
+        layoutParams.rightMargin = horizontalPadding;
+        float contentRatio = 1.33f;
+        if (appearance.contentRatio() < 5f && appearance.contentRatio() > 0.01f) {
+            contentRatio = appearance.contentRatio();
+        }
+        float availableWidth = externalContainerRect.width() - 2 * horizontalPadding;
+        if (Sizes.isTablet(getContext())) {
+            availableWidth = Math.min(availableWidth, Sizes.dpToPxExt(340, getContext()));
+        }
+        float availableHeight = externalContainerRect.height();
+        float screenContentRatio = availableWidth / availableHeight;
+        if (contentRatio >= screenContentRatio) {
+            layoutParams.height = Math.min(
+                    Math.round(availableHeight),
+                    Math.round(availableWidth / contentRatio)
+            );
+            if (Sizes.isTablet(getContext())) {
+                layoutParams.width = Math.round(availableWidth);
+            }
+        } else {
+            layoutParams.height = Math.round(availableHeight);
+            layoutParams.width = Math.round(availableHeight * contentRatio);
+        }
+        roundedCornerLayout.setRadius(
+                Sizes.dpToPxExt(appearance.cornerRadius(), getContext())
+        );
+        roundedCornerLayout.setLayoutParams(
+                layoutParams
+        );
+        roundedCornerLayout.requestLayout();
+    }
 
     @Override
     public void closeWithoutAnimation() {

@@ -27,6 +27,8 @@ public interface ApiInterface {
     @GET("v2/inappmessaging")
     Request getInAppMessages(
             @Query("srcList") Integer srcList,
+            @Query("id") String ids,
+            @Query("tags") String tags,
             @Query("fields") String fields,
             @Query("expand") String expand,
             @ReplaceHeader(HeadersKeys.USER_ID) String xUserId,

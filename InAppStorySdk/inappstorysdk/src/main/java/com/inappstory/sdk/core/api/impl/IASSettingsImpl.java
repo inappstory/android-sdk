@@ -34,7 +34,6 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
     private final List<String> tags = new ArrayList<>();
     private String deviceId = null;
     private String userId;
-    private boolean isSandbox;
     private final Object settingsLock = new Object();
     private IAppVersion externalAppVersion;
 
@@ -380,13 +379,25 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
             mergedKeySet.addAll(userImagePlaceholders.keySet());
             mergedKeySet.addAll(sessionImagePlaceholders.keySet());
             for (String key : mergedKeySet) {
-                result.put(
-                        key,
-                        new Pair<>(
-                                sessionImagePlaceholders.get(key),
-                                userImagePlaceholders.get(key)
-                        )
-                );
+                ImagePlaceholderValue userKey = userImagePlaceholders.get(key);
+                ImagePlaceholderValue sessionKey = sessionImagePlaceholders.get(key);
+                if (userKey != null) {
+                    result.put(
+                            key,
+                            new Pair<>(
+                                    userKey,
+                                    sessionKey
+                            )
+                    );
+                } else {
+                    result.put(
+                            key,
+                            new Pair<ImagePlaceholderValue, ImagePlaceholderValue>(
+                                    sessionKey,
+                                    null
+                            )
+                    );
+                }
             }
         }
         return result;

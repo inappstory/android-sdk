@@ -128,6 +128,10 @@ public class IAMReaderJavascriptInterface {
         slideViewModel.storyFreezeUI();
     }
 
+    @JavascriptInterface
+    public void closeStory(String reason) {
+        slideViewModel.closeReader();
+    }
 
     @JavascriptInterface
     public void storySendData(String data) {

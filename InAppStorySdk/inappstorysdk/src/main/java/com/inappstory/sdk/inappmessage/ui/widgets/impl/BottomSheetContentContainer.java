@@ -69,6 +69,7 @@ public final class BottomSheetContentContainer extends IAMContentContainer<InApp
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT
         );
+        layoutParams.gravity = Gravity.CENTER_HORIZONTAL;
         layoutParams.setBehavior(new BottomSheetBehavior<RoundedCornerLayout>());
         roundedCornerLayout.setLayoutParams(
                 layoutParams
@@ -118,22 +119,23 @@ public final class BottomSheetContentContainer extends IAMContentContainer<InApp
     }
 
     @Override
-    public void appearance(InAppMessageBottomSheetAppearance appearance) {
-        super.appearance(appearance);
-        if (content == null) return;
-        int backgroundColor = ColorUtils.parseColorRGBA(
-                appearance.backgroundColor()
-        );
-        content.setBackgroundColor(backgroundColor);
-        generateLoader(backgroundColor);
-        roundedCornerLayout.addView(loaderContainer);
+    protected void visibleRectIsCalculated() {
         float contentRatio = 1.33f;
-        Point size = Sizes.getScreenSize(getContext());
-        float minContentRatio = (1f * size.x) / size.y;
-        if (appearance.contentRatio() < 5f && appearance.contentRatio() > minContentRatio) {
+        if (appearance.contentRatio() < 5f && appearance.contentRatio() > 0.01f) {
             contentRatio = appearance.contentRatio();
         }
-        layoutParams.height = Math.min(size.y, Math.round(size.x / contentRatio));
+        float availableWidth = externalContainerRect.width();
+        float availableHeight = externalContainerRect.height();
+        float screenContentRatio = availableWidth / availableHeight;
+        if (contentRatio >= screenContentRatio) {
+            layoutParams.height = Math.min(
+                    Math.round(availableHeight),
+                    Math.round(availableWidth / contentRatio)
+            );
+        } else {
+            layoutParams.height = Math.round(availableHeight);
+            layoutParams.width = Math.round(availableHeight * contentRatio);
+        }
         roundedCornerLayout.setRadius(
                 Sizes.dpToPxExt(appearance.cornerRadius(), getContext()),
                 Sizes.dpToPxExt(appearance.cornerRadius(), getContext()),
@@ -143,6 +145,19 @@ public final class BottomSheetContentContainer extends IAMContentContainer<InApp
         roundedCornerLayout.setLayoutParams(
                 layoutParams
         );
+        roundedCornerLayout.requestLayout();
+    }
+
+    @Override
+    public void appearance(InAppMessageBottomSheetAppearance appearance) {
+        super.appearance(appearance);
+        if (content == null) return;
+        int backgroundColor = ColorUtils.parseColorRGBA(
+                appearance.backgroundColor()
+        );
+        content.setBackgroundColor(backgroundColor);
+        generateLoader(backgroundColor);
+        roundedCornerLayout.addView(loaderContainer);
         FrameLayout.LayoutParams blcLp = new FrameLayout.LayoutParams(
                 Sizes.dpToPxExt(appearance.lineAppearance().width() + 16, getContext()),
                 Sizes.dpToPxExt(appearance.lineAppearance().height() +
@@ -163,7 +178,6 @@ public final class BottomSheetContentContainer extends IAMContentContainer<InApp
         bottomSheetLineContainer.setElevation(8);
         bottomSheetLineContainer.setLayoutParams(blcLp);
         bottomSheetLine.setColor(ColorUtils.parseColorRGBA(appearance.lineAppearance().color()));
-        roundedCornerLayout.requestLayout();
         bottomSheetLine.requestLayout();
         bottomSheetLineContainer.requestLayout();
     }

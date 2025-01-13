@@ -18,6 +18,11 @@ public interface IASContentLoader {
     StoryDownloadManager storyDownloadManager();
     InAppMessageDownloadManager inAppMessageDownloadManager();
     GameCacheManager gameCacheManager();
+
+
+    boolean iamWereLoaded();
+    void iamWereLoaded(boolean loaded);
+
     void clearCache();
     void clearGames();
     void setCacheSizes();

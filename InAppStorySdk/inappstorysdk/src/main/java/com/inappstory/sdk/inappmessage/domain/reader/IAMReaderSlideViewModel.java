@@ -3,15 +3,10 @@ package com.inappstory.sdk.inappmessage.domain.reader;
 
 import android.util.Log;
 
-import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
-import com.inappstory.sdk.core.api.impl.IASSingleStoryImpl;
-import com.inappstory.sdk.core.data.IInAppMessage;
 import com.inappstory.sdk.core.data.IReaderContent;
-import com.inappstory.sdk.core.exceptions.NotImplementedMethodException;
 import com.inappstory.sdk.core.inappmessages.InAppMessageDownloadManager;
-import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenAppearance;
 import com.inappstory.sdk.inappmessage.stedata.JsSendApiRequestData;
 import com.inappstory.sdk.inappmessage.stedata.STEDataType;
 import com.inappstory.sdk.inappmessage.stedata.STETypeAndData;
@@ -25,9 +20,6 @@ import com.inappstory.sdk.stories.api.models.SlideLinkObject;
 import com.inappstory.sdk.stories.cache.ContentIdAndType;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickAction;
 import com.inappstory.sdk.inappmessage.stedata.CallToActionData;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.InAppMessageData;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
-import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.utils.Observable;
 import com.inappstory.sdk.stories.utils.Observer;
 import com.inappstory.sdk.stories.utils.SingleTimeEvent;
@@ -98,6 +90,11 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
                 slideTimeState.totalTime(),
                 slideTimeState.iterationId()
         );
+    }
+
+    @Override
+    public void closeReader() {
+        core.screensManager().getIAMScreenHolder().closeScreen();
     }
 
 

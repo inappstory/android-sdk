@@ -13,6 +13,7 @@ public interface IIAMReaderSlideViewModel extends IReaderSlideViewModel {
 
     void readerIsOpened(boolean fromScratch);
     void readerIsClosing();
+    void closeReader();
 
     SingleTimeEvent<STETypeAndData> singleTimeEvents();
 

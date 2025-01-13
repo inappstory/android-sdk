@@ -4,6 +4,7 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.content.Context;
 import android.graphics.Color;
+import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,6 +24,7 @@ public abstract class IAMContentContainer<T extends InAppMessageAppearance> exte
     public static @IdRes int CONTAINER_ID = R.id.ias_iam_reader_container;
     protected View background;
     protected FrameLayout loaderContainer;
+    protected Rect externalContainerRect = new Rect();
 
     protected IAMContainerCallback callback;
 
@@ -98,7 +100,16 @@ public abstract class IAMContentContainer<T extends InAppMessageAppearance> exte
         });
         addView(background);
         setId(CONTAINER_ID);
+        post(new Runnable() {
+            @Override
+            public void run() {
+                getGlobalVisibleRect(externalContainerRect);
+                visibleRectIsCalculated();
+            }
+        });
     }
+
+    protected abstract void visibleRectIsCalculated();
 
     public void appearance(T appearance) {
         this.appearance = appearance;

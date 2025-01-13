@@ -2,6 +2,7 @@ package com.inappstory.sdk.core.api.impl;
 
 import android.os.Handler;
 import android.os.Looper;
+import android.text.TextUtils;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -62,7 +63,11 @@ public class IASContentPreloadImpl implements IASContentPreload {
 
     @Override
     public void downloadInAppMessages(List<String> inAppMessageIds, final InAppMessageLoadCallback callback) {
-        new InAppMessagesUseCase(core)
+        String iamIds = null;
+        if (inAppMessageIds != null && !inAppMessageIds.isEmpty()) {
+            iamIds = TextUtils.join(",", inAppMessageIds);
+        }
+        new InAppMessagesUseCase(core, iamIds)
                 .get(new InAppMessageFeedCallback() {
                     @Override
                     public void success(final List<IReaderContent> content) {
@@ -110,7 +115,6 @@ public class IASContentPreloadImpl implements IASContentPreload {
     }
 
     private void downloadInAppMessageContent(final IReaderContent content, final InAppMessageLoadCallback callback) {
-
         core.contentLoader().inAppMessageDownloadManager().addInAppMessageTask(
                 content.id(),
                 ContentType.IN_APP_MESSAGE,
