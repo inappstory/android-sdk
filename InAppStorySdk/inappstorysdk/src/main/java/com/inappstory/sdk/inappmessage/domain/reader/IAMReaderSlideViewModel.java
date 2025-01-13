@@ -3,10 +3,15 @@ package com.inappstory.sdk.inappmessage.domain.reader;
 
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+
 import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
+import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.data.IReaderContent;
 import com.inappstory.sdk.core.inappmessages.InAppMessageDownloadManager;
+import com.inappstory.sdk.inappmessage.InAppMessageWidgetCallback;
 import com.inappstory.sdk.inappmessage.stedata.JsSendApiRequestData;
 import com.inappstory.sdk.inappmessage.stedata.STEDataType;
 import com.inappstory.sdk.inappmessage.stedata.STETypeAndData;
@@ -20,13 +25,16 @@ import com.inappstory.sdk.stories.api.models.SlideLinkObject;
 import com.inappstory.sdk.stories.cache.ContentIdAndType;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickAction;
 import com.inappstory.sdk.inappmessage.stedata.CallToActionData;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryWidgetCallback;
 import com.inappstory.sdk.stories.utils.Observable;
 import com.inappstory.sdk.stories.utils.Observer;
 import com.inappstory.sdk.stories.utils.SingleTimeEvent;
 import com.inappstory.sdk.stories.utils.WebPageConvertCallback;
 import com.inappstory.sdk.stories.utils.WebPageConverter;
+import com.inappstory.sdk.utils.StringsUtils;
 
 import java.lang.reflect.Type;
+import java.util.Map;
 import java.util.UUID;
 
 public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
@@ -236,9 +244,9 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
     }
 
     public void statisticEvent(
-            String name,
-            String data,
-            String eventData
+            final String name,
+            final String data,
+            final String eventData
     ) {
         Integer iamId = readerViewModel.getCurrentState().iamId;
         if (data != null) {
@@ -253,7 +261,19 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
             );
         }
         if (eventData != null) {
-            //widget callback
+            final Map<String, String> widgetEventMap = JsonParser.toMap(eventData);
+            core.callbacksAPI().useCallback(IASCallbackType.IN_APP_MESSAGE_WIDGET,
+                    new UseIASCallback<InAppMessageWidgetCallback>() {
+                        @Override
+                        public void use(@NonNull InAppMessageWidgetCallback callback) {
+                            callback.inAppMessageWidget(
+                                    readerViewModel.getCurrentInAppMessageData(),
+                                    StringsUtils.getNonNull(name),
+                                    widgetEventMap
+                            );
+                        }
+                    }
+            );
         }
     }
 
