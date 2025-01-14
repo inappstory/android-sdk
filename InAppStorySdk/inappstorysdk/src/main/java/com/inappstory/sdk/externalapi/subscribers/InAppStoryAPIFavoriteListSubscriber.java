@@ -32,7 +32,9 @@ public abstract class InAppStoryAPIFavoriteListSubscriber
 
     @Override
     public final StoryAPIData updateStoryAPIData(Story data, String imagePath, String videoPath) {
+        if (data == null) return null;
         for (StoryAPIData storyAPIDataItem : storyAPIData) {
+            if (storyAPIDataItem == null) continue;
             if (storyAPIDataItem.id == data.id) {
                 boolean needToUpdate = false;
                 if (data.isOpened != storyAPIDataItem.opened) {
