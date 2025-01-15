@@ -450,6 +450,8 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
             }
             if (!downloadManager.checkBundleResources(this, state.showOnlyIfLoaded)) {
                 readerViewModel.updateCurrentLoadState(IAMReaderLoadStates.FAILED);
+            } else if (state.showOnlyIfLoaded) {
+                slideLoadSuccess(0);
             }
         } else {
             if (state.showOnlyIfLoaded) {
