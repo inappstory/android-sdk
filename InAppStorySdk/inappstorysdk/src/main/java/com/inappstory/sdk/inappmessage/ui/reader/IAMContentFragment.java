@@ -69,6 +69,7 @@ public class IAMContentFragment extends Fragment implements Observer<IAMReaderSl
             readerSlideViewModel.removeSubscriber(this);
             readerSlideViewModel.singleTimeEvents().unsubscribe(callToActionDataObserver);
         }
+        contentWebView.stopSlide();
         super.onDestroyView();
     }
 
@@ -295,6 +296,30 @@ public class IAMContentFragment extends Fragment implements Observer<IAMReaderSl
                                     }
                             );
                         }
+                    }
+                    break;
+                case -1:
+                    break;
+            }
+
+        }
+        if (currentState != null &&
+                (newValue.slideJSStatus() != currentState.slideJSStatus())
+        ) {
+            switch (newValue.slideJSStatus()) {
+                case 0:
+                    break;
+                case 1:
+                    if (contentWebView instanceof View) {
+                        ((View) contentWebView).post(
+                                new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        contentWebView.startSlide(null);
+                                        contentWebView.resumeSlide();
+                                    }
+                                }
+                        );
                     }
                     break;
                 case -1:

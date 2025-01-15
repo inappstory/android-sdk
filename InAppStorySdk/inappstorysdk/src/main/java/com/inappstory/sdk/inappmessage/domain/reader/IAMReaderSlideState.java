@@ -4,6 +4,8 @@ public class IAMReaderSlideState {
 
     int contentStatus = 0; //0 - loading, 1 - loaded, -1 - failed
 
+    int slideJSStatus = 0; //0 - none, 1 - loaded, 2 - started, 3 - paused?
+
     public int contentStatus() {
         return contentStatus;
     }
@@ -13,6 +15,14 @@ public class IAMReaderSlideState {
         return this;
     }
 
+    public int slideJSStatus() {
+        return slideJSStatus;
+    }
+
+    public IAMReaderSlideState slideJSStatus(int slideJSStatus) {
+        this.slideJSStatus = slideJSStatus;
+        return this;
+    }
 
     String content;
 
@@ -29,6 +39,7 @@ public class IAMReaderSlideState {
     public IAMReaderSlideState copy() {
         return new IAMReaderSlideState()
                 .content(this.content)
-                .contentStatus(this.contentStatus);
+                .contentStatus(this.contentStatus)
+                .slideJSStatus(this.slideJSStatus);
     }
 }

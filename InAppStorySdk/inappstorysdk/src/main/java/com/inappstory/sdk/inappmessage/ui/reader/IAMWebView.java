@@ -125,6 +125,17 @@ public class IAMWebView extends IASWebView implements ContentViewInteractor {
     }
 
     @Override
+    public void resumeSlide() {
+        loadUrl("javascript:(function() {" +
+                "if ('story_slide_resume' in window) " +
+                "{" +
+                " window.story_slide_resume(); " +
+                "}" +
+                "})()");
+        logMethod("story_slide_resume");
+    }
+
+    @Override
     public void restartSlide(IASCore core) {
         loadUrl("javascript:(function(){" +
                 "if ('story_slide_restart' in window) " +
@@ -165,16 +176,6 @@ public class IAMWebView extends IASWebView implements ContentViewInteractor {
         evaluateJavascript(cb + "('" + result + "');", null);
     }
 
-    @Override
-    public void resumeSlide() {
-        loadUrl("javascript:(function() {" +
-                "if ('story_slide_resume' in window) " +
-                "{" +
-                " window.story_slide_resume(); " +
-                "}" +
-                "})()");
-        logMethod("story_slide_resume");
-    }
 
     @Override
     public Context getActivityContext() {

@@ -237,10 +237,22 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
 
     public void storyLoaded() {
         readerViewModel.updateCurrentLoadState(IAMReaderLoadStates.LOADED);
+        slideStateObservable.updateValue(
+                slideStateObservable
+                        .getValue()
+                        .copy()
+                        .slideJSStatus(1)
+        );
     }
 
     public void storyLoaded(String data) {
         readerViewModel.updateCurrentLoadState(IAMReaderLoadStates.LOADED);
+        slideStateObservable.updateValue(
+                slideStateObservable
+                        .getValue()
+                        .copy()
+                        .slideJSStatus(1)
+        );
     }
 
     public void statisticEvent(
