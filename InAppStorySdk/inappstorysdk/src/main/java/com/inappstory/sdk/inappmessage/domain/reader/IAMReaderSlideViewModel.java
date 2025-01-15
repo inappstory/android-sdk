@@ -40,7 +40,7 @@ import java.util.UUID;
 public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
     private final Observable<IAMReaderSlideState> slideStateObservable =
             new Observable<>(new IAMReaderSlideState());
-    private IAMReaderSlideStatState slideTimeState = new IAMReaderSlideStatState();
+    private final IAMReaderSlideStatState slideTimeState = new IAMReaderSlideStatState();
 
     public SingleTimeEvent<STETypeAndData> singleTimeEvents() {
         return singleTimeEvents;
@@ -99,6 +99,7 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
                 slideTimeState.iterationId()
         );
     }
+
 
     @Override
     public void closeReader() {
@@ -162,6 +163,7 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
     @Override
     public void clear() {
         slideTimeState.clear();
+        slideStateObservable.updateValue(new IAMReaderSlideState());
     }
 
 

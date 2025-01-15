@@ -126,5 +126,6 @@ public class IAMReaderViewModel implements IIAMReaderViewModel {
         this.readerStateObservable.updateValue(
                 new IAMReaderState()
         );
+        this.slideViewModel.clear();
     }
 }
