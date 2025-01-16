@@ -187,12 +187,9 @@ public class IASWebViewClient extends WebViewClient {
             if (response == null)
                 response = getChangedResponse(request.getUrl().toString());
             if (response != null) {
-                InAppStoryManager.showELog("LoadSlideCheck", "shouldInterceptRequestSuccess " + request.getUrl().toString());
                 return response;
             }
         } catch (Exception e) {
-            InAppStoryManager.showELog("LoadSlideCheck",
-                    "shouldInterceptRequestError " + request.getUrl().toString() + " " + e.getMessage());
             e.printStackTrace();
         }
         return super.shouldInterceptRequest(view, request);

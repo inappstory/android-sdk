@@ -1216,8 +1216,6 @@ public class InAppStoryManager {
                 inAppStoryService.getStoryDownloadManager().refreshLocals(Story.StoryType.COMMON);
                 inAppStoryService.getStoryDownloadManager().refreshLocals(Story.StoryType.UGC);
                 inAppStoryService.getStoryDownloadManager().cleanTasks(false);
-                InAppStoryManager.showELog("LoadSlideCheck",
-                        "cleanTasks setUserId");
                 inAppStoryService.setUserId(userId);
                 if (sessionId == null || sessionId.isEmpty()) {
                     service.getListReaderConnector().userIdChanged();
@@ -1256,9 +1254,6 @@ public class InAppStoryManager {
                     inAppStoryService.getFavoriteImages().clear();
                 inAppStoryService.getStoryDownloadManager().refreshLocals(Story.StoryType.COMMON);
                 inAppStoryService.getStoryDownloadManager().refreshLocals(Story.StoryType.UGC);
-
-                InAppStoryManager.showELog("LoadSlideCheck",
-                        "cleanTasks setLocale");
                 inAppStoryService.getStoryDownloadManager().cleanTasks(false);
             }
         });
@@ -1409,8 +1404,6 @@ public class InAppStoryManager {
             public void use(@NonNull final InAppStoryService inAppStoryService) throws Exception {
                 inAppStoryService.listStoriesIds.clear();
                 inAppStoryService.getListSubscribers().clear();
-                InAppStoryManager.showELog("LoadSlideCheck",
-                        "cleanTasks logout");
                 inAppStoryService.getStoryDownloadManager().cleanTasks();
                 ScreensManager.getInstance().forceCloseAllReaders(
                         new ForceCloseReaderCallback() {

@@ -78,17 +78,12 @@ class SlidesDownloader {
         LruDiskCache cache = service.getCommonCache();
         LruDiskCache vodCache = service.getVodCache();
         SlideTask slideTask = pageTasks.get(key);
-
-        InAppStoryManager.showELog("LoadSlideCheck",
-                "slideTask " + slideTask);
         if (slideTask != null) {
             if (slideTask.loadType == 2) {
                 for (ResourceMappingObject object : slideTask.staticResources) {
                     String uniqueKey = StringsUtils.md5(object.getUrl());
                     if (!cache.hasKey(uniqueKey)) {
-                        InAppStoryManager.showELog("LoadSlideCheck",
-                                "slideTask pageTasks.remove static " + uniqueKey);
-                        remove = true;
+                         remove = true;
                     } else {
                         if (cache.getFullFile(uniqueKey) == null) {
                             synchronized (pageTasksLock) {
@@ -101,9 +96,7 @@ class SlidesDownloader {
                 for (ResourceMappingObject object : slideTask.vodResources) {
                     String uniqueKey = object.getFileName();
                     if (!vodCache.hasKey(uniqueKey)) {
-                        InAppStoryManager.showELog("LoadSlideCheck",
-                                "slideTask pageTasks.remove VOD " + uniqueKey);
-                        remove = true;
+                         remove = true;
                     } else {
                         if (vodCache.getFileFromKey(uniqueKey) == null) {
                             synchronized (pageTasksLock) {
@@ -207,9 +200,6 @@ class SlidesDownloader {
         if (service != null) {
             imgPlaceholders.putAll(service.getImagePlaceholdersValuesWithDefaults());
         }
-
-        InAppStoryManager.showELog("LoadSlideCheck",
-                "addStoryPages " + story);
         synchronized (pageTasksLock) {
             int key = story.id;
             int slidesCountToCache;
