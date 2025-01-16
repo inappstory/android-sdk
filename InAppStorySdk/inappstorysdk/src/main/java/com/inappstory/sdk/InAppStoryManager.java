@@ -1180,8 +1180,12 @@ public class InAppStoryManager {
     }
 
     private void setUserIdInner(final String userId) {
-        if (noCorrectUserIdOrDevice(userId)) return;
+        if (userId == null) {
+            showELog(IAS_ERROR_TAG, StringsUtils.getErrorStringFromContext(context, R.string.ias_setter_user_null_error));
+            return;
+        }
         if (userId.equals(this.userId)) return;
+        if (noCorrectUserIdOrDevice(userId)) return;
         InAppStoryService.useInstance(new UseServiceInstanceCallback() {
             @Override
             public void use(@NonNull InAppStoryService inAppStoryService) throws Exception {
