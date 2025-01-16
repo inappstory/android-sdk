@@ -7,6 +7,8 @@ import android.webkit.URLUtil;
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.AppearanceManager;
+import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASDataSettings;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
@@ -48,8 +50,14 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
         if (deviceId == null && (newUserId == null || newUserId.isEmpty())) {
             return;
         }
-        if (StringsUtils.getBytesLength(newUserId) > 255) {
-            // showELog(IAS_ERROR_TAG, StringsUtils.getErrorStringFromContext(context, R.string.ias_setter_user_length_error));
+        if (newUserId == null || StringsUtils.getBytesLength(newUserId) > 255) {
+            InAppStoryManager.showELog(
+                    InAppStoryManager.IAS_ERROR_TAG,
+                    StringsUtils.getErrorStringFromContext(
+                            core.appContext(),
+                            R.string.ias_setter_user_length_error
+                    )
+            );
             return;
         }
         final String currentUserId;
