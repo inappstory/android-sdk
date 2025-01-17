@@ -537,9 +537,26 @@ public class InAppStoryManager implements IASBackPressHandler {
 
     public final static String IAS_ERROR_TAG = "InAppStory_SDK_error";
 
+    private boolean isInitialized = false;
+    private boolean isInitProcess = false;
+
+    private final Object initLock = new Object();
+
+    public boolean isInitialized() {
+        synchronized (initLock) {
+            return isInitialized;
+        }
+    }
+
+    public boolean isInitializedOrInitProcess() {
+        synchronized (initLock) {
+            return isInitialized || isInitProcess;
+        }
+    }
 
     private void build(final Builder builder) {
         Context context = core.appContext();
+
         Integer errorStringId = null;
         if (context == null) {
             errorStringId = R.string.ias_context_is_null;
@@ -568,26 +585,46 @@ public class InAppStoryManager implements IASBackPressHandler {
                     R.string.ias_min_free_space_error));
             return;
         }
-        core.settingsAPI().setUserId(builder.userId);
-        core.contentLoader().setCacheSizes();
-        String domain = new HostFromSecretKey(
-                builder.apiKey
-        ).get(builder.sandbox);
-        this.isSandbox = builder.sandbox;
-        initManager(
-                context,
-                domain,
-                builder.apiKey() != null ? builder.apiKey() : context.getResources().getString(R.string.csApiKey),
-                builder.testKey() != null ? builder.testKey() : null,
-                builder.userId(),
-                builder.locale(),
-                builder.gameDemoMode(),
-                builder.isDeviceIdEnabled(),
-                builder.tags() != null ? builder.tags() : null,
-                builder.placeholders() != null ? builder.placeholders() : null,
-                builder.imagePlaceholders() != null ? builder.imagePlaceholders() : null
-        );
-        new ExceptionManager(core).sendSavedException();
+        synchronized (initLock) {
+            if (isInitProcess)  {
+                showELog(IAS_ERROR_TAG, "Previous init process still not finished");
+                return;
+            }
+            isInitialized = false;
+            isInitProcess = true;
+        }
+        try {
+            core.settingsAPI().setUserId(builder.userId);
+            core.contentLoader().setCacheSizes();
+            String domain = new HostFromSecretKey(
+                    builder.apiKey
+            ).get(builder.sandbox);
+            this.isSandbox = builder.sandbox;
+            initManager(
+                    context,
+                    domain,
+                    builder.apiKey() != null ? builder.apiKey() : context.getResources().getString(R.string.csApiKey),
+                    builder.testKey() != null ? builder.testKey() : null,
+                    builder.userId(),
+                    builder.locale(),
+                    builder.gameDemoMode(),
+                    builder.isDeviceIdEnabled(),
+                    builder.tags() != null ? builder.tags() : null,
+                    builder.placeholders() != null ? builder.placeholders() : null,
+                    builder.imagePlaceholders() != null ? builder.imagePlaceholders() : null
+            );
+            new ExceptionManager(core).sendSavedException();
+            synchronized (initLock) {
+                isInitialized = true;
+                isInitProcess = false;
+            }
+        } catch (Exception e) {
+            synchronized (initLock) {
+                isInitialized = false;
+                isInitProcess = false;
+            }
+        }
+
     }
 
     public void preloadGames() {
@@ -680,6 +717,7 @@ public class InAppStoryManager implements IASBackPressHandler {
                 .testKey(testKey)
                 .host(cmsUrl);
         core.network().setBaseUrl(cmsUrl);
+
     }
 
 
