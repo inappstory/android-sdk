@@ -1,5 +1,11 @@
 Change Log
-==========
+========== 
+
+Version *1.20.7 (957)*
+----------------------------
+* Fixed: NPE in setUserId
+* Fixed: NPE in external API
+* Fixed: Disable overscroll for WebViews (slider widget bug)
 
 Version *1.20.6 (956)*
 ----------------------------
