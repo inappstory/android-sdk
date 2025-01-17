@@ -227,6 +227,8 @@ public class InAppStoryManager implements IASBackPressHandler {
                 core.screensManager()
                         .getStoryScreenHolder()
                         .closeScreenWithAction(CloseStory.CUSTOM);
+                core.screensManager().getIAMScreenHolder()
+                        .closeScreen();
             }
         });
     }
@@ -250,6 +252,8 @@ public class InAppStoryManager implements IASBackPressHandler {
                 } else {
                     core.screensManager().getStoryScreenHolder()
                             .closeScreenWithAction(CloseStory.CUSTOM);
+                    core.screensManager().getIAMScreenHolder()
+                            .closeScreen();
                 }
             }
         });
