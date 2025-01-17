@@ -44,7 +44,7 @@ public class IASWebView extends WebView {
     protected void init() {
         getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE);
         setBackgroundColor(getResources().getColor(R.color.black));
-
+        setOverScrollMode(OVER_SCROLL_NEVER);
         setVerticalScrollBarEnabled(false);
         setHorizontalScrollBarEnabled(false);
         setLayerType(View.LAYER_TYPE_HARDWARE, null);
