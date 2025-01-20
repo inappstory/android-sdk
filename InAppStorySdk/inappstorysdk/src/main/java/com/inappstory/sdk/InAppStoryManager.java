@@ -586,7 +586,6 @@ public class InAppStoryManager implements IASBackPressHandler {
             isInitProcess = true;
         }
         try {
-            core.settingsAPI().setUserId(builder.userId);
             core.contentLoader().setCacheSizes();
             String domain = new HostFromSecretKey(
                     builder.apiKey
@@ -598,6 +597,7 @@ public class InAppStoryManager implements IASBackPressHandler {
                     builder.apiKey() != null ? builder.apiKey() : context.getResources().getString(R.string.csApiKey),
                     builder.testKey() != null ? builder.testKey() : null,
                     builder.userId(),
+                    builder.userSign(),
                     builder.locale(),
                     builder.gameDemoMode(),
                     builder.isDeviceIdEnabled(),
@@ -637,6 +637,10 @@ public class InAppStoryManager implements IASBackPressHandler {
         core.settingsAPI().setUserId(userId);
     }
 
+    public void setUserId(@NonNull String userId, String userSign) {
+        core.settingsAPI().setUserId(userId, userSign);
+    }
+
     public String getUserId() {
         return ((IASDataSettingsHolder) core.settingsAPI()).userId();
     }
@@ -673,6 +677,7 @@ public class InAppStoryManager implements IASBackPressHandler {
             String apiKey,
             String testKey,
             String userId,
+            String userSign,
             Locale locale,
             boolean gameDemoMode,
             boolean isDeviceIDEnabled,
@@ -681,7 +686,7 @@ public class InAppStoryManager implements IASBackPressHandler {
             Map<String, ImagePlaceholderValue> imagePlaceholders
     ) {
         IASDataSettings settings = core.settingsAPI();
-        settings.setUserId(userId);
+        settings.setUserId(userId, userSign);
         settings.setLang(locale);
         settings.setTags(tags);
         if (isDeviceIDEnabled) {
@@ -972,6 +977,10 @@ public class InAppStoryManager implements IASBackPressHandler {
             return userId;
         }
 
+        public String userSign() {
+            return userSign;
+        }
+
         public String apiKey() {
             return apiKey;
         }
@@ -1014,6 +1023,7 @@ public class InAppStoryManager implements IASBackPressHandler {
 
         int cacheSize;
         String userId;
+        String userSign;
         String apiKey;
         String testKey;
         Locale locale = Locale.getDefault();
@@ -1082,6 +1092,12 @@ public class InAppStoryManager implements IASBackPressHandler {
          * @param userId (userId) value for user id. Can't be longer than 255 characters.
          * @return {@link Builder}
          */
+        public Builder userId(@NonNull String userId, String userSign) {
+            Builder.this.userId = userId;
+            Builder.this.userSign = userSign;
+            return Builder.this;
+        }
+
         public Builder userId(@NonNull String userId) {
             Builder.this.userId = userId;
             return Builder.this;

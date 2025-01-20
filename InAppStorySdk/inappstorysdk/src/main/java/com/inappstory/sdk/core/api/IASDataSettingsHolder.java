@@ -13,6 +13,7 @@ public interface IASDataSettingsHolder {
     IAppVersion externalAppVersion();
     String deviceId();
     String userId();
+    String userSign();
     Locale lang();
     boolean isSoundOn();
     Map<String, String> placeholders();

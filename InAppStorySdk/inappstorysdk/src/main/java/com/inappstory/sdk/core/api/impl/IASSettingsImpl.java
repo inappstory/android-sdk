@@ -25,6 +25,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
@@ -36,6 +37,7 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
     private final List<String> tags = new ArrayList<>();
     private String deviceId = null;
     private String userId;
+    private String userSign;
     private final Object settingsLock = new Object();
     private IAppVersion externalAppVersion;
 
@@ -46,7 +48,7 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
     }
 
     @Override
-    public void setUserId(final String newUserId) {
+    public void setUserId(final String newUserId, final String newUserSign) {
         if (deviceId == null && (newUserId == null || newUserId.isEmpty())) {
             return;
         }
@@ -64,7 +66,10 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
         final Locale currentLang;
         synchronized (settingsLock) {
             currentUserId = userId;
-            if (currentUserId != null && currentUserId.equals(newUserId)) return;
+            if (currentUserId != null && currentUserId.equals(newUserId)) {
+                if (Objects.equals(userSign, newUserSign)) return;
+            }
+            userSign = newUserSign;
             currentLang = lang;
             userId = newUserId;
         }
@@ -315,6 +320,11 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
     }
 
     @Override
+    public void setUserId(String userId) {
+        setUserId(userId, null);
+    }
+
+    @Override
     public IAppVersion externalAppVersion() {
         return externalAppVersion;
     }
@@ -330,6 +340,13 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
     public String userId() {
         synchronized (settingsLock) {
             return userId;
+        }
+    }
+
+    @Override
+    public String userSign() {
+        synchronized (settingsLock) {
+            return userSign;
         }
     }
 

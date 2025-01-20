@@ -41,6 +41,7 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
 public class SessionManager {
     private final IASCore core;
@@ -235,6 +236,7 @@ public class SessionManager {
                     public void success() {
                         final String sessionOpenUID = core.statistic().profiling().addTask("api_session_open");
                         final String initialUserId = dataSettingsHolder.userId();
+                        final String initialUserSign = dataSettingsHolder.userSign();
                         core.network().enqueue(
                                 core.network().getApi().sessionOpen(
                                         SESSION_FIELDS,
@@ -253,12 +255,14 @@ public class SessionManager {
                                         appPackageId,
                                         appVersion,
                                         appBuild,
-                                        initialUserId
+                                        initialUserId,
+                                        initialUserSign
                                 ),
                                 new NetworkCallback<SessionResponse>() {
                                     @Override
                                     public void onSuccess(SessionResponse response) {
                                         String serviceUserId = dataSettingsHolder.userId();
+                                        String serviceUserSign = dataSettingsHolder.userSign();
                                         String currentSession = getSession().getSessionId();
                                         if (initialUserId == null) {
                                             if (serviceUserId != null) {
@@ -273,7 +277,9 @@ public class SessionManager {
                                                 return;
                                             }
                                         } else {
-                                            if (!initialUserId.equals(serviceUserId)) {
+                                            if (!initialUserId.equals(serviceUserId) ||
+                                                    !Objects.equals(initialUserSign, serviceUserSign)
+                                            ) {
                                                 closeSession(
                                                         false,
                                                         true,

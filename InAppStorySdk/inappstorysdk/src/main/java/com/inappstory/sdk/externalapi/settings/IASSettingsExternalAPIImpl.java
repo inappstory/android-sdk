@@ -18,15 +18,29 @@ import java.util.Map;
 
 public class IASSettingsExternalAPIImpl implements IASDataSettings {
     @Override
-    public void deviceId(String deviceId) {
-        throw new NoSuchMethodError();
+    public void deviceId(final String deviceId) {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.settingsAPI().deviceId(deviceId);
+            }
+        });
     }
 
     public void setUserId(final String userId) {
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-                core.settingsAPI().setUserId(userId);
+                core.settingsAPI().setUserId(userId, null);
+            }
+        });
+    }
+
+    public void setUserId(final String userId, final String sign) {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.settingsAPI().setUserId(userId, sign);
             }
         });
     }
@@ -42,8 +56,13 @@ public class IASSettingsExternalAPIImpl implements IASDataSettings {
     }
 
     @Override
-    public void gameDemoMode(boolean gameDemoMode) {
-        throw new NoSuchMethodError();
+    public void gameDemoMode(final boolean gameDemoMode) {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.settingsAPI().gameDemoMode(gameDemoMode);
+            }
+        });
     }
 
     public void setLang(final Locale lang) {
@@ -97,22 +116,43 @@ public class IASSettingsExternalAPIImpl implements IASDataSettings {
     }
 
     @Override
-    public void addTags(List<String> tags) {
-        throw new NoSuchMethodError();
+    public void addTags(final List<String> tags) {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.settingsAPI().addTags(tags);
+            }
+        });
     }
 
     @Override
-    public void removeTags(List<String> tags) {
-        throw new NoSuchMethodError();
+    public void removeTags(final List<String> tags) {
+
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.settingsAPI().removeTags(tags);
+            }
+        });
     }
 
     @Override
-    public void setPlaceholder(String key, String value) {
-        throw new NoSuchMethodError();
+    public void setPlaceholder(final String key, final String value) {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.settingsAPI().setPlaceholder(key, value);
+            }
+        });
     }
 
     @Override
-    public void setImagePlaceholder(String key, ImagePlaceholderValue value) {
-        throw new NoSuchMethodError();
+    public void setImagePlaceholder(final String key, final ImagePlaceholderValue value) {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.settingsAPI().setImagePlaceholder(key, value);
+            }
+        });
     }
 }

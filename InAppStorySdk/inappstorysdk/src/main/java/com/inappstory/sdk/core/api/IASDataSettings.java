@@ -12,6 +12,7 @@ import java.util.Map;
 
 public interface IASDataSettings {
     void deviceId(String deviceId);
+    void setUserId(String userId, String sign);
     void setUserId(String userId);
     void setExternalAppVersion(IAppVersion externalAppVersion);
     void gameDemoMode(boolean gameDemoMode);
