@@ -285,7 +285,7 @@ public class InAppStoryManager implements IASBackPressHandler {
                 .isOpened();
     }
 
-    public static boolean isIAMReaderOpened() {
+    public static boolean isInAppMessageReaderOpened() {
         return getInstance() != null && getInstance()
                 .core
                 .screensManager()
@@ -458,23 +458,11 @@ public class InAppStoryManager implements IASBackPressHandler {
         core.settingsAPI().setPlaceholders(newPlaceholders);
     }
 
-    public Map<String, String> getPlaceholdersCopy() {
-        return new HashMap<>(getPlaceholders());
-    }
-
     /**
      * Returns map with all default strings replacements
      */
     public Map<String, String> getPlaceholders() {
         return ((IASDataSettingsHolder) core.settingsAPI()).placeholders();
-    }
-
-    public Map<String, ImagePlaceholderValue> getImagePlaceholdersValues() {
-        return ((IASDataSettingsHolder) core.settingsAPI()).imagePlaceholders();
-    }
-
-    public Map<String, Pair<ImagePlaceholderValue, ImagePlaceholderValue>> getImagePlaceholdersValuesWithDefaults() {
-        return ((IASDataSettingsHolder) core.settingsAPI()).imagePlaceholdersWithSessionDefaults();
     }
 
 
