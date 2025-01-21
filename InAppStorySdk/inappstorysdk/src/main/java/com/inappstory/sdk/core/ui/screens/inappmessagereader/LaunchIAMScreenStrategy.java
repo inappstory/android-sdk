@@ -5,6 +5,7 @@ import android.content.Context;
 import androidx.fragment.app.FragmentManager;
 
 import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.data.IInAppMessage;
 import com.inappstory.sdk.core.data.IReaderContent;
 import com.inappstory.sdk.core.inappmessages.InAppMessageByIdCallback;
@@ -24,9 +25,13 @@ import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenInAppMessageReader;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenReader;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
+import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 import com.inappstory.sdk.stories.utils.Sizes;
 
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
     private final IASCore core;
@@ -114,6 +119,32 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
     }
 
     private boolean checkContentForShownFrequency(IInAppMessage inAppMessage) {
+        if (inAppMessage.displayFrom() > 0 && System.currentTimeMillis() < inAppMessage.displayFrom())
+            return false;
+        if (inAppMessage.displayTo() > 0 && System.currentTimeMillis() > inAppMessage.displayTo())
+            return false;
+        IASDataSettingsHolder settingsHolder = (IASDataSettingsHolder) core.settingsAPI();
+        String localOpensKey = "iam_opened";
+        if (settingsHolder.userId() != null) {
+            localOpensKey += settingsHolder.userId();
+        }
+        Set<String> opens = core.sharedPreferencesAPI().getStringSet(localOpensKey);
+        Integer openedId = null;
+        Long lastTime = null;
+        if (opens != null) {
+            for (String open : opens) {
+                IAMShownTime shownTime = new IAMShownTime(open);
+                if (shownTime.iamId == inAppMessage.id()) {
+                    openedId = shownTime.iamId;
+                    lastTime = shownTime.latestShownTime;
+                }
+            }
+        }
+        if (openedId == null) return true;
+        int frequencyLimit = inAppMessage.frequencyLimit();
+        if (frequencyLimit == -1) return false;
+        if (frequencyLimit > 0)
+            return (System.currentTimeMillis() - lastTime) >= 86400000L * frequencyLimit;
         return true;
     }
 
@@ -227,17 +258,6 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
         }
         if (!(openReader instanceof IOpenInAppMessageReader)) return;
         InAppMessageAppearance appearance = inAppMessage.inAppMessageAppearance();
-        /*switch (inAppMessage.screenType()) {
-            case POPUP:
-                appearance = new InAppMessagePopupSettings();
-                break;
-            case FULLSCREEN:
-                appearance = new InAppMessageFullscreenSettings();
-                break;
-            default:
-                appearance = new InAppMessageBottomSheetSettings();
-                break;
-        }*/
         inAppMessageScreenActions.readerIsOpened();
         core.screensManager().iamReaderViewModel().initState(
                 new IAMReaderState()
@@ -247,6 +267,7 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
                         .showOnlyIfLoaded(inAppMessageOpenSettings.showOnlyIfLoaded())
                         .appearance(appearance)
         );
+        saveIAMOpened(inAppMessage.id());
         ((IOpenInAppMessageReader) openReader).onOpen(
                 inAppMessage,
                 inAppMessageOpenSettings.showOnlyIfLoaded(),
@@ -254,6 +275,34 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
                 containerId,
                 inAppMessageScreenActions
         );
+    }
+
+    private void saveIAMOpened(int iamId) {
+        IASDataSettingsHolder settingsHolder = (IASDataSettingsHolder) core.settingsAPI();
+        String localOpensKey = "iam_opened";
+        if (settingsHolder.userId() != null) {
+            localOpensKey += settingsHolder.userId();
+        }
+        Set<String> opens = core.sharedPreferencesAPI().getStringSet(localOpensKey);
+        IAMShownTime savedShownTime = null;
+        if (opens != null) {
+            for (Iterator<String> iterator = opens.iterator(); iterator.hasNext(); ) {
+                IAMShownTime shownTime = new IAMShownTime(iterator.next());
+                if (shownTime.iamId == iamId) {
+                    shownTime.updateLatestShownTime();
+                    savedShownTime = shownTime;
+                    iterator.remove();
+                    break;
+                }
+            }
+        } else {
+            opens = new HashSet<>();
+        }
+        if (savedShownTime == null) {
+            savedShownTime = new IAMShownTime(iamId);
+        }
+        opens.add(savedShownTime.getSaveKey());
+        core.sharedPreferencesAPI().saveStringSet(localOpensKey, opens);
     }
 
     private void launchScreenError(String message) {

@@ -31,7 +31,13 @@ public class InAppMessage implements IInAppMessage {
     public String layout;
 
     @SerializedName("frequency_limit")
-    public int frequencyLimit;
+    public Integer frequencyLimit;
+
+    @SerializedName("display_to")
+    public Long displayTo;
+
+    @SerializedName("display_from")
+    public Long displayFrom;
 
     @SerializedName("slides")
     public List<InAppMessageSlide> slides;
@@ -209,7 +215,17 @@ public class InAppMessage implements IInAppMessage {
 
     @Override
     public int frequencyLimit() {
-        return frequencyLimit;
+        return frequencyLimit != null ? frequencyLimit : -1;
+    }
+
+    @Override
+    public long displayFrom() {
+        return displayFrom != null ? displayFrom : -1;
+    }
+
+    @Override
+    public long displayTo() {
+        return displayTo != null ? displayTo : -1;
     }
 
     @Override
@@ -239,7 +255,7 @@ public class InAppMessage implements IInAppMessage {
     @Override
     public boolean belongsToEvent(@NonNull String eventToCompare) {
         if (events != null) {
-            for (InAppMessageEvent event: events) {
+            for (InAppMessageEvent event : events) {
                 if (Objects.equals(event.name, eventToCompare)) {
                     return true;
                 }

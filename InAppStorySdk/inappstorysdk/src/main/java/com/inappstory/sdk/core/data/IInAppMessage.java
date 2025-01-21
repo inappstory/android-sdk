@@ -7,6 +7,8 @@ public interface IInAppMessage extends IReaderContent {
     int id();
     boolean hasPlaceholders();
     int frequencyLimit();
+    long displayFrom();
+    long displayTo();
     IAMUiContainerType screenType();
     InAppMessageAppearance inAppMessageAppearance();
     boolean belongsToEvent(String eventToCompare);
