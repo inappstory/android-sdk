@@ -6,6 +6,7 @@ import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
+import com.inappstory.sdk.core.data.IFavoriteItem;
 import com.inappstory.sdk.core.dataholders.IContentHolder;
 import com.inappstory.sdk.core.data.IListItemContent;
 import com.inappstory.sdk.core.data.IReaderContent;
@@ -318,19 +319,21 @@ public class StoryDownloadManager {
                                 public void onSuccess(List<Story> favorites) {
                                     core.statistic().profiling().setReady(loadFavUID);
                                     contentHolder.clearAllFavorites(type);
+                                    List<IFavoriteItem> newFavItems = new ArrayList<>();
                                     for (int i = 0; i < favorites.size(); i++) {
                                         IListItemContent listItemContent = favorites.get(i);
-                                        contentHolder.favoriteItems().setByIdAndType(
-                                                new StoryFavoriteImage(
-                                                        listItemContent.id(),
-                                                        listItemContent.imageCoverByQuality(Image.QUALITY_MEDIUM),
-                                                        listItemContent.backgroundColor()
-                                                ),
+                                        newFavItems.add(new StoryFavoriteImage(
                                                 listItemContent.id(),
-                                                ContentType.STORY
-                                        );
+                                                listItemContent.imageCoverByQuality(Image.QUALITY_MEDIUM),
+                                                listItemContent.backgroundColor()
+                                        ));
+
                                         contentHolder.favorite(listItemContent.id(), type, true);
                                     }
+                                    contentHolder.favoriteItems().setByType(
+                                            newFavItems,
+                                            ContentType.STORY
+                                    );
                                     setLocalsOpened(ContentType.STORY);
                                     if (favorites.size() > 0) {
                                         if (callback != null) {
