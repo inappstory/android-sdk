@@ -220,12 +220,12 @@ public class InAppMessage implements IInAppMessage {
 
     @Override
     public long displayFrom() {
-        return displayFrom != null ? displayFrom : -1;
+        return displayFrom != null ? (displayFrom * 1000) : -1;
     }
 
     @Override
     public long displayTo() {
-        return displayTo != null ? displayTo : -1;
+        return displayTo != null ? (displayTo * 1000) : -1;
     }
 
     @Override
