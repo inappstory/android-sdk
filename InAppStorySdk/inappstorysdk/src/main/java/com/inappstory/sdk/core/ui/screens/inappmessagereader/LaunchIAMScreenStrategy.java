@@ -141,10 +141,10 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
             }
         }
         if (openedId == null) return true;
-        int frequencyLimit = inAppMessage.frequencyLimit();
+        long frequencyLimit = inAppMessage.frequencyLimit();
         if (frequencyLimit == -1) return false;
         if (frequencyLimit > 0)
-            return (System.currentTimeMillis() - lastTime) >= 86400000L * frequencyLimit;
+            return (System.currentTimeMillis() - lastTime) >= frequencyLimit;
         return true;
     }
 

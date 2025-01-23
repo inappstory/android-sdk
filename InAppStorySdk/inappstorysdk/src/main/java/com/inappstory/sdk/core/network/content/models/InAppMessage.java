@@ -31,7 +31,7 @@ public class InAppMessage implements IInAppMessage {
     public String layout;
 
     @SerializedName("frequency_limit")
-    public Integer frequencyLimit;
+    public Long frequencyLimit;
 
     @SerializedName("display_to")
     public Long displayTo;
@@ -214,8 +214,8 @@ public class InAppMessage implements IInAppMessage {
     }
 
     @Override
-    public int frequencyLimit() {
-        return frequencyLimit != null ? frequencyLimit : -1;
+    public long frequencyLimit() {
+        return frequencyLimit != null ? frequencyLimit * 1000 : -1L;
     }
 
     @Override
