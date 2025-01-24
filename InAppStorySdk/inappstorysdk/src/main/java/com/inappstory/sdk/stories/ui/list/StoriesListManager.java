@@ -95,7 +95,7 @@ public class StoriesListManager implements ListManager {
             @Override
             public void run() {
                 if (list == null) return;
-                list.refreshList();
+                list.refresh();
             }
         });
     }

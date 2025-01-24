@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Rect;
 import android.os.Handler;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
@@ -27,7 +28,8 @@ import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.IASStatisticStoriesV1;
 import com.inappstory.sdk.core.data.IListItemContent;
-import com.inappstory.sdk.core.storieslist.StoriesListVMState;
+import com.inappstory.sdk.core.dataholders.StoriesRequestKey;
+import com.inappstory.sdk.core.storieslist.StoriesRequestResult;
 import com.inappstory.sdk.core.ui.screens.storyreader.StoryScreenHolder;
 import com.inappstory.sdk.network.models.RequestLocalParameters;
 import com.inappstory.sdk.stories.api.models.ContentType;
@@ -46,6 +48,7 @@ import com.inappstory.sdk.ugc.list.OnUGCItemClick;
 import com.inappstory.sdk.utils.StringsUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
@@ -82,20 +85,13 @@ public class StoriesList extends RecyclerView {
         synchronized (feedLock) {
             if (!isFavoriteList && feed != null && !feed.isEmpty()) {
                 if (this.feed != null && !this.feed.isEmpty() && !this.feed.equals(feed)) {
-                    InAppStoryManager.useCore(new UseIASCoreCallback() {
-                        @Override
-                        public void use(@NonNull IASCore core) {
-                            if (cacheId != null)
-                                core.storiesListVMHolder().removeVM(cacheId);
-                        }
-                    });
                     reloadStories = true;
                 }
                 this.feed = feed;
             }
         }
-        if (this.adapter != null && reloadStories) {
-            refreshList();
+        if (reloadStories) {
+            loadStories();
         }
     }
 
@@ -493,9 +489,24 @@ public class StoriesList extends RecyclerView {
 
     }
 
-    void refreshList() {
+    public void refresh() {
         adapter = null;
-        loadStoriesInner();
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                StoriesRequestKey key = null;
+                if (isFavoriteList) {
+                    key = new StoriesRequestKey(true);
+                } else {
+                    IASDataSettingsHolder settingsHolder = (IASDataSettingsHolder) core.settingsAPI();
+                    List<String> nonSortedTags = new ArrayList<>(settingsHolder.tags());
+                    Collections.sort(nonSortedTags);
+                    final String tagsHash = StringsUtils.md5(TextUtils.join(",", nonSortedTags));
+                    key = new StoriesRequestKey(cacheId, feed, tagsHash);
+                }
+                loadStoriesInner(key);
+            }
+        });
     }
 
     public class RecyclerTouchListener implements RecyclerView.OnItemTouchListener {
@@ -676,24 +687,44 @@ public class StoriesList extends RecyclerView {
         loadStoriesLocal();
     }
 
+
     private String cacheId;
 
     public void setCacheId(String id) {
         this.cacheId = id;
     }
 
+    public void clearCachedData() {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                if (isFavoriteList) {
+                    core.storiesListVMHolder().removeFavoriteResult();
+                } else {
+                    core.storiesListVMHolder().removeResultByIdAndFeed(cacheId, feed);
+                }
+            }
+        });
+    }
+
     private void loadStoriesLocal() {
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-                if (cacheId == null || cacheId.isEmpty()) {
-                    loadStoriesInner();
-                    return;
+                StoriesRequestKey key = null;
+                if (isFavoriteList) {
+                    key = new StoriesRequestKey(true);
+                } else {
+                    IASDataSettingsHolder settingsHolder = (IASDataSettingsHolder) core.settingsAPI();
+                    List<String> nonSortedTags = new ArrayList<>(settingsHolder.tags());
+                    Collections.sort(nonSortedTags);
+                    final String tagsHash = StringsUtils.md5(TextUtils.join(",", nonSortedTags));
+                    key = new StoriesRequestKey(cacheId, feed, tagsHash);
                 }
-                StoriesListVMState state = core.storiesListVMHolder().getVMState(cacheId);
                 List<Integer> storiesIds;
+                StoriesRequestResult state = core.storiesListVMHolder().getStoriesRequestResult(key);
                 if (state == null || (storiesIds = state.getStoriesIds()) == null) {
-                    loadStoriesInner();
+                    loadStoriesInner(key);
                     return;
                 }
                 setOrRefreshAdapter(storiesIds);
@@ -796,14 +827,14 @@ public class StoriesList extends RecyclerView {
                 int itemCount = state.getItemCount();
                 if (position == 0)
                     outRect.left = margin;
-                if (position == itemCount-1) {
+                if (position == itemCount - 1) {
                     outRect.right = margin;
                 }
             }
         });
     }
 
-    private void loadStoriesInner() {
+    private void loadStoriesInner(final StoriesRequestKey key) {
 
         InAppStoryManager manager = InAppStoryManager.getInstance();
         if (manager == null) {
@@ -826,12 +857,10 @@ public class StoriesList extends RecyclerView {
         lcallback = new LoadStoriesCallback() {
             @Override
             public void storiesLoaded(final List<Integer> storiesIds) {
-                if (cacheId != null && !cacheId.isEmpty()) {
-                    core.storiesListVMHolder().setVMState(
-                            cacheId,
-                            new StoriesListVMState(storiesIds)
-                    );
-                }
+                core.storiesListVMHolder().setStoriesRequestResult(
+                        key,
+                        new StoriesRequestResult(storiesIds)
+                );
                 core.statistic().profiling().setReady(listUid);
                 post(new Runnable() {
                     @Override

@@ -2,15 +2,15 @@ package com.inappstory.sdk.core.storieslist;
 
 import java.util.List;
 
-public class StoriesListVMState {
+public class StoriesRequestResult {
 
     private List<Integer> storiesIds;
 
-    public StoriesListVMState(List<Integer> storiesIds) {
+    public StoriesRequestResult(List<Integer> storiesIds) {
         this.storiesIds = storiesIds;
     }
 
-    public StoriesListVMState() {
+    public StoriesRequestResult() {
     }
 
     public List<Integer> getStoriesIds() {

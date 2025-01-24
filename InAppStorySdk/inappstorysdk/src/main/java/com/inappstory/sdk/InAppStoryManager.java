@@ -23,13 +23,9 @@ import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.IASDataSettings;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.IASStatisticStoriesV1;
-import com.inappstory.sdk.core.exceptions.NotImplementedMethodException;
 import com.inappstory.sdk.inappmessage.InAppMessageLoadCallback;
 import com.inappstory.sdk.inappmessage.InAppMessageOpenSettings;
 import com.inappstory.sdk.inappmessage.InAppMessageScreenActions;
-import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderState;
-import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderUIStates;
-import com.inappstory.sdk.inappmessage.domain.reader.IIAMReaderViewModel;
 import com.inappstory.sdk.lrudiskcache.CacheSize;
 import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.utils.HostFromSecretKey;
@@ -66,7 +62,6 @@ import com.inappstory.sdk.utils.StringsUtils;
 import com.inappstory.sdk.utils.WebViewUtils;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -645,8 +640,16 @@ public class InAppStoryManager implements IASBackPressHandler {
         return ((IASDataSettingsHolder) core.settingsAPI()).userId();
     }
 
-    public void clearCachedList(String id) {
-        core.storiesListVMHolder().removeVM(id);
+    public void clearCachedListById(String cacheId) {
+        core.storiesListVMHolder().removeResultById(cacheId);
+    }
+
+    public void clearCachedListByFeed(String feed) {
+        core.storiesListVMHolder().removeResultByFeed(feed);
+    }
+
+    public void clearCachedListByIdAndFeed(String cacheId, String feed) {
+        core.storiesListVMHolder().removeResultByIdAndFeed(cacheId, feed);
     }
 
     public void setOpenStoriesReader(@NonNull IOpenStoriesReader openStoriesReader) {

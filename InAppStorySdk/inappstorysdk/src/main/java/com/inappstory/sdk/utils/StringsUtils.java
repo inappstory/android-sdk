@@ -48,7 +48,7 @@ public class StringsUtils {
 
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
-        }
+        } catch (Exception e) {}
         return "";
     }
 

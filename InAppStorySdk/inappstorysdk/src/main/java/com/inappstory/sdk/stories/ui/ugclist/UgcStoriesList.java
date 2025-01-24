@@ -4,6 +4,7 @@ import static java.util.UUID.randomUUID;
 
 import android.content.Context;
 import android.os.Handler;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
@@ -23,7 +24,8 @@ import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.IASStatisticStoriesV1;
 import com.inappstory.sdk.core.data.IListItemContent;
-import com.inappstory.sdk.core.storieslist.StoriesListVMState;
+import com.inappstory.sdk.core.dataholders.StoriesRequestKey;
+import com.inappstory.sdk.core.storieslist.StoriesRequestResult;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.core.network.content.callbacks.LoadStoriesCallback;
@@ -41,6 +43,7 @@ import com.inappstory.sdk.ugc.list.OnUGCItemClick;
 import com.inappstory.sdk.utils.StringsUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -266,10 +269,20 @@ public class UgcStoriesList extends RecyclerView {
     }
 
 
-    void refreshList() {
-
+    public void refresh() {
         adapter = null;
-        loadStoriesInner(lastPayload);
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                IASDataSettingsHolder settingsHolder = (IASDataSettingsHolder) core.settingsAPI();
+                List<String> nonSortedTags = new ArrayList<>(settingsHolder.tags());
+                Collections.sort(nonSortedTags);
+                final String tagsHash = StringsUtils.md5(TextUtils.join(",", nonSortedTags));
+                StoriesRequestKey key = new StoriesRequestKey(cacheId, "ugc_feed", tagsHash);
+                loadStoriesInner(lastPayload, key);
+            }
+        });
+
     }
 
     String lastPayload = "";
@@ -414,15 +427,15 @@ public class UgcStoriesList extends RecyclerView {
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-                if (cacheId == null
-                        || cacheId.isEmpty()) {
-                    loadStoriesInner(payload);
-                    return;
-                }
-                StoriesListVMState state = core.storiesListVMHolder().getVMState(cacheId);
+                IASDataSettingsHolder settingsHolder = (IASDataSettingsHolder) core.settingsAPI();
+                List<String> nonSortedTags = new ArrayList<>(settingsHolder.tags());
+                Collections.sort(nonSortedTags);
+                final String tagsHash = StringsUtils.md5(TextUtils.join(",", nonSortedTags));
+                StoriesRequestKey key = new StoriesRequestKey(cacheId, "ugc_feed", tagsHash);
+                StoriesRequestResult state = core.storiesListVMHolder().getStoriesRequestResult(key);
                 List<Integer> storiesIds;
                 if (state == null || (storiesIds = state.getStoriesIds()) == null) {
-                    loadStoriesInner(payload);
+                    loadStoriesInner(payload, key);
                     return;
                 }
                 checkAppearanceManager();
@@ -485,7 +498,7 @@ public class UgcStoriesList extends RecyclerView {
         setAdapter(adapter);
     }
 
-    private void loadStoriesInner(final String payload) {
+    private void loadStoriesInner(final String payload, final StoriesRequestKey key) {
 
         lastPayload = payload;
         InAppStoryManager manager = InAppStoryManager.getInstance();
@@ -502,19 +515,16 @@ public class UgcStoriesList extends RecyclerView {
 
         final IASCore core = manager.iasCore();
         if (((IASDataSettingsHolder) core.settingsAPI()).noCorrectUserIdOrDevice()) return;
-        final InAppStoryService service = InAppStoryService.getInstance();
 
         checkAppearanceManager();
         final String listUid = core.statistic().profiling().addTask("widget_init");
         lcallback = new LoadStoriesCallback() {
             @Override
             public void storiesLoaded(final List<Integer> storiesIds) {
-                if (cacheId != null && !cacheId.isEmpty()) {
-                    core.storiesListVMHolder().setVMState(
-                            cacheId,
-                            new StoriesListVMState(storiesIds)
-                    );
-                }
+                core.storiesListVMHolder().setStoriesRequestResult(
+                        key,
+                        new StoriesRequestResult(storiesIds)
+                );
                 post(new Runnable() {
                     @Override
                     public void run() {
