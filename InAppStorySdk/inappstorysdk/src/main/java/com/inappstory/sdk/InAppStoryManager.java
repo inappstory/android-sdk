@@ -1131,7 +1131,7 @@ public class InAppStoryManager {
         }
         final InAppStoryService inAppStoryService = InAppStoryService.getInstance();
         if (inAppStoryService != null) {
-            inAppStoryService.setUserId(builder.userId);
+            inAppStoryService.setUserId(builder.userId, builder.userSign);
             service.useServiceIfInitialized(new InitializedCallback() {
                 @Override
                 public void onCreated() {
@@ -1179,12 +1179,12 @@ public class InAppStoryManager {
         }
     }
 
-    private void setUserIdInner(final String userId) {
+    private void setUserIdInner(final String userId, final String userSign) {
         if (userId == null) {
             showELog(IAS_ERROR_TAG, StringsUtils.getErrorStringFromContext(context, R.string.ias_setter_user_null_error));
             return;
         }
-        if (userId.equals(this.userId)) return;
+        if (userId.equals(this.userId) && Objects.equals(userSign, this.userSign)) return;
         if (noCorrectUserIdOrDevice(userId)) return;
         InAppStoryService.useInstance(new UseServiceInstanceCallback() {
             @Override
@@ -1194,6 +1194,7 @@ public class InAppStoryManager {
                 localOpensKey = null;
                 final String oldUserId = InAppStoryManager.this.userId;
                 InAppStoryManager.this.userId = userId;
+                InAppStoryManager.this.userSign = userSign;
                 ScreensManager.getInstance().forceCloseAllReaders(
                         new ForceCloseReaderCallback() {
                             @Override
@@ -1216,7 +1217,7 @@ public class InAppStoryManager {
                 inAppStoryService.getStoryDownloadManager().refreshLocals(Story.StoryType.COMMON);
                 inAppStoryService.getStoryDownloadManager().refreshLocals(Story.StoryType.UGC);
                 inAppStoryService.getStoryDownloadManager().cleanTasks(false);
-                inAppStoryService.setUserId(userId);
+                inAppStoryService.setUserId(userId, userSign);
                 if (sessionId == null || sessionId.isEmpty()) {
                     service.getListReaderConnector().userIdChanged();
                 }
@@ -1277,12 +1278,22 @@ public class InAppStoryManager {
      * @param userId (userId) - can't be longer than 255 characters
      */
     public void setUserId(@NonNull String userId) {
-        setUserIdInner(userId);
+        setUserIdInner(userId, null);
+    }
+
+    public void setUserId(@NonNull String userId, String userSign) {
+        setUserIdInner(userId, userSign);
     }
 
     private String userId;
 
+    private String userSign;
+
     public String getUserId() {
+        return userId;
+    }
+
+    public String getUserSign() {
         return userId;
     }
 
@@ -2393,6 +2404,7 @@ public class InAppStoryManager {
 
         int cacheSize;
         String userId;
+        String userSign;
         String apiKey;
         String testKey;
         Locale locale = Locale.getDefault();
@@ -2463,6 +2475,12 @@ public class InAppStoryManager {
          */
         public Builder userId(@NonNull String userId) {
             Builder.this.userId = userId;
+            return Builder.this;
+        }
+
+        public Builder userId(@NonNull String userId, String userSign) {
+            Builder.this.userId = userId;
+            Builder.this.userSign = userSign;
             return Builder.this;
         }
 

@@ -230,6 +230,7 @@ public class SessionManager {
         }
         final String sessionOpenUID = ProfilingManager.getInstance().addTask("api_session_open");
         final String initialUserId = InAppStoryService.getInstance().getUserId();
+        final String initialUserSign = InAppStoryService.getInstance().getUserSign();
         networkClient.enqueue(
                 networkClient.getApi().sessionOpen(
                         SESSION_FIELDS,
@@ -248,7 +249,8 @@ public class SessionManager {
                         appPackageId,
                         appVersion,
                         appBuild,
-                        initialUserId
+                        initialUserId,
+                        initialUserSign
                 ),
                 new NetworkCallback<SessionResponse>() {
                     @Override
@@ -262,6 +264,7 @@ public class SessionManager {
                         )
                             return;
                         String serviceUserId = service.getUserId();
+                        String serviceUserSign = service.getUserSign();
                         String currentSession = response.session.id;
                         if (initialUserId == null) {
                             if (serviceUserId != null) {
@@ -277,8 +280,10 @@ public class SessionManager {
                                 return;
                             }
                         } else {
-                            if (!initialUserId.equals(serviceUserId)) {
-                                InAppStoryManager.showDLog("AdditionalLog", "closeSession: initial user " + initialUserId + ", new user " + serviceUserId);
+                            if (!initialUserId.equals(serviceUserId) ||
+                                    !initialUserSign.equals(serviceUserSign)) {
+                                InAppStoryManager.showDLog("AdditionalLog", "closeSession: initial user " + initialUserId +
+                                        ", initial sign " + initialUserSign + "; new user " + serviceUserId + ", new sign " + serviceUserSign);
                                 closeSession(
                                         false,
                                         true,

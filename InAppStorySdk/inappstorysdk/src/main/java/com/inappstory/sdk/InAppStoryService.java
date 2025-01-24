@@ -202,13 +202,25 @@ public class InAppStoryService {
         }
     }
 
-    public void setUserId(String userId) {
+    public String getUserSign() {
+        synchronized (userIdLock) {
+            if (userSign == null) {
+                InAppStoryManager manager = InAppStoryManager.getInstance();
+                if (manager != null) return manager.getUserSign();
+            }
+            return userSign;
+        }
+    }
+
+    public void setUserId(String userId, String userSign) {
         synchronized (userIdLock) {
             this.userId = userId;
+            this.userSign = userSign;
         }
     }
 
     private String userId;
+    private String userSign;
 
     public String getTagsString() {
         InAppStoryManager manager = InAppStoryManager.getInstance();
