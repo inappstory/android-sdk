@@ -20,10 +20,13 @@ public abstract class NetworkCallback<T> implements Callback<T>, NetworkErrorsHa
         switch (code) {
             case -1:
                 timeoutError();
+                break;
             case -2:
                 connectionError();
+                break;
             case -3:
                 jsonError(message);
+                break;
             case 400:
                 error400(message);
                 break;
@@ -73,9 +76,9 @@ public abstract class NetworkCallback<T> implements Callback<T>, NetworkErrorsHa
                 error502(message);
                 break;
             default:
+                errorDefault(message);
                 break;
         }
-        errorDefault(message);
     }
 
     @Override
