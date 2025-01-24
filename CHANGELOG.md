@@ -1,6 +1,10 @@
 Change Log
 ========== 
 
+Version *1.20.8 (958)*
+----------------------------
+* Added: user sign feature
+
 Version *1.20.7 (957)*
 ----------------------------
 * Fixed: NPE in setUserId
