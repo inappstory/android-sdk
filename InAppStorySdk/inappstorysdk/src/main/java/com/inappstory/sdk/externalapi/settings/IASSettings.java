@@ -21,6 +21,15 @@ public class IASSettings {
         });
     }
 
+    public void setUserId(final String userId, final String userSign) {
+        InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryManager manager) throws Exception {
+                manager.setUserId(userId, userSign);
+            }
+        });
+    }
+
     public void setLang(final Locale lang) {
         InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
             @Override
