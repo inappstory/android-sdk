@@ -400,7 +400,7 @@ class StoryDownloader {
                         core.network().getApi().getUgcStories(
                                 payload,
                                 null,
-                                "slides_count"
+                                "slides,slides_count"
                         ),
                         new NetworkCallback<List<Story>>() {
                             @Override

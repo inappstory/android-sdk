@@ -82,6 +82,7 @@ public class IASOnboardingsImpl implements IASOnboardings {
                                 ApiSettings.getInstance().getTestKey(),
                                 limit,
                                 localTags,
+                                "stories.slides",
                                 requestLocalParameters.userId,
                                 requestLocalParameters.sessionId,
                                 requestLocalParameters.locale

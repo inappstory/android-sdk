@@ -100,7 +100,7 @@ public class DummyApiInterface implements ApiInterface {
     }
 
     @Override
-    public Request getOnboardingFeed(String feed, String test, Integer limit, String tags, String xUserId, String xSessionId, String lang) {
+    public Request getOnboardingFeed(String feed, String test, Integer limit, String tags, String expand, String xUserId, String xSessionId, String lang) {
         return new DummyRequest();
     }
 

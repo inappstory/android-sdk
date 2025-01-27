@@ -129,6 +129,7 @@ public interface ApiInterface {
             @Query("test") String test,
             @Query("limit") Integer limit,
             @Query("tags") String tags,
+            @Query("expand") String expand,
             @ReplaceHeader(HeadersKeys.USER_ID) String xUserId,
             @ReplaceHeader(HeadersKeys.AUTH_SESSION_ID) String xSessionId,
             @ReplaceHeader(HeadersKeys.ACCEPT_LANGUAGE) String lang
