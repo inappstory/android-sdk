@@ -1,9 +1,14 @@
 package com.inappstory.sdk.core.network.content.models;
 
 
+import static com.inappstory.sdk.core.network.content.models.StorySlideTimeline.DEFAULT_TIMELINE_BACKGROUND_COLOR;
+import static com.inappstory.sdk.core.network.content.models.StorySlideTimeline.DEFAULT_TIMELINE_FOREGROUND_COLOR;
+
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.data.IContentWithTimeline;
 import com.inappstory.sdk.core.data.IReaderContentSlide;
 import com.inappstory.sdk.core.data.IStory;
@@ -11,6 +16,7 @@ import com.inappstory.sdk.network.annotations.models.Required;
 import com.inappstory.sdk.network.annotations.models.SerializedName;
 import com.inappstory.sdk.core.data.IResource;
 import com.inappstory.sdk.stories.api.models.GameInstance;
+import com.inappstory.sdk.utils.StringsUtils;
 
 import java.util.HashMap;
 import java.util.List;
@@ -109,8 +115,10 @@ public class Story implements Parcelable, IStory, IContentWithTimeline {
     }
 
     @Override
-    public String slideEventPayload(int index) {
-        return slide(index).slidePayload();
+    public String slideEventPayload(int slideIndex) {
+        IReaderContentSlide slide = slide(slideIndex);
+        if (slide == null) return null;
+        return slide.slidePayload();
     }
 
     @Override
@@ -158,8 +166,10 @@ public class Story implements Parcelable, IStory, IContentWithTimeline {
     }
 
     @Override
-    public int shareType(int index) {
-        return slide(index).shareType();
+    public int shareType(int slideIndex) {
+        IReaderContentSlide slide = slide(slideIndex);
+        if (slide == null) return 0;
+        return slide.shareType();
     }
 
     @Override
@@ -186,32 +196,49 @@ public class Story implements Parcelable, IStory, IContentWithTimeline {
     }
 
     private IReaderContentSlide slide(int index) {
-        if (slides == null || index < 0 || slides.size() <= index)
-            throw new RuntimeException("Slide index out of bounds: " + index + " from " + slidesCount);
+        if (slides == null || index < 0 || slides.size() <= index) {
+            InAppStoryManager.showELog(
+                    InAppStoryManager.IAS_ERROR_TAG,
+                    "Slide index out of bounds: " + index + " from " + slidesCount
+            );
+            return null;
+        }
         for (IReaderContentSlide slide : slides) {
             if (slide.index() == index) return slide;
         }
-        throw new RuntimeException("Slide " + index + " not in slides array of story " + id());
+        InAppStoryManager.showELog(
+                InAppStoryManager.IAS_ERROR_TAG,
+                "Slide " + index + " not in slides array of story " + id()
+        );
+        return null;
     }
 
     @Override
-    public List<IResource> vodResources(int index) {
-        return slide(index).vodResources();
+    public List<IResource> vodResources(int slideIndex) {
+        IReaderContentSlide slide = slide(slideIndex);
+        if (slide == null) return null;
+        return slide.vodResources();
     }
 
     @Override
-    public List<IResource> staticResources(int index) {
-        return slide(index).staticResources();
+    public List<IResource> staticResources(int slideIndex) {
+        IReaderContentSlide slide = slide(slideIndex);
+        if (slide == null) return null;
+        return slide.staticResources();
     }
 
     @Override
-    public List<String> placeholdersNames(int index) {
-        return slide(index).placeholdersNames();
+    public List<String> placeholdersNames(int slideIndex) {
+        IReaderContentSlide slide = slide(slideIndex);
+        if (slide == null) return null;
+        return slide.placeholdersNames();
     }
 
     @Override
-    public Map<String, String> placeholdersMap(int index) {
-        return slide(index).placeholdersMap();
+    public Map<String, String> placeholdersMap(int slideIndex) {
+        IReaderContentSlide slide = slide(slideIndex);
+        if (slide == null) return null;
+        return slide.placeholdersMap();
     }
 
     @Override
@@ -292,8 +319,10 @@ public class Story implements Parcelable, IStory, IContentWithTimeline {
     }
 
     @Override
-    public String slideByIndex(int index) {
-        return slide(index).html();
+    public String slideByIndex(int slideIndex) {
+        IReaderContentSlide slide = slide(slideIndex);
+        if (slide == null) return null;
+        return slide.html();
     }
 
     public Story() {
@@ -373,11 +402,15 @@ public class Story implements Parcelable, IStory, IContentWithTimeline {
 
     @Override
     public String timelineBackgroundColor(int slideIndex) {
-        return slide(slideIndex).timelineBackgroundColor();
+        IReaderContentSlide slide = slide(slideIndex);
+        if (slide == null) return DEFAULT_TIMELINE_BACKGROUND_COLOR;
+        return slide.timelineBackgroundColor();
     }
 
     @Override
     public String timelineForegroundColor(int slideIndex) {
-        return slide(slideIndex).timelineForegroundColor();
+        IReaderContentSlide slide = slide(slideIndex);
+        if (slide == null) return DEFAULT_TIMELINE_FOREGROUND_COLOR;
+        return slide.timelineForegroundColor();
     }
 }

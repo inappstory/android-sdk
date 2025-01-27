@@ -329,6 +329,7 @@ public class StoriesViewManager {
 
     void setWebViewSettings(IReaderContent story) throws IOException {
         String innerWebData = story.slideByIndex(index);
+        if (innerWebData == null) return;
         if (storiesView == null || !(storiesView instanceof StoriesWebView)) return;
 
         WebPageConvertCallback callback = new WebPageConvertCallback() {

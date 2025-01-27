@@ -94,7 +94,6 @@ public class StoriesLoaderFragment extends Fragment {
                 );
             }
         }
-
         setOffsets(view);
     }
 
