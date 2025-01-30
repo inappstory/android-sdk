@@ -48,10 +48,11 @@ public class DefaultOpenStoriesReader implements IOpenStoriesReader {
                 intent2.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             }
             intent2.putExtras(bundle);
+            intent2.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
             context.startActivity(intent2);
-            if (context instanceof Activity) {
+         /*   if (context instanceof Activity) {
                 ((Activity) context).overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
-            }
+            }*/
 
 
            /* final StoriesDialogFragment storiesDialogFragment = new StoriesDialogFragment();

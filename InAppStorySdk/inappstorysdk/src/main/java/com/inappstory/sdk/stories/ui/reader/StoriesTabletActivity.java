@@ -13,6 +13,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 
@@ -39,6 +40,7 @@ import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenAppearanc
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenData;
 import com.inappstory.sdk.core.ui.widgets.elasticview.DraggableElasticLayout;
 import com.inappstory.sdk.core.utils.CallbackTypesConverter;
+import com.inappstory.sdk.core.utils.ColorUtils;
 import com.inappstory.sdk.stories.api.models.ContentIdWithIndex;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenStoriesReader;
@@ -169,6 +171,17 @@ public class StoriesTabletActivity extends AppCompatActivity implements BaseStor
             setStartAnimations()
                     .setListener(new HandlerAnimatorListenerAdapter() {
                         @Override
+                        public void onAnimationStart() {
+                            super.onAnimationStart();
+                            new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+                                @Override
+                                public void run() {
+                                    animatedContainer.setVisibility(View.VISIBLE);
+                                }
+                            }, 100);
+                        }
+
+                        @Override
                         public void onAnimationEnd() {
                             getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
                             isAnimation = false;
@@ -196,7 +209,7 @@ public class StoriesTabletActivity extends AppCompatActivity implements BaseStor
                 InAppStoryManager.useCore(new UseIASCoreCallback() {
                     @Override
                     public void use(@NonNull IASCore core) {
-                        coordinates[0] = core.screensManager().getStoryScreenHolder().coordinates();
+                        coordinates[0] = launchData.getInitCoordinates();
                     }
                 });
                 float pivotX = -screenSize.x / 2f;
@@ -235,7 +248,8 @@ public class StoriesTabletActivity extends AppCompatActivity implements BaseStor
                 InAppStoryManager.useCore(new UseIASCoreCallback() {
                     @Override
                     public void use(@NonNull IASCore core) {
-                        coordinates[0] = core.screensManager().getStoryScreenHolder().coordinates();
+                        if (launchData.getInitCoordinates() != null)
+                            coordinates[0] = core.screensManager().getStoryScreenHolder().coordinates();
                     }
                 });
                 float pivotX = -screenSize.x / 2f;
@@ -392,6 +406,17 @@ public class StoriesTabletActivity extends AppCompatActivity implements BaseStor
         cleaned = false;
         super.onCreate(savedInstanceState1);
         setContentView(R.layout.cs_mainscreen_stories_draggable_tablet);
+        Point size = Sizes.getScreenSize(this);
+        int cleanSize = Math.min(size.x, size.y) - Sizes.dpToPxExt(80, this);
+        int maxHeight = Math.min(
+                cleanSize,
+                Sizes.dpToPxExt(640, this)
+        );
+        int maxWidth = Math.min(
+                428 * cleanSize / 805,
+                Sizes.dpToPxExt(340, this)
+        );
+
         InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
 
         launchData = (LaunchStoryScreenData) getIntent().
@@ -417,7 +442,11 @@ public class StoriesTabletActivity extends AppCompatActivity implements BaseStor
         closeOnOverscroll = appearanceSettings.csCloseOnOverscroll();
 
         draggableFrame = findViewById(R.id.draggable_frame);
-
+        View scrollView = findViewById(R.id.scrollContainer);
+        ViewGroup.LayoutParams layoutParams = scrollView.getLayoutParams();
+        layoutParams.width = maxWidth;
+        layoutParams.height = maxHeight;
+        scrollView.requestLayout();
         blockView = findViewById(R.id.blockView);
         backTintView = findViewById(R.id.background);
         animatedContainer = findViewById(R.id.animatedContainer);
@@ -478,6 +507,9 @@ public class StoriesTabletActivity extends AppCompatActivity implements BaseStor
         type = launchData.getType();
         if (savedInstanceState1 != null)
             storiesContentFragment = (StoriesContentFragment) getSupportFragmentManager().findFragmentByTag("STORIES_FRAGMENT");
+        if (storiesContentFragment != null) {
+            setAppearanceSettings(storiesContentFragment.getArguments());
+        }
         draggableFrame.post(new Runnable() {
             @Override
             public void run() {
@@ -561,7 +593,12 @@ public class StoriesTabletActivity extends AppCompatActivity implements BaseStor
     LaunchStoryScreenData launchData;
 
     private void setAppearanceSettings(Bundle bundle) {
-        backTintView.setBackgroundColor(appearanceSettings.csReaderBackgroundColor());
+        backTintView.setBackgroundColor(
+                ColorUtils.modifyAlpha(
+                        appearanceSettings.csReaderBackgroundColor(),
+                        0.3f
+                )
+        );
         try {
             bundle.putSerializable(appearanceSettings.getSerializableKey(), appearanceSettings);
             bundle.putSerializable(launchData.getSerializableKey(), launchData);

@@ -108,49 +108,56 @@ public class ReaderPageFragment extends Fragment {
             int cp = appearanceSettings.csClosePosition();
             int viewsMargin = Sizes.dpToPxExt(8, getContext());
             storiesProgressViewLP.leftMargin =
-                    storiesProgressViewLP.rightMargin =
-                            layoutParams.rightMargin = viewsMargin;
+                    storiesProgressViewLP.rightMargin = viewsMargin;
 
             switch (cp) {
                 case TOP_RIGHT:
+                    layoutParams.rightMargin = viewsMargin;
                     layoutParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
                     storiesProgressViewLP.addRule(RelativeLayout.CENTER_VERTICAL);
                     storiesProgressViewLP.addRule(RelativeLayout.LEFT_OF, close.getId());
                     break;
                 case TOP_LEFT:
+                    layoutParams.leftMargin = viewsMargin;
                     layoutParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
                     storiesProgressViewLP.addRule(RelativeLayout.CENTER_VERTICAL);
                     storiesProgressViewLP.addRule(RelativeLayout.RIGHT_OF, close.getId());
                     break;
                 case BOTTOM_RIGHT:
+                    layoutParams.rightMargin = viewsMargin;
                     layoutParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
                     layoutParams.addRule(RelativeLayout.BELOW, timeline.getId());
                     storiesProgressViewLP.topMargin = viewsMargin;
                     layoutParams.topMargin = viewsMargin;
                     break;
                 case BOTTOM_LEFT:
+                    layoutParams.leftMargin = viewsMargin;
                     storiesProgressViewLP.topMargin = viewsMargin;
                     layoutParams.topMargin = viewsMargin;
                     layoutParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
                     layoutParams.addRule(RelativeLayout.BELOW, timeline.getId());
                     break;
                 case TOP_START:
+                    layoutParams.leftMargin = viewsMargin;
                     layoutParams.addRule(RelativeLayout.ALIGN_PARENT_START);
                     storiesProgressViewLP.addRule(RelativeLayout.CENTER_VERTICAL);
                     storiesProgressViewLP.addRule(RelativeLayout.END_OF, close.getId());
                     break;
                 case TOP_END:
+                    layoutParams.rightMargin = viewsMargin;
                     layoutParams.addRule(RelativeLayout.ALIGN_PARENT_END);
                     storiesProgressViewLP.addRule(RelativeLayout.CENTER_VERTICAL);
                     storiesProgressViewLP.addRule(RelativeLayout.START_OF, close.getId());
                     break;
                 case BOTTOM_START:
+                    layoutParams.leftMargin = viewsMargin;
                     layoutParams.addRule(RelativeLayout.ALIGN_PARENT_START);
                     layoutParams.addRule(RelativeLayout.BELOW, timeline.getId());
                     storiesProgressViewLP.topMargin = viewsMargin;
                     layoutParams.topMargin = viewsMargin;
                     break;
                 case BOTTOM_END:
+                    layoutParams.rightMargin = viewsMargin;
                     storiesProgressViewLP.topMargin = viewsMargin;
                     layoutParams.topMargin = viewsMargin;
                     layoutParams.addRule(RelativeLayout.ALIGN_PARENT_END);
@@ -617,7 +624,7 @@ public class ReaderPageFragment extends Fragment {
         RelativeLayout.LayoutParams tclp = new RelativeLayout.LayoutParams(MATCH_PARENT,
                 RelativeLayout.LayoutParams.WRAP_CONTENT);
         int offset = Sizes.dpToPxExt(Math.max(0, appearanceSettings.csReaderRadius() - 16), getContext()) / 2;
-        tclp.setMargins(offset, offset, offset, 0);
+        tclp.setMargins(offset, Sizes.dpToPxExt(8, getContext()) + offset, offset, 0);
         timelineContainer.setLayoutParams(tclp);
         timelineContainer.setId(R.id.ias_timeline_container);
         timelineContainer.setMinimumHeight(Sizes.dpToPxExt(30, getContext()));
