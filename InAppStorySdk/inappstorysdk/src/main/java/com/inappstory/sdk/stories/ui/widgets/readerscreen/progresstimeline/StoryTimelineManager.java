@@ -96,6 +96,7 @@ public class StoryTimelineManager {
     }
 
     private void setProgressSync(float progress) {
+        if (host == null) return;
         if (contentWithTimeline != null) {
             host.setState(
                     new StoryTimelineState(

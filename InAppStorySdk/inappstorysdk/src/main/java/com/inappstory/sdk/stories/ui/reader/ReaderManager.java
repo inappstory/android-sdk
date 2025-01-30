@@ -19,8 +19,10 @@ import com.inappstory.sdk.core.api.IASStatisticStoriesV1;
 import com.inappstory.sdk.core.api.IASStatisticStoriesV2;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.api.impl.IASSingleStoryImpl;
+import com.inappstory.sdk.core.data.IContentWithStatus;
 import com.inappstory.sdk.core.data.IListItemContent;
 import com.inappstory.sdk.core.data.IReaderContent;
+import com.inappstory.sdk.core.network.content.models.Story;
 import com.inappstory.sdk.core.ui.screens.ShareProcessHandler;
 import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryScreen;
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenAppearance;
@@ -389,11 +391,10 @@ public class ReaderManager {
         lastSentId = 0;
         ContentIdWithIndex contentIdWithIndex = storiesIds.get(position);
         currentStoryId = contentIdWithIndex.id();
-        IReaderContent story = core.contentHolder().readerContent()
-                .getByIdAndType(currentStoryId, contentType);
-        if (story != null) {
+        Story content = (Story) core.contentHolder().getByIdAndType(currentStoryId, contentType);
+        if (content != null) {
             if (firstStoryId > 0 && startedSlideInd > 0) {
-                if (story.slidesCount() > startedSlideInd)
+                if (content.slidesCount() > startedSlideInd)
                     contentIdWithIndex.index(startedSlideInd);
                 cleanFirst();
             }
@@ -549,7 +550,9 @@ public class ReaderManager {
     }
 
     public int getCurrentStoryIndex() {
-        return getByIdAndIndex(currentStoryId).index();
+        ContentIdWithIndex contentIdWithIndex = getByIdAndIndex(currentStoryId);
+        if (contentIdWithIndex == null) return 0;
+        return contentIdWithIndex.index();
     }
 
     public void setCurrentStoryId(int currentStoryId) {

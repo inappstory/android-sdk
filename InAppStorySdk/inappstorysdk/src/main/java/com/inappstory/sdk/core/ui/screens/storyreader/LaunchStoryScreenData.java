@@ -98,14 +98,19 @@ public class LaunchStoryScreenData implements SerializableWithKey {
     private final String listUniqueId;
     private final String sessionId;
     private final List<Integer> storiesIds;
-    private final int listIndex;
+    private int listIndex;
     private final SourceType sourceType;
-    private final int firstAction;
-    private final Integer slideIndex;
+    private int firstAction;
+    private Integer slideIndex;
     private final String feed;
     private final ContentType type;
     private final boolean shownOnlyNewStories;
 
+    public void clearSingleTimeParameters() {
+        firstAction = 0;
+        slideIndex = null;
+        listIndex = 0;
+    }
 
 
     public boolean shownOnlyNewStories() {

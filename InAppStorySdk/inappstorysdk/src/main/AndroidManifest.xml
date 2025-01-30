@@ -28,6 +28,11 @@
             android:screenOrientation="portrait"
             android:theme="@style/StoriesSDKAppTheme.Transparent"
             tools:ignore="LockedOrientationActivity" />
+        <activity
+            android:name="com.inappstory.sdk.stories.ui.reader.StoriesTabletActivity"
+            android:hardwareAccelerated="true"
+            android:theme="@style/StoriesSDKAppTheme.Transparent"
+            tools:ignore="LockedOrientationActivity" />
 
         <activity
             android:name=".game.reader.GameActivity"

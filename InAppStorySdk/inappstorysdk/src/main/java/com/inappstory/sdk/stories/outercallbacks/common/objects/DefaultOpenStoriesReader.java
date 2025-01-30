@@ -17,6 +17,7 @@ import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.stories.ui.reader.StoriesActivity;
 import com.inappstory.sdk.stories.ui.reader.StoriesDialogFragment;
+import com.inappstory.sdk.stories.ui.reader.StoriesTabletActivity;
 import com.inappstory.sdk.stories.utils.ActivityUtils;
 import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.stories.utils.StatusBarController;
@@ -42,7 +43,18 @@ public class DefaultOpenStoriesReader implements IOpenStoriesReader {
             }
         }
         if (Sizes.isTablet(context) && context instanceof FragmentActivity) {
-            final StoriesDialogFragment storiesDialogFragment = new StoriesDialogFragment();
+            Intent intent2 = new Intent(context, StoriesTabletActivity.class);
+            if (!(context instanceof Activity)) {
+                intent2.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            }
+            intent2.putExtras(bundle);
+            context.startActivity(intent2);
+            if (context instanceof Activity) {
+                ((Activity) context).overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+            }
+
+
+           /* final StoriesDialogFragment storiesDialogFragment = new StoriesDialogFragment();
             storiesDialogFragment.setArguments(bundle);
             try {
                 storiesDialogFragment.show(
@@ -56,7 +68,7 @@ public class DefaultOpenStoriesReader implements IOpenStoriesReader {
                 });
             } catch (IllegalStateException ignored) {
 
-            }
+            }*/
         } else {
             Intent intent2 = new Intent(context, StoriesActivity.class);
             if (!(context instanceof Activity)) {

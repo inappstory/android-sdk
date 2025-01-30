@@ -71,6 +71,7 @@ public class StoriesContentFragment extends Fragment
     boolean isDestroyed = false;
 
     boolean created = false;
+    boolean firstStoryLaunched = false;
 
     public String getReaderUniqueId() {
         return getLaunchData().getReaderUniqueId();
@@ -153,6 +154,7 @@ public class StoriesContentFragment extends Fragment
 
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
+
         ArrayList<Integer> ids = new ArrayList<>();
         ArrayList<Integer> indices = new ArrayList<>();
         List<ContentIdWithIndex> idWithIndices = readerManager.getStoriesIdsWithIndex();
@@ -162,21 +164,44 @@ public class StoriesContentFragment extends Fragment
         }
         outState.putIntegerArrayList("storyIds", ids);
         outState.putIntegerArrayList("storyIndices", indices);
+
+        Bundle args = getArguments();
+        if (args != null) {
+            args.putIntegerArrayList("storyIds", ids);
+            args.putIntegerArrayList("storyIndices", indices);
+        }
+        //setArguments(args);
+
         super.onSaveInstanceState(outState);
     }
 
-    @Override
-    public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
-        super.onViewStateRestored(savedInstanceState);
-        if (savedInstanceState == null) return;
-        ArrayList<Integer> ids = savedInstanceState.getIntegerArrayList("storyIds");
-        ArrayList<Integer> indices = savedInstanceState.getIntegerArrayList("storyIndices");
-        if (ids == null) return;
+    private void restoreIndices(Bundle arguments) {
+        ArrayList<Integer> ids = arguments.getIntegerArrayList("storyIds");
+        ArrayList<Integer> indices = arguments.getIntegerArrayList("storyIndices");
+        if (ids == null) {
+            return;
+        }
         List<ContentIdWithIndex> idWithIndices = new ArrayList<>();
         for (int i = 0; i < ids.size(); i++) {
             idWithIndices.add(new ContentIdWithIndex(ids.get(i), indices.get(i)));
         }
         readerManager.setStoriesIdsWithIndex(idWithIndices);
+    }
+
+    @Override
+    public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
+        super.onViewStateRestored(savedInstanceState);
+        if (savedInstanceState == null) {
+            return;
+        }
+
+    }
+
+    private void launchFirstStory() {
+        firstStoryLaunched = true;
+        if (!created) return;
+        LaunchStoryScreenData launchData = getLaunchData();
+
     }
 
     private void shareCustomOrDefault(final String slidePayload,
@@ -447,7 +472,7 @@ public class StoriesContentFragment extends Fragment
                     LaunchStoryScreenData launchData = getLaunchData();
                     currentIds = launchData.getStoriesIds();
                     readerAnimation = appearanceSettings.csStoryReaderAnimation();
-                    ind = launchData.getListIndex();
+
                     if (currentIds == null || currentIds.isEmpty()) {
                         forceFinish();
                         return;
@@ -470,26 +495,34 @@ public class StoriesContentFragment extends Fragment
                     readerManager.setHost(StoriesContentFragment.this);
                     readerManager.setStoriesIds(currentIds);
                     readerManager.firstStoryId = currentIds.get(ind);
-                    readerManager.startedSlideInd = arguments.getInt("slideIndex", 0);
+
+                    readerManager.startedSlideInd =
+                            launchData.getSlideIndex() != null ?
+                                    launchData.getSlideIndex() : 0;
+
                     closeOnSwipe = appearanceSettings.csCloseOnSwipe();
                     closeOnOverscroll = appearanceSettings.csCloseOnOverscroll();
 
 
-                    getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+                    requireActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
                     storiesViewPager.setParameters(readerAnimation);
                     source = getLaunchData().getSourceType();
+                    restoreIndices(arguments);
                     outerViewPagerAdapter =
                             new ReaderPagerAdapter(
                                     getChildFragmentManager(),
                                     source,
                                     getAppearanceSettings(),
-                                    ((Rect) getArguments().getParcelable("readerContainer")),
+                                    ((Rect) arguments.getParcelable("readerContainer")),
                                     currentIds,
                                     readerManager
                             );
+                    restoreIndices(arguments);
                     storiesViewPager.setAdapter(outerViewPagerAdapter);
                     storiesViewPager.addOnPageChangeListener(StoriesContentFragment.this);
+
+                    ind = launchData.getListIndex();
                     if (ind > 0) {
                         storiesViewPager.setCurrentItem(ind);
                     } else {
@@ -499,7 +532,7 @@ public class StoriesContentFragment extends Fragment
                             e.printStackTrace();
                         }
                     }
-
+                    launchData.clearSingleTimeParameters();
                     created = true;
                 } catch (Exception e) {
                     forceFinish();
