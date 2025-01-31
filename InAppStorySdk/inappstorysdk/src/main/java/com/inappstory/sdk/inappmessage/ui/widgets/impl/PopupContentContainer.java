@@ -242,10 +242,16 @@ public class PopupContentContainer extends IAMContentContainer<InAppMessagePopup
             contentRatio = appearance.contentRatio();
         }
         float availableWidth = externalContainerRect.width() - 2 * horizontalPadding;
+        Point screenSize = Sizes.getScreenSize(getContext());
         if (Sizes.isTablet(getContext())) {
             availableWidth = Math.min(availableWidth, Sizes.dpToPxExt(340, getContext()));
+        } else {
+            availableWidth = Math.min(
+                    availableWidth,
+                    Math.min(screenSize.x, screenSize.y) - 2 * horizontalPadding
+            );
         }
-        float availableHeight = externalContainerRect.height();
+        float availableHeight = externalContainerRect.height() - 2 * horizontalPadding;
         float screenContentRatio = availableWidth / availableHeight;
         if (contentRatio >= screenContentRatio) {
             layoutParams.height = Math.min(

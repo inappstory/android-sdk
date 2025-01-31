@@ -47,19 +47,20 @@ public class InAppMessageByIdUseCase {
                                         new NetworkCallback<InAppMessage>() {
                                             @Override
                                             public void onSuccess(InAppMessage response) {
-                                                if (
+                                                core.contentHolder().readerContent().setByIdAndType(
+                                                        response,
+                                                        response.id(),
+                                                        ContentType.IN_APP_MESSAGE
+                                                );
+                                                callback.success(response);
+                                               /* if (
                                                         core.screensManager().isPhone() ||
                                                         response.screenType().equals(IAMUiContainerType.POPUP)
                                                 ) {
-                                                    core.contentHolder().readerContent().setByIdAndType(
-                                                            response,
-                                                            response.id(),
-                                                            ContentType.IN_APP_MESSAGE
-                                                    );
-                                                    callback.success(response);
+
                                                 } else {
                                                     callback.error();
-                                                }
+                                                }*/
                                             }
 
                                             @Override

@@ -88,8 +88,12 @@ public class FullscreenContentContainer extends IAMContentContainer<InAppMessage
                     if (cutout != null) {
                         closeButtonLayoutParams.topMargin = Math.max(cutout.getSafeInsetTop() - topOffset, 0) +
                                 Sizes.dpToPxExt(16, context);
-                        closeButton.setLayoutParams(closeButtonLayoutParams);
+                    } else {
+                        int windowTopOffset = activity.getWindow().getDecorView().getRootWindowInsets().getSystemWindowInsetTop();
+                        closeButtonLayoutParams.topMargin = Math.max(windowTopOffset - topOffset, 0) +
+                                Sizes.dpToPxExt(16, context);
                     }
+                    closeButton.setLayoutParams(closeButtonLayoutParams);
                 }
             }
         }

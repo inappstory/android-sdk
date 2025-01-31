@@ -62,15 +62,16 @@ public class InAppMessagesUseCase {
                                         core.contentLoader().iamWereLoaded(true);
                                         boolean hasDeviceSupportedMessage = false;
                                         for (IInAppMessage message : inAppMessageFeed.messages()) {
-                                            if (
+                                          /*  if (
                                                     core.screensManager().isPhone() ||
                                                             message.screenType().equals(IAMUiContainerType.POPUP)
                                             ) {
-                                                hasDeviceSupportedMessage = true;
-                                                core.contentHolder().readerContent().setByIdAndType(
-                                                        message, message.id(), ContentType.IN_APP_MESSAGE
-                                                );
-                                            }
+
+                                            }*/
+                                            hasDeviceSupportedMessage = true;
+                                            core.contentHolder().readerContent().setByIdAndType(
+                                                    message, message.id(), ContentType.IN_APP_MESSAGE
+                                            );
                                         }
                                         if (!hasDeviceSupportedMessage) {
                                             loadCallback.isEmpty();

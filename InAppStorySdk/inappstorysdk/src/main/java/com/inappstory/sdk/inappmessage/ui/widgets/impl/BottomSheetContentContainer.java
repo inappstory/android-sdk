@@ -126,16 +126,28 @@ public final class BottomSheetContentContainer extends IAMContentContainer<InApp
         }
         float availableWidth = externalContainerRect.width();
         float availableHeight = externalContainerRect.height();
+
+        Point screenSize = Sizes.getScreenSize(getContext());
+        if (Sizes.isTablet(getContext())) {
+            availableWidth = Math.min(availableWidth, Sizes.dpToPxExt(340, getContext()));
+        } else {
+            availableWidth = Math.min(
+                    availableWidth,
+                    Math.min(screenSize.x, screenSize.y)
+            );
+        }
         float screenContentRatio = availableWidth / availableHeight;
         if (contentRatio >= screenContentRatio) {
             layoutParams.height = Math.min(
                     Math.round(availableHeight),
                     Math.round(availableWidth / contentRatio)
             );
+            layoutParams.width = Math.round(availableWidth);
         } else {
             layoutParams.height = Math.round(availableHeight);
             layoutParams.width = Math.round(availableHeight * contentRatio);
         }
+
         roundedCornerLayout.setRadius(
                 Sizes.dpToPxExt(appearance.cornerRadius(), getContext()),
                 Sizes.dpToPxExt(appearance.cornerRadius(), getContext()),
