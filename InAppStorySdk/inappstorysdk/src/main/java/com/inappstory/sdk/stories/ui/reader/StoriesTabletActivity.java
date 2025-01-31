@@ -107,6 +107,12 @@ public class StoriesTabletActivity extends AppCompatActivity implements BaseStor
 
     @Override
     protected void onStop() {
+        try {
+            clearDialog();
+            clearOverlap();
+        } catch (Exception e) {
+
+        }
         super.onStop();
     }
 
@@ -600,6 +606,7 @@ public class StoriesTabletActivity extends AppCompatActivity implements BaseStor
         disableDrag(!closeOnSwipe);
     }
 
+
     private void createStoriesFragment(Bundle savedInstanceState, Rect readerContainer) {
         if (savedInstanceState == null) {
             storiesContentFragment = new StoriesContentFragment();
@@ -645,6 +652,29 @@ public class StoriesTabletActivity extends AppCompatActivity implements BaseStor
             return;
         }
         closeWithAction(-1);
+    }
+
+    private void clearDialog() {
+
+        Fragment fragmentById = getScreenFragmentManager().findFragmentById(R.id.ias_dialog_container);
+        if (fragmentById instanceof IASBackPressHandler && ((IASBackPressHandler) fragmentById).onBackPressed()) {
+            return;
+        }
+
+       /* FragmentManager parentFragmentManager = getScreenFragmentManager();
+        Fragment oldFragment =
+                parentFragmentManager.findFragmentById(R.id.ias_dialog_container);
+        if (oldFragment != null) {
+            parentFragmentManager.beginTransaction().replace(R.id.ias_dialog_container, new Fragment()).commit();
+            parentFragmentManager.popBackStack();
+        }*/
+    }
+
+    private void clearOverlap() {
+        Fragment fragmentById = getScreenFragmentManager().findFragmentById(R.id.ias_outer_top_container);
+        if (fragmentById instanceof IASBackPressHandler && ((IASBackPressHandler) fragmentById).onBackPressed()) {
+            return;
+        }
     }
 
     @Override

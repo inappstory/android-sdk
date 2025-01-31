@@ -20,15 +20,19 @@ public class DefaultOpenInAppMessageReader implements IOpenInAppMessageReader {
             int containerId,
             InAppMessageScreenActions screenActions
     ) {
-        InAppMessageMainFragment inAppMessageFragment =
-                new InAppMessageMainFragment();
-        FragmentTransaction t = fragmentManager.beginTransaction()
-                .add(
-                        containerId,
-                        inAppMessageFragment,
-                        IN_APP_MESSAGE_FRAGMENT
-                );
-     //   t.addToBackStack(IN_APP_MESSAGE_FRAGMENT);
-        t.commit();
+        try {
+            InAppMessageMainFragment inAppMessageFragment =
+                    new InAppMessageMainFragment();
+            FragmentTransaction t = fragmentManager.beginTransaction()
+                    .add(
+                            containerId,
+                            inAppMessageFragment,
+                            IN_APP_MESSAGE_FRAGMENT
+                    );
+            //   t.addToBackStack(IN_APP_MESSAGE_FRAGMENT);
+            t.commit();
+        } catch (Exception e) {
+
+        }
     }
 }
