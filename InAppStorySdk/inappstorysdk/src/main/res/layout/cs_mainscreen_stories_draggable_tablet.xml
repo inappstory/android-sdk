@@ -19,6 +19,7 @@
         android:layout_width="match_parent"
         android:visibility="invisible"
         android:layout_height="match_parent"
+        android:clickable="false"
         android:layout_gravity="center">
 
         <com.inappstory.sdk.core.ui.widgets.elasticview.DraggableElasticLayout
@@ -37,6 +38,7 @@
             <androidx.core.widget.NestedScrollView
                 android:id="@+id/scrollContainer"
                 android:layout_width="340dp"
+                android:clickable="true"
                 android:layout_height="640dp"
                 android:layout_gravity="center"
                 android:fillViewport="true">
@@ -52,8 +54,8 @@
 
         <FrameLayout
             android:id="@+id/ias_dialog_container"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_width="340dp"
+            android:layout_height="640dp"
             android:layout_gravity="center" />
 
         <View
@@ -67,7 +69,7 @@
 
     <FrameLayout
         android:id="@+id/ias_outer_top_container"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_width="340dp"
+        android:layout_height="640dp"
         android:layout_gravity="center" />
 </FrameLayout>

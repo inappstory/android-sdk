@@ -372,6 +372,11 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryScree
     }
 
     @Override
+    public Point getContainerSize() {
+        return Sizes.getScreenSize(this);
+    }
+
+    @Override
     public void setShowGoodsCallback(ShowGoodsCallback callback) {
         currentGoodsCallback = callback;
     }

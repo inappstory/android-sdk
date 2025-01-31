@@ -207,6 +207,11 @@ public class StoriesDialogFragment extends DialogFragment implements IASBackPres
     }
 
     @Override
+    public Point getContainerSize() {
+        return null;
+    }
+
+    @Override
     public void setShowGoodsCallback(ShowGoodsCallback callback) {
         currentGoodsCallback = callback;
     }

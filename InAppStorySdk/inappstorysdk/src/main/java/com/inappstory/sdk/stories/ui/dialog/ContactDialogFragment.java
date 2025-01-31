@@ -10,6 +10,7 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Color;
+import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
@@ -61,12 +62,18 @@ public class ContactDialogFragment extends Fragment implements IASBackPressHandl
         dialogStructure = (DialogStructure) arguments.getSerializable(DialogStructure.SERIALIZABLE_KEY);
         dialogId = arguments.getString("dialogId");
         storyId = arguments.getInt("storyId");
+        dialogContainerSize = new Point(
+                arguments.getInt("dialogContainerWidth"),
+                arguments.getInt("dialogContainerHeight")
+        );
+        storyId = arguments.getInt("storyId");
         return inflater.inflate(R.layout.cs_dialog_layout, container, false);
     }
 
     private DialogStructure dialogStructure;
     String dialogId;
     int storyId;
+    Point dialogContainerSize;
 
     public static final String TAG = "IASDialogFragment";
 
@@ -135,6 +142,16 @@ public class ContactDialogFragment extends Fragment implements IASBackPressHandl
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (dialogContainerSize == null) {
+            if (Sizes.isTablet(getContext())) {
+                dialogContainerSize = new Point(
+                        Sizes.dpToPxExt(340, getContext()),
+                        Sizes.dpToPxExt(640, getContext())
+                );
+            } else {
+                dialogContainerSize = Sizes.getScreenSize(getContext());
+            }
+        }
         globalLayoutListener = new ViewTreeObserver.OnGlobalLayoutListener() {
             private boolean alreadyOpen;
             private final Rect rect = new Rect();
@@ -143,7 +160,7 @@ public class ContactDialogFragment extends Fragment implements IASBackPressHandl
                 public void run() {
                     if (getActivity() != null) {
                         getActivity().getWindow().getDecorView().getWindowVisibleDisplayFrame(rect);
-                        int size = Sizes.getScreenSize(getActivity()).y - rect.height();
+                        int size = dialogContainerSize.y - rect.height();
 
                         boolean isShown = size >= Sizes.dpToPxExt(defaultKeyboardHeightDP, getActivity());
                         if (isShown == alreadyOpen) {
@@ -153,8 +170,8 @@ public class ContactDialogFragment extends Fragment implements IASBackPressHandl
                         if (isShown) {
                             newCenterStructure = new CenterStructure(
                                     50f,
-                                    50f * (Sizes.getScreenSize(getActivity()).y - size) /
-                                            Sizes.getScreenSize(getActivity()).y);
+                                    50f * (dialogContainerSize.y - size) /
+                                            dialogContainerSize.y);
 
                         } else {
                             if (cancelListener != null) {
@@ -233,50 +250,13 @@ public class ContactDialogFragment extends Fragment implements IASBackPressHandl
         InputMethodManager imm =
                 (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
         imm.showSoftInput(view, InputMethodManager.SHOW_IMPLICIT);
-     /*   new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                if (getActivity() != null) {
-                    Rect rect = new Rect();
-                    getActivity().getWindow().getDecorView().getWindowVisibleDisplayFrame(rect);
-                    int size = Sizes.getScreenSize(getActivity()).y - rect.height();
-                    newCenterStructure = new CenterStructure(
-                            50f,
-                            50f * (Sizes.getScreenSize(getActivity()).y - size) /
-                                    Sizes.getScreenSize(getActivity()).y);
-                    if (!isAnimated && (newCenterStructure.y != currentCenterStructure.y)) {
-                        new Handler(Looper.getMainLooper()).post(new Runnable() {
-                            @Override
-                            public void run() {
-                                animateDialogArea();
-                            }
-                        });
-                    }
 
-                }
-            }
-        }, 300);*/
     }
 
     private void hideKeyboard(View view) {
         InputMethodManager imm = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
         imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
-       /* new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                if (getActivity() != null) {
-                    newCenterStructure = new CenterStructure(50, 50);
-                    if (!isAnimated && (newCenterStructure.y != currentCenterStructure.y)) {
-                        new Handler(Looper.getMainLooper()).post(new Runnable() {
-                            @Override
-                            public void run() {
-                                animateDialogArea();
-                            }
-                        });
-                    }
-                }
-            }
-        }, 300);*/
+
     }
 
     TextMultiInput editText = null;
@@ -300,13 +280,8 @@ public class ContactDialogFragment extends Fragment implements IASBackPressHandl
         final FrameLayout buttonBackground = dialog.findViewById(R.id.buttonBackground);
         AppCompatTextView buttonText = dialog.findViewById(R.id.buttonText);
 
-        if (Sizes.isTablet(getContext())) {
-            fullWidth = getContext().getResources().getDimensionPixelSize(R.dimen.cs_tablet_width);
-            fullHeight = getContext().getResources().getDimensionPixelSize(R.dimen.cs_tablet_height);
-        } else {
-            fullWidth = Sizes.getScreenSize(getContext()).x;
-            fullHeight = Sizes.getScreenSize(getContext()).y;
-        }
+        fullWidth = dialogContainerSize.x;
+        fullHeight = dialogContainerSize.y;
         if (dialogStructure.size == null) {
             dialogStructure.size = new SizeStructure();
             dialogStructure.size.width = 95;

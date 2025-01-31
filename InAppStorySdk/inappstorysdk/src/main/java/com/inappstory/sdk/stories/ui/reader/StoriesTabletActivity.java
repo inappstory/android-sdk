@@ -386,6 +386,11 @@ public class StoriesTabletActivity extends AppCompatActivity implements BaseStor
     }
 
     @Override
+    public Point getContainerSize() {
+        return new Point(maxWidth, maxHeight);
+    }
+
+    @Override
     public void setShowGoodsCallback(ShowGoodsCallback callback) {
         currentGoodsCallback = callback;
     }
@@ -394,6 +399,9 @@ public class StoriesTabletActivity extends AppCompatActivity implements BaseStor
     public void permissionResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
 
     }
+
+    int maxHeight = 0;
+    int maxWidth = 0;
 
     @Override
     public FragmentManager getScreenFragmentManager() {
@@ -408,11 +416,11 @@ public class StoriesTabletActivity extends AppCompatActivity implements BaseStor
         setContentView(R.layout.cs_mainscreen_stories_draggable_tablet);
         Point size = Sizes.getScreenSize(this);
         int cleanSize = Math.min(size.x, size.y) - Sizes.dpToPxExt(80, this);
-        int maxHeight = Math.min(
+        maxHeight = Math.min(
                 cleanSize,
                 Sizes.dpToPxExt(640, this)
         );
-        int maxWidth = Math.min(
+        maxWidth = Math.min(
                 428 * cleanSize / 805,
                 Sizes.dpToPxExt(340, this)
         );
@@ -442,11 +450,28 @@ public class StoriesTabletActivity extends AppCompatActivity implements BaseStor
         closeOnOverscroll = appearanceSettings.csCloseOnOverscroll();
 
         draggableFrame = findViewById(R.id.draggable_frame);
+        draggableFrame.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onBackPressed();
+            }
+        });
         View scrollView = findViewById(R.id.scrollContainer);
         ViewGroup.LayoutParams layoutParams = scrollView.getLayoutParams();
         layoutParams.width = maxWidth;
         layoutParams.height = maxHeight;
         scrollView.requestLayout();
+        View goodsView = findViewById(R.id.ias_outer_top_container);
+        View dialogsView = findViewById(R.id.ias_dialog_container);
+
+        ViewGroup.LayoutParams goodsLayoutParams = goodsView.getLayoutParams();
+        goodsLayoutParams.width = maxWidth;
+        goodsLayoutParams.height = maxHeight;
+        ViewGroup.LayoutParams dialogsLayoutParams = dialogsView.getLayoutParams();
+        dialogsLayoutParams.width = maxWidth;
+        dialogsLayoutParams.height = maxHeight;
+        dialogsView.requestLayout();
+        goodsView.requestLayout();
         blockView = findViewById(R.id.blockView);
         backTintView = findViewById(R.id.background);
         animatedContainer = findViewById(R.id.animatedContainer);

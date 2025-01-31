@@ -7,16 +7,10 @@ import android.os.Build;
 import android.os.Bundle;
 import android.view.Window;
 
-import androidx.annotation.NonNull;
 import androidx.fragment.app.FragmentActivity;
 
-import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.R;
-import com.inappstory.sdk.UseManagerInstanceCallback;
-import com.inappstory.sdk.core.IASCore;
-import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.stories.ui.reader.StoriesActivity;
-import com.inappstory.sdk.stories.ui.reader.StoriesDialogFragment;
 import com.inappstory.sdk.stories.ui.reader.StoriesTabletActivity;
 import com.inappstory.sdk.stories.utils.ActivityUtils;
 import com.inappstory.sdk.stories.utils.Sizes;

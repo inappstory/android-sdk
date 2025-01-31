@@ -256,7 +256,6 @@ public class ReaderPageFragment extends Fragment {
     private void setCutout(View view, int minusOffset) {
         if (Build.VERSION.SDK_INT >= 28) {
             if (getActivity() != null && getActivity().getWindow() != null &&
-                    getActivity().getWindow().getDecorView() != null &&
                     getActivity().getWindow().getDecorView().getRootWindowInsets() != null) {
                 DisplayCutout cutout = getActivity().getWindow().getDecorView().getRootWindowInsets().getDisplayCutout();
                 if (cutout != null) {

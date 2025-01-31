@@ -1,6 +1,8 @@
 package com.inappstory.sdk.core.ui.screens.storyreader;
 
 
+import android.graphics.Point;
+
 import androidx.fragment.app.FragmentManager;
 
 import com.inappstory.sdk.core.ui.screens.BaseScreen;
@@ -13,5 +15,6 @@ public interface BaseStoryScreen extends BaseScreen {
     void timerIsUnlocked();
     void disableDrag(boolean disable);
     void disableClose(boolean disable);
+    Point getContainerSize();
     FragmentManager getScreenFragmentManager();
 }

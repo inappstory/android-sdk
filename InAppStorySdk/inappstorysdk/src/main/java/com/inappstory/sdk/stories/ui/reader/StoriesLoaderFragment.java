@@ -145,7 +145,7 @@ public class StoriesLoaderFragment extends Fragment {
                     View view1 = view.findViewById(R.id.ias_timeline_container);
                     if (view1 != null) {
                         RelativeLayout.LayoutParams lp1 = (RelativeLayout.LayoutParams) view1.getLayoutParams();
-                        lp1.topMargin += Math.max(cutout.getSafeInsetTop() - minusOffset, 0);
+                        lp1.topMargin = Math.max(cutout.getSafeInsetTop() - minusOffset, 0);
                         view1.setLayoutParams(lp1);
                     }
                 }

@@ -63,6 +63,12 @@ public abstract class StoriesMainFragment extends Fragment implements
         IASBackPressHandler,
         ShowGoodsCallback {
 
+
+    @Override
+    public Point getContainerSize() {
+        return Sizes.getScreenSize(getContext());
+    }
+
     @Override
     public void close() {
         closeWithAction(CloseStory.CUSTOM);

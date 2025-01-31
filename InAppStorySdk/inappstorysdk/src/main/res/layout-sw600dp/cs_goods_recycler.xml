@@ -4,8 +4,8 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
     <RelativeLayout
-        android:layout_width="@dimen/cs_tablet_width"
-        android:layout_height="@dimen/cs_tablet_height"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:id="@+id/layout"
         android:clickable="true"
         android:layout_centerInParent="true">

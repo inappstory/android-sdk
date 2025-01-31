@@ -1,5 +1,6 @@
 package com.inappstory.sdk.stories.ui.dialog;
 
+import android.graphics.Point;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -67,6 +68,9 @@ public class ContactDialogCreator {
         arguments.putSerializable(dialogStructure.getSerializableKey(), dialogStructure);
         arguments.putInt("storyId", storyId);
         arguments.putString("dialogId", dialogId);
+        Point containerSize = readerScreen.getContainerSize();
+        arguments.putInt("dialogContainerWidth", containerSize.x);
+        arguments.putInt("dialogContainerHeight", containerSize.y);
         fragment.setArguments(arguments);
         FragmentTransaction t = parentFragmentManager.beginTransaction()
                 .replace(R.id.ias_dialog_container, fragment);

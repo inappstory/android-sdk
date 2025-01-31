@@ -517,12 +517,13 @@ public class ReaderManager {
                     contentIdWithIndex.id(),
                     contentType
             );
-            statisticV2.sendCloseStory(contentIdWithIndex.id(),
-                    whence,
-                    contentIdWithIndex.index(),
-                    story.slidesCount(),
-                    feedId
-            );
+            if (story != null)
+                statisticV2.sendCloseStory(contentIdWithIndex.id(),
+                        whence,
+                        contentIdWithIndex.index(),
+                        story.slidesCount(),
+                        feedId
+                );
         }
         statisticV2.sendViewStory(id, whence, feedId);
         statisticV2.sendOpenStory(id, whence, feedId);

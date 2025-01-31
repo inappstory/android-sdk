@@ -1,6 +1,10 @@
 package com.inappstory.sdk.stories.ui.reader;
 
+import android.graphics.Point;
+
 import androidx.annotation.NonNull;
+
+import com.inappstory.sdk.stories.utils.Sizes;
 
 public class StoriesMainTabletFragment extends StoriesMainFragment {
     @Override
@@ -42,4 +46,5 @@ public class StoriesMainTabletFragment extends StoriesMainFragment {
     public void permissionResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
 
     }
+
 }
