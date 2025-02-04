@@ -839,67 +839,82 @@ public class StoriesList extends RecyclerView {
     }
 
     private void loadStoriesInner(final StoriesRequestKey key) {
-
-        InAppStoryManager manager = InAppStoryManager.getInstance();
-        if (manager == null) {
-            InAppStoryManager.showELog(
-                    InAppStoryManager.IAS_ERROR_TAG,
-                    StringsUtils.getErrorStringFromContext(
-                            getContext(),
-                            R.string.ias_npe_manager
-                    )
-            );
-            return;
-        }
-        final IASCore core = manager.iasCore();
-        if (((IASDataSettingsHolder) core.settingsAPI()).noCorrectUserIdOrDevice()) return;
-
-        InAppStoryManager.debugSDKCalls("StoriesList_loadStoriesInner", "");
-        final String listUid = core.statistic().profiling().addTask("widget_init");
-        final boolean hasFavorite = (!isFavoriteList && getAppearanceManager().csHasFavorite());
-
-        lcallback = new LoadStoriesCallback() {
+        InAppStoryManager.useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
-            public void storiesLoaded(final List<Integer> storiesIds) {
-                core.storiesListVMHolder().setStoriesRequestResult(
-                        key,
-                        new StoriesRequestResult(storiesIds)
-                );
-                core.statistic().profiling().setReady(listUid);
-                post(new Runnable() {
+            public void use(@NonNull final IASCore core) {
+                if (1 == 1) {
+                    throw new RuntimeException("testException");
+                }
+                if (((IASDataSettingsHolder) core.settingsAPI()).noCorrectUserIdOrDevice()) {
+                    InAppStoryManager.showELog(
+                            InAppStoryManager.IAS_ERROR_TAG,
+                            StringsUtils.getErrorStringFromContext(
+                                    getContext(),
+                                    R.string.ias_usage_without_user_and_device
+                            )
+                    );
+                    return;
+                }
+
+                InAppStoryManager.debugSDKCalls("StoriesList_loadStoriesInner", "");
+                final String listUid = core.statistic().profiling().addTask("widget_init");
+                final boolean hasFavorite = (!isFavoriteList && getAppearanceManager().csHasFavorite());
+
+                lcallback = new LoadStoriesCallback() {
                     @Override
-                    public void run() {
-                        setOrRefreshAdapter(storiesIds);
-                        if (callback != null)
-                            callback.storiesLoaded(
-                                    storiesIds.size(),
-                                    StringsUtils.getNonNull(getFeed()),
-                                    getStoriesData(storiesIds)
-                            );
+                    public void storiesLoaded(final List<Integer> storiesIds) {
+                        core.storiesListVMHolder().setStoriesRequestResult(
+                                key,
+                                new StoriesRequestResult(storiesIds)
+                        );
+                        core.statistic().profiling().setReady(listUid);
+                        post(new Runnable() {
+                            @Override
+                            public void run() {
+                                setOrRefreshAdapter(storiesIds);
+                                if (callback != null)
+                                    callback.storiesLoaded(
+                                            storiesIds.size(),
+                                            StringsUtils.getNonNull(getFeed()),
+                                            getStoriesData(storiesIds)
+                                    );
+                            }
+                        });
+
+
                     }
-                });
 
+                    @Override
+                    public void setFeedId(String feedId) {
+                        setListFeedId(feedId);
+                    }
 
+                    @Override
+                    public void onError() {
+                        if (callback != null)
+                            callback.loadError(StringsUtils.getNonNull(getFeed()));
+                    }
+                };
+                core.contentLoader().storyDownloadManager().loadStories(
+                        getFeed(),
+                        lcallback,
+                        null,
+                        isFavoriteList,
+                        hasFavorite
+                );
             }
 
             @Override
-            public void setFeedId(String feedId) {
-                setListFeedId(feedId);
+            public void error() {
+                InAppStoryManager.showELog(
+                        InAppStoryManager.IAS_ERROR_TAG,
+                        StringsUtils.getErrorStringFromContext(
+                                getContext(),
+                                R.string.ias_npe_manager
+                        )
+                );
             }
-
-            @Override
-            public void onError() {
-                if (callback != null)
-                    callback.loadError(StringsUtils.getNonNull(getFeed()));
-            }
-        };
-        core.contentLoader().storyDownloadManager().loadStories(
-                getFeed(),
-                lcallback,
-                null,
-                isFavoriteList,
-                hasFavorite
-        );
+        });
     }
 
 }

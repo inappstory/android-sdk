@@ -16,7 +16,7 @@ import java.util.List;
 public class IASInAppMessageAPIImpl implements IASInAppMessage {
     @Override
     public void preload(final List<String> inAppMessageIds, final InAppMessageLoadCallback callback) {
-        InAppStoryManager.useCore(new UseIASCoreCallback() {
+        InAppStoryManager.useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
                 core.inAppMessageAPI().preload(
@@ -33,7 +33,7 @@ public class IASInAppMessageAPIImpl implements IASInAppMessage {
             final int containerId,
             final InAppMessageScreenActions screenActions
     ) {
-        InAppStoryManager.useCore(new UseIASCoreCallback() {
+        InAppStoryManager.useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
                 core.inAppMessageAPI().show(

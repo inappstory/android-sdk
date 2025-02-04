@@ -18,6 +18,7 @@ import androidx.fragment.app.FragmentManager;
 
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.IASCoreImpl;
+import com.inappstory.sdk.core.IASExceptionHandler;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.IASDataSettings;
@@ -88,7 +89,7 @@ public class InAppStoryManager implements IASBackPressHandler {
     }
 
     public static void handleException(final Throwable e) {
-        useCore(new UseIASCoreCallback() {
+        useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
                 core.exceptionManager().createExceptionLog(e);
@@ -96,12 +97,39 @@ public class InAppStoryManager implements IASBackPressHandler {
         });
     }
 
+    private final ExecutorService coreThread = Executors.newSingleThreadExecutor();
+
     public static void useCore(UseIASCoreCallback callback) {
         synchronized (lock) {
-            if (INSTANCE == null || INSTANCE.core == null) {
-                callback.error();
-            } else {
-                callback.use(INSTANCE.iasCore());
+            try {
+                if (INSTANCE == null || INSTANCE.core == null) {
+                    callback.error();
+                } else {
+                    callback.use(INSTANCE.iasCore());
+                }
+            } catch (Exception e) {
+                showELog(IAS_ERROR_TAG, e.getMessage() + "");
+            }
+        }
+    }
+
+    public static void useCoreInSeparateThread(final UseIASCoreCallback callback) {
+        synchronized (lock) {
+            try {
+                if (INSTANCE == null || INSTANCE.core == null) {
+                    callback.error();
+                } else {
+                    final IASCore core = INSTANCE.core;
+                    Runnable runnable = new Runnable() {
+                        @Override
+                        public void run() {
+                            callback.use(core);
+                        }
+                    };
+                    INSTANCE.coreThread.execute(runnable);
+                }
+            } catch (Exception e) {
+                showELog(IAS_ERROR_TAG, e.getMessage() + "");
             }
         }
     }
@@ -111,7 +139,7 @@ public class InAppStoryManager implements IASBackPressHandler {
     }
 
     private static void clearLocalData() {
-        InAppStoryManager.useCore(new UseIASCoreCallback() {
+        useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
                 core.storiesListVMHolder().clear();
@@ -130,7 +158,7 @@ public class InAppStoryManager implements IASBackPressHandler {
                 callback.error();
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            showELog(IAS_ERROR_TAG, e.getMessage() + "");
         }
     }
 
@@ -222,7 +250,12 @@ public class InAppStoryManager implements IASBackPressHandler {
      * use to clear downloaded files and in-app cache
      */
     public void clearCache() {
-        core.contentLoader().clearCache();
+        useCoreInSeparateThread(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.contentLoader().clearCache();
+            }
+        });
     }
 
     /**
@@ -273,36 +306,53 @@ public class InAppStoryManager implements IASBackPressHandler {
     }
 
 
-    public void openGame(final String gameId, @NonNull Context context) {
-        core.gamesAPI().open(context, gameId);
+    public void openGame(final String gameId, @NonNull final Context context) {
+        useCoreInSeparateThread(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+
+                core.gamesAPI().open(context, gameId);
+            }
+        });
     }
 
     public static boolean isStoryReaderOpened() {
-        return getInstance() != null && getInstance()
-                .core
+        InAppStoryManager inAppStoryManager = getInstance();
+        return inAppStoryManager != null
+                && inAppStoryManager.core != null
+                && inAppStoryManager.core
                 .screensManager()
                 .getStoryScreenHolder()
                 .isOpened();
     }
 
     public static boolean isGameReaderOpened() {
-        return getInstance() != null && getInstance()
-                .core
+        InAppStoryManager inAppStoryManager = getInstance();
+        return inAppStoryManager != null
+                && inAppStoryManager.core != null
+                && inAppStoryManager.core
                 .screensManager()
                 .getGameScreenHolder()
                 .isOpened();
     }
 
     public static boolean isInAppMessageReaderOpened() {
-        return getInstance() != null && getInstance()
-                .core
+        InAppStoryManager inAppStoryManager = getInstance();
+        return inAppStoryManager != null
+                && inAppStoryManager.core != null
+                && inAppStoryManager.core
                 .screensManager()
                 .getIAMScreenHolder()
                 .isOpened();
     }
 
     public void closeGame() {
-        core.gamesAPI().close();
+        useCoreInSeparateThread(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.gamesAPI().close();
+            }
+        });
     }
 
     /**
@@ -312,23 +362,39 @@ public class InAppStoryManager implements IASBackPressHandler {
     /**
      * use to set callback on different errors
      */
-    public void setErrorCallback(ErrorCallback errorCallback) {
-        core.callbacksAPI().setCallback(IASCallbackType.ERROR, errorCallback);
+    public void setErrorCallback(final ErrorCallback errorCallback) {
+        useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+
+                core.callbacksAPI().setCallback(IASCallbackType.ERROR, errorCallback);
+            }
+        });
     }
 
 
     /**
      * use to set callback on different errors
      */
-    public void setExceptionCallback(ExceptionCallback exceptionCallback) {
-        core.callbacksAPI().setCallback(IASCallbackType.EXCEPTION, exceptionCallback);
+    public void setExceptionCallback(final ExceptionCallback exceptionCallback) {
+        useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.callbacksAPI().setCallback(IASCallbackType.EXCEPTION, exceptionCallback);
+            }
+        });
     }
 
     /**
      * use to set callback on share click
      */
-    public void setClickOnShareStoryCallback(ClickOnShareStoryCallback clickOnShareStoryCallback) {
-        core.callbacksAPI().setCallback(IASCallbackType.CLICK_SHARE, clickOnShareStoryCallback);
+    public void setClickOnShareStoryCallback(final ClickOnShareStoryCallback clickOnShareStoryCallback) {
+        useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.callbacksAPI().setCallback(IASCallbackType.CLICK_SHARE, clickOnShareStoryCallback);
+            }
+        });
     }
 
 
@@ -388,7 +454,6 @@ public class InAppStoryManager implements IASBackPressHandler {
         useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-
                 core.callbacksAPI().setCallback(IASCallbackType.CLOSE_STORY, closeStoryCallback);
             }
         });
@@ -401,7 +466,6 @@ public class InAppStoryManager implements IASBackPressHandler {
         useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-
                 core.callbacksAPI().setCallback(IASCallbackType.FAVORITE, favoriteStoryCallback);
             }
         });
@@ -426,7 +490,6 @@ public class InAppStoryManager implements IASBackPressHandler {
         useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-
                 core.callbacksAPI().setCallback(IASCallbackType.SHOW_SLIDE, showSlideCallback);
             }
         });
@@ -439,7 +502,6 @@ public class InAppStoryManager implements IASBackPressHandler {
         useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-
                 core.callbacksAPI().setCallback(IASCallbackType.SHOW_STORY, showStoryCallback);
             }
         });
@@ -592,7 +654,7 @@ public class InAppStoryManager implements IASBackPressHandler {
 
 
     public void removeFromFavorite(final int storyId) {
-        useCore(new UseIASCoreCallback() {
+        useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
                 core.favoritesAPI().removeByStoryId(storyId);
@@ -602,7 +664,7 @@ public class InAppStoryManager implements IASBackPressHandler {
     }
 
     public void removeAllFavorites() {
-        useCore(new UseIASCoreCallback() {
+        useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
                 core.favoritesAPI().removeAll();
@@ -652,6 +714,12 @@ public class InAppStoryManager implements IASBackPressHandler {
             core.contentLoader().inAppMessageDownloadManager().clearSubscribers();
             core.settingsAPI().isSoundOn(!context.getResources().getBoolean(R.bool.defaultMuted));
             core.inAppStoryService().onCreate();
+            useCoreInSeparateThread(new UseIASCoreCallback() {
+                @Override
+                public void use(@NonNull IASCore core) {
+                    Thread.setDefaultUncaughtExceptionHandler(new IASExceptionHandler(core));
+                }
+            });
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -831,7 +899,7 @@ public class InAppStoryManager implements IASBackPressHandler {
     }
 
     public static void logout() {
-        InAppStoryManager.useCore(new UseIASCoreCallback() {
+        InAppStoryManager.useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull final IASCore core) {
                 InAppStoryService.useInstance(new UseServiceInstanceCallback() {
@@ -890,7 +958,7 @@ public class InAppStoryManager implements IASBackPressHandler {
 
 
     public void preloadGames() {
-        useCore(new UseIASCoreCallback() {
+        useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
 
@@ -1027,7 +1095,7 @@ public class InAppStoryManager implements IASBackPressHandler {
             final AppearanceManager appearanceManager,
             final IStackFeedResult stackFeedResult
     ) {
-        useCore(new UseIASCoreCallback() {
+        useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
 
@@ -1044,7 +1112,7 @@ public class InAppStoryManager implements IASBackPressHandler {
      * @param manager      (manager) {@link AppearanceManager} for reader. May be null
      */
     public void showOnboardingStories(final String feed, final List<String> tags, final Context outerContext, final AppearanceManager manager) {
-        useCore(new UseIASCoreCallback() {
+        useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
 
@@ -1061,7 +1129,7 @@ public class InAppStoryManager implements IASBackPressHandler {
      * @param manager      (manager) {@link AppearanceManager} for reader. May be null
      */
     public void showOnboardingStories(final String feed, final Context outerContext, final AppearanceManager manager) {
-        useCore(new UseIASCoreCallback() {
+        useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
 
@@ -1079,7 +1147,7 @@ public class InAppStoryManager implements IASBackPressHandler {
      * @param manager      (manager) {@link AppearanceManager} for reader. May be null
      */
     public void showOnboardingStories(final List<String> tags, final Context outerContext, final AppearanceManager manager) {
-        useCore(new UseIASCoreCallback() {
+        useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
 
@@ -1095,7 +1163,7 @@ public class InAppStoryManager implements IASBackPressHandler {
      * @param manager      (manager) {@link AppearanceManager} for reader. May be null
      */
     public void showOnboardingStories(final Context outerContext, final AppearanceManager manager) {
-        useCore(new UseIASCoreCallback() {
+        useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
 
@@ -1112,7 +1180,7 @@ public class InAppStoryManager implements IASBackPressHandler {
      * @param manager      (manager) {@link AppearanceManager} for reader. May be null
      */
     public void showOnboardingStories(final int limit, final String feed, final List<String> tags, final Context outerContext, final AppearanceManager manager) {
-        useCore(new UseIASCoreCallback() {
+        useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
                 core.onboardingsAPI().show(outerContext, feed, manager, tags, limit);
@@ -1128,7 +1196,7 @@ public class InAppStoryManager implements IASBackPressHandler {
      * @param manager      (manager) {@link AppearanceManager} for reader. May be null
      */
     public void showOnboardingStories(final int limit, final String feed, final Context outerContext, final AppearanceManager manager) {
-        useCore(new UseIASCoreCallback() {
+        useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
 
@@ -1146,7 +1214,7 @@ public class InAppStoryManager implements IASBackPressHandler {
      * @param manager      (manager) {@link AppearanceManager} for reader. May be null
      */
     public void showOnboardingStories(final int limit, final List<String> tags, final Context outerContext, final AppearanceManager manager) {
-        useCore(new UseIASCoreCallback() {
+        useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
 
@@ -1162,7 +1230,7 @@ public class InAppStoryManager implements IASBackPressHandler {
      * @param manager      (manager) {@link AppearanceManager} for reader. May be null
      */
     public void showOnboardingStories(final int limit, final Context outerContext, final AppearanceManager manager) {
-        useCore(new UseIASCoreCallback() {
+        useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
 
@@ -1181,7 +1249,7 @@ public class InAppStoryManager implements IASBackPressHandler {
      * @param callback (callback) custom action when story is loaded
      */
     public void showStory(final String storyId, final Context context, final AppearanceManager manager, final IShowStoryCallback callback) {
-        useCore(new UseIASCoreCallback() {
+        useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
 
@@ -1191,7 +1259,7 @@ public class InAppStoryManager implements IASBackPressHandler {
     }
 
     public void showStory(final String storyId, final Context context, final AppearanceManager manager, final IShowStoryCallback callback, final Integer slide) {
-        useCore(new UseIASCoreCallback() {
+        useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
 
@@ -1206,7 +1274,7 @@ public class InAppStoryManager implements IASBackPressHandler {
                               final AppearanceManager manager,
                               final IShowStoryOnceCallback callback
     ) {
-        useCore(new UseIASCoreCallback() {
+        useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
 
@@ -1223,7 +1291,7 @@ public class InAppStoryManager implements IASBackPressHandler {
      * @param manager (manager) {@link AppearanceManager} for reader. May be null
      */
     public void showStory(final String storyId, final Context context, final AppearanceManager manager) {
-        useCore(new UseIASCoreCallback() {
+        useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
 
@@ -1236,7 +1304,7 @@ public class InAppStoryManager implements IASBackPressHandler {
             final List<String> inAppMessageIds,
             final InAppMessageLoadCallback callback
     ) {
-        useCore(new UseIASCoreCallback() {
+        useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
 
@@ -1248,7 +1316,7 @@ public class InAppStoryManager implements IASBackPressHandler {
     public void preloadInAppMessages(
             final InAppMessageLoadCallback callback
     ) {
-        useCore(new UseIASCoreCallback() {
+        useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
 
@@ -1273,7 +1341,7 @@ public class InAppStoryManager implements IASBackPressHandler {
             final int containerId,
             final InAppMessageScreenActions screenActions
     ) {
-        useCore(new UseIASCoreCallback() {
+        useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
                 core.inAppMessageAPI().show(

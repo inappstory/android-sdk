@@ -1,8 +1,5 @@
 package com.inappstory.sdk.core;
 
-import android.os.Handler;
-import android.util.Log;
-
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.core.api.IASCallbackType;

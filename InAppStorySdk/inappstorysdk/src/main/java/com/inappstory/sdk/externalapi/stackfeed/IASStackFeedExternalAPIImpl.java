@@ -20,7 +20,7 @@ public class IASStackFeedExternalAPIImpl implements IASStackFeed {
             final List<String> tags,
             final IStackFeedResult stackFeedResult
     ) {
-        InAppStoryManager.useCore(new UseIASCoreCallback() {
+        InAppStoryManager.useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
                 core.stackFeedAPI().get(feed, uniqueStackId, appearanceManager, tags, stackFeedResult);

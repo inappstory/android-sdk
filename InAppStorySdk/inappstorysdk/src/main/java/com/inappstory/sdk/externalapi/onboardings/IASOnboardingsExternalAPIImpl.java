@@ -21,7 +21,7 @@ public class IASOnboardingsExternalAPIImpl implements IASOnboardings {
             final List<String> tags,
             final int limit
     ) {
-        InAppStoryManager.useCore(new UseIASCoreCallback() {
+        InAppStoryManager.useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
                 core.onboardingsAPI().show(

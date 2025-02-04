@@ -1,7 +1,5 @@
 package com.inappstory.sdk.core.api;
 
-import android.content.Context;
-
 import androidx.fragment.app.FragmentManager;
 
 import com.inappstory.sdk.inappmessage.InAppMessageLoadCallback;

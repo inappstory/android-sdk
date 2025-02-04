@@ -22,7 +22,7 @@ public class IASGamesExternalAPIImpl implements IASGames {
     }
 
     public void open(@NonNull final Context context, final String gameId) {
-        InAppStoryManager.useCore(new UseIASCoreCallback() {
+        InAppStoryManager.useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
                 core.gamesAPI().open(context, gameId);
@@ -41,7 +41,7 @@ public class IASGamesExternalAPIImpl implements IASGames {
 
     @Override
     public void preloadGames() {
-        InAppStoryManager.useCore(new UseIASCoreCallback() {
+        InAppStoryManager.useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
                 core.contentPreload().restartGamePreloader();
