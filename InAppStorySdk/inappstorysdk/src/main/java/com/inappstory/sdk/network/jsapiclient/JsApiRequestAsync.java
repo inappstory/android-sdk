@@ -2,6 +2,7 @@ package com.inappstory.sdk.network.jsapiclient;
 
 import android.content.Context;
 
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 
 import java.util.Map;
@@ -54,7 +55,7 @@ public class JsApiRequestAsync implements Callable<JsApiResponse> {
             );
             return s;
         } catch (Exception e) {
-            InAppStoryService.createExceptionLog(e);
+            InAppStoryManager.handleException(e);
             JsApiResponse response = new JsApiResponse();
             response.status = 12002;
             response.requestId = requestId;

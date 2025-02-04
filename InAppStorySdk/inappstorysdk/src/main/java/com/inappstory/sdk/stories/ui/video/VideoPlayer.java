@@ -15,6 +15,7 @@ import android.view.ViewParent;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 
 import java.io.File;
@@ -142,7 +143,7 @@ public class VideoPlayer extends TextureView implements TextureView.SurfaceTextu
                 }
             });
         } catch (Exception e) {
-            InAppStoryService.createExceptionLog(e);
+            InAppStoryManager.handleException(e);
             e.printStackTrace();
         }
 

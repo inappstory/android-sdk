@@ -189,7 +189,7 @@ public class IASStatisticStoriesV1Impl implements IASStatisticStoriesV1 {
 
                     }
                 } catch (Exception e) {
-                    InAppStoryService.createExceptionLog(e);
+                    core.exceptionManager().createExceptionLog(e);
                 }
             }
         });

@@ -360,7 +360,7 @@ public class StoriesDialogFragment extends DialogFragment implements IASBackPres
                     fragmentArgs.getInt(CS_STORY_READER_ANIMATION, ANIMATION_CUBE));
             bundle.putString(CS_READER_SETTINGS, JsonParser.getJson(storiesReaderSettings));
         } catch (Exception e) {
-            InAppStoryService.createExceptionLog(e);
+            InAppStoryManager.handleException(e);
             e.printStackTrace();
         }
 

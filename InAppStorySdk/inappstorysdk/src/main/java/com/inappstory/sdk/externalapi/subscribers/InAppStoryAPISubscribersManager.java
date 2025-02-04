@@ -170,7 +170,7 @@ public class InAppStoryAPISubscribersManager {
                         public void onDefault() {
                             InAppStoryManager.useCore(new UseIASCoreCallback() {
                                 @Override
-                                public void use(@NonNull IASCore core) {
+                                public void use(final @NonNull IASCore core) {
                                     new ConnectionCheck().check(
                                             context,
                                             new ConnectionCheckCallback(core) {
@@ -182,7 +182,7 @@ public class InAppStoryAPISubscribersManager {
                                                         i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                                                         context.startActivity(i);
                                                     } catch (Exception ignored) {
-                                                        InAppStoryService.createExceptionLog(ignored);
+                                                        core.exceptionManager().createExceptionLog(ignored);
                                                     }
                                                 }
                                             }

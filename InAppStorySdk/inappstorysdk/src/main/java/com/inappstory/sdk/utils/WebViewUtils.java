@@ -1,17 +1,18 @@
 package com.inappstory.sdk.utils;
 
-import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.os.Build;
 import android.webkit.CookieManager;
 
 import androidx.webkit.WebViewCompat;
 
+import com.inappstory.sdk.core.IASCore;
+
 public class WebViewUtils {
-    public static boolean isWebViewEnabled(Context context) {
+    public static boolean isWebViewEnabled(IASCore core) {
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                PackageInfo packageInfo = WebViewCompat.getCurrentWebViewPackage(context);
+                PackageInfo packageInfo = WebViewCompat.getCurrentWebViewPackage(core.appContext());
                 return packageInfo != null;
             } else {
                 CookieManager.getInstance();

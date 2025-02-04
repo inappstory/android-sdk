@@ -124,19 +124,6 @@ public class WebPageConverter {
         return newData[0];
     }
 
-    public void replaceEmptyAndLoad(
-            IASCore core,
-            int index, String layout,
-            WebPageConvertCallback callback) {
-        try {
-            String wData = layout
-                    .replace("//_ratio = 0.66666666666,", "")
-                    .replace("{{%content}}", "");
-            callback.onConvert("", wData, index);
-        } catch (Exception e) {
-            InAppStoryService.createExceptionLog(e);
-        }
-    }
 
     private Pair<String, String> replacePlaceholders(
             IASCore core,
@@ -182,7 +169,7 @@ public class WebPageConverter {
                             .replace("{{%content}}", localData);
                     callback.onConvert(localData, wData, index);
                 } catch (Exception e) {
-                    InAppStoryService.createExceptionLog(e);
+                    core.exceptionManager().createExceptionLog(e);
                 }
             }
         });

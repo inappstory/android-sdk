@@ -17,6 +17,7 @@ import androidx.annotation.NonNull;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.IASCoreImpl;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.IASStatisticStoriesV1;
@@ -206,6 +207,7 @@ public class SessionManager {
             }
             return;
         }
+
         Context context = core.appContext();
         final String platform = "android";
         final IASDataSettingsHolder dataSettingsHolder = (IASDataSettingsHolder) core.settingsAPI();
@@ -224,7 +226,7 @@ public class SessionManager {
         try {
             pInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
         } catch (PackageManager.NameNotFoundException e) {
-            InAppStoryService.createExceptionLog(e);
+            core.exceptionManager().createExceptionLog(e);
         }
         final String appVersion = (pInfo != null ? pInfo.versionName : "");
         final String appBuild = (pInfo != null ? Integer.toString(pInfo.versionCode) : "");

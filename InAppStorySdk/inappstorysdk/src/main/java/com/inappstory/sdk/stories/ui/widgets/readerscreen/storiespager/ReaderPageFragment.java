@@ -166,7 +166,7 @@ public class ReaderPageFragment extends Fragment {
             }
             close.setLayoutParams(layoutParams);
         } catch (Exception e) {
-            InAppStoryService.createExceptionLog(e);
+            InAppStoryManager.handleException(e);
         }
     }
 
@@ -392,7 +392,7 @@ public class ReaderPageFragment extends Fragment {
         try {
             return createFragmentView(container);
         } catch (Exception e) {
-            InAppStoryService.createExceptionLog(e);
+            InAppStoryManager.handleException(e);
             return new View(getContext());
         }
     }

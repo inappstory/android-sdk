@@ -1,6 +1,7 @@
 package com.inappstory.sdk.core.api;
 
 public enum IASCallbackType {
+    EXCEPTION,
     ERROR,
     SHOW_STORY,
     SHOW_IN_APP_MESSAGE,

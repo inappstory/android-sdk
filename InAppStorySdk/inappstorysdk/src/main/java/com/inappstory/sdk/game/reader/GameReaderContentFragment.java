@@ -621,7 +621,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
             }
             forceFinish();
         } catch (Exception e) {
-            InAppStoryService.createExceptionLog(e);
+            InAppStoryManager.handleException(e);
             closing = false;
         }
     }

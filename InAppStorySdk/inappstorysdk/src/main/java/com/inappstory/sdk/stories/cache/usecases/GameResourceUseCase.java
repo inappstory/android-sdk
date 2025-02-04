@@ -193,8 +193,7 @@ public class GameResourceUseCase extends GetCacheFileUseCase<Void> {
                 e.printStackTrace();
             }
         } catch (Exception e) {
-            InAppStoryService.createExceptionLog(e);
-            e.printStackTrace();
+            core.exceptionManager().createExceptionLog(e);
             useCaseCallback.onError(e.getMessage());
         }
     }

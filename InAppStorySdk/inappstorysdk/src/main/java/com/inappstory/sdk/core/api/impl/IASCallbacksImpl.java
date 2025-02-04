@@ -8,6 +8,7 @@ import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.IASCallbacks;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.inappmessage.InAppMessageLoadCallback;
+import com.inappstory.sdk.stories.callbacks.ExceptionCallback;
 import com.inappstory.sdk.stories.callbacks.ShareCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.errors.ErrorCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.gamereader.GameReaderCallback;
@@ -40,6 +41,12 @@ public class IASCallbacksImpl implements IASCallbacks {
             @NonNull UseIASCallback useIASCallback
     ) {
         switch (type) {
+            case EXCEPTION:
+                if (exceptionCallback != null) {
+                    useIASCallback.use(exceptionCallback);
+                    return;
+                }
+                break;
             case ERROR:
                 if (errorCallback != null) {
                     useIASCallback.use(errorCallback);
@@ -136,6 +143,9 @@ public class IASCallbacksImpl implements IASCallbacks {
             case ERROR:
                 errorCallback = (ErrorCallback) callback;
                 return;
+            case EXCEPTION:
+                exceptionCallback = (ExceptionCallback) callback;
+                return;
             case FAVORITE:
                 favoriteStoryCallback = (FavoriteStoryCallback) callback;
                 return;
@@ -181,6 +191,7 @@ public class IASCallbacksImpl implements IASCallbacks {
     }
 
 
+    private ExceptionCallback exceptionCallback;
     private ErrorCallback errorCallback;
     private GameReaderCallback gameReaderCallback;
     private OnboardingLoadCallback onboardingLoadCallback;

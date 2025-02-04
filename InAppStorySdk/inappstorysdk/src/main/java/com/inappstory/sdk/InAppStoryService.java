@@ -25,7 +25,7 @@ public class InAppStoryService {
 
     public static InAppStoryService getInstance() {
         InAppStoryManager manager = InAppStoryManager.getInstance();
-        if (manager == null) return null;
+        if (manager == null || manager.iasCore() == null) return null;
         return manager.iasCore().inAppStoryService();
     }
 
@@ -217,18 +217,6 @@ public class InAppStoryService {
     }
 
 
-    public void clearSubscribers() {
-        for (ListManager listManager : listSubscribers) {
-            listManager.clear();
-        }
-        synchronized (stackStoryObservers) {
-            stackStoryObservers.clear();
-        }
-        tempListSubscribers.clear();
-        listSubscribers.clear();
-    }
-
-
     public void removeListSubscriber(ListManager listManager) {
         if (listSubscribers == null) return;
         listManager.clear();
@@ -237,17 +225,6 @@ public class InAppStoryService {
         listSubscribers.remove(listManager);
     }
 
-    public static void createExceptionLog(final Throwable throwable) {
-        InAppStoryManager.useCore(new UseIASCoreCallback() {
-            @Override
-            public void use(@NonNull IASCore core) {
-                ExceptionManager em = new ExceptionManager(core);
-                ExceptionLog el = em.generateExceptionLog(throwable);
-                em.saveException(el);
-                em.sendException(el);
-            }
-        });
-    }
 
     public void onCreate() {
         this.apiSubscribersManager = new InAppStoryAPISubscribersManager(core);

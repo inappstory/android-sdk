@@ -57,7 +57,7 @@ public class GameMainFragment extends Fragment
                 t.addToBackStack(fragmentTag);
                 t.commit();
             } catch (IllegalStateException e) {
-                InAppStoryService.createExceptionLog(e);
+                InAppStoryManager.handleException(e);
                 forceFinish();
             }
         }

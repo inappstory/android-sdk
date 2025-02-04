@@ -98,8 +98,13 @@ public class GameActivity extends AppCompatActivity implements BaseGameScreen {
                         .replace(R.id.stories_fragments_layout, fragment, fragmentTag);
                 t.addToBackStack(fragmentTag);
                 t.commit();
-            } catch (IllegalStateException e) {
-                InAppStoryService.createExceptionLog(e);
+            } catch (final IllegalStateException e) {
+                InAppStoryManager.useCore(new UseIASCoreCallback() {
+                    @Override
+                    public void use(@NonNull IASCore core) {
+                        core.exceptionManager().createExceptionLog(e);
+                    }
+                });
                 forceFinish();
             }
         }

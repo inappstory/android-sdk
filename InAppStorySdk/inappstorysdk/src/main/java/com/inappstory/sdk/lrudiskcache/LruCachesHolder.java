@@ -76,7 +76,7 @@ public class LruCachesHolder {
                     CacheType.VOD
             );
         } catch (IOException e) {
-            InAppStoryService.createExceptionLog(e);
+            core.exceptionManager().createExceptionLog(e);
         }
     }
 

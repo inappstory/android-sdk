@@ -524,7 +524,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryScree
             t.addToBackStack("TEST");
             t.commit();
         } catch (IllegalStateException e) {
-            InAppStoryService.createExceptionLog(e);
+            InAppStoryManager.handleException(e);
             finishWithoutAnimation();
         }
     }
@@ -539,7 +539,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryScree
                 t.addToBackStack("STORIES_FRAGMENT");
                 t.commit();
             } catch (IllegalStateException e) {
-                InAppStoryService.createExceptionLog(e);
+                InAppStoryManager.handleException(e);
                 finishWithoutAnimation();
             }
         } else {

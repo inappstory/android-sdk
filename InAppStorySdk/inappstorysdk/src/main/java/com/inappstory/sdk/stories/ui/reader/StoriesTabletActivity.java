@@ -581,7 +581,7 @@ public class StoriesTabletActivity extends AppCompatActivity implements BaseStor
             t.addToBackStack(null);
             t.commit();
         } catch (IllegalStateException e) {
-            InAppStoryService.createExceptionLog(e);
+            InAppStoryManager.handleException(e);
             finishWithoutAnimation();
         }
     }
@@ -596,7 +596,7 @@ public class StoriesTabletActivity extends AppCompatActivity implements BaseStor
                 t.addToBackStack(null);
                 t.commit();
             } catch (IllegalStateException e) {
-                InAppStoryService.createExceptionLog(e);
+                InAppStoryManager.handleException(e);
                 finishWithoutAnimation();
             }
         } else {

@@ -820,7 +820,7 @@ public abstract class StoriesMainFragment extends Fragment implements
             t.addToBackStack("STORIES_LOADER_FRAGMENT");
             t.commitAllowingStateLoss();
         } catch (Exception e) {
-            InAppStoryService.createExceptionLog(e);
+            InAppStoryManager.handleException(e);
             forceFinish();
         }
     }

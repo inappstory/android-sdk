@@ -3,6 +3,7 @@ package com.inappstory.sdk.stories.utils;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.network.JsonParser;
@@ -17,8 +18,6 @@ public class KeyValueStorage {
         this.core = core;
     }
 
-
-    private Context context;
 
     private static final String SHARED_PREFERENCES_DEFAULT = "key_value_prefs";
 
@@ -67,44 +66,5 @@ public class KeyValueStorage {
         return getKeyValuePrefs().getString(key, def);
     }
 
-    /**
-     * Сохранение json объекта
-     */
-    public void saveObject(String key, Object value) {
-        if (getKeyValuePrefs() == null) return;
-        try {
-            SharedPreferences.Editor editor = getKeyValuePrefs().edit();
-            editor.putString(key, JsonParser.getJson(value));
-            editor.apply();
-        } catch (Exception e) {
-            InAppStoryService.createExceptionLog(e);
-        }
-    }
-
-    /**
-     * Получение json объекта
-     */
-    public <T> T getObject(String key, Class<T> type) {
-        if (getKeyValuePrefs() == null) return null;
-        String jsonString = getKeyValuePrefs().getString(key, null);
-        if (jsonString != null) {
-            return JsonParser.fromJson(jsonString, type);
-        }
-        return null;
-    }
-
-
-    /**
-     * Сохранение json объекта
-     */
-    public void saveMap(String key, HashMap value) {
-        SharedPreferences.Editor editor = getKeyValuePrefs().edit();
-        try {
-            editor.putString(key, JsonParser.getJson(value));
-            editor.apply();
-        } catch (Exception e) {
-            InAppStoryService.createExceptionLog(e);
-        }
-    }
 
 }

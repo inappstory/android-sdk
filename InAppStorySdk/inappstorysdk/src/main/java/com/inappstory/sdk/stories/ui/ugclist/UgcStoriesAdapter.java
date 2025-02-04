@@ -263,8 +263,8 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
                                                             i.setData(Uri.parse(current.deeplink()));
                                                             i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                                                             context.startActivity(i);
-                                                        } catch (Exception ignored) {
-                                                            InAppStoryService.createExceptionLog(ignored);
+                                                        } catch (Exception e) {
+                                                            InAppStoryManager.handleException(e);
                                                         }
                                                     }
                                                 }

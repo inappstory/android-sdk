@@ -310,7 +310,7 @@ public class StackStoryObserver implements IStackFeedActions {
                                                 i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                                                 context.startActivity(i);
                                             } catch (Exception ignored) {
-                                                InAppStoryService.createExceptionLog(ignored);
+                                                core.exceptionManager().createExceptionLog(ignored);
                                             }
                                         }
                                     }

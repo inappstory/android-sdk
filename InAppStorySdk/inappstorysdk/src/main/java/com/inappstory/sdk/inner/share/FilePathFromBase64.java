@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.util.Base64;
 
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 
 import java.io.File;
@@ -59,7 +60,7 @@ public class FilePathFromBase64 implements Callable<ArrayList<String>> {
             stream.close();
             return file.getAbsolutePath();
         } catch (IOException e) {
-            InAppStoryService.createExceptionLog(e);
+            InAppStoryManager.handleException(e);
             return null;
         }
     }

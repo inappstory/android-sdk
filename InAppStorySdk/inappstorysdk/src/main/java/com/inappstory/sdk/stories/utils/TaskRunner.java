@@ -3,6 +3,7 @@ package com.inappstory.sdk.stories.utils;
 import android.os.Handler;
 import android.os.Looper;
 
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 
 import java.util.concurrent.Callable;
@@ -30,7 +31,7 @@ public class TaskRunner {
                         }
                     });
                 } catch (Exception e) {
-                    InAppStoryService.createExceptionLog(e);
+                    InAppStoryManager.handleException(e);
                 }
             }
         });

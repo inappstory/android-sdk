@@ -1,6 +1,7 @@
 package com.inappstory.sdk.core;
 
 import android.content.Context;
+import android.os.Handler;
 
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryService;
@@ -45,6 +46,7 @@ import com.inappstory.sdk.core.dataholders.IStoriesListVMHolder;
 import com.inappstory.sdk.core.dataholders.StoriesListVMHolder;
 import com.inappstory.sdk.core.ui.screens.ScreensManager;
 import com.inappstory.sdk.network.NetworkClient;
+import com.inappstory.sdk.stories.exceptions.ExceptionManager;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
 import com.inappstory.sdk.stories.utils.SessionManager;
@@ -57,6 +59,7 @@ public class IASCoreImpl implements IASCore {
     private final IASFavorites favorites;
     private final IASGames games;
     private final IASManager manager;
+    private final ExceptionManager exceptionManager;
     private final IASOnboardings onboardings;
     private final IASDataSettings settings;
     private final IASSingleStory singleStory;
@@ -82,6 +85,7 @@ public class IASCoreImpl implements IASCore {
 
     public IASCoreImpl(Context context) {
         this.context = context;
+        exceptionManager = new ExceptionManager(this);
         contentHolder = new ContentHolder();
         contentLoader = new IASContentLoaderImpl(this);
         externalUtilsAPI = new IASExternalUtilsAPIImpl();
@@ -107,6 +111,7 @@ public class IASCoreImpl implements IASCore {
         inAppStoryService = new InAppStoryService(this);
         inAppMessages = new IASInAppMessageImpl(this);
         iasAssetsHolder = new IASAssetsHolderImpl(this);
+        Thread.setDefaultUncaughtExceptionHandler(new IASExceptionHandler(this));
         externalUtilsAPI.init();
     }
 
@@ -119,6 +124,11 @@ public class IASCoreImpl implements IASCore {
     @Override
     public void commonAppearance(AppearanceManager appearanceManager) {
         this.commonAppearance = appearanceManager;
+    }
+
+    @Override
+    public ExceptionManager exceptionManager() {
+        return exceptionManager;
     }
 
     @Override

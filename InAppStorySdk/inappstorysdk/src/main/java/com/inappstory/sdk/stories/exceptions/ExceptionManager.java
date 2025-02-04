@@ -1,5 +1,7 @@
 package com.inappstory.sdk.stories.exceptions;
 
+import android.util.Log;
+
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
@@ -20,7 +22,14 @@ public class ExceptionManager {
 
     private final IASCore core;
 
-    public void sendException(ExceptionLog log) {
+    public void createExceptionLog(Throwable throwable) {
+        ExceptionLog el = generateExceptionLog(throwable);
+        Log.d("EXCEPTION", throwable.getMessage() + "");
+        saveException(el);
+        sendException(el);
+    }
+
+    private void sendException(ExceptionLog log) {
         logException(log);
 
         final ExceptionLog copiedLog = new ExceptionLog();
@@ -76,7 +85,7 @@ public class ExceptionManager {
     }
 
 
-    public ExceptionLog generateExceptionLog(Throwable throwable) {
+    private ExceptionLog generateExceptionLog(Throwable throwable) {
         ExceptionLog log = new ExceptionLog();
         log.id = UUID.randomUUID().toString();
         log.timestamp = System.currentTimeMillis();
@@ -95,7 +104,7 @@ public class ExceptionManager {
         return log;
     }
 
-    public void saveException(ExceptionLog log) {
+    private void saveException(ExceptionLog log) {
         try {
             core.sharedPreferencesAPI().saveString(SAVED_EX, JsonParser.getJson(log));
         } catch (Exception e) {
@@ -103,7 +112,7 @@ public class ExceptionManager {
         }
     }
 
-    public ExceptionLog getSavedException() {
+    private ExceptionLog getSavedException() {
         String ex = core.sharedPreferencesAPI().getString(SAVED_EX, null);
         if (ex == null) return null;
         return JsonParser.fromJson(ex, ExceptionLog.class);

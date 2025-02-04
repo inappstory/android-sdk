@@ -684,7 +684,11 @@ public class StoriesList extends RecyclerView {
 
     public void loadStories() {
         InAppStoryManager.debugSDKCalls("StoriesList_loadStories", "");
-        loadStoriesLocal();
+        try {
+            loadStoriesLocal();
+        } catch (Throwable e) {
+            InAppStoryManager.handleException(e);
+        }
     }
 
 

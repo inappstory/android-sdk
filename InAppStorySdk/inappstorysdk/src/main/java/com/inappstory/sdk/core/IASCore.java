@@ -28,6 +28,7 @@ import com.inappstory.sdk.core.dataholders.IStoriesListVMHolder;
 import com.inappstory.sdk.core.ui.screens.ScreensManager;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.stories.cache.FilesDownloadManager;
+import com.inappstory.sdk.stories.exceptions.ExceptionManager;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
 import com.inappstory.sdk.stories.utils.SessionManager;
@@ -36,6 +37,7 @@ import com.inappstory.sdk.utils.IVibrateUtils;
 public interface IASCore {
     AppearanceManager commonAppearance();
     void commonAppearance(AppearanceManager appearanceManager);
+    ExceptionManager exceptionManager();
     Context appContext();
     IASCallbacks callbacksAPI();
     IASFavorites favoritesAPI();

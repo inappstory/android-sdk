@@ -38,7 +38,7 @@ public class IASWebViewClient extends WebViewClient {
         try {
             return core.contentLoader().getCommonCache().getFullFile(key);
         } catch (Exception e) {
-            InAppStoryService.createExceptionLog(e);
+            core.exceptionManager().createExceptionLog(e);
             return null;
         }
     }
@@ -82,7 +82,7 @@ public class IASWebViewClient extends WebViewClient {
                 response.setResponseHeaders(newHeaders);
                 return response;
             } catch (Exception e) {
-                InAppStoryService.createExceptionLog(e);
+                InAppStoryManager.handleException(e);
             }
         }
         return response;
