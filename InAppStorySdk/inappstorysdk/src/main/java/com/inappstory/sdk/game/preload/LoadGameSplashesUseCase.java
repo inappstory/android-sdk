@@ -133,7 +133,6 @@ public class LoadGameSplashesUseCase {
                                 JsonParser.getJson(gameData.splashAnimation())
                         );
                     } catch (Exception e) {
-                        throw new RuntimeException(e);
                     }
 
                     downloadSplash(

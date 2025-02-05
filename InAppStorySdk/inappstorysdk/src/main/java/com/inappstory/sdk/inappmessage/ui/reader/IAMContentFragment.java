@@ -92,12 +92,13 @@ public class IAMContentFragment extends Fragment implements Observer<IAMReaderSl
         @Override
         public void onUpdate(final STETypeAndData newValue) {
             if (newValue == null) return;
-            InAppStoryManager.useCore(new UseIASCoreCallback() {
+            InAppStoryManager.useCoreInSeparateThread(new UseIASCoreCallback() {
                 @Override
                 public void use(@NonNull IASCore core) {
                     switch (newValue.type()) {
                         case CALL_TO_ACTION:
-                            callToActionHandle(core,
+                            callToActionHandle(
+                                    core,
                                     (CallToActionData) newValue.data()
                             );
                             break;
@@ -108,10 +109,16 @@ public class IAMContentFragment extends Fragment implements Observer<IAMReaderSl
                             );
                             break;
                         case OPEN_STORY:
-                            openStoryHandle((ContentIdWithIndex) newValue.data());
+                            openStoryHandle(
+                                    core,
+                                    (ContentIdWithIndex) newValue.data()
+                            );
                             break;
                         case OPEN_GAME:
-                            openGameHandle((ContentId) newValue.data());
+                            openGameHandle(
+                                    core,
+                                    (ContentId) newValue.data()
+                            );
                             break;
 
                     }
@@ -121,49 +128,39 @@ public class IAMContentFragment extends Fragment implements Observer<IAMReaderSl
     };
 
 
-    private void openStoryHandle(final ContentIdWithIndex contentIdWithIndex) {
-        InAppStoryManager.useCoreInSeparateThread(new UseIASCoreCallback() {
-            @Override
-            public void use(@NonNull IASCore core) {
-                final AppearanceManager appearanceManager = AppearanceManager.checkOrCreateAppearanceManager(null);
-                try {
-                    ((IASSingleStoryImpl) core.singleStoryAPI()).show(
-                            requireActivity(),
-                            contentIdWithIndex.id() + "",
-                            appearanceManager,
-                            null,
-                            contentIdWithIndex.index(),
-                            true,
-                            SourceType.SINGLE,
-                            ShowStory.ACTION_CUSTOM
-                    );
-                } catch (Exception e) {
+    private void openStoryHandle(IASCore core, final ContentIdWithIndex contentIdWithIndex) {
+        try {
+            AppearanceManager appearanceManager = AppearanceManager.checkOrCreateAppearanceManager(null);
+            ((IASSingleStoryImpl) core.singleStoryAPI()).show(
+                    requireActivity(),
+                    contentIdWithIndex.id() + "",
+                    appearanceManager,
+                    null,
+                    contentIdWithIndex.index(),
+                    true,
+                    SourceType.SINGLE,
+                    ShowStory.ACTION_CUSTOM
+            );
+        } catch (Exception e) {
 
-                }
-            }
-        });
+        }
 
     }
 
-    private void openGameHandle(final ContentId contentId) {
-        InAppStoryManager.useCore(new UseIASCoreCallback() {
-            @Override
-            public void use(@NonNull IASCore core) {
-                try {
-                    core.screensManager().openScreen(
-                            requireActivity(),
-                            new LaunchGameScreenStrategy(core, true)
-                                    .data(new LaunchGameScreenData(
-                                            null,
-                                            null,
-                                            contentId.id()
-                                    ))
-                    );
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        });
+    private void openGameHandle(IASCore core, final ContentId contentId) {
+        try {
+            core.screensManager().openScreen(
+                    requireActivity(),
+                    new LaunchGameScreenStrategy(core, true)
+                            .data(new LaunchGameScreenData(
+                                    null,
+                                    null,
+                                    contentId.id()
+                            ))
+            );
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void jsSendApiRequestHandle(

@@ -7,4 +7,6 @@ public class InAppMessageEvent {
     int id;
     @SerializedName("name")
     String name;
+    @SerializedName("priority")
+    int priority;
 }
