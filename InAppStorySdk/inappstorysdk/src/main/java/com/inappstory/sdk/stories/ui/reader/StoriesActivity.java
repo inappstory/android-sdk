@@ -740,7 +740,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryScree
                 cleaned = true;
             }
         });
-        if (storiesContentFragment != null) {
+        if (storiesContentFragment != null && storiesContentFragment.readerManager != null) {
             storiesContentFragment.readerManager.refreshStoriesIds();
         }
     }

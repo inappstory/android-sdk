@@ -1,5 +1,7 @@
 package com.inappstory.sdk.core;
 
+import android.os.Looper;
+
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.core.api.IASCallbackType;
@@ -18,9 +20,10 @@ public class IASExceptionHandler implements Thread.UncaughtExceptionHandler {
     @Override
     public void uncaughtException(final @NonNull Thread t, @NonNull final Throwable e) {
         core.exceptionManager().createExceptionLog(e);
-
-        if (oldHandler != null)
-            oldHandler.uncaughtException(t, e);
+        if (t == Looper.getMainLooper().getThread()) {
+            if (oldHandler != null)
+                oldHandler.uncaughtException(t, e);
+        }
         core.callbacksAPI().useCallback(
                 IASCallbackType.EXCEPTION,
                 new UseIASCallback<ExceptionCallback>() {

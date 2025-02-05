@@ -569,6 +569,7 @@ public class ReaderManager {
     }
 
     public void refreshStoriesIds() {
+
         for (ContentIdWithIndex contentIdWithIndex : storiesIds) {
             contentIdWithIndex.index(0);
         }

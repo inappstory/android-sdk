@@ -122,7 +122,7 @@ public class IAMContentFragment extends Fragment implements Observer<IAMReaderSl
 
 
     private void openStoryHandle(final ContentIdWithIndex contentIdWithIndex) {
-        InAppStoryManager.useCore(new UseIASCoreCallback() {
+        InAppStoryManager.useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
                 final AppearanceManager appearanceManager = AppearanceManager.checkOrCreateAppearanceManager(null);

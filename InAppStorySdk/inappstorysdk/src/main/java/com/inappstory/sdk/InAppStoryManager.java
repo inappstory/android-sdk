@@ -714,12 +714,7 @@ public class InAppStoryManager implements IASBackPressHandler {
             core.contentLoader().inAppMessageDownloadManager().clearSubscribers();
             core.settingsAPI().isSoundOn(!context.getResources().getBoolean(R.bool.defaultMuted));
             core.inAppStoryService().onCreate();
-            useCoreInSeparateThread(new UseIASCoreCallback() {
-                @Override
-                public void use(@NonNull IASCore core) {
-                    Thread.setDefaultUncaughtExceptionHandler(new IASExceptionHandler(core));
-                }
-            });
+
         } catch (Exception e) {
             e.printStackTrace();
         }

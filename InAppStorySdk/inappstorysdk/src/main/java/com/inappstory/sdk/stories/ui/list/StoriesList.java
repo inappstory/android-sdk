@@ -842,9 +842,6 @@ public class StoriesList extends RecyclerView {
         InAppStoryManager.useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull final IASCore core) {
-                if (1 == 1) {
-                    throw new RuntimeException("testException");
-                }
                 if (((IASDataSettingsHolder) core.settingsAPI()).noCorrectUserIdOrDevice()) {
                     InAppStoryManager.showELog(
                             InAppStoryManager.IAS_ERROR_TAG,
