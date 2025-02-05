@@ -61,6 +61,7 @@ import com.inappstory.sdk.stories.ui.reader.animations.ZoomReaderFromCellAnimati
 import com.inappstory.sdk.stories.utils.IASBackPressHandler;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 import com.inappstory.sdk.stories.utils.Sizes;
+import com.inappstory.sdk.utils.SystemUiUtils;
 
 
 public class StoriesTabletActivity extends AppCompatActivity implements BaseStoryScreen, ShowGoodsCallback {
@@ -444,7 +445,7 @@ public class StoriesTabletActivity extends AppCompatActivity implements BaseStor
         IASCore core = inAppStoryManager.iasCore();
         int navColor = appearanceSettings.csNavBarColor();
         if (navColor != 0)
-            getWindow().setNavigationBarColor(navColor);
+            SystemUiUtils.setNavBarColor(navColor, getWindow());
         core.screensManager().getStoryScreenHolder().subscribeScreen(StoriesTabletActivity.this);
         View view = getCurrentFocus();
         if (view != null) {

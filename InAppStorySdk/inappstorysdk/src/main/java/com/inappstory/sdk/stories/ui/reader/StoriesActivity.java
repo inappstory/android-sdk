@@ -23,6 +23,7 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
+import com.google.android.material.internal.EdgeToEdgeUtils;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
@@ -59,6 +60,7 @@ import com.inappstory.sdk.core.ui.widgets.elasticview.DraggableElasticLayout;
 import com.inappstory.sdk.stories.utils.IASBackPressHandler;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 import com.inappstory.sdk.stories.utils.Sizes;
+import com.inappstory.sdk.utils.SystemUiUtils;
 
 
 public class StoriesActivity extends AppCompatActivity implements BaseStoryScreen, ShowGoodsCallback {
@@ -401,7 +403,6 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryScree
         super.onCreate(savedInstanceState1);
         setContentView(R.layout.cs_mainscreen_stories_draggable);
         InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
-
         launchData = (LaunchStoryScreenData) getIntent().
                 getSerializableExtra(LaunchStoryScreenData.SERIALIZABLE_KEY);
         appearanceSettings = (LaunchStoryScreenAppearance) getIntent()
@@ -411,9 +412,10 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryScree
             return;
         }
         IASCore core = inAppStoryManager.iasCore();
+
         int navColor = appearanceSettings.csNavBarColor();
         if (navColor != 0)
-            getWindow().setNavigationBarColor(navColor);
+            SystemUiUtils.setNavBarColor(navColor, getWindow());
         core.screensManager().getStoryScreenHolder().subscribeScreen(StoriesActivity.this);
         View view = getCurrentFocus();
         if (view != null) {

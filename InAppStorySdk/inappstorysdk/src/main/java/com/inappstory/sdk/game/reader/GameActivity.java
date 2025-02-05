@@ -24,6 +24,7 @@ import com.inappstory.sdk.stories.outercallbacks.common.objects.GameReaderAppear
 import com.inappstory.sdk.stories.outercallbacks.common.objects.GameReaderLaunchData;
 import com.inappstory.sdk.stories.ui.utils.FragmentAction;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
+import com.inappstory.sdk.utils.SystemUiUtils;
 
 
 public class GameActivity extends AppCompatActivity implements BaseGameScreen {
@@ -63,7 +64,7 @@ public class GameActivity extends AppCompatActivity implements BaseGameScreen {
 
     private void setStatusBarColor(String color) {
         if (color == null) return;
-        getWindow().setStatusBarColor(Color.parseColor(color));
+        SystemUiUtils.setStatusBarColor(Color.parseColor(color), getWindow());
         WindowInsetsControllerCompat windowInsetsController =
                 WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
         double bright = ColorUtils.getColorBright(getWindow().getStatusBarColor());
@@ -77,7 +78,7 @@ public class GameActivity extends AppCompatActivity implements BaseGameScreen {
 
     private void setNavBarColor(String color) {
         if (color == null) return;
-        getWindow().setNavigationBarColor(Color.parseColor(color));
+        SystemUiUtils.setNavBarColor(Color.parseColor(color), getWindow());
     }
 
     private void createGameContentFragment(

@@ -16,6 +16,7 @@ import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.utils.AnimUtils;
 import com.inappstory.sdk.core.utils.ColorUtils;
 import com.inappstory.sdk.core.utils.ViewUtils;
+import com.inappstory.sdk.utils.SystemUiUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -399,19 +400,14 @@ public class DraggableElasticLayout extends FrameLayout {
                            float rawOffset, float rawOffsetPixels) {
             if (elasticOffsetPixels > 0) {
                 // dragging downward, fade the status bar in proportion
-                activity.getWindow().setStatusBarColor(ColorUtils.modifyAlpha(activity.getWindow()
-                        .getStatusBarColor(), (int) ((1f - rawOffset) * statusBarAlpha)));
+                SystemUiUtils.modifyStatusBarColor((int) ((1f - rawOffset) * statusBarAlpha), activity.getWindow());
             } else if (elasticOffsetPixels == 0) {
                 // reset
-                activity.getWindow().setStatusBarColor(ColorUtils.modifyAlpha(
-                        activity.getWindow().getStatusBarColor(), statusBarAlpha));
-                activity.getWindow().setNavigationBarColor(ColorUtils.modifyAlpha(
-                        activity.getWindow().getNavigationBarColor(), navBarAlpha));
+                SystemUiUtils.modifyStatusBarColor(statusBarAlpha, activity.getWindow());
+                SystemUiUtils.modifyNabBarColor(navBarAlpha, activity.getWindow());;
             } else if (fadeNavBar) {
                 // dragging upward, fade the navigation bar in proportion
-                activity.getWindow().setNavigationBarColor(
-                        ColorUtils.modifyAlpha(activity.getWindow().getNavigationBarColor(),
-                                (int) ((1f - rawOffset) * navBarAlpha)));
+                SystemUiUtils.modifyNabBarColor((int) ((1f - rawOffset) * navBarAlpha), activity.getWindow());
             }
         }
 
