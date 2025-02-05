@@ -11,5 +11,6 @@ public interface IInAppMessage extends IReaderContent {
     long displayTo();
     IAMUiContainerType screenType();
     InAppMessageAppearance inAppMessageAppearance();
+    int getEventPriority(String eventToCompare);
     boolean belongsToEvent(String eventToCompare);
 }

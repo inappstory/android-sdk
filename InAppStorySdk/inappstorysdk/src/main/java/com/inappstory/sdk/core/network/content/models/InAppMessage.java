@@ -263,4 +263,16 @@ public class InAppMessage implements IInAppMessage {
         }
         return false;
     }
+
+    @Override
+    public int getEventPriority(@NonNull String eventToCompare) {
+        if (events != null) {
+            for (InAppMessageEvent event : events) {
+                if (Objects.equals(event.name, eventToCompare)) {
+                    return event.priority;
+                }
+            }
+        }
+        return -1;
+    }
 }

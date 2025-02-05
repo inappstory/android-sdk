@@ -25,7 +25,6 @@ import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenInAppMessageReader;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenReader;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
-import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 import com.inappstory.sdk.stories.utils.Sizes;
 
 import java.util.HashSet;
@@ -319,16 +318,21 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
                 core.contentHolder().readerContent().getByType(
                         ContentType.IN_APP_MESSAGE
                 );
+        int currentPriority = 0;
+        IInAppMessage resContent = null;
         if (readerContents != null) {
             for (IReaderContent content : readerContents) {
                 IInAppMessage inAppMessage = (IInAppMessage) content;
-                if (inAppMessage.belongsToEvent(inAppMessageOpenSettings.event()) &&
-                        checkContentForShownFrequency(inAppMessage)) {
-                    return content;
+                int messagePriority = inAppMessage.getEventPriority(inAppMessageOpenSettings.event());
+                if (messagePriority >= 0 && checkContentForShownFrequency(inAppMessage)) {
+                    if (messagePriority >= currentPriority) {
+                        currentPriority = messagePriority;
+                        resContent = inAppMessage;
+                    }
                 }
             }
         }
-        return null;
+        return resContent;
     }
 
     @Override
