@@ -231,6 +231,8 @@ public class StoriesContentFragment extends Fragment
                                                                     @Override
                                                                     public void onSuccess(boolean shared) {
                                                                         getStoriesReader().timerIsUnlocked();
+                                                                        readerManager.resumeCurrent(false);
+                                                                        readerManager.shareComplete();
                                                                     }
 
                                                                     @Override
