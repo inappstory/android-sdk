@@ -231,14 +231,14 @@ public class StoriesContentFragment extends Fragment
                                                                     @Override
                                                                     public void onSuccess(boolean shared) {
                                                                         getStoriesReader().timerIsUnlocked();
-                                                                        readerManager.resumeCurrent(false);
-                                                                        readerManager.shareComplete();
+                                                                        readerManager.shareComplete(true);
                                                                     }
 
                                                                     @Override
                                                                     public void onCancel() {
                                                                         getStoriesReader().timerIsUnlocked();
                                                                         readerManager.resumeCurrent(false);
+                                                                        readerManager.shareComplete(false);
                                                                     }
 
                                                                 }
@@ -351,15 +351,15 @@ public class StoriesContentFragment extends Fragment
     public void resume() {
         if (!created && readerManager != null) {
             readerManager.resumeCurrent(true);
-            InAppStoryManager.useCore(new UseIASCoreCallback() {
+            /*InAppStoryManager.useCore(new UseIASCoreCallback() {
                 @Override
                 public void use(@NonNull IASCore core) {
                     ShareProcessHandler shareProcessHandler = core.screensManager().getShareProcessHandler();
                     if (shareProcessHandler != null && shareProcessHandler.shareCompleteListener() != null) {
-                        readerManager.shareComplete();
+                        readerManager.shareComplete(true);
                     }
                 }
-            });
+            });*/
 
         }
         created = false;

@@ -534,7 +534,7 @@ public class ReaderManager {
         }
     }
 
-    void shareComplete() {
+    void shareComplete(boolean shared) {
         synchronized (subscribers) {
             for (ReaderPageManager pageManager : subscribers) {
                 pageManager.unlockShareButton();
@@ -542,7 +542,7 @@ public class ReaderManager {
         }
         ShareProcessHandler shareProcessHandler = core.screensManager().getShareProcessHandler();
         if (shareProcessHandler == null) return;
-        shareProcessHandler.shareCompleteListener().complete(true);
+        shareProcessHandler.shareCompleteListener().complete(shared);
         shareProcessHandler.clearShareIds();
     }
 
