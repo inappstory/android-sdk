@@ -14,6 +14,7 @@ import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASCallbacks;
 import com.inappstory.sdk.core.api.IASFavorites;
 import com.inappstory.sdk.core.api.IASGames;
+import com.inappstory.sdk.core.api.IASInAppMessage;
 import com.inappstory.sdk.core.api.IASManager;
 import com.inappstory.sdk.core.api.IASOnboardings;
 import com.inappstory.sdk.core.api.IASDataSettings;
@@ -24,6 +25,7 @@ import com.inappstory.sdk.externalapi.callbacks.IASCallbacksExternalAPIImpl;
 import com.inappstory.sdk.externalapi.favorites.IASFavoritesExternalAPIImpl;
 import com.inappstory.sdk.externalapi.games.IASGamesExternalAPIImpl;
 import com.inappstory.sdk.externalapi.iasmanager.IASManagerExternalAPIImpl;
+import com.inappstory.sdk.externalapi.inappmessage.IASInAppMessageAPIImpl;
 import com.inappstory.sdk.externalapi.onboardings.IASOnboardingsExternalAPIImpl;
 import com.inappstory.sdk.externalapi.settings.IASSettingsExternalAPIImpl;
 import com.inappstory.sdk.externalapi.single.IASSingleStoryExternalAPIImpl;
@@ -41,6 +43,7 @@ public class InAppStoryAPI {
     public IASOnboardings onboardings = new IASOnboardingsExternalAPIImpl();
     public IASStackFeed stackFeed = new IASStackFeedExternalAPIImpl();
     public IASStoryList storyList = new IASStoryListExternalAPIImpl();
+    public IASInAppMessage inAppMessage = new IASInAppMessageAPIImpl();
 
 
     public void addSubscriber(final IAPISubscriber subscriber) {

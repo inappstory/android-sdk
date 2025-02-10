@@ -19,6 +19,7 @@ import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.ui.screens.ShareProcessHandler;
 import com.inappstory.sdk.share.IASShareData;
+import com.inappstory.sdk.share.IShareCompleteListener;
 import com.inappstory.sdk.share.ShareListener;
 import com.inappstory.sdk.stories.callbacks.OverlappingContainerActions;
 import com.inappstory.sdk.stories.callbacks.ShareCallback;
@@ -57,12 +58,9 @@ public class OverlapFragment extends Fragment implements IASBackPressHandler {
                     } catch (IllegalStateException e) {
                         shareProcessHandler.setTempShareStatus(shared);
                     }
-                    ShareListener shareListener = shareProcessHandler.shareListener();
-                    if (shareListener != null) {
-                        if (shared)
-                            shareListener.onSuccess(true);
-                        else
-                            shareListener.onCancel();
+                    IShareCompleteListener shareCompleteListener = shareProcessHandler.shareCompleteListener();
+                    if (shareCompleteListener != null) {
+                        shareCompleteListener.complete(shared);
                     }
                 }
             });

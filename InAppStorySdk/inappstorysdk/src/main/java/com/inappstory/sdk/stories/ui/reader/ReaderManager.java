@@ -241,13 +241,18 @@ public class ReaderManager {
         }
     }
 
+    public void shareComplete(int storyId, String shareId, boolean shared) {
+        ReaderPageManager pageManager = getSubscriberByStoryId(storyId);
+        if (pageManager != null) pageManager.shareComplete(shareId, shared);
+    }
+
     public void showShareView(final InnerShareData shareData,
-                              final int storyId, final int slideIndex) {
+                              final int storyId, final int slideIndex, final String widgetId) {
         //pause();
         useContentFragment(new StoriesContentFragmentAction() {
             @Override
             public void invoke(StoriesContentFragment host) {
-                host.showShareView(shareData, storyId, slideIndex);
+                host.showShareView(shareData, storyId, slideIndex, widgetId);
             }
 
             @Override
@@ -532,16 +537,12 @@ public class ReaderManager {
         }
     }
 
-    void shareComplete() {
+    void unlockShareButton() {
         synchronized (subscribers) {
             for (ReaderPageManager pageManager : subscribers) {
                 pageManager.unlockShareButton();
             }
         }
-        ShareProcessHandler shareProcessHandler = core.screensManager().getShareProcessHandler();
-        if (shareProcessHandler == null) return;
-        shareProcessHandler.shareCompleteListener().complete(true);
-        shareProcessHandler.clearShareIds();
     }
 
     public int getCurrentStoryId() {

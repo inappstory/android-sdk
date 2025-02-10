@@ -447,21 +447,15 @@ public class StoriesViewManager {
             return;
         shareProcessHandler.isShareProcess(true);
         InnerShareData shareData = JsonParser.fromJson(data, InnerShareData.class);
-        shareProcessHandler.shareCompleteListener(
-                new IShareCompleteListener(id, storyId) {
-                    @Override
-                    public void complete(String shareId, boolean shared) {
-                        shareComplete(shareId, shared);
-                    }
-                }
-        );
+
         IReaderContent story = core.contentHolder().readerContent()
                 .getByIdAndType(storyId, pageManager.getViewContentType());
         if (story != null && shareData != null) {
             shareData.payload = story.slideEventPayload(index);
             pageManager.getParentManager().showShareView(
-                    shareData, storyId, index
+                    shareData, storyId, index, id
             );
+
         } else {
             shareProcessHandler.isShareProcess(false);
         }

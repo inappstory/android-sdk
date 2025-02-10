@@ -24,6 +24,7 @@ public class StoryShareBroadcastReceiver extends BroadcastReceiver {
                 if (shareCompleteListener != null) {
                     shareCompleteListener.complete(true);
                 }
+                shareProcessHandler.clearShareIds();
             }
         });
 

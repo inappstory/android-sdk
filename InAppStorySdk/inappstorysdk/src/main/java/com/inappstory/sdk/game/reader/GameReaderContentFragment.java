@@ -1388,10 +1388,10 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                         if (shareCompleteListener != null) {
                             shareCompleteListener.complete(shared);
                         }
+                        shareProcessHandler.clearShareIds();
                         if (!shared)
                             resumeGame();
                         shareViewIsShown = false;
-                        shareProcessHandler.clearShareIds();
                     }
                 });
             }
