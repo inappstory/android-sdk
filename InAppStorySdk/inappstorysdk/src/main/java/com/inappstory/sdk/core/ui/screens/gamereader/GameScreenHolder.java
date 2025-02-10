@@ -48,7 +48,6 @@ public class GameScreenHolder extends AbstractScreenHolder<BaseGameScreen, Launc
             GameReaderOverlapContainerDataForShare storyReaderShareData = (GameReaderOverlapContainerDataForShare) data;
             try {
                 shareProcessHandler.overlapFragmentObserver(observer);
-                shareProcessHandler.shareListener(storyReaderShareData.shareListener);
                 OverlapFragment overlapFragment = new OverlapFragment();
                 Bundle bundle = new Bundle();
                 bundle.putInt("storyId", storyReaderShareData.storyId);
