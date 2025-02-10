@@ -34,6 +34,8 @@ import com.inappstory.sdk.stories.ui.views.IASWebView;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
 import com.inappstory.sdk.utils.StringsUtils;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.lang.reflect.Type;
 import java.util.List;
 
@@ -46,6 +48,14 @@ public class GameManager {
     AbstractGameLogger logger;
 
     GameStoryData dataModel;
+
+    public void sendSdkError(Exception e) {
+        StringWriter sw = new StringWriter();
+        e.printStackTrace(new PrintWriter(sw));
+        String exceptionAsString = sw.toString();
+        if (logger != null)
+            logger.sendSdkError(e.getMessage(), exceptionAsString);
+    }
 
     public void setLogger(int loggerLevel) {
         switch (loggerLevel) {

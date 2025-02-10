@@ -26,48 +26,82 @@ public class GameJSInterface {
 
     @JavascriptInterface
     public int pausePlaybackOtherApp() {
-        return manager.pausePlaybackOtherApp();
+        try {
+            return manager.pausePlaybackOtherApp();
+        } catch (Exception e) {
+            manager.sendSdkError(e);
+            return 0;
+        }
+
     }
 
     @JavascriptInterface
     public void storySetLocalData(int storyId, String data, boolean sendToServer) {
-        manager.storySetData(data, sendToServer);
+        try {
+            manager.storySetData(data, sendToServer);
+        } catch (Exception e) {
+            manager.sendSdkError(e);
+        }
     }
 
     @JavascriptInterface
     public void openUrl(String data) {
-        manager.openUrl(data);
+        try {
+            manager.openUrl(data);
+        } catch (Exception e) {
+            manager.sendSdkError(e);
+        }
+
     }
 
     @JavascriptInterface
     public void vibrate(int[] vibratePattern) {
-        manager.vibrate(vibratePattern);
+        try {
+            manager.vibrate(vibratePattern);
+        } catch (Exception e) {
+            manager.sendSdkError(e);
+        }
     }
 
     @JavascriptInterface
     public void gameInstanceSetLocalData(String gameInstanceId, String data, boolean sendToServer) {
-        manager.gameInstanceSetData(gameInstanceId, data, sendToServer);
+        try {
+
+            manager.gameInstanceSetData(gameInstanceId, data, sendToServer);
+        } catch (Exception e) {
+            manager.sendSdkError(e);
+        }
     }
 
     @JavascriptInterface
     public String gameInstanceGetLocalData(String gameInstanceId) {
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service == null) return "";
-        String id = gameInstanceId;
-        if (id == null) id = manager.gameCenterId;
-        if (id == null) return "";
-        String res = KeyValueStorage.getString("gameInstance_" + id
-                + "__" + service.getUserId());
-        return res == null ? "" : res;
+        try {
+            InAppStoryService service = InAppStoryService.getInstance();
+            if (service == null) return "";
+            String id = gameInstanceId;
+            if (id == null) id = manager.gameCenterId;
+            if (id == null) return "";
+            String res = KeyValueStorage.getString("gameInstance_" + id
+                    + "__" + service.getUserId());
+            return res == null ? "" : res;
+        } catch (Exception e) {
+            manager.sendSdkError(e);
+            return "";
+        }
     }
 
     @JavascriptInterface
     public String storyGetLocalData(int storyId) {
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service == null) return "";
-        String res = KeyValueStorage.getString("story" + storyId
-                + "__" + service.getUserId());
-        return res == null ? "" : res;
+        try {
+            InAppStoryService service = InAppStoryService.getInstance();
+            if (service == null) return "";
+            String res = KeyValueStorage.getString("story" + storyId
+                    + "__" + service.getUserId());
+            return res == null ? "" : res;
+        } catch (Exception e) {
+            manager.sendSdkError(e);
+            return "";
+        }
     }
 
     @JavascriptInterface
@@ -75,21 +109,36 @@ public class GameJSInterface {
             String name,
             String data
     ) {
-        manager.jsEvent(name,  data);
-        logMethod("name:" + name + " | data:" + data);
+        try {
+            manager.jsEvent(name,  data);
+            logMethod("name:" + name + " | data:" + data);
+        } catch (Exception e) {
+            manager.sendSdkError(e);
+        }
+
     }
 
     @JavascriptInterface
     public void gameShouldForegroundCallback(String data) {
-        manager.gameShouldForegroundCallback(data);
-        logMethod(data);
+        try {
+            manager.gameShouldForegroundCallback(data);
+            logMethod(data);
+        } catch (Exception e) {
+            manager.sendSdkError(e);
+        }
+
     }
 
 
     @JavascriptInterface
     public void gameLoaded() {
-        manager.gameLoaded();
-        logMethod("");
+        try {
+            manager.gameLoaded();
+            logMethod("");
+        } catch (Exception e) {
+            manager.sendSdkError(e);
+        }
+
     }
 
     private void logMethod(String payload) {
@@ -99,49 +148,85 @@ public class GameJSInterface {
 
     @JavascriptInterface
     public void gameLoadFailed(String reason, boolean canTryReload) {
-        manager.gameLoadFailed(reason, canTryReload);
-        logMethod("reason:" + reason + " | canTryReload:" + canTryReload);
+        try {
+            manager.gameLoadFailed(reason, canTryReload);
+            logMethod("reason:" + reason + " | canTryReload:" + canTryReload);
+        } catch (Exception e) {
+            manager.sendSdkError(e);
+        }
     }
 
     @JavascriptInterface
     public void reloadGameReader() {
-        manager.clearTries();
-        manager.reloadGame();
-        logMethod("null");
+        try {
+            manager.clearTries();
+            manager.reloadGame();
+            logMethod("null");
+        } catch (Exception e) {
+            manager.sendSdkError(e);
+        }
     }
 
     @JavascriptInterface
     public void sendApiRequest(String data) {
-        manager.sendApiRequest(data);
-        logMethod(data);
+        try {
+            manager.sendApiRequest(data);
+            logMethod(data);
+        } catch (Exception e) {
+            manager.sendSdkError(e);
+        }
     }
 
     @JavascriptInterface
     public void gameComplete(String data) {
-        manager.gameCompleted(data, null, null);
-        logMethod(data);
+        try {
+            manager.gameCompleted(data, null, null);
+            logMethod(data);
+        } catch (Exception e) {
+            manager.sendSdkError(e);
+        }
+
     }
 
     @JavascriptInterface
     public void setAudioManagerMode(String mode) {
-        manager.setAudioManagerMode(mode);
+        try {
+            manager.setAudioManagerMode(mode);
+        } catch (Exception e) {
+            manager.sendSdkError(e);
+        }
+
     }
 
     @JavascriptInterface
     public void gameComplete(String data, String eventData, String urlOrOptions) {
-        manager.gameCompleted(data, urlOrOptions, eventData);
-        logMethod("data:" + data + " | deeplink:" + urlOrOptions + " | eventData:" + eventData);
+        try {
+            manager.gameCompleted(data, urlOrOptions, eventData);
+            logMethod("data:" + data + " | deeplink:" + urlOrOptions + " | eventData:" + eventData);
+        } catch (Exception e) {
+            manager.sendSdkError(e);
+        }
+
     }
 
     @JavascriptInterface
     public void gameStatisticEvent(String name, String data) {
-        manager.sendGameStat(name, data);
-        logMethod("name:" + name + " | data:" + data);
+        try {
+            manager.sendGameStat(name, data);
+            logMethod("name:" + name + " | data:" + data);
+        } catch (Exception e) {
+            manager.sendSdkError(e);
+        }
     }
 
     @JavascriptInterface
     public void showGoodsWidget(String id, String skus) {
-        manager.showGoods(skus, id);
+        try {
+            manager.showGoods(skus, id);
+        } catch (Exception e) {
+            manager.sendSdkError(e);
+        }
+
     }
 
     @JavascriptInterface
@@ -151,7 +236,11 @@ public class GameJSInterface {
 
     @JavascriptInterface
     public void share(String id, String data) {
-        manager.shareData(id, data);
+        try {
+            manager.shareData(id, data);
+        } catch (Exception e) {
+            manager.sendSdkError(e);
+        }
     }
 
 
@@ -159,11 +248,21 @@ public class GameJSInterface {
 
     @JavascriptInterface
     public void  openFilePicker(String data) {
-        manager.openFilePicker(data);
+        try {
+            manager.openFilePicker(data);
+        } catch (Exception e) {
+            manager.sendSdkError(e);
+        }
+
     }
 
     @JavascriptInterface
     public boolean hasFilePicker() {
-        return manager.hasFilePicker();
+        try {
+            return manager.hasFilePicker();
+        } catch (Exception e) {
+            manager.sendSdkError(e);
+            return false;
+        }
     }
 }

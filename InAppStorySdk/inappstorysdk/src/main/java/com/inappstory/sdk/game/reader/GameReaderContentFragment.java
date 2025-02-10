@@ -734,29 +734,35 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
 
             @Override
             public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
-                if (dataModel != null && webView != null) {
-                    webView.sendWebConsoleLog(consoleMessage,
-                            Integer.toString(dataModel.slideData.story.id),
-                            dataModel.slideData.index);
-                }
-                String msg = consoleMessage.message() + " -- From line "
-                        + consoleMessage.lineNumber() + " of "
-                        + consoleMessage.sourceId();
-                if (manager != null && manager.logger != null) {
-                    switch (consoleMessage.messageLevel()) {
-                        case ERROR:
-                            manager.logger.sendConsoleError(msg);
-                            break;
-                        case WARNING:
-                            manager.logger.sendConsoleWarn(msg);
-                            break;
-                        default:
-                            manager.logger.sendConsoleInfo(msg);
-                            break;
+                try {
+                    if (dataModel != null && webView != null) {
+                        webView.sendWebConsoleLog(consoleMessage,
+                                Integer.toString(dataModel.slideData.story.id),
+                                dataModel.slideData.index);
+                    }
+                    String msg = consoleMessage.message() + " -- From line "
+                            + consoleMessage.lineNumber() + " of "
+                            + consoleMessage.sourceId();
+                    if (manager != null && manager.logger != null) {
+                        switch (consoleMessage.messageLevel()) {
+                            case ERROR:
+                                manager.logger.sendConsoleError(msg);
+                                break;
+                            case WARNING:
+                                manager.logger.sendConsoleWarn(msg);
+                                break;
+                            default:
+                                manager.logger.sendConsoleInfo(msg);
+                                break;
+                        }
+                    }
+                    Log.d("InAppStory_SDK_Game", "Console: " +
+                            consoleMessage.messageLevel().name() + ": " + msg);
+                } catch (Exception e) {
+                    if (manager != null) {
+                        manager.sendSdkError(e);
                     }
                 }
-                Log.d("InAppStory_SDK_Game", "Console: " +
-                        consoleMessage.messageLevel().name() + ": " + msg);
                 return super.onConsoleMessage(consoleMessage);
             }
 
