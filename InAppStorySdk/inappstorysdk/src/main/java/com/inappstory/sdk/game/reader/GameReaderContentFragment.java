@@ -76,7 +76,6 @@ import com.inappstory.sdk.network.utils.UserAgent;
 import com.inappstory.sdk.share.IASShareData;
 import com.inappstory.sdk.share.IASShareManager;
 import com.inappstory.sdk.share.IShareCompleteListener;
-import com.inappstory.sdk.share.ShareListener;
 import com.inappstory.sdk.stories.api.interfaces.IGameCenterData;
 import com.inappstory.sdk.stories.api.models.GameCenterData;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderType;
@@ -362,20 +361,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                                                 new GameReaderOverlapContainerDataForShare()
                                                         .shareData(shareObject)
                                                         .slideIndex(slideIndex)
-                                                        .storyId(storyId)
-                                                        .shareListener(
-                                                                new ShareListener() {
-                                                                    @Override
-                                                                    public void onSuccess(boolean shared) {
-
-                                                                    }
-
-                                                                    @Override
-                                                                    public void onCancel() {
-
-                                                                    }
-                                                                }
-                                                        ),
+                                                        .storyId(storyId),
                                                 getBaseGameReader()
                                                         .getScreenFragmentManager(),
                                                 GameReaderContentFragment.this
