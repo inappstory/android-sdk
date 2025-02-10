@@ -101,7 +101,6 @@ public class VODCacheJournal {
                     );
                 }
             } catch (IOException ex) {
-                ex.printStackTrace();
             } finally {
                 if (stream != null) {
                     try {
@@ -135,6 +134,8 @@ public class VODCacheJournal {
                     }
                 }
             } catch (IOException ex) {
+
+            } finally {
                 if (stream != null) {
                     try {
                         stream.close();

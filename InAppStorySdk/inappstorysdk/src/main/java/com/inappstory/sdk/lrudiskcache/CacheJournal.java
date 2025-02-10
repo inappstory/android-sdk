@@ -191,6 +191,8 @@ public class CacheJournal {
                     stream.writeLong(item.getDownloadedSize());
                 }
             } catch (IOException ex) {
+
+            } finally {
                 if (stream != null) {
                     try {
                         stream.close();

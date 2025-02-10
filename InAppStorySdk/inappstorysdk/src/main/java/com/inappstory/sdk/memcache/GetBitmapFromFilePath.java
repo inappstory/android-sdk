@@ -29,7 +29,8 @@ public class GetBitmapFromFilePath implements Callable<Bitmap> {
         try {
             BitmapFactory.Options o = new BitmapFactory.Options();
             o.inJustDecodeBounds = true;
-            BitmapFactory.decodeStream(new FileInputStream(f), null, o);
+            FileInputStream is = new FileInputStream(f);
+            BitmapFactory.decodeStream(is, null, o);
             final int REQUIRED_SIZE = 1600;
             int width_tmp = o.outWidth, height_tmp = o.outHeight;
             int scale = 1;
@@ -40,6 +41,7 @@ public class GetBitmapFromFilePath implements Callable<Bitmap> {
             }
             BitmapFactory.Options o2 = new BitmapFactory.Options();
             o2.inSampleSize = scale;
+            is.close();
             FileInputStream fileInputStream = new FileInputStream(f);
             Bitmap bitmap = BitmapFactory.decodeStream(fileInputStream, null, o2);
             fileInputStream.close();
