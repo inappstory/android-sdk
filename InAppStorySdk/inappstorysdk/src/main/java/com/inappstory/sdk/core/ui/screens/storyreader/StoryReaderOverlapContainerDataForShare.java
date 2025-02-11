@@ -4,15 +4,10 @@ package com.inappstory.sdk.core.ui.screens.storyreader;
 import com.inappstory.sdk.core.ui.screens.holder.IOverlapContainerData;
 import com.inappstory.sdk.core.ui.screens.holder.OverlapContainerHolderType;
 import com.inappstory.sdk.share.IASShareData;
-import com.inappstory.sdk.share.ShareListener;
 
 public class StoryReaderOverlapContainerDataForShare implements IOverlapContainerData {
     public StoryReaderOverlapContainerDataForShare() {}
 
-    public StoryReaderOverlapContainerDataForShare shareListener(ShareListener shareListener) {
-        this.shareListener = shareListener;
-        return this;
-    }
 
     public StoryReaderOverlapContainerDataForShare slidePayload(String slidePayload) {
         this.slidePayload = slidePayload;
@@ -34,7 +29,6 @@ public class StoryReaderOverlapContainerDataForShare implements IOverlapContaine
         return this;
     }
 
-    ShareListener shareListener;
     String slidePayload;
     int storyId;
     int slideIndex;

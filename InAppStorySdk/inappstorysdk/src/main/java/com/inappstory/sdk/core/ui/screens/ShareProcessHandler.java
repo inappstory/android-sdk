@@ -1,7 +1,6 @@
 package com.inappstory.sdk.core.ui.screens;
 
 import com.inappstory.sdk.share.IShareCompleteListener;
-import com.inappstory.sdk.share.ShareListener;
 import com.inappstory.sdk.stories.ui.OverlapFragmentObserver;
 
 public final class ShareProcessHandler {
@@ -23,16 +22,6 @@ public final class ShareProcessHandler {
             this.sharingProcess = sharingProcess;
         }
     }
-
-    public ShareListener shareListener() {
-        return shareListener;
-    }
-
-    public void shareListener(ShareListener shareListener) {
-        this.shareListener = shareListener;
-    }
-
-    private ShareListener shareListener;
 
     public void setTempShareStatus(boolean tempShareStatus) {
         this.tempShareStatus = tempShareStatus;

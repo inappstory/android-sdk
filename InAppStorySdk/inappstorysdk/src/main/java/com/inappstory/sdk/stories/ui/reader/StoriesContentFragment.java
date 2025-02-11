@@ -38,7 +38,7 @@ import com.inappstory.sdk.inner.share.InnerShareFilesPrepare;
 import com.inappstory.sdk.inner.share.ShareFilesPrepareCallback;
 import com.inappstory.sdk.share.IASShareData;
 import com.inappstory.sdk.share.IASShareManager;
-import com.inappstory.sdk.share.ShareListener;
+import com.inappstory.sdk.share.IShareCompleteListener;
 import com.inappstory.sdk.stories.api.models.ContentIdWithIndex;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.callbacks.ShareCallback;
@@ -121,7 +121,7 @@ public class StoriesContentFragment extends Fragment
     }
 
     public void showShareView(final InnerShareData shareData,
-                              final int storyId, final int slideIndex) {
+                              final int storyId, final int slideIndex, final String widgetId) {
         Context context = getContext();
         if (shareData.getFiles().isEmpty()) {
             shareCustomOrDefault(
@@ -131,7 +131,8 @@ public class StoriesContentFragment extends Fragment
                             shareData.getPayload()
                     ),
                     storyId,
-                    slideIndex
+                    slideIndex,
+                    widgetId
             );
         } else {
             new InnerShareFilesPrepare().prepareFiles(context, new ShareFilesPrepareCallback() {
@@ -145,7 +146,8 @@ public class StoriesContentFragment extends Fragment
                                     shareData.getPayload()
                             ),
                             storyId,
-                            slideIndex
+                            slideIndex,
+                            widgetId
                     );
                 }
             }, shareData.getFiles());
@@ -204,20 +206,36 @@ public class StoriesContentFragment extends Fragment
 
     }
 
-    private void shareCustomOrDefault(final String slidePayload,
-                                      final IASShareData shareObject,
-                                      final int storyId,
-                                      final int slideIndex) {
+    private void shareCustomOrDefault(
+            final String slidePayload,
+            final IASShareData shareObject,
+            final int storyId,
+            final int slideIndex,
+            final String widgetId
+    ) {
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
             public void use(final @NonNull IASCore core) {
                 final Context context = getContext();
                 if (context == null) return;
-                core.screensManager().getShareProcessHandler().isShareProcess(false);
+                final ShareProcessHandler shareProcessHandler = core.screensManager().getShareProcessHandler();
+                shareProcessHandler.isShareProcess(false);
                 core.callbacksAPI().useCallback(IASCallbackType.SHARE_ADDITIONAL,
                         new UseIASCallback<ShareCallback>() {
                             @Override
                             public void use(@NonNull ShareCallback callback) {
+                                shareProcessHandler.shareCompleteListener(
+                                        new IShareCompleteListener(widgetId, storyId) {
+                                            @Override
+                                            public void complete(String shareId, boolean shared) {
+                                                getStoriesReader().timerIsUnlocked();
+                                                shareComplete(storyId, shareId, shared);
+                                                if (!paused)
+                                                    readerManager.resumeCurrent(false);
+                                                shareProcessHandler.clearShareIds();
+                                            }
+                                        }
+                                );
                                 core.screensManager()
                                         .getStoryScreenHolder()
                                         .openShareOverlapContainer(
@@ -225,24 +243,7 @@ public class StoriesContentFragment extends Fragment
                                                         .shareData(shareObject)
                                                         .slideIndex(slideIndex)
                                                         .storyId(storyId)
-                                                        .slidePayload(slidePayload)
-                                                        .shareListener(
-                                                                new ShareListener() {
-                                                                    @Override
-                                                                    public void onSuccess(boolean shared) {
-                                                                        getStoriesReader().timerIsUnlocked();
-                                                                        readerManager.shareComplete(true);
-                                                                    }
-
-                                                                    @Override
-                                                                    public void onCancel() {
-                                                                        getStoriesReader().timerIsUnlocked();
-                                                                        readerManager.resumeCurrent(false);
-                                                                        readerManager.shareComplete(false);
-                                                                    }
-
-                                                                }
-                                                        ),
+                                                        .slidePayload(slidePayload),
                                                 getStoriesReader()
                                                         .getScreenFragmentManager(),
                                                 StoriesContentFragment.this
@@ -253,6 +254,15 @@ public class StoriesContentFragment extends Fragment
 
                             @Override
                             public void onDefault() {
+                                shareProcessHandler.shareCompleteListener(
+                                        new IShareCompleteListener(widgetId, storyId) {
+                                            @Override
+                                            public void complete(String shareId, boolean shared) {
+                                                shareComplete(storyId, shareId, shared);
+                                                shareProcessHandler.clearShareIds();
+                                            }
+                                        }
+                                );
                                 new IASShareManager().shareDefault(
                                         StoryShareBroadcastReceiver.class,
                                         context,
@@ -263,6 +273,11 @@ public class StoriesContentFragment extends Fragment
             }
         });
     }
+
+    private void shareComplete(int storyId, String shareId, boolean shared) {
+        readerManager.shareComplete(storyId, shareId, shared);
+    }
+
 
     @Override
     public void onPageSelected(int position) {
@@ -351,24 +366,31 @@ public class StoriesContentFragment extends Fragment
     public void resume() {
         if (!created && readerManager != null) {
             readerManager.resumeCurrent(true);
-            /*InAppStoryManager.useCore(new UseIASCoreCallback() {
+            readerManager.unlockShareButton();
+            InAppStoryManager.useCore(new UseIASCoreCallback() {
                 @Override
                 public void use(@NonNull IASCore core) {
                     ShareProcessHandler shareProcessHandler = core.screensManager().getShareProcessHandler();
-                    if (shareProcessHandler != null && shareProcessHandler.shareCompleteListener() != null) {
-                        readerManager.shareComplete(true);
+                    if (shareProcessHandler != null) {
+                        IShareCompleteListener shareCompleteListener = shareProcessHandler.shareCompleteListener();
+                        if (shareCompleteListener != null)
+                            shareCompleteListener.complete(false);
+                        shareProcessHandler.clearShareIds();
                     }
                 }
-            });*/
+            });
 
         }
         created = false;
     }
 
+    private boolean paused = false;
+
     @Override
     public void onPause() {
         if (!timerIsLocked)
             pause();
+        paused = true;
         super.onPause();
     }
 
@@ -607,6 +629,7 @@ public class StoriesContentFragment extends Fragment
     public void onResume() {
         if (!timerIsLocked)
             resume();
+        paused = false;
         super.onResume();
     }
 

@@ -81,7 +81,6 @@ public class StoryScreenHolder extends AbstractScreenHolder<BaseStoryScreen, Lau
             StoryReaderOverlapContainerDataForShare storyReaderShareData = (StoryReaderOverlapContainerDataForShare) data;
             try {
                 shareProcessHandler.overlapFragmentObserver(observer);
-                shareProcessHandler.shareListener(storyReaderShareData.shareListener);
                 OverlapFragment overlapFragment = new OverlapFragment();
                 Bundle bundle = new Bundle();
                 bundle.putString("slidePayload", storyReaderShareData.slidePayload);

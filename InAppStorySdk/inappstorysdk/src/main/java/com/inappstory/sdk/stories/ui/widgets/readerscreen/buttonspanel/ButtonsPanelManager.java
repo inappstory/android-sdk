@@ -258,14 +258,6 @@ public class ButtonsPanelManager {
                     @Override
                     public void onSuccess(ShareObject response) {
                         core.statistic().profiling().setReady(shareUID);
-                        shareProcessHandler.shareCompleteListener(new IShareCompleteListener(
-                                null, storyId
-                        ) {
-                            @Override
-                            public void complete(String shareId, boolean shared) {
-                                pageManager.shareComplete(shareId, shared);
-                            }
-                        });
                         InnerShareData shareData = new InnerShareData();
                         shareData.text = response.getUrl();
                         shareData.payload = story.slideEventPayload(slideIndex);

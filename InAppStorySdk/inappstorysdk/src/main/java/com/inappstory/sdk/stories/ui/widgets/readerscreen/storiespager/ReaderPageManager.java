@@ -488,7 +488,7 @@ public class ReaderPageManager implements IReaderSlideViewModel {
             IReaderContent story = core.contentHolder().readerContent()
                     .getByIdAndType(storyId, getViewContentType());
             if (story != null)
-                parentManager.showShareView(shareData, storyId, slideIndex);
+                parentManager.showShareView(shareData, storyId, slideIndex, null);
         }
     }
 
