@@ -231,7 +231,9 @@ public class ReaderManager {
 
     public void gameComplete(String data, int storyId, int slideIndex) {
         ReaderPageManager pageManager = getSubscriberByStoryId(storyId);
-        if (pageManager != null) pageManager.gameComplete(data);
+        if (pageManager != null) {
+            pageManager.gameComplete(data);
+        }
     }
 
 
@@ -243,7 +245,10 @@ public class ReaderManager {
 
     public void shareComplete(int storyId, String shareId, boolean shared) {
         ReaderPageManager pageManager = getSubscriberByStoryId(storyId);
-        if (pageManager != null) pageManager.shareComplete(shareId, shared);
+        if (pageManager != null) {
+            pageManager.shareComplete(shareId, shared);
+            pageManager.unlockShareButton();
+        }
     }
 
     public void showShareView(final InnerShareData shareData,
