@@ -431,7 +431,7 @@ public class SessionManager {
                 );
             }
         });
-        core.network().setSessionId(null);
+        core.network().removeSessionId(oldSessionId);
         sessionHolder.clear(oldSessionId);
     }
 

@@ -431,6 +431,7 @@ public class StoriesList extends RecyclerView {
     }
 
     StoriesAdapter adapter;
+    boolean loadStoriesLaunched = false;
 
     @Override
     public void setLayoutManager(LayoutManager layoutManager) {
@@ -490,6 +491,7 @@ public class StoriesList extends RecyclerView {
     }
 
     public void refresh() {
+        loadStoriesLaunched = true;
         adapter = null;
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
@@ -683,6 +685,7 @@ public class StoriesList extends RecyclerView {
     LoadStoriesCallback lcallback;
 
     public void loadStories() {
+        loadStoriesLaunched = true;
         InAppStoryManager.debugSDKCalls("StoriesList_loadStories", "");
         try {
             loadStoriesLocal();

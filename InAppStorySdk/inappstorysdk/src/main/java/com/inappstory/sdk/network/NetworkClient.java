@@ -22,6 +22,7 @@ import java.lang.reflect.ParameterizedType;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -54,6 +55,8 @@ public class NetworkClient {
     }
 
     public void setBaseUrl(String baseUrl) {
+        if (this.baseUrl != null && Objects.equals(this.baseUrl, baseUrl)) return;
+        this.apiInterface = null;
         this.baseUrl = baseUrl;
         this.networkHandler = new NetworkHandler(baseUrl, core);
     }
@@ -175,6 +178,10 @@ public class NetworkClient {
 
     public void setSessionId(String sessionId) {
         networkHandler.setSessionId(sessionId);
+    }
+
+    public void removeSessionId(String sessionId) {
+        networkHandler.removeSessionId(sessionId);
     }
 
     public List<Header> generateHeaders(

@@ -897,13 +897,6 @@ public class InAppStoryManager implements IASBackPressHandler {
         InAppStoryManager.useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull final IASCore core) {
-                InAppStoryService.useInstance(new UseServiceInstanceCallback() {
-                    @Override
-                    public void use(@NonNull final InAppStoryService inAppStoryService) throws Exception {
-                        inAppStoryService.getListSubscribers().clear();
-                    }
-                });
-
                 final String sessionId = core.sessionManager().getSession().getSessionId();
                 core.storiesListVMHolder().clear();
                 core.contentLoader().storyDownloadManager().cleanTasks();

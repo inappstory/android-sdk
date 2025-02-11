@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 
 public final class NetworkHandler implements InvocationHandler {
 
@@ -57,6 +58,14 @@ public final class NetworkHandler implements InvocationHandler {
     public void setSessionId(String sessionId) {
         synchronized (sessionLock) {
             this.sessionId = sessionId;
+        }
+    }
+
+    public void removeSessionId(String sessionId) {
+        synchronized (sessionLock) {
+            if (sessionId == null) return;
+            if (Objects.equals(sessionId, this.sessionId))
+                this.sessionId = null;
         }
     }
 
