@@ -21,6 +21,7 @@ import com.inappstory.sdk.core.api.IASDataSettings;
 import com.inappstory.sdk.core.api.IASSingleStory;
 import com.inappstory.sdk.core.api.IASStackFeed;
 import com.inappstory.sdk.core.api.IASStoryList;
+import com.inappstory.sdk.externalapi.callbacks.IASCallbacksExternalAPI;
 import com.inappstory.sdk.externalapi.callbacks.IASCallbacksExternalAPIImpl;
 import com.inappstory.sdk.externalapi.favorites.IASFavoritesExternalAPIImpl;
 import com.inappstory.sdk.externalapi.games.IASGamesExternalAPIImpl;
@@ -35,7 +36,7 @@ import com.inappstory.sdk.externalapi.subscribers.IAPISubscriber;
 
 public class InAppStoryAPI {
     public IASFavorites favorites = new IASFavoritesExternalAPIImpl();
-    public IASCallbacks callbacks = new IASCallbacksExternalAPIImpl();
+    public IASCallbacksExternalAPI callbacks = new IASCallbacksExternalAPIImpl();
     public IASGames games = new IASGamesExternalAPIImpl();
     public IASManager inAppStoryManager = new IASManagerExternalAPIImpl();
     public IASDataSettings settings = new IASSettingsExternalAPIImpl();

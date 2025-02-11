@@ -24,9 +24,12 @@ import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.IASDataSettings;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.IASStatisticStoriesV1;
+import com.inappstory.sdk.inappmessage.CloseInAppMessageCallback;
 import com.inappstory.sdk.inappmessage.InAppMessageLoadCallback;
 import com.inappstory.sdk.inappmessage.InAppMessageOpenSettings;
 import com.inappstory.sdk.inappmessage.InAppMessageScreenActions;
+import com.inappstory.sdk.inappmessage.InAppMessageWidgetCallback;
+import com.inappstory.sdk.inappmessage.ShowInAppMessageCallback;
 import com.inappstory.sdk.lrudiskcache.CacheSize;
 import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.utils.HostFromSecretKey;
@@ -1321,6 +1324,34 @@ public class InAppStoryManager implements IASBackPressHandler {
             }
         });
 
+    }
+
+    public void setShowInAppMessageCallback(final ShowInAppMessageCallback callback) {
+        useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.callbacksAPI().setCallback(IASCallbackType.SHOW_IN_APP_MESSAGE, callback);
+            }
+        });
+    }
+
+    public void setCloseInAppMessageCallback(final CloseInAppMessageCallback callback) {
+        useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.callbacksAPI().setCallback(IASCallbackType.CLOSE_IN_APP_MESSAGE, callback);
+            }
+        });
+    }
+
+
+    public void setInAppMessageWidgetCallback(final InAppMessageWidgetCallback callback) {
+        useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.callbacksAPI().setCallback(IASCallbackType.IN_APP_MESSAGE_WIDGET, callback);
+            }
+        });
     }
 
     public void showInAppMessage(

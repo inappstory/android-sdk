@@ -7,7 +7,10 @@ import com.inappstory.sdk.core.api.IASCallback;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.IASCallbacks;
 import com.inappstory.sdk.core.api.UseIASCallback;
+import com.inappstory.sdk.inappmessage.CloseInAppMessageCallback;
 import com.inappstory.sdk.inappmessage.InAppMessageLoadCallback;
+import com.inappstory.sdk.inappmessage.InAppMessageWidgetCallback;
+import com.inappstory.sdk.inappmessage.ShowInAppMessageCallback;
 import com.inappstory.sdk.stories.callbacks.ExceptionCallback;
 import com.inappstory.sdk.stories.callbacks.ShareCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.errors.ErrorCallback;
@@ -131,6 +134,24 @@ public class IASCallbacksImpl implements IASCallbacks {
                     return;
                 }
                 break;
+            case SHOW_IN_APP_MESSAGE:
+                if (showInAppMessageCallback != null) {
+                    useIASCallback.use(showInAppMessageCallback);
+                    return;
+                }
+                break;
+            case CLOSE_IN_APP_MESSAGE:
+                if (closeInAppMessageCallback != null) {
+                    useIASCallback.use(closeInAppMessageCallback);
+                    return;
+                }
+                break;
+            case IN_APP_MESSAGE_WIDGET:
+                if (inAppMessageWidgetCallback != null) {
+                    useIASCallback.use(inAppMessageWidgetCallback);
+                    return;
+                }
+                break;
             default:
                 break;
         }
@@ -185,6 +206,15 @@ public class IASCallbacksImpl implements IASCallbacks {
             case IN_APP_MESSAGE_LOAD:
                 inAppMessageLoadCallback = (InAppMessageLoadCallback) callback;
                 return;
+            case SHOW_IN_APP_MESSAGE:
+                showInAppMessageCallback = (ShowInAppMessageCallback) callback;
+                return;
+            case CLOSE_IN_APP_MESSAGE:
+                closeInAppMessageCallback = (CloseInAppMessageCallback) callback;
+                return;
+            case IN_APP_MESSAGE_WIDGET:
+                inAppMessageWidgetCallback = (InAppMessageWidgetCallback) callback;
+                return;
             default:
                 break;
         }
@@ -202,6 +232,9 @@ public class IASCallbacksImpl implements IASCallbacks {
     private FavoriteStoryCallback favoriteStoryCallback;
     private LikeDislikeStoryCallback likeDislikeStoryCallback;
     private InAppMessageLoadCallback inAppMessageLoadCallback;
+    private ShowInAppMessageCallback showInAppMessageCallback;
+    private CloseInAppMessageCallback closeInAppMessageCallback;
+    private InAppMessageWidgetCallback inAppMessageWidgetCallback;
     private ShowSlideCallback showSlideCallback;
     private ShowStoryCallback showStoryCallback;
     private SingleLoadCallback singleLoadCallback;

@@ -9,6 +9,9 @@ import com.inappstory.sdk.core.api.IASCallback;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.IASCallbacks;
 import com.inappstory.sdk.core.api.UseIASCallback;
+import com.inappstory.sdk.inappmessage.CloseInAppMessageCallback;
+import com.inappstory.sdk.inappmessage.InAppMessageWidgetCallback;
+import com.inappstory.sdk.inappmessage.ShowInAppMessageCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.errors.ErrorCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.CallToActionCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickOnShareStoryCallback;
@@ -19,7 +22,7 @@ import com.inappstory.sdk.stories.outercallbacks.common.reader.ShowSlideCallback
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ShowStoryCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryWidgetCallback;
 
-public class IASCallbacksExternalAPIImpl implements IASCallbacks {
+public class IASCallbacksExternalAPIImpl implements IASCallbacksExternalAPI {
 
     private void useCore(UseIASCoreCallback callback) {
         InAppStoryManager.useCore(callback);
@@ -106,13 +109,65 @@ public class IASCallbacksExternalAPIImpl implements IASCallbacks {
         });
     }
 
-    @Override
-    public void useCallback(IASCallbackType type, @NonNull UseIASCallback useIASCallback) {
-        throw new NoSuchMethodError();
+    public void showInAppMessage(final ShowInAppMessageCallback showInAppMessageCallback) {
+        useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.callbacksAPI().setCallback(
+                        IASCallbackType.SHOW_IN_APP_MESSAGE,
+                        showInAppMessageCallback
+                );
+            }
+        });
+    }
+
+    public void closeInAppMessage(final CloseInAppMessageCallback closeInAppMessageCallback) {
+        useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.callbacksAPI().setCallback(
+                        IASCallbackType.CLOSE_IN_APP_MESSAGE,
+                        closeInAppMessageCallback
+                );
+            }
+        });
+    }
+
+    public void inAppMessageWidget(final InAppMessageWidgetCallback inAppMessageWidgetCallback) {
+        useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.callbacksAPI().setCallback(
+                        IASCallbackType.IN_APP_MESSAGE_WIDGET,
+                        inAppMessageWidgetCallback
+                );
+            }
+        });
     }
 
     @Override
-    public void setCallback(IASCallbackType type, IASCallback useIASCallback) {
-        throw new NoSuchMethodError();
+    public void useCallback(final IASCallbackType type, @NonNull final UseIASCallback useIASCallback) {
+        useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.callbacksAPI().useCallback(
+                        type,
+                        useIASCallback
+                );
+            }
+        });
+    }
+
+    @Override
+    public void setCallback(final IASCallbackType type, final IASCallback useIASCallback) {
+        useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.callbacksAPI().setCallback(
+                        type,
+                        useIASCallback
+                );
+            }
+        });
     }
 }
