@@ -11,10 +11,16 @@ public class IAMReaderState {
     public boolean showOnlyIfLoaded = false;
     public boolean contentIsPreloaded = false;
     public Integer iamId = null;
-    public SourceType sourceType = SourceType.IN_APP_MESSAGES;
+    public String event = null;
+    public SourceType sourceType = SourceType.EVENT_IN_APP_MESSAGE;
 
     public IAMReaderState iamId(Integer iamId) {
         this.iamId = iamId;
+        return this;
+    }
+
+    public IAMReaderState event(String event) {
+        this.event = event;
         return this;
     }
 
@@ -55,6 +61,7 @@ public class IAMReaderState {
                 .sourceType(this.sourceType)
                 .loadState(this.loadState)
                 .iamId(this.iamId)
+                .event(this.event)
                 .appearance(this.appearance)
                 .showOnlyIfLoaded(this.showOnlyIfLoaded)
                 .contentIsPreloaded(this.contentIsPreloaded);

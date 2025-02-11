@@ -276,6 +276,9 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
         }
         if (eventData != null) {
             final Map<String, String> widgetEventMap = JsonParser.toMap(eventData);
+            String event = readerViewModel.getCurrentState().event;
+            if (widgetEventMap != null)
+                widgetEventMap.put("event", event);
             core.callbacksAPI().useCallback(IASCallbackType.IN_APP_MESSAGE_WIDGET,
                     new UseIASCallback<InAppMessageWidgetCallback>() {
                         @Override

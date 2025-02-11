@@ -6,6 +6,6 @@ public enum SourceType {
     LIST,
     FAVORITE,
     STACK,
-    IN_APP_MESSAGES,
+    EVENT_IN_APP_MESSAGE,
     SINGLE_IN_APP_MESSAGE
 }

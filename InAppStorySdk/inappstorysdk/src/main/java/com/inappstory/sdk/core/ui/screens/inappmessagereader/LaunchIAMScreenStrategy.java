@@ -76,7 +76,7 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
                 new CheckLocalIAMCallback() {
                     @Override
                     public void success(IInAppMessage inAppMessage, boolean contentIsPreloaded) {
-                        SourceType sourceType = SourceType.IN_APP_MESSAGES;
+                        SourceType sourceType = SourceType.EVENT_IN_APP_MESSAGE;
                         if (inAppMessageOpenSettings.id() != null)
                             sourceType = SourceType.SINGLE_IN_APP_MESSAGE;
                         launchScreenSuccess(
@@ -262,6 +262,7 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
                 new IAMReaderState()
                         .sourceType(sourceType)
                         .iamId(inAppMessage.id())
+                        .event(inAppMessageOpenSettings.event())
                         .contentIsPreloaded(contentIsPreloaded)
                         .showOnlyIfLoaded(inAppMessageOpenSettings.showOnlyIfLoaded())
                         .appearance(appearance)

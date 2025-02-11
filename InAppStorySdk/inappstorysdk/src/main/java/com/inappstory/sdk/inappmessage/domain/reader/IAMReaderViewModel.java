@@ -41,6 +41,7 @@ public class IAMReaderViewModel implements IIAMReaderViewModel {
                 return new InAppMessageData(
                         inAppMessage.id(),
                         inAppMessage.statTitle(),
+                        readerState.event,
                         readerState.sourceType
                 );
             }
