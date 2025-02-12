@@ -114,8 +114,9 @@ public class StoriesLoaderFragment extends Fragment {
                 float sn = 805f / 428f;
                 LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) blackTop.getLayoutParams();
                 if (realProps > sn) {
-                    lp.height = (int) (screenSize.y - (screenSize.x * sn) - getPanelHeight(getContext()));
-                    setCutout(view, lp.height);
+                    int maxHeight = Math.max((int) (screenSize.y - (screenSize.x * sn) - getPanelHeight(getContext())), 0);
+                    lp.height = maxHeight;
+                    setCutout(view, maxHeight);
                 } else {
                     setCutout(view, topOffset);
                 }
