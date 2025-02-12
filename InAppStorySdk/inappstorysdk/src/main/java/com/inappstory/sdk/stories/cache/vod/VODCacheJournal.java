@@ -59,9 +59,7 @@ public class VODCacheJournal {
             if (journalFile == null) return;
             if (!journalFile.exists()) return;
             if (journalFile.length() == 0) return;
-            DataInputStream stream = null;
-            try {
-                stream = new DataInputStream(new FileInputStream(journalFile));
+            try (DataInputStream stream = new DataInputStream(new FileInputStream(journalFile))) {
                 int version = stream.readShort();
                 if (version != VERSION) {
                     Log.d("InAppStory_SDK_error", "Invalid journal " +
@@ -101,14 +99,7 @@ public class VODCacheJournal {
                     );
                 }
             } catch (IOException ex) {
-                ex.printStackTrace();
-            } finally {
-                if (stream != null) {
-                    try {
-                        stream.close();
-                    } catch (IOException ignored) {
-                    }
-                }
+
             }
         }
     }
@@ -118,9 +109,7 @@ public class VODCacheJournal {
             if (journalFile == null) return;
             if (!journalFile.exists()) return;
             List<VODCacheJournalItem> list = new ArrayList<>(vodItems.values());
-            DataOutputStream stream = null;
-            try {
-                stream = new DataOutputStream(new FileOutputStream(journalFile));
+            try (DataOutputStream stream = new DataOutputStream(new FileOutputStream(journalFile))) {
                 stream.writeShort(VERSION);
                 stream.writeInt(list.size());
                 for (VODCacheJournalItem item : list) {
@@ -135,12 +124,7 @@ public class VODCacheJournal {
                     }
                 }
             } catch (IOException ex) {
-                if (stream != null) {
-                    try {
-                        stream.close();
-                    } catch (IOException ignored) {
-                    }
-                }
+
             }
         }
     }

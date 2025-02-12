@@ -239,8 +239,9 @@ public class ReaderPageFragment extends Fragment {
                 float sn = 805f / 428f;
                 LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) blackTop.getLayoutParams();
                 if (realProps > sn) {
-                    lp.height = (int) (screenSize.y - (screenSize.x * sn) - getPanelHeight(getContext()));
-                    setCutout(view, lp.height);
+                    int positiveOffset = Math.max(0,(int) (screenSize.y - (screenSize.x * sn) - getPanelHeight(getContext())));
+                    lp.height = positiveOffset;
+                    setCutout(view, positiveOffset);
                 } else {
                     setCutout(view, topOffset);
                 }
