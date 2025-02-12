@@ -53,7 +53,11 @@ public class ButtonsPanel extends LinearLayout {
             favorite.setActivated(favVal == 1);
     }
 
-    public boolean isVisible = true;
+    public boolean panelIsVisible() {
+        return isVisible;
+    }
+
+    private boolean isVisible = true;
 
     public void setButtonsVisibility(
             LaunchStoryScreenAppearance readerSettings,

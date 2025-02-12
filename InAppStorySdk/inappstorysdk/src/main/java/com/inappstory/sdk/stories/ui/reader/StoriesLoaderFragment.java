@@ -10,6 +10,7 @@ import static com.inappstory.sdk.AppearanceManager.TOP_LEFT;
 import static com.inappstory.sdk.AppearanceManager.TOP_RIGHT;
 import static com.inappstory.sdk.AppearanceManager.TOP_START;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Point;
@@ -21,6 +22,7 @@ import android.view.DisplayCutout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowInsets;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
@@ -63,11 +65,13 @@ public class StoriesLoaderFragment extends Fragment {
         View closeButton = view.findViewById(R.id.ias_close_button);
         if (story.disableClose())
             closeButton.setVisibility(View.GONE);
+        boolean panelIsVisible = false;
         if (buttonsPanel != null && aboveButtonsPanel != null) {
             buttonsPanel.setButtonsVisibility(appearanceSettings,
                     story.hasLike(), story.hasFavorite(), story.hasShare(), story.hasAudio());
             buttonsPanel.setButtonsStatus(story.like(), story.favorite() ? 1 : 0);
             aboveButtonsPanel.setVisibility(buttonsPanel.getVisibility());
+            panelIsVisible = buttonsPanel.panelIsVisible();
         }
         StoryTimeline timeline = view.findViewById(R.id.ias_timeline);
         if (timeline != null) {
@@ -94,37 +98,69 @@ public class StoriesLoaderFragment extends Fragment {
                 );
             }
         }
-        setOffsets(view);
+        setOffsets(view, panelIsVisible);
     }
 
 
-    private void setOffsets(View view) {
+    private void setOffsets(View view, boolean panelIsVisible) {
         View blackTop = view.findViewById(R.id.ias_black_top);
-        if (!Sizes.isTablet(getContext())) {
+        Activity fragmentActivity = getActivity();
+        if (fragmentActivity == null) return;
+        if (!Sizes.isTablet(fragmentActivity)) {
             if (blackTop != null) {
                 Point screenSize;
                 Rect readerContainer = getArguments().getParcelable("readerContainer");
                 int topOffset = 0;
                 Point maxSize = Sizes.getScreenSize(getContext());
-                int height = Sizes.getFullPhoneHeight(getContext());
+                int height = Sizes.getFullPhoneHeight(fragmentActivity);
+                int topInsetOffset = 0;
+                int readerContainerTop = 0;
+                int bottomInsetOffset = 0;
+                int maxContentHeight = 0;
+                if (Build.VERSION.SDK_INT >= 23) {
+                    if (fragmentActivity.getWindow() != null) {
+                        WindowInsets windowInsets = fragmentActivity.getWindow().getDecorView().getRootWindowInsets();
+                        if (windowInsets != null) {
+                            topInsetOffset = windowInsets.getSystemWindowInsetTop();
+                            bottomInsetOffset = windowInsets.getSystemWindowInsetBottom();
+                        }
+                    }
+                }
                 if (readerContainer != null) {
                     screenSize = new Point(
                             Math.min(readerContainer.width(), maxSize.x),
                             Math.min(readerContainer.height(), height)
                     );
-                    topOffset = readerContainer.top;
                 } else {
                     screenSize = maxSize;
+                    screenSize.y = height;
                 }
-                float realProps = screenSize.y / ((float) screenSize.x);
-                float sn = 805f / 428f;
+
+                if (Build.VERSION.SDK_INT >= 28) {
+                    if (fragmentActivity.getWindow() != null &&
+                            fragmentActivity.getWindow().getDecorView().getRootWindowInsets() != null) {
+                        DisplayCutout cutout = getActivity().getWindow().getDecorView().getRootWindowInsets().getDisplayCutout();
+                        if (cutout != null) {
+                            View view1 = view.findViewById(R.id.ias_timeline_container);
+                            if (view1 != null) {
+                                RelativeLayout.LayoutParams lp1 = (RelativeLayout.LayoutParams) view1.getLayoutParams();
+                                lp1.topMargin = Math.max(cutout.getSafeInsetTop() - minusOffset, 0);
+                                view1.setLayoutParams(lp1);
+                            }
+                        }
+                    }
+                }
+                if (panelIsVisible)
+                float realProps = screenSize.y - Sizes.dpToPxExt(60, fragmentActivity) / ((float) screenSize.x);
+
+                float sn = 16f / 9f;
                 LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) blackTop.getLayoutParams();
                 if (realProps > sn) {
                     int positiveOffset = Math.max(0, (int) (screenSize.y - (screenSize.x * sn) - getPanelHeight(getContext())));
                     lp.height = positiveOffset;
-                    setCutout(view, positiveOffset);
+                    //setCutout(view, positiveOffset);
                 } else {
-                    setCutout(view, topOffset);
+                  //  setCutout(view, topOffset);
                 }
                 blackTop.setLayoutParams(lp);
             }
