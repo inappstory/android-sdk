@@ -41,6 +41,7 @@ import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderLau
 import com.inappstory.sdk.stories.outercallbacks.common.reader.CloseReader;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
+import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.statistic.GetOldStatisticManagerCallback;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
@@ -330,7 +331,12 @@ public class StoriesDialogFragment extends DialogFragment implements IASBackPres
         type = launchData.getType();
         draggableFrame = view.findViewById(R.id.draggable_frame);
         dialogContainer = view.findViewById(R.id.shrinkableDialogContainer);
-
+        view.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                closeStoryReader(CloseStory.CLICK);
+            }
+        });
         if (savedInstanceState == null) {
             storiesContentFragment = new StoriesContentFragment();
             Bundle args = new Bundle();

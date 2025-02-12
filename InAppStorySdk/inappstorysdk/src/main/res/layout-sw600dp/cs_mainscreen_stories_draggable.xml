@@ -6,10 +6,14 @@
     android:layout_height="match_parent"
     android:background="@android:color/transparent"
     tools:context="com.inappstory.sdk.stories.ui.reader.StoriesActivity">
-
+    <View
+        android:id="@+id/backgroundClick"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
     <FrameLayout
         android:id="@+id/shrinkableDialogContainer"
         android:layout_width="match_parent"
+        android:clickable="true"
         android:layout_gravity="center"
         android:layout_height="match_parent">
 
