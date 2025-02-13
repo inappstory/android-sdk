@@ -994,6 +994,15 @@ public class InAppStoryManager implements IASBackPressHandler {
         });
     }
 
+    public void userLogout() {
+        useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.settingsAPI().setUserId("");
+            }
+        });
+    }
+
     public String getUserId() {
         if (core == null) return null;
         return ((IASDataSettingsHolder) core.settingsAPI()).userId();

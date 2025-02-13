@@ -404,10 +404,10 @@ public class DraggableElasticLayout extends FrameLayout {
             } else if (elasticOffsetPixels == 0) {
                 // reset
                 SystemUiUtils.modifyStatusBarColor(statusBarAlpha, activity.getWindow());
-                SystemUiUtils.modifyNabBarColor(navBarAlpha, activity.getWindow());;
+            //    SystemUiUtils.modifyNabBarColor(navBarAlpha, activity.getWindow());;
             } else if (fadeNavBar) {
                 // dragging upward, fade the navigation bar in proportion
-                SystemUiUtils.modifyNabBarColor((int) ((1f - rawOffset) * navBarAlpha), activity.getWindow());
+        //        SystemUiUtils.modifyNabBarColor((int) ((1f - rawOffset) * navBarAlpha), activity.getWindow());
             }
         }
 

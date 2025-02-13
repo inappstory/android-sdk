@@ -64,7 +64,8 @@ public class ButtonsPanel extends LinearLayout {
             boolean hasLike,
             boolean hasFavorite,
             boolean hasShare,
-            boolean hasSound
+            boolean hasSound,
+            boolean isTablet
     ) {
         hasLike = hasLike && readerSettings.csHasLike();
         hasFavorite = hasFavorite && readerSettings.csHasFavorite();
@@ -83,7 +84,11 @@ public class ButtonsPanel extends LinearLayout {
             }
         });
         this.isVisible = (hasFavorite || hasLike || hasShare || hasSound);
-        setVisibility(VISIBLE);
+        if (!isVisible && isTablet) {
+            setVisibility(GONE);
+        } else {
+            setVisibility(VISIBLE);
+        }
     }
 
     @Override

@@ -59,6 +59,14 @@ public class Sizes {
         return metrics.heightPixels;
     }
 
+    public static int getFullPhoneWidth(Context context) {
+        DisplayMetrics metrics = new DisplayMetrics();
+        WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+        wm.getDefaultDisplay().getMetrics(metrics);
+        wm.getDefaultDisplay().getRealMetrics(metrics);
+        return metrics.widthPixels;
+    }
+
     public static int dpFloatToPxExt(float dp, Context context) {
         return Math.round(dp * getPixelScaleFactorExt(context));
     }

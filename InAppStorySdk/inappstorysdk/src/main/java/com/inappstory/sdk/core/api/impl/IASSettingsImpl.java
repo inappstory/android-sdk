@@ -50,6 +50,13 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
     @Override
     public void setUserId(final String newUserId, final String newUserSign) {
         if (deviceId == null && (newUserId == null || newUserId.isEmpty())) {
+            InAppStoryManager.showELog(
+                    InAppStoryManager.IAS_ERROR_TAG,
+                    StringsUtils.getErrorStringFromContext(
+                            core.appContext(),
+                            R.string.ias_usage_without_user_and_device
+                    )
+            );
             return;
         }
         if (newUserId == null || StringsUtils.getBytesLength(newUserId) > 255) {

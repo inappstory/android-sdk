@@ -23,7 +23,6 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
-import com.google.android.material.internal.EdgeToEdgeUtils;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
@@ -414,8 +413,8 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryScree
         IASCore core = inAppStoryManager.iasCore();
 
         int navColor = appearanceSettings.csNavBarColor();
-        if (navColor != 0)
-            SystemUiUtils.setNavBarColor(navColor, getWindow());
+     //   if (navColor != 0)
+     //       SystemUiUtils.setNavBarColor(navColor, getWindow());
         core.screensManager().getStoryScreenHolder().subscribeScreen(StoriesActivity.this);
         View view = getCurrentFocus();
         if (view != null) {

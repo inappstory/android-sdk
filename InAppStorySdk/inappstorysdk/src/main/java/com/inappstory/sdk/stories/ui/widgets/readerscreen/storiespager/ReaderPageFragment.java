@@ -11,6 +11,7 @@ import static com.inappstory.sdk.AppearanceManager.TOP_RIGHT;
 import static com.inappstory.sdk.AppearanceManager.TOP_START;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.LinearGradient;
@@ -29,6 +30,7 @@ import android.view.DisplayCutout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowInsets;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -200,7 +202,8 @@ public class ReaderPageFragment extends Fragment {
                     story.hasLike(),
                     story.hasFavorite(),
                     story.hasShare(),
-                    story.hasAudio()
+                    story.hasAudio(),
+                    Sizes.isTablet(getContext())
             );
             buttonsPanel.setButtonsStatus(story.like(), story.favorite() ? 1 : 0);
             aboveButtonsPanel.setVisibility(buttonsPanel.getVisibility());
@@ -219,58 +222,48 @@ public class ReaderPageFragment extends Fragment {
     }
 
     private void setOffsets(View view) {
-        if (!Sizes.isTablet(getContext())) {
+        Context context = view.getContext();
+        if (!Sizes.isTablet(context)) {
             if (blackTop != null) {
                 Point screenSize;
                 Rect readerContainer = getArguments().getParcelable("readerContainer");
-                int topOffset = 0;
-                Point maxSize = Sizes.getScreenSize(getContext());
-                int height = Sizes.getFullPhoneHeight(getContext());
+                int height = Sizes.getFullPhoneHeight(context);
+                int width = Sizes.getFullPhoneWidth(context);
+                int topInsetOffset = 0;
+                int bottomInsetOffset = 0;
+                if (Build.VERSION.SDK_INT >= 23) {
+                    if (context instanceof Activity && ((Activity) context).getWindow() != null) {
+                        WindowInsets windowInsets = ((Activity) context).getWindow().getDecorView().getRootWindowInsets();
+                        if (windowInsets != null) {
+                            topInsetOffset = Math.max(0, windowInsets.getSystemWindowInsetTop());
+                            bottomInsetOffset = Math.max(0, windowInsets.getSystemWindowInsetBottom());
+                        }
+                    }
+                }
                 if (readerContainer != null) {
                     screenSize = new Point(
-                            Math.min(readerContainer.width(), maxSize.x),
-                            Math.min(readerContainer.height(), height)
+                            Math.min(readerContainer.width(), width),
+                            Math.min(readerContainer.height(), height - topInsetOffset - bottomInsetOffset)
                     );
-                    topOffset = readerContainer.top;
                 } else {
-                    screenSize = maxSize;
+                    screenSize = new Point(
+                            width,
+                            height - topInsetOffset - bottomInsetOffset
+                    );
                 }
-                float realProps = screenSize.y / ((float) screenSize.x);
-                float sn = 805f / 428f;
+                int maxRatioHeight = (int) (screenSize.x * 2f);
+                int restHeight = Math.max(0, screenSize.y - maxRatioHeight) + topInsetOffset;
                 LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) blackTop.getLayoutParams();
-                if (realProps > sn) {
-                    int positiveOffset = Math.max(0,(int) (screenSize.y - (screenSize.x * sn) - getPanelHeight(getContext())));
-                    lp.height = positiveOffset;
-                    setCutout(view, positiveOffset);
-                } else {
-                    setCutout(view, topOffset);
-                }
-                blackTop.setLayoutParams(lp);
+                lp.height = restHeight;
+                blackTop.requestLayout();
             }
+
         }
     }
 
     private int getPanelHeight(Context context) {
         return Sizes.dpToPxExt(60, context);
     }
-
-    private void setCutout(View view, int minusOffset) {
-        if (Build.VERSION.SDK_INT >= 28) {
-            if (getActivity() != null && getActivity().getWindow() != null &&
-                    getActivity().getWindow().getDecorView().getRootWindowInsets() != null) {
-                DisplayCutout cutout = getActivity().getWindow().getDecorView().getRootWindowInsets().getDisplayCutout();
-                if (cutout != null) {
-                    View view1 = view.findViewById(R.id.ias_timeline_container);
-                    if (view1 != null) {
-                        RelativeLayout.LayoutParams lp1 = (RelativeLayout.LayoutParams) view1.getLayoutParams();
-                        lp1.topMargin = Math.max(cutout.getSafeInsetTop() - minusOffset, 0);
-                        view1.setLayoutParams(lp1);
-                    }
-                }
-            }
-        }
-    }
-
 
     View loader;
 

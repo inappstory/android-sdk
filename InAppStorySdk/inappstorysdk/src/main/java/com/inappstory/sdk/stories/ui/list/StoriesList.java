@@ -853,6 +853,7 @@ public class StoriesList extends RecyclerView {
                                     R.string.ias_usage_without_user_and_device
                             )
                     );
+                    setOrRefreshAdapter(new ArrayList<Integer>());
                     return;
                 }
 
@@ -891,6 +892,7 @@ public class StoriesList extends RecyclerView {
 
                     @Override
                     public void onError() {
+                        setOrRefreshAdapter(new ArrayList<Integer>());
                         if (callback != null)
                             callback.loadError(StringsUtils.getNonNull(getFeed()));
                     }
@@ -906,6 +908,7 @@ public class StoriesList extends RecyclerView {
 
             @Override
             public void error() {
+                setOrRefreshAdapter(new ArrayList<Integer>());
                 InAppStoryManager.showELog(
                         InAppStoryManager.IAS_ERROR_TAG,
                         StringsUtils.getErrorStringFromContext(
