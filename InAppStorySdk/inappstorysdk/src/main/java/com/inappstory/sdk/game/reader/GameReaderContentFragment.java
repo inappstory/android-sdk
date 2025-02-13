@@ -1144,7 +1144,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
 
     private String generateJsonConfig() {
         Context context = getContext();
-        if (context == null) return "";
+        if (context == null) return "{}";
         GameConfigOptions options = new GameConfigOptions();
         options.fullScreen = isFullscreen;
         NetworkClient networkClient = InAppStoryManager.getNetworkClient();
@@ -1210,7 +1210,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         try {
             return JsonParser.getJson(options);
         } catch (Exception e) {
-            return "";
+            return "{}";
         }
     }
 

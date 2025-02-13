@@ -7,6 +7,7 @@ import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.network.constants.HttpMethods;
 import com.inappstory.sdk.network.models.Request;
 import com.inappstory.sdk.network.utils.headers.Header;
+import com.inappstory.sdk.stories.api.models.logs.ApiLogRequest;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -33,6 +34,13 @@ public class RequestConnection {
                 request.getBody() != null &&
                 !request.getBody().isEmpty()
         ) {
+            ApiLogRequest requestLog = new ApiLogRequest();
+            requestLog.buildFromRequest(request, requestId);
+            Pair<HttpURLConnection, Map<String, List<String>>> connectionWithProperties = new Pair<>(connection, connectionProperties);
+            requestLog.setHeaders(connectionWithProperties.second);
+            InAppStoryManager.sendApiRequestLog(requestLog);
+            InAppStoryManager.showDLog("InAppStory_Network", requestLog.getCurl());
+
             InAppStoryManager.showDLog("InAppStory_Network", requestId + " " + connectionProperties);
             new PostRequestBody().writeToStream(connection, request.getBody());
             InAppStoryManager.showDLog("InAppStory_Network", requestId + " " + request.getBody());

@@ -227,7 +227,7 @@ public class StoriesDialogFragment extends DialogFragment implements IASBackPres
             }
         }
         dialogHeight = Math.min(dialogHeight, size.y);
-        int dialogWidth = Math.round(dialogHeight / 1.78f);
+        int dialogWidth = Math.round((dialogHeight - Sizes.dpToPxExt(60, getContext()))/ 1.55f);
         screenRectangle = new Rect(0, 0, dialogWidth, dialogHeight);
         if (dialogContainer != null) {
             FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) dialogContainer.getLayoutParams();

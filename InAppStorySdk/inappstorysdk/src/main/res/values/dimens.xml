@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <dimen name="cs_tablet_width">400dp</dimen>
-    <dimen name="cs_tablet_height">600dp</dimen>
+    <dimen name="cs_tablet_height">680dp</dimen>
 </resources>

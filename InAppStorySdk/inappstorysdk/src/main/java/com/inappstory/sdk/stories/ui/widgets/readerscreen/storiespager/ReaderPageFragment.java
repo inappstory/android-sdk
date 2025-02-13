@@ -209,7 +209,8 @@ public class ReaderPageFragment extends Fragment {
                     story.hasLike(),
                     story.hasFavorite(),
                     story.hasShare(),
-                    story.hasAudio()
+                    story.hasAudio(),
+                    Sizes.isTablet(getContext())
             );
             buttonsPanel.setButtonsStatus(story.getLike(), story.favorite ? 1 : 0);
             aboveButtonsPanel.setVisibility(buttonsPanel.getVisibility());

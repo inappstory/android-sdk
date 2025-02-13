@@ -64,8 +64,14 @@ public class StoriesLoaderFragment extends Fragment {
         if (story.disableClose)
             closeButton.setVisibility(View.GONE);
         if (buttonsPanel != null && aboveButtonsPanel != null) {
-            buttonsPanel.setButtonsVisibility(appearanceSettings,
-                    story.hasLike(), story.hasFavorite(), story.hasShare(), story.hasAudio());
+            buttonsPanel.setButtonsVisibility(
+                    appearanceSettings,
+                    story.hasLike(),
+                    story.hasFavorite(),
+                    story.hasShare(),
+                    story.hasAudio(),
+                    Sizes.isTablet(getContext())
+            );
             buttonsPanel.setButtonsStatus(story.getLike(), story.favorite ? 1 : 0);
             aboveButtonsPanel.setVisibility(buttonsPanel.getVisibility());
         }
