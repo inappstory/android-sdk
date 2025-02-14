@@ -13,7 +13,10 @@ class VibrateUtils implements IVibrateUtils {
     WeakReference<Vibrator> vibratorWeakReference;
 
     public void vibrate(Context context, int[] vibratePattern) {
-        Vibrator vibrator = vibratorWeakReference.get();
+        Vibrator vibrator = null;
+        if (vibratorWeakReference != null) {
+            vibrator = vibratorWeakReference.get();
+        }
         if (vibrator != null) {
             vibrator.cancel();
         } else {
