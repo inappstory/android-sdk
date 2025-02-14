@@ -425,11 +425,11 @@ public class StoriesTabletActivity extends AppCompatActivity implements BaseStor
         int cleanSize = Math.min(size.x, size.y) - Sizes.dpToPxExt(80, this);
         maxHeight = Math.min(
                 cleanSize,
-                Sizes.dpToPxExt(578, this)
+                Sizes.dpToPxExt(680, this)
         );
         maxWidth = Math.min(
-                340 * cleanSize / 578,
-                Sizes.dpToPxExt(340, this)
+                400 * cleanSize / 680,
+                Sizes.dpToPxExt(400, this)
         );
 
         InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
