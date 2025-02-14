@@ -96,9 +96,10 @@ public class StoryTimelineManager {
     }
 
     private void setProgressSync(float progress) {
-        if (host == null) return;
+        StoryTimeline localHost = host;
+        if (localHost == null) return;
         if (contentWithTimeline != null) {
-            host.setState(
+            localHost.setState(
                     new StoryTimelineState(
                             slidesCount,
                             currentIndex,
@@ -110,7 +111,7 @@ public class StoryTimelineManager {
                     )
             );
         } else {
-            host.setState(
+            localHost.setState(
                     new StoryTimelineState(
                             slidesCount,
                             currentIndex,
@@ -122,8 +123,9 @@ public class StoryTimelineManager {
     }
 
     private void setProgress(final float progress) {
-        if (host != null) {
-            host.post(new Runnable() {
+        StoryTimeline localHost = host;
+        if (localHost != null) {
+            localHost.post(new Runnable() {
                 @Override
                 public void run() {
                     setProgressSync(progress);

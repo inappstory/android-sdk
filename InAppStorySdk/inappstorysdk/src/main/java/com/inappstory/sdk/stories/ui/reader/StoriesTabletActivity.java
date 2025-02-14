@@ -425,10 +425,10 @@ public class StoriesTabletActivity extends AppCompatActivity implements BaseStor
         int cleanSize = Math.min(size.x, size.y) - Sizes.dpToPxExt(80, this);
         maxHeight = Math.min(
                 cleanSize,
-                Sizes.dpToPxExt(640, this)
+                Sizes.dpToPxExt(578, this)
         );
         maxWidth = Math.min(
-                428 * cleanSize / 805,
+                340 * cleanSize / 578,
                 Sizes.dpToPxExt(340, this)
         );
 
@@ -444,8 +444,6 @@ public class StoriesTabletActivity extends AppCompatActivity implements BaseStor
         }
         IASCore core = inAppStoryManager.iasCore();
         int navColor = appearanceSettings.csNavBarColor();
-        if (navColor != 0)
-            SystemUiUtils.setNavBarColor(navColor, getWindow());
         core.screensManager().getStoryScreenHolder().subscribeScreen(StoriesTabletActivity.this);
         View view = getCurrentFocus();
         if (view != null) {
