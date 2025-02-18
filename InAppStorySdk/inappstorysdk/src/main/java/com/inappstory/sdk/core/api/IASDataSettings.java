@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.core.data.IAppVersion;
+import com.inappstory.sdk.core.data.IInAppStorySettings;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
 
 import java.util.List;
@@ -11,6 +12,7 @@ import java.util.Locale;
 import java.util.Map;
 
 public interface IASDataSettings {
+    void inAppStorySettings(IInAppStorySettings settings);
     void deviceId(String deviceId);
     void setUserId(String userId, String sign);
     void setUserId(String userId);

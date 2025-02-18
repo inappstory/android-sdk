@@ -18,12 +18,12 @@ import androidx.fragment.app.FragmentManager;
 
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.IASCoreImpl;
-import com.inappstory.sdk.core.IASExceptionHandler;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.IASDataSettings;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.IASStatisticStoriesV1;
+import com.inappstory.sdk.core.data.models.InAppStorySettings;
 import com.inappstory.sdk.inappmessage.CloseInAppMessageCallback;
 import com.inappstory.sdk.inappmessage.InAppMessageLoadCallback;
 import com.inappstory.sdk.inappmessage.InAppMessageOpenSettings;
@@ -994,13 +994,17 @@ public class InAppStoryManager implements IASBackPressHandler {
         });
     }
 
-    public void userLogout() {
+    public void userLogout(final InAppStorySettings settings) {
         useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-                core.settingsAPI().setUserId("");
+                core.settingsAPI().inAppStorySettings(settings.userId("", null));
             }
         });
+    }
+
+    public void setUserSettings(InAppStorySettings settings) {
+
     }
 
     public String getUserId() {

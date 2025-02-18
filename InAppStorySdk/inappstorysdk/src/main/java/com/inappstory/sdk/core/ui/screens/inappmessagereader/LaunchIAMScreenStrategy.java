@@ -2,21 +2,24 @@ package com.inappstory.sdk.core.ui.screens.inappmessagereader;
 
 import android.content.Context;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.FragmentManager;
 
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.data.IInAppMessage;
+import com.inappstory.sdk.core.data.IInAppMessageLimit;
 import com.inappstory.sdk.core.data.IReaderContent;
 import com.inappstory.sdk.core.inappmessages.InAppMessageByIdCallback;
 import com.inappstory.sdk.core.inappmessages.InAppMessageDownloadManager;
 import com.inappstory.sdk.core.inappmessages.InAppMessageFeedCallback;
+import com.inappstory.sdk.core.inappmessages.InAppMessagesLimitCallback;
 import com.inappstory.sdk.core.network.content.usecase.InAppMessageByIdUseCase;
+import com.inappstory.sdk.core.network.content.usecase.InAppMessageLimitsUseCase;
 import com.inappstory.sdk.core.network.content.usecase.InAppMessagesUseCase;
 import com.inappstory.sdk.core.ui.screens.holder.IScreensHolder;
 import com.inappstory.sdk.core.ui.screens.launcher.LaunchScreenStrategy;
 import com.inappstory.sdk.core.ui.screens.ScreenType;
-import com.inappstory.sdk.inappmessage.IAMUiContainerType;
 import com.inappstory.sdk.inappmessage.InAppMessageScreenActions;
 import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderState;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageAppearance;
@@ -25,8 +28,8 @@ import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenInAppMessageReader;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenReader;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
-import com.inappstory.sdk.stories.utils.Sizes;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -87,34 +90,29 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
                                 screensHolders
                         );
                     }
-                },
-                Sizes.isTablet(context)
+                }
         );
     }
 
-    private IReaderContent getLocalReaderContent() {
-        IReaderContent readerContent = null;
+    private void getLocalReaderContent(GetLocalInAppMessage getLocalInAppMessage) {
         if (inAppMessageOpenSettings.id() != null) {
-            readerContent = core.contentHolder().readerContent().getByIdAndType(
+            IInAppMessage inAppMessage = (IInAppMessage) core.contentHolder().readerContent().getByIdAndType(
                     inAppMessageOpenSettings.id(),
                     ContentType.IN_APP_MESSAGE
             );
-        } else if (inAppMessageOpenSettings.event() != null) {
-            readerContent = getContentByEvent();
-        } else {
-            List<IReaderContent> readerContents =
-                    core.contentHolder().readerContent().getByType(
-                            ContentType.IN_APP_MESSAGE
-                    );
-            if (readerContents != null) {
-                for (IReaderContent content : readerContents) {
-                    if (checkContentForShownFrequency((IInAppMessage) content)) {
-                        return content;
-                    }
-                }
+            if (inAppMessage != null) {
+                getLocalInAppMessage.get(inAppMessage);
+            } else {
+                getLocalInAppMessage.error();
             }
+        } else if (inAppMessageOpenSettings.event() != null) {
+            getContentByEvent(
+                    getLocalInAppMessage,
+                    inAppMessageOpenSettings.event()
+            );
+        } else {
+            getLocalInAppMessage.error();
         }
-        return readerContent;
     }
 
     private boolean checkContentForShownFrequency(IInAppMessage inAppMessage) {
@@ -147,93 +145,124 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
         return true;
     }
 
-    private void checkIfMessageCanBeOpened(final CheckLocalIAMCallback loadScreen, boolean isTablet) {
-        if (inAppMessageOpenSettings == null) {
-            launchScreenError("Need to pass opening settings");
+    private void checkIfMessageCanBeOpened(final CheckLocalIAMCallback loadScreen) {
+        final InAppMessageDownloadManager downloadManager = core.contentLoader().inAppMessageDownloadManager();
+        final InAppMessageOpenSettings localSettings = inAppMessageOpenSettings;
+        if (localSettings == null) {
+            launchScreenError("Need to pass opening settings (id or event)");
             return;
         }
-
-        final IReaderContent readerContent = getLocalReaderContent();
-        final InAppMessageDownloadManager downloadManager = core.contentLoader().inAppMessageDownloadManager();
-        boolean contentIsPreloaded = readerContent != null &&
-                downloadManager.allSlidesLoaded(readerContent) &&
-                downloadManager.allBundlesLoaded();
-        if (inAppMessageOpenSettings.showOnlyIfLoaded()) {
-            if (contentIsPreloaded) {
-                loadScreen.success((IInAppMessage) readerContent, true);
-            } else {
-                launchScreenError("Need to preload InAppMessages and session bundles first");
-            }
-        } else {
-            if (readerContent != null) {
-                loadScreen.success((IInAppMessage) readerContent, contentIsPreloaded);
-            } else {
-                if (inAppMessageOpenSettings.id() != null) {
-                    new InAppMessageByIdUseCase(core, inAppMessageOpenSettings.id()).get(new InAppMessageByIdCallback() {
-                        @Override
-                        public void success(IReaderContent content) {
-                            if (content != null) {
-                                boolean contentIsPreloaded =
-                                        downloadManager.allSlidesLoaded(content) &&
-                                                downloadManager.allBundlesLoaded();
-                                loadScreen.success((IInAppMessage) content, contentIsPreloaded);
+        if (localSettings.id() == null &&
+                (localSettings.event() == null ||
+                        localSettings.event().isEmpty())
+        ) {
+            launchScreenError("Need to pass opening settings (id or event)");
+            return;
+        }
+        getLocalReaderContent(
+                new GetLocalInAppMessage() {
+                    @Override
+                    public void get(@NonNull IInAppMessage readerContent) {
+                        boolean contentIsPreloaded =
+                                downloadManager.allSlidesLoaded(readerContent) &&
+                                        downloadManager.allBundlesLoaded();
+                        if (localSettings.showOnlyIfLoaded()) {
+                            if (contentIsPreloaded) {
+                                loadScreen.success(readerContent, true);
                             } else {
-                                launchScreenError(
-                                        "Can't load InAppMessage with settings: [id: "
-                                                + inAppMessageOpenSettings.id() +
-                                                ", event: " + inAppMessageOpenSettings.event() + "]"
+                                launchScreenError("Need to preload InAppMessages and session bundles first");
+                            }
+                        } else {
+                            loadScreen.success(readerContent, contentIsPreloaded);
+                        }
+                    }
+
+                    @Override
+                    public void error() {
+                        if (localSettings.showOnlyIfLoaded()) {
+                            launchScreenError("Need to preload InAppMessages and session bundles first");
+                        } else {
+                            if (localSettings.id() != null) {
+                                new InAppMessageByIdUseCase(
+                                        core,
+                                        localSettings.id()
+                                ).get(
+                                        new InAppMessageByIdCallback() {
+                                            @Override
+                                            public void success(IReaderContent content) {
+                                                if (content != null) {
+                                                    boolean contentIsPreloaded =
+                                                            downloadManager.allSlidesLoaded(content) &&
+                                                                    downloadManager.allBundlesLoaded();
+                                                    loadScreen.success(
+                                                            (IInAppMessage) content,
+                                                            contentIsPreloaded
+                                                    );
+                                                } else {
+                                                    launchScreenError(
+                                                            "Can't load InAppMessage with settings: [id: "
+                                                                    + localSettings.id() +
+                                                                    ", event: " + localSettings.event() + "]"
+                                                    );
+                                                }
+                                            }
+
+                                            @Override
+                                            public void error() {
+                                                launchScreenError("Can't load InAppMessage " + localSettings.id());
+                                            }
+                                        });
+                            } else {
+                                if (core.contentLoader().iamWereLoaded()) {
+                                    launchScreenError(
+                                            "Can't load InAppMessage with settings: [id: "
+                                                    + localSettings.id() +
+                                                    ", event: " + localSettings.event() + "]"
+                                    );
+                                    return;
+                                }
+                                new InAppMessagesUseCase(core).get(
+                                        new InAppMessageFeedCallback() {
+                                            @Override
+                                            public void success(List<IReaderContent> content) {
+                                                getLocalReaderContent(new GetLocalInAppMessage() {
+                                                    @Override
+                                                    public void get(@NonNull IInAppMessage readerContent) {
+                                                        boolean contentIsPreloaded =
+                                                                downloadManager.allSlidesLoaded(readerContent) &&
+                                                                        downloadManager.allBundlesLoaded();
+                                                        loadScreen.success(readerContent,
+                                                                contentIsPreloaded
+                                                        );
+                                                    }
+
+                                                    @Override
+                                                    public void error() {
+                                                        launchScreenError(
+                                                                "Can't load InAppMessage with settings: [id: "
+                                                                        + localSettings.id() +
+                                                                        ", event: " + localSettings.event() + "]"
+                                                        );
+                                                    }
+                                                });
+                                            }
+
+                                            @Override
+                                            public void isEmpty() {
+                                                launchScreenError("InAppMessage feed is empty");
+                                            }
+
+                                            @Override
+                                            public void error() {
+                                                launchScreenError("Can't load InAppMessages");
+                                            }
+                                        }
                                 );
                             }
                         }
-
-                        @Override
-                        public void error() {
-
-                            launchScreenError("Can't load InAppMessage " + inAppMessageOpenSettings.id());
-                        }
-                    });
-                } else {
-                    if (core.contentLoader().iamWereLoaded()) {
-                        launchScreenError(
-                                "Can't load InAppMessage with settings: [id: "
-                                        + inAppMessageOpenSettings.id() +
-                                        ", event: " + inAppMessageOpenSettings.event() + "]"
-                        );
-                        return;
                     }
-                    new InAppMessagesUseCase(core).get(
-                            new InAppMessageFeedCallback() {
-                                @Override
-                                public void success(List<IReaderContent> content) {
-                                    IReaderContent readerContent = getLocalReaderContent();
-                                    boolean contentIsPreloaded =
-                                            downloadManager.allSlidesLoaded(readerContent) &&
-                                                    downloadManager.allBundlesLoaded();
-                                    if (readerContent != null)
-                                        loadScreen.success((IInAppMessage) readerContent, contentIsPreloaded);
-                                    else
-                                        launchScreenError(
-                                                "Can't load InAppMessage with settings: [id: "
-                                                        + inAppMessageOpenSettings.id() +
-                                                        ", event: " + inAppMessageOpenSettings.event() + "]"
-                                        );
-                                }
-
-                                @Override
-                                public void isEmpty() {
-                                    launchScreenError("InAppMessage feed is empty");
-                                }
-
-                                @Override
-                                public void error() {
-                                    launchScreenError("Can't load InAppMessages");
-                                }
-                            }
-                    );
                 }
-            }
-        }
-
+        );
     }
 
     private void launchScreenSuccess(
@@ -309,31 +338,77 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
         inAppMessageScreenActions.readerOpenError(message);
     }
 
-    private boolean deviceIsSupported(IInAppMessage message, boolean isTablet) {
-        if (message.screenType().equals(IAMUiContainerType.POPUP)) return true;
-        return !isTablet;
-    }
-
-    private IReaderContent getContentByEvent() {
-        List<IReaderContent> readerContents =
+    private void getContentByEvent(
+            final GetLocalInAppMessage getLocalInAppMessage,
+            final String event
+    ) {
+        final List<IReaderContent> readerContents =
                 core.contentHolder().readerContent().getByType(
                         ContentType.IN_APP_MESSAGE
                 );
-        int currentPriority = 0;
         IInAppMessage resContent = null;
-        if (readerContents != null) {
+        int currentPriority = 0;
+        if (readerContents != null && !readerContents.isEmpty()) {
+            List<Integer> contentIds = new ArrayList<>();
             for (IReaderContent content : readerContents) {
                 IInAppMessage inAppMessage = (IInAppMessage) content;
-                int messagePriority = inAppMessage.getEventPriority(inAppMessageOpenSettings.event());
+                int messagePriority = inAppMessage.getEventPriority(event);
                 if (messagePriority >= 0 && checkContentForShownFrequency(inAppMessage)) {
+                    contentIds.add(content.id());
                     if (messagePriority >= currentPriority) {
                         currentPriority = messagePriority;
                         resContent = inAppMessage;
                     }
                 }
             }
+            if (resContent != null && resContent.hasLimit()) {
+                InAppMessageLimitsUseCase inAppMessageLimitsUseCase =
+                        new InAppMessageLimitsUseCase(core, contentIds);
+                inAppMessageLimitsUseCase.loadLimits(
+                        new InAppMessagesLimitCallback() {
+                            @Override
+                            public void success(List<IInAppMessageLimit> limits) {
+                                int currentPriority = 0;
+                                IInAppMessage resContent = null;
+                                for (IReaderContent content : readerContents) {
+                                    IInAppMessage inAppMessage = (IInAppMessage) content;
+                                    boolean canOpen = false;
+                                    for (IInAppMessageLimit limit : limits) {
+                                        if (limit.messageId() == inAppMessage.id()) {
+                                            if (limit.canOpen()) canOpen = true;
+                                        }
+                                    }
+                                    if (!canOpen)
+                                        continue;
+                                    int messagePriority = inAppMessage.getEventPriority(event);
+                                    if (messagePriority >= 0 && checkContentForShownFrequency(inAppMessage)) {
+                                        if (messagePriority >= currentPriority) {
+                                            currentPriority = messagePriority;
+                                            resContent = inAppMessage;
+                                        }
+                                    }
+                                }
+                                if (resContent != null)
+                                    getLocalInAppMessage.get(resContent);
+                                else
+                                    getLocalInAppMessage.error();
+                            }
+
+                            @Override
+                            public void error() {
+                                getLocalInAppMessage.error();
+                            }
+                        }
+                );
+            } else {
+                if (resContent != null)
+                    getLocalInAppMessage.get(resContent);
+                else
+                    getLocalInAppMessage.error();
+            }
+        } else {
+            getLocalInAppMessage.error();
         }
-        return resContent;
     }
 
     @Override

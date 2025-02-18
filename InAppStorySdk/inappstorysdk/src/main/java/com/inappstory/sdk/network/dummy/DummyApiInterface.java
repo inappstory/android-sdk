@@ -14,6 +14,11 @@ public class DummyApiInterface implements ApiInterface {
     }
 
     @Override
+    public Request getInAppMessagesLimits(String ids) {
+        return new DummyRequest();
+    }
+
+    @Override
     public Request getInAppMessage(String id, Integer srcList, String fields, String expand, String xUserId, String xSessionId, String lang) {
         return new DummyRequest();
     }

@@ -27,6 +27,9 @@ public class InAppMessage implements IInAppMessage {
     @SerializedName("has_placeholder")
     public boolean hasPlaceholders;
 
+    @SerializedName("has_limit")
+    public boolean hasLimit;
+
     @SerializedName("layout")
     public String layout;
 
@@ -211,6 +214,11 @@ public class InAppMessage implements IInAppMessage {
     @Override
     public boolean hasPlaceholders() {
         return hasPlaceholders;
+    }
+
+    @Override
+    public boolean hasLimit() {
+        return hasLimit;
     }
 
     @Override

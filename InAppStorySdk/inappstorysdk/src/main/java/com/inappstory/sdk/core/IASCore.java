@@ -12,6 +12,7 @@ import com.inappstory.sdk.core.api.IASExternalUtilsAPI;
 import com.inappstory.sdk.core.api.IASFavorites;
 import com.inappstory.sdk.core.api.IASGames;
 import com.inappstory.sdk.core.api.IASInAppMessage;
+import com.inappstory.sdk.core.api.IASLimitsHolder;
 import com.inappstory.sdk.core.api.IASLogs;
 import com.inappstory.sdk.core.api.IASManager;
 import com.inappstory.sdk.core.api.IASOnboardings;
@@ -45,6 +46,7 @@ public interface IASCore {
     IASManager managerAPI();
     IASOnboardings onboardingsAPI();
     IASDataSettings settingsAPI();
+    IASLimitsHolder limitsHolder();
     IASInAppMessage inAppMessageAPI();
     IASSingleStory singleStoryAPI();
     IASStackFeed stackFeedAPI();

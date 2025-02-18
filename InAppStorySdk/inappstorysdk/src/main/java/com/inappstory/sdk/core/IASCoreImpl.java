@@ -1,7 +1,6 @@
 package com.inappstory.sdk.core;
 
 import android.content.Context;
-import android.os.Handler;
 
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryService;
@@ -13,6 +12,7 @@ import com.inappstory.sdk.core.api.IASExternalUtilsAPI;
 import com.inappstory.sdk.core.api.IASFavorites;
 import com.inappstory.sdk.core.api.IASGames;
 import com.inappstory.sdk.core.api.IASInAppMessage;
+import com.inappstory.sdk.core.api.IASLimitsHolder;
 import com.inappstory.sdk.core.api.IASLogs;
 import com.inappstory.sdk.core.api.IASManager;
 import com.inappstory.sdk.core.api.IASOnboardings;
@@ -31,6 +31,7 @@ import com.inappstory.sdk.core.api.impl.IASExternalUtilsAPIImpl;
 import com.inappstory.sdk.core.api.impl.IASFavoritesImpl;
 import com.inappstory.sdk.core.api.impl.IASGamesImpl;
 import com.inappstory.sdk.core.api.impl.IASInAppMessageImpl;
+import com.inappstory.sdk.core.api.impl.IASLimitsHolderImpl;
 import com.inappstory.sdk.core.api.impl.IASLogsImpl;
 import com.inappstory.sdk.core.api.impl.IASManagerImpl;
 import com.inappstory.sdk.core.api.impl.IASOnboardingsImpl;
@@ -39,7 +40,6 @@ import com.inappstory.sdk.core.api.impl.IASSingleStoryImpl;
 import com.inappstory.sdk.core.api.impl.IASStackFeedImpl;
 import com.inappstory.sdk.core.api.impl.IASStatisticImpl;
 import com.inappstory.sdk.core.api.impl.IASStoriesOpenedCacheImpl;
-import com.inappstory.sdk.core.data.IAppVersion;
 import com.inappstory.sdk.core.dataholders.ContentHolder;
 import com.inappstory.sdk.core.dataholders.IContentHolder;
 import com.inappstory.sdk.core.dataholders.IStoriesListVMHolder;
@@ -81,7 +81,8 @@ public class IASCoreImpl implements IASCore {
     private final SharedPreferencesAPI sharedPreferencesAPI;
     private final IContentHolder contentHolder;
     private final IASInAppMessage inAppMessages;
-    private final IASAssetsHolder iasAssetsHolder;
+    private final IASAssetsHolder assetsHolder;
+    private final IASLimitsHolder limitsHolder;
 
     public IASCoreImpl(Context context) {
         this.context = context;
@@ -110,7 +111,8 @@ public class IASCoreImpl implements IASCore {
         iasLogs = new IASLogsImpl(this);
         inAppStoryService = new InAppStoryService(this);
         inAppMessages = new IASInAppMessageImpl(this);
-        iasAssetsHolder = new IASAssetsHolderImpl(this);
+        assetsHolder = new IASAssetsHolderImpl(this);
+        limitsHolder = new IASLimitsHolderImpl();
         Thread.setDefaultUncaughtExceptionHandler(new IASExceptionHandler(this));
         externalUtilsAPI.init();
     }
@@ -164,6 +166,11 @@ public class IASCoreImpl implements IASCore {
     @Override
     public IASDataSettings settingsAPI() {
         return settings;
+    }
+
+    @Override
+    public IASLimitsHolder limitsHolder() {
+        return limitsHolder;
     }
 
     @Override
@@ -268,6 +275,6 @@ public class IASCoreImpl implements IASCore {
 
     @Override
     public IASAssetsHolder assetsHolder() {
-        return iasAssetsHolder;
+        return assetsHolder;
     }
 }

@@ -36,6 +36,12 @@ public interface ApiInterface {
             @ReplaceHeader(HeadersKeys.ACCEPT_LANGUAGE) String lang
     );
 
+    @FormUrlEncoded
+    @POST("v2/inappmessaging/message-limit")
+    Request getInAppMessagesLimits(
+            @Field("id") String ids
+    );
+
     @GET("v2/inappmessaging/message/{id}")
     Request getInAppMessage(
             @Path("id") String id,

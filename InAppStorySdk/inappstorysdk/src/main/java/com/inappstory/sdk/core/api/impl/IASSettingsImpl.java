@@ -13,6 +13,7 @@ import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASDataSettings;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.data.IAppVersion;
+import com.inappstory.sdk.core.data.IInAppStorySettings;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
 import com.inappstory.sdk.core.network.content.models.StoryPlaceholder;
@@ -71,6 +72,7 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
         }
         final String currentUserId;
         final Locale currentLang;
+        final String currentUserSign = userSign;
         synchronized (settingsLock) {
             currentUserId = userId;
             if (currentUserId != null && currentUserId.equals(newUserId)) {
@@ -80,8 +82,11 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
             currentLang = lang;
             userId = newUserId;
         }
-        final String sessionId = core.sessionManager().getSession().getSessionId();
+       refreshSession(currentUserId, currentLang, currentUserSign);
+    }
 
+    private void refreshSession(final String currentUserId, final Locale currentLang, String currentUserSign) {
+        final String sessionId = core.sessionManager().getSession().getSessionId();
         core.storiesListVMHolder().clear();
         core.storyListCache().clearLocalOpensKey();
         core.screensManager().forceCloseAllReaders(new ForceCloseReaderCallback() {
@@ -120,35 +125,16 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
     public void setLang(final Locale newLang) {
         final Locale currentLang;
         final String currentUserId;
+        final String currentUserSign;
         if (newLang == null) return;
         synchronized (settingsLock) {
             if (lang.toLanguageTag().equals(newLang.toLanguageTag())) return;
             currentLang = lang;
             lang = newLang;
             currentUserId = userId;
+            currentUserSign = userSign;
         }
-        final String sessionId = core.sessionManager().getSession().getSessionId();
-        core.storiesListVMHolder().clear();
-        core.storyListCache().clearLocalOpensKey();
-        core.screensManager().forceCloseAllReaders(new ForceCloseReaderCallback() {
-            @Override
-            public void onComplete() {
-
-                core.sessionManager().closeSession(
-                        sendStatistic,
-                        true,
-                        currentLang.toLanguageTag(),
-                        currentUserId,
-                        sessionId
-                );
-            }
-        });
-
-        core.contentHolder().favoriteItems().clearByType(ContentType.STORY);
-        core.contentHolder().favoriteItems().clearByType(ContentType.UGC);
-        core.contentLoader().storyDownloadManager().refreshLocals(ContentType.STORY);
-        core.contentLoader().storyDownloadManager().refreshLocals(ContentType.UGC);
-        core.contentLoader().storyDownloadManager().cleanTasks(false);
+        refreshSession(currentUserId, currentLang, currentUserSign);
     }
 
     @Override
@@ -316,6 +302,101 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
     public void setImagePlaceholder(String key, ImagePlaceholderValue value) {
         synchronized (settingsLock) {
             userImagePlaceholders.put(key, value);
+        }
+    }
+
+    @Override
+    public void inAppStorySettings(IInAppStorySettings settings) {
+        final Locale currentLang;
+        final String currentUserId;
+        final String currentUserSign;
+        boolean needToReloadSession = false;
+        synchronized (settingsLock) {
+            currentLang = lang;
+            currentUserId = userId;
+            currentUserSign = userSign;
+            if (settings.userId() != null) {
+                if (deviceId == null && settings.userId().isEmpty()) {
+                    InAppStoryManager.showELog(
+                            InAppStoryManager.IAS_ERROR_TAG,
+                            StringsUtils.getErrorStringFromContext(
+                                    core.appContext(),
+                                    R.string.ias_usage_without_user_and_device
+                            )
+                    );
+                    return;
+                }
+                if (StringsUtils.getBytesLength(settings.userId()) > 255) {
+                    InAppStoryManager.showELog(
+                            InAppStoryManager.IAS_ERROR_TAG,
+                            StringsUtils.getErrorStringFromContext(
+                                    core.appContext(),
+                                    R.string.ias_setter_user_length_error
+                            )
+                    );
+                    return;
+                }
+                if (currentUserId != null && currentUserId.equals(settings.userId())) {
+                    if (!Objects.equals(userSign, settings.userSign())) {
+                        userSign = settings.userSign();
+                        userId = settings.userId();
+                        needToReloadSession = true;
+                    }
+                }
+            }
+            if (settings.tags() != null) {
+                if (StringsUtils.getBytesLength(TextUtils.join(",", settings.tags())) <= TAG_LIMIT) {
+                    List<String> currentTags = tags();
+                    Set<String> oldList = new HashSet<>();
+                    if (currentTags != null) {
+                        oldList.addAll(currentTags);
+                    }
+                    Set<String> newList = new HashSet<>(settings.tags());
+                    boolean replace = false;
+                    if (oldList.size() == newList.size()) {
+                        for (String newTag : newList) {
+                            if (!oldList.contains(newTag)) {
+                                replace = true;
+                                break;
+                            }
+                        }
+                    } else {
+                        replace = true;
+                    }
+
+                    if (replace) {
+                        this.tags.clear();
+                        this.tags.addAll(newList);
+                        core.storiesListVMHolder().clear();
+                    }
+                } else {
+                    InAppStoryManager.showELog(
+                            InAppStoryManager.IAS_ERROR_TAG,
+                            StringsUtils.getErrorStringFromContext(
+                                    core.appContext(),
+                                    R.string.ias_setter_tags_length_error
+                            )
+                    );
+                    return;
+                }
+            }
+            if (settings.imagePlaceholders() != null) {
+                this.userImagePlaceholders.clear();
+                this.userImagePlaceholders.putAll(settings.imagePlaceholders());
+            }
+            if (settings.placeholders() != null) {
+                this.userPlaceholders.clear();
+                this.userPlaceholders.putAll(settings.placeholders());
+            }
+            if (settings.lang() != null) {
+                if (!lang.toLanguageTag().equals(settings.lang().toLanguageTag())) {
+                    lang = settings.lang();
+                    needToReloadSession = true;
+                }
+            }
+        }
+        if (needToReloadSession) {
+            refreshSession(currentUserId, currentLang, currentUserSign);
         }
     }
 
