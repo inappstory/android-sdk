@@ -1,6 +1,14 @@
 Change Log
 ========== 
 
+Version *1.20.9 (959)*
+----------------------------
+* Added: game js exception logs
+* Fixed: LeakedCloseableViolation
+* Fixed: negative offset for timelines
+* Fixed: tablet outside click
+* Fixed: vibration bug
+
 Version *1.20.8 (958)*
 ----------------------------
 * Added: user sign feature
