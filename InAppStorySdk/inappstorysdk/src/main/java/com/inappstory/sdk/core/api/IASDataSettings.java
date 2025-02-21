@@ -12,6 +12,7 @@ import java.util.Locale;
 import java.util.Map;
 
 public interface IASDataSettings {
+    void destroy();
     void inAppStorySettings(IInAppStoryUserSettings settings);
     void deviceId(String deviceId);
     void setUserId(String userId, String sign);

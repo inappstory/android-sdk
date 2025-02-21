@@ -306,6 +306,32 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
     }
 
     @Override
+    public void destroy() {
+        final Locale currentLang;
+        final String currentUserId;
+        synchronized (settingsLock) {
+            currentLang = lang;
+            currentUserId = userId;
+            this.userId = null;
+            this.userSign = null;
+            this.tags.clear();
+            this.userImagePlaceholders.clear();
+            this.userPlaceholders.clear();
+            this.lang = Locale.getDefault();
+        }
+        final String sessionId = core.sessionManager().getSession().getSessionId();
+        if (sessionId != null) {
+            core.sessionManager().closeSession(
+                    sendStatistic,
+                    true,
+                    currentLang.toLanguageTag(),
+                    currentUserId,
+                    sessionId
+            );
+        }
+    }
+
+    @Override
     public void inAppStorySettings(IInAppStoryUserSettings settings) {
         final Locale currentLang;
         final String currentUserId;

@@ -33,6 +33,7 @@ import com.inappstory.sdk.inappmessage.ShowInAppMessageCallback;
 import com.inappstory.sdk.lrudiskcache.CacheSize;
 import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.utils.HostFromSecretKey;
+import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
 import com.inappstory.sdk.stories.api.models.logs.ApiLogRequest;
 import com.inappstory.sdk.stories.api.models.logs.ApiLogResponse;
@@ -863,7 +864,7 @@ public class InAppStoryManager implements IASBackPressHandler {
             settings.setPlaceholders(placeholders);
         if (imagePlaceholders != null)
             settings.setImagePlaceholders(imagePlaceholders);
-        logout();
+        destroy();
         if (ApiSettings.getInstance().hostIsDifferent(cmsUrl)) {
             core.network().clear();
         }
@@ -896,35 +897,34 @@ public class InAppStoryManager implements IASBackPressHandler {
         });
     }
 
-    public static void logout() {
+    private void destroy() {
         InAppStoryManager.useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull final IASCore core) {
-                final String sessionId = core.sessionManager().getSession().getSessionId();
-                core.storiesListVMHolder().clear();
-                core.contentLoader().storyDownloadManager().cleanTasks();
-                core.screensManager().forceCloseAllReaders(
-                        new ForceCloseReaderCallback() {
+                core.screensManager().forceCloseAllReaders(new ForceCloseReaderCallback() {
+                    @Override
+                    public void onComplete() {
+                        core.statistic().storiesV1(new GetStatisticV1Callback() {
                             @Override
-                            public void onComplete() {
-                                if (sessionId == null || sessionId.isEmpty()) return;
-                                IASDataSettingsHolder settingsHolder = ((IASDataSettingsHolder) core.settingsAPI());
-                                core.statistic().storiesV1(new GetStatisticV1Callback() {
-                                    @Override
-                                    public void get(@NonNull IASStatisticStoriesV1 manager) {
-                                        manager.closeStatisticEvent();
-                                    }
-                                });
-                                core.sessionManager().closeSession(
-                                        true,
-                                        false,
-                                        settingsHolder.lang().toLanguageTag(),
-                                        settingsHolder.userId(),
-                                        core.sessionManager().getSession().getSessionId()
-                                );
+                            public void get(@NonNull IASStatisticStoriesV1 manager) {
+                                manager.closeStatisticEvent();
                             }
-                        }
-                );
+                        });
+                        core.settingsAPI().destroy();
+                        core.storiesListVMHolder().clear();
+                        core.storyListCache().clearLocalOpensKey();
+                        core.contentLoader().storyDownloadManager().cleanTasks();
+                        core.contentHolder().favoriteItems().clearByType(ContentType.STORY);
+                        core.contentHolder().favoriteItems().clearByType(ContentType.UGC);
+                        core.contentLoader().storyDownloadManager().refreshLocals(ContentType.STORY);
+                        core.contentLoader().storyDownloadManager().refreshLocals(ContentType.UGC);
+                        core.contentLoader().storyDownloadManager().cleanTasks(false);
+                        core.contentHolder().readerContent().clearByType(ContentType.IN_APP_MESSAGE);
+                        core.contentHolder().readerContent().clearByType(ContentType.STORY);
+                        core.contentLoader().inAppMessageDownloadManager().clearLocalData();
+                        core.contentLoader().inAppMessageDownloadManager().clearSlidesDownloader();
+                    }
+                });
 
             }
         });
