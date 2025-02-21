@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-public interface IInAppStorySettings {
+public interface IInAppStoryUserSettings {
     String userId();
     String userSign();
     List<String> tags();

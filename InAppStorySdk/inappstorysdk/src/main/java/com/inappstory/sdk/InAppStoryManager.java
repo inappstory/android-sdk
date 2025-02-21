@@ -23,7 +23,7 @@ import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.IASDataSettings;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.IASStatisticStoriesV1;
-import com.inappstory.sdk.core.data.models.InAppStorySettings;
+import com.inappstory.sdk.core.data.models.InAppStoryUserSettings;
 import com.inappstory.sdk.inappmessage.CloseInAppMessageCallback;
 import com.inappstory.sdk.inappmessage.InAppMessageLoadCallback;
 import com.inappstory.sdk.inappmessage.InAppMessageOpenSettings;
@@ -978,7 +978,6 @@ public class InAppStoryManager implements IASBackPressHandler {
         useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-
                 core.settingsAPI().setUserId(userId);
             }
         });
@@ -988,23 +987,71 @@ public class InAppStoryManager implements IASBackPressHandler {
         useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-
                 core.settingsAPI().setUserId(userId, userSign);
             }
         });
     }
 
-    public void userLogout(final InAppStorySettings settings) {
+    public void userLogout(final InAppStoryUserSettings settings) {
         useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-                core.settingsAPI().inAppStorySettings(settings.userId("", null));
+                if (settings == null) {
+                    core.settingsAPI().inAppStorySettings(
+                            new InAppStoryUserSettings()
+                                    .userId(
+                                            "",
+                                            null
+                                    )
+                    );
+                } else {
+                    core.settingsAPI().inAppStorySettings(
+                            settings.userId(
+                                    "",
+                                    null
+                            )
+                    );
+                }
             }
         });
     }
 
-    public void setUserSettings(InAppStorySettings settings) {
+    public void userLogout() {
+        useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.settingsAPI().inAppStorySettings(
+                        new InAppStoryUserSettings().userId(
+                                "",
+                                null
+                        )
+                );
+            }
+        });
+    }
 
+    public void userSettings(final InAppStoryUserSettings settings) {
+        useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                if (settings == null) {
+                    core.settingsAPI().inAppStorySettings(
+                            new InAppStoryUserSettings()
+                                    .userId(
+                                            "",
+                                            null
+                                    )
+                    );
+                } else {
+                    core.settingsAPI().inAppStorySettings(
+                            settings.userId(
+                                    "",
+                                    null
+                            )
+                    );
+                }
+            }
+        });
     }
 
     public String getUserId() {

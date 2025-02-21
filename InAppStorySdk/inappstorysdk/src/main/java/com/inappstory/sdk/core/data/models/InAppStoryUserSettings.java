@@ -1,13 +1,13 @@
 package com.inappstory.sdk.core.data.models;
 
-import com.inappstory.sdk.core.data.IInAppStorySettings;
+import com.inappstory.sdk.core.data.IInAppStoryUserSettings;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
 
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-public class InAppStorySettings implements IInAppStorySettings {
+public class InAppStoryUserSettings implements IInAppStoryUserSettings {
     private String userId;
     private String userSign;
     private List<String> tags;
@@ -15,33 +15,33 @@ public class InAppStorySettings implements IInAppStorySettings {
     private Map<String, ImagePlaceholderValue> imagePlaceholders;
     private Locale lang;
 
-    public InAppStorySettings userId(String userId) {
+    public InAppStoryUserSettings userId(String userId) {
         this.userId = userId;
         return this;
     }
 
-    public InAppStorySettings userId(String userId, String userSign) {
+    public InAppStoryUserSettings userId(String userId, String userSign) {
         this.userId = userId;
         this.userSign = userSign;
         return this;
     }
 
-    public InAppStorySettings tags(List<String> tags) {
+    public InAppStoryUserSettings tags(List<String> tags) {
         this.tags = tags;
         return this;
     }
 
-    public InAppStorySettings placeholders(Map<String, String> placeholders) {
+    public InAppStoryUserSettings placeholders(Map<String, String> placeholders) {
         this.placeholders = placeholders;
         return this;
     }
 
-    public InAppStorySettings imagePlaceholders(Map<String, ImagePlaceholderValue> imagePlaceholders) {
+    public InAppStoryUserSettings imagePlaceholders(Map<String, ImagePlaceholderValue> imagePlaceholders) {
         this.imagePlaceholders = imagePlaceholders;
         return this;
     }
 
-    public InAppStorySettings lang(Locale lang) {
+    public InAppStoryUserSettings lang(Locale lang) {
         this.lang = lang;
         return this;
     }

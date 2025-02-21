@@ -13,7 +13,7 @@ import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASDataSettings;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.data.IAppVersion;
-import com.inappstory.sdk.core.data.IInAppStorySettings;
+import com.inappstory.sdk.core.data.IInAppStoryUserSettings;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
 import com.inappstory.sdk.core.network.content.models.StoryPlaceholder;
@@ -306,7 +306,7 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
     }
 
     @Override
-    public void inAppStorySettings(IInAppStorySettings settings) {
+    public void inAppStorySettings(IInAppStoryUserSettings settings) {
         final Locale currentLang;
         final String currentUserId;
         final String currentUserSign;

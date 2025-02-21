@@ -8,7 +8,7 @@ import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASDataSettings;
 import com.inappstory.sdk.core.data.IAppVersion;
-import com.inappstory.sdk.core.data.IInAppStorySettings;
+import com.inappstory.sdk.core.data.IInAppStoryUserSettings;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
 
 import java.util.List;
@@ -17,7 +17,7 @@ import java.util.Map;
 
 public class IASSettingsExternalAPIImpl implements IASDataSettings {
     @Override
-    public void inAppStorySettings(final IInAppStorySettings settings) {
+    public void inAppStorySettings(final IInAppStoryUserSettings settings) {
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
