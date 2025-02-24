@@ -17,6 +17,16 @@ import java.util.Map;
 
 public class IASSettingsExternalAPIImpl implements IASDataSettings {
     @Override
+    public void destroy() {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.settingsAPI().destroy();
+            }
+        });
+    }
+
+    @Override
     public void inAppStorySettings(final IInAppStoryUserSettings settings) {
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
