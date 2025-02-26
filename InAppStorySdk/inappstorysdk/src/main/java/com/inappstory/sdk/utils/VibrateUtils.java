@@ -7,14 +7,22 @@ import android.os.Vibrator;
 
 import com.inappstory.sdk.utils.IVibrateUtils;
 
+import java.lang.ref.WeakReference;
+
 public class VibrateUtils implements IVibrateUtils {
-    private Vibrator vibrator;
+    WeakReference<Vibrator> vibratorWeakReference;
 
     public void vibrate(Context context, int[] vibratePattern) {
-        if (vibrator != null) vibrator.cancel();
-        else {
+        Vibrator vibrator = null;
+        if (vibratorWeakReference != null) {
+            vibrator = vibratorWeakReference.get();
+        }
+        if (vibrator != null) {
+            vibrator.cancel();
+        } else {
             if (context == null) return;
             vibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
+            vibratorWeakReference = new WeakReference<>(vibrator);
         }
         if (vibratePattern.length == 0) return;
         if (vibratePattern.length > 1) {
