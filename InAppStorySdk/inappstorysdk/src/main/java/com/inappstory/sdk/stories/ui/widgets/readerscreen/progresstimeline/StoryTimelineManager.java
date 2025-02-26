@@ -7,6 +7,7 @@ import android.view.View;
 import com.inappstory.sdk.core.data.IContentWithTimeline;
 import com.inappstory.sdk.utils.ScheduledTPEManager;
 
+import java.util.Objects;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -82,6 +83,11 @@ public class StoryTimelineManager {
 
     public void setHost(StoryTimeline host) {
         this.host = host;
+    }
+
+    public void clearHost(StoryTimeline host) {
+        if (this.host == host)
+            this.host = null;
     }
 
     StoryTimeline host;

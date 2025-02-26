@@ -368,6 +368,9 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
                         userId = settings.userId();
                         needToReloadSession = true;
                     }
+                } else if (currentUserId == null) {
+                    userSign = settings.userSign();
+                    userId = settings.userId();
                 }
             }
             if (settings.tags() != null) {

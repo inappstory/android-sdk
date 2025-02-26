@@ -832,50 +832,60 @@ public class InAppStoryManager implements IASBackPressHandler {
     private boolean sendStatistic = true;
 
     private void initManager(
-            Context context,
-            String cmsUrl,
-            String apiKey,
-            String testKey,
-            String userId,
-            String userSign,
-            Locale locale,
-            boolean gameDemoMode,
-            boolean isDeviceIDEnabled,
-            ArrayList<String> tags,
-            Map<String, String> placeholders,
-            Map<String, ImagePlaceholderValue> imagePlaceholders
+            final Context context,
+            final String cmsUrl,
+            final String apiKey,
+            final String testKey,
+            final String userId,
+            final String userSign,
+            final Locale locale,
+            final boolean gameDemoMode,
+            final boolean isDeviceIDEnabled,
+            final ArrayList<String> tags,
+            final Map<String, String> placeholders,
+            final Map<String, ImagePlaceholderValue> imagePlaceholders
     ) {
         if (core == null) return;
-        IASDataSettings settings = core.settingsAPI();
-        settings.setUserId(userId, userSign);
-        settings.setLang(locale);
-        settings.setTags(tags);
-        if (isDeviceIDEnabled) {
-            settings.deviceId
-                    (
-                            Settings.Secure.getString(
-                                    context.getContentResolver(),
-                                    Settings.Secure.ANDROID_ID
-                            )
-                    );
-        }
-        settings.gameDemoMode(gameDemoMode);
-        if (placeholders != null)
-            settings.setPlaceholders(placeholders);
-        if (imagePlaceholders != null)
-            settings.setImagePlaceholders(imagePlaceholders);
-        destroy();
-        if (ApiSettings.getInstance().hostIsDifferent(cmsUrl)) {
-            core.network().clear();
-        }
-        ApiSettings
-                .getInstance()
-                .cacheDirPath(context.getCacheDir().getAbsolutePath())
-                .apiKey(apiKey)
-                .testKey(testKey)
-                .host(cmsUrl);
-        core.network().setBaseUrl(cmsUrl);
+        ForceCloseReaderCallback callback = new ForceCloseReaderCallback() {
+            @Override
+            public void onComplete() {
+                if (ApiSettings.getInstance().hostIsDifferent(cmsUrl)) {
+                    core.network().clear();
+                }
+                ApiSettings
+                        .getInstance()
+                        .cacheDirPath(context.getCacheDir().getAbsolutePath())
+                        .apiKey(apiKey)
+                        .testKey(testKey)
+                        .host(cmsUrl);
+                core.network().setBaseUrl(cmsUrl);
+                IASDataSettings settings = core.settingsAPI();
+                if (isDeviceIDEnabled) {
+                    settings.deviceId
+                            (
+                                    Settings.Secure.getString(
+                                            context.getContentResolver(),
+                                            Settings.Secure.ANDROID_ID
+                                    )
+                            );
+                }
+                settings.gameDemoMode(gameDemoMode);
+                core.settingsAPI().inAppStorySettings(
+                        new InAppStoryUserSettings()
+                                .userId(userId, userSign)
+                                .lang(locale)
+                                .tags(tags)
+                                .placeholders(placeholders)
+                                .imagePlaceholders(imagePlaceholders)
 
+                );
+            }
+        };
+        if (isInitialized) {
+            destroy(callback);
+        } else {
+            callback.onComplete();
+        }
     }
 
 
@@ -897,7 +907,7 @@ public class InAppStoryManager implements IASBackPressHandler {
         });
     }
 
-    private void destroy() {
+    private void destroy(ForceCloseReaderCallback callback) {
         InAppStoryManager.useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull final IASCore core) {

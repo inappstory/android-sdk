@@ -102,6 +102,13 @@ public class StoryTimeline extends View {
     }
 
     @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        if (timelineManager != null)
+            timelineManager.clearHost(this);
+    }
+
+    @Override
     protected void onDraw(Canvas canvas) {
         if (parameters == null || state == null || getWidth() == 0) {
             super.onDraw(canvas);
