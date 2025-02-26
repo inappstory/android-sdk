@@ -23,15 +23,28 @@ public class IASExceptionHandler implements Thread.UncaughtExceptionHandler {
         if (t == Looper.getMainLooper().getThread()) {
             if (oldHandler != null)
                 oldHandler.uncaughtException(t, e);
-        }
-        core.callbacksAPI().useCallback(
-                IASCallbackType.EXCEPTION,
-                new UseIASCallback<ExceptionCallback>() {
-                    @Override
-                    public void use(@NonNull ExceptionCallback callback) {
-                        callback.onException(e);
+            core.callbacksAPI().useCallback(
+                    IASCallbackType.EXCEPTION,
+                    new UseIASCallback<ExceptionCallback>() {
+                        @Override
+                        public void use(@NonNull ExceptionCallback callback) {
+                            callback.onException(e);
+                        }
                     }
-                }
-        );
+            );
+        } else {
+            core.callbacksAPI().useCallback(
+                    IASCallbackType.EXCEPTION,
+                    new UseIASCallback<ExceptionCallback>() {
+                        @Override
+                        public void use(@NonNull ExceptionCallback callback) {
+                            callback.onException(e);
+                        }
+                    }
+            );
+            if (oldHandler != null)
+                oldHandler.uncaughtException(t, e);
+        }
+
     }
 }
