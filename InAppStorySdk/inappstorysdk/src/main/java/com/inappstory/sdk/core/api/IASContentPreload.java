@@ -9,7 +9,7 @@ import java.util.List;
 public interface IASContentPreload {
     void downloadInAppMessages(List<String> inAppMessageIds, InAppMessageLoadCallback callback);
 
-    IGamePreloader getGamePreloader();
-
     void restartGamePreloader();
+    void pauseGamePreloader();
+    void resumeGamePreloader();
 }

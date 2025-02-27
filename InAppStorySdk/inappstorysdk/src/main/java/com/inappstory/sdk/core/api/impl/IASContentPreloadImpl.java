@@ -35,10 +35,6 @@ import java.util.List;
 public class IASContentPreloadImpl implements IASContentPreload {
     private final IASCore core;
 
-    public IGamePreloader getGamePreloader() {
-        return gamePreloader;
-    }
-
     private IGamePreloader gamePreloader;
 
     public IASContentPreloadImpl(IASCore core) {
@@ -146,8 +142,16 @@ public class IASContentPreloadImpl implements IASContentPreload {
     @Override
     public void restartGamePreloader() {
         Log.e("ArchiveUseCase", "restartGamePreloader");
-        gamePreloader.pause();
-        gamePreloader.active(true);
         gamePreloader.restart();
+    }
+
+    @Override
+    public void pauseGamePreloader() {
+        gamePreloader.pause();
+    }
+
+    @Override
+    public void resumeGamePreloader() {
+        gamePreloader.resume();
     }
 }

@@ -196,7 +196,7 @@ public class FilesDownloader {
         int cnt = 0;
         try {
             if (interruption != null) {
-                Log.e("ArchiveUseCase", "FilesDownloader " +  interruption.toString());
+                Log.e("ArchiveUseCase", "FilesDownloader " + url + " " + interruption);
             }
             while ((bufferLength = inputStream.read(buffer)) > 0) {
                 if (interruption != null && interruption.active) {

@@ -15,14 +15,13 @@ import java.util.Map;
 
 public class GamePreloader implements IGamePreloader {
 
-    private boolean active = false;
     private final boolean useAnimSplash;
     private final IASCore core;
 
     public GamePreloader(
             IASCore core,
             FilesDownloadManager filesDownloadManager,
-                         boolean useAnimSplash,
+            boolean useAnimSplash,
             SuccessUseCaseCallback<IGameCenterData> successUseCaseCallback
     ) {
         this.core = core;
@@ -37,14 +36,13 @@ public class GamePreloader implements IGamePreloader {
 
     Map<String, IGameCenterData> loadedData = null;
 
-    @Override
-    public void launch() {
-        if (!active) return;
+    private void launch() {
         if (loadedData == null) {
             GetGamePreloadModelsUseCase getGameModelsUseCase = new GetGamePreloadModelsUseCase(core);
             getGameModelsUseCase.get(new IGetGamePreloadModelsCallback() {
                 @Override
                 public void onSuccess(List<IGameCenterData> data) {
+                    if (cannotBeUsed()) return;
                     if (data != null) {
                         loadedData = new HashMap<>();
                         for (IGameCenterData dataItem : data) {
@@ -67,6 +65,7 @@ public class GamePreloader implements IGamePreloader {
     DownloadInterruption interruption = new DownloadInterruption();
 
     private void loadSplashes(IDownloadAllSplashesCallback callback) {
+        if (cannotBeUsed()) return;
         synchronized (useCaseCreateLock) {
             interruption = new DownloadInterruption();
             splashesUseCase = new LoadGameSplashesUseCase(
@@ -85,6 +84,7 @@ public class GamePreloader implements IGamePreloader {
                 new IDownloadAllSplashesCallback() {
                     @Override
                     public void onDownloaded() {
+                        if (cannotBeUsed()) return;
                         synchronized (useCaseCreateLock) {
                             gameFilesUseCase = new LoadGameFilesUseCase(
                                     core,
@@ -108,14 +108,29 @@ public class GamePreloader implements IGamePreloader {
     }
 
     @Override
-    public void restart() {
-        if (!active) return;
-        loadedData = null;
+    public void resume() {
+        synchronized (useCaseCreateLock) {
+            interruption.active = false;
+        }
         launch();
     }
 
+    private boolean cannotBeUsed() {
+        synchronized (useCaseCreateLock) {
+            return (interruption.active);
+        }
+    }
+
     @Override
-    public void active(boolean active) {
-        this.active = active;
+    public void restart() {
+        if (cannotBeUsed()) return;
+        synchronized (useCaseCreateLock) {
+            boolean currentInterruptionStatus = interruption.active;
+            interruption.active = true;
+            interruption = new DownloadInterruption();
+            interruption.active = currentInterruptionStatus;
+        }
+        loadedData = null;
+        launch();
     }
 }

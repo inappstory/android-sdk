@@ -958,9 +958,8 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull final IASCore core) {
-
                 Log.e("ArchiveUseCase", "downloadGame");
-                core.contentPreload().getGamePreloader().pause();
+                core.contentPreload().pauseGamePreloader();
                 core.contentLoader().gameCacheManager().getGame(
                         gameId,
                         core.externalUtilsAPI().hasLottieAnimation(),
@@ -1068,7 +1067,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
 
                             @Override
                             public void onSuccess(final FilePathAndContent result) {
-                                core.contentPreload().getGamePreloader().restart();
+                                core.contentPreload().resumeGamePreloader();
                                 webView.post(new Runnable() {
                                     @Override
                                     public void run() {
