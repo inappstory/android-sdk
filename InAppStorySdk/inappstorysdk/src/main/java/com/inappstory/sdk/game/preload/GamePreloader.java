@@ -1,5 +1,7 @@
 package com.inappstory.sdk.game.preload;
 
+import android.util.Log;
+
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.game.cache.SuccessUseCaseCallback;
 import com.inappstory.sdk.stories.api.interfaces.IGameCenterData;
@@ -62,7 +64,7 @@ public class GamePreloader implements IGamePreloader {
         }
     }
 
-    DownloadInterruption interruption;
+    DownloadInterruption interruption = new DownloadInterruption();
 
     private void loadSplashes(IDownloadAllSplashesCallback callback) {
         synchronized (useCaseCreateLock) {
@@ -87,7 +89,6 @@ public class GamePreloader implements IGamePreloader {
                             gameFilesUseCase = new LoadGameFilesUseCase(
                                     core,
                                     new ArrayList<>(loadedData.values()),
-                                    filesDownloadManager,
                                     interruption
                             );
                             gameFilesUseCase.download(successUseCaseCallback);
@@ -101,7 +102,6 @@ public class GamePreloader implements IGamePreloader {
 
     @Override
     public void pause() {
-        if (!active) return;
         synchronized (useCaseCreateLock) {
             interruption.active = true;
         }

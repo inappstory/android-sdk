@@ -145,6 +145,7 @@ public class IASContentPreloadImpl implements IASContentPreload {
 
     @Override
     public void restartGamePreloader() {
+        Log.e("ArchiveUseCase", "restartGamePreloader");
         gamePreloader.pause();
         gamePreloader.active(true);
         gamePreloader.restart();

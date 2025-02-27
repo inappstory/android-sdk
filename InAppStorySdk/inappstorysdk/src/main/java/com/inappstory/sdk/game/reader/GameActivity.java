@@ -64,10 +64,11 @@ public class GameActivity extends AppCompatActivity implements BaseGameScreen {
 
     private void setStatusBarColor(String color) {
         if (color == null) return;
-        SystemUiUtils.setStatusBarColor(Color.parseColor(color), getWindow());
+        int colorInt = Color.parseColor(color);
+        SystemUiUtils.setStatusBarColor(colorInt, getWindow());
         WindowInsetsControllerCompat windowInsetsController =
                 WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
-        double bright = ColorUtils.getColorBright(getWindow().getStatusBarColor());
+        double bright = ColorUtils.getColorBright(colorInt);
         windowInsetsController.setAppearanceLightStatusBars(bright > 40);
         /*if ((getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_NO)
             windowInsetsController.setAppearanceLightStatusBars(true);

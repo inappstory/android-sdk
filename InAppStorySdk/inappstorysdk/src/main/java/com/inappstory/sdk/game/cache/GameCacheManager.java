@@ -42,7 +42,6 @@ public class GameCacheManager {
     public void getGame(
             final String gameId,
             final boolean useAnimSplash,
-            final FilesDownloadManager filesDownloadManager,
             final DownloadInterruption interruption,
             final ProgressCallback progressCallback,
             final UseCaseWarnCallback<File> staticSplashScreenCallback,
@@ -338,9 +337,11 @@ public class GameCacheManager {
                         );
 
 
+                Log.e("ArchiveUseCase", "GameCacheManager0");
                 gameUseCasesThread.submit(new Runnable() {
                     @Override
                     public void run() {
+                        Log.e("ArchiveUseCase", "GameCacheManager");
                         getZipFileUseCase.getFile();
                     }
                 });

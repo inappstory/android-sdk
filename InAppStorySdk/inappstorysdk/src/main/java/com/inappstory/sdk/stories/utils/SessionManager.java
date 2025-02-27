@@ -310,12 +310,13 @@ public class SessionManager {
                                             isSendStatistic = manager.isSendStatistic();
                                         sessionHolder.setSession(cachedSessionData, !(isSendStatistic && response.isAllowStatV1));
                                         core.network().setSessionId(response.session.id);
+                                        if (response.preloadGame)
+                                            core.contentPreload().restartGamePreloader();
                                         saveSession(response);
                                         openStatisticSuccess(response);
                                         core.inAppStoryService()
                                                 .getListReaderConnector().sessionIsOpened(currentSession);
-                                        if (response.preloadGame)
-                                            core.contentPreload().restartGamePreloader();
+
                                     }
 
                                     @Override

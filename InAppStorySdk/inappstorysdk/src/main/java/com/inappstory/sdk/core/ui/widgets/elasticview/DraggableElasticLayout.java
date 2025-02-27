@@ -390,8 +390,8 @@ public class DraggableElasticLayout extends FrameLayout {
 
         public DraggableElasticFader(Activity activity) {
             this.activity = activity;
-            statusBarAlpha = Color.alpha(activity.getWindow().getStatusBarColor());
-            navBarAlpha = Color.alpha(activity.getWindow().getNavigationBarColor());
+            statusBarAlpha = SystemUiUtils.getStatusBarColorAlpha(activity.getWindow());
+            navBarAlpha = SystemUiUtils.getNavigationBarColorAlpha(activity.getWindow());
             fadeNavBar = ViewUtils.isNavBarOnBottom(activity);
         }
 
@@ -399,15 +399,11 @@ public class DraggableElasticLayout extends FrameLayout {
         public void onDrag(float elasticOffset, float elasticOffsetPixels,
                            float rawOffset, float rawOffsetPixels) {
             if (elasticOffsetPixels > 0) {
-                // dragging downward, fade the status bar in proportion
                 SystemUiUtils.modifyStatusBarColor((int) ((1f - rawOffset) * statusBarAlpha), activity.getWindow());
             } else if (elasticOffsetPixels == 0) {
-                // reset
                 SystemUiUtils.modifyStatusBarColor(statusBarAlpha, activity.getWindow());
-            //    SystemUiUtils.modifyNabBarColor(navBarAlpha, activity.getWindow());;
             } else if (fadeNavBar) {
-                // dragging upward, fade the navigation bar in proportion
-        //        SystemUiUtils.modifyNabBarColor((int) ((1f - rawOffset) * navBarAlpha), activity.getWindow());
+
             }
         }
 

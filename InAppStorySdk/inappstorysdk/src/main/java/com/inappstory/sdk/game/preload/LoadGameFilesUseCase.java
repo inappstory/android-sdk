@@ -1,5 +1,7 @@
 package com.inappstory.sdk.game.preload;
 
+import android.util.Log;
+
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.game.cache.DownloadResourcesUseCase;
 import com.inappstory.sdk.game.cache.SuccessUseCaseCallback;
@@ -27,7 +29,6 @@ public class LoadGameFilesUseCase {
     public LoadGameFilesUseCase(
             IASCore core,
             List<IGameCenterData> gamesData,
-            FilesDownloadManager filesDownloadManager,
             DownloadInterruption interruption
     ) {
         this.core = core;
@@ -47,6 +48,7 @@ public class LoadGameFilesUseCase {
             final IGameCenterData data,
             final SuccessUseCaseCallback<IGameCenterData> successUseCaseCallback
     ) {
+        Log.e("ArchiveUseCase", "loadGameData " + interruption.toString());
         if (interruption.active) return;
         if (data.url() == null || data.url().isEmpty()) return;
         final String archiveUrl = data.url();
@@ -107,7 +109,6 @@ public class LoadGameFilesUseCase {
                 },
                 emptyProgress
         );
-
         final ArchiveUseCase getZipFileUseCase =
                 new ArchiveUseCase(
                         core,

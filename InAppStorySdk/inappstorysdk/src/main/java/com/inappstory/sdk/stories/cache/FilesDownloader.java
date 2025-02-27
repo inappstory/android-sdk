@@ -1,5 +1,7 @@
 package com.inappstory.sdk.stories.cache;
 
+import android.util.Log;
+
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.network.utils.ConnectionHeadersMap;
@@ -193,6 +195,9 @@ public class FilesDownloader {
         int bufferLength = 0;
         int cnt = 0;
         try {
+            if (interruption != null) {
+                Log.e("ArchiveUseCase", "FilesDownloader " +  interruption.toString());
+            }
             while ((bufferLength = inputStream.read(buffer)) > 0) {
                 if (interruption != null && interruption.active) {
                     releaseStreamAndFile(fileOutputStream, lock);
