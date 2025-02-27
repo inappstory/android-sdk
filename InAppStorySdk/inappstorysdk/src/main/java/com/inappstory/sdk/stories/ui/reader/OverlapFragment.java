@@ -38,34 +38,7 @@ public class OverlapFragment extends Fragment implements IASBackPressHandler {
     FrameLayout readerTopContainer;
     View shareView;
 
-    OverlappingContainerActions shareActions = new OverlappingContainerActions() {
-        @Override
-        public void closeView(final HashMap<String, Object> data) {
-            InAppStoryManager.useCore(new UseIASCoreCallback() {
-                @Override
-                public void use(@NonNull IASCore core) {
-                    ShareProcessHandler shareProcessHandler =
-                            core.screensManager().getShareProcessHandler();
-                    if (shareProcessHandler == null) return;
-                    boolean shared = false;
-                    if (data.containsKey("shared")) shared = (boolean) data.get("shared");
-                    OverlapFragmentObserver observer = shareProcessHandler.overlapFragmentObserver();
-                    if (observer != null) observer.closeView(data);
-                    shareProcessHandler.overlapFragmentObserver(null);
-                    try {
-                        getParentFragmentManager().popBackStack();
-                    } catch (IllegalStateException e) {
-                        shareProcessHandler.setTempShareStatus(shared);
-                    }
-                    IShareCompleteListener shareCompleteListener = shareProcessHandler.shareCompleteListener();
-                    if (shareCompleteListener != null) {
-                        shareCompleteListener.complete(shared);
-                    }
-                }
-            });
-
-        }
-    };
+    OverlappingContainerActions shareActions;
 
     private boolean closed = false;
 
@@ -132,7 +105,7 @@ public class OverlapFragment extends Fragment implements IASBackPressHandler {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
+        shareActions = new ShareOverlappingContainerActions(getParentFragmentManager());
         readerTopContainer = view.findViewById(R.id.ias_stories_top_container);
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
