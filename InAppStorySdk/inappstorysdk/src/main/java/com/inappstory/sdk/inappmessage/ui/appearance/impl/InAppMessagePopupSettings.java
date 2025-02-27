@@ -1,5 +1,6 @@
 package com.inappstory.sdk.inappmessage.ui.appearance.impl;
 
+import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageBackdrop;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessagePopupAppearance;
 import com.inappstory.sdk.utils.NumberUtils;
 
@@ -12,7 +13,8 @@ public class InAppMessagePopupSettings implements InAppMessagePopupAppearance {
             Integer horizontalPadding,
             Integer closeButtonPosition,
             Integer animationType,
-            String backgroundColor
+            String backgroundColor,
+            InAppMessageBackdrop backdrop
     ) {
         this.contentRatio = contentRatio;
         this.cornerRadius = cornerRadius;
@@ -20,6 +22,7 @@ public class InAppMessagePopupSettings implements InAppMessagePopupAppearance {
         this.closeButtonPosition = closeButtonPosition;
         this.animationType = animationType;
         this.backgroundColor = backgroundColor;
+        this.backdrop = backdrop;
     }
 
     public InAppMessagePopupSettings() {}
@@ -32,6 +35,7 @@ public class InAppMessagePopupSettings implements InAppMessagePopupAppearance {
         String closeButtonPositionKey = "close_button_position";
         String animationTypeKey = "animation_type";
         String backgroundColorKey = "background_color";
+        String backdropKey = "backdrop";
         NumberUtils numberUtils = new NumberUtils();
         if (appearance.containsKey(contentRatioKey)) {
             contentRatio = numberUtils.convertNumberToFloat(appearance.get(contentRatioKey));
@@ -48,6 +52,9 @@ public class InAppMessagePopupSettings implements InAppMessagePopupAppearance {
         if (appearance.containsKey(animationTypeKey)) {
             animationType = numberUtils.convertNumberToInt(appearance.get(animationTypeKey));
         }
+        if (appearance.containsKey(backdropKey)) {
+            backdrop = new InAppMessageBackdropSettings((Map<String, Object>) appearance.get(backdropKey));
+        }
         if (appearance.containsKey(backgroundColorKey)) {
             backgroundColor = (String) appearance.get(backgroundColorKey);
         }
@@ -59,6 +66,7 @@ public class InAppMessagePopupSettings implements InAppMessagePopupAppearance {
     private Integer closeButtonPosition;
     private Integer animationType;
     private String backgroundColor;
+    private InAppMessageBackdrop backdrop;
 
     @Override
     public float contentRatio() {
@@ -83,6 +91,11 @@ public class InAppMessagePopupSettings implements InAppMessagePopupAppearance {
     @Override
     public int animationType() {
         return animationType != null ? animationType : 2;
+    }
+
+    @Override
+    public InAppMessageBackdrop backdrop() {
+        return backdrop != null ? backdrop : new InAppMessageBackdropSettings();
     }
 
 

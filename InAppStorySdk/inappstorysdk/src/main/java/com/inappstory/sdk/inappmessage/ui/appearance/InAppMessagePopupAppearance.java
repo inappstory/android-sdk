@@ -6,4 +6,5 @@ public interface InAppMessagePopupAppearance extends InAppMessageAppearance {
     int cornerRadius();
     int closeButtonPosition();
     int animationType();
+    InAppMessageBackdrop backdrop();
 }

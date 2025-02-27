@@ -1,6 +1,7 @@
 package com.inappstory.sdk.inappmessage.ui.appearance.impl;
 
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageBSLineAppearance;
+import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageBackdrop;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageBottomSheetAppearance;
 import com.inappstory.sdk.utils.NumberUtils;
 
@@ -11,18 +12,21 @@ public class InAppMessageBottomSheetSettings implements InAppMessageBottomSheetA
             Float contentRatio,
             Integer cornerRadius,
             String backgroundColor,
-            InAppMessageBSLineAppearance lineAppearance
+            InAppMessageBSLineAppearance lineAppearance,
+            InAppMessageBackdrop backdrop
     ) {
         this.contentRatio = contentRatio;
         this.lineAppearance = lineAppearance;
         this.cornerRadius = cornerRadius;
         this.backgroundColor = backgroundColor;
+        this.backdrop = backdrop;
     }
 
     private Float contentRatio;
     private Integer cornerRadius;
     private String backgroundColor;
     private InAppMessageBSLineAppearance lineAppearance;
+    private InAppMessageBackdrop backdrop;
 
     public InAppMessageBottomSheetSettings() {
     }
@@ -33,6 +37,7 @@ public class InAppMessageBottomSheetSettings implements InAppMessageBottomSheetA
         String cornerRadiusKey = "corner_radius";
         String lineAppearanceKey = "line_appearance";
         String backgroundColorKey = "background_color";
+        String backdropKey = "backdrop";
         NumberUtils numberUtils = new NumberUtils();
         if (appearance.containsKey(contentRatioKey)) {
             contentRatio = numberUtils.convertNumberToFloat(appearance.get(contentRatioKey));
@@ -42,6 +47,9 @@ public class InAppMessageBottomSheetSettings implements InAppMessageBottomSheetA
         }
         if (appearance.containsKey(lineAppearanceKey)) {
             lineAppearance = new InAppMessageBSLineSettings((Map<String, Object>) appearance.get(lineAppearanceKey));
+        }
+        if (appearance.containsKey(backdropKey)) {
+            backdrop = new InAppMessageBackdropSettings((Map<String, Object>) appearance.get(backdropKey));
         }
         if (appearance.containsKey(backgroundColorKey)) {
             backgroundColor = (String) appearance.get(backgroundColorKey);
@@ -67,5 +75,10 @@ public class InAppMessageBottomSheetSettings implements InAppMessageBottomSheetA
     @Override
     public InAppMessageBSLineAppearance lineAppearance() {
         return lineAppearance != null ? lineAppearance : new InAppMessageBSLineSettings();
+    }
+
+    @Override
+    public InAppMessageBackdrop backdrop() {
+        return backdrop != null ? backdrop : new InAppMessageBackdropSettings();
     }
 }

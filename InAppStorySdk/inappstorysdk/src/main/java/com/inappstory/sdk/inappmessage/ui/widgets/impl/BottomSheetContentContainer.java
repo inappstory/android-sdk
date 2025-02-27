@@ -5,6 +5,7 @@ import static com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_
 import static com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_HIDDEN;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.graphics.Point;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -164,6 +165,9 @@ public final class BottomSheetContentContainer extends IAMContentContainer<InApp
     public void appearance(InAppMessageBottomSheetAppearance appearance) {
         super.appearance(appearance);
         if (content == null) return;
+        float backdropAlpha = appearance.backdrop().alpha();
+        int backdropColor = ColorUtils.modifyAlpha(Color.BLACK, backdropAlpha);
+        background.setBackgroundColor(backdropColor);
         int backgroundColor = ColorUtils.parseColorRGBA(
                 appearance.backgroundColor()
         );

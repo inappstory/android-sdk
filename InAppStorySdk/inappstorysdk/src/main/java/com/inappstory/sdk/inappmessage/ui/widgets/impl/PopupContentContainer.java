@@ -1,6 +1,7 @@
 package com.inappstory.sdk.inappmessage.ui.widgets.impl;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.graphics.Point;
 import android.util.AttributeSet;
 import android.view.Gravity;
@@ -55,6 +56,9 @@ public class PopupContentContainer extends IAMContentContainer<InAppMessagePopup
     public void appearance(InAppMessagePopupAppearance appearance) {
         super.appearance(appearance);
         if (content == null) return;
+        float backdropAlpha = appearance.backdrop().alpha();
+        int backdropColor = ColorUtils.modifyAlpha(Color.BLACK, backdropAlpha);
+        background.setBackgroundColor(backdropColor);
         int backgroundColor = ColorUtils.parseColorRGBA(
                 appearance.backgroundColor()
         );

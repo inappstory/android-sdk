@@ -5,4 +5,5 @@ public interface InAppMessageBottomSheetAppearance extends InAppMessageAppearanc
     int cornerRadius();
     float contentRatio();
     InAppMessageBSLineAppearance lineAppearance();
+    InAppMessageBackdrop backdrop();
 }
