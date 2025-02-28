@@ -71,6 +71,7 @@ import com.inappstory.sdk.inner.share.ShareFilesPrepareCallback;
 import com.inappstory.sdk.memcache.IGetBitmapFromMemoryCache;
 import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.JsonParser;
+import com.inappstory.sdk.utils.IAcceleratorSubscriber;
 import com.inappstory.sdk.utils.UrlEncoder;
 import com.inappstory.sdk.network.utils.UserAgent;
 import com.inappstory.sdk.share.IASShareData;
@@ -106,7 +107,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-public class GameReaderContentFragment extends Fragment implements OverlapFragmentObserver, IASBackPressHandler {
+public class GameReaderContentFragment extends Fragment implements OverlapFragmentObserver, IASBackPressHandler, IAcceleratorSubscriber {
     private IASWebView webView;
     private ImageView loader;
     private FrameLayout gameWebViewContainer;
@@ -411,6 +412,12 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                 }
             });
         }
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.acceleratorUtils().unsubscribe(GameReaderContentFragment.this);
+            }
+        });
         super.onDestroyView();
     }
 
@@ -1435,5 +1442,46 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
             }
         }
         return true;
+    }
+
+
+    public void acceleratorSensorIsActive() {
+        if (webView == null) return;
+        webView.post(new Runnable() {
+            @Override
+            public void run() {
+                webView.evaluateJavascript("userAccelerationSensorCbActivate();", null);
+            }
+        });
+    }
+
+    public void acceleratorSensorActivationError(final String type, final String message) {
+        if (webView == null) return;
+        webView.post(new Runnable() {
+            @Override
+            public void run() {
+                webView.evaluateJavascript(
+                        "userAccelerationSensorCbError("
+                                + type + ","
+                                + message + ");",
+                        null);
+            }
+        });
+    }
+
+    @Override
+    public void onEvent(final float x, final float y, final float z) {
+        if (webView == null) return;
+        webView.post(new Runnable() {
+            @Override
+            public void run() {
+                webView.evaluateJavascript(
+                        "userAccelerationSensorCbRead("
+                                + x + ","
+                                + y + ","
+                                + z + ");",
+                        null);
+            }
+        });
     }
 }

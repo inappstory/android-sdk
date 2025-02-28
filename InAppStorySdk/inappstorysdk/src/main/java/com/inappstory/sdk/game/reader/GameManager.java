@@ -2,6 +2,7 @@ package com.inappstory.sdk.game.reader;
 
 import android.content.Context;
 import android.media.AudioManager;
+import android.webkit.JavascriptInterface;
 
 import androidx.annotation.NonNull;
 
@@ -36,6 +37,7 @@ import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.ui.views.IASWebView;
+import com.inappstory.sdk.utils.IAcceleratorInitCallback;
 import com.inappstory.sdk.utils.StringsUtils;
 
 import java.lang.reflect.Type;
@@ -124,10 +126,48 @@ public class GameManager {
     }
 
     void vibrate(int[] vibratePattern) {
-        if (host != null && host.getContext() != null) {
-            core.vibrateUtils().vibrate(host.getContext(), vibratePattern);
+        if (host != null) {
+            core.vibrateUtils().vibrate(vibratePattern);
         }
     }
+
+    @JavascriptInterface
+    public void initUserAccelerationSensor(String options) {
+        GameAcceleratorOptions gameAcceleratorOptions =
+                JsonParser.fromJson(options, GameAcceleratorOptions.class);
+        core.acceleratorUtils().init(
+                gameAcceleratorOptions.frequency,
+                new IAcceleratorInitCallback() {
+                    @Override
+                    public void onSuccess() {
+                        if (host != null) {
+                            host.acceleratorSensorIsActive();
+                        }
+                    }
+
+                    @Override
+                    public void onError(String type, String message) {
+                        if (host != null) {
+                            host.acceleratorSensorActivationError(type, message);
+                        }
+                    }
+                }
+        );
+
+    }
+
+    @JavascriptInterface
+    public void startUserAccelerationSensor() {
+        if (host != null)
+            core.acceleratorUtils().subscribe(host);
+    }
+
+    @JavascriptInterface
+    public void stopUserAccelerationSensor() {
+        if (host != null)
+            core.acceleratorUtils().unsubscribe(host);
+    }
+
 
     void storySetData(String data, boolean sendToServer) {
         InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
@@ -253,7 +293,6 @@ public class GameManager {
             }
         }
     }
-
 
 
     void loadAnotherGame(final String gameId) {

@@ -87,9 +87,7 @@ public class StoriesViewManager {
     }
 
     public void vibrate(int[] vibratePattern) {
-        if (context != null) {
-            core.vibrateUtils().vibrate(context, vibratePattern);
-        }
+        core.vibrateUtils().vibrate(vibratePattern);
     }
 
     void goodsWidgetComplete(String widgetId) {

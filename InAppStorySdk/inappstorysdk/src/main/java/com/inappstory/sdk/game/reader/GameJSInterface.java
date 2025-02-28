@@ -114,6 +114,24 @@ public class GameJSInterface {
     }
 
     @JavascriptInterface
+    public void initUserAccelerationSensor(String options) {
+        manager.initUserAccelerationSensor(options);
+        logMethod(options);
+    }
+
+    @JavascriptInterface
+    public void startUserAccelerationSensor() {
+        manager.startUserAccelerationSensor();
+        logMethod("null");
+    }
+
+    @JavascriptInterface
+    public void stopUserAccelerationSensor() {
+        manager.stopUserAccelerationSensor();
+        logMethod("null");
+    }
+
+    @JavascriptInterface
     public void sendApiRequest(String data) {
         manager.sendApiRequest(data);
         logMethod(data);

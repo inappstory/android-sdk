@@ -5,15 +5,24 @@ import android.os.Build;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
 
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.utils.IVibrateUtils;
 
 import java.lang.ref.WeakReference;
 
 public class VibrateUtils implements IVibrateUtils {
+    private final IASCore core;
+
     WeakReference<Vibrator> vibratorWeakReference;
 
-    public void vibrate(Context context, int[] vibratePattern) {
+    public VibrateUtils(IASCore core) {
+        this.core = core;
+    }
+
+
+    public void vibrate(int[] vibratePattern) {
         Vibrator vibrator = null;
+        Context context = core.appContext();
         if (vibratorWeakReference != null) {
             vibrator = vibratorWeakReference.get();
         }

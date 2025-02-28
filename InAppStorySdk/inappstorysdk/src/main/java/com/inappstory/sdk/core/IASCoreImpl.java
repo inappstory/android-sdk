@@ -50,6 +50,8 @@ import com.inappstory.sdk.stories.exceptions.ExceptionManager;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
 import com.inappstory.sdk.stories.utils.SessionManager;
+import com.inappstory.sdk.utils.AcceleratorUtils;
+import com.inappstory.sdk.utils.IAcceleratorUtils;
 import com.inappstory.sdk.utils.IVibrateUtils;
 import com.inappstory.sdk.utils.VibrateUtils;
 
@@ -70,6 +72,7 @@ public class IASCoreImpl implements IASCore {
     private final IASStoriesOpenedCache storyListCache;
     private final IASStatistic statistic;
     private final IVibrateUtils vibrateUtils;
+    private final IAcceleratorUtils acceleratorUtils;
     private final IASContentPreload contentPreload;
     private final IASExternalUtilsAPI externalUtilsAPI;
     private final IASContentLoader contentLoader;
@@ -106,7 +109,8 @@ public class IASCoreImpl implements IASCore {
         sessionManager = new SessionManager(this);
         storyListCache = new IASStoriesOpenedCacheImpl(this);
         statistic = new IASStatisticImpl(this);
-        vibrateUtils = new VibrateUtils();
+        vibrateUtils = new VibrateUtils(this);
+        acceleratorUtils = new AcceleratorUtils(this);
         contentPreload = new IASContentPreloadImpl(this);
         iasLogs = new IASLogsImpl(this);
         inAppStoryService = new InAppStoryService(this);
@@ -221,6 +225,11 @@ public class IASCoreImpl implements IASCore {
     @Override
     public IVibrateUtils vibrateUtils() {
         return vibrateUtils;
+    }
+
+    @Override
+    public IAcceleratorUtils acceleratorUtils() {
+        return acceleratorUtils;
     }
 
     @Override

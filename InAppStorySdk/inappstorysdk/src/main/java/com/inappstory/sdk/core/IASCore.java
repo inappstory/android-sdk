@@ -33,6 +33,7 @@ import com.inappstory.sdk.stories.exceptions.ExceptionManager;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
 import com.inappstory.sdk.stories.utils.SessionManager;
+import com.inappstory.sdk.utils.IAcceleratorUtils;
 import com.inappstory.sdk.utils.IVibrateUtils;
 
 public interface IASCore {
@@ -57,6 +58,7 @@ public interface IASCore {
     SessionManager sessionManager();
     IASStatistic statistic();
     IVibrateUtils vibrateUtils();
+    IAcceleratorUtils acceleratorUtils();
     IASContentPreload contentPreload();
     IASSessionAssetsHolder sessionAssets();
     IASExternalUtilsAPI externalUtilsAPI();
