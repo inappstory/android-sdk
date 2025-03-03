@@ -56,7 +56,7 @@ public class GamePreloader implements IGamePreloader {
         }
     }
 
-    DownloadInterruption interruption;
+    DownloadInterruption interruption = new DownloadInterruption();
 
     private void loadSplashes(IDownloadAllSplashesCallback callback) {
         if (cannotBeUsed()) return;
