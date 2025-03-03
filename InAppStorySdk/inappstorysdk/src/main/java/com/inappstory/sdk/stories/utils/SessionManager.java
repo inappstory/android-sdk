@@ -299,6 +299,7 @@ public class SessionManager {
                         networkClient.setSessionId(currentSession);
                         service.getListReaderConnector().sessionIsOpened(currentSession);
                         ProfilingManager.getInstance().setReady(sessionOpenUID);
+                        if (response.preloadGame) service.restartGamePreloader();
                         openStatisticSuccess(response);
                         CachedSessionData cachedSessionData = new CachedSessionData();
                         cachedSessionData.userId = serviceUserId;
@@ -310,7 +311,6 @@ public class SessionManager {
                         cachedSessionData.tags = service.getTagsString();
                         CachedSessionData.setInstance(cachedSessionData);
 
-                        if (response.preloadGame) service.restartGamePreloader();
                     }
 
                     @Override

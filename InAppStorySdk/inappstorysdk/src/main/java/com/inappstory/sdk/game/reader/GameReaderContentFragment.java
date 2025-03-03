@@ -1091,7 +1091,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                             @Override
                             public void onSuccess(final FilePathAndContent result) {
                                 if (!isAdded()) return;
-                                service.getGamePreloader().restart();
+                                service.getGamePreloader().resume();
                                 webView.post(new Runnable() {
                                     @Override
                                     public void run() {

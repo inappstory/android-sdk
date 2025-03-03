@@ -154,8 +154,6 @@ public class InAppStoryService {
 
     public void restartGamePreloader() {
         IGamePreloader gamePreloader = getGamePreloader();
-        gamePreloader.pause();
-        gamePreloader.active(true);
         gamePreloader.restart();
     }
 
