@@ -1,6 +1,10 @@
 Change Log
 ========== 
 
+Version *1.20.10 (960)*
+----------------------------
+* Fixed: bug with game preloading
+
 Version *1.20.9 (959)*
 ----------------------------
 * Added: game js exception logs
