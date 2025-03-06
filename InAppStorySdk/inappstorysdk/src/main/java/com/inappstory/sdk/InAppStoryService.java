@@ -7,6 +7,8 @@ import androidx.annotation.NonNull;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.data.IListItemContent;
+import com.inappstory.sdk.core.dataholders.StoriesRequestKey;
+import com.inappstory.sdk.core.storieslist.StoriesRequestResult;
 import com.inappstory.sdk.externalapi.subscribers.InAppStoryAPISubscribersManager;
 import com.inappstory.sdk.core.network.content.models.Image;
 import com.inappstory.sdk.stories.api.models.ContentType;
@@ -19,6 +21,7 @@ import com.inappstory.sdk.stories.ui.list.ListManager;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 public class InAppStoryService {
@@ -154,6 +157,16 @@ public class InAppStoryService {
                     }
                     core.contentHolder().favorite(id, ContentType.STORY, favStatus);
                     boolean isEmpty = core.contentHolder().favoriteItems().isEmpty(ContentType.STORY);
+                    StoriesRequestKey favKey = new StoriesRequestKey(true);
+                    StoriesRequestResult requestResult = core.storiesListVMHolder().getStoriesRequestResult(favKey);
+                    if (requestResult != null) {
+                        List<Integer> stories = requestResult.getStoriesIds();
+                        if (!stories.contains(id) && favStatus) {
+                            stories.add(0, id);
+                        } else if (stories.contains(id) && !favStatus) {
+                            stories.remove(Integer.valueOf(id));
+                        }
+                    }
                     for (ListManager sub : service.getListSubscribers()) {
                         sub.storyFavorite(id, favStatus, isEmpty);
                     }

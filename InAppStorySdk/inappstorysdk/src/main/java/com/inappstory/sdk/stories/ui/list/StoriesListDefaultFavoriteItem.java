@@ -72,15 +72,21 @@ public final class StoriesListDefaultFavoriteItem implements IGetFavoriteListIte
         switch (count) {
             case 1:
                 setImage(0, favoriteImages.get(0), getColorOrTransparent(backgroundColors, 0));
+                clearImageByIndex(1);
+                clearImageByIndex(2);
+                clearImageByIndex(3);
                 break;
             case 2:
                 setImage(0, favoriteImages.get(0), getColorOrTransparent(backgroundColors, 0));
                 setImage(1, favoriteImages.get(1), getColorOrTransparent(backgroundColors, 1));
+                clearImageByIndex(2);
+                clearImageByIndex(3);
                 break;
             case 3:
                 setImage(0, favoriteImages.get(0), getColorOrTransparent(backgroundColors, 0));
                 setImage(1, favoriteImages.get(1), getColorOrTransparent(backgroundColors, 1));
                 setImage(2, favoriteImages.get(2), getColorOrTransparent(backgroundColors, 2));
+                clearImageByIndex(3);
                 break;
             default:
                 setImage(0, favoriteImages.get(0), getColorOrTransparent(backgroundColors, 0));
@@ -179,6 +185,11 @@ public final class StoriesListDefaultFavoriteItem implements IGetFavoriteListIte
     private void clearImage(AppCompatImageView imageView) {
         imageView.setImageBitmap(null);
         imageView.setVisibility(View.INVISIBLE);
+    }
+
+    private void clearImageByIndex(int index) {
+        final AppCompatImageView imageView = getImageByIndex(index);
+        clearImage(imageView);
     }
 
     private void setImage(

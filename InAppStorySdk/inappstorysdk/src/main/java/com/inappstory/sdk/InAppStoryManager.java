@@ -1079,6 +1079,16 @@ public class InAppStoryManager implements IASBackPressHandler {
         });
     }
 
+    public void clearCachedFavoriteList() {
+        useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+
+                core.storiesListVMHolder().removeFavoriteResult();
+            }
+        });
+    }
+
     public void clearCachedListByFeed(final String feed) {
         useCore(new UseIASCoreCallback() {
             @Override
