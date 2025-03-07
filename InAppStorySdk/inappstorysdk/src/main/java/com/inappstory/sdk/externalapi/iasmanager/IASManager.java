@@ -12,6 +12,7 @@ public class IASManager {
     public InAppStoryManager create(
             String apiKey,
             String userId,
+            String userSign,
             Locale lang,
             ArrayList<String> tags,
             Map<String, String> placeholders,
@@ -32,11 +33,40 @@ public class IASManager {
         if (gameDemoMode != null) builder = builder.gameDemoMode(gameDemoMode);
         return builder
                 .apiKey(apiKey)
-                .userId(userId)
+                .userId(userId, userSign)
                 .testKey(testKey)
                 .tags(tags)
                 .placeholders(placeholders)
                 .imagePlaceholders(imagePlaceholders)
                 .create();
+    }
+
+    public InAppStoryManager create(
+            String apiKey,
+            String userId,
+            Locale lang,
+            ArrayList<String> tags,
+            Map<String, String> placeholders,
+            Map<String, ImagePlaceholderValue> imagePlaceholders,
+            String testKey,
+            Boolean gameDemoMode,
+            Boolean deviceIdEnabled,
+            Integer cacheSize,
+            Boolean sandbox
+    ) {
+        return create(
+                apiKey,
+                userId,
+                null,
+                lang,
+                tags,
+                placeholders,
+                imagePlaceholders,
+                testKey,
+                gameDemoMode,
+                deviceIdEnabled,
+                cacheSize,
+                sandbox
+        );
     }
 }
