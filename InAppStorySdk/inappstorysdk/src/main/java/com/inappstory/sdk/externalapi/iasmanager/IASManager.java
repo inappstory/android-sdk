@@ -41,6 +41,7 @@ public class IASManager {
                 .create();
     }
 
+    @Deprecated
     public InAppStoryManager create(
             String apiKey,
             String userId,
