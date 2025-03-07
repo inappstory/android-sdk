@@ -20,6 +20,7 @@ public class IASManagerImpl implements IASManager {
     public InAppStoryManager create(
             String apiKey,
             String userId,
+            String userSign,
             Locale lang,
             ArrayList<String> tags,
             Map<String, String> placeholders,
