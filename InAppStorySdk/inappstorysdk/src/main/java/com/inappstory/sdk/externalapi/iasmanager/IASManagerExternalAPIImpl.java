@@ -13,6 +13,7 @@ public class IASManagerExternalAPIImpl implements IASManager {
     public InAppStoryManager create(
             String apiKey,
             String userId,
+            String userSign,
             Locale lang,
             ArrayList<String> tags,
             Map<String, String> placeholders,
@@ -33,7 +34,7 @@ public class IASManagerExternalAPIImpl implements IASManager {
         if (gameDemoMode != null) builder = builder.gameDemoMode(gameDemoMode);
         return builder
                 .apiKey(apiKey)
-                .userId(userId)
+                .userId(userId, userSign)
                 .testKey(testKey)
                 .tags(tags)
                 .placeholders(placeholders)

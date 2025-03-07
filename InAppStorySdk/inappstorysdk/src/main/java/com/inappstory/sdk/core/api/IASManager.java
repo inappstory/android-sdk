@@ -11,6 +11,7 @@ public interface IASManager {
     InAppStoryManager create(
             String apiKey,
             String userId,
+            String userSign,
             Locale lang,
             ArrayList<String> tags,
             Map<String, String> placeholders,
