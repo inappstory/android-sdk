@@ -141,7 +141,7 @@ public class StoriesLoaderFragment extends Fragment {
                     );
                 }
                 int windowHeight = screenSize.y;
-                if (phoneHeight - topInsetOffset - bottomInsetOffset <= windowHeight) {
+                if (phoneHeight - topInsetOffset - bottomInsetOffset < windowHeight) {
                     LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) blackBottom.getLayoutParams();
                     lp.height = bottomInsetOffset;
                     blackBottom.requestLayout();
