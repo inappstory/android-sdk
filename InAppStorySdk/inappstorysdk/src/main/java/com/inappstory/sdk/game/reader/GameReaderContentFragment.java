@@ -1201,10 +1201,10 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
             if (getActivity() != null) {
                 WindowInsets windowInsets = getActivity().getWindow().getDecorView().getRootWindowInsets();
                 if (windowInsets != null) {
-                    insets.top = Sizes.pxToDpExt(windowInsets.getSystemWindowInsetTop(), context);
-                    insets.bottom = Sizes.pxToDpExt(windowInsets.getSystemWindowInsetBottom(), context);
-                    insets.left = Sizes.pxToDpExt(windowInsets.getSystemWindowInsetLeft(), context);
-                    insets.right = Sizes.pxToDpExt(windowInsets.getSystemWindowInsetRight(), context);
+                    insets.top = Sizes.pxToDpExt(windowInsets.getStableInsetTop(), context);
+                    insets.bottom = Sizes.pxToDpExt(windowInsets.getStableInsetBottom(), context);
+                    insets.left = Sizes.pxToDpExt(windowInsets.getStableInsetLeft(), context);
+                    insets.right = Sizes.pxToDpExt(windowInsets.getStableInsetRight(), context);
                 }
             }
         }
@@ -1229,7 +1229,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                         WindowInsets windowInsets = getActivity().getWindow().getDecorView().getRootWindowInsets();
                         if (windowInsets != null) {
                             ((RelativeLayout.LayoutParams) closeButton.getLayoutParams()).topMargin =
-                                    Math.max(windowInsets.getSystemWindowInsetTop(),
+                                    Math.max(windowInsets.getStableInsetTop(),
                                             Sizes.dpToPxExt(16, getContext())
                                     );
                             closeButton.requestLayout();
@@ -1240,8 +1240,8 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                             if (gameContainer != null) {
                                 Point size = Sizes.getScreenSize(getContext());
                                 if (windowInsets != null) {
-                                    size.y -= (windowInsets.getSystemWindowInsetTop() +
-                                            windowInsets.getSystemWindowInsetBottom());
+                                    size.y -= (windowInsets.getStableInsetTop() +
+                                            windowInsets.getStableInsetBottom());
                                 }
                                 gameContainer.getLayoutParams().height = size.y;
                                 gameContainer.getLayoutParams().width = (int) (size.y / 1.5f);

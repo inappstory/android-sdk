@@ -243,8 +243,8 @@ public class StoriesDialogFragment extends DialogFragment implements IASBackPres
                         ((Activity) getContext()).getWindow()
                                 .getDecorView().getRootWindowInsets();
                 if (insets != null) {
-                    size.y -= (insets.getSystemWindowInsetTop() +
-                            insets.getSystemWindowInsetBottom());
+                    size.y -= (insets.getStableInsetTop() +
+                            insets.getStableInsetBottom());
                 }
             }
         }

@@ -1,6 +1,6 @@
 package com.inappstory.sdk.stories.api.models;
 
-import com.inappstory.sdk.inappmessage.stedata.STEData;
+import com.inappstory.sdk.inappmessage.domain.stedata.STEData;
 
 import java.io.Serializable;
 

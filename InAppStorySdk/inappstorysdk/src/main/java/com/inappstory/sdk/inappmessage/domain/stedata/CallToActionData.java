@@ -1,4 +1,4 @@
-package com.inappstory.sdk.inappmessage.stedata;
+package com.inappstory.sdk.inappmessage.domain.stedata;
 
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickAction;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ContentData;

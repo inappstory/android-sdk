@@ -1,8 +1,6 @@
 package com.inappstory.sdk.stories.api.models;
 
-import com.inappstory.sdk.inappmessage.stedata.STEData;
-
-import java.io.Serializable;
+import com.inappstory.sdk.inappmessage.domain.stedata.STEData;
 
 public class ContentId implements STEData {
     private final String id;

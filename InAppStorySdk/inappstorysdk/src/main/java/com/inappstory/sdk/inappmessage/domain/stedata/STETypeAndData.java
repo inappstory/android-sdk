@@ -1,4 +1,4 @@
-package com.inappstory.sdk.inappmessage.stedata;
+package com.inappstory.sdk.inappmessage.domain.stedata;
 
 public class STETypeAndData {
     public STETypeAndData(STEDataType type, STEData data) {

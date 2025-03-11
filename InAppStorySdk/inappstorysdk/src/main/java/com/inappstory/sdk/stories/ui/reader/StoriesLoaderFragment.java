@@ -107,13 +107,14 @@ public class StoriesLoaderFragment extends Fragment {
 
     private void setOffsets(View view) {
         View blackTop = view.findViewById(R.id.ias_black_top);
+        View blackBottom = view.findViewById(R.id.ias_black_bottom);
         Activity fragmentActivity = getActivity();
         if (fragmentActivity == null) return;
         if (!Sizes.isTablet(fragmentActivity)) {
             if (blackTop != null) {
                 Point screenSize;
                 Rect readerContainer = getArguments().getParcelable("readerContainer");
-                int height = Sizes.getFullPhoneHeight(fragmentActivity);
+                int phoneHeight = Sizes.getFullPhoneHeight(fragmentActivity);
                 int width = Sizes.getFullPhoneWidth(fragmentActivity);
                 int topInsetOffset = 0;
                 int bottomInsetOffset = 0;
@@ -121,21 +122,29 @@ public class StoriesLoaderFragment extends Fragment {
                     if (fragmentActivity.getWindow() != null) {
                         WindowInsets windowInsets = fragmentActivity.getWindow().getDecorView().getRootWindowInsets();
                         if (windowInsets != null) {
-                            topInsetOffset = Math.max(0, windowInsets.getSystemWindowInsetTop());
-                            bottomInsetOffset = Math.max(0, windowInsets.getSystemWindowInsetBottom());
+                            topInsetOffset = Math.max(0, windowInsets.getStableInsetTop());
+                            bottomInsetOffset = Math.max(0, windowInsets.getStableInsetBottom());
                         }
                     }
                 }
+
+
                 if (readerContainer != null) {
                     screenSize = new Point(
                             Math.min(readerContainer.width(), width),
-                            Math.min(readerContainer.height(), height - topInsetOffset - bottomInsetOffset)
+                            Math.min(readerContainer.height(), phoneHeight - topInsetOffset - bottomInsetOffset)
                     );
                 } else {
                     screenSize = new Point(
                             width,
-                            height - topInsetOffset - bottomInsetOffset
+                            phoneHeight - topInsetOffset - bottomInsetOffset
                     );
+                }
+                int windowHeight = screenSize.y;
+                if (phoneHeight - topInsetOffset - bottomInsetOffset <= windowHeight) {
+                    LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) blackBottom.getLayoutParams();
+                    lp.height = bottomInsetOffset;
+                    blackBottom.requestLayout();
                 }
                 int maxRatioHeight = (int) (screenSize.x * 2f);
                 int restHeight = Math.max(0, screenSize.y - maxRatioHeight) + topInsetOffset;
@@ -252,8 +261,14 @@ public class StoriesLoaderFragment extends Fragment {
     private void setLinearContainer(Context context, LinearLayout linearLayout) {
         View blackTop = new View(context);
         blackTop.setId(R.id.ias_black_top);
-        blackTop.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 1));
+        blackTop.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0));
         blackTop.setBackgroundColor(Color.TRANSPARENT);
+
+        View blackBottom = new View(context);
+        blackBottom.setId(R.id.ias_black_bottom);
+        blackBottom.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0));
+        blackBottom.setBackgroundColor(Color.TRANSPARENT);
+
         RelativeLayout content = new RelativeLayout(context);
         content.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.MATCH_PARENT, 1));
@@ -285,6 +300,7 @@ public class StoriesLoaderFragment extends Fragment {
         content.addView(main);
         linearLayout.addView(blackTop);
         linearLayout.addView(content);
+        linearLayout.addView(blackBottom);
     }
 
     private BaseStoryScreen getStoriesReader() {
