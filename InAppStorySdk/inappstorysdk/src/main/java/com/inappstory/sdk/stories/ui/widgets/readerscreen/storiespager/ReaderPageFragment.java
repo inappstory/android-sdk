@@ -231,7 +231,7 @@ public class ReaderPageFragment extends Fragment {
                 Rect readerContainer = getArguments().getParcelable("readerContainer");
                 int phoneHeight = Sizes.getFullPhoneHeight(context);
                 int width = Sizes.getFullPhoneWidth(context);
-
+                int windowHeight = Sizes.getScreenSize(context).y;
                 int topInsetOffset = 0;
                 int bottomInsetOffset = 0;
                 if (Build.VERSION.SDK_INT >= 23) {
@@ -256,7 +256,6 @@ public class ReaderPageFragment extends Fragment {
                     );
                 }
 
-                int windowHeight = screenSize.y;
                 if (phoneHeight - topInsetOffset - bottomInsetOffset < windowHeight) {
                     LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) blackBottom.getLayoutParams();
                     lp.height = bottomInsetOffset;

@@ -116,6 +116,7 @@ public class StoriesLoaderFragment extends Fragment {
                 Rect readerContainer = getArguments().getParcelable("readerContainer");
                 int phoneHeight = Sizes.getFullPhoneHeight(fragmentActivity);
                 int width = Sizes.getFullPhoneWidth(fragmentActivity);
+                int windowHeight = Sizes.getScreenSize(fragmentActivity).y;
                 int topInsetOffset = 0;
                 int bottomInsetOffset = 0;
                 if (Build.VERSION.SDK_INT >= 23) {
@@ -140,7 +141,6 @@ public class StoriesLoaderFragment extends Fragment {
                             phoneHeight - topInsetOffset - bottomInsetOffset
                     );
                 }
-                int windowHeight = screenSize.y;
                 if (phoneHeight - topInsetOffset - bottomInsetOffset < windowHeight) {
                     LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) blackBottom.getLayoutParams();
                     lp.height = bottomInsetOffset;
