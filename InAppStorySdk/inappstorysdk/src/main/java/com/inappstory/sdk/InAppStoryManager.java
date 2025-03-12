@@ -1294,7 +1294,7 @@ public class InAppStoryManager {
     }
 
     public String getUserSign() {
-        return userId;
+        return userSign;
     }
 
     public void clearCachedList(String id) {
@@ -1386,11 +1386,8 @@ public class InAppStoryManager {
             localHandler.removeCallbacksAndMessages(null);
             localDestroy();
         }
-        if (ApiSettings.getInstance().hostIsDifferent(cmsUrl)) {
-            if (networkClient != null) {
-                networkClient.clear();
-                networkClient = null;
-            }
+        if (networkClient == null) {
+            networkClient = new NetworkClient(context, cmsUrl);
         }
         ApiSettings
                 .getInstance()
@@ -1399,7 +1396,6 @@ public class InAppStoryManager {
                 .testKey(this.TEST_KEY)
                 .host(cmsUrl);
 
-        networkClient = new NetworkClient(context, cmsUrl);
 
         changeInitialize(true);
     }
@@ -1414,7 +1410,7 @@ public class InAppStoryManager {
             @Override
             public void use(@NonNull final InAppStoryService inAppStoryService) throws Exception {
                 inAppStoryService.listStoriesIds.clear();
-                inAppStoryService.getListSubscribers().clear();
+              //  inAppStoryService.getListSubscribers().clear();
                 inAppStoryService.getStoryDownloadManager().cleanTasks();
                 ScreensManager.getInstance().forceCloseAllReaders(
                         new ForceCloseReaderCallback() {

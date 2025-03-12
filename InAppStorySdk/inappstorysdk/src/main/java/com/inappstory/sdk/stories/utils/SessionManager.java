@@ -39,6 +39,7 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
 public class SessionManager {
     private static SessionManager INSTANCE;
@@ -281,7 +282,7 @@ public class SessionManager {
                             }
                         } else {
                             if (!initialUserId.equals(serviceUserId) ||
-                                    !initialUserSign.equals(serviceUserSign)) {
+                                    !Objects.equals(initialUserSign, serviceUserSign)) {
                                 InAppStoryManager.showDLog("AdditionalLog", "closeSession: initial user " + initialUserId +
                                         ", initial sign " + initialUserSign + "; new user " + serviceUserId + ", new sign " + serviceUserSign);
                                 closeSession(

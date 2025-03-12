@@ -53,6 +53,10 @@ public class ApiSettings {
     }
 
     public ApiSettings host(String host) {
+        if (hostIsDifferent(host)) {
+            NetworkClient networkClient = InAppStoryManager.getNetworkClient();
+            if (networkClient != null) networkClient.clear();
+        }
         ApiSettings.this.host = host;
         return ApiSettings.this;
     }
