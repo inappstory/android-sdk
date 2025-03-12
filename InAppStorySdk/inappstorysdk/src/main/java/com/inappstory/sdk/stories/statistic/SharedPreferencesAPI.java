@@ -3,6 +3,7 @@ package com.inappstory.sdk.stories.statistic;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import java.util.HashSet;
 import java.util.Set;
 
 public class SharedPreferencesAPI {
@@ -50,7 +51,7 @@ public class SharedPreferencesAPI {
                 synchronized (sharedPrefLock) {
                     SharedPreferences.Editor editor = getDefaultPreferences().edit();
                     editor.putString(key, value);
-                    editor.apply();
+                    editor.commit();
                 }
             }
         }).start();
@@ -109,7 +110,7 @@ public class SharedPreferencesAPI {
                 synchronized (sharedPrefLock) {
                     SharedPreferences.Editor editor = getDefaultPreferences().edit();
                     editor.putStringSet(key, value);
-                    editor.apply();
+                    boolean isCommitted = editor.commit();
                 }
             }
         }).start();
@@ -124,7 +125,9 @@ public class SharedPreferencesAPI {
         synchronized (sharedPrefLock) {
             SharedPreferences preferences = getDefaultPreferences();
             if (preferences == null) return null;
-            return preferences.getStringSet(key, null);
+            Set<String> resSet = preferences.getStringSet(key, null);
+            if (resSet != null) return new HashSet<>(resSet);
+            return null;
         }
     }
 

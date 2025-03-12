@@ -1384,6 +1384,7 @@ public class InAppStoryManager {
         }
         if (isInitialized) {
             localHandler.removeCallbacksAndMessages(null);
+            localOpensKey = null;
             localDestroy();
         }
         if (networkClient == null) {
