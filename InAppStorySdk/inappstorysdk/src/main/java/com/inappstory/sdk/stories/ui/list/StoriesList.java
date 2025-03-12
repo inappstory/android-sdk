@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Rect;
 import android.os.Handler;
+import android.os.Looper;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
@@ -853,7 +854,12 @@ public class StoriesList extends RecyclerView {
                                     R.string.ias_usage_without_user_and_device
                             )
                     );
-                    setOrRefreshAdapter(new ArrayList<Integer>());
+                    new Handler(Looper.getMainLooper()).post(new Runnable() {
+                        @Override
+                        public void run() {
+                            setOrRefreshAdapter(new ArrayList<Integer>());
+                        }
+                    });
                     return;
                 }
 

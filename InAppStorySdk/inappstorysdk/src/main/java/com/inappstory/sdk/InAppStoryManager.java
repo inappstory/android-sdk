@@ -782,11 +782,13 @@ public class InAppStoryManager implements IASBackPressHandler {
                     R.string.ias_min_free_space_error));
             return;
         }
+        boolean secondaryInit = false;
         synchronized (initLock) {
             if (isInitProcess) {
                 showELog(IAS_ERROR_TAG, "Previous init process still not finished");
                 return;
             }
+            secondaryInit = isInitialized;
             isInitialized = false;
             isInitProcess = true;
         }
@@ -808,7 +810,8 @@ public class InAppStoryManager implements IASBackPressHandler {
                     builder.isDeviceIdEnabled(),
                     builder.tags() != null ? builder.tags() : null,
                     builder.placeholders() != null ? builder.placeholders() : null,
-                    builder.imagePlaceholders() != null ? builder.imagePlaceholders() : null
+                    builder.imagePlaceholders() != null ? builder.imagePlaceholders() : null,
+                    secondaryInit
             );
             new ExceptionManager(core).sendSavedException();
             synchronized (initLock) {
@@ -843,7 +846,8 @@ public class InAppStoryManager implements IASBackPressHandler {
             final boolean isDeviceIDEnabled,
             final ArrayList<String> tags,
             final Map<String, String> placeholders,
-            final Map<String, ImagePlaceholderValue> imagePlaceholders
+            final Map<String, ImagePlaceholderValue> imagePlaceholders,
+            final boolean secondaryInit
     ) {
         if (core == null) return;
         ForceCloseReaderCallback callback = new ForceCloseReaderCallback() {
@@ -881,7 +885,7 @@ public class InAppStoryManager implements IASBackPressHandler {
                 );
             }
         };
-        if (isInitialized) {
+        if (secondaryInit) {
             destroy(callback);
         } else {
             callback.onComplete();
@@ -907,7 +911,7 @@ public class InAppStoryManager implements IASBackPressHandler {
         });
     }
 
-    private void destroy(ForceCloseReaderCallback callback) {
+    private void destroy(final ForceCloseReaderCallback callback) {
         InAppStoryManager.useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull final IASCore core) {
@@ -933,6 +937,7 @@ public class InAppStoryManager implements IASBackPressHandler {
                         core.contentHolder().readerContent().clearByType(ContentType.STORY);
                         core.contentLoader().inAppMessageDownloadManager().clearLocalData();
                         core.contentLoader().inAppMessageDownloadManager().clearSlidesDownloader();
+                        callback.onComplete();
                     }
                 });
 
