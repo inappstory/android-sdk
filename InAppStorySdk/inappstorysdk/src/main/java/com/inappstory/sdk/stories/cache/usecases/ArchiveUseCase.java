@@ -31,6 +31,7 @@ public class ArchiveUseCase extends GetCacheFileUseCase<Void> {
     private final DownloadInterruption interruption;
     private final UseCaseCallback<File> useCaseCallback;
     private final FileChecker fileChecker = new FileChecker();
+    private final boolean useLocalFile;
 
     public ArchiveUseCase(
             IASCore core,
@@ -40,7 +41,8 @@ public class ArchiveUseCase extends GetCacheFileUseCase<Void> {
             long totalFilesSize,
             ProgressCallback progressCallback,
             DownloadInterruption interruption,
-            UseCaseCallback<File> useCaseCallback
+            UseCaseCallback<File> useCaseCallback,
+            boolean useLocalFile
     ) {
         super(core);
         this.url = url;
@@ -52,6 +54,7 @@ public class ArchiveUseCase extends GetCacheFileUseCase<Void> {
         this.progressCallback = progressCallback;
         this.interruption = interruption;
         this.useCaseCallback = useCaseCallback;
+        this.useLocalFile = useLocalFile;
         this.filePath = getCache().getCacheDir().getAbsolutePath() +
                 File.separator +
                 "v2" +
@@ -75,7 +78,10 @@ public class ArchiveUseCase extends GetCacheFileUseCase<Void> {
     @Override
     @WorkerThread
     public Void getFile() {
-        if (!getLocalArchive()) {
+        if (!useLocalFile) {
+            removeOldVersions();
+            downloadArchive();
+        } else if (!getLocalArchive()) {
             downloadArchive();
         }
         return null;

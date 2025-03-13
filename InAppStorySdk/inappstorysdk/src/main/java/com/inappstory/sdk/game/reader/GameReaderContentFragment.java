@@ -452,7 +452,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                                     manager.statusHolder.clearGameStatus();
                                     manager.logger.gameLoaded(false);
                                 }
-                                downloadGame();
+                                downloadGame(true);
                             }
                         }, 500);
 
@@ -474,7 +474,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                 });
                 checkInsets();
                 checkIntentValues(core, gameLoadedErrorCallback);
-                downloadGame();
+                downloadGame(false);
             }
 
             @Override
@@ -952,14 +952,16 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         super.onDestroy();
     }
 
-    private void downloadGame() {
+    private void downloadGame(boolean forceReloadArchive) {
         downloadGame(
-                gameReaderLaunchData.getGameId()
+                gameReaderLaunchData.getGameId(),
+                forceReloadArchive
         );
     }
 
     void downloadGame(
-            final String gameId
+            final String gameId,
+            final boolean forceReloadArchive
     ) {
         startDownloadTime = System.currentTimeMillis();
         InAppStoryManager.useCore(new UseIASCoreCallback() {
@@ -1101,7 +1103,8 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                                     manager.setLogger(loggerLevel);
                                 }
                             }
-                        }
+                        },
+                        forceReloadArchive
                 );
             }
         });

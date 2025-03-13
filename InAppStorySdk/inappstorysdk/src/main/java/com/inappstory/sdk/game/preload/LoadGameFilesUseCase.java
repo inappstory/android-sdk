@@ -124,7 +124,8 @@ public class LoadGameFilesUseCase {
                                 totalProgress[0] += result.length();
                                 gameFolderUseCase.getFile();
                             }
-                        }
+                        },
+                        true
                 );
         gameUseCasesThread.submit(new Runnable() {
             @Override

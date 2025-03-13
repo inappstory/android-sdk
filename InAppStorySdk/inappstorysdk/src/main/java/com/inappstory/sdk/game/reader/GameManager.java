@@ -305,7 +305,7 @@ public class GameManager {
                 logger.gameLoaded(false);
                 clearTries();
                 host.showLoaders(oldWebView, core);
-                host.downloadGame(gameId);
+                host.downloadGame(gameId, false);
             }
         });
 

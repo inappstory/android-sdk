@@ -38,7 +38,6 @@ public class GameCacheManager {
 
     private final ExecutorService gameUseCasesThread = Executors.newFixedThreadPool(1);
 
-
     public void getGame(
             final String gameId,
             final boolean useAnimSplash,
@@ -48,7 +47,8 @@ public class GameCacheManager {
             final UseCaseWarnCallback<File> animSplashScreenCallback,
             final UseCaseCallback<IGameCenterData> gameModelCallback,
             final UseCaseCallback<FilePathAndContent> gameLoadCallback,
-            final SetGameLoggerCallback setGameLoggerCallback
+            final SetGameLoggerCallback setGameLoggerCallback,
+            final boolean forceReloadArchive
     ) {
         final Map<String, File> localSplashFiles = new HashMap<>();
 
@@ -333,7 +333,8 @@ public class GameCacheManager {
                                         totalProgress[0] += result.length();
                                         gameFolderUseCase.getFile();
                                     }
-                                }
+                                },
+                                !forceReloadArchive
                         );
 
 
