@@ -93,12 +93,18 @@ public class ButtonsPanel extends LinearLayout {
     }
 
     ButtonsPanelManager manager;
+    ButtonPanelClickCallback favoriteCallback = new ButtonPanelFavoriteClickCallback();
+    ButtonPanelClickCallback likeCallback = new ButtonPanelLikeClickCallback();
+    ButtonPanelClickCallback dislikeCallback = new ButtonPanelDislikeClickCallback();
 
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
         if (manager != null)
             manager.unsubscribe(this);
+        likeCallback.unsubscribeView(this);
+        dislikeCallback.unsubscribeView(this);
+        favoriteCallback.unsubscribeView(this);
     }
 
     @Override
@@ -106,6 +112,9 @@ public class ButtonsPanel extends LinearLayout {
         super.onAttachedToWindow();
         if (manager == null) manager = new ButtonsPanelManager();
         manager.subscribe(this);
+        likeCallback.subscribeView(this);
+        dislikeCallback.subscribeView(this);
+        favoriteCallback.subscribeView(this);
     }
 
     public void init() {
@@ -167,62 +176,13 @@ public class ButtonsPanel extends LinearLayout {
     public void likeClick() {
         like.setEnabled(false);
         like.setClickable(false);
-        manager.likeClick(new ButtonClickCallback() {
-            @Override
-            public void onSuccess(final int val) {
-                post(new Runnable() {
-                    @Override
-                    public void run() {
-                        like.setEnabled(true);
-                        like.setClickable(true);
-                        like.setActivated(val == 1);
-                        dislike.setActivated(val == -1);
-                    }
-                });
-            }
-
-            @Override
-            public void onError() {
-                post(new Runnable() {
-                    @Override
-                    public void run() {
-                        like.setEnabled(true);
-                        like.setClickable(true);
-                    }
-                });
-            }
-        });
+        manager.likeClick(likeCallback);
     }
 
     public void dislikeClick() {
         dislike.setEnabled(false);
         dislike.setClickable(false);
-        manager.dislikeClick(new ButtonClickCallback() {
-            @Override
-            public void onSuccess(final int val) {
-                post(new Runnable() {
-                    @Override
-                    public void run() {
-                        dislike.setEnabled(true);
-                        dislike.setClickable(true);
-                        like.setActivated(val == 1);
-                        dislike.setActivated(val == -1);
-                    }
-                });
-            }
-
-            @Override
-            public void onError() {
-
-                post(new Runnable() {
-                    @Override
-                    public void run() {
-                        dislike.setEnabled(true);
-                        dislike.setClickable(true);
-                    }
-                });
-            }
-        });
+        manager.dislikeClick(dislikeCallback);
     }
 
     public void forceRemoveFromFavorite() {
@@ -242,30 +202,7 @@ public class ButtonsPanel extends LinearLayout {
     public void favoriteClick() {
         favorite.setEnabled(false);
         favorite.setClickable(false);
-        manager.favoriteClick(new ButtonClickCallback() {
-            @Override
-            public void onSuccess(final int val) {
-                post(new Runnable() {
-                    @Override
-                    public void run() {
-                        favorite.setEnabled(true);
-                        favorite.setClickable(true);
-                        favorite.setActivated(val == 1);
-                    }
-                });
-            }
-
-            @Override
-            public void onError() {
-                post(new Runnable() {
-                    @Override
-                    public void run() {
-                        favorite.setEnabled(true);
-                        favorite.setClickable(true);
-                    }
-                });
-            }
-        });
+        manager.favoriteClick(favoriteCallback);
     }
 
     public void soundClick() {
