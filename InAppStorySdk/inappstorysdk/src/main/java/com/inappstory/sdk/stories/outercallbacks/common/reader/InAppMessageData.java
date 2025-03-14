@@ -47,6 +47,7 @@ public class InAppMessageData extends ContentData {
         return "IAMData{" +
                 "id=" + id() +
                 ", title='" + title() + '\'' +
+                ", event='" + event() + '\'' +
                 ", sourceType='" + sourceType().name() + '\'' +
                 '}';
     }
