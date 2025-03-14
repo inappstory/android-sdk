@@ -58,6 +58,17 @@ public class LruDiskCache {
         }
     }
 
+    public void delete(CacheJournalItem item, String type) throws IOException {
+        synchronized (journal) {
+            File file = new File(item.getFilePath());
+            keyIsValid(item.getUniqueKey());
+            String name = file.getAbsolutePath();
+            manager.delete(name);
+            journal.delete(item.getUniqueKey(), type, false);
+            journal.writeJournal();
+        }
+    }
+
     public void delete(String key) throws IOException {
         delete(key, true);
     }

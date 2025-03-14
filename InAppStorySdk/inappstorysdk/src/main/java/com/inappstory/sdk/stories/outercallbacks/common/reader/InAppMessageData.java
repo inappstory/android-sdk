@@ -6,7 +6,6 @@ import com.inappstory.sdk.inappmessage.IAMUiContainerType;
 public class InAppMessageData extends ContentData {
     private int id;
     private String event;
-    private IAMUiContainerType uiContainerType;
 
     private String title;
 
@@ -28,10 +27,7 @@ public class InAppMessageData extends ContentData {
         super(sourceType, ContentType.IN_APP_MESSAGE);
         this.id = id;
         this.title = campaignName;
-    }
-
-    public IAMUiContainerType uiContainerType() {
-        return uiContainerType;
+        this.event = event;
     }
 
     public int id() {
@@ -40,6 +36,10 @@ public class InAppMessageData extends ContentData {
 
     public String title() {
         return title;
+    }
+
+    public String event() {
+        return event;
     }
 
     @Override

@@ -79,7 +79,13 @@ public class ArchiveUseCase extends GetCacheFileUseCase<Void> {
     @WorkerThread
     public Void getFile() {
         if (!useLocalFile) {
-            removeOldVersions();
+            removeOldVersions(true);
+            try {
+                getCache().delete(generateCacheItem(), type);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            downloadLog.generateRequestLog(url);
             downloadArchive();
         } else if (!getLocalArchive()) {
             downloadArchive();
@@ -119,12 +125,12 @@ public class ArchiveUseCase extends GetCacheFileUseCase<Void> {
                 return true;
             }
         } else {
-            removeOldVersions();
+            removeOldVersions(false);
         }
         return false;
     }
 
-    private void removeOldVersions() {
+    private void removeOldVersions(boolean inclusive) {
         File gameDir = new File(
                 getCache().getCacheDir().getAbsolutePath() +
                         File.separator +
@@ -150,6 +156,9 @@ public class ArchiveUseCase extends GetCacheFileUseCase<Void> {
             for (File gameDirFile : files) {
                 FileManager.deleteRecursive(gameDirFile);
             }
+        }
+        if (inclusive) {
+            gameDir.delete();
         }
     }
 

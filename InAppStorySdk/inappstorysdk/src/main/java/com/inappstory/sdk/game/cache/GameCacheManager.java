@@ -51,7 +51,6 @@ public class GameCacheManager {
             final boolean forceReloadArchive
     ) {
         final Map<String, File> localSplashFiles = new HashMap<>();
-
         final Map<String, String> splashesKeyValueStorageKeys = GameConstants.getSplashesKeys(useAnimSplash);
         final String animKey = GameConstants.SPLASH_ANIM;
         final String staticKey = GameConstants.SPLASH_STATIC;

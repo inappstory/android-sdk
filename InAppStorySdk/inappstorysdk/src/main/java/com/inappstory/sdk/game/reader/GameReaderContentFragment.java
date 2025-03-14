@@ -441,6 +441,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                     @Override
                     public void onClick(View v) {
                         interruption.active = false;
+                        progressLoader.setProgress(0, 100);
                         changeView(progressLoader, refreshGame);
                         new Handler().postDelayed(new Runnable() {
                             @Override
