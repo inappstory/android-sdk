@@ -4,10 +4,10 @@ import android.webkit.JavascriptInterface;
 
 import com.inappstory.sdk.inappmessage.domain.reader.IIAMReaderSlideViewModel;
 
-public class IAMReaderJavascriptInterface {
+public class IAMJavascriptInterface {
     private final IIAMReaderSlideViewModel slideViewModel;
 
-    public IAMReaderJavascriptInterface(IIAMReaderSlideViewModel viewModel) {
+    public IAMJavascriptInterface(IIAMReaderSlideViewModel viewModel) {
         this.slideViewModel = viewModel;
     }
 

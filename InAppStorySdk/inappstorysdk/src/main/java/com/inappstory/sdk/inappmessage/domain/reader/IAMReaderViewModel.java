@@ -10,7 +10,6 @@ import com.inappstory.sdk.inappmessage.CloseInAppMessageCallback;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.inappmessage.ShowInAppMessageCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.InAppMessageData;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.utils.Observable;
 import com.inappstory.sdk.stories.utils.Observer;
 
@@ -75,12 +74,12 @@ public class IAMReaderViewModel implements IIAMReaderViewModel {
     }
 
     @Override
-    public void updateCurrentUiState(IAMReaderUIStates newState) {
+    public void updateCurrentUiState(IAMReaderUIState newState) {
         final IAMReaderState readerState = this.readerStateObservable.getValue();
-        IAMReaderUIStates currentUiState = readerState.uiState;
+        IAMReaderUIState currentUiState = readerState.uiState;
 
         if (currentUiState != newState) {
-            if (newState == IAMReaderUIStates.OPENED) {
+            if (newState == IAMReaderUIState.OPENED) {
                 core.callbacksAPI().useCallback(
                         IASCallbackType.SHOW_IN_APP_MESSAGE,
                         new UseIASCallback<ShowInAppMessageCallback>() {
@@ -92,7 +91,7 @@ public class IAMReaderViewModel implements IIAMReaderViewModel {
                             }
                         }
                 );
-            } else if (newState == IAMReaderUIStates.CLOSED) {
+            } else if (newState == IAMReaderUIState.CLOSED) {
                 core.callbacksAPI().useCallback(
                         IASCallbackType.CLOSE_IN_APP_MESSAGE,
                         new UseIASCallback<CloseInAppMessageCallback>() {
@@ -114,7 +113,7 @@ public class IAMReaderViewModel implements IIAMReaderViewModel {
     }
 
     @Override
-    public void updateCurrentLoadState(IAMReaderLoadStates newState) {
+    public void updateCurrentLoadState(IAMReaderLoadState newState) {
         this.readerStateObservable.updateValue(
                 this.readerStateObservable.getValue()
                         .copy()

@@ -25,7 +25,7 @@ import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenStrategy;
 import com.inappstory.sdk.core.utils.ColorUtils;
 import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderSlideState;
 import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderState;
-import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderUIStates;
+import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderUIState;
 import com.inappstory.sdk.inappmessage.domain.reader.IIAMReaderSlideViewModel;
 import com.inappstory.sdk.inappmessage.domain.reader.IIAMReaderViewModel;
 import com.inappstory.sdk.inappmessage.domain.stedata.JsSendApiRequestData;
@@ -237,7 +237,7 @@ public class IAMContentFragment extends Fragment implements Observer<IAMReaderSl
                             callToActionDataObserver
                     );
                     if (!readerSlideViewModel.loadContent()) {
-                        readerViewModel.updateCurrentUiState(IAMReaderUIStates.CLOSED);
+                        readerViewModel.updateCurrentUiState(IAMReaderUIState.CLOSED);
                         return;
                     }
                 }

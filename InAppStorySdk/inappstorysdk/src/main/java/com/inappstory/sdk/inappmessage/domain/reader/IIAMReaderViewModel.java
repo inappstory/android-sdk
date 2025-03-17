@@ -10,8 +10,8 @@ public interface IIAMReaderViewModel {
     void initState(IAMReaderState state);
     IIAMReaderSlideViewModel slideViewModel();
     IAMReaderState getCurrentState();
-    void updateCurrentUiState(IAMReaderUIStates newState);
-    void updateCurrentLoadState(IAMReaderLoadStates newState);
+    void updateCurrentUiState(IAMReaderUIState newState);
+    void updateCurrentLoadState(IAMReaderLoadState newState);
 
     void clear();
 }

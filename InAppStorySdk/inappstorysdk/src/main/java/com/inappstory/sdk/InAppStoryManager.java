@@ -834,6 +834,10 @@ public class InAppStoryManager implements IASBackPressHandler {
 
     private boolean sendStatistic = true;
 
+    public InAppStoryManagerSettings getCurrentSettings() {
+        return null;
+    }
+
     private void initManager(
             final Context context,
             final String cmsUrl,

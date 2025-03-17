@@ -21,9 +21,9 @@ import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.ui.screens.inappmessagereader.BaseIAMScreen;
-import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderLoadStates;
+import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderLoadState;
 import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderState;
-import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderUIStates;
+import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderUIState;
 import com.inappstory.sdk.inappmessage.domain.reader.IIAMReaderViewModel;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageAppearance;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageFullscreenAppearance;
@@ -37,8 +37,8 @@ import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 import java.util.Objects;
 
 public class InAppMessageMainFragment extends Fragment implements Observer<IAMReaderState>, BaseIAMScreen {
-    private IAMReaderLoadStates currentLoadState = IAMReaderLoadStates.EMPTY;
-    private IAMReaderUIStates currentUIState = IAMReaderUIStates.CLOSED;
+    private IAMReaderLoadState currentLoadState = IAMReaderLoadState.IDLE;
+    private IAMReaderUIState currentUIState = IAMReaderUIState.CLOSED;
     private IIAMReaderViewModel readerViewModel;
     private boolean showOnlyIfLoaded;
     private boolean contentIsPreloaded;
@@ -120,12 +120,12 @@ public class InAppMessageMainFragment extends Fragment implements Observer<IAMRe
     IAMContainerCallback containerCallback = new IAMContainerCallback() {
         @Override
         public void onShown() {
-            readerViewModel.updateCurrentUiState(IAMReaderUIStates.OPENED);
+            readerViewModel.updateCurrentUiState(IAMReaderUIState.OPENED);
         }
 
         @Override
         public void onClosed() {
-            readerViewModel.updateCurrentUiState(IAMReaderUIStates.CLOSED);
+            readerViewModel.updateCurrentUiState(IAMReaderUIState.CLOSED);
         }
     };
 
@@ -162,7 +162,7 @@ public class InAppMessageMainFragment extends Fragment implements Observer<IAMRe
         super.onViewCreated(view, savedInstanceState);
         if (readerViewModel == null) return;
         if (!contentIsPreloaded) {
-            readerViewModel.updateCurrentUiState(IAMReaderUIStates.OPENING);
+            readerViewModel.updateCurrentUiState(IAMReaderUIState.OPENING);
         }
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
@@ -198,7 +198,7 @@ public class InAppMessageMainFragment extends Fragment implements Observer<IAMRe
 
     }
 
-    private void uiStateIsChanged(IAMReaderUIStates uiState) {
+    private void uiStateIsChanged(IAMReaderUIState uiState) {
         currentUIState = uiState;
         switch (uiState) {
             case OPENING:
@@ -215,18 +215,18 @@ public class InAppMessageMainFragment extends Fragment implements Observer<IAMRe
         }
     }
 
-    private void loadStateIsChanged(IAMReaderLoadStates newState) {
+    private void loadStateIsChanged(IAMReaderLoadState newState) {
         currentLoadState = newState;
-        if (Objects.requireNonNull(newState) == IAMReaderLoadStates.LOADED) {
-            if (currentUIState != IAMReaderUIStates.OPENED &&
-                    currentUIState != IAMReaderUIStates.OPENING) {
-                readerViewModel.updateCurrentUiState(IAMReaderUIStates.OPENING);
+        if (Objects.requireNonNull(newState) == IAMReaderLoadState.LOADED) {
+            if (currentUIState != IAMReaderUIState.OPENED &&
+                    currentUIState != IAMReaderUIState.OPENING) {
+                readerViewModel.updateCurrentUiState(IAMReaderUIState.OPENING);
             }
             if (!contentIsPreloaded && contentContainer != null) {
                 contentContainer.hideLoader();
             }
-        } else if (Objects.requireNonNull(newState) == IAMReaderLoadStates.FAILED) {
-            readerViewModel.updateCurrentUiState(IAMReaderUIStates.CLOSING);
+        } else if (Objects.requireNonNull(newState) == IAMReaderLoadState.FAILED) {
+            readerViewModel.updateCurrentUiState(IAMReaderUIState.CLOSING);
         }
     }
 

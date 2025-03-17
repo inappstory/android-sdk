@@ -170,7 +170,7 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
     }
 
     public void storyLoadingFailed(String data) {
-        readerViewModel.updateCurrentLoadState(IAMReaderLoadStates.FAILED);
+        readerViewModel.updateCurrentLoadState(IAMReaderLoadState.FAILED);
     }
 
     public void storyShowSlide(int index) {
@@ -237,7 +237,7 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
     }
 
     public void storyLoaded() {
-        readerViewModel.updateCurrentLoadState(IAMReaderLoadStates.LOADED);
+        readerViewModel.updateCurrentLoadState(IAMReaderLoadState.LOADED);
         slideStateObservable.updateValue(
                 slideStateObservable
                         .getValue()
@@ -247,7 +247,7 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
     }
 
     public void storyLoaded(String data) {
-        readerViewModel.updateCurrentLoadState(IAMReaderLoadStates.LOADED);
+        readerViewModel.updateCurrentLoadState(IAMReaderLoadState.LOADED);
         slideStateObservable.updateValue(
                 slideStateObservable
                         .getValue()
@@ -390,7 +390,7 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
 
     @Override
     public void slideLoadError(int index) {
-        readerViewModel.updateCurrentLoadState(IAMReaderLoadStates.FAILED);
+        readerViewModel.updateCurrentLoadState(IAMReaderLoadState.FAILED);
         slideStateObservable.updateValue(
                 slideStateObservable.getValue().copy().contentStatus(-1).content(null)
         );
@@ -448,18 +448,18 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
         downloadManager.addSubscriber(this);
         if (downloadManager.allSlidesLoaded(readerContent)) {
             if (!state.showOnlyIfLoaded) {
-                readerViewModel.updateCurrentLoadState(IAMReaderLoadStates.LOADING);
+                readerViewModel.updateCurrentLoadState(IAMReaderLoadState.LOADING);
             }
             if (!downloadManager.checkBundleResources(this, state.showOnlyIfLoaded)) {
-                readerViewModel.updateCurrentLoadState(IAMReaderLoadStates.FAILED);
+                readerViewModel.updateCurrentLoadState(IAMReaderLoadState.FAILED);
             } else if (state.showOnlyIfLoaded) {
                 slideLoadSuccess(0);
             }
         } else {
             if (state.showOnlyIfLoaded) {
-                readerViewModel.updateCurrentLoadState(IAMReaderLoadStates.FAILED);
+                readerViewModel.updateCurrentLoadState(IAMReaderLoadState.FAILED);
             } else {
-                readerViewModel.updateCurrentLoadState(IAMReaderLoadStates.LOADING);
+                readerViewModel.updateCurrentLoadState(IAMReaderLoadState.LOADING);
                 downloadManager.addInAppMessageTask(state.iamId, ContentType.IN_APP_MESSAGE, null);
             }
         }

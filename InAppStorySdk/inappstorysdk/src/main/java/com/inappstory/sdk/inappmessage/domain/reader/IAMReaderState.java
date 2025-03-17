@@ -5,8 +5,8 @@ import com.inappstory.sdk.inappmessage.ui.appearance.impl.InAppMessageBottomShee
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 
 public class IAMReaderState {
-    public IAMReaderUIStates uiState = IAMReaderUIStates.CLOSED;
-    public IAMReaderLoadStates loadState = IAMReaderLoadStates.EMPTY;
+    public IAMReaderUIState uiState = IAMReaderUIState.CLOSED;
+    public IAMReaderLoadState loadState = IAMReaderLoadState.IDLE;
     public InAppMessageAppearance appearance = new InAppMessageBottomSheetSettings();
     public boolean showOnlyIfLoaded = false;
     public boolean contentIsPreloaded = false;
@@ -30,12 +30,12 @@ public class IAMReaderState {
     }
 
 
-    public IAMReaderState uiState(IAMReaderUIStates uiState) {
+    public IAMReaderState uiState(IAMReaderUIState uiState) {
         this.uiState = uiState;
         return this;
     }
 
-    public IAMReaderState loadState(IAMReaderLoadStates loadState) {
+    public IAMReaderState loadState(IAMReaderLoadState loadState) {
         this.loadState = loadState;
         return this;
     }

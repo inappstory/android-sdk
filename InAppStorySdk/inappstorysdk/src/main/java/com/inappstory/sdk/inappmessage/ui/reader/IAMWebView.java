@@ -231,7 +231,7 @@ public class IAMWebView extends IASWebView implements ContentViewInteractor {
         if (!clientIsSet) {
             if (slideViewModel == null) return;
             addJavascriptInterface(
-                    new IAMReaderJavascriptInterface(slideViewModel),
+                    new IAMJavascriptInterface(slideViewModel),
                     "Android"
             );
             setWebViewClient(new IASWebViewClient());

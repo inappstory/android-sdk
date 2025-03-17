@@ -18,8 +18,7 @@ import com.inappstory.sdk.core.ui.screens.storyreader.StoryScreenHolder;
 import com.inappstory.sdk.domain.IScreenViewModelsHolder;
 import com.inappstory.sdk.domain.ScreenViewModelsHolder;
 import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderState;
-import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderUIStates;
-import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderViewModel;
+import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderUIState;
 import com.inappstory.sdk.inappmessage.domain.reader.IIAMReaderViewModel;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenGameReader;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenInAppMessageReader;
@@ -132,7 +131,7 @@ public class ScreensManager implements IScreensLauncher,
     public boolean onBackPressed() {
         IIAMReaderViewModel iamReaderViewModel = iamReaderViewModel();
         IAMReaderState state = iamReaderViewModel.getCurrentState();
-        if (!state.uiState.equals(IAMReaderUIStates.CLOSED)) {
+        if (!state.uiState.equals(IAMReaderUIState.CLOSED)) {
             getIAMScreenHolder().closeScreen();
             return true;
         }
