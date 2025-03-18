@@ -1392,9 +1392,9 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                         LinearLayout.LayoutParams bottomLp = (LinearLayout.LayoutParams) blackBottom.getLayoutParams();
                         bottomLp.height = bottomInsetOffset;
                         blackBottom.requestLayout();
-                        LinearLayout.LayoutParams topLp = (LinearLayout.LayoutParams) blackTop.getLayoutParams();
+                  /*      LinearLayout.LayoutParams topLp = (LinearLayout.LayoutParams) blackTop.getLayoutParams();
                         topLp.height = topInsetOffset;
-                        blackTop.requestLayout();
+                        blackTop.requestLayout();*/
                     }
                 }
             }
