@@ -19,32 +19,23 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
+
+        <View
+            android:id="@+id/ias_black_top"
+            android:layout_width="match_parent"
+            android:layout_height="0dp" />
+
         <RelativeLayout
             android:id="@+id/webViewContainer"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:layout_weight="1">
 
-            <LinearLayout
+
+            <FrameLayout
+                android:id="@+id/gameWebviewContainer"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical">
-
-                <View
-                    android:id="@+id/ias_black_top"
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp" />
-
-                <FrameLayout
-                    android:id="@+id/gameWebviewContainer"
-                    android:layout_weight="1"
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp" />
-
-                <View
-                    android:id="@+id/ias_black_bottom"
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp" />
-            </LinearLayout>
+                android:layout_height="match_parent" />
 
             <RelativeLayout
                 android:id="@+id/loaderContainer"
@@ -79,6 +70,11 @@
 
         </RelativeLayout>
 
+
+        <View
+            android:id="@+id/ias_black_bottom"
+            android:layout_width="match_parent"
+            android:layout_height="0dp" />
     </LinearLayout>
 
     <androidx.appcompat.widget.AppCompatImageView
