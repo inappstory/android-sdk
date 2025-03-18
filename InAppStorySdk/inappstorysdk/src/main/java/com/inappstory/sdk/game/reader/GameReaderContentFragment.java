@@ -1377,7 +1377,16 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
             if (blackTop != null) {
                 int phoneHeight = Sizes.getFullPhoneHeight(fragmentActivity);
                 View window = getView();
-                int windowHeight = window != null ? window.getHeight() : Sizes.getScreenSize(fragmentActivity).y;
+                int windowHeight = Sizes.getScreenSize(fragmentActivity).y;
+
+                int[] location = new int[2];
+                int[] location2 = new int[2];
+                if (window != null) {
+                    windowHeight = window.getHeight();
+                    window.getLocationOnScreen(location);
+                    window.getLocationInWindow(location2);
+                }
+
                 int topInsetOffset = 0;
                 int bottomInsetOffset = 0;
                 if (Build.VERSION.SDK_INT >= 23) {
