@@ -1376,7 +1376,8 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
 
             if (blackTop != null) {
                 int phoneHeight = Sizes.getFullPhoneHeight(fragmentActivity);
-                int windowHeight = Sizes.getScreenSize(fragmentActivity).y;
+                View window = getView();
+                int windowHeight = window != null ? window.getHeight() : Sizes.getScreenSize(fragmentActivity).y;
                 int topInsetOffset = 0;
                 int bottomInsetOffset = 0;
                 if (Build.VERSION.SDK_INT >= 23) {
@@ -1390,7 +1391,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                 }
 
                 if (!isFullscreen) {
-                    if (phoneHeight - topInsetOffset < windowHeight) {
+                    if (phoneHeight - topInsetOffset >= windowHeight) {
                         LinearLayout.LayoutParams topLp = (LinearLayout.LayoutParams) blackTop.getLayoutParams();
                         topLp.height = topInsetOffset;
                         blackTop.requestLayout();
