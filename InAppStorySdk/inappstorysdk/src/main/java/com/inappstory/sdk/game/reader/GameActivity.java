@@ -36,7 +36,6 @@ public class GameActivity extends AppCompatActivity implements BaseGameScreen {
         setTheme(theme);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.cs_game_reader_layout);
-        //test
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
