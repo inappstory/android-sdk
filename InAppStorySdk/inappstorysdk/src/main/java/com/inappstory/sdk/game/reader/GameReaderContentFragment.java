@@ -932,7 +932,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                 }
             });
         }
-        setOffsets();
+        setOffsets(isFullscreen);
     }
 
     private long startDownloadTime;
@@ -1369,7 +1369,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         return view;
     }
 
-    private void setOffsets() {
+    private void setOffsets(boolean isFullscreen) {
         FragmentActivity fragmentActivity = getActivity();
         if (fragmentActivity == null) return;
         if (!Sizes.isTablet(fragmentActivity)) {
@@ -1387,14 +1387,15 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                         }
                     }
                 }
-
-                if (phoneHeight - topInsetOffset - bottomInsetOffset < windowHeight) {
-                    LinearLayout.LayoutParams bottomLp = (LinearLayout.LayoutParams) blackBottom.getLayoutParams();
-                    bottomLp.height = bottomInsetOffset;
-                    blackBottom.requestLayout();
-                    LinearLayout.LayoutParams topLp = (LinearLayout.LayoutParams) blackTop.getLayoutParams();
-                    topLp.height = topInsetOffset;
-                    blackTop.requestLayout();
+                if (!isFullscreen) {
+                    if (phoneHeight - topInsetOffset - bottomInsetOffset < windowHeight) {
+                        LinearLayout.LayoutParams bottomLp = (LinearLayout.LayoutParams) blackBottom.getLayoutParams();
+                        bottomLp.height = bottomInsetOffset;
+                        blackBottom.requestLayout();
+                        LinearLayout.LayoutParams topLp = (LinearLayout.LayoutParams) blackTop.getLayoutParams();
+                        topLp.height = topInsetOffset;
+                        blackTop.requestLayout();
+                    }
                 }
             }
         }
