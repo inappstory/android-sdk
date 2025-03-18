@@ -1373,6 +1373,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         FragmentActivity fragmentActivity = getActivity();
         if (fragmentActivity == null) return;
         if (!Sizes.isTablet(fragmentActivity)) {
+
             if (blackTop != null) {
                 int phoneHeight = Sizes.getFullPhoneHeight(fragmentActivity);
                 int windowHeight = Sizes.getScreenSize(fragmentActivity).y;
@@ -1387,14 +1388,14 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                         }
                     }
                 }
+                LinearLayout.LayoutParams topLp = (LinearLayout.LayoutParams) blackTop.getLayoutParams();
+                topLp.height = topInsetOffset;
+                blackTop.requestLayout();
                 if (!isFullscreen) {
                     if (phoneHeight - topInsetOffset - bottomInsetOffset < windowHeight) {
                         LinearLayout.LayoutParams bottomLp = (LinearLayout.LayoutParams) blackBottom.getLayoutParams();
                         bottomLp.height = bottomInsetOffset;
                         blackBottom.requestLayout();
-                  /*      LinearLayout.LayoutParams topLp = (LinearLayout.LayoutParams) blackTop.getLayoutParams();
-                        topLp.height = topInsetOffset;
-                        blackTop.requestLayout();*/
                     }
                 }
             }
