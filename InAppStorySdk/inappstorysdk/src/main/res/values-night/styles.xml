@@ -26,6 +26,23 @@
         <item name="android:windowSoftInputMode">adjustResize|stateAlwaysHidden</item>
     </style>
 
+    <style name="StoriesSDKAppTheme.GameActivity" parent="StoriesSDKAppTheme.NoActionBar">
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowActionBar">false</item>
+        <item name="android:windowDisablePreview">true</item>
+        <item name="android:windowSoftInputMode">adjustResize|adjustPan</item>
+        <item name="android:forceDarkAllowed" tools:targetApi="q">false</item>
+        <item name="android:windowTranslucentStatus">false</item>
+        <item name="android:statusBarColor">@android:color/black</item>
+        <item name="android:windowFullscreen">false</item>
+        <item name="android:windowBackground">@android:color/black</item>
+        <item name="android:backgroundDimEnabled">false</item>
+        <item name="android:windowLayoutInDisplayCutoutMode" tools:targetApi="o_mr1">
+            shortEdges <!-- default, shortEdges, never -->
+        </item>
+    </style>
+
     <style name="StoriesSDKAppTheme.NewDialogTheme" parent="Theme.AppCompat.Light.Dialog">
         <item name="android:windowFrame">@null</item>
         <item name="android:windowIsFloating">true</item>
