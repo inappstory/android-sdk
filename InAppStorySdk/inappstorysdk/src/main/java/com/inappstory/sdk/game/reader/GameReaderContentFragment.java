@@ -1380,11 +1380,11 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                 int windowHeight = Sizes.getScreenSize(fragmentActivity).y;
 
                 int[] location = new int[2];
-                int[] location2 = new int[2];
+               // int[] location2 = new int[2];
                 if (window != null) {
                     windowHeight = window.getHeight();
                     window.getLocationOnScreen(location);
-                    window.getLocationInWindow(location2);
+                   // window.getLocationInWindow(location2);
                 }
 
                 int topInsetOffset = 0;
@@ -1393,7 +1393,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                     if (fragmentActivity.getWindow() != null) {
                         WindowInsets windowInsets = fragmentActivity.getWindow().getDecorView().getRootWindowInsets();
                         if (windowInsets != null) {
-                            topInsetOffset = Math.max(0, windowInsets.getStableInsetTop());
+                            topInsetOffset = Math.max(0, windowInsets.getStableInsetTop() - location[1]);
                             bottomInsetOffset = Math.max(0, windowInsets.getStableInsetBottom());
                         }
                     }
@@ -1405,7 +1405,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                         topLp.height = topInsetOffset;
                         blackTop.requestLayout();
                     }
-                    if (phoneHeight - topInsetOffset - bottomInsetOffset < windowHeight) {
+                    if (phoneHeight - location[1] - bottomInsetOffset < windowHeight) {
                         LinearLayout.LayoutParams bottomLp = (LinearLayout.LayoutParams) blackBottom.getLayoutParams();
                         bottomLp.height = bottomInsetOffset;
                         blackBottom.requestLayout();
