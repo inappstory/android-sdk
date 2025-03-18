@@ -1390,9 +1390,11 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                 }
 
                 if (!isFullscreen) {
-                    LinearLayout.LayoutParams topLp = (LinearLayout.LayoutParams) blackTop.getLayoutParams();
-                    topLp.height = topInsetOffset;
-                    blackTop.requestLayout();
+                    if (phoneHeight - topInsetOffset < windowHeight) {
+                        LinearLayout.LayoutParams topLp = (LinearLayout.LayoutParams) blackTop.getLayoutParams();
+                        topLp.height = topInsetOffset;
+                        blackTop.requestLayout();
+                    }
                     if (phoneHeight - topInsetOffset - bottomInsetOffset < windowHeight) {
                         LinearLayout.LayoutParams bottomLp = (LinearLayout.LayoutParams) blackBottom.getLayoutParams();
                         bottomLp.height = bottomInsetOffset;
