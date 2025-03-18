@@ -15,6 +15,7 @@ import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Point;
+import android.graphics.Rect;
 import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Build;
@@ -33,6 +34,7 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
@@ -41,6 +43,7 @@ import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
 
 import com.inappstory.iasutilsconnector.filepicker.IFilePicker;
 import com.inappstory.iasutilsconnector.filepicker.OnFilesChooseCallback;
@@ -112,6 +115,8 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
     private ImageView loader;
     private FrameLayout gameWebViewContainer;
     private View closeButton;
+    private View blackTop;
+    private View blackBottom;
     private View webViewAndLoaderContainer;
     private RelativeLayout loaderContainer;
     private GameProgressLoader progressLoader;
@@ -927,6 +932,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                 }
             });
         }
+        setOffsets();
     }
 
     private long startDownloadTime;
@@ -1351,6 +1357,8 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         baseContainer = view.findViewById(R.id.draggable_frame);
         loaderContainer = view.findViewById(R.id.loaderContainer);
         progressLoader = view.findViewById(R.id.gameProgressLoader);
+        blackTop = view.findViewById(R.id.ias_black_top);
+        blackBottom = view.findViewById(R.id.ias_black_bottom);
         refreshGame = view.findViewById(R.id.gameRefresh);
         refreshGame.setImageDrawable(
                 getResources().getDrawable(
@@ -1359,6 +1367,37 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         );
         closeButton = view.findViewById(R.id.close_button);
         return view;
+    }
+
+    private void setOffsets() {
+        FragmentActivity fragmentActivity = getActivity();
+        if (fragmentActivity == null) return;
+        if (!Sizes.isTablet(fragmentActivity)) {
+            if (blackTop != null) {
+                int phoneHeight = Sizes.getFullPhoneHeight(fragmentActivity);
+                int windowHeight = Sizes.getScreenSize(fragmentActivity).y;
+                int topInsetOffset = 0;
+                int bottomInsetOffset = 0;
+                if (Build.VERSION.SDK_INT >= 23) {
+                    if (fragmentActivity.getWindow() != null) {
+                        WindowInsets windowInsets = fragmentActivity.getWindow().getDecorView().getRootWindowInsets();
+                        if (windowInsets != null) {
+                            topInsetOffset = Math.max(0, windowInsets.getStableInsetTop());
+                            bottomInsetOffset = Math.max(0, windowInsets.getStableInsetBottom());
+                        }
+                    }
+                }
+
+                if (phoneHeight - topInsetOffset - bottomInsetOffset < windowHeight) {
+                    LinearLayout.LayoutParams bottomLp = (LinearLayout.LayoutParams) blackBottom.getLayoutParams();
+                    bottomLp.height = bottomInsetOffset;
+                    blackBottom.requestLayout();
+                    LinearLayout.LayoutParams topLp = (LinearLayout.LayoutParams) blackTop.getLayoutParams();
+                    topLp.height = topInsetOffset;
+                    blackTop.requestLayout();
+                }
+            }
+        }
     }
 
     void loadJsApiResponse(String gameResponse, String cb) {

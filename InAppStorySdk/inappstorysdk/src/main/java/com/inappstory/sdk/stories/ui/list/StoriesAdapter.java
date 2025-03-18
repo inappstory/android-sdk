@@ -46,12 +46,14 @@ import com.inappstory.sdk.ugc.list.UGCListItem;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> implements ClickCallback {
     public List<Integer> getStoriesIds() {
         return storiesIds;
     }
 
+    private final String uuid = UUID.randomUUID().toString();
     private List<Integer> storiesIds = new ArrayList<>();
     private boolean isFavoriteList;
     OnFavoriteItemClick favoriteItemClick;
@@ -401,7 +403,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
 
     @Override
     public long getItemId(int position) {
-        return position;
+        return 100L * uuid.hashCode() + position;
     }
 
     @Override
