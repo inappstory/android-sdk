@@ -19,7 +19,7 @@ public class GameCenterData implements IGameCenterData {
     public GameSplashAnimation splashAnimation;
     @SerializedName("resources")
     public List<WebResource> resources;
-    @SerializedName("options")
+    @SerializedName("screenOptions")
     public GameScreenOptions options;
     @SerializedName("loggerLevel")
     public Integer loggerLevel;
