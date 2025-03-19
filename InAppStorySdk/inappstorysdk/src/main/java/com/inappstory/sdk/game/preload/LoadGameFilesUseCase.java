@@ -6,6 +6,7 @@ import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.game.cache.DownloadResourcesUseCase;
 import com.inappstory.sdk.game.cache.SuccessUseCaseCallback;
 import com.inappstory.sdk.stories.api.interfaces.IGameCenterData;
+import com.inappstory.sdk.stories.api.models.GameArchiveItem;
 import com.inappstory.sdk.stories.api.models.WebResource;
 import com.inappstory.sdk.stories.cache.DownloadInterruption;
 import com.inappstory.sdk.stories.cache.FilesDownloadManager;
@@ -51,6 +52,7 @@ public class LoadGameFilesUseCase {
         Log.e("ArchiveUseCase", "loadGameData " + interruption.toString());
         if (interruption.active) return;
         if (data.url() == null || data.url().isEmpty()) return;
+        final List<GameArchiveItem> archiveItems = data.archiveItems();
         final String archiveUrl = data.url();
         final ProgressCallback emptyProgress = new EmptyProgressCallback();
         final long totalArchiveSize;
@@ -96,6 +98,7 @@ public class LoadGameFilesUseCase {
         final GameFolderUseCase gameFolderUseCase = new GameFolderUseCase(
                 core,
                 archiveUrl,
+                archiveItems,
                 new SuccessUseCaseCallback<String>() {
                     @Override
                     public void onSuccess(String result) {

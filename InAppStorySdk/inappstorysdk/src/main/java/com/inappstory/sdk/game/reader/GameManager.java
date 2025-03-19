@@ -302,7 +302,10 @@ public class GameManager {
             public void invoke(IASWebView oldWebView) {
                 host.changeGameToAnother(gameId);
                 statusHolder.clearGameStatus();
-                logger.gameLoaded(false);
+                if (logger != null) {
+                    logger.stopQueue();
+                    logger.gameLoaded(false);
+                }
                 clearTries();
                 host.showLoaders(oldWebView, core);
                 host.downloadGame(gameId, false);
@@ -382,7 +385,10 @@ public class GameManager {
 
     void gameLoaded() {
         if (statusHolder.hasGameLoadStatus()) return;
-        logger.gameLoaded(true);
+        if (logger != null) {
+            logger.gameLoaded(true);
+            logger.startQueue(true);
+        }
         statusHolder.setGameLoaded();
         host.gameShouldForeground();
     }
@@ -402,10 +408,13 @@ public class GameManager {
             logger.sendGameError(reason);
         }
         if (canTryReload && statusHolder.updateCurrentReloadTry()) {
-            logger.launchTryNumber(statusHolder.launchTryNumber() + 1);
+            if (logger != null)
+                logger.launchTryNumber(statusHolder.launchTryNumber() + 1);
             reloadGame();
         } else {
             clearTries();
+            if (logger != null)
+                logger.startQueue(false);
             host.gameLoadedErrorCallback.onError(null, reason);
         }
     }
@@ -444,12 +453,16 @@ public class GameManager {
 
     void clearTries() {
         statusHolder.clearGameLoadTries();
-        logger.launchTryNumber(1);
+        if (logger != null)
+            logger.launchTryNumber(1);
     }
 
     void reloadGame() {
         statusHolder.clearGameStatus();
-        logger.gameLoaded(false);
+        if (logger != null) {
+            logger.stopQueue();
+            logger.gameLoaded(false);
+        }
         host.restartGame();
     }
 

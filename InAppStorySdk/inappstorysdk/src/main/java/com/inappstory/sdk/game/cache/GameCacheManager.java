@@ -6,6 +6,7 @@ import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.game.utils.GameConstants;
 import com.inappstory.sdk.lrudiskcache.FileManager;
 import com.inappstory.sdk.stories.api.interfaces.IGameCenterData;
+import com.inappstory.sdk.stories.api.models.GameArchiveItem;
 import com.inappstory.sdk.stories.api.models.GameCenterData;
 import com.inappstory.sdk.stories.api.models.WebResource;
 import com.inappstory.sdk.stories.cache.DownloadInterruption;
@@ -18,6 +19,7 @@ import com.inappstory.sdk.utils.ProgressCallback;
 
 import java.io.File;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -108,6 +110,7 @@ public class GameCacheManager {
             @Override
             public void onSuccess(GameCenterData data) {
                 gameModelCallback.onSuccess(data);
+                final List<GameArchiveItem> archiveItems = data.archiveItems();
                 final String archiveUrl = data.url;
                 final DownloadSplashUseCase downloadAnimSplashUseCase;
                 if (useAnimSplash) {
@@ -267,6 +270,7 @@ public class GameCacheManager {
                 final GameFolderUseCase gameFolderUseCase = new GameFolderUseCase(
                         core,
                         archiveUrl,
+                        archiveItems,
                         new UseCaseCallback<String>() {
                             @Override
                             public void onError(String message) {

@@ -678,9 +678,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                             Integer.toString(dataModel.storyData().id()),
                             dataModel.slideData.index());
                 }
-                String msg = consoleMessage.message() + " -- From line "
-                        + consoleMessage.lineNumber() + " of "
-                        + consoleMessage.sourceId();
+                String msg = consoleMessage.message();
                 if (manager != null && manager.logger != null) {
                     switch (consoleMessage.messageLevel()) {
                         case ERROR:

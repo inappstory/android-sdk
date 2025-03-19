@@ -11,6 +11,7 @@ import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -79,6 +80,14 @@ public abstract class AbstractGameLogger {
                 core.logs().logSaver().saveLog(log);
             }
         });
+    }
+
+    public final void stopQueue() {
+        core.logs().logSender().stop();
+    }
+
+    public final void startQueue(boolean gameLaunched) {
+        core.logs().logSender().start(gameLaunched);
     }
 
     protected final GameLog createBaseLog() {
