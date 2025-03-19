@@ -42,7 +42,7 @@ public class InAppStoryAPI {
         });
     }
 
-    public void setLogger(IASLogger logger) {
+    public void logger(IASLogger logger) {
         this.logger = logger;
     }
 
