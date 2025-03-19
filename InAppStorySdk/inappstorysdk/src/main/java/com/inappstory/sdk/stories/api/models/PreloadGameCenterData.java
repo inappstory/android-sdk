@@ -4,6 +4,7 @@ import com.inappstory.sdk.network.annotations.models.Required;
 import com.inappstory.sdk.network.annotations.models.SerializedName;
 import com.inappstory.sdk.stories.api.interfaces.IGameCenterData;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class PreloadGameCenterData implements IGameCenterData {
@@ -29,6 +30,9 @@ public class PreloadGameCenterData implements IGameCenterData {
 
     @SerializedName("archiveUncompressedSize")
     public Long archiveUncompressedSize;
+
+    @SerializedName("archiveItems")
+    public List<GameArchiveItem> archiveItems;
 
     @Override
     public String id() {
@@ -89,6 +93,11 @@ public class PreloadGameCenterData implements IGameCenterData {
             }
         }
         return totalSize;
+    }
+
+    @Override
+    public List<GameArchiveItem> archiveItems() {
+        return archiveItems != null ? archiveItems : new ArrayList<GameArchiveItem>();
     }
 
     public void updateData(IGameCenterData gameCenterData) {

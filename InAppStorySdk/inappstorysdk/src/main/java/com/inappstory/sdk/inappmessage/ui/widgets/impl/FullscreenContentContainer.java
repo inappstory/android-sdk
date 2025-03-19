@@ -63,11 +63,15 @@ public class FullscreenContentContainer extends IAMContentContainer<InAppMessage
         content.setBackgroundColor(backgroundColor);
         generateLoader(backgroundColor);
         container.addView(loaderContainer);
-        closeButtonLayoutParams.addRule(
-                appearance.closeButtonPosition() == 1 ?
-                        RelativeLayout.ALIGN_PARENT_START :
-                        RelativeLayout.ALIGN_PARENT_END
-        );
+        switch (appearance.closeButtonPosition()) {
+            case 0:
+                closeButton.setVisibility(GONE);
+            case 1:
+                closeButtonLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_START);
+            default:
+                closeButtonLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_END);
+        }
+
         closeButton.setLayoutParams(closeButtonLayoutParams);
         closeButton.requestLayout();
         //  showWithAnimation();
