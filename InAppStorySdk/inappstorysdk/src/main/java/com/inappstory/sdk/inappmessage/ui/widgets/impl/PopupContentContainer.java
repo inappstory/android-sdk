@@ -73,6 +73,7 @@ public class PopupContentContainer extends IAMContentContainer<InAppMessagePopup
             default:
                 closeButtonLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_END);
         }
+        //
         closeButton.setLayoutParams(closeButtonLayoutParams);
         closeButton.requestLayout();
     }
