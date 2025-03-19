@@ -7,10 +7,9 @@
         android:layout_width="120dp"
         android:id="@+id/container"
         android:layout_height="120dp">
-        <View
+        <com.inappstory.sdk.stories.ui.widgets.StoryListItemBorder
             android:layout_width="match_parent"
             android:id="@+id/border"
-            android:background="@drawable/cs_story_border_square"
             android:layout_height="match_parent"/>
         <com.inappstory.sdk.imageloader.RoundedCornerLayout
             android:layout_width="match_parent"

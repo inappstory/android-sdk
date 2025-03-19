@@ -18,6 +18,7 @@ import com.inappstory.sdk.imageloader.RoundedCornerLayout;
 import com.inappstory.sdk.memcache.IGetBitmap;
 import com.inappstory.sdk.stories.ui.video.VideoPlayer;
 import com.inappstory.sdk.stories.ui.views.IStoriesListItem;
+import com.inappstory.sdk.stories.ui.widgets.StoryListItemBorder;
 import com.inappstory.sdk.stories.utils.Sizes;
 
 public final class StoriesListDefaultItem implements IStoriesListItem {
@@ -25,7 +26,7 @@ public final class StoriesListDefaultItem implements IStoriesListItem {
     private VideoPlayer video;
     private AppCompatTextView titleView;
     private AppCompatImageView hasAudioIcon;
-    private View borderView;
+    private StoryListItemBorder borderView;
     private View gradient;
 
     private View container;
@@ -91,8 +92,7 @@ public final class StoriesListDefaultItem implements IStoriesListItem {
             titleView.setTextColor(appearanceManager.csListItemTitleColor());
         }
         if (borderView != null) {
-            borderView.getBackground().setColorFilter(appearanceManager.csListItemBorderColor(),
-                    PorterDuff.Mode.SRC_ATOP);
+            borderView.color(appearanceManager.csListItemBorderColor());
         }
     }
 
@@ -172,18 +172,16 @@ public final class StoriesListDefaultItem implements IStoriesListItem {
     @Override
     public void setOpened(View itemView, boolean isOpened) {
         if (borderView != null) {
-            ((GradientDrawable) borderView.getBackground())
-                    .setCornerRadius(appearanceManager.csListItemRadius(context));
+            borderView.radius(appearanceManager.csListItemRadius(context));
             borderView.setVisibility(
                     isOpened ?
                             (appearanceManager.csListOpenedItemBorderVisibility() ? View.VISIBLE : View.GONE)
                             : (appearanceManager.csListItemBorderVisibility() ? View.VISIBLE : View.GONE)
             );
-            borderView.getBackground().setColorFilter(
+            borderView.color(
                     isOpened ?
                             appearanceManager.csListOpenedItemBorderColor()
-                            : appearanceManager.csListItemBorderColor(),
-                    PorterDuff.Mode.SRC_ATOP
+                            : appearanceManager.csListItemBorderColor()
             );
         }
     }
