@@ -25,6 +25,7 @@ import com.inappstory.sdk.core.utils.ConnectionCheckCallback;
 import com.inappstory.sdk.game.reader.GameStoryData;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.UpdateTimelineData;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.ui.widgets.LoadProgressBar;
 import com.inappstory.sdk.inner.share.InnerShareData;
@@ -513,14 +514,12 @@ public class StoriesViewManager {
     }
 
 
-    private GameStoryData getGameStoryData() {
-        GameStoryData data = null;
+    private SlideData getGameStoryData() {
+        SlideData data = null;
         ContentType type = pageManager != null ? pageManager.getViewContentType() : ContentType.STORY;
         IReaderContent story = core.contentHolder().readerContent().getByIdAndType(storyId, type);
         if (story != null) {
-            data = new GameStoryData(
-                    pageManager.getSlideData(story)
-            );
+            data = pageManager.getSlideData(story);
         }
         return data;
     }

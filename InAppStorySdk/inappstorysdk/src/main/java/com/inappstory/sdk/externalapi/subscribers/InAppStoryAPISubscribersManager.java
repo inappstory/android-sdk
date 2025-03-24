@@ -211,17 +211,14 @@ public class InAppStoryAPISubscribersManager {
                     new LaunchGameScreenStrategy(core, false)
                             .data(new LaunchGameScreenData(
                                     null,
-                                    new GameStoryData(
-                                            new SlideData(
-                                                    new StoryData(
-                                                            currentStoryCover,
-                                                            requestData.feed,
-                                                            SourceType.LIST
-                                                    ),
-                                                    0,
-                                                    null
-                                            )
-
+                                    new SlideData(
+                                            new StoryData(
+                                                    currentStoryCover,
+                                                    requestData.feed,
+                                                    SourceType.LIST
+                                            ),
+                                            0,
+                                            null
                                     ),
                                     currentStoryCover.gameInstanceId()
                             ))

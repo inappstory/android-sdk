@@ -248,17 +248,14 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
                         new LaunchGameScreenStrategy(core, false)
                                 .data(new LaunchGameScreenData(
                                         null,
-                                        new GameStoryData(
-                                                new SlideData(
-                                                        new StoryData(
-                                                                current,
-                                                                feed,
-                                                                getListSourceType()
-                                                        ),
-                                                        0,
-                                                        null
-                                                )
-
+                                        new SlideData(
+                                                new StoryData(
+                                                        current,
+                                                        feed,
+                                                        getListSourceType()
+                                                ),
+                                                0,
+                                                null
                                         ),
                                         gameInstanceId
                                 ))

@@ -28,13 +28,17 @@ import com.inappstory.sdk.network.jsapiclient.JsApiClient;
 import com.inappstory.sdk.network.jsapiclient.JsApiResponseCallback;
 import com.inappstory.sdk.network.models.Response;
 import com.inappstory.sdk.share.IShareCompleteListener;
+import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.UrlObject;
 import com.inappstory.sdk.stories.api.models.WebResource;
 import com.inappstory.sdk.stories.outercallbacks.common.gamereader.GameReaderCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.CallToActionCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickAction;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.ContentData;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.InAppMessageData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.ui.views.IASWebView;
 import com.inappstory.sdk.utils.IAcceleratorInitCallback;
@@ -55,7 +59,7 @@ public class GameManager {
     final GameLoadStatusHolder statusHolder = new GameLoadStatusHolder();
     String gameConfig;
     AbstractGameLogger logger;
-    private final GameStoryData dataModel;
+    private final ContentData dataModel;
 
 
     public void setLogger(int loggerLevel) {
@@ -79,7 +83,7 @@ public class GameManager {
             GameReaderContentFragment host,
             IASCore core,
             String gameCenterId,
-            GameStoryData dataModel
+            ContentData dataModel
     ) {
         this.core = core;
         this.host = host;
@@ -168,43 +172,6 @@ public class GameManager {
             core.acceleratorUtils().unsubscribe(host);
     }
 
-
-    void storySetData(String data, boolean sendToServer) {
-        InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
-        if (inAppStoryManager == null) return;
-        IASDataSettingsHolder settingsHolder =
-                (IASDataSettingsHolder) inAppStoryManager.iasCore().settingsAPI();
-        if (dataModel == null) return;
-        int id;
-        if (dataModel.slideData.story() != null) {
-            id = dataModel.slideData.story().id();
-            core.keyValueStorage().saveString("story" + id
-                    + "__" + settingsHolder.userId(), data);
-        } else
-            return;
-        String sessionId = core.sessionManager().getSession().getSessionId();
-        if (core.statistic().storiesV1().disabled() || sessionId.isEmpty()) return;
-        if (sendToServer) {
-            core.network().enqueue(
-                    core.network().getApi().sendStoryData(
-                            Integer.toString(id),
-                            data,
-                            sessionId
-                    ),
-                    new NetworkCallback<Response>() {
-                        @Override
-                        public void onSuccess(Response response) {
-
-                        }
-
-                        @Override
-                        public Type getType() {
-                            return null;
-                        }
-                    });
-        }
-    }
-
     GameReaderContentFragment host;
 
     void showGoods(String skusString, String widgetId) {
@@ -217,11 +184,11 @@ public class GameManager {
     }
 
     void sendGameStat(String name, String data) {
-        if (dataModel != null && dataModel.slideData.story() != null)
+        if (dataModel instanceof SlideData)
             core.statistic().storiesV2().sendGameEvent(
                     name,
                     data,
-                    dataModel.slideData.story().feed()
+                    ((SlideData) dataModel).story().feed()
             );
     }
 
@@ -241,7 +208,7 @@ public class GameManager {
     }
 
     private void closeOrFinishGameCallback(
-            final GameStoryData dataModel,
+            final ContentData dataModel,
             final String gameCenterId,
             final String eventData
     ) {
@@ -349,12 +316,6 @@ public class GameManager {
     }
 
     void tapOnLink(final String link, final Context context) {
-        final SlideData data;
-        if (dataModel != null) {
-            data = dataModel.slideData;
-        } else {
-            data = null;
-        }
         core.callbacksAPI().useCallback(
                 IASCallbackType.CALL_TO_ACTION,
                 new UseIASCallback<CallToActionCallback>() {
@@ -362,7 +323,7 @@ public class GameManager {
                     public void use(@NonNull CallToActionCallback callback) {
                         callback.callToAction(
                                 context,
-                                data,
+                                dataModel,
                                 StringsUtils.getNonNull(link),
                                 ClickAction.GAME
                         );

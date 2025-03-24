@@ -5,7 +5,6 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 
-import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
@@ -45,7 +44,7 @@ public class LaunchGameScreenStrategy implements LaunchScreenStrategy {
                         @Override
                         public void use(@NonNull GameReaderCallback callback) {
                             callback.gameOpenError(
-                                    data.gameStoryData, data.gameId
+                                    data.gameLaunchSourceData, data.gameId
                             );
                         }
                     }
@@ -74,7 +73,7 @@ public class LaunchGameScreenStrategy implements LaunchScreenStrategy {
                     @Override
                     public void use(@NonNull GameReaderCallback callback) {
                         callback.startGame(
-                                data.gameStoryData, data.gameId
+                                data.gameLaunchSourceData, data.gameId
                         );
                     }
                 }

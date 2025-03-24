@@ -258,8 +258,10 @@ public class IAMWebView extends IASWebView implements ContentViewInteractor {
                 public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
                     ContentIdWithIndex idWithIndex = slideViewModel.iamId();
                     if (idWithIndex != null) {
-                        sendWebConsoleLog(consoleMessage,
+                        sendWebConsoleLog(
+                                consoleMessage,
                                 Integer.toString(idWithIndex.id()),
+                                1,
                                 idWithIndex.index()
                         );
                     }

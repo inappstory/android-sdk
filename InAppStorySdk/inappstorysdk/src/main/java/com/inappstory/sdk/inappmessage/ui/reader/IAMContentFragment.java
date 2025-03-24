@@ -41,6 +41,7 @@ import com.inappstory.sdk.stories.api.models.ContentId;
 import com.inappstory.sdk.stories.api.models.ContentIdWithIndex;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.CallToActionCallback;
 import com.inappstory.sdk.inappmessage.domain.stedata.CallToActionData;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.InAppMessageData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ContentViewInteractor;
@@ -148,12 +149,13 @@ public class IAMContentFragment extends Fragment implements Observer<IAMReaderSl
 
     private void openGameHandle(IASCore core, final ContentId contentId) {
         try {
+            IIAMReaderViewModel readerViewModel = core.screensManager().iamReaderViewModel();
             core.screensManager().openScreen(
                     requireActivity(),
                     new LaunchGameScreenStrategy(core, true)
                             .data(new LaunchGameScreenData(
                                     null,
-                                    null,
+                                    readerViewModel.getCurrentInAppMessageData(),
                                     contentId.id()
                             ))
             );

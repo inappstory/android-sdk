@@ -1,7 +1,7 @@
 package com.inappstory.sdk.stories.outercallbacks.common.objects;
 
 
-import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.ContentData;
 
 
 public class GameReaderLaunchData implements SerializableWithKey {
@@ -10,11 +10,11 @@ public class GameReaderLaunchData implements SerializableWithKey {
     public GameReaderLaunchData(
             String gameId,
             String observableUID,
-            SlideData slideData
+            ContentData slideData
     ) {
         this.gameId = gameId;
         this.observableUID = observableUID;
-        this.slideData = slideData;
+        this.contentData = slideData;
     }
 
     public String getGameId() {
@@ -26,13 +26,13 @@ public class GameReaderLaunchData implements SerializableWithKey {
     }
 
 
-    public SlideData getSlideData() {
-        return slideData;
+    public ContentData getContentData() {
+        return contentData;
     }
 
     private String gameId;
     private String observableUID;
-    private SlideData slideData;
+    private ContentData contentData;
 
     @Override
     public String getSerializableKey() {
