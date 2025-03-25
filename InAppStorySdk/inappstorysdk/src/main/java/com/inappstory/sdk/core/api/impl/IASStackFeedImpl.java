@@ -4,6 +4,8 @@ import android.content.Context;
 import android.text.TextUtils;
 
 import com.inappstory.sdk.AppearanceManager;
+import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.IASStackFeed;
@@ -20,8 +22,12 @@ import com.inappstory.sdk.stories.stackfeed.IStackFeedResult;
 import com.inappstory.sdk.stories.stackfeed.IStackStoryData;
 import com.inappstory.sdk.stories.stackfeed.StackStoryObserver;
 import com.inappstory.sdk.stories.stackfeed.StackStoryUpdatedCallback;
+import com.inappstory.sdk.stories.utils.TagsUtils;
+import com.inappstory.sdk.utils.StringsUtils;
+
 import static com.inappstory.sdk.core.api.impl.IASSettingsImpl.TAG_LIMIT;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class IASStackFeedImpl implements IASStackFeed {
@@ -46,13 +52,36 @@ public class IASStackFeedImpl implements IASStackFeed {
         }
         final String localTags;
         if (tags != null) {
-            localTags = TextUtils.join(",", tags);
+            List<String> filteredList = new ArrayList<>();
+            for (String tag : tags) {
+                if (!TagsUtils.checkTagPattern(tag)) {
+                    InAppStoryManager.showELog(
+                            InAppStoryManager.IAS_WARN_TAG,
+                            StringsUtils.getFormattedErrorStringFromContext(
+                                    core.appContext(),
+                                    R.string.ias_tag_pattern_error,
+                                    tag
+                            )
+                    );
+                    continue;
+                }
+                filteredList.add(tag);
+            }
+            if (StringsUtils.getBytesLength(TextUtils.join(",", filteredList)) > TAG_LIMIT) {
+                InAppStoryManager.showELog(
+                        InAppStoryManager.IAS_ERROR_TAG,
+                        StringsUtils.getErrorStringFromContext(
+                                core.appContext(),
+                                R.string.ias_setter_tags_length_error
+                        )
+                );
+                stackFeedResult.error();
+                return;
+
+            }
+            localTags = TextUtils.join(",", filteredList);
         } else {
             localTags = TextUtils.join(",", settingsHolder.tags());
-        }
-        if (localTags.length() > TAG_LIMIT) {
-            stackFeedResult.error();
-            return;
         }
         final String localFeed;
         if (feed != null && !feed.isEmpty()) localFeed = feed;

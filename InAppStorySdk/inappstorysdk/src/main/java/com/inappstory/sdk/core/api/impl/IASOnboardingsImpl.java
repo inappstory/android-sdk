@@ -9,6 +9,7 @@ import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
@@ -30,6 +31,7 @@ import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.onboarding.OnboardingLoadCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
+import com.inappstory.sdk.stories.utils.TagsUtils;
 import com.inappstory.sdk.utils.StringsUtils;
 
 import java.util.ArrayList;
@@ -63,13 +65,36 @@ public class IASOnboardingsImpl implements IASOnboardings {
         }
         final String localTags;
         if (tags != null) {
-            localTags = TextUtils.join(",", tags);
+            List<String> filteredList = new ArrayList<>();
+            for (String tag : tags) {
+                if (!TagsUtils.checkTagPattern(tag)) {
+                    InAppStoryManager.showELog(
+                            InAppStoryManager.IAS_WARN_TAG,
+                            StringsUtils.getFormattedErrorStringFromContext(
+                                    core.appContext(),
+                                    R.string.ias_tag_pattern_error,
+                                    tag
+                            )
+                    );
+                    continue;
+                }
+                filteredList.add(tag);
+            }
+            if (StringsUtils.getBytesLength(TextUtils.join(",", filteredList)) > TAG_LIMIT) {
+                InAppStoryManager.showELog(
+                        InAppStoryManager.IAS_ERROR_TAG,
+                        StringsUtils.getErrorStringFromContext(
+                                core.appContext(),
+                                R.string.ias_setter_tags_length_error
+                        )
+                );
+                loadOnboardingError(usedFeed, "Tags string too long");
+                return;
+
+            }
+            localTags = TextUtils.join(",", filteredList);
         } else {
             localTags = TextUtils.join(",", settingsHolder.tags());
-        }
-        if (localTags.length() > TAG_LIMIT) {
-            loadOnboardingError(usedFeed, "Tags string too long");
-            return;
         }
         core.sessionManager().useOrOpenSession(new OpenSessionCallback() {
             @Override

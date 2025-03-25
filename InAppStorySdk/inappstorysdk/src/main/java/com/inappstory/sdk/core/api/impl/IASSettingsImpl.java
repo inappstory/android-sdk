@@ -194,6 +194,13 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
             }
         }
         if (StringsUtils.getBytesLength(TextUtils.join(",", newList)) > TAG_LIMIT) {
+            InAppStoryManager.showELog(
+                    InAppStoryManager.IAS_ERROR_TAG,
+                    StringsUtils.getErrorStringFromContext(
+                            core.appContext(),
+                            R.string.ias_setter_tags_length_error
+                    )
+            );
             return;
         }
         List<String> currentTags = tags();
@@ -247,6 +254,10 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
         }
         String tagsString = TextUtils.join(",", mergedTags);
         if (StringsUtils.getBytesLength(tagsString) > TAG_LIMIT) {
+            StringsUtils.getErrorStringFromContext(
+                    core.appContext(),
+                    R.string.ias_setter_tags_length_error
+            );
             return;
         }
         if (hasNewTags) {
@@ -410,31 +421,7 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
                     }
                     filteredList.add(tag);
                 }
-                if (StringsUtils.getBytesLength(TextUtils.join(",", filteredList)) <= TAG_LIMIT) {
-                    List<String> currentTags = tags();
-                    Set<String> oldList = new HashSet<>();
-                    if (currentTags != null) {
-                        oldList.addAll(currentTags);
-                    }
-                    Set<String> newList = new HashSet<>(filteredList);
-                    boolean replace = false;
-                    if (oldList.size() == newList.size()) {
-                        for (String newTag : newList) {
-                            if (!oldList.contains(newTag)) {
-                                replace = true;
-                                break;
-                            }
-                        }
-                    } else {
-                        replace = true;
-                    }
-
-                    if (replace) {
-                        this.tags.clear();
-                        this.tags.addAll(newList);
-                        core.storiesListVMHolder().clear();
-                    }
-                } else {
+                if (StringsUtils.getBytesLength(TextUtils.join(",", filteredList)) > TAG_LIMIT) {
                     InAppStoryManager.showELog(
                             InAppStoryManager.IAS_ERROR_TAG,
                             StringsUtils.getErrorStringFromContext(
@@ -443,6 +430,30 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
                             )
                     );
                     return;
+
+                }
+                List<String> currentTags = tags();
+                Set<String> oldList = new HashSet<>();
+                if (currentTags != null) {
+                    oldList.addAll(currentTags);
+                }
+                Set<String> newList = new HashSet<>(filteredList);
+                boolean replace = false;
+                if (oldList.size() == newList.size()) {
+                    for (String newTag : newList) {
+                        if (!oldList.contains(newTag)) {
+                            replace = true;
+                            break;
+                        }
+                    }
+                } else {
+                    replace = true;
+                }
+
+                if (replace) {
+                    this.tags.clear();
+                    this.tags.addAll(newList);
+                    core.storiesListVMHolder().clear();
                 }
             }
             if (settings.imagePlaceholders() != null) {
