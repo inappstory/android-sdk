@@ -727,6 +727,7 @@ public class InAppStoryManager implements IASBackPressHandler {
     private boolean isSandbox = false;
 
     public final static String IAS_ERROR_TAG = "InAppStory_SDK_error";
+    public final static String IAS_WARN_TAG = "InAppStory_SDK_warn";
 
     private boolean isInitialized = false;
     private boolean isInitProcess = false;
