@@ -86,15 +86,16 @@ public class OverlapFragment extends Fragment implements IASBackPressHandler {
 
     View shareView = null;
 
-    public WeakReference<ShareListener> shareListenerWeakReference;
+    public ShareListener shareListener;
 
     public void setShareListener(ShareListener shareListener) {
-        shareListenerWeakReference = new WeakReference<>(shareListener);
+        this.shareListener = shareListener;
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        this.shareListener = null;
         if (callback != null)
             callback.onDestroyView(shareView);
     }

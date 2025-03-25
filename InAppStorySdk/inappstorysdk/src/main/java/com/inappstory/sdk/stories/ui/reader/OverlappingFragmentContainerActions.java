@@ -1,5 +1,7 @@
 package com.inappstory.sdk.stories.ui.reader;
 
+import android.util.Log;
+
 import com.inappstory.sdk.share.ShareListener;
 import com.inappstory.sdk.stories.callbacks.OverlappingContainerActions;
 import com.inappstory.sdk.stories.ui.OverlapFragmentObserver;
@@ -10,14 +12,19 @@ import java.util.HashMap;
 
 public class OverlappingFragmentContainerActions implements OverlappingContainerActions {
     private WeakReference<OverlapFragment> fragmentWeakReference;
+    private ShareListener shareListener;
 
     public OverlappingFragmentContainerActions(OverlapFragment fragment) {
         fragmentWeakReference = new WeakReference<>(fragment);
+
     }
 
     @Override
     public void closeView(HashMap<String, Object> data) {
         OverlapFragment fragment = fragmentWeakReference.get();
+        if (fragment != null) {
+            shareListener = fragment.shareListener;
+        }
         boolean shared = false;
         if (data.containsKey("shared")) shared = (boolean) data.get("shared");
 
@@ -30,13 +37,14 @@ public class OverlappingFragmentContainerActions implements OverlappingContainer
             } catch (IllegalStateException e) {
                 ScreensManager.getInstance().setTempShareStatus(shared);
             }
-            ShareListener shareListener = fragment.shareListenerWeakReference.get();
+            Log.e("JS_method_share_process", "" + (shareListener != null));
             if (shareListener != null) {
                 if (shared)
                     shareListener.onSuccess(true);
                 else
                     shareListener.onCancel();
             }
+            shareListener = null;
         }
 
     }
