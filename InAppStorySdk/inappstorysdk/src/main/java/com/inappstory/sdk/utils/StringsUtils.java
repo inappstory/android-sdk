@@ -27,6 +27,16 @@ public class StringsUtils {
         return "";
     }
 
+    public static String getFormattedErrorStringFromContext(
+            Context context,
+            @StringRes int resourceId,
+            Object... formatArgs
+    ) {
+        if (context != null)
+            return context.getResources().getString(resourceId, formatArgs);
+        return "";
+    }
+
     public static int getBytesLength(String value) {
         if (value == null) return 0;
         int encodedLength = 0;

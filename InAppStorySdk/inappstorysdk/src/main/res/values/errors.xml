@@ -11,4 +11,5 @@
     <string name="ias_usage_without_user_and_device">UserId is empty and deviceId usage is prohibited</string>
     <string name="ias_min_free_space_error">Not enough free space on device</string>
     <string name="ias_npe_manager">\'InAppStoryManager\' cannot be null</string>
+    <string name="ias_tag_pattern_error">Tag \'%1$s\' is incorrect</string>
 </resources>

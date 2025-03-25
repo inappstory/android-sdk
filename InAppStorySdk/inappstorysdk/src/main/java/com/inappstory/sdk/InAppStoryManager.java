@@ -89,6 +89,7 @@ import com.inappstory.sdk.stories.utils.KeyValueStorage;
 import com.inappstory.sdk.stories.utils.SessionManager;
 import com.inappstory.sdk.utils.IVibrateUtils;
 import com.inappstory.sdk.utils.StringsUtils;
+import com.inappstory.sdk.utils.TagsUtils;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -534,9 +535,19 @@ public class InAppStoryManager {
 
 
     public void setTags(ArrayList<String> tags) {
-        if (tags != null && StringsUtils.getBytesLength(TextUtils.join(",", tags)) > TAG_LIMIT) {
-            showELog(IAS_ERROR_TAG, StringsUtils.getErrorStringFromContext(context, R.string.ias_setter_tags_length_error));
-            return;
+        List<String> filteredTags = new ArrayList<>();
+        if (tags != null) {
+            for (String tag : tags) {
+                if (!TagsUtils.checkTagPattern(tag)) {
+                    showELog(IAS_WARN_TAG, StringsUtils.getFormattedErrorStringFromContext(context, R.string.ias_tag_pattern_error, tag));
+                    continue;
+                }
+                filteredTags.add(tag);
+            }
+            if (StringsUtils.getBytesLength(TextUtils.join(",", filteredTags)) > TAG_LIMIT) {
+                showELog(IAS_ERROR_TAG, StringsUtils.getErrorStringFromContext(context, R.string.ias_setter_tags_length_error));
+                return;
+            }
         }
         List<String> currentTags = getTags();
         Set<String> oldList = new HashSet<>();
@@ -544,9 +555,7 @@ public class InAppStoryManager {
             oldList.addAll(currentTags);
         }
         Set<String> newList = new HashSet<>();
-        if (tags != null) {
-            newList.addAll(tags);
-        }
+        newList.addAll(filteredTags);
         synchronized (tagsLock) {
             if (oldList.size() == newList.size()) {
                 for (String newTag : newList) {
@@ -582,8 +591,19 @@ public class InAppStoryManager {
             if (newTags == null || newTags.isEmpty()) return;
             if (tags == null) tags = new ArrayList<>();
             String oldTagsString = TextUtils.join(",", tags);
-            String newTagsString = TextUtils.join(",", newTags);
-            if (StringsUtils.getBytesLength(oldTagsString + newTagsString) > TAG_LIMIT - 1) {
+            String newTagsString = "";
+            List<String> filteredTags = new ArrayList<>();
+            if (tags != null) {
+                for (String tag : tags) {
+                    if (!TagsUtils.checkTagPattern(tag)) {
+                        showELog(IAS_WARN_TAG, StringsUtils.getFormattedErrorStringFromContext(context, R.string.ias_tag_pattern_error, tag));
+                        continue;
+                    }
+                    filteredTags.add(tag);
+                }
+                newTagsString = TextUtils.join(",", filteredTags);
+            }
+            if (StringsUtils.getBytesLength(oldTagsString + newTagsString) > TAG_LIMIT) {
                 showELog(IAS_ERROR_TAG, StringsUtils.getErrorStringFromContext(context, R.string.ias_setter_tags_length_error));
                 return;
             }
@@ -1099,19 +1119,30 @@ public class InAppStoryManager {
     private boolean isSandbox = false;
 
     public final static String IAS_ERROR_TAG = "InAppStory_SDK_error";
+    public final static String IAS_WARN_TAG = "InAppStory_SDK_warn";
 
 
     private void build(final Builder builder) {
         final Context context = this.context;
         Integer errorStringId = null;
+        ArrayList<String> filteredTags = new ArrayList<>();
         if (context == null) {
             errorStringId = R.string.ias_context_is_null;
         } else if (builder.apiKey == null && context.getResources().getString(R.string.csApiKey).isEmpty()) {
             errorStringId = R.string.ias_api_key_error;
         } else if (StringsUtils.getBytesLength(builder.userId) > 255) {
             errorStringId = R.string.ias_builder_user_length_error;
-        } else if (builder.tags != null && StringsUtils.getBytesLength(TextUtils.join(",", builder.tags)) > TAG_LIMIT) {
-            errorStringId = R.string.ias_builder_tags_length_error;
+        } else if (builder.tags != null) {
+            for (String tag : builder.tags) {
+                if (!TagsUtils.checkTagPattern(tag)) {
+                    showELog(IAS_WARN_TAG, StringsUtils.getFormattedErrorStringFromContext(context, R.string.ias_tag_pattern_error, tag));
+                    continue;
+                }
+                filteredTags.add(tag);
+            }
+            if (StringsUtils.getBytesLength(TextUtils.join(",", filteredTags)) > TAG_LIMIT) {
+                errorStringId = R.string.ias_builder_tags_length_error;
+            }
         }
         if (errorStringId != null) {
             showELog(
@@ -1153,7 +1184,7 @@ public class InAppStoryManager {
                 builder.locale(),
                 builder.gameDemoMode(),
                 builder.isDeviceIdEnabled(),
-                builder.tags() != null ? builder.tags() : null,
+                filteredTags.isEmpty() ? null : filteredTags,
                 builder.placeholders() != null ? builder.placeholders() : null,
                 builder.imagePlaceholders() != null ? builder.imagePlaceholders() : null
         );
@@ -1411,7 +1442,7 @@ public class InAppStoryManager {
             @Override
             public void use(@NonNull final InAppStoryService inAppStoryService) throws Exception {
                 inAppStoryService.listStoriesIds.clear();
-              //  inAppStoryService.getListSubscribers().clear();
+                //  inAppStoryService.getListSubscribers().clear();
                 inAppStoryService.getStoryDownloadManager().cleanTasks();
                 ScreensManager.getInstance().forceCloseAllReaders(
                         new ForceCloseReaderCallback() {
@@ -1564,9 +1595,20 @@ public class InAppStoryManager {
             final IStackFeedResult stackFeedResult
     ) {
         if (noCorrectUserIdOrDevice()) return;
-        if (tags != null && StringsUtils.getBytesLength(TextUtils.join(",", tags)) > TAG_LIMIT) {
-            showELog(IAS_ERROR_TAG, StringsUtils.getErrorStringFromContext(context, R.string.ias_setter_tags_length_error));
-            stackFeedResult.error();
+        final List<String> filteredTags = new ArrayList<>();
+        if (tags != null) {
+            for (String tag : tags) {
+                if (!TagsUtils.checkTagPattern(tag)) {
+                    showELog(IAS_WARN_TAG, StringsUtils.getFormattedErrorStringFromContext(context, R.string.ias_tag_pattern_error, tag));
+                    continue;
+                }
+                filteredTags.add(tag);
+            }
+            if (StringsUtils.getBytesLength(TextUtils.join(",", filteredTags)) > TAG_LIMIT) {
+                showELog(IAS_ERROR_TAG, StringsUtils.getErrorStringFromContext(context, R.string.ias_setter_tags_length_error));
+                stackFeedResult.error();
+                return;
+            }
             return;
         }
         final String localFeed;
@@ -1601,8 +1643,8 @@ public class InAppStoryManager {
                     @Override
                     public void onSuccess(final RequestLocalParameters requestLocalParameters) {
                         String localTags = null;
-                        if (tags != null) {
-                            localTags = TextUtils.join(",", tags);
+                        if (!filteredTags.isEmpty()) {
+                            localTags = TextUtils.join(",", filteredTags);
                         } else if (getTags() != null) {
                             localTags = TextUtils.join(",", getTags());
                         }
@@ -1738,17 +1780,28 @@ public class InAppStoryManager {
             @Override
             public void onCreated() {
                 if (noCorrectUserIdOrDevice()) return;
-                if (tags != null && StringsUtils.getBytesLength(TextUtils.join(",", tags)) > TAG_LIMIT) {
-                    showELog(IAS_ERROR_TAG, StringsUtils.getErrorStringFromContext(context, R.string.ias_setter_tags_length_error));
-                    return;
+
+                final List<String> filteredTags = new ArrayList<>();
+                if (tags != null) {
+                    for (String tag : tags) {
+                        if (!TagsUtils.checkTagPattern(tag)) {
+                            showELog(IAS_WARN_TAG, StringsUtils.getFormattedErrorStringFromContext(context, R.string.ias_tag_pattern_error, tag));
+                            continue;
+                        }
+                        filteredTags.add(tag);
+                    }
+                    if (StringsUtils.getBytesLength(TextUtils.join(",", filteredTags)) > TAG_LIMIT) {
+                        showELog(IAS_ERROR_TAG, StringsUtils.getErrorStringFromContext(context, R.string.ias_setter_tags_length_error));
+                        return;
+                    }
                 }
 
                 SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
                     @Override
                     public void onSuccess(final RequestLocalParameters requestLocalParameters) {
                         String localTags = null;
-                        if (tags != null) {
-                            localTags = TextUtils.join(",", tags);
+                        if (!filteredTags.isEmpty()) {
+                            localTags = TextUtils.join(",", filteredTags);
                         } else if (getTags() != null) {
                             localTags = TextUtils.join(",", getTags());
                         }
@@ -1756,8 +1809,7 @@ public class InAppStoryManager {
                         final String onboardUID =
                                 ProfilingManager.getInstance().addTask("api_onboarding");
                         final String localFeed;
-                        if (feed != null) localFeed = feed;
-                        else localFeed = ONBOARDING_FEED;
+                        localFeed = feed;
                         networkClient.enqueue(
                                 networkClient.getApi().getOnboardingFeed(
                                         localFeed,
@@ -2114,8 +2166,7 @@ public class InAppStoryManager {
     }
 
     private boolean idIsIncorrect(String id) {
-        if (id == null || id.isEmpty() || id.length() > 255) return true;
-        return false;
+        return id == null || id.isEmpty() || id.length() > 255;
     }
 
     private void showStoryInner(final String storyId,
