@@ -6,6 +6,5 @@ public interface IStatData {
     int id();
     String statTitle();
     int slidesCount();
-    String tags();
     Map<String, Object> ugcPayload();
 }

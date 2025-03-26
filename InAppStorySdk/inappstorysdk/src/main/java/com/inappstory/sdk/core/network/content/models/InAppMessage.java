@@ -48,9 +48,6 @@ public class InAppMessage implements IInAppMessage {
     @SerializedName("campaign_name")
     public String campaignName;
 
-    @SerializedName("tags")
-    public String tags;
-
     @SerializedName("has_swipe_up")
     public Boolean hasSwipeUp;
 
@@ -139,11 +136,6 @@ public class InAppMessage implements IInAppMessage {
     @Override
     public int slidesCount() {
         return actualSlidesCount();
-    }
-
-    @Override
-    public String tags() {
-        return tags;
     }
 
     @Override

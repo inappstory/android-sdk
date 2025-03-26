@@ -34,9 +34,6 @@ public class Story implements Parcelable, IStory, IContentWithTimeline {
     @SerializedName("title")
     public String title;
 
-    @SerializedName("tags")
-    public String tags;
-
     @SerializedName("title_color")
     public String titleColor;
 
@@ -245,11 +242,6 @@ public class Story implements Parcelable, IStory, IContentWithTimeline {
     public int actualSlidesCount() {
         if (slides != null) return slides.size();
         return 0;
-    }
-
-    @Override
-    public String tags() {
-        return tags;
     }
 
     @Override
