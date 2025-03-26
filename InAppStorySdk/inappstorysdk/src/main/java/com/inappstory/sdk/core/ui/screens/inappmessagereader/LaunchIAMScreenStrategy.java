@@ -102,7 +102,7 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
         );
     }
 
-    private void getLocalReaderContent(GetLocalInAppMessage getLocalInAppMessage) {
+    private void getLocalReaderContent(GetLocalInAppMessage getLocalInAppMessage, List<String> tagsToCheck) {
         if (inAppMessageOpenSettings.id() != null) {
             IInAppMessage inAppMessage = (IInAppMessage) core.contentHolder().readerContent().getByIdAndType(
                     inAppMessageOpenSettings.id(),
@@ -114,10 +114,14 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
                 getLocalInAppMessage.error();
             }
         } else if (inAppMessageOpenSettings.event() != null) {
-            getContentByEvent(
-                    getLocalInAppMessage,
-                    inAppMessageOpenSettings.event()
-            );
+            if (tagsToCheck != null && !core.contentLoader().getIamWereLoadedStatus(TagsUtils.tagsHash(tagsToCheck))) {
+                getLocalInAppMessage.error();
+            } else {
+                getContentByEvent(
+                        getLocalInAppMessage,
+                        inAppMessageOpenSettings.event()
+                );
+            }
         } else {
             getLocalInAppMessage.error();
         }
@@ -259,26 +263,29 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
                                         new InAppMessageFeedCallback() {
                                             @Override
                                             public void success(List<IReaderContent> content) {
-                                                getLocalReaderContent(new GetLocalInAppMessage() {
-                                                    @Override
-                                                    public void get(@NonNull IInAppMessage readerContent) {
-                                                        boolean contentIsPreloaded =
-                                                                downloadManager.allSlidesLoaded(readerContent) &&
-                                                                        downloadManager.allBundlesLoaded();
-                                                        loadScreen.success(readerContent,
-                                                                contentIsPreloaded
-                                                        );
-                                                    }
+                                                getLocalReaderContent(
+                                                        new GetLocalInAppMessage() {
+                                                            @Override
+                                                            public void get(@NonNull IInAppMessage readerContent) {
+                                                                boolean contentIsPreloaded =
+                                                                        downloadManager.allSlidesLoaded(readerContent) &&
+                                                                                downloadManager.allBundlesLoaded();
+                                                                loadScreen.success(readerContent,
+                                                                        contentIsPreloaded
+                                                                );
+                                                            }
 
-                                                    @Override
-                                                    public void error() {
-                                                        launchScreenError(
-                                                                "Can't load InAppMessage with settings: [id: "
-                                                                        + localSettings.id() +
-                                                                        ", event: " + localSettings.event() + "]"
-                                                        );
-                                                    }
-                                                });
+                                                            @Override
+                                                            public void error() {
+                                                                launchScreenError(
+                                                                        "Can't load InAppMessage with settings: [id: "
+                                                                                + localSettings.id() +
+                                                                                ", event: " + localSettings.event() + "]"
+                                                                );
+                                                            }
+                                                        },
+                                                        null
+                                                );
                                             }
 
                                             @Override
@@ -295,7 +302,8 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
                             }
                         }
                     }
-                }
+                },
+                localTags
         );
     }
 
