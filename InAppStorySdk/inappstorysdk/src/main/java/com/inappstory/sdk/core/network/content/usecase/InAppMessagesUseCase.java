@@ -9,11 +9,11 @@ import com.inappstory.sdk.core.inappmessages.InAppMessageFeedCallback;
 import com.inappstory.sdk.core.utils.ConnectionCheck;
 import com.inappstory.sdk.core.utils.ConnectionCheckCallback;
 import com.inappstory.sdk.core.network.content.models.InAppMessageFeed;
-import com.inappstory.sdk.inappmessage.IAMUiContainerType;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.network.models.RequestLocalParameters;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
+import com.inappstory.sdk.stories.utils.TagsUtils;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -22,15 +22,12 @@ import java.util.List;
 public class InAppMessagesUseCase {
     private final IASCore core;
     private final String ids;
+    private final List<String> tags;
 
-    public InAppMessagesUseCase(IASCore core) {
-        this.core = core;
-        this.ids = null;
-    }
-
-    public InAppMessagesUseCase(IASCore core,String ids) {
+    public InAppMessagesUseCase(IASCore core, String ids, List<String> tags) {
         this.core = core;
         this.ids = ids;
+        this.tags = tags;
     }
 
     public void get(InAppMessageFeedCallback callback) {
@@ -42,6 +39,13 @@ public class InAppMessagesUseCase {
             final boolean retry
     ) {
         core.statistic().profiling().addTask("inAppMessages");
+        final List<String> localTags = new ArrayList<>();
+        if (this.tags != null) {
+            localTags.addAll(this.tags);
+        } else {
+            localTags.addAll(((IASDataSettingsHolder) core.settingsAPI()).tags());
+        }
+
         new ConnectionCheck().check(
                 core.appContext(),
                 new ConnectionCheckCallback(core) {
@@ -59,7 +63,7 @@ public class InAppMessagesUseCase {
                                             loadError(loadCallback);
                                             return;
                                         }
-                                        core.contentLoader().iamWereLoaded(true);
+                                        core.contentLoader().changeIamWereLoadedStatus(TagsUtils.tagsHash(localTags));
                                         boolean hasDeviceSupportedMessage = false;
                                         for (IInAppMessage message : inAppMessageFeed.messages()) {
                                             hasDeviceSupportedMessage = true;
@@ -103,8 +107,7 @@ public class InAppMessagesUseCase {
                                         core.network().getApi().getInAppMessages(
                                                 1,
                                                 ids,
-                                                TextUtils.join(",",
-                                                        ((IASDataSettingsHolder) core.settingsAPI()).tags()),
+                                                TextUtils.join(",", localTags),
                                                 null,
                                                 "messages.slides",
                                                 sessionParameters.userId,

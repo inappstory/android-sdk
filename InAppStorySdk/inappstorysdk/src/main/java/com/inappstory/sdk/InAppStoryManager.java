@@ -27,6 +27,7 @@ import com.inappstory.sdk.core.data.models.InAppStoryUserSettings;
 import com.inappstory.sdk.inappmessage.CloseInAppMessageCallback;
 import com.inappstory.sdk.inappmessage.InAppMessageLoadCallback;
 import com.inappstory.sdk.inappmessage.InAppMessageOpenSettings;
+import com.inappstory.sdk.inappmessage.InAppMessagePreloadSettings;
 import com.inappstory.sdk.inappmessage.InAppMessageScreenActions;
 import com.inappstory.sdk.inappmessage.InAppMessageWidgetCallback;
 import com.inappstory.sdk.inappmessage.ShowInAppMessageCallback;
@@ -64,6 +65,7 @@ import com.inappstory.sdk.stories.stackfeed.IStackFeedResult;
 import com.inappstory.sdk.stories.statistic.GetStatisticV1Callback;
 import com.inappstory.sdk.stories.ui.reader.ForceCloseReaderCallback;
 import com.inappstory.sdk.stories.utils.IASBackPressHandler;
+import com.inappstory.sdk.stories.utils.TagsUtils;
 import com.inappstory.sdk.utils.StringsUtils;
 import com.inappstory.sdk.utils.WebViewUtils;
 
@@ -762,10 +764,26 @@ public class InAppStoryManager implements IASBackPressHandler {
             errorStringId = R.string.ias_api_key_error;
         } else if (StringsUtils.getBytesLength(builder.userId) > 255) {
             errorStringId = R.string.ias_builder_user_length_error;
-        } else if (builder.tags != null
-                &&
-                StringsUtils.getBytesLength(TextUtils.join(",", builder.tags)) > TAG_LIMIT) {
-            errorStringId = R.string.ias_builder_tags_length_error;
+        } else if (builder.tags != null) {
+            List<String> filteredList = new ArrayList<>();
+            for (String tag : builder.tags) {
+                if (!TagsUtils.checkTagPattern(tag)) {
+                    InAppStoryManager.showELog(
+                            InAppStoryManager.IAS_WARN_TAG,
+                            StringsUtils.getFormattedErrorStringFromContext(
+                                    core.appContext(),
+                                    R.string.ias_tag_pattern_error,
+                                    tag
+                            )
+                    );
+                    continue;
+                }
+                filteredList.add(tag);
+            }
+            if (StringsUtils.getBytesLength(TextUtils.join(",", filteredList)) > TAG_LIMIT) {
+                errorStringId = R.string.ias_builder_tags_length_error;
+
+            }
         }
         if (errorStringId != null) {
             showELog(
@@ -1378,14 +1396,14 @@ public class InAppStoryManager implements IASBackPressHandler {
     }
 
     public void preloadInAppMessages(
-            final List<String> inAppMessageIds,
+            final InAppMessagePreloadSettings inAppMessagePreloadSettings,
             final InAppMessageLoadCallback callback
     ) {
         useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
 
-                core.inAppMessageAPI().preload(inAppMessageIds, callback);
+                core.inAppMessageAPI().preload(inAppMessagePreloadSettings, callback);
             }
         });
     }

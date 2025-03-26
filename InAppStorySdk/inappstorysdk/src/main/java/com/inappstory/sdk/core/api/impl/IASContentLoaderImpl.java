@@ -24,7 +24,11 @@ import com.inappstory.sdk.utils.ScheduledTPEManager;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -35,7 +39,7 @@ public class IASContentLoaderImpl implements IASContentLoader {
     private final GameCacheManager gameCacheManager;
     private final FilesDownloader filesDownloader;
     private final InAppMessageDownloadManager inAppMessageDownloadManager;
-    private boolean iamWereLoaded = false;
+    private Set<String> iamByTagsWereLoaded = new HashSet<>();
 
     private final StoryDownloadManager storyDownloadManager;
 
@@ -95,16 +99,23 @@ public class IASContentLoaderImpl implements IASContentLoader {
     }
 
     @Override
-    public boolean iamWereLoaded() {
+    public boolean getIamWereLoadedStatus(String tagsHash) {
         synchronized (this) {
-            return iamWereLoaded;
+            return iamByTagsWereLoaded.contains(tagsHash);
         }
     }
 
     @Override
-    public void iamWereLoaded(boolean loaded) {
+    public void changeIamWereLoadedStatus(String tagsHash) {
         synchronized (this) {
-            iamWereLoaded = loaded;
+            iamByTagsWereLoaded.add(tagsHash);
+        }
+    }
+
+    @Override
+    public void clearIamWereLoadedStatuses() {
+        synchronized (this) {
+            iamByTagsWereLoaded.clear();
         }
     }
 
@@ -120,6 +131,9 @@ public class IASContentLoaderImpl implements IASContentLoader {
             core.contentLoader().inAppMessageDownloadManager().clearLocalData();
             storyDownloadManager.clearCache();
             core.keyValueStorage().clear();
+            synchronized (this) {
+                iamByTagsWereLoaded.clear();
+            }
         } catch (IOException ignored) {
 
         }
