@@ -183,7 +183,17 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
                 filteredList.add(tag);
             }
             if (StringsUtils.getBytesLength(TextUtils.join(",", filteredList)) > TAG_LIMIT) {
-                launchScreenError("Need to pass opening settings (id or event)");
+                InAppStoryManager.showELog(
+                        InAppStoryManager.IAS_ERROR_TAG,
+                        StringsUtils.getErrorStringFromContext(
+                                core.appContext(),
+                                R.string.ias_setter_tags_length_error
+                        )
+                );
+                launchScreenError(StringsUtils.getErrorStringFromContext(
+                        core.appContext(),
+                        R.string.ias_setter_tags_length_error
+                ));
                 return;
             }
             localTags.addAll(filteredList);

@@ -101,7 +101,8 @@ public class IASContentPreloadImpl implements IASContentPreload {
                                     R.string.ias_setter_tags_length_error
                             )
                     );
-                    callback.loadError();
+                    if (callback != null)
+                        callback.loadError();
                     return;
                 }
             }
@@ -141,7 +142,8 @@ public class IASContentPreloadImpl implements IASContentPreload {
 
                     @Override
                     public void error() {
-                        if (callback != null) callback.loadError();
+                        if (callback != null)
+                            callback.loadError();
                         core.callbacksAPI().useCallback(
                                 IASCallbackType.IN_APP_MESSAGE_LOAD,
                                 new UseIASCallback<InAppMessageLoadCallback>() {
