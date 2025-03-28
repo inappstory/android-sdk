@@ -68,10 +68,13 @@ public class PopupContentContainer extends IAMContentContainer<InAppMessagePopup
         switch (appearance.closeButtonPosition()) {
             case 0:
                 closeButton.setVisibility(GONE);
+                break;
             case 1:
                 closeButtonLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_START);
+                break;
             default:
                 closeButtonLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_END);
+                break;
         }
         //
         closeButton.setLayoutParams(closeButtonLayoutParams);
