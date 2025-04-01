@@ -2,38 +2,39 @@ package com.inappstory.sdk.stories.outercallbacks.common.gamereader;
 
 import com.inappstory.sdk.core.api.IASCallback;
 import com.inappstory.sdk.game.reader.GameStoryData;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.ContentData;
 
 public interface GameReaderCallback extends IASCallback {
     void startGame(
-            GameStoryData data,
+            ContentData gameLaunchSourceData,
             String gameId
     );
 
     void finishGame(
-            GameStoryData data,
+            ContentData gameLaunchSourceData,
             String result,
             String gameId
     );
 
     void closeGame(
-            GameStoryData data,
+            ContentData gameLaunchSourceData,
             String gameId
     );
 
     void eventGame(
-            GameStoryData data,
+            ContentData gameLaunchSourceData,
             String gameId,
             String eventName,
             String payload
     );
 
     void gameLoadError(
-            GameStoryData data,
+            ContentData gameLaunchSourceData,
             String gameId
     );
 
     void gameOpenError(
-            GameStoryData data,
+            ContentData gameLaunchSourceData,
             String gameId
     );
 }

@@ -1,9 +1,13 @@
 package com.inappstory.sdk.network.utils.headers;
 
 
-import com.inappstory.sdk.network.ApiSettings;
-
 public class AuthorizationHeader implements Header {
+    private final String apiKey;
+
+    public AuthorizationHeader(String apiKey) {
+        this.apiKey = apiKey;
+    }
+
     @Override
     public String getKey() {
         return HeadersKeys.AUTHORIZATION;
@@ -11,6 +15,6 @@ public class AuthorizationHeader implements Header {
 
     @Override
     public String getValue() {
-        return "Bearer " + ApiSettings.getInstance().getApiKey();
+        return "Bearer " + apiKey;
     }
 }

@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:clickable="true"
     android:background="@android:color/black"
+    android:clickable="true"
     tools:context=".game.reader.GameActivity">
 
     <View
@@ -14,66 +14,80 @@
         android:layout_height="match_parent" />
 
     <LinearLayout
-        android:layout_width="match_parent"
         android:id="@+id/gameContainer"
+        android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
+
+
+        <View
+            android:id="@+id/ias_black_top"
+            android:layout_width="match_parent"
+            android:layout_height="0dp" />
 
         <RelativeLayout
             android:id="@+id/webViewContainer"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:layout_weight="1">
+
 
             <FrameLayout
-                android:layout_width="match_parent"
                 android:id="@+id/gameWebviewContainer"
-                android:layout_height="match_parent"/>
-
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
 
             <RelativeLayout
                 android:id="@+id/loaderContainer"
                 android:layout_width="match_parent"
-                android:background="@color/black"
                 android:layout_height="match_parent"
+                android:background="@color/black"
                 android:elevation="2dp">
-                
+
                 <ImageView
                     android:id="@+id/loader"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:scaleType="centerCrop" />
+
                 <ImageView
-                    android:layout_width="40dp"
-                    android:layout_centerInParent="true"
-                    android:src="@drawable/ic_refresh"
                     android:id="@+id/gameRefresh"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_centerInParent="true"
                     android:alpha="0"
                     android:elevation="4dp"
-                    android:visibility="gone"
-                    android:layout_height="40dp"/>
-                <com.inappstory.sdk.game.ui.GameProgressLoader
-                    android:elevation="8dp"
-                    android:layout_width="match_parent"
-                    android:id="@+id/gameProgressLoader"
-                    android:layout_height="match_parent"/>
-            </RelativeLayout>
+                    android:src="@drawable/ic_refresh"
+                    android:visibility="gone" />
 
+                <com.inappstory.sdk.game.ui.GameProgressLoader
+                    android:id="@+id/gameProgressLoader"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:elevation="8dp" />
+            </RelativeLayout>
 
 
         </RelativeLayout>
 
+
+        <View
+            android:id="@+id/ias_black_bottom"
+            android:layout_width="match_parent"
+            android:layout_height="0dp" />
     </LinearLayout>
+
     <androidx.appcompat.widget.AppCompatImageView
         android:id="@+id/close_button"
         android:layout_width="30dp"
         android:layout_height="30dp"
-        android:visibility="gone"
         android:layout_alignParentEnd="true"
-        android:background="@null"
-        android:elevation="10dp"
         android:layout_marginTop="16dp"
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="8dp"
+        android:background="@null"
+        android:elevation="10dp"
+        android:visibility="gone"
         app:srcCompat="@drawable/ic_stories_close" />
 </RelativeLayout>
 

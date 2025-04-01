@@ -9,18 +9,22 @@ import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASInAppMessage;
 import com.inappstory.sdk.inappmessage.InAppMessageLoadCallback;
 import com.inappstory.sdk.inappmessage.InAppMessageOpenSettings;
+import com.inappstory.sdk.inappmessage.InAppMessagePreloadSettings;
 import com.inappstory.sdk.inappmessage.InAppMessageScreenActions;
 
 import java.util.List;
 
 public class IASInAppMessageAPIImpl implements IASInAppMessage {
     @Override
-    public void preload(final List<String> inAppMessageIds, final InAppMessageLoadCallback callback) {
+    public void preload(
+            final InAppMessagePreloadSettings inAppMessagePreloadSettings,
+            final InAppMessageLoadCallback callback
+    ) {
         InAppStoryManager.useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
                 core.inAppMessageAPI().preload(
-                        inAppMessageIds, callback
+                        inAppMessagePreloadSettings, callback
                 );
             }
         });

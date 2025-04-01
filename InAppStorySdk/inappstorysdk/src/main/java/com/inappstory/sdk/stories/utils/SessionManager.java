@@ -15,9 +15,7 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.InAppStoryManager;
-import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.core.IASCore;
-import com.inappstory.sdk.core.IASCoreImpl;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.IASStatisticStoriesV1;
@@ -25,7 +23,6 @@ import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.api.impl.IASSettingsImpl;
 import com.inappstory.sdk.core.utils.ConnectionCheck;
 import com.inappstory.sdk.core.utils.ConnectionCheckCallback;
-import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.network.models.RequestLocalParameters;
 import com.inappstory.sdk.stories.api.models.CachedSessionData;
@@ -41,7 +38,6 @@ import com.inappstory.sdk.utils.ISessionHolder;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Objects;
 
 public class SessionManager {
@@ -300,8 +296,8 @@ public class SessionManager {
                                         cachedSessionData.previewAspectRatio = response.getPreviewAspectRatio();
                                         cachedSessionData.isAllowUGC = response.isAllowUgc;
                                         cachedSessionData.sessionId = response.session.id;
-                                        cachedSessionData.testKey = ApiSettings.getInstance().getTestKey();
-                                        cachedSessionData.token = ApiSettings.getInstance().getApiKey();
+                                        cachedSessionData.testKey = core.projectSettingsAPI().testKey();
+                                        cachedSessionData.token = core.projectSettingsAPI().apiKey();
                                         cachedSessionData.tags =
                                                 TextUtils.join(",", dataSettingsHolder.tags());
                                         boolean isSendStatistic = false;
@@ -376,7 +372,7 @@ public class SessionManager {
     private void clearCaches() {
         core.storiesListVMHolder().clear();
         core.contentLoader().clearGames();
-        core.contentLoader().iamWereLoaded(false);
+        core.contentLoader().clearIamWereLoadedStatuses();
     }
 
     public void closeSession(

@@ -1,6 +1,8 @@
 package com.inappstory.sdk.stories.outercallbacks.common.objects;
 
 
+import android.util.Log;
+
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
@@ -31,6 +33,8 @@ public class DefaultOpenInAppMessageReader implements IOpenInAppMessageReader {
                     );
             //   t.addToBackStack(IN_APP_MESSAGE_FRAGMENT);
             t.commit();
+
+            Log.e("ShowIAMLog", System.currentTimeMillis() + "_finish");
         } catch (Exception e) {
 
         }

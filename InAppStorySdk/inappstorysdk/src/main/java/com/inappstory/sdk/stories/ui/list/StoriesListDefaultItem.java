@@ -3,8 +3,7 @@ package com.inappstory.sdk.stories.ui.list;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.graphics.PorterDuff;
-import android.graphics.drawable.GradientDrawable;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,6 +17,7 @@ import com.inappstory.sdk.core.ui.widgets.roundedlayout.RoundedCornerLayout;
 import com.inappstory.sdk.memcache.IGetBitmap;
 import com.inappstory.sdk.stories.ui.video.VideoPlayer;
 import com.inappstory.sdk.stories.ui.views.IStoriesListItem;
+import com.inappstory.sdk.stories.ui.widgets.StoryListItemBorder;
 import com.inappstory.sdk.stories.utils.Sizes;
 
 public final class StoriesListDefaultItem implements IStoriesListItem {
@@ -25,7 +25,7 @@ public final class StoriesListDefaultItem implements IStoriesListItem {
     private VideoPlayer video;
     private AppCompatTextView titleView;
     private AppCompatImageView hasAudioIcon;
-    private View borderView;
+    private StoryListItemBorder borderView;
     private View gradient;
 
     private View container;
@@ -91,8 +91,8 @@ public final class StoriesListDefaultItem implements IStoriesListItem {
             titleView.setTextColor(appearanceManager.csListItemTitleColor());
         }
         if (borderView != null) {
-            borderView.getBackground().setColorFilter(appearanceManager.csListItemBorderColor(),
-                    PorterDuff.Mode.SRC_ATOP);
+            borderView.radius(appearanceManager.csListItemRadius(context));
+            borderView.color(appearanceManager.csListItemBorderColor());
         }
     }
 
@@ -135,6 +135,7 @@ public final class StoriesListDefaultItem implements IStoriesListItem {
         if (path == null) {
             image.setImageResource(0);
             image.setBackgroundColor(backgroundColor);
+
             return;
         }
         manager.getBitmap(path, new IGetBitmap() {
@@ -172,19 +173,17 @@ public final class StoriesListDefaultItem implements IStoriesListItem {
     @Override
     public void setOpened(View itemView, boolean isOpened) {
         if (borderView != null) {
-            ((GradientDrawable) borderView.getBackground())
-                    .setCornerRadius(appearanceManager.csListItemRadius(context));
+            /*  */
             borderView.setVisibility(
                     isOpened ?
                             (appearanceManager.csListOpenedItemBorderVisibility() ? View.VISIBLE : View.GONE)
                             : (appearanceManager.csListItemBorderVisibility() ? View.VISIBLE : View.GONE)
             );
-            borderView.getBackground().setColorFilter(
-                    isOpened ?
-                            appearanceManager.csListOpenedItemBorderColor()
-                            : appearanceManager.csListItemBorderColor(),
-                    PorterDuff.Mode.SRC_ATOP
-            );
+
+            borderView.radius(appearanceManager.csListItemRadius(context));
+            borderView.color(isOpened ?
+                    appearanceManager.csListOpenedItemBorderColor()
+                    : appearanceManager.csListItemBorderColor());
         }
     }
 }

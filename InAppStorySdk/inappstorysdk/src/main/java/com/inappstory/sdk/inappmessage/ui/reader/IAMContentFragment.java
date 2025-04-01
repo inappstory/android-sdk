@@ -34,7 +34,6 @@ import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageAppearance;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageBottomSheetAppearance;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageFullscreenAppearance;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessagePopupAppearance;
-import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.jsapiclient.JsApiClient;
 import com.inappstory.sdk.network.jsapiclient.JsApiResponseCallback;
 import com.inappstory.sdk.stories.api.models.ContentId;
@@ -148,12 +147,13 @@ public class IAMContentFragment extends Fragment implements Observer<IAMReaderSl
 
     private void openGameHandle(IASCore core, final ContentId contentId) {
         try {
+            IIAMReaderViewModel readerViewModel = core.screensManager().iamReaderViewModel();
             core.screensManager().openScreen(
                     requireActivity(),
                     new LaunchGameScreenStrategy(core, true)
                             .data(new LaunchGameScreenData(
                                     null,
-                                    null,
+                                    readerViewModel.getCurrentInAppMessageData(),
                                     contentId.id()
                             ))
             );
@@ -169,7 +169,7 @@ public class IAMContentFragment extends Fragment implements Observer<IAMReaderSl
         new JsApiClient(
                 core,
                 getContext(),
-                ApiSettings.getInstance().getHost()
+                core.projectSettingsAPI().host()
         ).sendApiRequest(apiRequestData.data(), new JsApiResponseCallback() {
             @Override
             public void onJsApiResponse(String result, String cb) {

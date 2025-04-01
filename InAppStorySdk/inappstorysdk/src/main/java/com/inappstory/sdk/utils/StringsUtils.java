@@ -8,6 +8,8 @@ import androidx.annotation.StringRes;
 
 import com.inappstory.sdk.stories.cache.vod.ContentRange;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -25,9 +27,26 @@ public class StringsUtils {
         return "";
     }
 
+
+    public static String getFormattedErrorStringFromContext(
+            Context context,
+            @StringRes int resourceId,
+            Object... formatArgs
+    ) {
+        if (context != null)
+            return context.getResources().getString(resourceId, formatArgs);
+        return "";
+    }
+
     public static int getBytesLength(String value) {
         if (value == null) return 0;
-        return value.getBytes(StandardCharsets.UTF_8).length;
+        int encodedLength = 0;
+        try {
+            encodedLength = URLEncoder.encode(value, StandardCharsets.UTF_8.name()).length();
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
+        }
+        return Math.max(value.getBytes(StandardCharsets.UTF_8).length, encodedLength);
     }
 
     public static String md5(final String s) {
@@ -48,7 +67,8 @@ public class StringsUtils {
 
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
-        } catch (Exception e) {}
+        } catch (Exception e) {
+        }
         return "";
     }
 

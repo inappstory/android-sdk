@@ -213,15 +213,13 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
                                 )
                                         .data(new LaunchGameScreenData(
                                                 null,
-                                                new GameStoryData(
-                                                        new SlideData(
-                                                                new UgcStoryData(
-                                                                        current,
-                                                                        SourceType.LIST
-                                                                ),
-                                                                0,
-                                                                null
-                                                        )
+                                                new SlideData(
+                                                        new UgcStoryData(
+                                                                current,
+                                                                SourceType.LIST
+                                                        ),
+                                                        0,
+                                                        null
                                                 ),
                                                 current.gameInstanceId()
                                         ))

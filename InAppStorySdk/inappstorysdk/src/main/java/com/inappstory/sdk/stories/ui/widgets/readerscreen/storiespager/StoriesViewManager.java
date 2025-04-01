@@ -22,19 +22,17 @@ import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenData;
 import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenStrategy;
 import com.inappstory.sdk.core.utils.ConnectionCheck;
 import com.inappstory.sdk.core.utils.ConnectionCheckCallback;
-import com.inappstory.sdk.game.reader.GameStoryData;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.UpdateTimelineData;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.ui.widgets.LoadProgressBar;
 import com.inappstory.sdk.inner.share.InnerShareData;
-import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.network.jsapiclient.JsApiClient;
 import com.inappstory.sdk.network.jsapiclient.JsApiResponseCallback;
 import com.inappstory.sdk.network.models.Response;
-import com.inappstory.sdk.share.IShareCompleteListener;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ShowSlideCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
@@ -48,7 +46,6 @@ import com.inappstory.sdk.stories.ui.widgets.readerscreen.webview.StoriesWebView
 import com.inappstory.sdk.stories.utils.AudioModes;
 import com.inappstory.sdk.stories.utils.WebPageConvertCallback;
 import com.inappstory.sdk.stories.utils.WebPageConverter;
-import com.inappstory.sdk.utils.ISessionHolder;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -111,7 +108,7 @@ public class StoriesViewManager {
         new JsApiClient(
                 core,
                 storiesView.getActivityContext(),
-                ApiSettings.getInstance().getHost()
+                core.projectSettingsAPI().host()
         ).sendApiRequest(data, new JsApiResponseCallback() {
             @Override
             public void onJsApiResponse(String result, String cb) {
@@ -513,14 +510,12 @@ public class StoriesViewManager {
     }
 
 
-    private GameStoryData getGameStoryData() {
-        GameStoryData data = null;
+    private SlideData getGameStoryData() {
+        SlideData data = null;
         ContentType type = pageManager != null ? pageManager.getViewContentType() : ContentType.STORY;
         IReaderContent story = core.contentHolder().readerContent().getByIdAndType(storyId, type);
         if (story != null) {
-            data = new GameStoryData(
-                    pageManager.getSlideData(story)
-            );
+            data = pageManager.getSlideData(story);
         }
         return data;
     }

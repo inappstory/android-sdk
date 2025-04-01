@@ -12,6 +12,7 @@ import com.inappstory.sdk.utils.ScheduledTPEManager;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -22,6 +23,9 @@ public class GameLogSender implements IGameLogSender {
     private final IGameLogSaver saver;
 
     private final IASCore core;
+    private boolean paused = true;
+    private boolean gameLaunched = false;
+    private final Object lock = new Object();
 
     public GameLogSender(
             @NonNull IASCore core,
@@ -54,7 +58,8 @@ public class GameLogSender implements IGameLogSender {
             new ScheduledTPEManager();
 
     private void sendLogs() {
-        synchronized (this) {
+        synchronized (lock) {
+            if (paused) return;
             if (inProcess) return;
             inProcess = true;
         }
@@ -74,11 +79,16 @@ public class GameLogSender implements IGameLogSender {
     private void sendLogs(
             final List<GameLog> logs
     ) {
+        boolean isGameLaunched = false;
         if (logs.isEmpty()) {
-            synchronized (GameLogSender.this) {
+            synchronized (lock) {
                 inProcess = false;
             }
             return;
+        }
+        synchronized (lock) {
+            if (paused) return;
+            isGameLaunched = gameLaunched;
         }
         GameLog log = logs.get(0);
         final List<GameLog> nextLogs = new ArrayList<>();
@@ -94,7 +104,7 @@ public class GameLogSender implements IGameLogSender {
                         log.message(),
                         log.stacktrace(),
                         log.logSession(),
-                        log.gameLoaded()
+                        isGameLaunched
                 ),
                 new NetworkCallback<Response>() {
                     @Override
@@ -105,7 +115,7 @@ public class GameLogSender implements IGameLogSender {
                     @Override
                     public void onError(int code, String message) {
                         saveLogs(logs);
-                        synchronized (GameLogSender.this) {
+                        synchronized (lock) {
                             inProcess = false;
                         }
                     }
@@ -116,5 +126,21 @@ public class GameLogSender implements IGameLogSender {
                     }
                 }
         );
+    }
+
+    @Override
+    public void stop() {
+        synchronized (lock) {
+            paused = true;
+            gameLaunched = false;
+        }
+    }
+
+    @Override
+    public void start(boolean gameLaunched) {
+        synchronized (lock) {
+            this.gameLaunched = gameLaunched;
+            paused = false;
+        }
     }
 }

@@ -172,7 +172,7 @@ public final class NetworkHandler implements InvocationHandler {
         if (!excludeList.contains(HeadersKeys.ACCEPT_ENCODING))
             resHeaders.add(new AcceptEncodingHeader());
         if (!excludeList.contains(HeadersKeys.AUTHORIZATION))
-            resHeaders.add(new AuthorizationHeader());
+            resHeaders.add(new AuthorizationHeader(core.projectSettingsAPI().apiKey()));
         if (!excludeList.contains(HeadersKeys.APP_PACKAGE_ID))
             resHeaders.add(new XAppPackageIdHeader(core.appContext()));
         if (!excludeList.contains(HeadersKeys.AUTH_SESSION_ID)) {

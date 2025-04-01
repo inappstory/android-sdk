@@ -27,11 +27,28 @@
             android:layout_height="match_parent"
             android:id="@+id/webViewContainer"
             android:layout_weight="1">
-
-            <FrameLayout
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:id="@+id/gameWebviewContainer"
-                android:layout_height="match_parent"/>
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+
+                <View
+                    android:id="@+id/ias_black_top"
+                    android:layout_width="match_parent"
+                    android:visibility="gone"
+                    android:layout_height="0dp" />
+
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:id="@+id/gameWebviewContainer"
+                    android:layout_height="match_parent"/>
+                <View
+                    android:id="@+id/ias_black_bottom"
+                    android:layout_width="match_parent"
+                    android:visibility="gone"
+                    android:layout_height="0dp" />
+            </LinearLayout>
+
 
 
             <RelativeLayout

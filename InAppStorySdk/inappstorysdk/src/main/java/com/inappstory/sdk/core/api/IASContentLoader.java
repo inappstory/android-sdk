@@ -20,8 +20,9 @@ public interface IASContentLoader {
     GameCacheManager gameCacheManager();
 
 
-    boolean iamWereLoaded();
-    void iamWereLoaded(boolean loaded);
+    boolean getIamWereLoadedStatus(String tagsHash);
+    void changeIamWereLoadedStatus(String tagsHash);
+    void clearIamWereLoadedStatuses();
 
     void clearCache();
     void clearGames();

@@ -27,6 +27,7 @@ import com.inappstory.sdk.externalapi.favorites.IASFavoritesExternalAPIImpl;
 import com.inappstory.sdk.externalapi.games.IASGamesExternalAPIImpl;
 import com.inappstory.sdk.externalapi.iasmanager.IASManagerExternalAPIImpl;
 import com.inappstory.sdk.externalapi.inappmessage.IASInAppMessageAPIImpl;
+import com.inappstory.sdk.externalapi.logger.IASLogger;
 import com.inappstory.sdk.externalapi.onboardings.IASOnboardingsExternalAPIImpl;
 import com.inappstory.sdk.externalapi.settings.IASSettingsExternalAPIImpl;
 import com.inappstory.sdk.externalapi.single.IASSingleStoryExternalAPIImpl;
@@ -45,6 +46,7 @@ public class InAppStoryAPI {
     public IASStackFeed stackFeed = new IASStackFeedExternalAPIImpl();
     public IASStoryList storyList = new IASStoryListExternalAPIImpl();
     public IASInAppMessage inAppMessage = new IASInAppMessageAPIImpl();
+    public IASLogger logger;
 
 
     public void addSubscriber(final IAPISubscriber subscriber) {
@@ -76,7 +78,27 @@ public class InAppStoryAPI {
 
     public void init(Context context) {
         InAppStoryManager.initSDK(context);
+        InAppStoryManager.logger = new InAppStoryManager.IASLogger() {
+            @Override
+            public void showELog(String tag, String message) {
+                if (logger != null) {
+                    logger.errorLog("TAG: " + tag + "; Message: " + message);
+                }
+            }
+
+            @Override
+            public void showDLog(String tag, String message) {
+                if (logger != null) {
+                    logger.debugLog("TAG: " + tag + "; Message: " + message);
+                }
+            }
+        };
     }
+
+    public void logger(IASLogger logger) {
+        this.logger = logger;
+    }
+
 
     public IASSDKVersion getVersion() {
         Pair<String, Integer> version = InAppStoryManager.getLibraryVersion();

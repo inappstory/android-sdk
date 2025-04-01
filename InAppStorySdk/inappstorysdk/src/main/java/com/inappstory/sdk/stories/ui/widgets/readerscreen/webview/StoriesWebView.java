@@ -359,6 +359,7 @@ public class StoriesWebView extends IASWebView implements ContentViewInteractor 
                     if (manager != null) {
                         sendWebConsoleLog(consoleMessage,
                                 Integer.toString(manager.storyId),
+                                0,
                                 manager.index);
                     }
 

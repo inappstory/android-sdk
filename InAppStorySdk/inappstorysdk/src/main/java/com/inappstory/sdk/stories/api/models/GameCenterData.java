@@ -5,6 +5,7 @@ import com.inappstory.sdk.network.annotations.models.Required;
 import com.inappstory.sdk.network.annotations.models.SerializedName;
 import com.inappstory.sdk.stories.api.interfaces.IGameCenterData;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -19,16 +20,20 @@ public class GameCenterData implements IGameCenterData {
     public GameSplashAnimation splashAnimation;
     @SerializedName("resources")
     public List<WebResource> resources;
-    @SerializedName("options")
+    @SerializedName("screenOptions")
     public GameScreenOptions options;
     @SerializedName("loggerLevel")
     public Integer loggerLevel;
+
     @Required
     @SerializedName("downloadUrl")
     public String url;
     @Required
     @SerializedName("initCode")
     public String initCode;
+
+    @SerializedName("archiveItems")
+    public List<GameArchiveItem> archiveItems;
 
     @SerializedName("canTryReloadCount")
     public Integer canTryReloadCount;
@@ -38,7 +43,6 @@ public class GameCenterData implements IGameCenterData {
 
     @SerializedName("archiveSha1")
     public String archiveSha1;
-
 
     @Override
     public GameSplashScreen splashLandscapeScreen() {
@@ -121,5 +125,10 @@ public class GameCenterData implements IGameCenterData {
             }
         }
         return totalSize;
+    }
+
+    @Override
+    public List<GameArchiveItem> archiveItems() {
+        return archiveItems != null ? archiveItems : new ArrayList<GameArchiveItem>();
     }
 }

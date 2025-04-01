@@ -4,7 +4,6 @@ import static com.inappstory.sdk.stories.cache.StoryDownloadManager.EXPAND_STRIN
 
 
 import android.text.TextUtils;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 
@@ -16,7 +15,6 @@ import com.inappstory.sdk.core.data.IListItemContent;
 import com.inappstory.sdk.core.data.IReaderContent;
 import com.inappstory.sdk.core.utils.ConnectionCheck;
 import com.inappstory.sdk.core.utils.ConnectionCheckCallback;
-import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.network.callbacks.SimpleApiCallback;
@@ -336,7 +334,7 @@ class StoryDownloader {
                 response = core.network().execute(
                         core.network().getApi().getStoryById(
                                 Integer.toString(key.contentId),
-                                ApiSettings.getInstance().getTestKey(),
+                                core.projectSettingsAPI().testKey(),
                                 0,
                                 1,
                                 EXPAND_STRING,
@@ -361,7 +359,7 @@ class StoryDownloader {
     ) {
         core.network().enqueue(
                 core.network().getApi().getStories(
-                        ApiSettings.getInstance().getTestKey(),
+                        core.projectSettingsAPI().testKey(),
                         1,
                         null,
                         "id, background_color, image",
@@ -468,7 +466,7 @@ class StoryDownloader {
                                 core.network().enqueue(
                                         core.network().getApi().getFeed(
                                                 feed,
-                                                ApiSettings.getInstance().getTestKey(),
+                                                core.projectSettingsAPI().testKey(),
                                                 0,
                                                 tags.isEmpty() ? null : tags,
                                                 null,
@@ -551,7 +549,7 @@ class StoryDownloader {
                         );
                         core.network().enqueue(
                                 core.network().getApi().getStories(
-                                        ApiSettings.getInstance().getTestKey(),
+                                        core.projectSettingsAPI().testKey(),
                                         isFavorite ? 1 : 0,
                                         isFavorite ? null :
                                                 TextUtils.join(",",

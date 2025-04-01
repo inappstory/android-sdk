@@ -13,7 +13,6 @@ import com.inappstory.sdk.core.dataholders.IContentHolder;
 import com.inappstory.sdk.core.data.IListItemContent;
 import com.inappstory.sdk.core.utils.ConnectionCheck;
 import com.inappstory.sdk.core.utils.ConnectionCheckCallback;
-import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.network.callbacks.SimpleApiCallback;
 import com.inappstory.sdk.network.models.RequestLocalParameters;
@@ -160,7 +159,7 @@ public class FeedByIdUseCase {
     ) {
         core.network().enqueue(
                 core.network().getApi().getStories(
-                        ApiSettings.getInstance().getTestKey(),
+                        core.projectSettingsAPI().testKey(),
                         1,
                         null,
                         "id, background_color, image",
@@ -205,7 +204,7 @@ public class FeedByIdUseCase {
                                         core.network().enqueue(
                                                 core.network().getApi().getFeed(
                                                         feed,
-                                                        ApiSettings.getInstance().getTestKey(),
+                                                        core.projectSettingsAPI().testKey(),
                                                         0,
                                                         TextUtils.join(",",
                                                                 ((IASDataSettingsHolder) core.settingsAPI()).tags()),

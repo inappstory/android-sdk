@@ -27,11 +27,11 @@ import com.inappstory.sdk.core.data.models.InAppStoryUserSettings;
 import com.inappstory.sdk.inappmessage.CloseInAppMessageCallback;
 import com.inappstory.sdk.inappmessage.InAppMessageLoadCallback;
 import com.inappstory.sdk.inappmessage.InAppMessageOpenSettings;
+import com.inappstory.sdk.inappmessage.InAppMessagePreloadSettings;
 import com.inappstory.sdk.inappmessage.InAppMessageScreenActions;
 import com.inappstory.sdk.inappmessage.InAppMessageWidgetCallback;
 import com.inappstory.sdk.inappmessage.ShowInAppMessageCallback;
 import com.inappstory.sdk.lrudiskcache.CacheSize;
-import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.utils.HostFromSecretKey;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
@@ -64,6 +64,7 @@ import com.inappstory.sdk.stories.stackfeed.IStackFeedResult;
 import com.inappstory.sdk.stories.statistic.GetStatisticV1Callback;
 import com.inappstory.sdk.stories.ui.reader.ForceCloseReaderCallback;
 import com.inappstory.sdk.stories.utils.IASBackPressHandler;
+import com.inappstory.sdk.stories.utils.TagsUtils;
 import com.inappstory.sdk.utils.StringsUtils;
 import com.inappstory.sdk.utils.WebViewUtils;
 
@@ -72,6 +73,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -727,6 +729,7 @@ public class InAppStoryManager implements IASBackPressHandler {
     private boolean isSandbox = false;
 
     public final static String IAS_ERROR_TAG = "InAppStory_SDK_error";
+    public final static String IAS_WARN_TAG = "InAppStory_SDK_warn";
 
     private boolean isInitialized = false;
     private boolean isInitProcess = false;
@@ -761,10 +764,26 @@ public class InAppStoryManager implements IASBackPressHandler {
             errorStringId = R.string.ias_api_key_error;
         } else if (StringsUtils.getBytesLength(builder.userId) > 255) {
             errorStringId = R.string.ias_builder_user_length_error;
-        } else if (builder.tags != null
-                &&
-                StringsUtils.getBytesLength(TextUtils.join(",", builder.tags)) > TAG_LIMIT) {
-            errorStringId = R.string.ias_builder_tags_length_error;
+        } else if (builder.tags != null) {
+            List<String> filteredList = new ArrayList<>();
+            for (String tag : builder.tags) {
+                if (!TagsUtils.checkTagPattern(tag)) {
+                    InAppStoryManager.showELog(
+                            InAppStoryManager.IAS_WARN_TAG,
+                            StringsUtils.getFormattedErrorStringFromContext(
+                                    core.appContext(),
+                                    R.string.ias_tag_pattern_error,
+                                    tag
+                            )
+                    );
+                    continue;
+                }
+                filteredList.add(tag);
+            }
+            if (StringsUtils.getBytesLength(TextUtils.join(",", filteredList)) > TAG_LIMIT) {
+                errorStringId = R.string.ias_builder_tags_length_error;
+
+            }
         }
         if (errorStringId != null) {
             showELog(
@@ -840,7 +859,7 @@ public class InAppStoryManager implements IASBackPressHandler {
 
     private void initManager(
             final Context context,
-            final String cmsUrl,
+            final String host,
             final String apiKey,
             final String testKey,
             final String userId,
@@ -857,16 +876,11 @@ public class InAppStoryManager implements IASBackPressHandler {
         ForceCloseReaderCallback callback = new ForceCloseReaderCallback() {
             @Override
             public void onComplete() {
-                if (ApiSettings.getInstance().hostIsDifferent(cmsUrl)) {
-                    core.network().clear();
-                }
-                ApiSettings
-                        .getInstance()
-                        .cacheDirPath(context.getCacheDir().getAbsolutePath())
+                core.projectSettingsAPI()
                         .apiKey(apiKey)
+                        .cacheDir(context.getCacheDir().getAbsolutePath())
                         .testKey(testKey)
-                        .host(cmsUrl);
-                core.network().setBaseUrl(cmsUrl);
+                        .host(host);
                 IASDataSettings settings = core.settingsAPI();
                 if (isDeviceIDEnabled) {
                     settings.deviceId
@@ -1071,6 +1085,16 @@ public class InAppStoryManager implements IASBackPressHandler {
                 }
             }
         });
+    }
+
+    public String getApiKey() {
+        if (core == null) return null;
+        return core.projectSettingsAPI().apiKey();
+    }
+
+    public String getTestKey() {
+        if (core == null) return null;
+        return core.projectSettingsAPI().testKey();
     }
 
     public String getUserId() {
@@ -1381,14 +1405,14 @@ public class InAppStoryManager implements IASBackPressHandler {
     }
 
     public void preloadInAppMessages(
-            final List<String> inAppMessageIds,
+            final InAppMessagePreloadSettings inAppMessagePreloadSettings,
             final InAppMessageLoadCallback callback
     ) {
         useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
 
-                core.inAppMessageAPI().preload(inAppMessageIds, callback);
+                core.inAppMessageAPI().preload(inAppMessagePreloadSettings, callback);
             }
         });
     }

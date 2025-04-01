@@ -25,13 +25,6 @@ public class StoryData extends ContentData {
 
     /**
      * @deprecated Will be changed to private in next version
-     * Use {@link #tags()} instead.
-     */
-    @Deprecated
-    public String tags;
-
-    /**
-     * @deprecated Will be changed to private in next version
      * Use {@link #feed()} instead.
      */
     @Deprecated
@@ -49,7 +42,6 @@ public class StoryData extends ContentData {
                 story.id(),
                 ContentType.STORY,
                 StringsUtils.getNonNull(story.statTitle()),
-                StringsUtils.getNonNull(story.tags()),
                 story.slidesCount(),
                 feed,
                 sourceType
@@ -60,7 +52,6 @@ public class StoryData extends ContentData {
             int id,
             ContentType contentType,
             String title,
-            String tags,
             int slidesCount,
             String feed,
             SourceType sourceType
@@ -68,7 +59,6 @@ public class StoryData extends ContentData {
         super(sourceType, contentType);
         this.id = id;
         this.title = title;
-        this.tags = tags;
         this.slidesCount = slidesCount;
         this.feed = feed;
     }
@@ -82,9 +72,6 @@ public class StoryData extends ContentData {
         return title;
     }
 
-    public String tags() {
-        return tags;
-    }
 
     public String feed() {
         return feed;
@@ -99,7 +86,6 @@ public class StoryData extends ContentData {
         return "StoryData{" +
                 "id=" + id() +
                 ", title='" + title() + '\'' +
-                ", tags='" + tags() + '\'' +
                 ", feed='" + feed() + '\'' +
                 ", sourceType='" + sourceType().name() + '\'' +
                 ", contentType='" + contentType().name() + '\'' +

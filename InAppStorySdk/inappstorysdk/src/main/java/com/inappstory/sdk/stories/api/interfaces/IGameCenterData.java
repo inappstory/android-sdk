@@ -1,5 +1,7 @@
 package com.inappstory.sdk.stories.api.interfaces;
 
+import com.inappstory.sdk.core.data.IGameArchiveItem;
+import com.inappstory.sdk.stories.api.models.GameArchiveItem;
 import com.inappstory.sdk.stories.api.models.GameSplashAnimation;
 import com.inappstory.sdk.stories.api.models.GameSplashScreen;
 import com.inappstory.sdk.stories.api.models.WebResource;
@@ -26,5 +28,7 @@ public interface IGameCenterData {
     Long archiveUncompressedSize();
 
     long getTotalSize();
+
+    List<GameArchiveItem> archiveItems();
 
 }

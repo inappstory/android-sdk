@@ -337,17 +337,14 @@ public class StackStoryObserver implements IStackFeedActions {
                     new LaunchGameScreenStrategy(core, false)
                             .data(new LaunchGameScreenData(
                                     null,
-                                    new GameStoryData(
-                                            new SlideData(
-                                                    new StoryData(
-                                                            currentStory,
-                                                            feed,
-                                                            SourceType.STACK
-                                                    ),
-                                                    0,
-                                                    null
-                                            )
-
+                                    new SlideData(
+                                            new StoryData(
+                                                    currentStory,
+                                                    feed,
+                                                    SourceType.STACK
+                                            ),
+                                            0,
+                                            null
                                     ),
                                     currentStory.gameInstanceId()
                             ))

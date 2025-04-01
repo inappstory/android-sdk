@@ -33,11 +33,6 @@ public class GameJSInterface {
     }
 
     @JavascriptInterface
-    public void storySetLocalData(int storyId, String data, boolean sendToServer) {
-        manager.storySetData(data, sendToServer);
-    }
-
-    @JavascriptInterface
     public void openUrl(String data) {
         manager.openUrl(data);
     }
@@ -60,15 +55,6 @@ public class GameJSInterface {
         if (id == null) id = manager.gameCenterId;
         if (id == null) return "";
         String res = core.keyValueStorage().getString("gameInstance_" + id
-                + "__" + settingsHolder.userId());
-        return res == null ? "" : res;
-    }
-
-    @JavascriptInterface
-    public String storyGetLocalData(int storyId) {
-        IASDataSettingsHolder settingsHolder =
-                (IASDataSettingsHolder) core.settingsAPI();
-        String res = core.keyValueStorage().getString("story" + storyId
                 + "__" + settingsHolder.userId());
         return res == null ? "" : res;
     }

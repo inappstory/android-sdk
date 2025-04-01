@@ -12,12 +12,11 @@ public class UgcStoryData extends StoryData {
     private UgcStoryData(
             int id,
             String title,
-            String tags,
             int slidesCount,
             Map<String, Object> ugcPayload,
             SourceType sourceType
     ) {
-        super(id, ContentType.UGC, title, tags, slidesCount, null, sourceType);
+        super(id, ContentType.UGC, title, slidesCount, null, sourceType);
         this.ugcPayload = ugcPayload;
     }
 
@@ -28,7 +27,6 @@ public class UgcStoryData extends StoryData {
         this(
                 story.id(),
                 StringsUtils.getNonNull(story.statTitle()),
-                StringsUtils.getNonNull(story.tags()),
                 story.slidesCount(),
                 story.ugcPayload(),
                 sourceType
@@ -40,7 +38,6 @@ public class UgcStoryData extends StoryData {
         return "UgcStoryData{" +
                 "id=" + id +
                 ", title='" + title + '\'' +
-                ", tags='" + tags + '\'' +
                 ", sourceType='" + sourceType().name() + '\'' +
                 ", slidesCount=" + slidesCount +
                 ", ugcPayload=" + ugcPayload +

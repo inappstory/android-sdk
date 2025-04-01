@@ -17,6 +17,8 @@ import com.inappstory.sdk.core.api.IASLogs;
 import com.inappstory.sdk.core.api.IASManager;
 import com.inappstory.sdk.core.api.IASOnboardings;
 import com.inappstory.sdk.core.api.IASDataSettings;
+import com.inappstory.sdk.core.api.IASProjectSettings;
+import com.inappstory.sdk.core.api.IASProjectSettingsInternal;
 import com.inappstory.sdk.core.api.IASSessionAssetsHolder;
 import com.inappstory.sdk.core.api.IASSingleStory;
 import com.inappstory.sdk.core.api.IASStackFeed;
@@ -47,6 +49,7 @@ public interface IASCore {
     IASManager managerAPI();
     IASOnboardings onboardingsAPI();
     IASDataSettings settingsAPI();
+    IASProjectSettingsInternal projectSettingsAPI();
     IASLimitsHolder limitsHolder();
     IASInAppMessage inAppMessageAPI();
     IASSingleStory singleStoryAPI();

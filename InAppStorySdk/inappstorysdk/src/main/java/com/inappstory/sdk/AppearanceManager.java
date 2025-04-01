@@ -3,6 +3,7 @@ package com.inappstory.sdk;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,6 +28,8 @@ import com.inappstory.sdk.stories.ui.views.goodswidget.ICustomGoodsWidget;
 import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.ugc.list.IStoriesListUGCItem;
 
+import java.util.UUID;
+
 /**
  * Defines appearance of the stories list, as well as some elements of the reader.
  * It must be set globally for the library, or separately for the list before calling {@link StoriesList#loadStories()}.
@@ -37,7 +40,6 @@ public class AppearanceManager {
     public static final String CS_CLOSE_POSITION = "closePosition";
     public static final String CS_NAVBAR_COLOR = "navBarColor";
     public static final String CS_STORY_READER_ANIMATION = "storyReaderAnimation";
-
     public static final String CS_TIMER_GRADIENT_ENABLE = "timerGradientEnable";
     public static final String CS_TIMER_GRADIENT = "timerGradient";
 
@@ -309,6 +311,7 @@ public class AppearanceManager {
     }
 
     public AppearanceManager csReaderRadius(int csReaderRadius) {
+
         this.csReaderRadius = csReaderRadius;
         return AppearanceManager.this;
     }
@@ -805,7 +808,9 @@ public class AppearanceManager {
     }
 
     public int csListItemRadius(Context context) {
-        if (csListItemRadius == -1) return Sizes.dpToPxExt(16, context);
+        if (csListItemRadius == -1) {
+            return Sizes.dpToPxExt(16, context);
+        }
         return csListItemRadius;
     }
 

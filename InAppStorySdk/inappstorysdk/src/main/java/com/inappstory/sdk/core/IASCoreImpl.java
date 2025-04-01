@@ -17,6 +17,8 @@ import com.inappstory.sdk.core.api.IASLogs;
 import com.inappstory.sdk.core.api.IASManager;
 import com.inappstory.sdk.core.api.IASOnboardings;
 import com.inappstory.sdk.core.api.IASDataSettings;
+import com.inappstory.sdk.core.api.IASProjectSettings;
+import com.inappstory.sdk.core.api.IASProjectSettingsInternal;
 import com.inappstory.sdk.core.api.IASSessionAssetsHolder;
 import com.inappstory.sdk.core.api.IASSingleStory;
 import com.inappstory.sdk.core.api.IASStackFeed;
@@ -35,6 +37,7 @@ import com.inappstory.sdk.core.api.impl.IASLimitsHolderImpl;
 import com.inappstory.sdk.core.api.impl.IASLogsImpl;
 import com.inappstory.sdk.core.api.impl.IASManagerImpl;
 import com.inappstory.sdk.core.api.impl.IASOnboardingsImpl;
+import com.inappstory.sdk.core.api.impl.IASProjectSettingsImpl;
 import com.inappstory.sdk.core.api.impl.IASSettingsImpl;
 import com.inappstory.sdk.core.api.impl.IASSingleStoryImpl;
 import com.inappstory.sdk.core.api.impl.IASStackFeedImpl;
@@ -59,6 +62,7 @@ public class IASCoreImpl implements IASCore {
     private AppearanceManager commonAppearance = null;
     private final IASCallbacks callbacks;
     private final IASFavorites favorites;
+    private final IASProjectSettingsInternal projectSettings;
     private final IASGames games;
     private final IASManager manager;
     private final ExceptionManager exceptionManager;
@@ -117,6 +121,7 @@ public class IASCoreImpl implements IASCore {
         inAppMessages = new IASInAppMessageImpl(this);
         assetsHolder = new IASAssetsHolderImpl(this);
         limitsHolder = new IASLimitsHolderImpl();
+        projectSettings = new IASProjectSettingsImpl(this);
         Thread.setDefaultUncaughtExceptionHandler(new IASExceptionHandler(this));
         externalUtilsAPI.init();
     }
@@ -170,6 +175,11 @@ public class IASCoreImpl implements IASCore {
     @Override
     public IASDataSettings settingsAPI() {
         return settings;
+    }
+
+    @Override
+    public IASProjectSettingsInternal projectSettingsAPI() {
+        return projectSettings;
     }
 
     @Override

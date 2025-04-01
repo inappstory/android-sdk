@@ -20,7 +20,6 @@ import com.inappstory.sdk.game.reader.logger.GameLoggerLvl1;
 import com.inappstory.sdk.game.reader.logger.GameLoggerLvl2;
 import com.inappstory.sdk.game.reader.logger.GameLoggerLvl3;
 import com.inappstory.sdk.inner.share.InnerShareData;
-import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.JsonParser;
 
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
@@ -33,6 +32,7 @@ import com.inappstory.sdk.stories.api.models.WebResource;
 import com.inappstory.sdk.stories.outercallbacks.common.gamereader.GameReaderCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.CallToActionCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickAction;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.ContentData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
@@ -55,7 +55,7 @@ public class GameManager {
     final GameLoadStatusHolder statusHolder = new GameLoadStatusHolder();
     String gameConfig;
     AbstractGameLogger logger;
-    private final GameStoryData dataModel;
+    private final ContentData dataModel;
 
 
     public void setLogger(int loggerLevel) {
@@ -79,7 +79,7 @@ public class GameManager {
             GameReaderContentFragment host,
             IASCore core,
             String gameCenterId,
-            GameStoryData dataModel
+            ContentData dataModel
     ) {
         this.core = core;
         this.host = host;
@@ -168,43 +168,6 @@ public class GameManager {
             core.acceleratorUtils().unsubscribe(host);
     }
 
-
-    void storySetData(String data, boolean sendToServer) {
-        InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
-        if (inAppStoryManager == null) return;
-        IASDataSettingsHolder settingsHolder =
-                (IASDataSettingsHolder) inAppStoryManager.iasCore().settingsAPI();
-        if (dataModel == null) return;
-        int id;
-        if (dataModel.slideData.story() != null) {
-            id = dataModel.slideData.story().id();
-            core.keyValueStorage().saveString("story" + id
-                    + "__" + settingsHolder.userId(), data);
-        } else
-            return;
-        String sessionId = core.sessionManager().getSession().getSessionId();
-        if (core.statistic().storiesV1().disabled() || sessionId.isEmpty()) return;
-        if (sendToServer) {
-            core.network().enqueue(
-                    core.network().getApi().sendStoryData(
-                            Integer.toString(id),
-                            data,
-                            sessionId
-                    ),
-                    new NetworkCallback<Response>() {
-                        @Override
-                        public void onSuccess(Response response) {
-
-                        }
-
-                        @Override
-                        public Type getType() {
-                            return null;
-                        }
-                    });
-        }
-    }
-
     GameReaderContentFragment host;
 
     void showGoods(String skusString, String widgetId) {
@@ -217,11 +180,11 @@ public class GameManager {
     }
 
     void sendGameStat(String name, String data) {
-        if (dataModel != null && dataModel.slideData.story() != null)
+        if (dataModel instanceof SlideData)
             core.statistic().storiesV2().sendGameEvent(
                     name,
                     data,
-                    dataModel.slideData.story().feed()
+                    ((SlideData) dataModel).story().feed()
             );
     }
 
@@ -241,7 +204,7 @@ public class GameManager {
     }
 
     private void closeOrFinishGameCallback(
-            final GameStoryData dataModel,
+            final ContentData dataModel,
             final String gameCenterId,
             final String eventData
     ) {
@@ -302,7 +265,10 @@ public class GameManager {
             public void invoke(IASWebView oldWebView) {
                 host.changeGameToAnother(gameId);
                 statusHolder.clearGameStatus();
-                logger.gameLoaded(false);
+                if (logger != null) {
+                    logger.stopQueue();
+                    logger.gameLoaded(false);
+                }
                 clearTries();
                 host.showLoaders(oldWebView, core);
                 host.downloadGame(gameId, false);
@@ -331,7 +297,7 @@ public class GameManager {
         new JsApiClient(
                 core,
                 host.getContext(),
-                ApiSettings.getInstance().getHost()
+                core.projectSettingsAPI().host()
         ).sendApiRequest(data, new JsApiResponseCallback() {
             @Override
             public void onJsApiResponse(String result, String cb) {
@@ -346,12 +312,6 @@ public class GameManager {
     }
 
     void tapOnLink(final String link, final Context context) {
-        final SlideData data;
-        if (dataModel != null) {
-            data = dataModel.slideData;
-        } else {
-            data = null;
-        }
         core.callbacksAPI().useCallback(
                 IASCallbackType.CALL_TO_ACTION,
                 new UseIASCallback<CallToActionCallback>() {
@@ -359,7 +319,7 @@ public class GameManager {
                     public void use(@NonNull CallToActionCallback callback) {
                         callback.callToAction(
                                 context,
-                                data,
+                                dataModel,
                                 StringsUtils.getNonNull(link),
                                 ClickAction.GAME
                         );
@@ -382,7 +342,10 @@ public class GameManager {
 
     void gameLoaded() {
         if (statusHolder.hasGameLoadStatus()) return;
-        logger.gameLoaded(true);
+        if (logger != null) {
+            logger.gameLoaded(true);
+            logger.startQueue(true);
+        }
         statusHolder.setGameLoaded();
         host.gameShouldForeground();
     }
@@ -402,10 +365,13 @@ public class GameManager {
             logger.sendGameError(reason);
         }
         if (canTryReload && statusHolder.updateCurrentReloadTry()) {
-            logger.launchTryNumber(statusHolder.launchTryNumber() + 1);
+            if (logger != null)
+                logger.launchTryNumber(statusHolder.launchTryNumber() + 1);
             reloadGame();
         } else {
             clearTries();
+            if (logger != null)
+                logger.startQueue(false);
             host.gameLoadedErrorCallback.onError(null, reason);
         }
     }
@@ -444,12 +410,16 @@ public class GameManager {
 
     void clearTries() {
         statusHolder.clearGameLoadTries();
-        logger.launchTryNumber(1);
+        if (logger != null)
+            logger.launchTryNumber(1);
     }
 
     void reloadGame() {
         statusHolder.clearGameStatus();
-        logger.gameLoaded(false);
+        if (logger != null) {
+            logger.stopQueue();
+            logger.gameLoaded(false);
+        }
         host.restartGame();
     }
 

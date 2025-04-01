@@ -1,25 +1,25 @@
 package com.inappstory.sdk.core.ui.screens.gamereader;
 
-import com.inappstory.sdk.game.reader.GameStoryData;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.GameReaderLaunchData;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.ContentData;
 
 public class LaunchGameScreenData {
     public LaunchGameScreenData(
             String observableId,
-            GameStoryData gameStoryData,
+            ContentData gameLaunchSourceData,
             String gameId
     ) {
         this.launchData = new GameReaderLaunchData(
                 gameId,
                 observableId,
-                gameStoryData != null ? gameStoryData.slideData : null
+                gameLaunchSourceData
         );
-        this.gameStoryData = gameStoryData;
+        this.gameLaunchSourceData = gameLaunchSourceData;
         this.gameId = gameId;
     }
 
 
     GameReaderLaunchData launchData;
-    GameStoryData gameStoryData;
+    ContentData gameLaunchSourceData;
     String gameId;
 }

@@ -35,7 +35,7 @@ public class InAppMessageBottomSheetSettings implements InAppMessageBottomSheetA
         if (appearance == null) return;
         String contentRatioKey = "content_ratio";
         String cornerRadiusKey = "corner_radius";
-        String lineAppearanceKey = "line_appearance";
+        String lineAppearanceKey = "close_button";
         String backgroundColorKey = "background_color";
         String backdropKey = "backdrop";
         NumberUtils numberUtils = new NumberUtils();

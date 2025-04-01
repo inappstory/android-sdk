@@ -33,6 +33,7 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
@@ -41,13 +42,13 @@ import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
 
 import com.inappstory.iasutilsconnector.filepicker.IFilePicker;
 import com.inappstory.iasutilsconnector.filepicker.OnFilesChooseCallback;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.BuildConfig;
 import com.inappstory.sdk.InAppStoryManager;
-import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
@@ -69,8 +70,9 @@ import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.inner.share.InnerShareFilesPrepare;
 import com.inappstory.sdk.inner.share.ShareFilesPrepareCallback;
 import com.inappstory.sdk.memcache.IGetBitmapFromMemoryCache;
-import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.JsonParser;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.ContentData;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.InAppMessageData;
 import com.inappstory.sdk.utils.IAcceleratorSubscriber;
 import com.inappstory.sdk.utils.UrlEncoder;
 import com.inappstory.sdk.network.utils.UserAgent;
@@ -112,6 +114,8 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
     private ImageView loader;
     private FrameLayout gameWebViewContainer;
     private View closeButton;
+    private View blackTop;
+    private View blackBottom;
     private View webViewAndLoaderContainer;
     private RelativeLayout loaderContainer;
     private GameProgressLoader progressLoader;
@@ -123,7 +127,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
 
     private boolean onBackPressedLocked = false;
 
-    GameStoryData storyDataModel;
+    ContentData storyDataModel;
 
     private PermissionRequest audioRequest;
 
@@ -239,15 +243,21 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-                GameStoryData dataModel = getStoryDataModel();
-                if (dataModel != null && dataModel.storyData() != null) {
+                // ContentData dataModel = getStoryDataModel();
+                /*if (dataModel instanceof SlideData) {
+                    SlideData slideData = (SlideData) dataModel;
                     core.statistic().profiling().setReady(
-                            "game_init"
-                                    + dataModel.storyData().id()
+                            "game_init" +
+                                    + slideData.story().id()
                                     + "_"
-                                    + dataModel.slideData.index()
+                                    + slideData.index()
                     );
+                } else if (dataModel instanceof InAppMessageData) {
+                    InAppMessageData iamData = (InAppMessageData) dataModel;
                 }
+                if (dataModel != null && dataModel.storyData() != null) {
+
+                }*/
 
 
             }
@@ -352,10 +362,10 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                             public void use(@NonNull ShareCallback callback) {
                                 int storyId = -1;
                                 int slideIndex = 0;
-                                GameStoryData dataModel = getStoryDataModel();
-                                if (dataModel != null && dataModel.storyData() != null) {
-                                    storyId = dataModel.storyData().id();
-                                    slideIndex = dataModel.slideData.index();
+                                ContentData dataModel = getStoryDataModel();
+                                if (dataModel instanceof SlideData) {
+                                    storyId = ((SlideData) dataModel).story().id();
+                                    slideIndex = ((SlideData) dataModel).index();
                                 }
                                 core.screensManager().getGameScreenHolder()
                                         .openShareOverlapContainer(
@@ -519,7 +529,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
     }
 
     void showGoods(final String skusString, final String widgetId) {
-        final GameStoryData dataModel = getStoryDataModel();
+        final ContentData dataModel = getStoryDataModel();
         if (dataModel == null) return;
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
@@ -588,8 +598,8 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         try {
             if (manager != null && link != null)
                 manager.tapOnLink(link, getContext());
-            final GameStoryData dataModel = getStoryDataModel();
-            if (dataModel != null && dataModel.storyData() != null) {
+            final ContentData dataModel = getStoryDataModel();
+            if (dataModel instanceof SlideData) {
                 closing = true;
                 final String observableUID = gameReaderLaunchData.getObservableUID();
                 if (observableUID != null) {
@@ -603,8 +613,8 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                                 observer.gameComplete(
                                         new GameCompleteEvent(
                                                 gameState,
-                                                dataModel.storyData().id(),
-                                                dataModel.slideData.index()
+                                                ((SlideData) dataModel).story().id(),
+                                                ((SlideData) dataModel).index()
                                         )
                                 );
                             }
@@ -623,11 +633,11 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
     GameReaderLaunchData gameReaderLaunchData;
 
 
-    private GameStoryData getStoryDataModel() {
+    private ContentData getStoryDataModel() {
         if (storyDataModel == null) {
-            SlideData slideData = gameReaderLaunchData.getSlideData();
+            ContentData slideData = gameReaderLaunchData.getContentData();
             if (slideData == null) return null;
-            storyDataModel = new GameStoryData(slideData);
+            storyDataModel = slideData;
         }
         return storyDataModel;
     }
@@ -645,7 +655,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         if (getContext() == null) return;
         webView = new IASWebView(getContext());
         gameWebViewContainer.addView(webView);
-        final GameStoryData dataModel = getStoryDataModel();
+        final ContentData dataModel = getStoryDataModel();
         webView.setWebViewClient(new IASWebViewClient());
         webView.setWebChromeClient(new WebChromeClient() {
 
@@ -668,14 +678,25 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
 
             @Override
             public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
-                if (dataModel != null && dataModel.storyData() != null && webView != null) {
-                    webView.sendWebConsoleLog(consoleMessage,
-                            Integer.toString(dataModel.storyData().id()),
-                            dataModel.slideData.index());
+                if (dataModel != null && webView != null) {
+                    if (dataModel instanceof SlideData) {
+                        webView.sendWebConsoleLog(
+                                consoleMessage,
+                                Integer.toString(((SlideData) dataModel).story().id()),
+                                0,
+                                ((SlideData) dataModel).index()
+                        );
+                    } else if (dataModel instanceof InAppMessageData) {
+                        webView.sendWebConsoleLog(
+                                consoleMessage,
+                                Integer.toString(((InAppMessageData) dataModel).id()),
+                                1,
+                                0
+                        );
+                    }
+
                 }
-                String msg = consoleMessage.message() + " -- From line "
-                        + consoleMessage.lineNumber() + " of "
-                        + consoleMessage.sourceId();
+                String msg = consoleMessage.message();
                 if (manager != null && manager.logger != null) {
                     switch (consoleMessage.messageLevel()) {
                         case ERROR:
@@ -772,7 +793,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         gameReaderLaunchData = new GameReaderLaunchData(
                 newGameId,
                 gameReaderLaunchData.getObservableUID(),
-                gameReaderLaunchData.getSlideData()
+                gameReaderLaunchData.getContentData()
         );
         Bundle args = getArguments();
         if (args == null) {
@@ -927,6 +948,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                 }
             });
         }
+        setOffsets(isFullscreen);
     }
 
     private long startDownloadTime;
@@ -1175,7 +1197,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                     core.network().userAgent()
             );
             options.sessionId = core.sessionManager().getSession().getSessionId();
-            options.apiKey = ApiSettings.getInstance().getApiKey();
+            options.apiKey = core.projectSettingsAPI().apiKey();
             options.placeholders = generatePlaceholders(dataSettingsHolder);
         } else {
             options.lang = Locale.getDefault().toLanguageTag();
@@ -1351,6 +1373,8 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         baseContainer = view.findViewById(R.id.draggable_frame);
         loaderContainer = view.findViewById(R.id.loaderContainer);
         progressLoader = view.findViewById(R.id.gameProgressLoader);
+        blackTop = view.findViewById(R.id.ias_black_top);
+        blackBottom = view.findViewById(R.id.ias_black_bottom);
         refreshGame = view.findViewById(R.id.gameRefresh);
         refreshGame.setImageDrawable(
                 getResources().getDrawable(
@@ -1359,6 +1383,52 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         );
         closeButton = view.findViewById(R.id.close_button);
         return view;
+    }
+
+    private void setOffsets(boolean isFullscreen) {
+        FragmentActivity fragmentActivity = getActivity();
+        if (fragmentActivity == null) return;
+        if (!Sizes.isTablet(fragmentActivity)) {
+
+            if (blackTop != null) {
+                int phoneHeight = Sizes.getFullPhoneHeight(fragmentActivity);
+                View window = getView();
+                int windowHeight = Sizes.getScreenSize(fragmentActivity).y;
+
+                int[] location = new int[2];
+                // int[] location2 = new int[2];
+                if (window != null) {
+                    windowHeight = window.getHeight();
+                    window.getLocationOnScreen(location);
+                    // window.getLocationInWindow(location2);
+                }
+
+                int topInsetOffset = 0;
+                int bottomInsetOffset = 0;
+                if (Build.VERSION.SDK_INT >= 23) {
+                    if (fragmentActivity.getWindow() != null) {
+                        WindowInsets windowInsets = fragmentActivity.getWindow().getDecorView().getRootWindowInsets();
+                        if (windowInsets != null) {
+                            topInsetOffset = Math.max(0, windowInsets.getStableInsetTop());
+                            bottomInsetOffset = Math.max(0, windowInsets.getStableInsetBottom());
+                        }
+                    }
+                }
+
+                if (!isFullscreen) {
+                    if (location[1] < topInsetOffset) {
+                        LinearLayout.LayoutParams topLp = (LinearLayout.LayoutParams) blackTop.getLayoutParams();
+                        topLp.height = topInsetOffset;
+                        blackTop.requestLayout();
+                    }
+                    if (phoneHeight - location[1] - bottomInsetOffset < windowHeight) {
+                        LinearLayout.LayoutParams bottomLp = (LinearLayout.LayoutParams) blackBottom.getLayoutParams();
+                        bottomLp.height = bottomInsetOffset;
+                        blackBottom.requestLayout();
+                    }
+                }
+            }
+        }
     }
 
     void loadJsApiResponse(String gameResponse, String cb) {

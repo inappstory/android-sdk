@@ -178,10 +178,15 @@ public final class BottomSheetContentContainer extends IAMContentContainer<InApp
         content.setBackgroundColor(backgroundColor);
         generateLoader(backgroundColor);
         roundedCornerLayout.addView(loaderContainer);
+        if (appearance.lineAppearance().height() == 0) {
+            bottomSheetLineContainer.setVisibility(GONE);
+            return;
+        }
+        bottomSheetLineContainer.setVisibility(VISIBLE);
         FrameLayout.LayoutParams blcLp = new FrameLayout.LayoutParams(
                 Sizes.dpToPxExt(appearance.lineAppearance().width() + 16, getContext()),
                 Sizes.dpToPxExt(appearance.lineAppearance().height() +
-                                2 * appearance.lineAppearance().topMargin(),
+                                Math.min(2 * appearance.lineAppearance().topMargin(), 24),
                         getContext()
                 )
         );

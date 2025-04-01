@@ -1,5 +1,8 @@
 package com.inappstory.sdk.inappmessage;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class InAppMessageOpenSettings {
     private Integer id;
 
@@ -7,18 +10,26 @@ public class InAppMessageOpenSettings {
 
     private String event;
 
+    private List<String> tags;
+
     public InAppMessageOpenSettings(
-    ) {}
+    ) {
+    }
 
     public InAppMessageOpenSettings(
             Integer id,
             boolean showOnlyIfLoaded,
-            String event
+            String event,
+            List<String> tags
     ) {
         this.id = id;
         this.showOnlyIfLoaded = showOnlyIfLoaded;
         this.event = event;
+        if (tags != null) {
+            this.tags = new ArrayList<>(tags);
+        }
     }
+
 
     public Integer id() {
         return id;
@@ -26,6 +37,10 @@ public class InAppMessageOpenSettings {
 
     public String event() {
         return event;
+    }
+
+    public List<String> tags() {
+        return tags;
     }
 
     public boolean showOnlyIfLoaded() {
@@ -44,6 +59,12 @@ public class InAppMessageOpenSettings {
 
     public InAppMessageOpenSettings event(String event) {
         this.event = event;
+        return this;
+    }
+
+    public InAppMessageOpenSettings tags(List<String> tags) {
+        if (tags != null)
+            this.tags = new ArrayList<>(tags);
         return this;
     }
 }

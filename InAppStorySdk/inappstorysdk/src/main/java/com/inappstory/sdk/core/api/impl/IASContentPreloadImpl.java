@@ -1,5 +1,7 @@
 package com.inappstory.sdk.core.api.impl;
 
+import static com.inappstory.sdk.core.api.impl.IASSettingsImpl.TAG_LIMIT;
+
 import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
@@ -7,12 +9,15 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.R;
 import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASAssetsHolder;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.IASContentPreload;
+import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.data.IReaderContent;
 import com.inappstory.sdk.core.inappmessages.InAppMessageFeedCallback;
@@ -23,13 +28,17 @@ import com.inappstory.sdk.game.cache.UseCaseCallback;
 import com.inappstory.sdk.game.preload.GamePreloader;
 import com.inappstory.sdk.game.preload.IGamePreloader;
 import com.inappstory.sdk.inappmessage.InAppMessageLoadCallback;
+import com.inappstory.sdk.inappmessage.InAppMessagePreloadSettings;
 import com.inappstory.sdk.stories.api.interfaces.IGameCenterData;
 import com.inappstory.sdk.core.network.content.models.SessionAsset;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.cache.usecases.SessionAssetUseCase;
+import com.inappstory.sdk.stories.utils.TagsUtils;
 import com.inappstory.sdk.utils.ISessionHolder;
+import com.inappstory.sdk.utils.StringsUtils;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 public class IASContentPreloadImpl implements IASContentPreload {
@@ -58,12 +67,49 @@ public class IASContentPreloadImpl implements IASContentPreload {
     }
 
     @Override
-    public void downloadInAppMessages(List<String> inAppMessageIds, final InAppMessageLoadCallback callback) {
+    public void downloadInAppMessages(
+            InAppMessagePreloadSettings preloadSettings,
+            final InAppMessageLoadCallback callback
+    ) {
         String iamIds = null;
-        if (inAppMessageIds != null && !inAppMessageIds.isEmpty()) {
-            iamIds = TextUtils.join(",", inAppMessageIds);
+        List<String> filteredTags = null;
+        if (preloadSettings != null) {
+            if (preloadSettings.inAppMessageIds() != null && !preloadSettings.inAppMessageIds().isEmpty()) {
+                iamIds = TextUtils.join(",", preloadSettings.inAppMessageIds());
+            }
+            if (preloadSettings.tags() != null) {
+                filteredTags = new ArrayList<>();
+                for (String tag : preloadSettings.tags()) {
+                    if (!TagsUtils.checkTagPattern(tag)) {
+                        InAppStoryManager.showELog(
+                                InAppStoryManager.IAS_WARN_TAG,
+                                StringsUtils.getFormattedErrorStringFromContext(
+                                        core.appContext(),
+                                        R.string.ias_tag_pattern_error,
+                                        tag
+                                )
+                        );
+                        continue;
+                    }
+                    filteredTags.add(tag);
+                }
+                if (StringsUtils.getBytesLength(TextUtils.join(",", filteredTags)) > TAG_LIMIT) {
+                    InAppStoryManager.showELog(
+                            InAppStoryManager.IAS_ERROR_TAG,
+                            StringsUtils.getErrorStringFromContext(
+                                    core.appContext(),
+                                    R.string.ias_setter_tags_length_error
+                            )
+                    );
+                    if (callback != null)
+                        callback.loadError();
+                    return;
+                }
+            }
+
         }
-        new InAppMessagesUseCase(core, iamIds)
+
+        new InAppMessagesUseCase(core, iamIds, filteredTags)
                 .get(new InAppMessageFeedCallback() {
                     @Override
                     public void success(final List<IReaderContent> content) {
@@ -96,7 +142,8 @@ public class IASContentPreloadImpl implements IASContentPreload {
 
                     @Override
                     public void error() {
-                        if (callback != null) callback.loadError();
+                        if (callback != null)
+                            callback.loadError();
                         core.callbacksAPI().useCallback(
                                 IASCallbackType.IN_APP_MESSAGE_LOAD,
                                 new UseIASCallback<InAppMessageLoadCallback>() {
