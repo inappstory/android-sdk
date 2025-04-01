@@ -20,7 +20,6 @@ import com.inappstory.sdk.game.reader.logger.GameLoggerLvl1;
 import com.inappstory.sdk.game.reader.logger.GameLoggerLvl2;
 import com.inappstory.sdk.game.reader.logger.GameLoggerLvl3;
 import com.inappstory.sdk.inner.share.InnerShareData;
-import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.JsonParser;
 
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
@@ -28,17 +27,14 @@ import com.inappstory.sdk.network.jsapiclient.JsApiClient;
 import com.inappstory.sdk.network.jsapiclient.JsApiResponseCallback;
 import com.inappstory.sdk.network.models.Response;
 import com.inappstory.sdk.share.IShareCompleteListener;
-import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.UrlObject;
 import com.inappstory.sdk.stories.api.models.WebResource;
 import com.inappstory.sdk.stories.outercallbacks.common.gamereader.GameReaderCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.CallToActionCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickAction;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ContentData;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.InAppMessageData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.ui.views.IASWebView;
 import com.inappstory.sdk.utils.IAcceleratorInitCallback;
@@ -301,7 +297,7 @@ public class GameManager {
         new JsApiClient(
                 core,
                 host.getContext(),
-                ApiSettings.getInstance().getHost()
+                core.projectSettingsAPI().host()
         ).sendApiRequest(data, new JsApiResponseCallback() {
             @Override
             public void onJsApiResponse(String result, String cb) {

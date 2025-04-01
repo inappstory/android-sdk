@@ -21,7 +21,6 @@ import com.inappstory.sdk.core.ui.screens.launcher.ILaunchScreenCallback;
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenAppearance;
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenData;
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenStrategy;
-import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.models.RequestLocalParameters;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.core.network.content.models.Feed;
@@ -104,7 +103,7 @@ public class IASOnboardingsImpl implements IASOnboardings {
                 core.network().enqueue(
                         core.network().getApi().getOnboardingFeed(
                                 usedFeed,
-                                ApiSettings.getInstance().getTestKey(),
+                                core.projectSettingsAPI().testKey(),
                                 limit,
                                 localTags,
                                 "stories.slides",

@@ -6,7 +6,6 @@ import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.data.IListItemContent;
-import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.network.models.RequestLocalParameters;
 import com.inappstory.sdk.stories.api.models.ContentType;
@@ -45,7 +44,7 @@ public class StoryByStringIdUseCase {
                         core.network().enqueue(
                                 core.network().getApi().getStoryById(
                                         id,
-                                        ApiSettings.getInstance().getTestKey(),
+                                        core.projectSettingsAPI().testKey(),
                                         showOnce ? 1 : 0,
                                         1,
                                         EXPAND_STRING,

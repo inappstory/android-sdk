@@ -34,14 +34,12 @@ import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageAppearance;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageBottomSheetAppearance;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageFullscreenAppearance;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessagePopupAppearance;
-import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.jsapiclient.JsApiClient;
 import com.inappstory.sdk.network.jsapiclient.JsApiResponseCallback;
 import com.inappstory.sdk.stories.api.models.ContentId;
 import com.inappstory.sdk.stories.api.models.ContentIdWithIndex;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.CallToActionCallback;
 import com.inappstory.sdk.inappmessage.domain.stedata.CallToActionData;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.InAppMessageData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ContentViewInteractor;
@@ -171,7 +169,7 @@ public class IAMContentFragment extends Fragment implements Observer<IAMReaderSl
         new JsApiClient(
                 core,
                 getContext(),
-                ApiSettings.getInstance().getHost()
+                core.projectSettingsAPI().host()
         ).sendApiRequest(apiRequestData.data(), new JsApiResponseCallback() {
             @Override
             public void onJsApiResponse(String result, String cb) {

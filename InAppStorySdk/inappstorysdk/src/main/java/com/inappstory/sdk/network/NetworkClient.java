@@ -195,7 +195,7 @@ public class NetworkClient {
 
     public ApiInterface getApi() {
         if (getBaseUrl() == null) {
-            if (ApiSettings.getInstance().getHost() == null) {
+            if (core.projectSettingsAPI().host() == null) {
                 return new DummyApiInterface();
             }
             apiInterface = null;

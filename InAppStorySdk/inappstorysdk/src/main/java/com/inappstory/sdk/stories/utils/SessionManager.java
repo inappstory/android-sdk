@@ -23,7 +23,6 @@ import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.api.impl.IASSettingsImpl;
 import com.inappstory.sdk.core.utils.ConnectionCheck;
 import com.inappstory.sdk.core.utils.ConnectionCheckCallback;
-import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.network.models.RequestLocalParameters;
 import com.inappstory.sdk.stories.api.models.CachedSessionData;
@@ -297,8 +296,8 @@ public class SessionManager {
                                         cachedSessionData.previewAspectRatio = response.getPreviewAspectRatio();
                                         cachedSessionData.isAllowUGC = response.isAllowUgc;
                                         cachedSessionData.sessionId = response.session.id;
-                                        cachedSessionData.testKey = ApiSettings.getInstance().getTestKey();
-                                        cachedSessionData.token = ApiSettings.getInstance().getApiKey();
+                                        cachedSessionData.testKey = core.projectSettingsAPI().testKey();
+                                        cachedSessionData.token = core.projectSettingsAPI().apiKey();
                                         cachedSessionData.tags =
                                                 TextUtils.join(",", dataSettingsHolder.tags());
                                         boolean isSendStatistic = false;

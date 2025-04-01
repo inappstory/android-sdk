@@ -32,7 +32,6 @@ import com.inappstory.sdk.inappmessage.InAppMessageScreenActions;
 import com.inappstory.sdk.inappmessage.InAppMessageWidgetCallback;
 import com.inappstory.sdk.inappmessage.ShowInAppMessageCallback;
 import com.inappstory.sdk.lrudiskcache.CacheSize;
-import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.utils.HostFromSecretKey;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
@@ -74,6 +73,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -855,7 +855,7 @@ public class InAppStoryManager implements IASBackPressHandler {
 
     private void initManager(
             final Context context,
-            final String cmsUrl,
+            final String host,
             final String apiKey,
             final String testKey,
             final String userId,
@@ -872,16 +872,11 @@ public class InAppStoryManager implements IASBackPressHandler {
         ForceCloseReaderCallback callback = new ForceCloseReaderCallback() {
             @Override
             public void onComplete() {
-                if (ApiSettings.getInstance().hostIsDifferent(cmsUrl)) {
-                    core.network().clear();
-                }
-                ApiSettings
-                        .getInstance()
-                        .cacheDirPath(context.getCacheDir().getAbsolutePath())
+                core.projectSettingsAPI()
                         .apiKey(apiKey)
+                        .cacheDir(context.getCacheDir().getAbsolutePath())
                         .testKey(testKey)
-                        .host(cmsUrl);
-                core.network().setBaseUrl(cmsUrl);
+                        .host(host);
                 IASDataSettings settings = core.settingsAPI();
                 if (isDeviceIDEnabled) {
                     settings.deviceId
@@ -1086,6 +1081,16 @@ public class InAppStoryManager implements IASBackPressHandler {
                 }
             }
         });
+    }
+
+    public String getApiKey() {
+        if (core == null) return null;
+        return core.projectSettingsAPI().apiKey();
+    }
+
+    public String getTestKey() {
+        if (core == null) return null;
+        return core.projectSettingsAPI().testKey();
     }
 
     public String getUserId() {

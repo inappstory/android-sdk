@@ -15,7 +15,6 @@ import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Point;
-import android.graphics.Rect;
 import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Build;
@@ -50,7 +49,6 @@ import com.inappstory.iasutilsconnector.filepicker.OnFilesChooseCallback;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.BuildConfig;
 import com.inappstory.sdk.InAppStoryManager;
-import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
@@ -72,7 +70,6 @@ import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.inner.share.InnerShareFilesPrepare;
 import com.inappstory.sdk.inner.share.ShareFilesPrepareCallback;
 import com.inappstory.sdk.memcache.IGetBitmapFromMemoryCache;
-import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ContentData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.InAppMessageData;
@@ -1200,7 +1197,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                     core.network().userAgent()
             );
             options.sessionId = core.sessionManager().getSession().getSessionId();
-            options.apiKey = ApiSettings.getInstance().getApiKey();
+            options.apiKey = core.projectSettingsAPI().apiKey();
             options.placeholders = generatePlaceholders(dataSettingsHolder);
         } else {
             options.lang = Locale.getDefault().toLanguageTag();
