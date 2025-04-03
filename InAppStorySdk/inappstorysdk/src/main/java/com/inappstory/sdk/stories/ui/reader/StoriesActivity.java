@@ -72,15 +72,16 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
             if (inAppStoryManager != null) {
                 inAppStoryManager.getOpenStoriesReader().onRestoreStatusBar(this);
             }
-            OldStatisticManager.useInstance(
-                    launchData.getSessionId(),
-                    new GetOldStatisticManagerCallback() {
-                        @Override
-                        public void get(@NonNull OldStatisticManager manager) {
-                            manager.sendStatistic();
+            if (launchData != null)
+                OldStatisticManager.useInstance(
+                        launchData.getSessionId(),
+                        new GetOldStatisticManagerCallback() {
+                            @Override
+                            public void get(@NonNull OldStatisticManager manager) {
+                                manager.sendStatistic();
+                            }
                         }
-                    }
-            );
+                );
             cleanReader();
             System.gc();
             pauseDestroyed = true;
@@ -157,6 +158,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
 
     private ReaderAnimation setStartAnimations() {
         Point screenSize = Sizes.getScreenSize(StoriesActivity.this);
+        if (appearanceSettings == null) return new DisabledReaderAnimation().setAnimations(true);
         switch (appearanceSettings.csStoryReaderPresentationStyle()) {
             case AppearanceManager.DISABLE:
                 return new DisabledReaderAnimation().setAnimations(true);
@@ -186,6 +188,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
 
     private ReaderAnimation setFinishAnimations() {
         Point screenSize = Sizes.getScreenSize(StoriesActivity.this);
+        if (appearanceSettings == null) return new DisabledReaderAnimation().setAnimations(true);
         switch (appearanceSettings.csStoryReaderPresentationStyle()) {
             case AppearanceManager.DISABLE:
                 return new DisabledReaderAnimation().setAnimations(false);
@@ -434,7 +437,8 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
             inAppStoryManager.getOpenStoriesReader().onHideStatusBar(this);
         }
         service.getListReaderConnector().readerIsOpened();
-        type = launchData.getType();
+        if (launchData != null)
+            type = launchData.getType();
         draggableFrame.type = type;
         draggableFrame.post(new Runnable() {
             @Override
@@ -525,8 +529,8 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
     StoriesReaderLaunchData launchData;
 
     private void setAppearanceSettings(Bundle bundle) {
-        backTintView.setBackgroundColor(appearanceSettings.csReaderBackgroundColor());
         try {
+            backTintView.setBackgroundColor(appearanceSettings.csReaderBackgroundColor());
             bundle.putSerializable(appearanceSettings.getSerializableKey(), appearanceSettings);
             bundle.putSerializable(launchData.getSerializableKey(), launchData);
         } catch (Exception e) {
@@ -561,7 +565,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
             service.getListReaderConnector().readerIsClosed();
             Story story = service.getStoryDownloadManager()
                     .getStoryById(service.getCurrentId(), type);
-            if (story != null) {
+            if (story != null && launchData != null) {
                 if (CallbackManager.getInstance().getCloseStoryCallback() != null) {
                     CallbackManager.getInstance().getCloseStoryCallback().closeStory(
                             new SlideData(
@@ -622,7 +626,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
             service.getListReaderConnector().readerIsClosed();
             Story story = service.getStoryDownloadManager()
                     .getStoryById(service.getCurrentId(), type);
-            if (story != null) {
+            if (story != null && launchData != null) {
                 if (CallbackManager.getInstance().getCloseStoryCallback() != null) {
                     CallbackManager.getInstance().getCloseStoryCallback().closeStory(
                             new SlideData(
@@ -655,15 +659,16 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
 
     public void cleanReader() {
         if (cleaned) return;
-        OldStatisticManager.useInstance(
-                launchData.getSessionId(),
-                new GetOldStatisticManagerCallback() {
-                    @Override
-                    public void get(@NonNull OldStatisticManager manager) {
-                        manager.closeStatisticEvent();
+        if (launchData != null)
+            OldStatisticManager.useInstance(
+                    launchData.getSessionId(),
+                    new GetOldStatisticManagerCallback() {
+                        @Override
+                        public void get(@NonNull OldStatisticManager manager) {
+                            manager.closeStatisticEvent();
+                        }
                     }
-                }
-        );
+            );
         InAppStoryService.useInstance(new UseServiceInstanceCallback() {
             @Override
             public void use(@NonNull InAppStoryService service) throws Exception {
