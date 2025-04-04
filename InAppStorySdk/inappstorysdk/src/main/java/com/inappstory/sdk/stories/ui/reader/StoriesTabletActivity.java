@@ -85,17 +85,18 @@ public class StoriesTabletActivity extends AppCompatActivity implements BaseStor
                             .screensManager()
                             .getGameScreenHolder()
                             .forceCloseScreen(null);
-                    core
-                            .statistic()
-                            .storiesV1(
-                                    launchData.getSessionId(),
-                                    new GetStatisticV1Callback() {
-                                        @Override
-                                        public void get(@NonNull IASStatisticStoriesV1 manager) {
-                                            manager.sendStatistic();
+                    if (launchData != null)
+                        core
+                                .statistic()
+                                .storiesV1(
+                                        launchData.getSessionId(),
+                                        new GetStatisticV1Callback() {
+                                            @Override
+                                            public void get(@NonNull IASStatisticStoriesV1 manager) {
+                                                manager.sendStatistic();
+                                            }
                                         }
-                                    }
-                            );
+                                );
                 }
             });
             cleanReader();
@@ -204,6 +205,9 @@ public class StoriesTabletActivity extends AppCompatActivity implements BaseStor
 
     private ReaderAnimation setStartAnimations() {
         Point screenSize = Sizes.getScreenSize(StoriesTabletActivity.this);
+        if (launchData == null || appearanceSettings == null) {
+            return new DisabledReaderAnimation().setAnimations(true);
+        }
         switch (appearanceSettings.csStoryReaderPresentationStyle()) {
             case AppearanceManager.DISABLE:
                 return new DisabledReaderAnimation().setAnimations(true);
@@ -239,6 +243,9 @@ public class StoriesTabletActivity extends AppCompatActivity implements BaseStor
 
     private ReaderAnimation setFinishAnimations() {
         Point screenSize = Sizes.getScreenSize(StoriesTabletActivity.this);
+        if (launchData == null || appearanceSettings == null) {
+            return new DisabledReaderAnimation().setAnimations(true);
+        }
         switch (appearanceSettings.csStoryReaderPresentationStyle()) {
             case AppearanceManager.DISABLE:
                 return new DisabledReaderAnimation().setAnimations(false);
@@ -624,17 +631,18 @@ public class StoriesTabletActivity extends AppCompatActivity implements BaseStor
     LaunchStoryScreenData launchData;
 
     private void setAppearanceSettings(Bundle bundle) {
-        backTintView.setBackgroundColor(
-                ColorUtils.modifyAlpha(
-                        appearanceSettings.csReaderBackgroundColor(),
-                        0.3f
-                )
-        );
+
         try {
+            backTintView.setBackgroundColor(
+                    ColorUtils.modifyAlpha(
+                            appearanceSettings.csReaderBackgroundColor(),
+                            0.3f
+                    )
+            );
             bundle.putSerializable(appearanceSettings.getSerializableKey(), appearanceSettings);
             bundle.putSerializable(launchData.getSerializableKey(), launchData);
         } catch (Exception e) {
-            e.printStackTrace();
+            forceFinish();
         }
     }
 
@@ -715,54 +723,55 @@ public class StoriesTabletActivity extends AppCompatActivity implements BaseStor
         final ReaderManager readerManager = storiesContentFragment.readerManager;
         if (readerManager == null) return;
         final ContentIdWithIndex idWithIndex = readerManager.getByIdAndIndex(story.id());
-        InAppStoryManager.useCore(new UseIASCoreCallback() {
-            @Override
-            public void use(@NonNull IASCore core) {
-                core.callbacksAPI().useCallback(
-                        IASCallbackType.CLOSE_STORY,
-                        new UseIASCallback<CloseStoryCallback>() {
-                            @Override
-                            public void use(@NonNull CloseStoryCallback callback) {
-                                callback.closeStory(
-                                        new SlideData(
-                                                StoryData.getStoryData(
-                                                        story,
-                                                        launchData.getFeed(),
-                                                        launchData.getSourceType(),
-                                                        type
-                                                ),
-                                                idWithIndex.index(),
-                                                story.slideEventPayload(idWithIndex.index())
-                                        ),
-                                        new CallbackTypesConverter().getCloseTypeFromInt(action)
-                                );
-                            }
-                        });
-                String cause = IASStatisticStoriesV2Impl.AUTO;
-                switch (action) {
-                    case CloseStory.CLICK:
-                        cause = IASStatisticStoriesV2Impl.CLICK;
-                        break;
-                    case CloseStory.CUSTOM:
-                        cause = IASStatisticStoriesV2Impl.CUSTOM;
-                        break;
-                    case -1:
-                        cause = IASStatisticStoriesV2Impl.BACK;
-                        break;
-                    case CloseStory.SWIPE:
-                        cause = IASStatisticStoriesV2Impl.SWIPE;
-                        break;
+        if (launchData != null) {
+            InAppStoryManager.useCore(new UseIASCoreCallback() {
+                @Override
+                public void use(@NonNull IASCore core) {
+                    core.callbacksAPI().useCallback(
+                            IASCallbackType.CLOSE_STORY,
+                            new UseIASCallback<CloseStoryCallback>() {
+                                @Override
+                                public void use(@NonNull CloseStoryCallback callback) {
+                                    callback.closeStory(
+                                            new SlideData(
+                                                    StoryData.getStoryData(
+                                                            story,
+                                                            launchData.getFeed(),
+                                                            launchData.getSourceType(),
+                                                            type
+                                                    ),
+                                                    idWithIndex.index(),
+                                                    story.slideEventPayload(idWithIndex.index())
+                                            ),
+                                            new CallbackTypesConverter().getCloseTypeFromInt(action)
+                                    );
+                                }
+                            });
+                    String cause = IASStatisticStoriesV2Impl.AUTO;
+                    switch (action) {
+                        case CloseStory.CLICK:
+                            cause = IASStatisticStoriesV2Impl.CLICK;
+                            break;
+                        case CloseStory.CUSTOM:
+                            cause = IASStatisticStoriesV2Impl.CUSTOM;
+                            break;
+                        case -1:
+                            cause = IASStatisticStoriesV2Impl.BACK;
+                            break;
+                        case CloseStory.SWIPE:
+                            cause = IASStatisticStoriesV2Impl.SWIPE;
+                            break;
+                    }
+                    core.statistic().storiesV2().sendCloseStory(
+                            idWithIndex.id(),
+                            cause,
+                            idWithIndex.index(),
+                            story.slidesCount(),
+                            launchData.getFeed()
+                    );
                 }
-                core.statistic().storiesV2().sendCloseStory(
-                        idWithIndex.id(),
-                        cause,
-                        idWithIndex.index(),
-                        story.slidesCount(),
-                        launchData.getFeed()
-                );
-            }
-        });
-
+            });
+        }
     }
 
     @Override
@@ -809,22 +818,23 @@ public class StoriesTabletActivity extends AppCompatActivity implements BaseStor
 
     public void cleanReader() {
         if (cleaned) return;
-        InAppStoryManager.useCore(new UseIASCoreCallback() {
-            @Override
-            public void use(@NonNull IASCore core) {
-                core.statistic().storiesV1(
-                        launchData.getSessionId(),
-                        new GetStatisticV1Callback() {
-                            @Override
-                            public void get(@NonNull IASStatisticStoriesV1 manager) {
-                                manager.closeStatisticEvent();
+        if (launchData != null)
+            InAppStoryManager.useCore(new UseIASCoreCallback() {
+                @Override
+                public void use(@NonNull IASCore core) {
+                    core.statistic().storiesV1(
+                            launchData.getSessionId(),
+                            new GetStatisticV1Callback() {
+                                @Override
+                                public void get(@NonNull IASStatisticStoriesV1 manager) {
+                                    manager.closeStatisticEvent();
+                                }
                             }
-                        }
-                );
-                core.screensManager().getStoryScreenHolder().currentOpenedStoryId(0);
-                cleaned = true;
-            }
-        });
+                    );
+                    core.screensManager().getStoryScreenHolder().currentOpenedStoryId(0);
+                    cleaned = true;
+                }
+            });
         if (storiesContentFragment != null) {
             storiesContentFragment.readerManager.refreshStoriesIds();
         }

@@ -83,17 +83,19 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryScree
                             .screensManager()
                             .getGameScreenHolder()
                             .forceCloseScreen(null);
-                    core
-                            .statistic()
-                            .storiesV1(
-                                    launchData.getSessionId(),
-                                    new GetStatisticV1Callback() {
-                                        @Override
-                                        public void get(@NonNull IASStatisticStoriesV1 manager) {
-                                            manager.sendStatistic();
+                    if (launchData != null) {
+                        core
+                                .statistic()
+                                .storiesV1(
+                                        launchData.getSessionId(),
+                                        new GetStatisticV1Callback() {
+                                            @Override
+                                            public void get(@NonNull IASStatisticStoriesV1 manager) {
+                                                manager.sendStatistic();
+                                            }
                                         }
-                                    }
-                            );
+                                );
+                    }
                 }
             });
             cleanReader();
@@ -185,6 +187,9 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryScree
 
     private ReaderAnimation setStartAnimations() {
         Point screenSize = Sizes.getScreenSize(StoriesActivity.this);
+        if (launchData == null || appearanceSettings == null) {
+            return new DisabledReaderAnimation().setAnimations(true);
+        }
         switch (appearanceSettings.csStoryReaderPresentationStyle()) {
             case AppearanceManager.DISABLE:
                 return new DisabledReaderAnimation().setAnimations(true);
@@ -220,6 +225,9 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryScree
 
     private ReaderAnimation setFinishAnimations() {
         Point screenSize = Sizes.getScreenSize(StoriesActivity.this);
+        if (launchData == null || appearanceSettings == null) {
+            return new DisabledReaderAnimation().setAnimations(true);
+        }
         switch (appearanceSettings.csStoryReaderPresentationStyle()) {
             case AppearanceManager.DISABLE:
                 return new DisabledReaderAnimation().setAnimations(false);
@@ -406,15 +414,15 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryScree
                 getSerializableExtra(LaunchStoryScreenData.SERIALIZABLE_KEY);
         appearanceSettings = (LaunchStoryScreenAppearance) getIntent()
                 .getSerializableExtra(LaunchStoryScreenAppearance.SERIALIZABLE_KEY);
-        if (inAppStoryManager == null) {
+        if (inAppStoryManager == null || launchData == null) {
             forceFinish();
             return;
         }
         IASCore core = inAppStoryManager.iasCore();
 
         int navColor = appearanceSettings.csNavBarColor();
-     //   if (navColor != 0)
-     //       SystemUiUtils.setNavBarColor(navColor, getWindow());
+        //   if (navColor != 0)
+        //       SystemUiUtils.setNavBarColor(navColor, getWindow());
         core.screensManager().getStoryScreenHolder().subscribeScreen(StoriesActivity.this);
         View view = getCurrentFocus();
         if (view != null) {
@@ -568,12 +576,12 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryScree
     LaunchStoryScreenData launchData;
 
     private void setAppearanceSettings(Bundle bundle) {
-        backTintView.setBackgroundColor(appearanceSettings.csReaderBackgroundColor());
         try {
+            backTintView.setBackgroundColor(appearanceSettings.csReaderBackgroundColor());
             bundle.putSerializable(appearanceSettings.getSerializableKey(), appearanceSettings);
             bundle.putSerializable(launchData.getSerializableKey(), launchData);
         } catch (Exception e) {
-            e.printStackTrace();
+            forceFinish();
         }
     }
 
@@ -631,54 +639,55 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryScree
         final ReaderManager readerManager = storiesContentFragment.readerManager;
         if (readerManager == null) return;
         final ContentIdWithIndex idWithIndex = readerManager.getByIdAndIndex(story.id());
-        InAppStoryManager.useCore(new UseIASCoreCallback() {
-            @Override
-            public void use(@NonNull IASCore core) {
-                core.callbacksAPI().useCallback(
-                        IASCallbackType.CLOSE_STORY,
-                        new UseIASCallback<CloseStoryCallback>() {
-                            @Override
-                            public void use(@NonNull CloseStoryCallback callback) {
-                                callback.closeStory(
-                                        new SlideData(
-                                                StoryData.getStoryData(
-                                                        story,
-                                                        launchData.getFeed(),
-                                                        launchData.getSourceType(),
-                                                        type
-                                                ),
-                                                idWithIndex.index(),
-                                                story.slideEventPayload(idWithIndex.index())
-                                        ),
-                                        new CallbackTypesConverter().getCloseTypeFromInt(action)
-                                );
-                            }
-                        });
-                String cause = IASStatisticStoriesV2Impl.AUTO;
-                switch (action) {
-                    case CloseStory.CLICK:
-                        cause = IASStatisticStoriesV2Impl.CLICK;
-                        break;
-                    case CloseStory.CUSTOM:
-                        cause = IASStatisticStoriesV2Impl.CUSTOM;
-                        break;
-                    case -1:
-                        cause = IASStatisticStoriesV2Impl.BACK;
-                        break;
-                    case CloseStory.SWIPE:
-                        cause = IASStatisticStoriesV2Impl.SWIPE;
-                        break;
+        if (launchData != null) {
+            InAppStoryManager.useCore(new UseIASCoreCallback() {
+                @Override
+                public void use(@NonNull IASCore core) {
+                    core.callbacksAPI().useCallback(
+                            IASCallbackType.CLOSE_STORY,
+                            new UseIASCallback<CloseStoryCallback>() {
+                                @Override
+                                public void use(@NonNull CloseStoryCallback callback) {
+                                    callback.closeStory(
+                                            new SlideData(
+                                                    StoryData.getStoryData(
+                                                            story,
+                                                            launchData.getFeed(),
+                                                            launchData.getSourceType(),
+                                                            type
+                                                    ),
+                                                    idWithIndex.index(),
+                                                    story.slideEventPayload(idWithIndex.index())
+                                            ),
+                                            new CallbackTypesConverter().getCloseTypeFromInt(action)
+                                    );
+                                }
+                            });
+                    String cause = IASStatisticStoriesV2Impl.AUTO;
+                    switch (action) {
+                        case CloseStory.CLICK:
+                            cause = IASStatisticStoriesV2Impl.CLICK;
+                            break;
+                        case CloseStory.CUSTOM:
+                            cause = IASStatisticStoriesV2Impl.CUSTOM;
+                            break;
+                        case -1:
+                            cause = IASStatisticStoriesV2Impl.BACK;
+                            break;
+                        case CloseStory.SWIPE:
+                            cause = IASStatisticStoriesV2Impl.SWIPE;
+                            break;
+                    }
+                    core.statistic().storiesV2().sendCloseStory(
+                            idWithIndex.id(),
+                            cause,
+                            idWithIndex.index(),
+                            story.slidesCount(),
+                            launchData.getFeed()
+                    );
                 }
-                core.statistic().storiesV2().sendCloseStory(
-                        idWithIndex.id(),
-                        cause,
-                        idWithIndex.index(),
-                        story.slidesCount(),
-                        launchData.getFeed()
-                );
-            }
-        });
-
+            });
+        }
     }
 
     @Override
@@ -725,22 +734,24 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryScree
 
     public void cleanReader() {
         if (cleaned) return;
-        InAppStoryManager.useCore(new UseIASCoreCallback() {
-            @Override
-            public void use(@NonNull IASCore core) {
-                core.statistic().storiesV1(
-                        launchData.getSessionId(),
-                        new GetStatisticV1Callback() {
-                            @Override
-                            public void get(@NonNull IASStatisticStoriesV1 manager) {
-                                manager.closeStatisticEvent();
+        if (launchData != null) {
+            InAppStoryManager.useCore(new UseIASCoreCallback() {
+                @Override
+                public void use(@NonNull IASCore core) {
+                    core.statistic().storiesV1(
+                            launchData.getSessionId(),
+                            new GetStatisticV1Callback() {
+                                @Override
+                                public void get(@NonNull IASStatisticStoriesV1 manager) {
+                                    manager.closeStatisticEvent();
+                                }
                             }
-                        }
-                );
-                core.screensManager().getStoryScreenHolder().currentOpenedStoryId(0);
-                cleaned = true;
-            }
-        });
+                    );
+                    core.screensManager().getStoryScreenHolder().currentOpenedStoryId(0);
+                    cleaned = true;
+                }
+            });
+        }
         if (storiesContentFragment != null && storiesContentFragment.readerManager != null) {
             storiesContentFragment.readerManager.refreshStoriesIds();
         }
