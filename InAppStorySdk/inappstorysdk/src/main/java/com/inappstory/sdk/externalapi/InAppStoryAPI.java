@@ -34,6 +34,7 @@ import com.inappstory.sdk.externalapi.single.IASSingleStoryExternalAPIImpl;
 import com.inappstory.sdk.externalapi.stackfeed.IASStackFeedExternalAPIImpl;
 import com.inappstory.sdk.externalapi.storylist.IASStoryListExternalAPIImpl;
 import com.inappstory.sdk.externalapi.subscribers.IAPISubscriber;
+import com.inappstory.sdk.stories.ui.reader.ForceCloseReaderCallback;
 
 public class InAppStoryAPI {
     public IASFavorites favorites = new IASFavoritesExternalAPIImpl();
@@ -54,6 +55,15 @@ public class InAppStoryAPI {
             @Override
             public void use(@NonNull IASCore core) {
                 core.inAppStoryService().getApiSubscribersManager().addAPISubscriber(subscriber);
+            }
+        });
+    }
+
+    public void closeReaders(final ForceCloseReaderCallback callback) {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.screensManager().forceCloseAllReaders(callback);
             }
         });
     }
@@ -104,6 +114,7 @@ public class InAppStoryAPI {
         Pair<String, Integer> version = InAppStoryManager.getLibraryVersion();
         return new IASSDKVersion(version.first, "1.0.1", version.second);
     }
+
 
     public void clearCache() {
         InAppStoryManager.useCoreInSeparateThread(new UseIASCoreCallback() {
