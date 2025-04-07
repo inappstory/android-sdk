@@ -2,7 +2,7 @@ package com.inappstory.sdk.stories.outercallbacks.common.reader;
 
 import com.inappstory.sdk.core.data.IStatData;
 import com.inappstory.sdk.stories.api.models.ContentType;
-import com.inappstory.sdk.utils.StringsUtils;
+import com.inappstory.sdk.utils.format.StringsUtils;
 
 import java.util.Map;
 

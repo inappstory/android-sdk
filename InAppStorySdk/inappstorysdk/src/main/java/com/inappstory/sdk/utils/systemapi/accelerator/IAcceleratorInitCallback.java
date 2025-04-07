@@ -1,4 +1,4 @@
-package com.inappstory.sdk.utils;
+package com.inappstory.sdk.utils.systemapi.accelerator;
 
 public interface IAcceleratorInitCallback {
     void onSuccess();

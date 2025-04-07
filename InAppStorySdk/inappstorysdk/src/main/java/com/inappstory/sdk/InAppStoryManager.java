@@ -65,7 +65,7 @@ import com.inappstory.sdk.stories.statistic.GetStatisticV1Callback;
 import com.inappstory.sdk.stories.ui.reader.ForceCloseReaderCallback;
 import com.inappstory.sdk.stories.utils.IASBackPressHandler;
 import com.inappstory.sdk.stories.utils.TagsUtils;
-import com.inappstory.sdk.utils.StringsUtils;
+import com.inappstory.sdk.utils.format.StringsUtils;
 import com.inappstory.sdk.utils.WebViewUtils;
 
 import java.util.ArrayList;
@@ -73,7 +73,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 

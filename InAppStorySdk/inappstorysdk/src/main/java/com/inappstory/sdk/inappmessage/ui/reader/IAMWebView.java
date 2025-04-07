@@ -17,6 +17,7 @@ import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.exceptions.NotImplementedMethodException;
+import com.inappstory.sdk.inappmessage.domain.reader.IAMJavascriptInterface;
 import com.inappstory.sdk.inappmessage.domain.reader.IIAMReaderSlideViewModel;
 import com.inappstory.sdk.stories.api.models.ContentIdWithIndex;
 import com.inappstory.sdk.stories.ui.views.IASWebView;

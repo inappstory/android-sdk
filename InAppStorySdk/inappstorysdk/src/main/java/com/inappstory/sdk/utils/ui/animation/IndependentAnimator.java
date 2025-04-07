@@ -1,4 +1,4 @@
-package com.inappstory.sdk.utils.animation;
+package com.inappstory.sdk.utils.ui.animation;
 
 import android.animation.TimeInterpolator;
 

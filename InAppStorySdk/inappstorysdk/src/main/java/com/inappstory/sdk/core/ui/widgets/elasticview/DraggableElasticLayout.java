@@ -3,7 +3,6 @@ package com.inappstory.sdk.core.ui.widgets.elasticview;
 import android.app.Activity;
 import android.content.Context;
 import android.content.res.TypedArray;
-import android.graphics.Color;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
@@ -14,9 +13,8 @@ import androidx.annotation.Nullable;
 
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.utils.AnimUtils;
-import com.inappstory.sdk.core.utils.ColorUtils;
 import com.inappstory.sdk.core.utils.ViewUtils;
-import com.inappstory.sdk.utils.SystemUiUtils;
+import com.inappstory.sdk.utils.ui.SystemUiUtils;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -19,7 +19,7 @@ import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
 import com.inappstory.sdk.core.network.content.models.StoryPlaceholder;
 import com.inappstory.sdk.stories.ui.reader.ForceCloseReaderCallback;
 import com.inappstory.sdk.stories.utils.TagsUtils;
-import com.inappstory.sdk.utils.StringsUtils;
+import com.inappstory.sdk.utils.format.StringsUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;

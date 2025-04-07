@@ -13,9 +13,7 @@ import androidx.fragment.app.FragmentTransaction;
 
 import com.inappstory.iasutilsconnector.UtilModulesHolder;
 import com.inappstory.sdk.InAppStoryManager;
-import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
-import com.inappstory.sdk.UseManagerInstanceCallback;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.ui.screens.gamereader.BaseGameScreen;
@@ -24,7 +22,7 @@ import com.inappstory.sdk.stories.outercallbacks.common.objects.GameReaderAppear
 import com.inappstory.sdk.stories.outercallbacks.common.objects.GameReaderLaunchData;
 import com.inappstory.sdk.stories.ui.utils.FragmentAction;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
-import com.inappstory.sdk.utils.SystemUiUtils;
+import com.inappstory.sdk.utils.ui.SystemUiUtils;
 
 
 public class GameActivity extends AppCompatActivity implements BaseGameScreen {

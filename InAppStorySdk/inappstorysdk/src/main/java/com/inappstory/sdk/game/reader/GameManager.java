@@ -37,8 +37,8 @@ import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.ui.views.IASWebView;
-import com.inappstory.sdk.utils.IAcceleratorInitCallback;
-import com.inappstory.sdk.utils.StringsUtils;
+import com.inappstory.sdk.utils.systemapi.accelerator.IAcceleratorInitCallback;
+import com.inappstory.sdk.utils.format.StringsUtils;
 
 import java.lang.reflect.Type;
 import java.util.List;
@@ -49,9 +49,7 @@ public class GameManager {
     }
 
     private final IASCore core;
-    String path;
     String gameCenterId;
-    List<WebResource> resources;
     final GameLoadStatusHolder statusHolder = new GameLoadStatusHolder();
     String gameConfig;
     AbstractGameLogger logger;

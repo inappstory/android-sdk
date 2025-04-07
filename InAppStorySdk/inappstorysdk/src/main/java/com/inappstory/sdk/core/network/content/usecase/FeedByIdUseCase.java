@@ -28,7 +28,7 @@ import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.SimpleListCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.errors.ErrorCallback;
 import com.inappstory.sdk.stories.ui.list.StoryFavoriteImage;
-import com.inappstory.sdk.utils.StringsUtils;
+import com.inappstory.sdk.utils.format.StringsUtils;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;

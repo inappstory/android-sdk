@@ -10,14 +10,13 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
 import com.inappstory.sdk.InAppStoryManager;
-import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.stories.cache.FilesDownloader;
 import com.inappstory.sdk.stories.cache.usecases.StoryVODResourceFileUseCase;
 import com.inappstory.sdk.stories.cache.usecases.StoryVODResourceFileUseCaseResult;
 import com.inappstory.sdk.stories.cache.vod.ContentRange;
 import com.inappstory.sdk.stories.cache.vod.VODCacheJournalItem;
-import com.inappstory.sdk.utils.StringsUtils;
+import com.inappstory.sdk.utils.format.StringsUtils;
 
 import java.io.File;
 import java.io.FileInputStream;

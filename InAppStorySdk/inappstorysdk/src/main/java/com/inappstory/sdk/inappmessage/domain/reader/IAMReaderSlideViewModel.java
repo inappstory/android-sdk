@@ -30,7 +30,7 @@ import com.inappstory.sdk.stories.utils.Observer;
 import com.inappstory.sdk.stories.utils.SingleTimeEvent;
 import com.inappstory.sdk.stories.utils.WebPageConvertCallback;
 import com.inappstory.sdk.stories.utils.WebPageConverter;
-import com.inappstory.sdk.utils.StringsUtils;
+import com.inappstory.sdk.utils.format.StringsUtils;
 
 import java.lang.reflect.Type;
 import java.util.Map;
@@ -230,6 +230,7 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
     }
 
     public void storyStarted() {
+
     }
 
     public void storyStarted(double startTime) {

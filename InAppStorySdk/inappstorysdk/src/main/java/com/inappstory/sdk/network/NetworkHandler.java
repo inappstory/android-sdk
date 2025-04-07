@@ -20,7 +20,7 @@ import com.inappstory.sdk.network.annotations.api.Query;
 import com.inappstory.sdk.network.annotations.api.QueryObject;
 import com.inappstory.sdk.network.annotations.api.ReplaceHeader;
 import com.inappstory.sdk.network.utils.ObjectToQuery;
-import com.inappstory.sdk.utils.UrlEncoder;
+import com.inappstory.sdk.utils.format.UrlEncoder;
 import com.inappstory.sdk.network.utils.headers.AcceptEncodingHeader;
 import com.inappstory.sdk.network.utils.headers.AcceptHeader;
 import com.inappstory.sdk.network.utils.headers.AcceptLanguageHeader;

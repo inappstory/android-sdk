@@ -22,8 +22,7 @@ import com.inappstory.sdk.stories.cache.usecases.GenerateSlideTaskUseCase;
 import com.inappstory.sdk.stories.cache.usecases.LoadSlideUseCase;
 import com.inappstory.sdk.stories.outercallbacks.common.errors.ErrorCallback;
 import com.inappstory.sdk.stories.utils.LoopedExecutor;
-import com.inappstory.sdk.utils.ISessionHolder;
-import com.inappstory.sdk.utils.StringsUtils;
+import com.inappstory.sdk.utils.format.StringsUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;

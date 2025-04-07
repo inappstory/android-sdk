@@ -1,4 +1,4 @@
-package com.inappstory.sdk.utils;
+package com.inappstory.sdk.utils.format;
 
 public class NumberUtils {
     public Integer convertNumberToInt(Object number) {

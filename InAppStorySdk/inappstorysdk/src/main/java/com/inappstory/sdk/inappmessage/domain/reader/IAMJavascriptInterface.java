@@ -1,4 +1,4 @@
-package com.inappstory.sdk.inappmessage.ui.reader;
+package com.inappstory.sdk.inappmessage.domain.reader;
 
 import android.webkit.JavascriptInterface;
 

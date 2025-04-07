@@ -2,16 +2,15 @@ package com.inappstory.sdk.game.reader;
 
 public class GameLoadStatusHolder {
     private final Object gameLoadStatusLock = new Object();
-    private boolean gameLoaded;
-    private boolean gameLoadFailed;
 
     public int launchTryNumber() {
         return launchTryNumber;
     }
 
     private int launchTryNumber;
-
     private int totalReloadTries;
+    private boolean gameLoaded;
+    private boolean gameLoadFailed;
 
     public void setTotalReloadTries(int totalReloadTries) {
 

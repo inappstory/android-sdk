@@ -59,7 +59,6 @@ import com.inappstory.sdk.core.ui.widgets.elasticview.DraggableElasticLayout;
 import com.inappstory.sdk.stories.utils.IASBackPressHandler;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 import com.inappstory.sdk.stories.utils.Sizes;
-import com.inappstory.sdk.utils.SystemUiUtils;
 
 
 public class StoriesActivity extends AppCompatActivity implements BaseStoryScreen, ShowGoodsCallback {

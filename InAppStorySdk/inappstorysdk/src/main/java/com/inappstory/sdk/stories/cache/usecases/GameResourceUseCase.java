@@ -1,7 +1,6 @@
 package com.inappstory.sdk.stories.cache.usecases;
 
 
-import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.game.cache.UseCaseCallback;
 import com.inappstory.sdk.lrudiskcache.CacheJournalItem;
@@ -12,7 +11,7 @@ import com.inappstory.sdk.stories.cache.DownloadFileState;
 import com.inappstory.sdk.stories.cache.DownloadInterruption;
 import com.inappstory.sdk.stories.cache.FileLoadProgressCallback;
 import com.inappstory.sdk.utils.ProgressCallback;
-import com.inappstory.sdk.utils.StringsUtils;
+import com.inappstory.sdk.utils.format.StringsUtils;
 
 import java.io.File;
 import java.io.IOException;

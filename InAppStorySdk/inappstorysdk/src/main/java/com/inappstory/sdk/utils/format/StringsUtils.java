@@ -1,4 +1,4 @@
-package com.inappstory.sdk.utils;
+package com.inappstory.sdk.utils.format;
 
 
 import android.content.Context;

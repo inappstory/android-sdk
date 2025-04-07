@@ -8,7 +8,6 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import com.inappstory.sdk.InAppStoryManager;
-import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.data.IContentWithTimeline;
 import com.inappstory.sdk.core.data.IReaderContentSlide;
 import com.inappstory.sdk.core.data.IStory;
@@ -16,7 +15,6 @@ import com.inappstory.sdk.network.annotations.models.Required;
 import com.inappstory.sdk.network.annotations.models.SerializedName;
 import com.inappstory.sdk.core.data.IResource;
 import com.inappstory.sdk.stories.api.models.GameInstance;
-import com.inappstory.sdk.utils.StringsUtils;
 
 import java.util.HashMap;
 import java.util.List;

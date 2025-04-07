@@ -22,8 +22,8 @@ import com.inappstory.sdk.core.utils.ColorUtils;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageFullscreenAppearance;
 import com.inappstory.sdk.inappmessage.ui.widgets.IAMContentContainer;
 import com.inappstory.sdk.stories.utils.Sizes;
-import com.inappstory.sdk.utils.animation.IndependentAnimator;
-import com.inappstory.sdk.utils.animation.IndependentAnimatorListener;
+import com.inappstory.sdk.utils.ui.animation.IndependentAnimator;
+import com.inappstory.sdk.utils.ui.animation.IndependentAnimatorListener;
 
 public class FullscreenContentContainer extends IAMContentContainer<InAppMessageFullscreenAppearance> {
 

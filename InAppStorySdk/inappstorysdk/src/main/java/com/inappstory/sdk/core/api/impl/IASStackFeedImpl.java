@@ -22,7 +22,7 @@ import com.inappstory.sdk.stories.stackfeed.IStackStoryData;
 import com.inappstory.sdk.stories.stackfeed.StackStoryObserver;
 import com.inappstory.sdk.stories.stackfeed.StackStoryUpdatedCallback;
 import com.inappstory.sdk.stories.utils.TagsUtils;
-import com.inappstory.sdk.utils.StringsUtils;
+import com.inappstory.sdk.utils.format.StringsUtils;
 
 import static com.inappstory.sdk.core.api.impl.IASSettingsImpl.TAG_LIMIT;
 

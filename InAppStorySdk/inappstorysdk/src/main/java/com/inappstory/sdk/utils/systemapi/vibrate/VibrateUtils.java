@@ -1,4 +1,4 @@
-package com.inappstory.sdk.utils;
+package com.inappstory.sdk.utils.systemapi.vibrate;
 
 import android.content.Context;
 import android.os.Build;
@@ -6,7 +6,6 @@ import android.os.VibrationEffect;
 import android.os.Vibrator;
 
 import com.inappstory.sdk.core.IASCore;
-import com.inappstory.sdk.utils.IVibrateUtils;
 
 import java.lang.ref.WeakReference;
 

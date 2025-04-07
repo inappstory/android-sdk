@@ -5,7 +5,6 @@ import static com.inappstory.sdk.game.reader.GameReaderContentFragment.GAME_READ
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.ActivityInfo;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.os.Build;
@@ -61,7 +60,6 @@ import com.inappstory.sdk.stories.ui.reader.animations.ZoomReaderFromCellAnimati
 import com.inappstory.sdk.stories.utils.IASBackPressHandler;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 import com.inappstory.sdk.stories.utils.Sizes;
-import com.inappstory.sdk.utils.SystemUiUtils;
 
 
 public class StoriesTabletActivity extends AppCompatActivity implements BaseStoryScreen, ShowGoodsCallback {

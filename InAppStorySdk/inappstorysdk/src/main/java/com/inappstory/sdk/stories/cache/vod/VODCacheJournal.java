@@ -2,9 +2,6 @@ package com.inappstory.sdk.stories.cache.vod;
 
 import android.util.Log;
 
-import com.inappstory.sdk.lrudiskcache.CacheJournalItem;
-import com.inappstory.sdk.utils.CollectionUtils;
-
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;

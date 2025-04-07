@@ -1,7 +1,7 @@
 package com.inappstory.sdk.inappmessage.ui.appearance.impl;
 
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageBSLineAppearance;
-import com.inappstory.sdk.utils.NumberUtils;
+import com.inappstory.sdk.utils.format.NumberUtils;
 
 import java.util.Map;
 

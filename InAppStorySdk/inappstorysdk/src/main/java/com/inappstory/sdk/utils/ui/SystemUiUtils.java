@@ -1,4 +1,4 @@
-package com.inappstory.sdk.utils;
+package com.inappstory.sdk.utils.ui;
 
 import android.graphics.Color;
 import android.os.Build;

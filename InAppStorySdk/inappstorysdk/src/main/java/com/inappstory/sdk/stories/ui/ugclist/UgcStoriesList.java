@@ -40,7 +40,7 @@ import com.inappstory.sdk.stories.statistic.GetStatisticV1Callback;
 import com.inappstory.sdk.stories.ui.list.StoryTouchListener;
 import com.inappstory.sdk.stories.ui.reader.ActiveStoryItem;
 import com.inappstory.sdk.ugc.list.OnUGCItemClick;
-import com.inappstory.sdk.utils.StringsUtils;
+import com.inappstory.sdk.utils.format.StringsUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;

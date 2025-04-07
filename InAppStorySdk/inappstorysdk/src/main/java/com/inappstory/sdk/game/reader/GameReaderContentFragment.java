@@ -73,8 +73,8 @@ import com.inappstory.sdk.memcache.IGetBitmapFromMemoryCache;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ContentData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.InAppMessageData;
-import com.inappstory.sdk.utils.IAcceleratorSubscriber;
-import com.inappstory.sdk.utils.UrlEncoder;
+import com.inappstory.sdk.utils.systemapi.accelerator.IAcceleratorSubscriber;
+import com.inappstory.sdk.utils.format.UrlEncoder;
 import com.inappstory.sdk.network.utils.UserAgent;
 import com.inappstory.sdk.share.IASShareData;
 import com.inappstory.sdk.share.IASShareManager;
@@ -99,7 +99,7 @@ import com.inappstory.sdk.stories.utils.IASBackPressHandler;
 import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.stories.utils.StoryShareBroadcastReceiver;
 import com.inappstory.sdk.utils.ProgressCallback;
-import com.inappstory.sdk.utils.StringsUtils;
+import com.inappstory.sdk.utils.format.StringsUtils;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -1069,10 +1069,8 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                                                 gameCenterData.canTryReloadCount()
                                         );
                                         manager.gameConfig = gameCenterData.initCode;
-                                        manager.path = gameCenterData.url;
                                         try {
                                             GameScreenOptions options = gameCenterData.options;
-                                            manager.resources = gameCenterData.resources;
                                             setOrientationFromOptions(options);
                                             setFullScreenFromOptions(options);
                                         } catch (Exception ignored) {

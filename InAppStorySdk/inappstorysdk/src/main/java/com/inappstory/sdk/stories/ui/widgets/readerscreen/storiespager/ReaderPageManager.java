@@ -34,7 +34,7 @@ import com.inappstory.sdk.stories.ui.widgets.readerscreen.buttonspanel.ButtonsPa
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.progresstimeline.StoryTimelineManager;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 import com.inappstory.sdk.stories.utils.Sizes;
-import com.inappstory.sdk.utils.StringsUtils;
+import com.inappstory.sdk.utils.format.StringsUtils;
 
 import java.util.Map;
 import java.util.Objects;

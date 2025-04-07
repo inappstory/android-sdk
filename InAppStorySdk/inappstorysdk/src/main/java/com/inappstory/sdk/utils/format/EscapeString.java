@@ -1,4 +1,4 @@
-package com.inappstory.sdk.utils;
+package com.inappstory.sdk.utils.format;
 
 import java.util.ArrayList;
 import java.util.List;

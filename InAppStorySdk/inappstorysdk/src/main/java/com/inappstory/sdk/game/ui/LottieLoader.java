@@ -2,7 +2,6 @@ package com.inappstory.sdk.game.ui;
 
 import android.animation.ValueAnimator;
 import android.content.Context;
-import android.util.Log;
 import android.util.Pair;
 import android.view.View;
 
@@ -10,7 +9,7 @@ import androidx.annotation.NonNull;
 
 import com.inappstory.iasutilsconnector.lottie.ILottieView;
 import com.inappstory.sdk.InAppStoryManager;
-import com.inappstory.sdk.utils.StringsUtils;
+import com.inappstory.sdk.utils.format.StringsUtils;
 
 import java.io.File;
 

@@ -5,7 +5,7 @@ import android.util.Pair;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.network.utils.ConnectionHeadersMap;
 import com.inappstory.sdk.network.utils.ResponseStringFromStream;
-import com.inappstory.sdk.utils.StringsUtils;
+import com.inappstory.sdk.utils.format.StringsUtils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;

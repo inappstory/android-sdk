@@ -15,7 +15,7 @@ import com.inappstory.sdk.stories.cache.vod.VODCacheItemPart;
 import com.inappstory.sdk.stories.cache.vod.VODCacheJournal;
 import com.inappstory.sdk.stories.cache.vod.VODCacheJournalItem;
 import com.inappstory.sdk.stories.cache.vod.VODDownloader;
-import com.inappstory.sdk.utils.StringsUtils;
+import com.inappstory.sdk.utils.format.StringsUtils;
 
 import java.io.File;
 import java.util.ArrayList;

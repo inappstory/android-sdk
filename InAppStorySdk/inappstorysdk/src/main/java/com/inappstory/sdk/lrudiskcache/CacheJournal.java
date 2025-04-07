@@ -3,10 +3,9 @@ package com.inappstory.sdk.lrudiskcache;
 import android.util.Log;
 
 import com.inappstory.sdk.InAppStoryManager;
-import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.stories.api.models.logs.ExceptionLog;
-import com.inappstory.sdk.utils.CollectionUtils;
+import com.inappstory.sdk.utils.format.CollectionUtils;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;

@@ -1,7 +1,7 @@
 package com.inappstory.sdk;
 
 import com.inappstory.sdk.core.data.IAppVersion;
-import com.inappstory.sdk.utils.UrlEncoder;
+import com.inappstory.sdk.utils.format.UrlEncoder;
 
 public class AppVersion implements IAppVersion {
     @Override

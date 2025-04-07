@@ -31,7 +31,7 @@ import com.inappstory.sdk.stories.outercallbacks.common.onboarding.OnboardingLoa
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.utils.TagsUtils;
-import com.inappstory.sdk.utils.StringsUtils;
+import com.inappstory.sdk.utils.format.StringsUtils;
 
 import java.util.ArrayList;
 import java.util.HashSet;

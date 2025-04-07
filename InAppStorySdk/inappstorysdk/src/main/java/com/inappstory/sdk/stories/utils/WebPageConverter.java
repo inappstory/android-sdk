@@ -9,7 +9,6 @@ import android.util.Pair;
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.InAppStoryManager;
-import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
@@ -20,7 +19,7 @@ import com.inappstory.sdk.stories.api.models.ImagePlaceholderType;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
 import com.inappstory.sdk.core.network.content.models.SessionAsset;
 import com.inappstory.sdk.stories.cache.usecases.SessionAssetLocalUseCase;
-import com.inappstory.sdk.utils.StringsUtils;
+import com.inappstory.sdk.utils.format.StringsUtils;
 
 import java.io.File;
 import java.util.ArrayList;

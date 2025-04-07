@@ -30,7 +30,7 @@ import com.inappstory.sdk.stories.api.models.callbacks.LoadListCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.errors.ErrorCallback;
 import com.inappstory.sdk.stories.utils.LoopedExecutor;
-import com.inappstory.sdk.utils.StringsUtils;
+import com.inappstory.sdk.utils.format.StringsUtils;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;

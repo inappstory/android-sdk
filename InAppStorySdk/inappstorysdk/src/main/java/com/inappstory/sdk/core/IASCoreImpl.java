@@ -17,7 +17,6 @@ import com.inappstory.sdk.core.api.IASLogs;
 import com.inappstory.sdk.core.api.IASManager;
 import com.inappstory.sdk.core.api.IASOnboardings;
 import com.inappstory.sdk.core.api.IASDataSettings;
-import com.inappstory.sdk.core.api.IASProjectSettings;
 import com.inappstory.sdk.core.api.IASProjectSettingsInternal;
 import com.inappstory.sdk.core.api.IASSessionAssetsHolder;
 import com.inappstory.sdk.core.api.IASSingleStory;
@@ -53,10 +52,12 @@ import com.inappstory.sdk.stories.exceptions.ExceptionManager;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
 import com.inappstory.sdk.stories.utils.SessionManager;
-import com.inappstory.sdk.utils.AcceleratorUtils;
-import com.inappstory.sdk.utils.IAcceleratorUtils;
-import com.inappstory.sdk.utils.IVibrateUtils;
-import com.inappstory.sdk.utils.VibrateUtils;
+import com.inappstory.sdk.utils.systemapi.accelerator.AcceleratorUtils;
+import com.inappstory.sdk.utils.systemapi.accelerator.IAcceleratorUtils;
+import com.inappstory.sdk.utils.systemapi.audiomanager.AudioManagerUtils;
+import com.inappstory.sdk.utils.systemapi.audiomanager.IAudioManagerUtils;
+import com.inappstory.sdk.utils.systemapi.vibrate.IVibrateUtils;
+import com.inappstory.sdk.utils.systemapi.vibrate.VibrateUtils;
 
 public class IASCoreImpl implements IASCore {
     private AppearanceManager commonAppearance = null;
@@ -77,6 +78,7 @@ public class IASCoreImpl implements IASCore {
     private final IASStatistic statistic;
     private final IVibrateUtils vibrateUtils;
     private final IAcceleratorUtils acceleratorUtils;
+    private final IAudioManagerUtils audioManagerUtils;
     private final IASContentPreload contentPreload;
     private final IASExternalUtilsAPI externalUtilsAPI;
     private final IASContentLoader contentLoader;
@@ -115,6 +117,7 @@ public class IASCoreImpl implements IASCore {
         statistic = new IASStatisticImpl(this);
         vibrateUtils = new VibrateUtils(this);
         acceleratorUtils = new AcceleratorUtils(this);
+        audioManagerUtils = new AudioManagerUtils(this);
         contentPreload = new IASContentPreloadImpl(this);
         iasLogs = new IASLogsImpl(this);
         inAppStoryService = new InAppStoryService(this);
@@ -240,6 +243,11 @@ public class IASCoreImpl implements IASCore {
     @Override
     public IAcceleratorUtils acceleratorUtils() {
         return acceleratorUtils;
+    }
+
+    @Override
+    public IAudioManagerUtils audioManagerUtils() {
+        return audioManagerUtils;
     }
 
     @Override
