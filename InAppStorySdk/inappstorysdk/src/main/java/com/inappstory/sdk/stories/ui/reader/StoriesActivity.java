@@ -375,6 +375,13 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryScree
     }
 
     @Override
+    public void disableSwipeUp(boolean disable) {
+
+        if (draggableFrame != null)
+            draggableFrame.swipeUpIsDisabled(disable);
+    }
+
+    @Override
     public void disableClose(boolean disable) {
         if (draggableFrame != null)
             draggableFrame.disableClose(true);

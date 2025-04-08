@@ -47,4 +47,10 @@ public class StoriesMainTabletFragment extends StoriesMainFragment {
 
     }
 
+    @Override
+    public void disableSwipeUp(boolean disable) {
+
+        if (draggableFrame != null)
+            draggableFrame.swipeUpIsDisabled(disable);
+    }
 }

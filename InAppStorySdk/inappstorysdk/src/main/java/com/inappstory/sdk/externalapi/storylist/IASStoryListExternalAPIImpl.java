@@ -25,6 +25,7 @@ public class IASStoryListExternalAPIImpl implements IASStoryList {
         InAppStoryService.useInstance(new UseServiceInstanceCallback() {
             @Override
             public void use(@NonNull InAppStoryService service) throws Exception {
+                service.getApiSubscribersManager().clearData();
                 IASStoryListRequestData data = new IASStoryListRequestData(
                         feed,
                         uniqueId,

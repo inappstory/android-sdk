@@ -78,6 +78,11 @@ public class InAppStoryAPISubscribersManager {
         urlLocalPath.clear();
     }
 
+    public void clearData() {
+        shownStories.clear();
+        storyFavoriteItemAPIData.clear();
+    }
+
 
     public HashMap<String, IASStoryListRequestData> requestsData = new HashMap<>();
 

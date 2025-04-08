@@ -43,9 +43,14 @@ public class DraggableElasticLayout extends FrameLayout {
     private int mLastActionEvent;
 
     private boolean disabled = false;
+    private boolean swipeUpDisabled = false;
 
     public void dragIsDisabled(boolean disabled) {
         this.disabled = disabled;
+    }
+
+    public void swipeUpIsDisabled(boolean disabled) {
+        this.swipeUpDisabled = disabled;
     }
 
     private List<DraggableElasticCallback> callbacks;
@@ -152,8 +157,15 @@ public class DraggableElasticLayout extends FrameLayout {
 
     @Override
     public void onNestedPreScroll(View target, int dx, int dy, int[] consumed) {
-        if (draggingDown && dy > 0 || draggingUp && dy < 0) {
+        if (draggingDown && dy > 0) {
             if (disabled)
+                disabledDragScale(dy);
+            else {
+                dragScale(dy);
+                consumed[1] = dy;
+            }
+        } else if (draggingUp && dy < 0) {
+            if (disabled || swipeUpDisabled)
                 disabledDragScale(dy);
             else {
                 dragScale(dy);
@@ -165,7 +177,7 @@ public class DraggableElasticLayout extends FrameLayout {
     @Override
     public void onNestedScroll(View target, int dxConsumed, int dyConsumed,
                                int dxUnconsumed, int dyUnconsumed) {
-        if (disabled) {
+        if (disabled || (draggingUp && swipeUpDisabled)) {
             disabledDragScale(dyUnconsumed);
         } else {
             dragScale(dyUnconsumed);

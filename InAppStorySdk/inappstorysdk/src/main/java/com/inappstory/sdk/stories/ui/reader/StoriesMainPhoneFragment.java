@@ -41,4 +41,11 @@ public class StoriesMainPhoneFragment extends StoriesMainFragment {
     public void permissionResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
 
     }
+
+    @Override
+    public void disableSwipeUp(boolean disable) {
+
+        if (draggableFrame != null)
+            draggableFrame.swipeUpIsDisabled(disable);
+    }
 }

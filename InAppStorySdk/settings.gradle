@@ -2,4 +2,4 @@ rootProject.name='InAppStorySdk'
 
 include ':inappstorysdk'
 include ':examples'
-//include ':v17examples'
+include ':apiexamples'
