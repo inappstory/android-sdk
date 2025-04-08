@@ -28,6 +28,7 @@ import com.inappstory.sdk.core.utils.ConnectionCheckCallback;
 import com.inappstory.sdk.externalapi.StoryAPIData;
 import com.inappstory.sdk.externalapi.StoryFavoriteItemAPIData;
 import com.inappstory.sdk.externalapi.storylist.IASStoryListRequestData;
+import com.inappstory.sdk.externalapi.storylist.IASStoryListSessionData;
 import com.inappstory.sdk.game.cache.SuccessUseCaseCallback;
 import com.inappstory.sdk.game.reader.GameStoryData;
 import com.inappstory.sdk.imageloader.CustomFileLoader;
@@ -497,7 +498,12 @@ public class InAppStoryAPISubscribersManager {
         IAPISubscriber subscriber = inAppStoryAPISubscribers.get(uniqueId);
         if (subscriber instanceof IStoryAPIDataHolder) {
             ((IStoryAPIDataHolder) subscriber).setStoryAPIData(storyAPIData);
-            subscriber.updateStoriesData(storyAPIData);
+            subscriber.updateStoriesData(
+                    storyAPIData,
+                    new IASStoryListSessionData().previewAspectRatio(
+                            core.sessionManager().getSession().sessionData().previewAspectRatio
+                    )
+            );
         }
     }
 
@@ -554,7 +560,12 @@ public class InAppStoryAPISubscribersManager {
                 );
                 if (data != null) {
                     Log.e("IAS_SDK_API", "update data: " + data);
-                    subscriber.updateStoryData(data);
+                    subscriber.updateStoryData(
+                            data,
+                            new IASStoryListSessionData().previewAspectRatio(
+                                    core.sessionManager().getSession().sessionData().previewAspectRatio
+                            )
+                    );
                 }
             }
         }
@@ -617,7 +628,12 @@ public class InAppStoryAPISubscribersManager {
 
                 }
                 ((InAppStoryAPIFavoriteListSubscriber) subscriber).setStoryAPIData(newData);
-                subscriber.updateStoriesData(newData);
+                subscriber.updateStoriesData(
+                        newData,
+                        new IASStoryListSessionData().previewAspectRatio(
+                                core.sessionManager().getSession().sessionData().previewAspectRatio
+                        )
+                );
             }
         }
     }
