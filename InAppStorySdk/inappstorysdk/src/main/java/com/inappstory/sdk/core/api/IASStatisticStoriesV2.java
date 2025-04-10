@@ -41,6 +41,7 @@ public interface IASStatisticStoriesV2 extends StatDisabled {
     void createCurrentState(final int stId,
                             final int ind,
                             final String feedId);
+
     void addFakeEvents(final int i,
                        final Integer si,
                        final Integer st,
@@ -75,7 +76,8 @@ public interface IASStatisticStoriesV2 extends StatDisabled {
 
     void sendStoryWidgetEvent(final String name,
                               final String data,
-                              final String feedId);
+                              final String feedId,
+                              boolean forceSend);
 
     void sendGameEvent(final String name,
                        final String data,

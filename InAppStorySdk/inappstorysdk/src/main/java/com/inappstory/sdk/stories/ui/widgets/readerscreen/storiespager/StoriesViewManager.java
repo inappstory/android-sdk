@@ -66,10 +66,10 @@ public class StoriesViewManager {
             storiesView.swipeUp();
     }
 
-    public void sendStoryWidgetEvent(String name, String data, String eventData) {
+    public void sendStoryWidgetEvent(String name, String data, String eventData, boolean forceStatSend) {
         if (data != null)
             core.statistic().storiesV2().sendStoryWidgetEvent(name, data,
-                    pageManager != null ? pageManager.getFeedId() : null);
+                    pageManager != null ? pageManager.getFeedId() : null, forceStatSend);
         if (eventData != null)
             pageManager.widgetEvent(name, eventData);
     }
@@ -642,6 +642,15 @@ public class StoriesViewManager {
     }
 
     public SourceType source = SourceType.SINGLE;
+
+
+    public void swipeVerticalGestureEnabled(boolean enabled) {
+        pageManager.swipeVerticalGestureEnabled(enabled);
+    }
+
+    public void backPressEnabled(boolean enabled) {
+        pageManager.backPressEnabled(enabled);
+    }
 
     public void storySendData(String data) {
         if (core.statistic().storiesV1().disabled()) return;

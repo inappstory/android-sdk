@@ -44,6 +44,7 @@ public class DraggableElasticLayout extends FrameLayout {
 
     private boolean disabled = false;
     private boolean swipeUpDisabled = false;
+    private boolean verticalGesturesEnabled = true;
 
     public void dragIsDisabled(boolean disabled) {
         this.disabled = disabled;
@@ -51,6 +52,10 @@ public class DraggableElasticLayout extends FrameLayout {
 
     public void swipeUpIsDisabled(boolean disabled) {
         this.swipeUpDisabled = disabled;
+    }
+
+    public void verticalGesturesEnabled(boolean enabled) {
+        verticalGesturesEnabled = enabled;
     }
 
     private List<DraggableElasticCallback> callbacks;
@@ -158,14 +163,14 @@ public class DraggableElasticLayout extends FrameLayout {
     @Override
     public void onNestedPreScroll(View target, int dx, int dy, int[] consumed) {
         if (draggingDown && dy > 0) {
-            if (disabled)
+            if (disabled || !verticalGesturesEnabled) {
                 disabledDragScale(dy);
-            else {
+            } else {
                 dragScale(dy);
                 consumed[1] = dy;
             }
         } else if (draggingUp && dy < 0) {
-            if (disabled || swipeUpDisabled)
+            if (disabled || swipeUpDisabled || !verticalGesturesEnabled)
                 disabledDragScale(dy);
             else {
                 dragScale(dy);
@@ -177,7 +182,7 @@ public class DraggableElasticLayout extends FrameLayout {
     @Override
     public void onNestedScroll(View target, int dxConsumed, int dyConsumed,
                                int dxUnconsumed, int dyUnconsumed) {
-        if (disabled || (draggingUp && swipeUpDisabled)) {
+        if (disabled || (draggingUp && swipeUpDisabled) || !verticalGesturesEnabled) {
             disabledDragScale(dyUnconsumed);
         } else {
             dragScale(dyUnconsumed);
@@ -216,7 +221,7 @@ public class DraggableElasticLayout extends FrameLayout {
         } else if (!disableClose && totalDisabledDrag < -400) {
             swipeDownCallback();
         }
-        if (Math.abs(totalDrag) >= dragDismissDistance && !disabled) {
+        if (Math.abs(totalDrag) >= dragDismissDistance && !disabled && verticalGesturesEnabled) {
             dispatchDismissCallback();
         } else {
             if (mLastActionEvent == MotionEvent.ACTION_DOWN) {

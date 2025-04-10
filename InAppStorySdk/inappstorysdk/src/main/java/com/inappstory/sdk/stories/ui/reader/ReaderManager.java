@@ -19,7 +19,6 @@ import com.inappstory.sdk.core.api.IASStatisticStoriesV1;
 import com.inappstory.sdk.core.api.IASStatisticStoriesV2;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.api.impl.IASSingleStoryImpl;
-import com.inappstory.sdk.core.data.IContentWithStatus;
 import com.inappstory.sdk.core.data.IListItemContent;
 import com.inappstory.sdk.core.data.IReaderContent;
 import com.inappstory.sdk.core.network.content.models.Story;
@@ -191,6 +190,20 @@ public class ReaderManager {
         ReaderPageManager manager = getSubscriberByStoryId(storyId);
         if (manager != null)
             manager.swipeUp();
+    }
+
+    public void swipeVerticalGestureEnabled(boolean enabled) {
+        BaseStoryScreen screen = getReaderScreen();
+        if (screen != null) {
+            screen.swipeVerticalGestureEnabled(enabled);
+        }
+    }
+
+    public void backPressEnabled(boolean enabled) {
+        BaseStoryScreen screen = getReaderScreen();
+        if (screen != null) {
+            screen.backPressEnabled(enabled);
+        }
     }
 
     public void showGoods(
@@ -399,6 +412,14 @@ public class ReaderManager {
         lastSentId = 0;
         ContentIdWithIndex contentIdWithIndex = storiesIds.get(position);
         currentStoryId = contentIdWithIndex.id();
+        BaseStoryScreen screen = getReaderScreen();
+        if (screen != null) {
+            ReaderPageManager subscriber = getCurrentSubscriber();
+            if (subscriber != null) {
+                screen.backPressEnabled(subscriber.backPressEnabled);
+                screen.swipeVerticalGestureEnabled(subscriber.swipeGestureEnabled);
+            }
+        }
         Story content = (Story) core.contentHolder().getByIdAndType(currentStoryId, contentType);
         if (content != null) {
             if (firstStoryId > 0 && startedSlideInd > 0) {
@@ -670,7 +691,7 @@ public class ReaderManager {
         return null;
     }
 
-    private ReaderPageManager getCurrentSubscriber() {
+    public ReaderPageManager getCurrentSubscriber() {
         return getSubscriberByStoryId(currentStoryId);
     }
 

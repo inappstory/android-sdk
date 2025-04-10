@@ -226,6 +226,7 @@ public class IAMWebView extends IASWebView implements ContentViewInteractor {
         throw new NotImplementedMethodException();
     }
 
+
     @Override
     public void checkIfClientIsSet() {
         if (!clientIsSet) {

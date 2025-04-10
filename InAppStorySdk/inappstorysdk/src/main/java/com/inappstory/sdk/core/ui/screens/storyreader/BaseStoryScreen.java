@@ -16,6 +16,8 @@ public interface BaseStoryScreen extends BaseScreen {
     void disableDrag(boolean disable);
     void disableSwipeUp(boolean disable);
     void disableClose(boolean disable);
+    void swipeVerticalGestureEnabled(boolean enabled);
+    void backPressEnabled(boolean enabled);
     Point getContainerSize();
     FragmentManager getScreenFragmentManager();
 }

@@ -58,6 +58,7 @@ import com.inappstory.sdk.stories.ui.reader.animations.PopupReaderAnimation;
 import com.inappstory.sdk.stories.ui.reader.animations.ReaderAnimation;
 import com.inappstory.sdk.stories.ui.reader.animations.ZoomReaderCenterAnimation;
 import com.inappstory.sdk.stories.ui.reader.animations.ZoomReaderFromCellAnimation;
+import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPageManager;
 import com.inappstory.sdk.stories.utils.IASBackPressHandler;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 import com.inappstory.sdk.stories.utils.Sizes;
@@ -407,6 +408,17 @@ public class StoriesTabletActivity extends AppCompatActivity implements BaseStor
     }
 
     @Override
+    public void swipeVerticalGestureEnabled(boolean enabled) {
+        if (draggableFrame != null)
+            draggableFrame.verticalGesturesEnabled(enabled);
+    }
+
+    @Override
+    public void backPressEnabled(boolean enabled) {
+
+    }
+
+    @Override
     public Point getContainerSize() {
         return new Point(maxWidth, maxHeight);
     }
@@ -655,8 +667,17 @@ public class StoriesTabletActivity extends AppCompatActivity implements BaseStor
 
     boolean closing = false;
 
+    public boolean backPressEnabled = true;
+
     @Override
     public void onBackPressed() {
+        if (!backPressEnabled && storiesContentFragment != null) {
+            ReaderPageManager page = storiesContentFragment.getCurrentPage();
+            if (page != null) {
+                page.handleBackPress();
+                return;
+            }
+        }
         Fragment fragmentById = getScreenFragmentManager().findFragmentById(R.id.ias_outer_top_container);
         if (fragmentById instanceof IASBackPressHandler && ((IASBackPressHandler) fragmentById).onBackPressed()) {
             return;

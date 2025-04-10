@@ -53,6 +53,7 @@ import com.inappstory.sdk.stories.ui.reader.animations.ZoomReaderCenterAnimation
 import com.inappstory.sdk.stories.ui.reader.animations.ZoomReaderFromCellAnimation;
 import com.inappstory.sdk.stories.ui.utils.FragmentAction;
 import com.inappstory.sdk.core.ui.widgets.elasticview.DraggableElasticLayout;
+import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPageManager;
 import com.inappstory.sdk.stories.utils.IASBackPressHandler;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 import com.inappstory.sdk.stories.utils.Sizes;
@@ -107,6 +108,23 @@ public abstract class StoriesMainFragment extends Fragment implements
                     fragment.readerManager.resumeCurrent(true);
             }
         });
+    }
+
+    @Override
+    public void swipeVerticalGestureEnabled(boolean enabled) {
+        if (draggableFrame != null)
+            draggableFrame.verticalGesturesEnabled(enabled);
+    }
+
+    @Override
+    public void backPressEnabled(boolean enabled) {
+
+    }
+
+    @Override
+    public void disableSwipeUp(boolean disable) {
+        if (draggableFrame != null)
+            draggableFrame.swipeUpIsDisabled(disable);
     }
 
     @Override
@@ -786,8 +804,22 @@ public abstract class StoriesMainFragment extends Fragment implements
 
     boolean closing = false;
 
+    public boolean backPressEnabled = true;
+
     public boolean onBackPressed() {
         if (isAdded()) {
+            if (!backPressEnabled) {
+                useContentFragment(new StoriesContentFragmentAction() {
+                    @Override
+                    public void invoke(StoriesContentFragment fragment) {
+                        ReaderPageManager page = fragment.getCurrentPage();
+                        if (page != null) {
+                            page.handleBackPress();
+                        }
+                    }
+                });
+                return true;
+            }
             Fragment fragmentById = getChildFragmentManager().findFragmentById(R.id.ias_outer_top_container);
             if (fragmentById instanceof IASBackPressHandler && ((IASBackPressHandler) fragmentById).onBackPressed()) {
                 return true;

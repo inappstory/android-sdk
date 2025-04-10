@@ -58,6 +58,10 @@ public class StoriesWebView extends IASWebView implements ContentViewInteractor 
                 manager.storyId + " " + manager.loadedIndex + " " + payload);
     }
 
+    public void handleBackPress() {
+        evaluateJavascript("handleBackpress();", null);
+    }
+
     public void gameComplete(String data) {
         if (data != null)
             loadUrl("javascript:game_complete('" + data + "')");
@@ -315,6 +319,7 @@ public class StoriesWebView extends IASWebView implements ContentViewInteractor 
         getParentForAccessibility().requestDisallowInterceptTouchEvent(false);
         getManager().getPageManager().resumeSlide(false);
     }
+
 
     @Override
     public void screenshotShare(String shareId) {

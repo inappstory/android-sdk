@@ -32,6 +32,7 @@ import com.inappstory.sdk.stories.statistic.GetStatisticV1Callback;
 import com.inappstory.sdk.stories.ui.reader.ReaderManager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.buttonspanel.ButtonsPanelManager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.progresstimeline.StoryTimelineManager;
+import com.inappstory.sdk.stories.ui.widgets.readerscreen.webview.StoriesWebView;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.utils.StringsUtils;
@@ -47,6 +48,12 @@ public class ReaderPageManager implements IReaderSlideViewModel {
     StoriesViewManager webViewManager;
     TimerManager timerManager;
     ReaderPageFragment host;
+    public boolean swipeGestureEnabled = true;
+    public boolean backPressEnabled = true;
+
+    public void handleBackPress() {
+        ((StoriesWebView)host.storiesView).handleBackPress();
+    }
 
     public boolean isCorrectSubscriber(ContentIdAndType contentIdAndType) {
         return getStoryId() == contentIdAndType.contentId &&
@@ -61,6 +68,20 @@ public class ReaderPageManager implements IReaderSlideViewModel {
 
     public void unlockShareButton() {
         buttonsPanelManager.unlockShareButton();
+    }
+
+    public void swipeVerticalGestureEnabled(boolean enabled) {
+        if (parentManager != null) {
+            parentManager.swipeVerticalGestureEnabled(enabled);
+        }
+        swipeGestureEnabled = enabled;
+    }
+
+    public void backPressEnabled(boolean enabled) {
+        if (parentManager != null) {
+            parentManager.backPressEnabled(enabled);
+        }
+        backPressEnabled = enabled;
     }
 
     public void removeStoryFromFavorite() {

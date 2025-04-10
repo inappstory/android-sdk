@@ -174,17 +174,19 @@ public class WebAppInterface {
             String data,
             String eventData
     ) {
-        manager.sendStoryWidgetEvent(name, data, eventData);
+        manager.sendStoryWidgetEvent(name, data, eventData, false);
         logMethod(name + " " + data + " " + eventData);
     }
 
     @JavascriptInterface
     public void storyStatisticEvent(
             String name,
-            String data
+            String data,
+            String eventData,
+            boolean forceEnableStatisticV2
     ) {
-        manager.sendStoryWidgetEvent(name, data, data);
-        logMethod(name + " " + data);
+        manager.sendStoryWidgetEvent(name, data, eventData, forceEnableStatisticV2);
+        logMethod(name + " " + data + " " + eventData + " " + forceEnableStatisticV2);
     }
 
     @JavascriptInterface
@@ -205,10 +207,33 @@ public class WebAppInterface {
     }
 
 
-
     @JavascriptInterface
     public void storyUnfreezeUI() {
         manager.unfreezeUI();
+        logMethod("");
+    }
+
+    @JavascriptInterface
+    public void disableVerticalSwipeGesture() {
+        manager.swipeVerticalGestureEnabled(false);
+        logMethod("");
+    }
+
+    @JavascriptInterface
+    public void enableVerticalSwipeGesture() {
+        manager.swipeVerticalGestureEnabled(true);
+        logMethod("");
+    }
+
+    @JavascriptInterface
+    public void disableBackpress() {
+        manager.backPressEnabled(false);
+        logMethod("");
+    }
+
+    @JavascriptInterface
+    public void enableBackpress() {
+        manager.backPressEnabled(true);
         logMethod("");
     }
 
@@ -236,7 +261,7 @@ public class WebAppInterface {
     public String storyGetLocalData() {
         synchronized (lock) {
             String res = core.keyValueStorage().getString("story" + manager.storyId
-                    + "__" +  ((IASDataSettingsHolder)core.settingsAPI()).userId());
+                    + "__" + ((IASDataSettingsHolder) core.settingsAPI()).userId());
             logMethod(res != null ? res : "");
             return res == null ? "" : res;
         }

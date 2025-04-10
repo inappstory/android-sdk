@@ -56,6 +56,7 @@ import com.inappstory.sdk.stories.ui.reader.animations.ReaderAnimation;
 import com.inappstory.sdk.stories.ui.reader.animations.ZoomReaderCenterAnimation;
 import com.inappstory.sdk.stories.ui.reader.animations.ZoomReaderFromCellAnimation;
 import com.inappstory.sdk.core.ui.widgets.elasticview.DraggableElasticLayout;
+import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPageManager;
 import com.inappstory.sdk.stories.utils.IASBackPressHandler;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 import com.inappstory.sdk.stories.utils.Sizes;
@@ -65,7 +66,6 @@ import com.inappstory.sdk.utils.SystemUiUtils;
 public class StoriesActivity extends AppCompatActivity implements BaseStoryScreen, ShowGoodsCallback {
 
     public boolean pauseDestroyed = false;
-
 
     @Override
     public void onPause() {
@@ -388,6 +388,17 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryScree
     }
 
     @Override
+    public void swipeVerticalGestureEnabled(boolean enabled) {
+        if (draggableFrame != null)
+            draggableFrame.verticalGesturesEnabled(enabled);
+    }
+
+    @Override
+    public void backPressEnabled(boolean enabled) {
+        backPressEnabled = enabled;
+    }
+
+    @Override
     public Point getContainerSize() {
         return Sizes.getScreenSize(this);
     }
@@ -594,8 +605,17 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryScree
 
     boolean closing = false;
 
+    public boolean backPressEnabled = true;
+
     @Override
     public void onBackPressed() {
+        if (!backPressEnabled && storiesContentFragment != null) {
+            ReaderPageManager page = storiesContentFragment.getCurrentPage();
+            if (page != null) {
+                page.handleBackPress();
+                return;
+            }
+        }
         Fragment fragmentById = getScreenFragmentManager().findFragmentById(R.id.ias_outer_top_container);
         if (fragmentById instanceof IASBackPressHandler && ((IASBackPressHandler) fragmentById).onBackPressed()) {
             return;

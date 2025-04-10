@@ -48,6 +48,7 @@ import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.statistic.GetStatisticV1Callback;
 import com.inappstory.sdk.stories.ui.OverlapFragmentObserver;
+import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPageManager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPagerAdapter;
 import com.inappstory.sdk.stories.utils.IASBackPressHandler;
@@ -79,6 +80,11 @@ public class StoriesContentFragment extends Fragment
 
     public void observeGameReader() {
 
+    }
+
+    public ReaderPageManager getCurrentPage() {
+        if (readerManager != null) return readerManager.getCurrentSubscriber();
+        return null;
     }
 
     public BaseStoryScreen getStoriesReader() {
@@ -319,7 +325,6 @@ public class StoriesContentFragment extends Fragment
             screen.disableClose(st.disableClose());
         }
     }
-
 
     public ReaderManager readerManager;
 
