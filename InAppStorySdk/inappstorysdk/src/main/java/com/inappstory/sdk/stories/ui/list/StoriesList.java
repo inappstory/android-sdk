@@ -898,9 +898,14 @@ public class StoriesList extends RecyclerView {
 
                     @Override
                     public void onError() {
-                        setOrRefreshAdapter(new ArrayList<Integer>());
-                        if (callback != null)
-                            callback.loadError(StringsUtils.getNonNull(getFeed()));
+                        post(new Runnable() {
+                            @Override
+                            public void run() {
+                                setOrRefreshAdapter(new ArrayList<Integer>());
+                                if (callback != null)
+                                    callback.loadError(StringsUtils.getNonNull(getFeed()));
+                            }
+                        });
                     }
                 };
                 core.contentLoader().storyDownloadManager().loadStories(
