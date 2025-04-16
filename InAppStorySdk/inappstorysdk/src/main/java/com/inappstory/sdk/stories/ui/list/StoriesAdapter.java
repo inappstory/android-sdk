@@ -405,7 +405,8 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
 
     @Override
     public int getItemCount() {
-        return storiesIds.size() + ((!storiesIds.isEmpty() && hasFavItem) ? 1 : 0) +
-                ((!storiesIds.isEmpty() && useUGC) ? 1 : 0);
+        if (storiesIds.isEmpty()) return 0;
+        return storiesIds.size() + (hasFavItem ? 1 : 0) +
+                (useUGC ? 1 : 0);
     }
 }
