@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Color;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -160,6 +161,8 @@ public class DraggableElasticLayout extends FrameLayout {
         return (nestedScrollAxes & View.SCROLL_AXIS_VERTICAL) != 0;
     }
 
+    int totalScrollValue = 0;
+
     @Override
     public void onNestedPreScroll(View target, int dx, int dy, int[] consumed) {
         if (draggingDown && dy > 0) {
@@ -177,12 +180,15 @@ public class DraggableElasticLayout extends FrameLayout {
                 consumed[1] = dy;
             }
         }
+        totalScrollValue = Math.min(0, totalScrollValue + dy);
     }
 
     @Override
     public void onNestedScroll(View target, int dxConsumed, int dyConsumed,
                                int dxUnconsumed, int dyUnconsumed) {
-        if (disabled || (draggingUp && swipeUpDisabled) || !verticalGesturesEnabled) {
+        if (totalScrollValue == 0 && dyUnconsumed > 0) {
+            disabledDragScale(dyUnconsumed);
+        } else if (disabled || (draggingUp && swipeUpDisabled) || !verticalGesturesEnabled) {
             disabledDragScale(dyUnconsumed);
         } else {
             dragScale(dyUnconsumed);
@@ -338,6 +344,7 @@ public class DraggableElasticLayout extends FrameLayout {
     }
 
     private void dispatchDismissCallback() {
+        totalScrollValue = 0;
         if (callbacks != null && !callbacks.isEmpty()) {
             for (DraggableElasticCallback callback : callbacks) {
                 if (callback != null)
@@ -384,6 +391,7 @@ public class DraggableElasticLayout extends FrameLayout {
 
 
     private void dispatchDropCallback() {
+        totalScrollValue = 0;
         if (callbacks != null && !callbacks.isEmpty()) {
             for (DraggableElasticCallback callback : callbacks) {
                 if (callback != null)
