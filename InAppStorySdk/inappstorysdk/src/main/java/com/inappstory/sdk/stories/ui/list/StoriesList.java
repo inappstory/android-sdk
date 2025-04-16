@@ -729,13 +729,18 @@ public class StoriesList extends RecyclerView {
                     final String tagsHash = StringsUtils.md5(TextUtils.join(",", nonSortedTags));
                     key = new StoriesRequestKey(cacheId, feed, tagsHash);
                 }
-                List<Integer> storiesIds;
+                final List<Integer> storiesIds;
                 StoriesRequestResult state = core.storiesListVMHolder().getStoriesRequestResult(key);
                 if (state == null || (storiesIds = state.getStoriesIds()) == null) {
                     loadStoriesInner(key);
                     return;
                 }
-                setOrRefreshAdapter(storiesIds);
+                post(new Runnable() {
+                    @Override
+                    public void run() {
+                        setOrRefreshAdapter(storiesIds);
+                    }
+                });
                 if (callback != null) {
                     callback.storiesLoaded(
                             storiesIds.size(),
@@ -773,44 +778,45 @@ public class StoriesList extends RecyclerView {
     }
 
     private void setOrRefreshAdapter(final List<Integer> storiesIds) {
+        final AppearanceManager appearanceManager = getAppearanceManager();
+        setOverScrollMode(appearanceManager.csListOverscroll() ?
+                OVER_SCROLL_ALWAYS : OVER_SCROLL_NEVER);
+        adapter = new StoriesAdapter(
+                InAppStoryManager.getInstance().iasCore(),
+                getContext(),
+                uniqueID,
+                manager != null ? manager.currentSessionId : "",
+                storiesIds,
+                appearanceManager,
+                isFavoriteList,
+                callback,
+                getFeed(),
+                getFeedId(),
+                appearanceManager.csHasFavorite() && !isFavoriteList,
+                !isFavoriteList ? favoriteItemClick : null,
+                hasSessionUGC() && appearanceManager.csHasUGC() && !isFavoriteList,
+                !isFavoriteList ? ugcItemClick : null);
+        if (layoutManager == defaultLayoutManager && appearanceManager.csColumnCount() != null) {
+            setLayoutManager(new GridLayoutManager(getContext(), appearanceManager.csColumnCount()) {
+                @Override
+                public int scrollVerticallyBy(int dy, Recycler recycler, State state) {
+                    int scrollRange = super.scrollVerticallyBy(dy, recycler, state);
+                    int overScroll = dy - scrollRange;
+                    if (overScroll != 0 && scrollCallback != null) {
+                        //  scrollCallback.onOverscroll(0, overScroll);
+                    }
+                    return scrollRange;
+                }
+            });
+
+        } else
+            setLayoutManager(layoutManager);
+        setAdapter(adapter);
+
         post(
                 new Runnable() {
                     @Override
                     public void run() {
-                        final AppearanceManager appearanceManager = getAppearanceManager();
-                        setOverScrollMode(appearanceManager.csListOverscroll() ?
-                                OVER_SCROLL_ALWAYS : OVER_SCROLL_NEVER);
-                        adapter = new StoriesAdapter(
-                                InAppStoryManager.getInstance().iasCore(),
-                                getContext(),
-                                uniqueID,
-                                manager != null ? manager.currentSessionId : "",
-                                storiesIds,
-                                appearanceManager,
-                                isFavoriteList,
-                                callback,
-                                getFeed(),
-                                getFeedId(),
-                                appearanceManager.csHasFavorite() && !isFavoriteList,
-                                !isFavoriteList ? favoriteItemClick : null,
-                                hasSessionUGC() && appearanceManager.csHasUGC() && !isFavoriteList,
-                                !isFavoriteList ? ugcItemClick : null);
-                        if (layoutManager == defaultLayoutManager && appearanceManager.csColumnCount() != null) {
-                            setLayoutManager(new GridLayoutManager(getContext(), appearanceManager.csColumnCount()) {
-                                @Override
-                                public int scrollVerticallyBy(int dy, Recycler recycler, State state) {
-                                    int scrollRange = super.scrollVerticallyBy(dy, recycler, state);
-                                    int overScroll = dy - scrollRange;
-                                    if (overScroll != 0 && scrollCallback != null) {
-                                        //  scrollCallback.onOverscroll(0, overScroll);
-                                    }
-                                    return scrollRange;
-                                }
-                            });
-
-                        } else
-                            setLayoutManager(layoutManager);
-                        setAdapter(adapter);
                         if (scrollCallback != null && !scrolledItems.isEmpty()) {
 
                             scrollCallback.onVisibleAreaUpdated(
