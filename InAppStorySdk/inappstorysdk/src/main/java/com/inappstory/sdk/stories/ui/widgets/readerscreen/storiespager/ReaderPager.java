@@ -52,6 +52,11 @@ public class ReaderPager extends BothSideViewPager {
     public static PageTransformer cubeTransformer = new CubeTransformer();
     public static PageTransformer depthTransformer = new DepthTransformer();
     public static PageTransformer coverTransformer = new CoverTransformer();
+    private boolean swipeVerticalEnabled = true;
+
+    public void swipeVerticalEnabled(boolean swipeVerticalEnabled) {
+        this.swipeVerticalEnabled = swipeVerticalEnabled;
+    }
 
     public void setTransformAnimation(int transformAnimation) {
         this.transformAnimation = transformAnimation;
@@ -106,6 +111,8 @@ public class ReaderPager extends BothSideViewPager {
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent motionEvent) {
+        if (getParent() != null)
+            getParent().requestDisallowInterceptTouchEvent(!swipeVerticalEnabled);
         if (cubeAnimation) {
             return true;
         }
@@ -130,13 +137,15 @@ public class ReaderPager extends BothSideViewPager {
                 || motionEvent.getAction() == MotionEvent.ACTION_CANCEL) {
             pressedEndY = motionEvent.getY() - pressedY;
             pressedEndX = motionEvent.getX() - pressedX;
-            if (pressedEndY > 400) {
-                host.swipeDownEvent(getCurrentItem());
-                return true;
-            }
-            if (pressedEndY < -400) {
-                host.swipeUpEvent(getCurrentItem());
-                return true;
+            if (swipeVerticalEnabled) {
+                if (pressedEndY > 400) {
+                    host.swipeDownEvent(getCurrentItem());
+                    return true;
+                }
+                if (pressedEndY < -400) {
+                    host.swipeUpEvent(getCurrentItem());
+                    return true;
+                }
             }
             if (swipeRightCondition &&
                     pressedEndX * pressedEndX > pressedEndY * pressedEndY &&

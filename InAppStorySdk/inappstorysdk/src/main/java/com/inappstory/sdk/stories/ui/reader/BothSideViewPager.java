@@ -4,6 +4,8 @@ import android.content.Context;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.AttributeSet;
+import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -18,6 +20,23 @@ public class BothSideViewPager extends ViewPager {
 
     private final HashMap<OnPageChangeListener, SidesPageChangeListener> mPageChangeListeners = new HashMap<>();
     private int layoutDirection = ViewCompat.LAYOUT_DIRECTION_LTR;
+
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent ev) {
+        return super.dispatchTouchEvent(ev);
+    }
+
+    @Override
+    public boolean onInterceptTouchEvent(MotionEvent ev) {
+        Log.e("ViewPagerTouch", "onInterceptTouchEvent " + ev);
+        return super.onInterceptTouchEvent(ev);
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent ev) {
+        Log.e("ViewPagerTouch", "onTouchEvent " + ev);
+        return super.onTouchEvent(ev);
+    }
 
     public BothSideViewPager(Context context) {
         super(context);

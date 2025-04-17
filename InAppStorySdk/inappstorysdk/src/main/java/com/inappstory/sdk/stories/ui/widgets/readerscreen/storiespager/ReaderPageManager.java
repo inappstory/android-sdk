@@ -74,6 +74,7 @@ public class ReaderPageManager implements IReaderSlideViewModel {
         if (parentManager != null) {
             parentManager.swipeVerticalGestureEnabled(enabled);
         }
+
         swipeGestureEnabled = enabled;
     }
 

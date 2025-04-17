@@ -427,6 +427,7 @@ public class StoriesWebView extends IASWebView implements ContentViewInteractor 
 
     @Override
     public boolean onTouchEvent(MotionEvent motionEvent) {
+        Log.e("ViewPagerTouch", "WebView onTouchEvent " + motionEvent);
         if (checkIfParentsHasCubeAnimation(getParentForAccessibility())) return false;
         boolean c = super.onTouchEvent(motionEvent);
         if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
@@ -444,6 +445,7 @@ public class StoriesWebView extends IASWebView implements ContentViewInteractor 
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent motionEvent) {
+        Log.e("ViewPagerTouch", "WebView onInterceptTouchEvent " + motionEvent);
         if (checkIfParentsHasCubeAnimation(getParentForAccessibility())) return false;
         boolean c = super.onInterceptTouchEvent(motionEvent);
         if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {

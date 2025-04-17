@@ -193,6 +193,9 @@ public class ReaderManager {
     }
 
     public void swipeVerticalGestureEnabled(boolean enabled) {
+        if (host != null) {
+            host.storiesViewPager.swipeVerticalEnabled(enabled);
+        }
         BaseStoryScreen screen = getReaderScreen();
         if (screen != null) {
             screen.swipeVerticalGestureEnabled(enabled);
