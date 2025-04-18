@@ -396,6 +396,7 @@ public class ReaderPageFragment extends Fragment {
         try {
             return createFragmentView(container);
         } catch (Exception e) {
+            e.printStackTrace();
             InAppStoryManager.handleException(e);
             return new View(getContext());
         }
@@ -543,10 +544,10 @@ public class ReaderPageFragment extends Fragment {
         webViewContainer.setOrientation(LinearLayout.VERTICAL);
         webViewContainer.setLayoutParams(webViewContainerParams);
         storiesView = new StoriesWebView(context);
-        ((StoriesWebView) storiesView).setId(R.id.ias_stories_view);
+        storiesView.setId(R.id.ias_stories_view);
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
                 MATCH_PARENT, MATCH_PARENT);
-        ((StoriesWebView) storiesView).setLayoutParams(lp);
+        storiesView.setLayoutParams(lp);
         webViewContainer.addView(((StoriesWebView) storiesView));
         return webViewContainer;
     }
