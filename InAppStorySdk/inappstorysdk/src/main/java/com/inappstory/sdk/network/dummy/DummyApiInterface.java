@@ -5,6 +5,8 @@ import com.inappstory.sdk.network.models.Request;
 import com.inappstory.sdk.stories.api.models.GameLaunchConfigObject;
 import com.inappstory.sdk.stories.api.models.StatisticSendObject;
 
+import java.util.List;
+
 public class DummyApiInterface implements ApiInterface {
 
 
@@ -78,7 +80,7 @@ public class DummyApiInterface implements ApiInterface {
     }
 
     @Override
-    public Request sendStat(String eventName, String sessionId, String userId,
+    public Request sendStat(String eventName, String fullData, String sessionId, String userId,
                             Long timestamp, String feedId, String storyId,
                             String whence, String cause, Integer slideIndex,
                             Integer slideTotal, Long durationMs,

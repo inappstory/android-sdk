@@ -481,6 +481,7 @@ public class IASStatisticStoriesV2Impl implements IASStatisticStoriesV2 {
             StoryStatisticV2Task task = JsonParser.fromJson(data, StoryStatisticV2Task.class);
             task.event = name;
             task.feedId = feedId;
+            task.fullData = data;
             generateBase(task);
             addTask(
                     task,
@@ -514,6 +515,7 @@ public class IASStatisticStoriesV2Impl implements IASStatisticStoriesV2 {
                     Response response = core.network().execute(
                             core.network().getApi().sendStat(
                                     task.event,
+                                    task.fullData,
                                     task.sessionId,
                                     task.userId,
                                     task.timestamp,

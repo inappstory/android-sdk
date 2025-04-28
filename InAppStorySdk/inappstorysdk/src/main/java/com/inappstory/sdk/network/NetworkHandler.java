@@ -18,6 +18,7 @@ import com.inappstory.sdk.network.annotations.api.PUT;
 import com.inappstory.sdk.network.annotations.api.Path;
 import com.inappstory.sdk.network.annotations.api.Query;
 import com.inappstory.sdk.network.annotations.api.QueryObject;
+import com.inappstory.sdk.network.annotations.api.QueryVars;
 import com.inappstory.sdk.network.annotations.api.ReplaceHeader;
 import com.inappstory.sdk.network.utils.ObjectToQuery;
 import com.inappstory.sdk.utils.UrlEncoder;
@@ -105,11 +106,19 @@ public final class NetworkHandler implements InvocationHandler {
                 } else if (annotation instanceof QueryObject) {
                     List<Pair<String, String>> objList =
                             new ObjectToQuery().convert(((QueryObject) annotation).value(), args[i].toString());
-                    if (objList != null)
+                    if (objList != null) {
                         for (int k = 0; k < objList.size(); k++) {
                             varList.add(new Pair(objList.get(k).first, encoder.encode(objList.get(k).second)));
                         }
-
+                    }
+                } else if (annotation instanceof QueryVars) {
+                    List<Pair<String, String>> objList =
+                            new ObjectToQuery().convert(args[i].toString());
+                    if (objList != null) {
+                        for (int k = 0; k < objList.size(); k++) {
+                            varList.add(new Pair(objList.get(k).first, encoder.encode(objList.get(k).second)));
+                        }
+                    }
                 } else if (annotation instanceof Field) {
                     bodyEncoded += "&" + ((Field) annotation).value() + "=" + encoder.encode(args[i].toString());
                 } else if (annotation instanceof Body) {

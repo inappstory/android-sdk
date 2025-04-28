@@ -152,6 +152,8 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
         }
     }
 
+
+
     @Override
     public void setPlaceholders(@NonNull Map<String, String> newPlaceholders) {
         synchronized (settingsLock) {

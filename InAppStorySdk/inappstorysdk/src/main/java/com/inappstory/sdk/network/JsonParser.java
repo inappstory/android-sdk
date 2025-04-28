@@ -135,7 +135,10 @@ public class JsonParser {
     private static List<Pair<String, String>> mapToQueryParams(String mainName, Map<String, Object> map) {
         ArrayList<Pair<String, String>> result = new ArrayList<>();
         for (Map.Entry<String, Object> entry : map.entrySet()) {
-            String newMainName = mainName + "[" + entry.getKey() + "]";
+            String newMainName = entry.getKey();
+            if (mainName != null) {
+                newMainName = mainName + "[" + entry.getKey() + "]";
+            }
             if (entry.getValue() instanceof List) {
                 result.addAll(listToQueryParams(newMainName, (List<Object>) entry.getValue()));
             } else if (entry.getValue() instanceof Map) {

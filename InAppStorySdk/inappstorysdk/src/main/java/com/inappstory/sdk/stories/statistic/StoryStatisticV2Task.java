@@ -45,5 +45,7 @@ public class StoryStatisticV2Task {
     public Integer layoutIndex;
     @SerializedName("m")
     public Integer mode;
+    @SerializedName("fullData")
+    public String fullData;
 
 }

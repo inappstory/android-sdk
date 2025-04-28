@@ -12,11 +12,14 @@ import com.inappstory.sdk.network.annotations.api.PUT;
 import com.inappstory.sdk.network.annotations.api.Path;
 import com.inappstory.sdk.network.annotations.api.Query;
 import com.inappstory.sdk.network.annotations.api.QueryObject;
+import com.inappstory.sdk.network.annotations.api.QueryVars;
 import com.inappstory.sdk.network.annotations.api.ReplaceHeader;
 import com.inappstory.sdk.network.models.Request;
 import com.inappstory.sdk.network.utils.headers.HeadersKeys;
 import com.inappstory.sdk.stories.api.models.GameLaunchConfigObject;
 import com.inappstory.sdk.stories.api.models.StatisticSendObject;
+
+import java.util.List;
 
 /**
  * InAppStory API. Contains all request
@@ -211,6 +214,7 @@ public interface ApiInterface {
     })
     Request sendStat(
             @Path("event_name") String eventName,
+            @QueryVars String data,
             @Query("s") String sessionId,
             @Query("u") String userId,
             @Query("ts") Long timestamp,
