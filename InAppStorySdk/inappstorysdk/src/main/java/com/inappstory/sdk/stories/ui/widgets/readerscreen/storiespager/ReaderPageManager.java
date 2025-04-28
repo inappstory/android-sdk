@@ -462,7 +462,6 @@ public class ReaderPageManager implements IReaderSlideViewModel {
 
     public void changeCurrentSlide(final int slideIndex) {
         if (checkIfManagersIsNull()) return;
-        host.showLoader();
         currentSlideIsLoaded = false;
         core.statistic().profiling().addTask("slide_show",
                 storyId + "_" + slideIndex);
