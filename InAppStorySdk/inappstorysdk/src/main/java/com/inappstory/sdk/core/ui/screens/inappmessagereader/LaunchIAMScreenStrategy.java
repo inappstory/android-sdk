@@ -168,7 +168,8 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
         }
         if (inAppMessageOpenSettings.tags() != null) {
             List<String> filteredList = new ArrayList<>();
-            for (String tag : inAppMessageOpenSettings.tags()) {
+            List<String> copyTags = new ArrayList<>(inAppMessageOpenSettings.tags());
+            for (String tag : copyTags) {
                 if (!TagsUtils.checkTagPattern(tag)) {
                     InAppStoryManager.showELog(
                             InAppStoryManager.IAS_WARN_TAG,

@@ -180,7 +180,8 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
 
         Set<String> newList = new HashSet<>();
         if (tags != null) {
-            for (String tag : tags) {
+            List<String> copyTags = new ArrayList<>(tags);
+            for (String tag : copyTags) {
                 if (!TagsUtils.checkTagPattern(tag)) {
                     InAppStoryManager.showELog(
                             InAppStoryManager.IAS_WARN_TAG,
@@ -240,7 +241,8 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
         synchronized (settingsLock) {
             mergedTags.addAll(tags);
         }
-        for (String tag : newTags) {
+        List<String> copyTags = new ArrayList<>(newTags);
+        for (String tag : copyTags) {
             if (!TagsUtils.checkTagPattern(tag)) {
                 StringsUtils.getFormattedErrorStringFromContext(
                         core.appContext(),
@@ -279,8 +281,8 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
         synchronized (settingsLock) {
             currentTags.addAll(tags);
         }
-
-        for (String tag : removedTags) {
+        List<String> copyTags = new ArrayList<>(removedTags);
+        for (String tag : copyTags) {
             if (currentTags.contains(tag)) {
                 tagIsRemoved = true;
                 currentTags.remove(tag);
@@ -409,7 +411,8 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
             }
             if (settings.tags() != null) {
                 List<String> filteredList = new ArrayList<>();
-                for (String tag : settings.tags()) {
+                List<String> copyTags = new ArrayList<>(settings.tags());
+                for (String tag : copyTags) {
                     if (!TagsUtils.checkTagPattern(tag)) {
                         InAppStoryManager.showELog(
                                 InAppStoryManager.IAS_WARN_TAG,

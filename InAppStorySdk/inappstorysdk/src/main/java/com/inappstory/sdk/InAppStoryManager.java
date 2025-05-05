@@ -766,7 +766,8 @@ public class InAppStoryManager implements IASBackPressHandler {
             errorStringId = R.string.ias_builder_user_length_error;
         } else if (builder.tags != null) {
             List<String> filteredList = new ArrayList<>();
-            for (String tag : builder.tags) {
+            List<String> copyTags = new ArrayList<>(builder.tags);
+            for (String tag : copyTags) {
                 if (!TagsUtils.checkTagPattern(tag)) {
                     InAppStoryManager.showELog(
                             InAppStoryManager.IAS_WARN_TAG,
@@ -1172,7 +1173,6 @@ public class InAppStoryManager implements IASBackPressHandler {
         useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-
                 core.storiesListVMHolder().clear();
             }
         });
@@ -1182,7 +1182,6 @@ public class InAppStoryManager implements IASBackPressHandler {
         useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-
                 core.settingsAPI().isSoundOn(isSoundOn);
             }
         });
@@ -1198,7 +1197,6 @@ public class InAppStoryManager implements IASBackPressHandler {
         useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-
                 core.stackFeedAPI().get(feed, uniqueStackId, appearanceManager, tags, stackFeedResult);
             }
         });
@@ -1215,7 +1213,6 @@ public class InAppStoryManager implements IASBackPressHandler {
         useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-
                 core.onboardingsAPI().show(outerContext, feed, manager, tags, 1000);
             }
         });
@@ -1482,6 +1479,7 @@ public class InAppStoryManager implements IASBackPressHandler {
         });
 
     }
+
 
     public boolean isSandbox() {
         return isSandbox;

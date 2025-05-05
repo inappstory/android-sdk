@@ -79,7 +79,8 @@ public class IASContentPreloadImpl implements IASContentPreload {
             }
             if (preloadSettings.tags() != null) {
                 filteredTags = new ArrayList<>();
-                for (String tag : preloadSettings.tags()) {
+                List<String> copyTags = new ArrayList<>(preloadSettings.tags());
+                for (String tag : copyTags) {
                     if (!TagsUtils.checkTagPattern(tag)) {
                         InAppStoryManager.showELog(
                                 InAppStoryManager.IAS_WARN_TAG,

@@ -65,7 +65,8 @@ public class IASOnboardingsImpl implements IASOnboardings {
         final String localTags;
         if (tags != null) {
             List<String> filteredList = new ArrayList<>();
-            for (String tag : tags) {
+            List<String> copyTags = new ArrayList<>(tags);
+            for (String tag : copyTags) {
                 if (!TagsUtils.checkTagPattern(tag)) {
                     InAppStoryManager.showELog(
                             InAppStoryManager.IAS_WARN_TAG,

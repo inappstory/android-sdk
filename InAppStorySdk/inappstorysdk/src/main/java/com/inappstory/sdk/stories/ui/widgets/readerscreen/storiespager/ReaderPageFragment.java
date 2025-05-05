@@ -226,6 +226,13 @@ public class ReaderPageFragment extends Fragment {
     private void setOffsets(View view) {
         Context context = view.getContext();
         if (!Sizes.isTablet(context)) {
+            view.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+                @Override
+                public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                    Log.e("ScreenSizes", "View " + v.getTop() + " " + v.getBottom());
+                }
+            });
+
             if (blackTop != null) {
                 Point screenSize;
                 Rect readerContainer = getArguments().getParcelable("readerContainer");
@@ -255,17 +262,24 @@ public class ReaderPageFragment extends Fragment {
                             phoneHeight - topInsetOffset - bottomInsetOffset
                     );
                 }
-
-                if (phoneHeight - topInsetOffset - bottomInsetOffset < windowHeight) {
+                int maxRatioHeight = (int) (screenSize.x * 2f);
+                if (phoneHeight - bottomInsetOffset < windowHeight) {
+                    Log.e("ScreenSizes", "addBottom");
                     LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) blackBottom.getLayoutParams();
                     lp.height = bottomInsetOffset;
                     blackBottom.requestLayout();
                 }
-                int maxRatioHeight = (int) (screenSize.x * 2f);
                 int restHeight = Math.max(0, screenSize.y - maxRatioHeight) + topInsetOffset;
                 LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) blackTop.getLayoutParams();
                 lp.height = restHeight;
+                Log.e("ScreenSizes",
+                        "ScreenSizeY: " + screenSize.y + "\nPhoneHeight: " +
+                                phoneHeight + "\nWindowHeight: " + windowHeight + "\nMaxRatioHeight: " +
+                                maxRatioHeight + "\nTopInsetOffset:" +
+                                topInsetOffset + "\nBottomInsetOffset:" + bottomInsetOffset + "\n");
                 blackTop.requestLayout();
+
+                Log.e("ScreenSizes", "blackBottom:" + blackBottom.getHeight() + "\nblackTop:" + restHeight);
             }
 
         }
