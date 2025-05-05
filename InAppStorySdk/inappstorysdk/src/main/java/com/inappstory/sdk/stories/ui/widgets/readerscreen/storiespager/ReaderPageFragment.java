@@ -263,8 +263,7 @@ public class ReaderPageFragment extends Fragment {
                     );
                 }
                 int maxRatioHeight = (int) (screenSize.x * 2f);
-                if (phoneHeight - bottomInsetOffset < windowHeight) {
-                    Log.e("ScreenSizes", "addBottom");
+                if (phoneHeight - Math.min(topInsetOffset, bottomInsetOffset) < windowHeight) {
                     LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) blackBottom.getLayoutParams();
                     lp.height = bottomInsetOffset;
                     blackBottom.requestLayout();
