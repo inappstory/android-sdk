@@ -294,8 +294,7 @@ public class StoriesTabletActivity extends AppCompatActivity implements BaseStor
                         @Override
                         public void onAnimationEnd() {
                             draggableFrame.setVisibility(View.GONE);
-                            StoriesTabletActivity.super.finish();
-                            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+                            finishWithoutAnimation();
                         }
                     })
                     .start();
