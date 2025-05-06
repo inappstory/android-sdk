@@ -1,6 +1,14 @@
 Change Log
 ========== 
 
+Version *1.21.3 (1013)*
+----------------------------
+* Updated: free data form from JS send statistic event
+* Fixed: tablet reader activity animation
+* Fixed: stories reader proportions count
+* Fixed: ConcurrentModificationException, copy tags list to temporary variable
+* Fixed: remove showLoader in changeCurrentSlide
+
 Version *1.20.10 (960)*
 ----------------------------
 * Fixed: bug with game preloading
