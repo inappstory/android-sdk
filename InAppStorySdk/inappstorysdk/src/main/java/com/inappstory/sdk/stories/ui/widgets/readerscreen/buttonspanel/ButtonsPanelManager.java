@@ -77,7 +77,7 @@ public class ButtonsPanelManager {
         final int val;
         ContentIdWithIndex idWithIndex = pageManager.getParentManager().getByIdAndIndex(storyId);
         core.callbacksAPI().useCallback(
-                IASCallbackType.CLICK_SHARE,
+                IASCallbackType.LIKE_DISLIKE,
                 new UseIASCallback<LikeDislikeStoryCallback>() {
                     @Override
                     public void use(@NonNull LikeDislikeStoryCallback callback) {
@@ -98,6 +98,7 @@ public class ButtonsPanelManager {
         if (like && story.like() != 1) {
             core.statistic().storiesV2().sendLikeStory(idWithIndex.id(), idWithIndex.index(),
                     pageManager != null ? pageManager.getFeedId() : null);
+
             val = 1;
         } else if (!like && story.like() != -1) {
             core.statistic().storiesV2().sendDislikeStory(idWithIndex.id(), idWithIndex.index(),
