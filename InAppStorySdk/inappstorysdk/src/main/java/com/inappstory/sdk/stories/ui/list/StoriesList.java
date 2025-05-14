@@ -3,15 +3,18 @@ package com.inappstory.sdk.stories.ui.list;
 
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
+import android.view.ViewTreeObserver;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -45,7 +48,9 @@ import com.inappstory.sdk.stories.outercallbacks.storieslist.ListScrollCallback;
 import com.inappstory.sdk.stories.statistic.GetStatisticV1Callback;
 import com.inappstory.sdk.stories.statistic.IASStatisticStoriesV2Impl;
 import com.inappstory.sdk.stories.ui.reader.ActiveStoryItem;
+import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.ugc.list.OnUGCItemClick;
+import com.inappstory.sdk.utils.ScheduledTPEManager;
 import com.inappstory.sdk.utils.StringsUtils;
 
 import java.util.ArrayList;
@@ -53,11 +58,14 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 public class StoriesList extends RecyclerView {
     public StoriesList(@NonNull Context context) {
         super(context);
         init(null);
+
     }
 
     public static String DEFAULT_FEED = "default";
@@ -210,7 +218,9 @@ public class StoriesList extends RecyclerView {
 
     @Override
     public void onDetachedFromWindow() {
+        Log.e("StoriesListMeasures", "onDetachedFromWindow");
         super.onDetachedFromWindow();
+        scheduledTimerCheckVisibility.cancel(false);
         InAppStoryService.useInstance(new UseServiceInstanceCallback() {
             @Override
             public void use(@NonNull InAppStoryService service) {
@@ -224,9 +234,18 @@ public class StoriesList extends RecyclerView {
         });
     }
 
+    private ScheduledTPEManager executorService = new ScheduledTPEManager();
+
     @Override
     public void onAttachedToWindow() {
+        Log.e("StoriesListMeasures", "onAttachedToWindow");
         super.onAttachedToWindow();
+        scheduledTimerCheckVisibility = executorService.scheduleAtFixedRate(
+                checkVisibilityRunnable,
+                1L,
+                300,
+                TimeUnit.MILLISECONDS
+        );
         manager.list = this;
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
@@ -325,7 +344,17 @@ public class StoriesList extends RecyclerView {
                         int rectLeft = Math.max(rect.left, rect2.left);
                         int rectRight = Math.min(rect.right, rect2.right);
                         int rectWidth = Math.max(0, rectRight - rectLeft);
-                        if (rectWidth > 0) {
+
+                        int rectTop = Math.max(rect.top, rect2.top);
+                        int rectBottom = Math.min(rect.bottom, rect2.bottom);
+                        int rectHeight = Math.max(0, rectBottom - rectTop);
+                        Rect rect3 = new Rect();
+                        getWindowVisibleDisplayFrame(rect3);
+
+                        if (rectWidth > 0 && rectHeight > 0 &&
+                                rectTop < rect3.bottom &&
+                                rectBottom > rect3.top
+                        ) {
                             indexes.add(adapter.getStoriesIds().get(ind));
                         }
                     }
@@ -372,6 +401,14 @@ public class StoriesList extends RecyclerView {
 
     }
 
+    Runnable checkVisibilityRunnable = new Runnable() {
+        @Override
+        public void run() {
+            getVisibleItems();
+            sendIndexes();
+        }
+    };
+
     int hasUgc() {
         return (hasSessionUGC() && !isFavoriteList && getAppearanceManager().csHasUGC()) ? 1 : 0;
     }
@@ -392,12 +429,15 @@ public class StoriesList extends RecyclerView {
                         holder.getGlobalVisibleRect(rect);
                         Rect rect2 = new Rect();
                         getGlobalVisibleRect(rect2);
+                        Rect rect3 = new Rect();
+                        getWindowVisibleDisplayFrame(rect3);
                         int rectTop = Math.max(rect.top, rect2.top);
                         int rectBottom = Math.min(rect.bottom, rect2.bottom);
+                        int rectHeight = Math.max(0, rectBottom - rectTop);
                         int rectLeft = Math.max(rect.left, rect2.left);
                         int rectRight = Math.min(rect.right, rect2.right);
-                        int rectHeight = Math.max(0, rectBottom - rectTop);
                         int rectWidth = Math.max(0, rectRight - rectLeft);
+                        if (rectTop > rect3.bottom || rectBottom < rect3.top) continue;
                         float currentPercentage =
                                 (float) (rectHeight * rectWidth) /
                                         (holder.getWidth() * holder.getHeight());
@@ -777,6 +817,8 @@ public class StoriesList extends RecyclerView {
         return this.appearanceManager;
     }
 
+    ScheduledFuture scheduledTimerCheckVisibility;
+
     private void setOrRefreshAdapter(final List<Integer> storiesIds) {
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
@@ -819,7 +861,6 @@ public class StoriesList extends RecyclerView {
                 } else
                     setLayoutManager(layoutManager);
                 setAdapter(adapter);
-
                 post(
                         new Runnable() {
                             @Override
