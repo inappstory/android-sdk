@@ -106,6 +106,9 @@ public class ReaderPageFragment extends Fragment {
         storiesView = view.findViewById(R.id.ias_stories_view);
         timeline = view.findViewById(R.id.ias_timeline);
 
+        int mirrorScale = view.getResources().getInteger(R.integer.mirrorScaleX);
+        close.setScaleX(mirrorScale);
+        timeline.setScaleX(mirrorScale);
         try {
             RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) close.getLayoutParams();
             RelativeLayout.LayoutParams storiesProgressViewLP = (RelativeLayout.LayoutParams) timeline.getLayoutParams();
@@ -142,26 +145,26 @@ public class ReaderPageFragment extends Fragment {
                     layoutParams.addRule(RelativeLayout.BELOW, timeline.getId());
                     break;
                 case TOP_START:
-                    layoutParams.leftMargin = viewsMargin;
+                    layoutParams.setMarginStart(viewsMargin);
                     layoutParams.addRule(RelativeLayout.ALIGN_PARENT_START);
                     storiesProgressViewLP.addRule(RelativeLayout.CENTER_VERTICAL);
                     storiesProgressViewLP.addRule(RelativeLayout.END_OF, close.getId());
                     break;
                 case TOP_END:
-                    layoutParams.rightMargin = viewsMargin;
+                    layoutParams.setMarginEnd(viewsMargin);
                     layoutParams.addRule(RelativeLayout.ALIGN_PARENT_END);
                     storiesProgressViewLP.addRule(RelativeLayout.CENTER_VERTICAL);
                     storiesProgressViewLP.addRule(RelativeLayout.START_OF, close.getId());
                     break;
                 case BOTTOM_START:
-                    layoutParams.leftMargin = viewsMargin;
+                    layoutParams.setMarginStart(viewsMargin);
                     layoutParams.addRule(RelativeLayout.ALIGN_PARENT_START);
                     layoutParams.addRule(RelativeLayout.BELOW, timeline.getId());
                     storiesProgressViewLP.topMargin = viewsMargin;
                     layoutParams.topMargin = viewsMargin;
                     break;
                 case BOTTOM_END:
-                    layoutParams.rightMargin = viewsMargin;
+                    layoutParams.setMarginEnd(viewsMargin);
                     storiesProgressViewLP.topMargin = viewsMargin;
                     layoutParams.topMargin = viewsMargin;
                     layoutParams.addRule(RelativeLayout.ALIGN_PARENT_END);
