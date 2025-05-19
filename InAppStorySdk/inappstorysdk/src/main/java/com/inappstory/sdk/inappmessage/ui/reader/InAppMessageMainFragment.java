@@ -54,7 +54,7 @@ public class InAppMessageMainFragment extends Fragment implements Observer<IAMRe
             InAppStoryManager.useCore(new UseIASCoreCallback() {
                 @Override
                 public void use(@NonNull IASCore core) {
-                    core.screensManager().iamReaderViewModel()
+                    core.screensManager().iamReaderViewModel(getArguments().getInt("iamId"))
                             .removeSubscriber(InAppMessageMainFragment.this);
                 }
             });
@@ -80,7 +80,7 @@ public class InAppMessageMainFragment extends Fragment implements Observer<IAMRe
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-                readerViewModel = core.screensManager().iamReaderViewModel();
+                readerViewModel = core.screensManager().iamReaderViewModel(getArguments().getInt("iamId"));
                 readerViewModel.addSubscriber(InAppMessageMainFragment.this);
                 IAMReaderState state = readerViewModel.getCurrentState();
                 showOnlyIfLoaded = state.showOnlyIfLoaded;
@@ -135,6 +135,12 @@ public class InAppMessageMainFragment extends Fragment implements Observer<IAMRe
         contentContainer.showWithAnimation();
     }
 
+    public void showContainerWithoutAnimation() {
+        if (!contentIsPreloaded)
+            contentContainer.showLoader();
+        contentContainer.showWithoutAnimation();
+    }
+
     public void hideContainerWithAnimation() {
         contentContainer.closeWithAnimation();
     }
@@ -172,6 +178,9 @@ public class InAppMessageMainFragment extends Fragment implements Observer<IAMRe
             }
         });
         IAMContentFragment contentFragment = new IAMContentFragment();
+        Bundle args = new Bundle();
+        args.putInt("iamId", getArguments().getInt("iamId"));
+        contentFragment.setArguments(args);
         FragmentTransaction t = getChildFragmentManager().beginTransaction()
                 .add(
                         CONTENT_ID,

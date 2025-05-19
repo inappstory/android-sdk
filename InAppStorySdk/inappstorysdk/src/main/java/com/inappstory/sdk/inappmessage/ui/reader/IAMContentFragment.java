@@ -50,6 +50,7 @@ public class IAMContentFragment extends Fragment implements Observer<IAMReaderSl
 
     IIAMReaderSlideViewModel readerSlideViewModel;
     IAMReaderSlideState currentState;
+    Integer iamId = null;
 
     @Nullable
     @Override
@@ -147,7 +148,7 @@ public class IAMContentFragment extends Fragment implements Observer<IAMReaderSl
 
     private void openGameHandle(IASCore core, final ContentId contentId) {
         try {
-            IIAMReaderViewModel readerViewModel = core.screensManager().iamReaderViewModel();
+            IIAMReaderViewModel readerViewModel = getViewModel(core);
             core.screensManager().openScreen(
                     requireActivity(),
                     new LaunchGameScreenStrategy(core, true)
@@ -215,16 +216,25 @@ public class IAMContentFragment extends Fragment implements Observer<IAMReaderSl
         }
     }
 
+    private IIAMReaderViewModel getViewModel(IASCore core) {
+        if (iamId == null) {
+            return core.screensManager().iamReaderViewModel();
+        } else {
+            return core.screensManager().iamReaderViewModel(iamId);
+        }
+    }
+
     private boolean isPaused = false;
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        iamId = getArguments().getInt("iamId");
         contentWebView = view.findViewById(R.id.webView);
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-                IIAMReaderViewModel readerViewModel = core.screensManager().iamReaderViewModel();
+                IIAMReaderViewModel readerViewModel = getViewModel(core);
                 IAMReaderState readerState = readerViewModel.getCurrentState();
                 readerSlideViewModel = readerViewModel.slideViewModel();
                 if (readerSlideViewModel != null) {

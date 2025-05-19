@@ -1,6 +1,7 @@
 package com.inappstory.sdk.stories.outercallbacks.common.objects;
 
 
+import android.os.Bundle;
 import android.util.Log;
 
 import androidx.fragment.app.FragmentManager;
@@ -25,6 +26,9 @@ public class DefaultOpenInAppMessageReader implements IOpenInAppMessageReader {
         try {
             InAppMessageMainFragment inAppMessageFragment =
                     new InAppMessageMainFragment();
+            Bundle args = new Bundle();
+            args.putInt("iamId", inAppMessage.id());
+            inAppMessageFragment.setArguments(args);
             FragmentTransaction t = fragmentManager.beginTransaction()
                     .add(
                             containerId,

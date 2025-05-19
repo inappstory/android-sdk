@@ -35,11 +35,6 @@ public class StorySlide implements IReaderContentSlide {
     public boolean isScreenshotShare;
 
     @Override
-    public ISlideTimeline slideTimeline() {
-        return slideTimeline;
-    }
-
-    @Override
     public int index() {
         return slideIndex;
     }

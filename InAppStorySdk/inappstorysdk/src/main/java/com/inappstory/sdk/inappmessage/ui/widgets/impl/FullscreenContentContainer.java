@@ -2,6 +2,7 @@ package com.inappstory.sdk.inappmessage.ui.widgets.impl;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Color;
 import android.graphics.Rect;
 import android.os.Build;
 import android.util.AttributeSet;
@@ -60,6 +61,7 @@ public class FullscreenContentContainer extends IAMContentContainer<InAppMessage
         int backgroundColor = ColorUtils.parseColorRGBA(
                 appearance.backgroundColor()
         );
+       // backgroundColor = Color.BLUE;
         content.setBackgroundColor(backgroundColor);
         generateLoader(backgroundColor);
         container.addView(loaderContainer);
