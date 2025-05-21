@@ -1,6 +1,7 @@
 package com.inappstory.sdk.game.reader;
 
 import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
 
 import androidx.activity.OnBackPressedCallback;
@@ -60,7 +61,7 @@ public class GameActivity extends AppCompatActivity implements BaseGameScreen {
                 forceFinish();
             }
         });
-        if (android.os.Build.VERSION.SDK_INT >= 36) {
+        if (android.os.Build.VERSION.SDK_INT >= 36 || Build.VERSION.CODENAME.equals("Baklava")) {
             OnBackPressedCallback callback = new OnBackPressedCallback(true) {
                 @Override
                 public void handleOnBackPressed() {
