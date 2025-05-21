@@ -17,6 +17,7 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -589,7 +590,15 @@ public class StoriesTabletActivity extends AppCompatActivity implements BaseStor
                 }
             }
         });
-
+        if (android.os.Build.VERSION.SDK_INT >= 36) {
+            OnBackPressedCallback callback = new OnBackPressedCallback(true) {
+                @Override
+                public void handleOnBackPressed() {
+                    onBackPressed();
+                }
+            };
+            getOnBackPressedDispatcher().addCallback(this, callback);
+        }
     }
 
     private void setLoaderFragment(Rect readerContainer) {

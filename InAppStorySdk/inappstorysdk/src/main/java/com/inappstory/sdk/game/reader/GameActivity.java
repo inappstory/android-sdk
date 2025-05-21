@@ -3,6 +3,7 @@ package com.inappstory.sdk.game.reader;
 import android.graphics.Color;
 import android.os.Bundle;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.WindowCompat;
@@ -59,7 +60,15 @@ public class GameActivity extends AppCompatActivity implements BaseGameScreen {
                 forceFinish();
             }
         });
-
+        if (android.os.Build.VERSION.SDK_INT >= 36) {
+            OnBackPressedCallback callback = new OnBackPressedCallback(true) {
+                @Override
+                public void handleOnBackPressed() {
+                    onBackPressed();
+                }
+            };
+            getOnBackPressedDispatcher().addCallback(this, callback);
+        }
     }
 
     private void setStatusBarColor(String color) {

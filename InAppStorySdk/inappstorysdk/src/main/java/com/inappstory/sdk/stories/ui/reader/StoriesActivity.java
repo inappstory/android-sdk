@@ -16,6 +16,7 @@ import android.view.View;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -24,6 +25,7 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.inappstory.sdk.AppearanceManager;
+import com.inappstory.sdk.BuildConfig;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
@@ -536,6 +538,15 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryScree
             }
         });
 
+        if (android.os.Build.VERSION.SDK_INT >= 36) {
+            OnBackPressedCallback callback = new OnBackPressedCallback(true) {
+                @Override
+                public void handleOnBackPressed() {
+                    onBackPressed();
+                }
+            };
+            getOnBackPressedDispatcher().addCallback(this, callback);
+        }
     }
 
     private void setLoaderFragment(Rect readerContainer) {
