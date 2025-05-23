@@ -20,6 +20,7 @@ import com.inappstory.sdk.R;
 import com.inappstory.sdk.UseManagerInstanceCallback;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
+import com.inappstory.sdk.core.ui.screens.IASActivity;
 import com.inappstory.sdk.core.ui.screens.gamereader.BaseGameScreen;
 import com.inappstory.sdk.core.utils.ColorUtils;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.GameReaderAppearanceSettings;
@@ -29,7 +30,7 @@ import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 import com.inappstory.sdk.utils.SystemUiUtils;
 
 
-public class GameActivity extends AppCompatActivity implements BaseGameScreen {
+public class GameActivity extends IASActivity implements BaseGameScreen {
 
 
     @Override

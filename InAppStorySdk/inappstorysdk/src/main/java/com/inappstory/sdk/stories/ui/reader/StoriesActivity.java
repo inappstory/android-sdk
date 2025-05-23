@@ -38,6 +38,7 @@ import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.IASStatisticStoriesV1;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.data.IReaderContent;
+import com.inappstory.sdk.core.ui.screens.IASActivity;
 import com.inappstory.sdk.core.ui.screens.ScreenType;
 import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryScreen;
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenAppearance;
@@ -70,7 +71,7 @@ import com.inappstory.sdk.utils.SystemUiUtils;
 import java.util.Locale;
 
 
-public class StoriesActivity extends AppCompatActivity implements BaseStoryScreen, ShowGoodsCallback {
+public class StoriesActivity extends IASActivity implements BaseStoryScreen, ShowGoodsCallback {
 
     public boolean pauseDestroyed = false;
 
@@ -443,6 +444,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryScree
             forceFinish();
             return;
         }
+
         IASCore core = inAppStoryManager.iasCore();
         Locale lang = ((IASDataSettingsHolder)core.settingsAPI()).lang();
 
@@ -562,6 +564,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryScree
             getOnBackPressedDispatcher().addCallback(this, callback);
         }
     }
+
 
     private void setLoaderFragment(Rect readerContainer) {
         try {
