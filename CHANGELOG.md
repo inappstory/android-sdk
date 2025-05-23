@@ -3,7 +3,7 @@ Change Log
 
 Version *1.21.5 (1015)*
 ----------------------------
-* Fixed: RTL fixes (icons and timelines mirroring, close button offset)
+* Fixed: RTL mode bugs (icons and timelines mirroring, close button offset)
 
 Version *1.21.4 (1014)*
 ----------------------------
