@@ -1,6 +1,14 @@
 Change Log
 ========== 
 
+Version *1.21.5 (1015)*
+----------------------------
+* Fixed: RTL fixes (icons and timelines mirroring, close button offset)
+
+Version *1.21.4 (1014)*
+----------------------------
+* Fixed: like/dislike external API callbacks
+
 Version *1.21.3 (1013)*
 ----------------------------
 * Updated: free data form from JS send statistic event
