@@ -89,7 +89,7 @@ public abstract class IAMContentContainer<T extends InAppMessageAppearance> exte
         ));
         background.setBackgroundColor(
                 ColorUtils.parseColorRGBA(
-                "#0000005A" //black 0.35
+                "#00000000" //black 0.35
         ));
         background.setClickable(true);
         background.setOnClickListener(new OnClickListener() {
