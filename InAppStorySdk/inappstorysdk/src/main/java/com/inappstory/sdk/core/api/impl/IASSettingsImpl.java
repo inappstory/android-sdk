@@ -645,4 +645,9 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
     public boolean sendStatistic() {
         return sendStatistic;
     }
+
+    @Override
+    public Integer layoutDirection() {
+        return null;
+    }
 }

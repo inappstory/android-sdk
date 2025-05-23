@@ -6,6 +6,8 @@ import static com.inappstory.sdk.game.reader.GameReaderContentFragment.GAME_READ
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.os.Build;
@@ -32,6 +34,7 @@ import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASCallbackType;
+import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.IASStatisticStoriesV1;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.data.IReaderContent;
@@ -63,6 +66,8 @@ import com.inappstory.sdk.stories.utils.IASBackPressHandler;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.utils.SystemUiUtils;
+
+import java.util.Locale;
 
 
 public class StoriesActivity extends AppCompatActivity implements BaseStoryScreen, ShowGoodsCallback {
@@ -439,6 +444,15 @@ public class StoriesActivity extends AppCompatActivity implements BaseStoryScree
             return;
         }
         IASCore core = inAppStoryManager.iasCore();
+        Locale lang = ((IASDataSettingsHolder)core.settingsAPI()).lang();
+
+        Resources resources = getResources();
+        Configuration configuration = resources.getConfiguration();
+        configuration.setLocale(lang);
+        configuration.setLayoutDirection(lang);
+        Locale.setDefault(lang);
+        resources.updateConfiguration(configuration, resources.getDisplayMetrics());
+
 
         int navColor = appearanceSettings.csNavBarColor();
         //   if (navColor != 0)

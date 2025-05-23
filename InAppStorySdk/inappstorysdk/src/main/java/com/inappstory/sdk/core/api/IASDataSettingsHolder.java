@@ -24,5 +24,5 @@ public interface IASDataSettingsHolder {
     boolean noCorrectTags();
     boolean gameDemoMode();
     boolean sendStatistic();
-
+    Integer layoutDirection();
 }

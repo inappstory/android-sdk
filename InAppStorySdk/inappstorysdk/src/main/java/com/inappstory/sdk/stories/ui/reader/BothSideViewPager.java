@@ -14,6 +14,8 @@ import androidx.core.view.ViewCompat;
 import androidx.viewpager.widget.PagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
+import com.inappstory.sdk.R;
+
 import java.util.HashMap;
 
 public class BothSideViewPager extends ViewPager {
@@ -57,6 +59,7 @@ public class BothSideViewPager extends ViewPager {
                 position = getCurrentItem();
             }
             this.layoutDirection = viewCompatLayoutDirection;
+            int mirror = getResources().getInteger(R.integer.mirrorScaleX);
             if (adapter != null) {
                 adapter.notifyDataSetChanged();
                 setCurrentItem(position);
