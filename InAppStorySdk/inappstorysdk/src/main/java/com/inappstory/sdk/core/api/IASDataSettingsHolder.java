@@ -15,6 +15,7 @@ public interface IASDataSettingsHolder {
     String userId();
     String userSign();
     Locale lang();
+    boolean changeLayoutDirection();
     boolean isSoundOn();
     Map<String, String> placeholders();
     Map<String, ImagePlaceholderValue> imagePlaceholders();
@@ -24,5 +25,4 @@ public interface IASDataSettingsHolder {
     boolean noCorrectTags();
     boolean gameDemoMode();
     boolean sendStatistic();
-    Integer layoutDirection();
 }

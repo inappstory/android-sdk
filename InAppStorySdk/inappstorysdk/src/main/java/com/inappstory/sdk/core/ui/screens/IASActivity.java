@@ -24,6 +24,11 @@ public class IASActivity extends AppCompatActivity {
         }
         IASCore core = inAppStoryManager.iasCore();
         Locale lang = ((IASDataSettingsHolder)core.settingsAPI()).lang();
+        boolean changeLayoutDirection = ((IASDataSettingsHolder)core.settingsAPI()).changeLayoutDirection();
+        if (!changeLayoutDirection) {
+            super.attachBaseContext(newBase);
+            return;
+        }
         Resources resources = newBase.getResources();
         Configuration configuration = resources.getConfiguration();
         configuration.setLocale(lang);

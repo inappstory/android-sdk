@@ -19,7 +19,7 @@ public interface IASDataSettings {
     void setUserId(String userId);
     void setExternalAppVersion(IAppVersion externalAppVersion);
     void gameDemoMode(boolean gameDemoMode);
-    void setLang(Locale lang);
+    void setLang(Locale lang, boolean changeLayoutDirection);
     void isSoundOn(boolean isSoundOn);
     void switchSoundOn();
     void setPlaceholders(@NonNull Map<String, String> newPlaceholders);

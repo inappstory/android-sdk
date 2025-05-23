@@ -2,6 +2,7 @@ package com.inappstory.sdk.stories.ui.list;
 
 
 import android.content.Context;
+import android.content.res.Configuration;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Rect;
@@ -823,6 +824,12 @@ public class StoriesList extends RecyclerView {
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
+                IASDataSettingsHolder dataSettingsHolder = ((IASDataSettingsHolder)core.settingsAPI());
+                if (dataSettingsHolder.changeLayoutDirection()) {
+                    Configuration configuration = new Configuration();
+                    configuration.setLocale(dataSettingsHolder.lang());
+                    setLayoutDirection(configuration.getLayoutDirection());
+                }
                 if (manager != null) {
                     if (!Objects.equals(manager.currentSessionId, core.sessionManager().getSession().getSessionId()))
                         manager.currentSessionId = core.sessionManager().getSession().getSessionId();

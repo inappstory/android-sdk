@@ -14,6 +14,7 @@ public class InAppStoryUserSettings implements IInAppStoryUserSettings {
     private Map<String, String> placeholders;
     private Map<String, ImagePlaceholderValue> imagePlaceholders;
     private Locale lang;
+    private boolean changeLayoutDirection;
 
     public InAppStoryUserSettings userId(String userId) {
         this.userId = userId;
@@ -46,6 +47,12 @@ public class InAppStoryUserSettings implements IInAppStoryUserSettings {
         return this;
     }
 
+    public InAppStoryUserSettings lang(Locale lang, boolean changeLayoutDirection) {
+        this.lang = lang;
+        this.changeLayoutDirection = changeLayoutDirection;
+        return this;
+    }
+
     @Override
     public String userId() {
         return userId;
@@ -74,5 +81,10 @@ public class InAppStoryUserSettings implements IInAppStoryUserSettings {
     @Override
     public Locale lang() {
         return lang;
+    }
+
+    @Override
+    public boolean changeLayoutDirection() {
+        return changeLayoutDirection;
     }
 }

@@ -1,5 +1,6 @@
 package com.inappstory.sdk.stories.ui.list;
 
+import android.content.res.Configuration;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
@@ -9,6 +10,7 @@ import androidx.annotation.NonNull;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
+import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.data.IListItemContent;
 import com.inappstory.sdk.stories.api.models.ContentType;
 
@@ -94,9 +96,10 @@ public class StoriesListManager implements ListManager {
         post(new Runnable() {
             @Override
             public void run() {
-                if (list == null) return;
-                if (list.loadStoriesLaunched)
-                    list.refresh();
+                final StoriesList storiesList = list;
+                if (storiesList == null) return;
+                if (storiesList.loadStoriesLaunched)
+                    storiesList.refresh();
             }
         });
     }

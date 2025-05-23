@@ -39,6 +39,7 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
     private final List<String> tags = new ArrayList<>();
     private String deviceId = null;
     private String userId;
+    private boolean changeLayoutDirection;
     private String userSign;
     private final Object settingsLock = new Object();
     private IAppVersion externalAppVersion;
@@ -73,7 +74,6 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
         }
         final String currentUserId;
         final Locale currentLang;
-        final String currentUserSign = userSign;
         synchronized (settingsLock) {
             currentUserId = userId;
             if (currentUserId != null && currentUserId.equals(newUserId)) {
@@ -83,10 +83,13 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
             currentLang = lang;
             userId = newUserId;
         }
-        refreshSession(currentUserId, currentLang, currentUserSign);
+        refreshSession(currentUserId, currentLang);
     }
 
-    private void refreshSession(final String currentUserId, final Locale currentLang, String currentUserSign) {
+    private void refreshSession(
+            final String currentUserId,
+            final Locale currentLang
+    ) {
         final String sessionId = core.sessionManager().getSession().getSessionId();
         core.storiesListVMHolder().clear();
         core.storyListCache().clearLocalOpensKey();
@@ -123,19 +126,18 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
     }
 
     @Override
-    public void setLang(final Locale newLang) {
+    public void setLang(final Locale newLang, final boolean changeLayoutDirection) {
         final Locale currentLang;
         final String currentUserId;
-        final String currentUserSign;
         if (newLang == null) return;
         synchronized (settingsLock) {
             if (lang.toLanguageTag().equals(newLang.toLanguageTag())) return;
             currentLang = lang;
             lang = newLang;
+            this.changeLayoutDirection = changeLayoutDirection;
             currentUserId = userId;
-            currentUserSign = userSign;
         }
-        refreshSession(currentUserId, currentLang, currentUserSign);
+        refreshSession(currentUserId, currentLang);
     }
 
     @Override
@@ -151,7 +153,6 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
             this.isSoundOn = !this.isSoundOn;
         }
     }
-
 
 
     @Override
@@ -371,12 +372,10 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
     public void inAppStorySettings(IInAppStoryUserSettings settings) {
         final Locale currentLang;
         final String currentUserId;
-        final String currentUserSign;
         boolean needToReloadSession = false;
         synchronized (settingsLock) {
             currentLang = lang;
             currentUserId = userId;
-            currentUserSign = userSign;
             if (settings.userId() != null) {
                 if (deviceId == null && settings.userId().isEmpty()) {
                     InAppStoryManager.showELog(
@@ -472,12 +471,13 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
             if (settings.lang() != null) {
                 if (!lang.toLanguageTag().equals(settings.lang().toLanguageTag())) {
                     lang = settings.lang();
+                    changeLayoutDirection = settings.changeLayoutDirection();
                     needToReloadSession = true;
                 }
             }
         }
         if (needToReloadSession) {
-            refreshSession(currentUserId, currentLang, currentUserSign);
+            refreshSession(currentUserId, currentLang);
         }
     }
 
@@ -523,6 +523,13 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
     public Locale lang() {
         synchronized (settingsLock) {
             return lang;
+        }
+    }
+
+    @Override
+    public boolean changeLayoutDirection() {
+        synchronized (settingsLock) {
+            return changeLayoutDirection;
         }
     }
 
@@ -646,8 +653,4 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
         return sendStatistic;
     }
 
-    @Override
-    public Integer layoutDirection() {
-        return null;
-    }
 }

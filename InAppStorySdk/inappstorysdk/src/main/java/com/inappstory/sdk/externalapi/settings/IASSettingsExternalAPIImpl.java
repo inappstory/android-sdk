@@ -84,11 +84,11 @@ public class IASSettingsExternalAPIImpl implements IASDataSettings {
         });
     }
 
-    public void setLang(final Locale lang) {
+    public void setLang(final Locale lang, final boolean changeLayoutDirection) {
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-                core.settingsAPI().setLang(lang);
+                core.settingsAPI().setLang(lang, changeLayoutDirection);
             }
         });
     }
