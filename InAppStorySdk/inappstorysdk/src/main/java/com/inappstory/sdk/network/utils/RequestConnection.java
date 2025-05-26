@@ -21,6 +21,7 @@ public class RequestConnection {
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setConnectTimeout(30000);
         connection.setReadTimeout(30000);
+
         connection.setRequestMethod(request.getMethod());
         if (request.getHeaders() != null) {
             for (Object header : request.getHeaders()) {

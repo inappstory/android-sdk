@@ -28,7 +28,6 @@ public class RequestSender {
         ApiLogResponse responseLog = new ApiLogResponse();
         responseLog.buildFromRawResponse(responseWithRawData, requestId);
         InAppStoryManager.sendApiResponseLog(responseLog);
-
         connection.disconnect();
         return responseWithRawData.response;
     }

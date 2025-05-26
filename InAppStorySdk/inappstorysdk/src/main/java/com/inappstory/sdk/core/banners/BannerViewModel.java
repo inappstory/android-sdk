@@ -5,7 +5,6 @@ import com.inappstory.sdk.stories.utils.Observer;
 
 public class BannerViewModel implements IBannerViewModel {
 
-
     private final int bannerId;
     private final Observable<BannerState> stateObservable =
             new Observable<>(new BannerState());
