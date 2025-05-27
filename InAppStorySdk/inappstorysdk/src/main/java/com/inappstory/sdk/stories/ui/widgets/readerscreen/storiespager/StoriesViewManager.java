@@ -678,6 +678,10 @@ public class StoriesViewManager {
         storiesView.stopSlide();
     }
 
+    public void autoSlideEnd() {
+        ((StoriesWebView)storiesView).autoSlideEnd();
+    }
+
     public void restartStory() {
         storiesView.restartSlide(core);
     }

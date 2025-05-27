@@ -145,6 +145,17 @@ public class StoriesWebView extends IASWebView implements ContentViewInteractor 
         logMethod("story_slide_start");
     }
 
+    public void autoSlideEnd() {
+        if (manager.loadedIndex < 0) return;
+        loadUrl("javascript:(function(){" +
+                "if ('story_slide_timer_end' in window) " +
+                "{" +
+                " window.story_slide_timer_end(); " +
+                "}" +
+                "})()");
+
+    }
+
     public void stopSlide() {
         if (manager.loadedIndex < 0) return;
         loadUrl("javascript:(function(){" +

@@ -432,6 +432,12 @@ public class ReaderPageManager implements IReaderSlideViewModel {
         parentManager.prevStory(action);
     }
 
+    public void nextSlideAuto() {
+        if (webViewManager == null) return;
+        pauseTimers();
+        webViewManager.autoSlideEnd();
+    }
+
     public void nextSlide(int action) {
         if (checkIfManagersIsNull()) return;
         IReaderContent story = core.contentHolder().readerContent()

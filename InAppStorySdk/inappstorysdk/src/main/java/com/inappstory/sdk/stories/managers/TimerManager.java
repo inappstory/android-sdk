@@ -53,7 +53,7 @@ public class TimerManager {
         public void run() {
             if (timerDuration > 0 && System.currentTimeMillis() - timerStartTimestamp >= timerDuration) {
                 if (pageManager != null)
-                    pageManager.nextSlide(ShowStory.ACTION_AUTO);
+                    pageManager.nextSlideAuto();
                 cancelTask();
             }
         }
