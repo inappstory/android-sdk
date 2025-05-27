@@ -989,15 +989,11 @@ public class InAppStoryManager implements IASBackPressHandler {
     }
 
     public void setLang(@NonNull final Locale lang) {
-        setLang(lang, false);
-    }
-
-    public void setLang(@NonNull final Locale lang, final boolean changeLayoutDirection) {
         useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
 
-                core.settingsAPI().setLang(lang, changeLayoutDirection);
+                core.settingsAPI().setLang(lang, true);
             }
         });
     }
