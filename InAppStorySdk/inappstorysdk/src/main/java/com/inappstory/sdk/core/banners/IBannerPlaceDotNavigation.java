@@ -1,8 +1,22 @@
 package com.inappstory.sdk.core.banners;
 
+import android.content.Context;
+import android.view.View;
+
 public interface IBannerPlaceDotNavigation {
-    int dotSize(); // in pt, default = 6pt, gap is equal to size
-    String color();
-    String activeColor();
-    int position(); //1 - inside bottom, 2 - outside bottom
+    View getView(Context context);
+
+    BannerDotNavigationPosition position();
+
+    void onBannerItemChanged(
+            View view,
+            int position
+    );
+
+    void onBannerScrolled(
+            View view,
+            int position,
+            float positionOffset,
+            int positionOffsetPixels
+    );
 }

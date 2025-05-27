@@ -21,6 +21,7 @@ public class BothSideViewPager extends ViewPager {
     private final HashMap<OnPageChangeListener, SidesPageChangeListener> mPageChangeListeners = new HashMap<>();
     private int layoutDirection = ViewCompat.LAYOUT_DIRECTION_LTR;
 
+
     @Override
     public boolean dispatchTouchEvent(MotionEvent ev) {
         return super.dispatchTouchEvent(ev);
