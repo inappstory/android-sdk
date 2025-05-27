@@ -264,7 +264,9 @@ public class StoriesWebView extends IASWebView implements ContentViewInteractor 
         currentPage = replaceData;
         if (!notFirstLoading || replaceData.isEmpty()) {
             notFirstLoading = true;
-            final String modifiedPageAndLayout = setDir(injectUnselectableStyle(firstData));
+            final String modifiedPageAndLayout = setDir(injectUnselectableStyle(firstData),
+                    context != null ? context : getContext()
+            );
             new Handler(Looper.getMainLooper()).post(new Runnable() {
                 @Override
                 public void run() {

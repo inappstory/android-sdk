@@ -206,7 +206,8 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                                         webView.loadDataWithBaseURL(
                                                 filePathAndContent.getFilePath(),
                                                 webView.setDir(
-                                                        filePathAndContent.getFileContent()
+                                                        filePathAndContent.getFileContent(),
+                                                        getContext()
                                                 ),
                                                 "text/html; charset=utf-8", "UTF-8",
                                                 null
@@ -1110,7 +1111,8 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                                         webView.loadDataWithBaseURL(
                                                 result.getFilePath(),
                                                 webView.setDir(
-                                                        result.getFileContent()
+                                                        result.getFileContent(),
+                                                        getContext()
                                                 ),
                                                 "text/html; charset=utf-8", "UTF-8",
                                                 null);

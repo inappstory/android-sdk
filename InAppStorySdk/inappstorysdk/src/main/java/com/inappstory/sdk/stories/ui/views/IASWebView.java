@@ -109,9 +109,9 @@ public class IASWebView extends WebView {
                         "} </style>");
     }
 
-    public String setDir(String html) {
+    public String setDir(String html, Context context) {
         try {
-            int dir = getContext().getResources().getConfiguration().getLayoutDirection();
+            int dir = context.getResources().getConfiguration().getLayoutDirection();
             String dirString = (dir == View.LAYOUT_DIRECTION_RTL) ? "rtl" : "ltr";
             return html.replace("{{%dir}}", dirString);
         } catch (Exception e) {

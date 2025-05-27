@@ -59,7 +59,6 @@ public class BothSideViewPager extends ViewPager {
                 position = getCurrentItem();
             }
             this.layoutDirection = viewCompatLayoutDirection;
-            int mirror = getResources().getInteger(R.integer.mirrorScaleX);
             if (adapter != null) {
                 adapter.notifyDataSetChanged();
                 setCurrentItem(position);

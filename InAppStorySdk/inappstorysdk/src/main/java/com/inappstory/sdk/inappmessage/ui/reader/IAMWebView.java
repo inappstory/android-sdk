@@ -78,7 +78,7 @@ public class IAMWebView extends IASWebView implements ContentViewInteractor {
     public void loadSlide(String content) {
         if (slideViewModel == null) return;
         String newContent = slideViewModel.modifyContent(
-                setDir(content)
+                setDir(content, getContext())
         );
         loadDataWithBaseURL(
                 "file:///data/",
