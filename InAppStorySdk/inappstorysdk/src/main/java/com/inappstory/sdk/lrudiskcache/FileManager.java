@@ -1,20 +1,27 @@
 package com.inappstory.sdk.lrudiskcache;
 
-import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.stories.cache.DownloadFileState;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
 public class FileManager {
-    public FileManager(File cacheDir, String subPath) throws IOException {
+    private final IASCore core;
+
+    public FileManager(IASCore core, File cacheDir, String subPath) throws IOException {
+        this.core = core;
         this.cacheDir = cacheDir;
-        prepare(subPath);
+        prepareCacheDir(subPath);
     }
 
     public long getFileSize(final File file) {
@@ -70,6 +77,7 @@ public class FileManager {
         return file;
     }
 
+
     public void delete(String name) throws IOException {
         File file = new File(cacheDir, name);
         if (!file.exists()) {
@@ -79,6 +87,24 @@ public class FileManager {
             return;
 //            throw formatException("Unable to delete file %s", file);
         }
+    }
+
+    public static String getStringFromFile(File fl) throws Exception {
+        FileInputStream fin = new FileInputStream(fl);
+        String ret = convertStreamToString(fin);
+        fin.close();
+        return ret;
+    }
+
+    private static String convertStreamToString(InputStream is) throws Exception {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+        StringBuilder sb = new StringBuilder();
+        String line = null;
+        while ((line = reader.readLine()) != null) {
+            sb.append(line).append("\n");
+        }
+        reader.close();
+        return sb.toString();
     }
 
     public static boolean deleteRecursive(File fileOrDirectory) {
@@ -117,7 +143,7 @@ public class FileManager {
         return new File(cacheDir, name).exists();
     }
 
-    public boolean checkAndUse(File baseDir, String subPath) throws IOException {
+    private boolean checkAndUse(File baseDir, String subPath) throws IOException {
         File file = new File(baseDir + subPath);
         if (!file.exists()) {
             if (!file.mkdirs()) {
@@ -140,9 +166,9 @@ public class FileManager {
         return true;
     }
 
-    public void prepare(String subPath) throws IOException {
+    public void prepareCacheDir(String subPath) throws IOException {
         if (!checkAndUse(cacheDir, subPath)) {
-            if (!checkAndUse(InAppStoryManager.getInstance().getContext().getFilesDir(),
+            if (!checkAndUse(core.appContext().getFilesDir(),
                     subPath)) {
                 throw formatException("Unable to use cache directory %s", cacheDir);
             }
@@ -195,6 +221,28 @@ public class FileManager {
         } catch (Exception ex) {
             return "";
         }
+    }
+
+    private static String convertToHex(byte[] data) {
+        StringBuilder buf = new StringBuilder();
+        for (byte b : data) {
+            int halfbyte = (b >>> 4) & 0x0F;
+            int two_halfs = 0;
+            do {
+                buf.append((0 <= halfbyte) && (halfbyte <= 9) ? (char) ('0' + halfbyte) : (char) ('a' + (halfbyte - 10)));
+                halfbyte = b & 0x0F;
+            } while (two_halfs++ < 1);
+        }
+        return buf.toString();
+    }
+
+    public static String SHA1(String text) throws NoSuchAlgorithmException {
+        if (text == null) return null;
+        MessageDigest md = MessageDigest.getInstance("SHA-1");
+        byte[] textBytes = text.getBytes();
+        md.update(textBytes, 0, textBytes.length);
+        byte[] sha1hash = md.digest();
+        return convertToHex(sha1hash);
     }
 
     public static boolean checkShaAndSize(File file, Long size, String sha) {

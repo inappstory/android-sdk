@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
-    <com.inappstory.sdk.stories.ui.widgets.elasticview.ElasticDragDismissFrameLayout
+    <com.inappstory.sdk.core.ui.widgets.elasticview.DraggableElasticLayout
         android:id="@+id/draggable_frame"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -15,9 +15,9 @@
         tools:context="com.inappstory.sdk.stories.ui.reader.StoriesActivity">
 
         <FrameLayout
-            android:id="@+id/fragments_layout"
+            android:id="@+id/stories_fragments_layout"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_weight="1"/>
-    </com.inappstory.sdk.stories.ui.widgets.elasticview.ElasticDragDismissFrameLayout>
+    </com.inappstory.sdk.core.ui.widgets.elasticview.DraggableElasticLayout>
 </FrameLayout>

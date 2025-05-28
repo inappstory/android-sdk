@@ -1,108 +1,182 @@
 package com.inappstory.sdk.stories.utils;
 
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
-import android.provider.Settings;
+import android.text.TextUtils;
 import android.util.DisplayMetrics;
+import android.util.Log;
 
-import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.network.ApiSettings;
-import com.inappstory.sdk.network.NetworkCallback;
-import com.inappstory.sdk.network.NetworkClient;
+import androidx.annotation.NonNull;
+
+import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.api.IASCallbackType;
+import com.inappstory.sdk.core.api.IASDataSettingsHolder;
+import com.inappstory.sdk.core.api.IASStatisticStoriesV1;
+import com.inappstory.sdk.core.api.UseIASCallback;
+import com.inappstory.sdk.core.api.impl.IASSettingsImpl;
+import com.inappstory.sdk.core.utils.ConnectionCheck;
+import com.inappstory.sdk.core.utils.ConnectionCheckCallback;
+import com.inappstory.sdk.network.callbacks.NetworkCallback;
+import com.inappstory.sdk.network.models.RequestLocalParameters;
 import com.inappstory.sdk.stories.api.models.CachedSessionData;
-import com.inappstory.sdk.stories.api.models.Session;
-import com.inappstory.sdk.stories.api.models.SessionResponse;
-import com.inappstory.sdk.stories.api.models.StatisticPermissions;
+import com.inappstory.sdk.stories.api.models.SessionRequestFields;
+import com.inappstory.sdk.core.network.content.models.SessionResponse;
 import com.inappstory.sdk.stories.api.models.StatisticSendObject;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
-import com.inappstory.sdk.stories.cache.Downloader;
-import com.inappstory.sdk.stories.callbacks.CallbackManager;
-import com.inappstory.sdk.stories.statistic.OldStatisticManager;
-import com.inappstory.sdk.stories.statistic.ProfilingManager;
+import com.inappstory.sdk.stories.outercallbacks.common.errors.ErrorCallback;
+import com.inappstory.sdk.stories.statistic.GetStatisticV1Callback;
+import com.inappstory.sdk.ugc.extinterfaces.IOpenSessionCallback;
+import com.inappstory.sdk.utils.ISessionHolder;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class SessionManager {
-    private static SessionManager INSTANCE;
+    private final IASCore core;
 
-    private static final Object lock = new Object();
-
-    public static SessionManager getInstance() {
-        synchronized (lock) {
-            if (INSTANCE == null)
-                INSTANCE = new SessionManager();
-            return INSTANCE;
-        }
+    public SessionManager(IASCore core) {
+        this.core = core;
+        sessionHolder = new SessionHolder(core);
     }
 
     public void useOrOpenSession(OpenSessionCallback callback) {
-        if (checkOpenStatistic(callback)) {
-            callback.onSuccess();
+        checkOpenStatistic(callback);
+    }
+
+    public void addStaticOpenSessionCallback(IOpenSessionCallback callback) {
+        synchronized (openProcessLock) {
+            staticCallbacks.add(callback);
         }
     }
 
-    public boolean checkOpenStatistic(final OpenSessionCallback callback) {
-        boolean checkOpen = false;
+
+    private final ISessionHolder sessionHolder;
+
+    public ISessionHolder getSession() {
+        return sessionHolder;
+    }
+
+    public void checkOpenStatistic(final OpenSessionCallback callback) {
+        final boolean checkOpen;
         synchronized (openProcessLock) {
             checkOpen = openProcess;
         }
-        if (InAppStoryService.isConnected()) {
-            if (Session.needToUpdate() || checkOpen) {
-                openSession(callback);
-                return false;
-            } else {
-                return true;
-            }
-        } else {
-            if (callback != null)
-                callback.onError();
-            return false;
-        }
-    }
-
-
-    public static boolean openProcess = false;
-
-    public static Object openProcessLock = new Object();
-    public static ArrayList<OpenSessionCallback> callbacks = new ArrayList<>();
-
-    public void openStatisticSuccess(final SessionResponse response) {
-        new Handler(Looper.getMainLooper()).post(new Runnable() {
+        final IASDataSettingsHolder settingsHolder = ((IASDataSettingsHolder) core.settingsAPI());
+        new ConnectionCheck().check(core.appContext(), new ConnectionCheckCallback(core) {
             @Override
-            public void run() {
-                if (response == null || response.session == null) return;
-                response.session.statisticPermissions = new StatisticPermissions(
-                        response.isAllowProfiling,
-                        response.isAllowStatV1,
-                        response.isAllowStatV2,
-                        response.isAllowCrash
-                );
-                response.session.editor = response.editor;
-                response.session.save();
-                InAppStoryService.getInstance().saveSessionPlaceholders(response.placeholders);
-                InAppStoryService.getInstance().saveSessionImagePlaceholders(response.imagePlaceholders);
-                synchronized (openProcessLock) {
-                    openProcess = false;
-                    for (OpenSessionCallback localCallback : callbacks)
-                        if (localCallback != null)
-                            localCallback.onSuccess();
-                    callbacks.clear();
+            public void success() {
+                String session = getSession().getSessionId();
+                if (session.isEmpty() || checkOpen) {
+                    openSession(callback);
+                } else {
+                    callback.onSuccess(
+                            new RequestLocalParameters(
+                                    session,
+                                    settingsHolder.userId(),
+                                    settingsHolder.lang()
+                            )
+                    );
                 }
-                InAppStoryService.getInstance().runStatisticThread();
-                Downloader.downloadFonts(response.cachedFonts);
+            }
+
+            @Override
+            protected void error() {
+                if (callback != null)
+                    callback.onError();
             }
         });
     }
 
-    private static final String FEATURES =
-            "animation,data,deeplink,placeholder,webp,resetTimers,gameReader,swipeUpItems,sendApi,imgPlaceholder";
+
+    public boolean openProcess = false;
+
+    public final Object openProcessLock = new Object();
+    public ArrayList<OpenSessionCallback> callbacks = new ArrayList<>();
+    public ArrayList<IOpenSessionCallback> staticCallbacks = new ArrayList<>();
+
+    private void saveSession(final SessionResponse response) {
+        if (response == null || response.session == null) return;
+        boolean isSendStatistic = InAppStoryManager.getInstance().isSendStatistic();
+        core.statistic().storiesV2().disabled(
+                !(isSendStatistic && response.isAllowStatV2)
+        );
+        core.statistic().profiling().disabled(
+                !(isSendStatistic && response.isAllowProfiling)
+        );
+        core.statistic().exceptions().disabled(
+                !(isSendStatistic && response.isAllowCrash)
+        );
+        core.statistic().iamV1().disabled(!(isSendStatistic && (
+                response.isAllowStatV1 ||
+                        response.isAllowStatV2)
+        ));
+        ((IASSettingsImpl) core.settingsAPI()).sessionPlaceholders(response.placeholders);
+        ((IASSettingsImpl) core.settingsAPI()).sessionImagePlaceholders(response.imagePlaceholders);
+    }
+
+    private void sessionIsSaved(final SessionResponse response) {
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                final IASDataSettingsHolder settingsHolder = ((IASDataSettingsHolder) core.settingsAPI());
+                synchronized (openProcessLock) {
+                    openProcess = false;
+                    for (OpenSessionCallback localCallback : callbacks)
+                        if (localCallback != null)
+                            localCallback.onSuccess(
+                                    new RequestLocalParameters(
+                                            response.session.id,
+                                            settingsHolder.userId(),
+                                            settingsHolder.lang()
+                                    )
+                            );
+                    callbacks.clear();
+                }
+
+            }
+        });
+        core.statistic().storiesV1(new GetStatisticV1Callback() {
+            @Override
+            public void get(@NonNull IASStatisticStoriesV1 manager) {
+                manager.restartSchedule();
+            }
+        });
+        core.assetsHolder().setAssets(response.sessionAssets);
+        core.assetsHolder().downloadAssets();
+    }
+
+    public void openStatisticSuccess(SessionResponse response) {
+        sessionIsSaved(response);
+    }
+
+    private final String FEATURES =
+            "animation,data,deeplink,placeholder,webp,resetTimers,gameReader,swipeUpItems,sendApi,imgPlaceholder,assets,vod,closeStoryApi,slideTimerEndApi";
+
+    private final String SESSION_FIELDS = TextUtils.join(",", new String[]{
+            SessionRequestFields.session,
+            SessionRequestFields.previewAspectRatio,
+            SessionRequestFields.isAllowProfiling,
+            SessionRequestFields.isAllowStatV1,
+            SessionRequestFields.isAllowStatV2,
+            SessionRequestFields.isAllowCrash,
+            SessionRequestFields.isAllowUgc,
+            SessionRequestFields.placeholders,
+            SessionRequestFields.preloadGame,
+            SessionRequestFields.imagePlaceholders
+    });
+    private final String SESSION_EXPAND = TextUtils.join(",", new String[]{
+            SessionRequestFields.sessionAssets
+    });
+
 
     public void openSession(final OpenSessionCallback callback) {
         synchronized (openProcessLock) {
@@ -118,173 +192,244 @@ public class SessionManager {
             if (callback != null)
                 callbacks.add(callback);
         }
-        Context context = InAppStoryService.getInstance().getContext();
-        String platform = "android";
-        String deviceId = Settings.Secure.getString(context.getContentResolver(),
-                Settings.Secure.ANDROID_ID);// Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
-        // deviceId = deviceId + "1";
-        String model = Build.MODEL;
-        String manufacturer = Build.MANUFACTURER;
-        String brand = Build.BRAND;
-        String screenWidth = Integer.toString(Sizes.getScreenSize(context).x);
-        String screenHeight = Integer.toString(Sizes.getScreenSize(context).y);
-        DisplayMetrics metrics = context.getResources().getDisplayMetrics();
-        String screenDpi = Float.toString(metrics.density * 160f);
-        String osVersion = Build.VERSION.CODENAME;
-        String osSdkVersion = Integer.toString(Build.VERSION.SDK_INT);
-        String appPackageId = context.getPackageName();
-        PackageInfo pInfo = null;
-        try {
-            pInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
-        } catch (PackageManager.NameNotFoundException e) {
-            InAppStoryService.createExceptionLog(e);
-        }
-        String appVersion = (pInfo != null ? pInfo.versionName : "");
-        String appBuild = (pInfo != null ? Integer.toString(pInfo.versionCode) : "");
-        if (!InAppStoryService.isConnected()) {
+        openSessionInner();
+    }
+
+    @SuppressLint("HardwareIds")
+    private void openSessionInner() {
+        if (core.network().getBaseUrl() == null) {
             synchronized (openProcessLock) {
                 openProcess = false;
             }
             return;
         }
-        final String sessionOpenUID = ProfilingManager.getInstance().addTask("api_session_open");
-        NetworkClient.getApi().sessionOpen(
-                "cache", FEATURES,
-                platform,
-                deviceId,
-                model,
-                manufacturer,
-                brand,
-                screenWidth,
-                screenHeight,
-                screenDpi,
-                osVersion,
-                osSdkVersion,
-                appPackageId,
-                appVersion,
-                appBuild,
-                InAppStoryService.getInstance().getUserId()
-        ).enqueue(new NetworkCallback<SessionResponse>() {
-            @Override
-            public void onSuccess(SessionResponse response) {
-                if (InAppStoryService.isNull()) return;
-                OldStatisticManager.getInstance().eventCount = 0;
-                ProfilingManager.getInstance().setReady(sessionOpenUID);
-                openStatisticSuccess(response);
-                CachedSessionData cachedSessionData = new CachedSessionData();
-                cachedSessionData.userId = InAppStoryService.getInstance().getUserId();
-                cachedSessionData.placeholders = response.placeholders;
-                cachedSessionData.previewAspectRatio = response.getPreviewAspectRatio();
-                cachedSessionData.sessionId = response.session.id;
-                cachedSessionData.testKey = ApiSettings.getInstance().getTestKey();
-                cachedSessionData.token = ApiSettings.getInstance().getApiKey();
-                cachedSessionData.tags = InAppStoryService.getInstance().getTagsString();
-                CachedSessionData.setInstance(cachedSessionData);
-            }
 
-            @Override
-            public Type getType() {
-                return SessionResponse.class;
-            }
+        Context context = core.appContext();
+        final String platform = "android";
+        final IASDataSettingsHolder dataSettingsHolder = (IASDataSettingsHolder) core.settingsAPI();
+        final String deviceId = dataSettingsHolder.deviceId();
+        final String model = Build.MODEL;
+        final String manufacturer = Build.MANUFACTURER;
+        final String brand = Build.BRAND;
+        final String screenWidth = Integer.toString(Sizes.getScreenSize(context).x);
+        final String screenHeight = Integer.toString(Sizes.getScreenSize(context).y);
+        DisplayMetrics metrics = context.getResources().getDisplayMetrics();
+        final String screenDpi = Float.toString(metrics.density * 160f);
+        final String osVersion = Build.VERSION.CODENAME;
+        final String osSdkVersion = Integer.toString(Build.VERSION.SDK_INT);
+        final String appPackageId = context.getPackageName();
+        PackageInfo pInfo = null;
+        try {
+            pInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
+        } catch (PackageManager.NameNotFoundException e) {
+            core.exceptionManager().createExceptionLog(e);
+        }
+        final String appVersion = (pInfo != null ? pInfo.versionName : "");
+        final String appBuild = (pInfo != null ? Integer.toString(pInfo.versionCode) : "");
+
+        new ConnectionCheck().check(
+                context,
+                new ConnectionCheckCallback(core) {
+                    @Override
+                    public void success() {
+                        final String sessionOpenUID = core.statistic().profiling().addTask("api_session_open");
+                        final String initialUserId = dataSettingsHolder.userId();
+                        final String initialUserSign = dataSettingsHolder.userSign();
+                        core.network().enqueue(
+                                core.network().getApi().sessionOpen(
+                                        SESSION_FIELDS,
+                                        SESSION_EXPAND,
+                                        FEATURES,
+                                        platform,
+                                        deviceId,
+                                        model,
+                                        manufacturer,
+                                        brand,
+                                        screenWidth,
+                                        screenHeight,
+                                        screenDpi,
+                                        osVersion,
+                                        osSdkVersion,
+                                        appPackageId,
+                                        appVersion,
+                                        appBuild,
+                                        initialUserId,
+                                        initialUserSign
+                                ),
+                                new NetworkCallback<SessionResponse>() {
+                                    @Override
+                                    public void onSuccess(SessionResponse response) {
+                                        String serviceUserId = dataSettingsHolder.userId();
+                                        String serviceUserSign = dataSettingsHolder.userSign();
+                                        String currentSession = getSession().getSessionId();
+                                        if (initialUserId == null) {
+                                            if (serviceUserId != null) {
+                                                closeSession(
+                                                        false,
+                                                        true,
+                                                        dataSettingsHolder.lang().toLanguageTag(),
+                                                        null,
+                                                        currentSession
+                                                );
+                                                openSessionInner();
+                                                return;
+                                            }
+                                        } else {
+                                            if (!initialUserId.equals(serviceUserId) ||
+                                                    !Objects.equals(initialUserSign, serviceUserSign)
+                                            ) {
+                                                closeSession(
+                                                        false,
+                                                        true,
+                                                        dataSettingsHolder.lang().toLanguageTag(),
+                                                        initialUserId,
+                                                        currentSession
+                                                );
+                                                openSessionInner();
+                                                return;
+                                            }
+                                        }
+                                        core.statistic().profiling().setReady(sessionOpenUID);
+                                        CachedSessionData cachedSessionData = new CachedSessionData();
+                                        cachedSessionData.userId = serviceUserId;
+                                        cachedSessionData.placeholders = response.placeholders;
+                                        cachedSessionData.previewAspectRatio = response.getPreviewAspectRatio();
+                                        cachedSessionData.isAllowUGC = response.isAllowUgc;
+                                        cachedSessionData.sessionId = response.session.id;
+                                        cachedSessionData.testKey = core.projectSettingsAPI().testKey();
+                                        cachedSessionData.token = core.projectSettingsAPI().apiKey();
+                                        cachedSessionData.tags =
+                                                TextUtils.join(",", dataSettingsHolder.tags());
+                                        boolean isSendStatistic = false;
+                                        InAppStoryManager manager = InAppStoryManager.getInstance();
+                                        if (manager != null)
+                                            isSendStatistic = manager.isSendStatistic();
+                                        sessionHolder.setSession(cachedSessionData, !(isSendStatistic && response.isAllowStatV1));
+                                        core.network().setSessionId(response.session.id);
+                                        if (response.preloadGame)
+                                            core.contentPreload().restartGamePreloader();
+                                        saveSession(response);
+                                        openStatisticSuccess(response);
+                                        core.inAppStoryService()
+                                                .getListReaderConnector().sessionIsOpened(currentSession);
+
+                                    }
+
+                                    @Override
+                                    public Type getType() {
+                                        return SessionResponse.class;
+                                    }
 
 
-            @Override
-            public void onError(int code, String message) {
-                ProfilingManager.getInstance().setReady(sessionOpenUID);
-                if (CallbackManager.getInstance().getErrorCallback() != null) {
-                    CallbackManager.getInstance().getErrorCallback().sessionError();
-                }
-                synchronized (openProcessLock) {
-                    openProcess = false;
-                    new Handler(Looper.getMainLooper()).post(new Runnable() {
-                        @Override
-                        public void run() {
-                            for (OpenSessionCallback localCallback : callbacks)
-                                if (localCallback != null)
-                                    localCallback.onError();
-                            callbacks.clear();
+                                    @Override
+                                    public void errorDefault(String message) {
+                                        core.statistic().profiling().setReady(sessionOpenUID);
+                                        core.callbacksAPI().useCallback(IASCallbackType.ERROR,
+                                                new UseIASCallback<ErrorCallback>() {
+                                                    @Override
+                                                    public void use(@NonNull ErrorCallback callback) {
+                                                        callback.sessionError();
+                                                    }
+                                                }
+                                        );
+                                        final List<OpenSessionCallback> localCallbacks = new ArrayList<>();
+                                        final List<IOpenSessionCallback> localStaticCallbacks = new ArrayList<>();
+                                        synchronized (openProcessLock) {
+                                            openProcess = false;
+                                            localCallbacks.addAll(callbacks);
+                                            callbacks.clear();
+                                            localStaticCallbacks.addAll(staticCallbacks);
+                                        }
+                                        new Handler(Looper.getMainLooper()).post(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                for (OpenSessionCallback localCallback : localCallbacks)
+                                                    if (localCallback != null)
+                                                        localCallback.onError();
+                                                for (IOpenSessionCallback localCallback : localStaticCallbacks)
+                                                    if (localCallback != null)
+                                                        localCallback.onError();
+                                            }
+                                        });
+                                    }
+                                }
+                        );
+
+                    }
+
+                    @Override
+                    protected void error() {
+                        super.error();
+                        synchronized (openProcessLock) {
+                            openProcess = false;
                         }
-                    });
+                    }
                 }
+        );
 
-
-                super.onError(code, message);
-
-            }
-
-            @Override
-            public void onTimeout() {
-                ProfilingManager.getInstance().setReady(sessionOpenUID);
-                if (CallbackManager.getInstance().getErrorCallback() != null) {
-                    CallbackManager.getInstance().getErrorCallback().sessionError();
-                }
-                synchronized (openProcessLock) {
-                    openProcess = false;
-                    new Handler(Looper.getMainLooper()).post(new Runnable() {
-                        @Override
-                        public void run() {
-                            for (OpenSessionCallback localCallback : callbacks)
-                                if (localCallback != null)
-                                    localCallback.onError();
-                            callbacks.clear();
-                        }
-                    });
-                }
-
-            }
-        });
     }
 
     private void clearCaches() {
-        InAppStoryService inAppStoryService = InAppStoryService.getInstance();
-        if (inAppStoryService != null) {
-            inAppStoryService.listStoriesIds.clear();
-            inAppStoryService.clearGames();
-        }
+        core.storiesListVMHolder().clear();
+        core.contentLoader().clearGames();
+        core.contentLoader().clearIamWereLoadedStatuses();
     }
 
-    public void closeSession(boolean sendStatistic, final boolean changeUserId) {
+    public void closeSession(
+            final boolean sendStatistic,
+            final boolean changeUserIdOrLocale,
+            final String oldLang,
+            final String oldUserId,
+            final String oldSessionId
+    ) {
+        if (oldSessionId == null) return;
         clearCaches();
-        if (Session.getInstance().id != null) {
-            List<List<Object>> stat = new ArrayList<>();
-            stat.addAll(sendStatistic ? OldStatisticManager.getInstance().statistic :
-                    new ArrayList<List<Object>>());
-            if (OldStatisticManager.getInstance() != null)
-                OldStatisticManager.getInstance().clear();
+        core.statistic().storiesV1(oldSessionId, new GetStatisticV1Callback() {
+            @Override
+            public void get(@NonNull IASStatisticStoriesV1 manager) {
+                List<List<Object>> stat = new ArrayList<>(
+                        sendStatistic ?
+                                manager.extractCurrentStatistic() :
+                                new ArrayList<List<Object>>()
+                );
 
-            final String sessionCloseUID =
-                    ProfilingManager.getInstance().addTask("api_session_close");
+                final String sessionCloseUID =
+                        core.statistic().profiling().addTask("api_session_close");
+                Log.e("statisticTests", "closeSession");
+                core.network().enqueue(
+                        core.network().getApi().sessionClose(
+                                new StatisticSendObject(
+                                        oldSessionId,
+                                        stat
+                                ),
+                                oldUserId,
+                                oldLang
+                        ),
+                        new NetworkCallback<SessionResponse>() {
+                            @Override
+                            public void onSuccess(SessionResponse response) {
+                                core.statistic().profiling().setReady(sessionCloseUID, true);
+                                if (changeUserIdOrLocale)
+                                    core.inAppStoryService().getListReaderConnector().userIdChanged();
+                            }
 
-            NetworkClient.getApi().sessionClose(new StatisticSendObject(Session.getInstance().id,
-                    stat)).enqueue(
-                    new NetworkCallback<SessionResponse>() {
-                        @Override
-                        public void onSuccess(SessionResponse response) {
-                            ProfilingManager.getInstance().setReady(sessionCloseUID, true);
-                            if (changeUserId && InAppStoryService.isNotNull())
-                                InAppStoryService.getInstance().getListReaderConnector().changeUserId();
+                            @Override
+                            public Type getType() {
+                                return SessionResponse.class;
+                            }
+
+                            @Override
+                            public void errorDefault(String message) {
+                                core.statistic().profiling().setReady(sessionCloseUID);
+                                if (changeUserIdOrLocale)
+                                    core.inAppStoryService().getListReaderConnector().userIdChanged();
+                            }
                         }
-
-                        @Override
-                        public Type getType() {
-                            return SessionResponse.class;
-                        }
-
-                        @Override
-                        public void onTimeout() {
-                            super.onTimeout();
-                            ProfilingManager.getInstance().setReady(sessionCloseUID);
-                        }
-
-                        @Override
-                        public void onError(int code, String message) {
-                            ProfilingManager.getInstance().setReady(sessionCloseUID);
-                            if (changeUserId && InAppStoryService.isNotNull())
-                                InAppStoryService.getInstance().getListReaderConnector().changeUserId();
-                        }
-                    });
-        }
-        Session.clear();
+                );
+            }
+        });
+        core.network().removeSessionId(oldSessionId);
+        sessionHolder.clear(oldSessionId);
     }
 
 }

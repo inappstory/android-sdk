@@ -1,17 +1,11 @@
 package com.inappstory.sdk.stories.outercallbacks.common.reader;
 
-public interface LikeDislikeStoryCallback {
-    void likeStory(int id,
-                   String title,
-                   String tags,
-                   int slidesCount,
-                   int index,
+import com.inappstory.sdk.core.api.IASCallback;
+
+public interface LikeDislikeStoryCallback extends IASCallback {
+    void likeStory(SlideData slideData,
                    boolean value);
 
-    void dislikeStory(int id,
-                      String title,
-                      String tags,
-                      int slidesCount,
-                      int index,
+    void dislikeStory(SlideData slideData,
                       boolean value);
 }

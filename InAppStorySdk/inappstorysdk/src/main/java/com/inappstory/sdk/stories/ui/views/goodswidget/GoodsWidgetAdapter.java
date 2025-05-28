@@ -1,33 +1,53 @@
 package com.inappstory.sdk.stories.ui.views.goodswidget;
 
-import android.content.Context;
-import android.graphics.Paint;
-import android.graphics.Typeface;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.widget.AppCompatImageView;
-import androidx.appcompat.widget.AppCompatTextView;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.inappstory.sdk.AppearanceManager;
-import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.R;
-import com.inappstory.sdk.imageloader.ImageLoader;
-import com.inappstory.sdk.stories.statistic.StatisticManager;
+import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.UseIASCoreCallback;
+import com.inappstory.sdk.core.api.IASCallbackType;
+import com.inappstory.sdk.core.api.UseIASCallback;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryWidgetCallback;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class GoodsWidgetAdapter extends RecyclerView.Adapter<GoodsWidgetItem> {
     ArrayList<GoodsItemData> items = new ArrayList<>();
     GoodsWidget.GoodsWidgetConfig config;
     GetGoodsDataCallback callback;
 
-    public GoodsWidgetAdapter(ArrayList<GoodsItemData> items,
-                              GoodsWidget.GoodsWidgetConfig config,
-                              GetGoodsDataCallback callback) {
+    ICustomGoodsWidget customGoodsWidget;
+    private View parentView;
+
+    @Override
+    public void onAttachedToRecyclerView(@NonNull RecyclerView recyclerView) {
+        super.onAttachedToRecyclerView(recyclerView);
+        if (recyclerView instanceof GoodsWidget) {
+            this.parentView = ((GoodsWidget) recyclerView).parentView;
+        }
+    }
+
+    @Override
+    public void onDetachedFromRecyclerView(@NonNull RecyclerView recyclerView) {
+        super.onDetachedFromRecyclerView(recyclerView);
+        this.parentView = null;
+    }
+
+    public GoodsWidgetAdapter(
+
+            ICustomGoodsWidget customGoodsWidget,
+            ArrayList<GoodsItemData> items,
+            GoodsWidget.GoodsWidgetConfig config,
+            GetGoodsDataCallback callback
+    ) {
+        this.customGoodsWidget = customGoodsWidget;
         this.callback = callback;
         if (items != null)
             this.items.addAll(items);
@@ -43,13 +63,45 @@ public class GoodsWidgetAdapter extends RecyclerView.Adapter<GoodsWidgetItem> {
         }
     }
 
-    public void onItemClick(GoodsItemData data) {
+    public void onItemClick(final GoodsItemData data, View view) {
+        customGoodsWidget.onItemClick(
+                parentView,
+                view,
+                data,
+                callback
+        );
         if (data != null) {
-            if (config != null) {
-                if (StatisticManager.getInstance() != null) {
-                    StatisticManager.getInstance().sendGoodsClick(config.storyId,
-                            config.slideIndex, config.widgetId, data.sku, config.feedId);
-                }
+            if (config != null &&
+                    config.slideData != null &&
+                    config.slideData.story() != null
+            ) {
+                final StoryData storyData = config.slideData.story();
+                InAppStoryManager.useCore(new UseIASCoreCallback() {
+                    @Override
+                    public void use(@NonNull IASCore core) {
+                        core.callbacksAPI().useCallback(IASCallbackType.STORY_WIDGET,
+                                new UseIASCallback<StoryWidgetCallback>() {
+                                    @Override
+                                    public void use(@NonNull StoryWidgetCallback callback) {
+                                        Map<String, String> widgetData = new HashMap<>();
+                                        widgetData.put("story_id", "" + storyData.id());
+                                        widgetData.put("feed_id", storyData.feed());
+                                        widgetData.put("slide_index", "" + config.slideData.index());
+                                        widgetData.put("widget_id", config.widgetId);
+                                        widgetData.put("widget_value", data.sku);
+                                        callback.widgetEvent(config.slideData, "w-goods-click", widgetData);
+                                    }
+                                }
+                        );
+                        core.statistic().storiesV2().sendGoodsClick(
+                                storyData.id(),
+                                config.slideData.index(),
+                                config.widgetId,
+                                data.sku,
+                                storyData.feed()
+                        );
+                    }
+                });
             }
         }
     }
@@ -57,12 +109,14 @@ public class GoodsWidgetAdapter extends RecyclerView.Adapter<GoodsWidgetItem> {
     @NonNull
     @Override
     public GoodsWidgetItem onCreateViewHolder(@NonNull final ViewGroup nParent, int viewType) {
-        ICustomGoodsItem customGoodsItem = AppearanceManager
-                .getCommonInstance()
-                .csCustomGoodsWidget()
+        ICustomGoodsItem customGoodsItem = customGoodsWidget
                 .getItem();
         if (customGoodsItem != null) {
-            return new GoodsWidgetItem(customGoodsItem, this, nParent.getContext());
+            return new GoodsWidgetItem(
+                    customGoodsItem,
+                    this,
+                    nParent.getContext()
+            );
         } else {
             return new GoodsWidgetItem(
                     new SimpleCustomGoodsItem(),
@@ -74,7 +128,7 @@ public class GoodsWidgetAdapter extends RecyclerView.Adapter<GoodsWidgetItem> {
 
     @Override
     public void onBindViewHolder(@NonNull GoodsWidgetItem holder, int position) {
-        holder.bind(this.items.get(position), callback);
+        holder.bind(this.items.get(position));
     }
 
 

@@ -7,6 +7,7 @@ import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.WindowManager;
 
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 
@@ -29,65 +30,65 @@ public class Sizes {
     }
 
 
-    public static float getPixelScaleFactorExt() {
-        if (InAppStoryService.isNull()) return 1;
-        Context con = InAppStoryService.getInstance().getContext();
-        if (con == null)
+    private static float getPixelScaleFactorExt(Context context) {
+        if (context == null)
             return 1;
-        DisplayMetrics displayMetrics = con.getResources().getDisplayMetrics();
+        DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
         return displayMetrics.density;
-    }
-
-    public static float getPixelScaleFactorExt(Context context) {
-        Context con = context;
-        if (con == null)
-            return 1;
-        DisplayMetrics displayMetrics = con.getResources().getDisplayMetrics();
-        return displayMetrics.density;
-    }
-
-    public static Point getScreenSize() {
-        Context con = null;
-        if (InAppStoryService.isNotNull())
-            con = InAppStoryService.getInstance().getContext();
-        if (con == null) return new Point(0, 0);
-        WindowManager wm = (WindowManager) con.getSystemService(Context.WINDOW_SERVICE);
-        Display display = wm.getDefaultDisplay();
-        Point size = new Point();
-        display.getSize(size);
-        return size;
     }
 
     public static Point getScreenSize(Context context) {
-        Context con = context;
-        WindowManager wm = (WindowManager) con.getSystemService(Context.WINDOW_SERVICE);
+        if (context == null) {
+            InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
+            if (inAppStoryManager != null) context = inAppStoryManager.iasCore().appContext();
+        }
+        if (context == null)
+            return new Point(0, 0);
+        WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
         Display display = wm.getDefaultDisplay();
         Point size = new Point();
         display.getSize(size);
         return size;
     }
 
-    public static int dpToPxExt(int dp) {
-        return Math.round(dp * getPixelScaleFactorExt());
+    public static int getFullPhoneHeight(Context context) {
+        DisplayMetrics metrics = new DisplayMetrics();
+        WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+        wm.getDefaultDisplay().getMetrics(metrics);
+        wm.getDefaultDisplay().getRealMetrics(metrics);
+        return metrics.heightPixels;
     }
 
-    public static boolean isTablet() {
-        if (InAppStoryService.isNotNull() && InAppStoryService.getInstance().getContext() != null)
-            return InAppStoryService.getInstance().getContext().getResources().getBoolean(R.bool.isTablet);
-        else return false;
-    }
-
-    public static int dpToPxExt(int dp, Context context) {
-        return Math.round(dp * getPixelScaleFactorExt(context));
+    public static int getFullPhoneWidth(Context context) {
+        DisplayMetrics metrics = new DisplayMetrics();
+        WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+        wm.getDefaultDisplay().getMetrics(metrics);
+        wm.getDefaultDisplay().getRealMetrics(metrics);
+        return metrics.widthPixels;
     }
 
     public static int dpFloatToPxExt(float dp, Context context) {
         return Math.round(dp * getPixelScaleFactorExt(context));
     }
 
-    public static int pxToDpExt(int dp) {
-        return Math.round(dp / getPixelScaleFactorExt());
+    public static boolean isTablet(Context context) {
+        InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
+        Context localContext = null;
+        if (context == null) {
+            if (inAppStoryManager != null)
+                localContext = inAppStoryManager.iasCore().appContext();
+        } else {
+            localContext = context;
+        }
+        if (localContext != null)
+            return localContext.getResources().getBoolean(R.bool.isTablet);
+        return false;
     }
+
+    public static int dpToPxExt(int dp, Context context) {
+        return Math.round(dp * getPixelScaleFactorExt(context));
+    }
+
 
     public static int pxToDpExt(int dp, Context context) {
         return Math.round(dp / getPixelScaleFactorExt(context));

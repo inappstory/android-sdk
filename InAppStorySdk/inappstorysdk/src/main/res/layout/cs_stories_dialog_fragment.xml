@@ -6,14 +6,27 @@
 
     <FrameLayout
         android:layout_width="match_parent"
-        android:id="@+id/dialog_fragment"
+        android:id="@+id/stories_fragments_layout"
 
         android:background="@android:color/transparent"
         android:layout_height="match_parent"/>
+
+    <FrameLayout
+        android:id="@+id/ias_dialog_container"
+        android:layout_width="match_parent"
+        android:background="@android:color/transparent"
+        android:layout_height="match_parent" />
+
+
+    <FrameLayout
+        android:id="@+id/ias_outer_top_container"
+        android:layout_width="match_parent"
+        android:background="@android:color/transparent"
+        android:layout_height="match_parent" />
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="60dp"
-        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
         android:gravity="center_vertical"
         android:layout_alignParentBottom="true"/>
 </RelativeLayout>

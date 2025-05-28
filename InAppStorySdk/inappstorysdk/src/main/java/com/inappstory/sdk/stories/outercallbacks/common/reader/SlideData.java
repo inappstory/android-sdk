@@ -2,14 +2,61 @@ package com.inappstory.sdk.stories.outercallbacks.common.reader;
 
 import androidx.annotation.NonNull;
 
-public class SlideData {
+import com.inappstory.sdk.stories.api.models.ContentType;
+
+import java.io.Serializable;
+
+public class SlideData extends ContentData implements Serializable  {
     @NonNull
+    /**
+     * @deprecated Will be renamed and changed to private in next version
+     * Use {@link #story()} instead.
+     */
+    @Deprecated
     public StoryData story;
 
+    /**
+     * @deprecated Will be changed to private in next version
+     * Use {@link #index()} instead.
+     */
+    @Deprecated
     public int index;
 
-    public SlideData(@NonNull StoryData story, int index) {
+    /**
+     * @deprecated Will be changed to private in next version
+     * Use {@link #payload()} instead.
+     */
+    @Deprecated
+    public String payload;
+
+    public StoryData story() {
+        return story;
+    }
+
+    public int index() {
+        return index;
+    }
+
+    public String payload() {
+        return payload;
+    }
+
+    public SlideData(
+            @NonNull StoryData story,
+            int index,
+            String payload) {
+        super(story.sourceType(), ContentType.STORY);
         this.story = story;
         this.index = index;
+        this.payload = payload;
+    }
+
+    @Override
+    public String toString() {
+        return "SlideData {" +
+                "content=" + story() +
+                ", index='" + index() + '\'' +
+                ", payload='" + payload() + '\'' +
+                '}';
     }
 }

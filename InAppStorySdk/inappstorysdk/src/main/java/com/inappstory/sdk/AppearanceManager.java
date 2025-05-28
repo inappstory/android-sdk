@@ -3,23 +3,24 @@ package com.inappstory.sdk;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
 
 import androidx.annotation.NonNull;
 
-import com.inappstory.sdk.game.reader.GameReaderLoadProgressBar;
+import com.inappstory.sdk.stories.ui.widgets.LoadProgressBar;
 import com.inappstory.sdk.stories.api.models.CachedSessionData;
-import com.inappstory.sdk.stories.api.models.Image;
+import com.inappstory.sdk.core.network.content.models.Image;
 import com.inappstory.sdk.stories.ui.list.StoriesList;
 import com.inappstory.sdk.stories.ui.list.StoryTouchListener;
 import com.inappstory.sdk.stories.ui.list.UGCListItemSimpleAppearance;
 import com.inappstory.sdk.stories.ui.reader.StoriesGradientObject;
-import com.inappstory.sdk.stories.ui.views.IGameLoaderView;
-import com.inappstory.sdk.stories.ui.views.IGameReaderLoaderView;
+import com.inappstory.sdk.game.ui.IGameReaderLoaderView;
 import com.inappstory.sdk.stories.ui.views.IGetFavoriteListItem;
-import com.inappstory.sdk.stories.ui.views.ILoaderView;
 import com.inappstory.sdk.stories.ui.views.IStoriesListItem;
 import com.inappstory.sdk.stories.ui.views.IStoryReaderLoaderView;
 import com.inappstory.sdk.stories.ui.views.goodswidget.ICustomGoodsItem;
@@ -27,9 +28,11 @@ import com.inappstory.sdk.stories.ui.views.goodswidget.ICustomGoodsWidget;
 import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.ugc.list.IStoriesListUGCItem;
 
+import java.util.UUID;
+
 /**
  * Defines appearance of the stories list, as well as some elements of the reader.
- * It must be set globally for the library, or separately for the list before calling {@link StoriesList#loadStoriesInner()}.
+ * It must be set globally for the library, or separately for the list before calling {@link StoriesList#loadStories()}.
  * For a global setting, you must call the static method of the class {@link #setCommonInstance(AppearanceManager)}.
  */
 public class AppearanceManager {
@@ -37,7 +40,6 @@ public class AppearanceManager {
     public static final String CS_CLOSE_POSITION = "closePosition";
     public static final String CS_NAVBAR_COLOR = "navBarColor";
     public static final String CS_STORY_READER_ANIMATION = "storyReaderAnimation";
-
     public static final String CS_TIMER_GRADIENT_ENABLE = "timerGradientEnable";
     public static final String CS_TIMER_GRADIENT = "timerGradient";
 
@@ -62,13 +64,22 @@ public class AppearanceManager {
 
     public static final String CS_COVER_QUALITY = "coverQuality";
 
+    public static final int DISABLE = -1;
+    public static final int ZOOM = 0;
+    public static final int FADE = 1;
+    public static final int POPUP = 2;
 
+    @Deprecated
     public static final int TOP_LEFT = 1;
+    @Deprecated
     public static final int TOP_RIGHT = 2;
+    @Deprecated
     public static final int BOTTOM_LEFT = 3;
+    @Deprecated
     public static final int BOTTOM_RIGHT = 4;
 
     public static final int TOP_START = -1;
+
     public static final int TOP_END = -2;
     public static final int BOTTOM_START = -3;
     public static final int BOTTOM_END = -4;
@@ -78,14 +89,16 @@ public class AppearanceManager {
     public static final int ANIMATION_COVER = 3;
     public static final int ANIMATION_FLAT = 4;
 
-    public static final int ZOOM = 0;
-
-    public static final int CROSS_DISSOLVE = 1;
-    public static final int MODAL = 2;
-    public static final int NONE = -1;
-
     public AppearanceManager clone() {
         return new AppearanceManager(this);
+    }
+
+    @NonNull
+    public static AppearanceManager checkOrCreateAppearanceManager(AppearanceManager manager) {
+        AppearanceManager result = manager;
+        if (result == null) result = AppearanceManager.getCommonInstance();
+        if (result == null) result = new AppearanceManager();
+        return result;
     }
 
     public AppearanceManager() {
@@ -96,9 +109,6 @@ public class AppearanceManager {
         this.csListItemTitleSize = other.csListItemTitleSize;
         this.csListItemTitleColor = other.csListItemTitleColor;
         this.csListItemRadius = other.csListItemRadius;
-        this.csListItemSourceVisibility = other.csListItemSourceVisibility;
-        this.csListItemSourceSize = other.csListItemSourceSize;
-        this.csListItemSourceColor = other.csListItemSourceColor;
         this.csListItemWidth = other.csListItemWidth;
         this.csListItemHeight = other.csListItemHeight;
         this.csListItemBorderVisibility = other.csListItemBorderVisibility;
@@ -106,9 +116,7 @@ public class AppearanceManager {
         this.csFavoriteListItemInterface = other.csFavoriteListItemInterface;
         this.csListItemInterface = other.csListItemInterface;
         this.csListUGCItemInterface = other.csListUGCItemInterface;
-        this.csLoaderView = other.csLoaderView;
         this.csStoryLoaderView = other.csStoryLoaderView;
-        this.csGameLoaderView = other.csGameLoaderView;
         this.csGameReaderLoaderView = other.csGameReaderLoaderView;
         this.storyTouchListener = other.storyTouchListener;
         this.csCustomGoodsWidget = other.csCustomGoodsWidget;
@@ -146,7 +154,6 @@ public class AppearanceManager {
         this.csListOpenedItemBorderVisibility = other.csListOpenedItemBorderVisibility;
         this.csListOpenedItemBorderColor = other.csListOpenedItemBorderColor;
         this.csListItemMargin = other.csListItemMargin;
-        this.csShowStatusBar = other.csShowStatusBar;
         this.csClosePosition = other.csClosePosition;
         this.csStoryReaderAnimation = other.csStoryReaderAnimation;
         this.csIsDraggable = other.csIsDraggable;
@@ -163,15 +170,10 @@ public class AppearanceManager {
 
     private int csListItemRadius = -1;
 
-    private boolean csListItemSourceVisibility = false;
-    private int csListItemSourceSize = -1;
-    private int csListItemSourceColor = Color.WHITE;
-
     private Integer csListItemWidth;
     private Integer csListItemHeight;
     private Integer csColumnCount;
     private Float csListItemRatio;
-
 
     private boolean csListItemBorderVisibility = true;
     private int csListItemBorderColor = Color.BLACK;
@@ -179,14 +181,11 @@ public class AppearanceManager {
     private IGetFavoriteListItem csFavoriteListItemInterface;
     private IStoriesListItem csListItemInterface;
     private IStoriesListUGCItem csListUGCItemInterface;
-    private ILoaderView csLoaderView;
 
     private IStoryReaderLoaderView csStoryLoaderView;
-    private IGameLoaderView csGameLoaderView;
 
     private IGameReaderLoaderView csGameReaderLoaderView;
     private StoryTouchListener storyTouchListener;
-    private static WidgetAppearance csWidgetAppearance;
 
     private ICustomGoodsWidget csCustomGoodsWidget;
     private ICustomGoodsItem csCustomGoodsItem;
@@ -207,8 +206,8 @@ public class AppearanceManager {
     private int csCloseIcon;
     private int csRefreshIcon;
     private int csSoundIcon;
-    private int csNavBarColor = Color.TRANSPARENT;
-    private int csNightNavBarColor = Color.TRANSPARENT;
+    private int csNavBarColor = Color.BLACK;
+    private int csNightNavBarColor = Color.BLACK;
     private int csReaderBackgroundColor = Color.BLACK;
 
     private Typeface csCustomFont;
@@ -223,18 +222,8 @@ public class AppearanceManager {
 
 
     private int csListItemMargin = -1;
-    private boolean csShowStatusBar = false;
-    private int csClosePosition = BOTTOM_RIGHT; //1 - topLeft, 2 - topRight, 3 - bottomLeft, 4 - bottomRight;
+    private int csClosePosition = BOTTOM_END; //1 - topLeft, 2 - topRight, 3 - bottomLeft, 4 - bottomRight;
     private int csStoryReaderAnimation = ANIMATION_CUBE;
-
-    public int csStoryReaderPresentationStyle() {
-        return csStoryReaderPresentationStyle;
-    }
-
-    public AppearanceManager csStoryReaderPresentationStyle(int csStoryReaderPresentationStyle) {
-        this.csStoryReaderPresentationStyle = csStoryReaderPresentationStyle;
-        return this;
-    }
 
     private int csStoryReaderPresentationStyle = ZOOM;
     private boolean csIsDraggable = true;
@@ -249,13 +238,34 @@ public class AppearanceManager {
     private boolean csCloseOnOverscroll = true;
 
 
+    private float getCurrentRatio() {
+        if (csListItemHeight != null
+                && csListItemWidth != null
+                && csListItemHeight > 0
+                && csListItemWidth > 0
+        )
+            return 1f * csListItemHeight / csListItemWidth;
+        if (csListItemRatio != null && csListItemRatio > 0) return csListItemRatio;
+        InAppStoryManager manager = InAppStoryManager.getInstance();
+        CachedSessionData sessionData = manager.iasCore().sessionManager()
+                .getSession().sessionData();
+        if (sessionData != null) return sessionData.previewAspectRatio;
+        return 1f;
+    }
+
+    private int getScaledWidth(Context context) {
+        return (int) ((Sizes.getScreenSize(context).x -
+                (float) (csColumnCount + 1) * csListItemMargin) / csColumnCount);
+    }
+
+
     public Integer getRealWidth(Context context) {
         if (csColumnCount != null && csColumnCount > 0) {
-            return getScaledWidth();
+            return getScaledWidth(context);
         } else {
             if (csListItemWidth != null && csListItemWidth > 0)
                 return csListItemWidth;
-            float ratio = getCurrentRatio(context);
+            float ratio = getCurrentRatio();
             if (csListItemHeight != null && csListItemHeight > 0) {
                 return (int) (csListItemHeight * ratio);
             } else {
@@ -264,28 +274,10 @@ public class AppearanceManager {
         }
     }
 
-    private float getCurrentRatio(Context context) {
-        if (csListItemHeight != null
-                && csListItemWidth != null
-                && csListItemHeight > 0
-                && csListItemWidth > 0
-        )
-            return 1f * csListItemHeight / csListItemWidth;
-        if (csListItemRatio != null && csListItemRatio > 0) return csListItemRatio;
-        CachedSessionData sessionData = CachedSessionData.getInstance(context);
-        if (sessionData != null) return sessionData.previewAspectRatio;
-        return 1f;
-    }
-
-    private int getScaledWidth() {
-        return (int) ((Sizes.getScreenSize().x -
-                (float) (csColumnCount + 1) * csListItemMargin) / csColumnCount);
-    }
-
     public Integer getRealHeight(Context context) {
-        float ratio = getCurrentRatio(context);
+        float ratio = getCurrentRatio();
         if (csColumnCount != null && csColumnCount > 0) {
-            return (int) (getScaledWidth() / ratio);
+            return (int) (getScaledWidth(context) / ratio);
         } else {
             if (csListItemHeight != null && csListItemHeight > 0)
                 return csListItemHeight;
@@ -319,6 +311,7 @@ public class AppearanceManager {
     }
 
     public AppearanceManager csReaderRadius(int csReaderRadius) {
+
         this.csReaderRadius = csReaderRadius;
         return AppearanceManager.this;
     }
@@ -351,8 +344,8 @@ public class AppearanceManager {
      * use to set quality for story covers
      *
      * @param csCoverQuality (csCoverQuality) quality for covers
-     *                       {@link com.inappstory.sdk.stories.api.models.Image#QUALITY_MEDIUM}
-     *                       {@link com.inappstory.sdk.stories.api.models.Image#QUALITY_HIGH}
+     *                       {@link Image#QUALITY_MEDIUM}
+     *                       {@link Image#QUALITY_HIGH}
      * @return {@link AppearanceManager}
      */
     public AppearanceManager csCoverQuality(int csCoverQuality) {
@@ -511,22 +504,6 @@ public class AppearanceManager {
         return csCustomSecondaryFont;
     }
 
-    public static WidgetAppearance csWidgetAppearance() {
-        if (csWidgetAppearance == null) csWidgetAppearance = new WidgetAppearance();
-        return csWidgetAppearance;
-    }
-
-    public static void csWidgetAppearance(@NonNull Context context,
-                                          @NonNull Class widgetClass,
-                                          Integer corners) {
-        csWidgetAppearance();
-        csWidgetAppearance.widgetClass = widgetClass;
-        csWidgetAppearance.corners = corners;
-        csWidgetAppearance.context = context;
-        csWidgetAppearance.sandbox = false;
-        csWidgetAppearance.save();
-    }
-
     /**
      * use to set custom list item height in default cells
      *
@@ -566,18 +543,6 @@ public class AppearanceManager {
 
     public StoryTouchListener csStoryTouchListener() {
         return this.storyTouchListener;
-    }
-
-    /**
-     * use to set custom list item width in default cells
-     *
-     * @param csListItemWidth (csListItemWidth)
-     * @return {@link AppearanceManager}
-     */
-    @Deprecated
-    public AppearanceManager csListItemWidth(Integer csListItemWidth) {
-        this.csListItemWidth = csListItemWidth;
-        return AppearanceManager.this;
     }
 
     /**
@@ -843,7 +808,9 @@ public class AppearanceManager {
     }
 
     public int csListItemRadius(Context context) {
-        if (csListItemRadius == -1) return Sizes.dpToPxExt(16, context);
+        if (csListItemRadius == -1) {
+            return Sizes.dpToPxExt(16, context);
+        }
         return csListItemRadius;
     }
 
@@ -904,30 +871,6 @@ public class AppearanceManager {
         return AppearanceManager.this;
     }
 
-    @Deprecated
-    public AppearanceManager csListItemSourceVisibility(boolean csListItemSourceVisibility) {
-        this.csListItemSourceVisibility = csListItemSourceVisibility;
-        return AppearanceManager.this;
-    }
-
-    @Deprecated
-    public AppearanceManager csListItemSourceSize(int csListItemSourceSize) {
-        this.csListItemSourceSize = csListItemSourceSize;
-        return AppearanceManager.this;
-    }
-
-    @Deprecated
-    public AppearanceManager csListItemSourceColor(int csListItemSourceColor) {
-        this.csListItemSourceColor = csListItemSourceColor;
-        return AppearanceManager.this;
-    }
-
-    @Deprecated
-    public AppearanceManager csListItemBorderVisibility(boolean csListItemBorderVisibility) {
-        this.csListItemBorderVisibility = csListItemBorderVisibility;
-        return AppearanceManager.this;
-    }
-
    /* public AppearanceManager csListItemBorderSize(int csListItemBorderSize) {
         this.csListItemBorderSize = csListItemBorderSize;
         return AppearanceManager.this;
@@ -939,20 +882,23 @@ public class AppearanceManager {
      * @param csListItemBorderColor (csListItemBorderColor)
      * @return {@link AppearanceManager}
      */
-    public AppearanceManager csListItemBorderColor(int csListItemBorderColor) {
-        this.csListItemBorderColor = csListItemBorderColor;
+    public AppearanceManager csListItemBorderColor(Integer csListItemBorderColor) {
+        if (csListItemBorderColor == null) {
+            csListItemBorderVisibility = false;
+        } else {
+            csListItemBorderVisibility = true;
+            this.csListItemBorderColor = csListItemBorderColor;
+        }
         return AppearanceManager.this;
     }
 
-    @Deprecated
-    public AppearanceManager csListOpenedItemBorderVisibility(boolean csListOpenedItemBorderVisibility) {
-        this.csListOpenedItemBorderVisibility = csListOpenedItemBorderVisibility;
-        return AppearanceManager.this;
-    }
-
-
-    public AppearanceManager csListOpenedItemBorderColor(int csListOpenedItemBorderColor) {
-        this.csListOpenedItemBorderColor = csListOpenedItemBorderColor;
+    public AppearanceManager csListOpenedItemBorderColor(Integer csListOpenedItemBorderColor) {
+        if (csListOpenedItemBorderColor == null) {
+            csListOpenedItemBorderVisibility = false;
+        } else {
+            csListOpenedItemBorderVisibility = true;
+            this.csListOpenedItemBorderColor = csListOpenedItemBorderColor;
+        }
         return AppearanceManager.this;
     }
 
@@ -961,11 +907,6 @@ public class AppearanceManager {
         return AppearanceManager.this;
     }
 
-    @Deprecated
-    public AppearanceManager csShowStatusBar(boolean csShowStatusBar) {
-        this.csShowStatusBar = csShowStatusBar;
-        return AppearanceManager.this;
-    }
 
     public AppearanceManager csClosePosition(int csClosePosition) {
         this.csClosePosition = csClosePosition;
@@ -977,13 +918,18 @@ public class AppearanceManager {
         return AppearanceManager.this;
     }
 
+    public AppearanceManager csStoryReaderPresentationStyle(int csStoryReaderPresentationStyle) {
+        this.csStoryReaderPresentationStyle = csStoryReaderPresentationStyle;
+        return AppearanceManager.this;
+    }
+
 
     public boolean csListItemTitleVisibility() {
         return csListItemTitleVisibility;
     }
 
     public int csListItemTitleSize(Context context) {
-        if (csListItemTitleSize == -1) return Sizes.dpToPxExt(14, context);
+        if (csListItemTitleSize == -1) return Sizes.dpToPxExt(12, context);
         return csListItemTitleSize;
     }
 
@@ -997,24 +943,6 @@ public class AppearanceManager {
 
     public Float csListItemRatio() {
         return csListItemRatio;
-    }
-
-    @Deprecated
-    public Integer csListItemWidth() {
-        return csListItemWidth;
-    }
-
-    public boolean csListItemSourceVisibility() {
-        return csListItemSourceVisibility;
-    }
-
-    public int csListItemSourceSize() {
-        if (csListItemSourceSize == -1) return Sizes.dpToPxExt(14);
-        return csListItemSourceSize;
-    }
-
-    public int csListItemSourceColor() {
-        return csListItemSourceColor;
     }
 
     public boolean csListItemBorderVisibility() {
@@ -1042,16 +970,16 @@ public class AppearanceManager {
         return csListItemMargin;
     }
 
-    public boolean csShowStatusBar() {
-        return csShowStatusBar;
-    }
-
     public int csClosePosition() {
         return csClosePosition;
     }
 
     public int csStoryReaderAnimation() {
         return csStoryReaderAnimation;
+    }
+
+    public int csStoryReaderPresentationStyle() {
+        return csStoryReaderPresentationStyle;
     }
 
 
@@ -1085,29 +1013,14 @@ public class AppearanceManager {
         return AppearanceManager.this;
     }
 
-    @Deprecated
-    public AppearanceManager csLoaderView(ILoaderView csLoaderView) {
-        this.csLoaderView = csLoaderView;
-        return AppearanceManager.this;
-    }
-
 
     public AppearanceManager csStoryLoaderView(IStoryReaderLoaderView csStoryLoaderView) {
         this.csStoryLoaderView = csStoryLoaderView;
         return AppearanceManager.this;
     }
 
-    public ILoaderView csLoaderView() {
-        return csLoaderView;
-    }
-
     public IStoryReaderLoaderView csStoryLoaderView() {
         return csStoryLoaderView;
-    }
-
-    public AppearanceManager csGameLoaderView(IGameLoaderView csGameLoaderView) {
-        this.csGameLoaderView = csGameLoaderView;
-        return AppearanceManager.this;
     }
 
     public AppearanceManager csGameReaderLoaderView(IGameReaderLoaderView csGameReaderLoaderView) {
@@ -1117,10 +1030,6 @@ public class AppearanceManager {
 
     public IGameReaderLoaderView csGameReaderLoaderView() {
         return csGameReaderLoaderView;
-    }
-
-    public IGameLoaderView csGameLoaderView() {
-        return csGameLoaderView;
     }
 
     public IStoriesListItem csListItemInterface() {
@@ -1141,23 +1050,26 @@ public class AppearanceManager {
         return AppearanceManager.this;
     }
 
-    public static View getLoader(Context context) {
+    public static View getLoader(Context context, int color) {
         if (commonInstance != null) {
-            RelativeLayout.LayoutParams relativeParams;
+            FrameLayout.LayoutParams relativeParams;
             View v = null;
             if (commonInstance.csStoryLoaderView() != null) {
                 v = commonInstance.csStoryLoaderView().getView(context);
-            } else if (commonInstance.csLoaderView() != null) {
-                v = commonInstance.csLoaderView().getView();
             }
             if (v != null) {
-                relativeParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-                relativeParams.addRule(RelativeLayout.CENTER_IN_PARENT);
+                relativeParams = new FrameLayout.LayoutParams(
+                        ViewGroup.LayoutParams.WRAP_CONTENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT
+                );
+                relativeParams.gravity = Gravity.CENTER;
                 v.setLayoutParams(relativeParams);
                 return v;
             }
         }
-        return new GameReaderLoadProgressBar(context);
+        LoadProgressBar v = new LoadProgressBar(context);
+        v.setColor(color);
+        return v;
     }
 
 }

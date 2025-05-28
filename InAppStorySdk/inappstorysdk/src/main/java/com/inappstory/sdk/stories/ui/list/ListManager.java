@@ -1,17 +1,19 @@
 package com.inappstory.sdk.stories.ui.list;
 
 public interface ListManager {
-    public void clear();
+    void clear();
 
-    public void changeStory(final int storyId, final String listID);
+    void changeStory(final int storyId, final String listID);
 
-    public void closeReader();
+    void readerIsClosed();
 
-    public void openReader();
+    void readerIsOpened();
 
-    public void changeUserId();
+    void userIdChanged();
 
-    public void clearAllFavorites();
+    void sessionIsOpened(String currentSessionId);
+
+    void clearAllFavorites();
 
     void storyFavorite(final int id, final boolean favStatus, final boolean isEmpty);
 }

@@ -1,18 +1,22 @@
 package com.inappstory.sdk.stories.ui.widgets.readerscreen.buttonspanel;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
-import android.os.Handler;
-import android.os.Looper;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.LinearLayout;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatImageView;
 
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
-import com.inappstory.sdk.stories.ui.reader.StoriesReaderSettings;
+import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.UseIASCoreCallback;
+import com.inappstory.sdk.core.api.IASDataSettingsHolder;
+import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenAppearance;
 
 public class ButtonsPanel extends LinearLayout {
 
@@ -22,8 +26,11 @@ public class ButtonsPanel extends LinearLayout {
     public AppCompatImageView favorite;
     public AppCompatImageView share;
 
-    public ButtonsPanel(Context context) {
+    private int storyId;
+
+    public ButtonsPanel(Context context, int storyId) {
         super(context);
+        this.storyId = storyId;
         init();
     }
 
@@ -46,21 +53,48 @@ public class ButtonsPanel extends LinearLayout {
             favorite.setActivated(favVal == 1);
     }
 
-    public void setButtonsVisibility(StoriesReaderSettings readerSettings, boolean hasLike, boolean hasFavorite, boolean hasShare, boolean hasSound) {
-        hasLike = hasLike && readerSettings.hasLike;
-        hasFavorite = hasFavorite && readerSettings.hasFavorite;
-        hasShare = hasShare && readerSettings.hasShare;
+    public boolean panelIsVisible() {
+        return isVisible;
+    }
+
+    private boolean isVisible = true;
+
+    public void setButtonsVisibility(
+            LaunchStoryScreenAppearance readerSettings,
+            boolean hasLike,
+            boolean hasFavorite,
+            boolean hasShare,
+            boolean hasSound,
+            boolean isTablet
+    ) {
+        hasLike = hasLike && readerSettings.csHasLike();
+        hasFavorite = hasFavorite && readerSettings.csHasFavorite();
+        hasShare = hasShare && readerSettings.csHasShare();
         like.setVisibility(hasLike ? VISIBLE : GONE);
         dislike.setVisibility(hasLike ? VISIBLE : GONE);
         favorite.setVisibility(hasFavorite ? VISIBLE : GONE);
         share.setVisibility(hasShare ? VISIBLE : GONE);
         sound.setVisibility(hasSound ? VISIBLE : GONE);
-        sound.setActivated(InAppStoryService.getInstance().isSoundOn());
-        if (hasFavorite || hasLike || hasShare || hasSound) {
-            setVisibility(VISIBLE);
-        } else {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                sound.setActivated(
+                        ((IASDataSettingsHolder) core.settingsAPI()).isSoundOn()
+                );
+            }
+        });
+        this.isVisible = (hasFavorite || hasLike || hasShare || hasSound);
+        if (!isVisible && isTablet) {
             setVisibility(GONE);
+        } else {
+            setVisibility(VISIBLE);
         }
+    }
+
+    @Override
+    public void setVisibility(int visibility) {
+
+        super.setVisibility(visibility);
     }
 
     public ButtonsPanelManager getManager() {
@@ -68,65 +102,71 @@ public class ButtonsPanel extends LinearLayout {
     }
 
 
-    public void refreshSoundStatus() {
-        sound.setActivated(InAppStoryService.getInstance().isSoundOn());
+    public void refreshSoundStatus(IASCore core) {
+        sound.setActivated(((IASDataSettingsHolder) core.settingsAPI()).isSoundOn());
     }
 
     ButtonsPanelManager manager;
 
     public void init() {
         inflate(getContext(), R.layout.cs_buttons_panel, this);
-        manager = new ButtonsPanelManager(this);
         like = findViewById(R.id.likeButton);
         dislike = findViewById(R.id.dislikeButton);
         favorite = findViewById(R.id.favoriteButton);
         sound = findViewById(R.id.soundButton);
         share = findViewById(R.id.shareButton);
-        if (like != null)
-            like.setOnClickListener(new OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    likeClick();
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                manager = new ButtonsPanelManager(ButtonsPanel.this, core);
+                if (like != null)
+                    like.setOnClickListener(new OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            likeClick();
+                        }
+                    });
+                if (dislike != null)
+                    dislike.setOnClickListener(new OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            dislikeClick();
+                        }
+                    });
+                if (favorite != null)
+                    favorite.setOnClickListener(new OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            favoriteClick();
+                        }
+                    });
+                if (share != null)
+                    share.setOnClickListener(new OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            shareClick();
+                        }
+                    });
+                if (sound != null) {
+                    sound.setOnClickListener(new OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            soundClick();
+                        }
+                    });
+                    sound.setActivated(((IASDataSettingsHolder) core.settingsAPI()).isSoundOn());
                 }
-            });
-        if (dislike != null)
-            dislike.setOnClickListener(new OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    dislikeClick();
-                }
-            });
-        if (favorite != null)
-            favorite.setOnClickListener(new OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    favoriteClick();
-                }
-            });
-        if (share != null)
-            share.setOnClickListener(new OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    shareClick();
-                }
-            });
-        if (sound != null) {
-            sound.setOnClickListener(new OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    soundClick();
-                }
-            });
-            sound.setActivated(InAppStoryService.getInstance().isSoundOn());
-        }
+            }
+        });
     }
 
-    public void setIcons(StoriesReaderSettings readerSettings) {
-        like.setImageDrawable(getResources().getDrawable(readerSettings.likeIcon));
-        dislike.setImageDrawable(getResources().getDrawable(readerSettings.dislikeIcon));
-        favorite.setImageDrawable(getResources().getDrawable(readerSettings.favoriteIcon));
-        share.setImageDrawable(getResources().getDrawable(readerSettings.shareIcon));
-        sound.setImageDrawable(getResources().getDrawable(readerSettings.soundIcon));
+    @SuppressLint("UseCompatLoadingForDrawables")
+    public void setIcons(LaunchStoryScreenAppearance readerSettings) {
+        like.setImageDrawable(getResources().getDrawable(readerSettings.csLikeIcon()));
+        dislike.setImageDrawable(getResources().getDrawable(readerSettings.csDislikeIcon()));
+        favorite.setImageDrawable(getResources().getDrawable(readerSettings.csFavoriteIcon()));
+        share.setImageDrawable(getResources().getDrawable(readerSettings.csShareIcon()));
+        sound.setImageDrawable(getResources().getDrawable(readerSettings.csSoundIcon()));
     }
 
     public void likeClick() {
@@ -134,17 +174,27 @@ public class ButtonsPanel extends LinearLayout {
         like.setClickable(false);
         manager.likeClick(new ButtonClickCallback() {
             @Override
-            public void onSuccess(int val) {
-                like.setEnabled(true);
-                like.setClickable(true);
-                like.setActivated(val == 1);
-                dislike.setActivated(val == -1);
+            public void onSuccess(final int val) {
+                post(new Runnable() {
+                    @Override
+                    public void run() {
+                        like.setEnabled(true);
+                        like.setClickable(true);
+                        like.setActivated(val == 1);
+                        dislike.setActivated(val == -1);
+                    }
+                });
             }
 
             @Override
             public void onError() {
-                like.setEnabled(true);
-                like.setClickable(true);
+                post(new Runnable() {
+                    @Override
+                    public void run() {
+                        like.setEnabled(true);
+                        like.setClickable(true);
+                    }
+                });
             }
         });
     }
@@ -154,23 +204,35 @@ public class ButtonsPanel extends LinearLayout {
         dislike.setClickable(false);
         manager.dislikeClick(new ButtonClickCallback() {
             @Override
-            public void onSuccess(int val) {
-                dislike.setEnabled(true);
-                dislike.setClickable(true);
-                like.setActivated(val == 1);
-                dislike.setActivated(val == -1);
+            public void onSuccess(final int val) {
+                post(new Runnable() {
+                    @Override
+                    public void run() {
+                        dislike.setEnabled(true);
+                        dislike.setClickable(true);
+                        like.setActivated(val == 1);
+                        dislike.setActivated(val == -1);
+                    }
+                });
             }
 
             @Override
             public void onError() {
-                dislike.setEnabled(true);
-                dislike.setClickable(true);
+
+                post(new Runnable() {
+                    @Override
+                    public void run() {
+                        dislike.setEnabled(true);
+                        dislike.setClickable(true);
+                    }
+                });
             }
         });
     }
 
     public void forceRemoveFromFavorite() {
-        new Handler(Looper.getMainLooper()).post(new Runnable() {
+
+        post(new Runnable() {
             @Override
             public void run() {
                 if (favorite != null) {
@@ -187,37 +249,32 @@ public class ButtonsPanel extends LinearLayout {
         favorite.setClickable(false);
         manager.favoriteClick(new ButtonClickCallback() {
             @Override
-            public void onSuccess(int val) {
-                favorite.setEnabled(true);
-                favorite.setClickable(true);
-                favorite.setActivated(val == 1);
+            public void onSuccess(final int val) {
+                post(new Runnable() {
+                    @Override
+                    public void run() {
+                        favorite.setEnabled(true);
+                        favorite.setClickable(true);
+                        favorite.setActivated(val == 1);
+                    }
+                });
             }
 
             @Override
             public void onError() {
-                favorite.setEnabled(true);
-                favorite.setClickable(true);
+                post(new Runnable() {
+                    @Override
+                    public void run() {
+                        favorite.setEnabled(true);
+                        favorite.setClickable(true);
+                    }
+                });
             }
         });
     }
 
     public void soundClick() {
-        // sound.setEnabled(false);
-        //  sound.setClickable(false);
-        manager.soundClick(/*new ButtonClickCallback() {
-            @Override
-            public void onSuccess(int val) {
-                sound.setEnabled(true);
-                sound.setClickable(true);
-                sound.setActivated(val == 1);
-            }
-
-            @Override
-            public void onError() {
-                sound.setEnabled(true);
-                sound.setClickable(true);
-            }
-        }*/);
+        manager.soundClick();
     }
 
     public void shareClick() {
@@ -226,7 +283,7 @@ public class ButtonsPanel extends LinearLayout {
         manager.shareClick(new ButtonsPanelManager.ShareButtonClickCallback() {
             @Override
             void onClick() {
-                manager.getParentManager().pauseSlide(false);
+                manager.getPageManager().pauseSlide(false);
             }
 
             @Override
@@ -236,8 +293,13 @@ public class ButtonsPanel extends LinearLayout {
 
             @Override
             public void onError() {
-                share.setEnabled(true);
-                share.setClickable(true);
+                post(new Runnable() {
+                    @Override
+                    public void run() {
+                        share.setEnabled(true);
+                        share.setClickable(true);
+                    }
+                });
             }
         });
     }

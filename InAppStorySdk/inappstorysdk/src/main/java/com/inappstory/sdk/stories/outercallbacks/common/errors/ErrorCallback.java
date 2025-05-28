@@ -1,11 +1,10 @@
 package com.inappstory.sdk.stories.outercallbacks.common.errors;
 
-public interface ErrorCallback {
+import com.inappstory.sdk.core.api.IASCallback;
+
+public interface ErrorCallback extends IASCallback {
     void loadListError(String feed);
-    void loadOnboardingError(String feed);
-    void loadSingleError();
     void cacheError();
-    void readerError();
     void emptyLinkError();
     void sessionError();
     void noConnection();

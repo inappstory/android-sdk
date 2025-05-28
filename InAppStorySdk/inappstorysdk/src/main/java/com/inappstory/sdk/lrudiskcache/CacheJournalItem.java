@@ -1,12 +1,69 @@
 package com.inappstory.sdk.lrudiskcache;
 
-public class CacheJournalItem {
-    private String key;
-    private String name;
+import androidx.annotation.NonNull;
+
+import java.io.Serializable;
+import java.util.Objects;
+
+public class CacheJournalItem implements Serializable {
+    public CacheJournalItem(
+            String uniqueKey,
+            String filePath,
+            String ext,
+            String type,
+            String sha1,
+            String replaceKey,
+            long time,
+            long size,
+            long downloadedSize,
+            String mimeType
+    ) {
+        this.uniqueKey = uniqueKey;
+        this.filePath = filePath;
+        this.ext = ext;
+        this.type = type;
+        this.sha1 = sha1;
+        this.replaceKey = replaceKey;
+        this.time = time;
+        this.size = size;
+        this.downloadedSize = downloadedSize;
+        this.mimeType = mimeType;
+    }
+
+    private String uniqueKey;
+    private String filePath;
+    private String ext;
+    private String type;
+    private String mimeType;
+    private String sha1;
+    private String replaceKey;
     private long time;
     private long size;
-
     private long downloadedSize;
+
+    public String getExt() {
+        return ext != null ? ext : "";
+    }
+
+    @NonNull
+    public String getType() {
+        return type != null ? type : "";
+    }
+
+    @NonNull
+    public String getMimeType() {
+        return mimeType != null ? mimeType : "application/octet-stream";
+    }
+
+    @NonNull
+    public String getSha1() {
+        return sha1 != null ? sha1 : "";
+    }
+
+    @NonNull
+    public String getReplaceKey() {
+        return replaceKey != null ? replaceKey : "";
+    }
 
     public long getDownloadedSize() {
         return downloadedSize;
@@ -16,62 +73,31 @@ public class CacheJournalItem {
         this.downloadedSize = downloadedSize;
     }
 
+    public void setSize(long size) {
+        this.size = size;
+    }
+
     public boolean isReady() {
         return downloadedSize == size;
     }
 
 
-    public CacheJournalItem(String key, String name, long time, long size) {
-        this.key = key;
-        this.name = name;
-        this.time = time;
-        this.size = size;
-        this.downloadedSize = size;
-    }
-
-    public CacheJournalItem(String key, String name, long time, long size, long downloadedSize) {
-        this.key = key;
-        this.name = name;
+  /*  public CacheJournalItem(String uniqueKey, String filePath, long time, long size, long downloadedSize) {
+        this.uniqueKey = uniqueKey;
+        this.filePath = filePath;
+        Log.e("CacheJournalItem", "Data:\nKey:" + uniqueKey + "\nName: " + filePath);
         this.time = time;
         this.size = size;
         this.downloadedSize = downloadedSize;
+    }*/
+
+
+    public String getUniqueKey() {
+        return uniqueKey;
     }
 
-    public void copy(CacheJournalItem item, long time) {
-        set(item.key, item.name, time, item.size);
-    }
-
-    public void set(String key, String name, long time, long size) {
-        this.key = key;
-        this.name = name;
-        this.time = time;
-        this.size = size;
-        this.downloadedSize = size;
-    }
-
-
-    public void set(String key, String name, long time, long size, long downloadedSize) {
-        this.key = key;
-        this.name = name;
-        this.time = time;
-        this.size = size;
-        this.downloadedSize = downloadedSize;
-    }
-
-    public String getKey() {
-        return key;
-    }
-
-    public void setKey(String key) {
-        this.key = key;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
+    public String getFilePath() {
+        return filePath;
     }
 
     public long getTime() {
@@ -86,27 +112,34 @@ public class CacheJournalItem {
         return size;
     }
 
-    public void setSize(long size) {
-        this.size = size;
-    }
-
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         CacheJournalItem item = (CacheJournalItem) o;
         if (time != item.time) return false;
-        if (!key.equals(item.key)) return false;
-        return name.equals(item.name);
+        if (Objects.equals(sha1, item.sha1)) return false;
+        if (Objects.equals(uniqueKey, item.uniqueKey)) return false;
+        if (Objects.equals(type, item.type)) return false;
+        if (Objects.equals(replaceKey, item.replaceKey)) return false;
+        return filePath.equals(item.filePath);
     }
 
     @Override
     public int hashCode() {
-        int result = key.hashCode();
-        result = 31 * result + name.hashCode();
+        int result = getUniqueKey().hashCode();
+        result = 31 * result + getFilePath().hashCode();
+        result = 31 * result + getType().hashCode();
+        result = 31 * result + getExt().hashCode();
+        result = 31 * result + getReplaceKey().hashCode();
+        result = 31 * result + getSha1().hashCode();
         result = 31 * result + (int) (time ^ (time >>> 32));
-        result = 31 * result + (int) (size ^ (size >>> 32));
         return result;
+    }
+
+    @NonNull
+    @Override
+    public String toString() {
+        return "Key: " + getUniqueKey() + "; File: " + getFilePath();
     }
 }

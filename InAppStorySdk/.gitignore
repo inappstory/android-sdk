@@ -1,6 +1,7 @@
 *.iml
 .gradle
 /local.properties
+/examples
 /.idea/caches
 /.idea/libraries
 /.idea/modules.xml
@@ -15,3 +16,4 @@
 .cxx
 /.idea/compiler.xml
 /.idea/jarRepositories.xml
+/examples/

@@ -4,21 +4,29 @@ import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
 
-import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.stories.api.models.Story;
+import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.data.IListItemContent;
+import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.ui.list.ListManager;
 
 class UgcStoriesListManager implements ListManager {
 
     UgcStoriesList list;
+    private final IASCore core;
 
     public void clear() {
         list = null;
     }
 
-    public UgcStoriesListManager() {
+    public UgcStoriesListManager(IASCore core) {
       //  this.list = list;
+        this.core = core;
         handler = new Handler(Looper.getMainLooper());
+        checkCurrentSession();
+    }
+
+    void checkCurrentSession() {
+        currentSessionId = core.sessionManager().getSession().getSessionId();
     }
 
     private void checkHandler() {
@@ -34,13 +42,12 @@ class UgcStoriesListManager implements ListManager {
     }
 
     public void changeStory(final int storyId, final String listID) {
-        if (InAppStoryService.isNull()) {
-            return;
-        }
-        Story st = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId, Story.StoryType.UGC);
+        IListItemContent st = core.contentHolder().listsContent().getByIdAndType(
+                storyId, ContentType.UGC
+        );
         if (st == null) return;
-        st.isOpened = true;
-        st.saveStoryOpened(Story.StoryType.UGC);
+        st.setOpened(true);
+        core.storyListCache().saveStoryOpened(st.id(), ContentType.UGC);
         checkHandler();
         post(new Runnable() {
             @Override
@@ -53,7 +60,7 @@ class UgcStoriesListManager implements ListManager {
     }
 
     //CloseReaderEvent
-    public void closeReader() {
+    public void readerIsClosed() {
         post(new Runnable() {
             @Override
             public void run() {
@@ -63,7 +70,7 @@ class UgcStoriesListManager implements ListManager {
         });
     }
 
-    public void openReader() {
+    public void readerIsOpened() {
         post(new Runnable() {
             @Override
             public void run() {
@@ -73,14 +80,21 @@ class UgcStoriesListManager implements ListManager {
         });
     }
 
-    public void changeUserId() {
+    public void userIdChanged() {
         post(new Runnable() {
             @Override
             public void run() {
                 if (list == null) return;
-                list.refreshList();
+                list.refresh();
             }
         });
+    }
+
+    String currentSessionId;
+
+    @Override
+    public void sessionIsOpened(String currentSessionId) {
+        this.currentSessionId = currentSessionId;
     }
 
     public void clearAllFavorites() {

@@ -3,16 +3,6 @@ package com.inappstory.sdk.stories.api.models;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.network.Required;
-import com.inappstory.sdk.network.SerializedName;
-import com.inappstory.sdk.stories.api.models.slidestructure.SlideStructure;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 /**
  * Created by Paperrose on 08.07.2018.
  */

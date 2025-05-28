@@ -43,26 +43,32 @@ public class IASWebView extends WebView {
 
     protected void init() {
         getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE);
-        setBackgroundColor(getResources().getColor(R.color.black));
-
+        //setBackgroundColor(getResources().getColor(R.color.black));
+        setOverScrollMode(OVER_SCROLL_NEVER);
         setVerticalScrollBarEnabled(false);
         setHorizontalScrollBarEnabled(false);
         setLayerType(View.LAYER_TYPE_HARDWARE, null);
+        getSettings().setMinimumFontSize(1);
         getSettings().setTextZoom(100);
         getSettings().setAllowContentAccess(true);
         getSettings().setAllowFileAccess(true);
-      //  getSettings().setAllowFileAccessFromFileURLs(true);
-      //  getSettings().setAllowUniversalAccessFromFileURLs(true);
+        //  getSettings().setAllowFileAccessFromFileURLs(true);
+        //  getSettings().setAllowUniversalAccessFromFileURLs(true);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             getSettings().setOffscreenPreRaster(true);
         }
 
         setClickable(true);
         getSettings().setJavaScriptEnabled(true);
+        resumeTimers();
     }
 
-    public void sendWebConsoleLog(ConsoleMessage consoleMessage,
-                                  String storyId, int slideIndex) {
+    public void sendWebConsoleLog(
+            ConsoleMessage consoleMessage,
+            String storyId,
+            int contentType, // 0 - story, 1 - iam
+            int slideIndex
+    ) {
         WebConsoleLog log = new WebConsoleLog();
         log.timestamp = System.currentTimeMillis();
         log.id = UUID.randomUUID().toString();
@@ -73,6 +79,22 @@ public class IASWebView extends WebView {
         log.storyId = storyId;
         log.slideIndex = slideIndex;
         InAppStoryManager.sendWebConsoleLog(log);
+    }
+
+
+
+    public void destroyView() {
+        removeAllViews();
+        clearHistory();
+        clearCache(true);
+        loadUrl("about:blank");
+        removeAllViews();
+        destroyDrawingCache();
+    }
+
+    protected String updateHead(String html, String headAddition) {
+        return html.replace("<head>",
+                "<head>"+headAddition);
     }
 
     protected String injectUnselectableStyle(String html) {
@@ -87,9 +109,9 @@ public class IASWebView extends WebView {
                         "} </style>");
     }
 
-    public String setDir(String html) {
+    public String setDir(String html, Context context) {
         try {
-            int dir = getContext().getResources().getConfiguration().getLayoutDirection();
+            int dir = context.getResources().getConfiguration().getLayoutDirection();
             String dirString = (dir == View.LAYOUT_DIRECTION_RTL) ? "rtl" : "ltr";
             return html.replace("{{%dir}}", dirString);
         } catch (Exception e) {

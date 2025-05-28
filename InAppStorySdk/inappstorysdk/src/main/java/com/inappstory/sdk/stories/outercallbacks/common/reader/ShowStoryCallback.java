@@ -1,10 +1,10 @@
 package com.inappstory.sdk.stories.outercallbacks.common.reader;
 
-public interface ShowStoryCallback {
-    void showStory(int id,
-                   String title,
-                   String tags,
-                   int slidesCount,
-                   SourceType source,
-                   ShowStoryAction action);
+import com.inappstory.sdk.core.api.IASCallback;
+
+public interface ShowStoryCallback extends IASCallback {
+    void showStory(
+            StoryData storyData,
+            ShowStoryAction action
+    );
 }

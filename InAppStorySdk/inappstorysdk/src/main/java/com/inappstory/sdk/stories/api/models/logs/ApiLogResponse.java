@@ -1,5 +1,8 @@
 package com.inappstory.sdk.stories.api.models.logs;
 
+import com.inappstory.sdk.network.models.Response;
+import com.inappstory.sdk.network.models.ResponseWithRawData;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -17,6 +20,24 @@ public class ApiLogResponse {
     public long duration;
     public long contentLength;
 
+    public ApiLogResponse(long timestamp) {
+        this.timestamp = timestamp;
+    }
+
+    public ApiLogResponse() {
+        this.timestamp = System.currentTimeMillis();
+    }
+
+    public void buildFromRawResponse(ResponseWithRawData responseWithRawData, String requestId) {
+        id = requestId;
+        contentLength = responseWithRawData.decompressedStream.length();
+        Response response = responseWithRawData.response;
+        if (response.body != null) {
+            generateJsonResponse(response.code, response.body, response.headers);
+        } else {
+            generateError(response.code, response.errorBody, response.headers);
+        }
+    }
     public void generateError(int statusCode, String errorBody, HashMap<String, String> headers) {
         this.isError = true;
         this.status = statusCode;

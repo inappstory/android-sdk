@@ -1,7 +1,6 @@
 package com.inappstory.sdk.lrudiskcache;
 
-import android.util.Log;
-
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.stories.cache.DownloadFileState;
 
 import java.io.File;
@@ -12,14 +11,10 @@ import java.util.Set;
 public class LruDiskCache {
 
     private final CacheJournal journal;
-    private FileManager manager;
+    private final FileManager manager;
     private long cacheSize;
 
     public CacheType cacheType;
-
-    private static LruDiskCache fastCache;
-    private static LruDiskCache commonCache;
-    private static LruDiskCache infiniteCache;
 
     public static final long MB_1 = 1024 * 1024;
     public static final long MB_5 = 5 * MB_1;
@@ -27,80 +22,50 @@ public class LruDiskCache {
     public static final long MB_50 = 50 * MB_1;
     public static final long MB_100 = 100 * MB_1;
     public static final long MB_200 = 200 * MB_1;
-
-    public static final long MB_2000 = 2000 * MB_1;
-
-    public static void clear() throws IOException {
-        if (fastCache != null) fastCache.clearCache();
-        if (commonCache != null) commonCache.clearCache();
-        if (infiniteCache != null) infiniteCache.clearCache();
-        fastCache = null;
-        commonCache = null;
-        infiniteCache = null;
-    }
+    public static final long MB_500 = 500 * MB_1;
 
     public File getCacheDir() {
         return manager.getCacheDir();
     }
 
-    private static Object cacheLock = new Object();
-
-    public static LruDiskCache create(File cacheDir, String subPath, long cacheSize, CacheType cacheType) throws IOException {
-        synchronized (cacheLock) {
-            if (cacheSize < MB_1)
-                cacheSize = MB_1;
-            switch (cacheType) {
-                case COMMON:
-                    if (commonCache == null)
-                        commonCache = new LruDiskCache(cacheDir, subPath + "commonCache", cacheSize, cacheType);
-                    return commonCache;
-                case FAST:
-                    if (fastCache == null)
-                        fastCache = new LruDiskCache(cacheDir, subPath + "fastCache", cacheSize, cacheType);
-                    return fastCache;
-                case INFINITE:
-                    if (infiniteCache == null)
-                        infiniteCache = new LruDiskCache(cacheDir, subPath + "infiniteCache", cacheSize, cacheType);
-                    return infiniteCache;
-                default:
-                    return null;
-            }
-        }
-    }
-
-    private LruDiskCache(File cacheDir, String subPath, long cacheSize, CacheType cacheType) throws IOException {
-        this.manager = new FileManager(cacheDir, subPath);
-        this.journal = new CacheJournal(manager);
+    LruDiskCache(
+            IASCore core,
+            File cacheDir,
+            String subPath,
+            long cacheSize,
+            CacheType cacheType
+    ) throws IOException {
+        this.manager = new FileManager(core, cacheDir, subPath);
+        this.journal = new CacheJournal(core, manager);
         this.cacheSize = cacheSize;
         this.cacheType = cacheType;
     }
 
-    public File put(String key, File file) throws IOException {
+
+    public void put(CacheJournalItem item) throws IOException {
+        put(item, null);
+    }
+
+    public void put(CacheJournalItem item, String type) throws IOException {
         synchronized (journal) {
-            keyIsValid(key);
+            File file = new File(item.getFilePath());
+            keyIsValid(item.getUniqueKey());
             String name = file.getAbsolutePath();
-            long time = System.currentTimeMillis();
-            long fileSize = manager.getFileSize(file);
-            CacheJournalItem item = new CacheJournalItem(key, name, time, fileSize);
-            File cacheFile = manager.put(file, name);
-            journal.delete(key, false);
+            manager.put(file, name);
+            journal.delete(item.getUniqueKey(), type, false);
             journal.put(item, cacheSize);
             journal.writeJournal();
-            return cacheFile;
         }
     }
 
-    public File put(String key, File file, long fileSize, long downloadedSize) throws IOException {
+    public void delete(CacheJournalItem item, String type) throws IOException {
         synchronized (journal) {
-            keyIsValid(key);
+            File file = new File(item.getFilePath());
+            keyIsValid(item.getUniqueKey());
             String name = file.getAbsolutePath();
-            long time = System.currentTimeMillis();
-            CacheJournalItem item = new CacheJournalItem(key, name, time, fileSize, downloadedSize);
-            File cacheFile = manager.put(file, name);
-            journal.delete(key, false);
-            journal.put(item, cacheSize);
+            manager.delete(name);
+            journal.delete(item.getUniqueKey(), type, false);
             journal.writeJournal();
-            return cacheFile;
         }
     }
 
@@ -111,11 +76,8 @@ public class LruDiskCache {
     private void delete(String key, boolean writeJournal) throws IOException {
         synchronized (journal) {
             keyIsValid(key);
-            CacheJournalItem item = journal.delete(key, true);
-            if (item != null) {
-                if (writeJournal) {
-                    journal.writeJournal();
-                }
+            if (journal.delete(key, true) && writeJournal) {
+                journal.writeJournal();
             }
         }
     }
@@ -131,12 +93,6 @@ public class LruDiskCache {
         FileManager.deleteFolderRecursive(getCacheDir(), false);
     }
 
-    public Set<String> keySet() {
-        synchronized (journal) {
-            return journal.keySet();
-        }
-    }
-
     public long getCacheSize() {
         synchronized (journal) {
             return cacheSize;
@@ -149,33 +105,12 @@ public class LruDiskCache {
         }
     }
 
-    public long getUsedSpace() {
-        synchronized (journal) {
-            return journal.getCurrentCacheSize();
-        }
-    }
-
-    public long getFreeSpace() {
-        synchronized (journal) {
-            return cacheSize - journal.getCurrentCacheSize();
-        }
-    }
-
-    public long getJournalSize() {
-        synchronized (journal) {
-            return journal.getJournalSize();
-        }
-    }
-
     public String getNameFromKey(String key) {
         return Utils.hash(key);
     }
 
-    public File getFileFromKey(String key, String extension) {
-        return new File(getCacheDir().getAbsolutePath() +
-                File.separator +
-                getNameFromKey(key) +
-                "." + extension);
+    public File getFileFromKey(String key) {
+        return new File(getCacheDir().getAbsolutePath() + File.separator + getNameFromKey(key));
     }
 
     public boolean hasKey(String key) {
@@ -187,18 +122,36 @@ public class LruDiskCache {
     }
 
     public File getFullFile(String key) {
-        return FileManager.getFullFile(get(key));
+        return getFullFile(key, null);
+    }
+
+
+    public File getFullFile(String key, String type) {
+        return FileManager.getFullFile(get(key, type));
     }
 
     public DownloadFileState get(String key) {
+        return get(key, null);
+    }
+
+    public CacheJournalItem getJournalItem(String key, String type) {
+        return journal.get(key, type);
+    }
+
+
+    public CacheJournalItem getJournalItem(String key) {
+        return getJournalItem(key, null);
+    }
+
+    public DownloadFileState get(String key, String type) {
         synchronized (journal) {
             try {
                 keyIsValid(key);
-                CacheJournalItem item = journal.get(key);
+                CacheJournalItem item = journal.get(key, type);
                 if (item != null) {
-                    File file = new File(item.getName());
+                    File file = new File(item.getFilePath());
                     if (!file.exists()) {
-                        journal.delete(key, false);
+                        journal.delete(key, type, false);
                         file = null;
                     }
                     journal.writeJournal();

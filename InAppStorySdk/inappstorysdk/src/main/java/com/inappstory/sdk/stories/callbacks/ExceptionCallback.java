@@ -1,6 +1,8 @@
 package com.inappstory.sdk.stories.callbacks;
 
-public interface ExceptionCallback {
+import com.inappstory.sdk.core.api.IASCallback;
+
+public interface ExceptionCallback extends IASCallback {
     /**
      * use to customize uncaught exception behaviour
      * @param throwable (throwable)

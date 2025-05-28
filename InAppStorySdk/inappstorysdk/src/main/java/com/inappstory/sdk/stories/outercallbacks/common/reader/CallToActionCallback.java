@@ -1,8 +1,13 @@
 package com.inappstory.sdk.stories.outercallbacks.common.reader;
 
-public interface CallToActionCallback {
+import android.content.Context;
+
+import com.inappstory.sdk.core.api.IASCallback;
+
+public interface CallToActionCallback extends IASCallback {
     void callToAction(
-            SlideData slide,
+            Context context,
+            ContentData slideData,
             String link,
             ClickAction action
     );

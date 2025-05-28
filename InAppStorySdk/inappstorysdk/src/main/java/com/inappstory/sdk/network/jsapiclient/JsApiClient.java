@@ -4,11 +4,11 @@ import static com.inappstory.sdk.network.JsonParser.toMap;
 
 import android.content.Context;
 
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.network.JsonParser;
-import com.inappstory.sdk.stories.api.models.Session;
+import com.inappstory.sdk.network.models.RequestLocalParameters;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
-import com.inappstory.sdk.stories.statistic.ProfilingManager;
-import com.inappstory.sdk.stories.utils.SessionManager;
+import com.inappstory.sdk.stories.statistic.IASStatisticProfilingImpl;
 import com.inappstory.sdk.stories.utils.TaskRunner;
 
 import org.json.JSONObject;
@@ -19,9 +19,14 @@ public class JsApiClient {
     TaskRunner taskRunner = new TaskRunner();
 
     Context context;
+    private final IASCore core;
 
-    public JsApiClient(Context context) {
+    String baseUrl;
+
+    public JsApiClient(IASCore core, Context context, String baseUrl) {
+        this.core = core;
         this.context = context;
+        this.baseUrl = baseUrl;
     }
 
     public void sendApiRequest(String data, JsApiResponseCallback callback) {
@@ -38,30 +43,41 @@ public class JsApiClient {
                 config.data, config.id, config.cb, config.profilingKey, callback);
     }
 
-    void checkSessionAndSendRequest(final String method,
-                                    final String path,
-                                    final Map<String, String> headers,
-                                    final Map<String, String> getParams,
-                                    final String body,
-                                    final String requestId,
-                                    final String cb,
-                                    final String profilingKey,
-                                    final JsApiResponseCallback callback) {
-        if (Session.needToUpdate()) {
-            SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
-                @Override
-                public void onSuccess() {
-                    sendRequest(method, path, headers, getParams, body, requestId, cb, profilingKey, callback);
-                }
+    void checkSessionAndSendRequest(
+            final String method,
+            final String path,
+            final Map<String, String> headers,
+            final Map<String, String> getParams,
+            final String body,
+            final String requestId,
+            final String cb,
+            final String profilingKey,
+            final JsApiResponseCallback callback
+    ) {
+        core.sessionManager().useOrOpenSession(
+                new OpenSessionCallback() {
+                    @Override
+                    public void onSuccess(RequestLocalParameters requestLocalParameters) {
+                        sendRequest(
+                                method,
+                                path,
+                                baseUrl,
+                                headers,
+                                getParams,
+                                body,
+                                requestId,
+                                cb,
+                                profilingKey,
+                                callback
+                        );
+                    }
 
-                @Override
-                public void onError() {
+                    @Override
+                    public void onError() {
 
+                    }
                 }
-            });
-        } else {
-            sendRequest(method, path, headers, getParams, body, requestId, cb, profilingKey, callback);
-        }
+        );
     }
 
     String oldEscape(String raw) {
@@ -75,6 +91,7 @@ public class JsApiClient {
 
     void sendRequest(final String method,
                      final String path,
+                     final String baseUrl,
                      final Map<String, String> headers,
                      final Map<String, String> getParams,
                      final String body,
@@ -84,30 +101,40 @@ public class JsApiClient {
                      final JsApiResponseCallback callback) {
         final String sarHash;
         if (profilingKey != null && !profilingKey.isEmpty()) {
-            sarHash = ProfilingManager.getInstance().addTask(profilingKey);
+            sarHash = core.statistic().profiling().addTask(profilingKey);
         } else {
             sarHash = null;
         }
-        taskRunner.executeAsync(new JsApiRequestAsync(method, path,
-                headers, getParams, body, requestId,
-                context), new TaskRunner.Callback<JsApiResponse>() {
-            @Override
-            public void onComplete(JsApiResponse result) {
-                ProfilingManager.getInstance().setReady(sarHash);
-                try {
-                    JSONObject resultJson = new JSONObject();
-                    resultJson.put("requestId", result.requestId);
-                    resultJson.put("status", result.status);
-                    resultJson.put("data", oldEscape(result.data));
-                    try {
-                        resultJson.put("headers", new JSONObject(result.headers));
-                    } catch (Exception e) {
+        taskRunner.executeAsync(
+                new JsApiRequestAsync(
+                        method,
+                        path,
+                        baseUrl,
+                        headers,
+                        getParams,
+                        body,
+                        requestId,
+                        context
+                ),
+                new TaskRunner.Callback<JsApiResponse>() {
+                    @Override
+                    public void onComplete(JsApiResponse result) {
+                        core.statistic().profiling().setReady(sarHash);
+                        try {
+                            JSONObject resultJson = new JSONObject();
+                            resultJson.put("requestId", result.requestId);
+                            resultJson.put("status", result.status);
+                            resultJson.put("data", oldEscape(result.data));
+                            try {
+                                resultJson.put("headers", new JSONObject(result.headers));
+                            } catch (Exception e) {
+                            }
+                            callback.onJsApiResponse(resultJson.toString(), cb);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
                     }
-                    callback.onJsApiResponse(resultJson.toString(), cb);
-                } catch (Exception e) {
-                    e.printStackTrace();
                 }
-            }
-        });
+        );
     }
 }

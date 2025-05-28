@@ -1,6 +1,6 @@
 package com.inappstory.sdk.network.jsapiclient;
 
-import com.inappstory.sdk.network.SerializedName;
+import com.inappstory.sdk.network.annotations.models.SerializedName;
 
 public class JsApiRequestConfig {
     String id;

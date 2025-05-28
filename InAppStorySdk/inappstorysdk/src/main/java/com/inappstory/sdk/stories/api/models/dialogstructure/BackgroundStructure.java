@@ -1,5 +1,7 @@
 package com.inappstory.sdk.stories.api.models.dialogstructure;
 
-public class BackgroundStructure {
+import java.io.Serializable;
+
+public class BackgroundStructure implements Serializable {
     public String color;
 }

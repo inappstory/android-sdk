@@ -1,8 +1,6 @@
 package com.inappstory.sdk.stories.ui.views;
 
-import android.annotation.TargetApi;
 import android.net.Uri;
-import android.os.Build;
 import android.util.Log;
 import android.webkit.MimeTypeMap;
 import android.webkit.URLUtil;
@@ -11,29 +9,36 @@ import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.lrudiskcache.LruDiskCache;
-import com.inappstory.sdk.stories.cache.Downloader;
+import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.stories.cache.FilesDownloader;
+import com.inappstory.sdk.stories.cache.usecases.StoryVODResourceFileUseCase;
+import com.inappstory.sdk.stories.cache.usecases.StoryVODResourceFileUseCaseResult;
+import com.inappstory.sdk.stories.cache.vod.ContentRange;
+import com.inappstory.sdk.stories.cache.vod.VODCacheJournalItem;
+import com.inappstory.sdk.utils.StringsUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 
 public class IASWebViewClient extends WebViewClient {
 
-    private File getCachedFile(String url, String key) {
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service == null) return null;
-        LruDiskCache cache = service.getCommonCache();
+    private File getCachedFile(String key) {
+        InAppStoryManager manager = InAppStoryManager.getInstance();
+        if (manager == null) return null;
+        IASCore core = manager.iasCore();
         try {
-            return Downloader.updateFile(cache.getFullFile(key), url, cache, key);
+            return core.contentLoader().getCommonCache().getFullFile(key);
         } catch (Exception e) {
-            InAppStoryService.createExceptionLog(e);
+            core.exceptionManager().createExceptionLog(e);
             return null;
         }
     }
@@ -51,8 +56,7 @@ public class IASWebViewClient extends WebViewClient {
         if (filePath != null) {
             file = new File(filePath);
         } else if (!url.startsWith("data:") && URLUtil.isValidUrl(url)) {
-            // skip any data URI scheme (data:content/type;)
-            file = getCachedFile(url, Downloader.cropUrl(url, true));
+            file = getCachedFile(FilesDownloader.deleteQueryArgumentsFromUrlOld(url, true));
         }
         return file;
     }
@@ -68,55 +72,136 @@ public class IASWebViewClient extends WebViewClient {
                 if (mimeType == null || mimeType.isEmpty()) {
                     mimeType = "application/octet-stream";
                 }
+
                 response = new WebResourceResponse(mimeType, "BINARY",
                         new FileInputStream(file));
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    Map<String, String> currentHeaders = response.getResponseHeaders();
-                    if (currentHeaders == null) currentHeaders = new HashMap<>();
-                    HashMap<String, String> newHeaders = new HashMap<>(currentHeaders);
-                    newHeaders.put("Access-Control-Allow-Origin", "*");
-                    response.setResponseHeaders(newHeaders);
-                }
+                Map<String, String> currentHeaders = response.getResponseHeaders();
+                if (currentHeaders == null) currentHeaders = new HashMap<>();
+                HashMap<String, String> newHeaders = new HashMap<>(currentHeaders);
+                newHeaders.put("Access-Control-Allow-Origin", "*");
+                response.setResponseHeaders(newHeaders);
+                return response;
             } catch (Exception e) {
-                InAppStoryService.createExceptionLog(e);
+                InAppStoryManager.handleException(e);
             }
         }
         return response;
     }
 
-    public static void copyFile(File src, File dst) throws IOException {
-        FileInputStream var2 = new FileInputStream(src);
-        FileOutputStream var3 = new FileOutputStream(dst);
-        byte[] var4 = new byte[1024];
-
-        int var5;
-        while ((var5 = var2.read(var4)) > 0) {
-            var3.write(var4, 0, var5);
+    private WebResourceResponse parseVODRequest(WebResourceRequest request) {
+        String url = request.getUrl().toString();
+        String vodAsset = "vod-asset/";
+        int indexOf = url.indexOf(vodAsset);
+        if (indexOf > -1) {
+            if (request.getMethod().equalsIgnoreCase("OPTIONS")) {
+                Map<String, String> headers = new HashMap<String, String>() {{
+                    SimpleDateFormat formatter = new SimpleDateFormat(
+                            "E, dd MMM yyyy kk:mm:ss",
+                            Locale.US);
+                    put("Connection", "close");
+                    put("Content-Type", "text/plain");
+                    put("Date", formatter.format(new Date()) + " GMT");
+                    put("Access-Control-Allow-Origin", "*");
+                    put("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT, OPTIONS");
+                    put("Access-Control-Max-Age", "600");
+                    put("Access-Control-Allow-Credentials", "true");
+                    put("Access-Control-Allow-Headers", "accept, authorization, Content-Type, range");
+                    put("Via", "1.1 vegur");
+                }};
+                return new WebResourceResponse("text/plain", "UTF-8", 200, "OK", headers, null);
+            }
+            String key = url.substring(indexOf + vodAsset.length());
+            Log.e("VOD_req", key);
+            Map<String, String> headers = request.getRequestHeaders();
+            String rangeHeader = headers.get("range");
+            WebResourceResponse response = getWebResourceResponse(rangeHeader, key);
+            return response;
         }
-
-        var2.close();
-        var3.close();
+        return null;
     }
 
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+
+    private WebResourceResponse getWebResourceResponse(
+            String rangeHeader,
+            String uniqueKey
+    ) {
+        InAppStoryManager manager = InAppStoryManager.getInstance();
+        if (manager == null) return null;
+        IASCore core = manager.iasCore();
+        VODCacheJournalItem item = core.contentLoader().filesDownloadManager().getVodCacheJournal().getItem(uniqueKey);
+        if (item == null) return null;
+
+        ContentRange range;
+
+        if (rangeHeader != null) {
+            range = StringsUtils.getRange(rangeHeader, item.getFullSize());
+        } else {
+            range = new ContentRange(0, item.getFullSize(), item.getFullSize());
+        }
+
+        Log.e("WebProfiling", "getWebResourceResponse Req " + item.getUrl() + " " + rangeHeader + " " + System.currentTimeMillis());
+        try {
+            StoryVODResourceFileUseCaseResult res = new StoryVODResourceFileUseCase(
+                    core,
+                    item.getUrl(),
+                    uniqueKey,
+                    range.start(),
+                    range.end()
+            ).getFile();
+            if (res == null) return null;
+            File file = res.file();
+            range = res.range();
+            String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(
+                    MimeTypeMap.getFileExtensionFromUrl(item.getUrl())
+            );
+            Log.e("VODTest", item.getUrl() + " " + range.start() + " " + range.end());
+
+
+            WebResourceResponse response = new WebResourceResponse(
+                    mimeType,
+                    "BINARY",
+                    new FileInputStream(file)
+            );
+            response.setStatusCodeAndReasonPhrase(206, "Partial Content");
+            Map<String, String> currentHeaders = response.getResponseHeaders();
+            if (currentHeaders == null) currentHeaders = new HashMap<>();
+            HashMap<String, String> newHeaders = new HashMap<>(currentHeaders);
+            Log.e("VOD_Resource", item.getUrl() + " " +
+                    (range.start() + "-" + range.end() + "/" + range.length())
+                    + " Cached:" + res.cached());
+            if (res.cached())
+                newHeaders.put("X-VOD-From-Cache", "");
+            newHeaders.put("Access-Control-Allow-Origin", "*");
+            newHeaders.put("Content-Range", "bytes=" + range.start() + "-" + range.end() + "/" + range.length());
+            newHeaders.put("Content-Length", "" + (range.length()));
+            newHeaders.put("Content-Type", mimeType);
+            response.setResponseHeaders(newHeaders);
+            return response;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+
     @Override
     public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
         try {
-            WebResourceResponse response = getChangedResponse(request.getUrl().toString());
-            if (response != null) return response;
-        } catch (FileNotFoundException ignored) {
+            Log.e("shouldInterceptRequest", request.getUrl().toString());
+            WebResourceResponse response = parseVODRequest(request);
+            if (response == null)
+                response = getChangedResponse(request.getUrl().toString());
+            if (response != null) {
+                Log.e("shouldInterceptRequest", request.getUrl().toString() + " success");
+                return response;
+            } else {
+
+                Log.e("shouldInterceptRequest", request.getUrl().toString() + " error");
+            }
+        } catch (Exception e) {
+
         }
         return super.shouldInterceptRequest(view, request);
     }
 
-    @Override
-    public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
-        try {
-            WebResourceResponse response = getChangedResponse(url);
-            if (response != null) return response;
-        } catch (FileNotFoundException ignored) {
-        }
-        return super.shouldInterceptRequest(view, url);
-    }
 
 }

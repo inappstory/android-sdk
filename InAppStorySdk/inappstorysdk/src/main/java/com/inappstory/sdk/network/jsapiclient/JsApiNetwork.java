@@ -1,180 +1,124 @@
 package com.inappstory.sdk.network.jsapiclient;
 
-import static com.inappstory.sdk.network.NetworkClient.getUAString;
-import static com.inappstory.sdk.network.NetworkHandler.GET;
-import static com.inappstory.sdk.network.NetworkHandler.getResponseFromStream;
-import static java.util.UUID.randomUUID;
-
 import android.content.Context;
-import android.os.Build;
-import android.provider.Settings;
+import android.util.Pair;
+
+import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.network.ApiSettings;
+import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.UseIASCoreCallback;
+import com.inappstory.sdk.core.utils.ConnectionCheck;
+import com.inappstory.sdk.core.utils.ConnectionCheckCallback;
 import com.inappstory.sdk.network.NetworkClient;
-import com.inappstory.sdk.network.NetworkHandler;
-import com.inappstory.sdk.network.Response;
-import com.inappstory.sdk.stories.api.models.Session;
-import com.inappstory.sdk.stories.api.models.logs.ApiLogRequest;
-import com.inappstory.sdk.stories.api.models.logs.ApiLogRequestHeader;
-import com.inappstory.sdk.stories.api.models.logs.ApiLogResponse;
+import com.inappstory.sdk.network.constants.HttpMethods;
+import com.inappstory.sdk.network.models.Request;
+import com.inappstory.sdk.network.models.Response;
+import com.inappstory.sdk.network.utils.headers.CustomHeader;
+import com.inappstory.sdk.network.utils.headers.Header;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.net.HttpURLConnection;
-import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
-import java.util.UUID;
 
 public class JsApiNetwork {
 
-    static URL getURL(String path, Map<String, String> queryParams) throws Exception {
-        String url = NetworkClient.getInstance().getBaseUrl() + "v2/" + path;
-        String varStr = "";
-        if (queryParams != null && queryParams.keySet().size() > 0) {
-            for (Object key : queryParams.keySet()) {
-                varStr += "&" + key + "=" + queryParams.get(key);
-            }
-            varStr = "?" + varStr.substring(1);
-        }
-        return new URL(url + varStr);
-    }
 
-    public static JsApiResponse sendRequest(String method,
-                                            String path,
-                                            Map<String, String> headers,
-                                            Map<String, String> getParams,
-                                            String body,
-                                            String requestId, Context context) throws Exception {
+    public static JsApiResponse sendRequest(
+            final String method,
+            final String path,
+            final String baseUrl,
+            final Map<String, String> headers,
+            final Map<String, String> getParams,
+            final String body,
+            String requestId,
+            final Context context
+    ) throws Exception {
+        final JsApiResponse jsResponse = new JsApiResponse();
+        jsResponse.requestId = requestId;
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull final IASCore core) {
 
+                if (core.network().getBaseUrl() == null) {
+                    jsResponse.status = 12163;
+                } else {
+                    new ConnectionCheck().check(context, new ConnectionCheckCallback(core) {
+                        @Override
+                        public void success() {
+                            Request.Builder requestBuilder = new Request.Builder();
 
-        JsApiResponse response = new JsApiResponse();
-        response.requestId = requestId;
-        if (!InAppStoryService.isConnected()) {
-            response.status = 12163;
-            return response;
-        }
-        HttpURLConnection connection = (HttpURLConnection) getURL(path, getParams).openConnection();
+                            boolean hasBody = !method.equals(HttpMethods.GET)
+                                    && !method.equals(HttpMethods.HEAD)
+                                    && body != null
+                                    && !body.isEmpty();
+                            List<Header> defaultHeaders;
+                            try {
+                                defaultHeaders = core.network().generateHeaders(
+                                        new String[]{},
+                                        new ArrayList<Pair<String, String>>(),
+                                        false,
+                                        hasBody
+                                );
+                            } catch (Exception e) {
+                                jsResponse.status = 12163;
+                                return;
+                            }
+                            if (headers != null)
+                                for (Map.Entry<String, String> header : headers.entrySet()) {
+                                    if (header.getValue() != null) {
+                                        defaultHeaders.add(new CustomHeader(header.getKey(), header.getValue()));
+                                    }
+                                }
 
-        connection.setConnectTimeout(30000);
-        connection.setReadTimeout(30000);
-        connection.setRequestMethod(method);
-        String packageName = context.getPackageName();
-        String language;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            language = Locale.getDefault().toLanguageTag();
-        } else {
-            language = Locale.getDefault().getLanguage();
-        }
-        connection.setRequestProperty("Accept", "application/json");
-        connection.setRequestProperty("Accept-Language", language);
-        connection.setRequestProperty("X-APP-PACKAGE-ID", packageName != null ? packageName : "-");
-        connection.setRequestProperty("User-Agent", getUAString(context));
-        connection.setRequestProperty("Authorization", "Bearer " + ApiSettings.getInstance().getApiKey());
-        connection.setRequestProperty("X-Device-Id", Settings.Secure.getString(context.getContentResolver(),
-                Settings.Secure.ANDROID_ID));
-        connection.setRequestProperty("X-Request-ID", randomUUID().toString());
-        if (InAppStoryService.isNotNull())
-            connection.setRequestProperty("X-User-id", InAppStoryService.getInstance().getUserId());
-        connection.setRequestProperty("auth-session-id", Session.getInstance().id);
+                            Request request = requestBuilder
+                                    .isFormEncoded(false)
+                                    .method(method)
+                                    .headers(defaultHeaders)
+                                    .isFormEncoded(false)
+                                    .url(baseUrl + "v2/" + path)
+                                    .vars(getParams != null ? getParams : new HashMap<String, String>())
+                                    .body(body)
+                                    .build();
+                            Response networkResponse = core.network().execute(request);
+                            jsResponse.status = networkResponse.code;
+                            if (networkResponse.headers != null && networkResponse.headers.size() > 0) {
+                                JSONObject jheaders = new JSONObject();
+                                try {
+                                    for (Map.Entry<String, String> header : networkResponse.headers.entrySet()) {
+                                        if (header.getValue() != null) {
+                                            jheaders.put(header.getKey(), header.getValue());
+                                        }
+                                    }
+                                    jsResponse.headers = jheaders.toString();
+                                } catch (JSONException e) {
 
-        connection.setRequestProperty("Accept-Encoding", "br, gzip");
-        boolean hasBody = !method.equals(GET) && body != null && !body.isEmpty();
-        if (hasBody) {
-            connection.setRequestProperty("Content-Type", "application/json");
-        }
-        if (headers != null) {
-            for (String key : headers.keySet()) {
-                connection.setRequestProperty(key, headers.get(key));
-            }
-        }
-        ApiLogRequest requestLog = new ApiLogRequest();
-        String logRequestId = UUID.randomUUID().toString();
-        requestLog.id = logRequestId;
-        requestLog.url = connection.getURL().toString();
-        requestLog.timestamp = System.currentTimeMillis();
-        requestLog.method = method;
-        for (Map.Entry<String, List<String>> entry : connection.getRequestProperties().entrySet()) {
-            if (entry.getKey() != null && entry.getValue() != null && !entry.getValue().isEmpty())
-                requestLog.headers.add(new ApiLogRequestHeader(entry.getKey(), entry.getValue().get(0)));
-        }
-        if (hasBody) {
-            requestLog.body = body;
-            InAppStoryManager.sendApiRequestLog(requestLog);
-            connection.setDoOutput(true);
-            OutputStream outStream = connection.getOutputStream();
-            OutputStreamWriter outStreamWriter = new OutputStreamWriter(outStream, "UTF-8");
-            outStreamWriter.write(body);
-            outStreamWriter.flush();
-            outStreamWriter.close();
-            outStream.close();
-        } else {
-            InAppStoryManager.sendApiRequestLog(requestLog);
-        }
-        int statusCode = connection.getResponseCode();
-        response.status = statusCode;
-        HashMap<String, String> logHeaders = new HashMap<>();
-        if (connection.getHeaderFields() != null && connection.getHeaderFields().size() > 0) {
-            JSONObject jheaders = new JSONObject();
-            for (String headerKey : connection.getHeaderFields().keySet()) {
-                if (connection.getHeaderFields().get(headerKey) != null &&
-                        connection.getHeaderFields().get(headerKey).size() > 0) {
-                    if (headerKey != null) {
-                        String headerVal = connection.getHeaderFields().get(headerKey).get(0);
-                        jheaders.put(headerKey, headerVal);
-                        logHeaders.put(headerKey, headerVal);
-                    }
+                                }
+                            }
+                            jsResponse.data = networkResponse.body != null ?
+                                    networkResponse.body :
+                                    networkResponse.errorBody;
+                        }
+
+                        @Override
+                        protected void error() {
+                            super.error();
+                            jsResponse.status = 12163;
+                        }
+                    });
                 }
             }
-            response.headers = jheaders.toString();
-        }
-        String respBody = null;
 
-        String decompression = null;
-        HashMap<String, String> responseHeaders = NetworkHandler.getHeaders(connection);
-        if (responseHeaders.containsKey("Content-Encoding")) {
-            decompression = responseHeaders.get("Content-Encoding");
-        }
-        if (responseHeaders.containsKey("content-encoding")) {
-            decompression = responseHeaders.get("content-encoding");
-        }
-        Response respObject = null;
-        long contentLength = 0;
-        String res = "";
-        if (statusCode == 200 || statusCode == 201 || statusCode == 202) {
-            res = getResponseFromStream(connection.getInputStream(), decompression);
-            contentLength = res.length();
-            InAppStoryManager.showDLog("InAppStory_Network", requestId + " Response: " + res);
-
-            respObject = new Response.Builder().contentLength(contentLength).
-                    headers(responseHeaders).code(statusCode).body(res).build();
-        } else {
-            res = getResponseFromStream(connection.getErrorStream(), decompression);
-            contentLength = res.length();
-            InAppStoryManager.showDLog("InAppStory_Network", requestId + " Error: " + res);
-            respObject = new Response.Builder().contentLength(contentLength).
-                    headers(responseHeaders).code(statusCode).errorBody(res).build();
-        }
-
-        ApiLogResponse responseLog = new ApiLogResponse();
-        responseLog.id = logRequestId;
-        responseLog.timestamp = System.currentTimeMillis();
-        responseLog.contentLength = connection.getContentLength();
-        if (respObject.body != null) {
-            responseLog.generateJsonResponse(respObject.code, respObject.body, respObject.headers);
-        } else {
-            responseLog.generateError(respObject.code, respObject.errorBody, respObject.headers);
-        }
-        response.data = res;
-        connection.disconnect();
-        InAppStoryManager.sendApiResponseLog(responseLog);
-        return response;
+            @Override
+            public void error() {
+                jsResponse.status = 12163;
+            }
+        });
+        return jsResponse;
     }
 }

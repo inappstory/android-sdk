@@ -1,24 +1,40 @@
 package com.inappstory.sdk.stories.ui.list;
 
+import android.content.res.Configuration;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
 
-import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.stories.api.models.Story;
+import androidx.annotation.NonNull;
 
-import java.util.List;
+import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.UseIASCoreCallback;
+import com.inappstory.sdk.core.api.IASDataSettingsHolder;
+import com.inappstory.sdk.core.data.IListItemContent;
+import com.inappstory.sdk.stories.api.models.ContentType;
 
 public class StoriesListManager implements ListManager {
     StoriesList list;
+    String currentSessionId;
+
+    void checkCurrentSession() {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                currentSessionId = core.sessionManager().getSession().getSessionId();
+            }
+        });
+    }
 
     public void clear() {
         list = null;
     }
 
     public StoriesListManager() {
-      //  this.list = list;
+        //  this.list = list;
         handler = new Handler(Looper.getMainLooper());
+        checkCurrentSession();
     }
 
     private void checkHandler() {
@@ -35,26 +51,28 @@ public class StoriesListManager implements ListManager {
 
 
     public void changeStory(final int storyId, final String listID) {
-        if (InAppStoryService.isNull()) {
-            return;
-        }
-        Story st = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId, Story.StoryType.COMMON);
-        if (st == null) return;
-        st.isOpened = true;
-        st.saveStoryOpened(Story.StoryType.COMMON);
-        checkHandler();
-        post(new Runnable() {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
-            public void run() {
-                if (list == null) return;
-                if (list.getVisibility() != View.VISIBLE) return;
-                list.changeStoryEvent(storyId, listID);
+            public void use(@NonNull IASCore core) {
+                IListItemContent st = core.contentHolder().listsContent()
+                        .getByIdAndType(storyId, ContentType.STORY);
+                if (st == null) return;
+                st.setOpened(true);
+                checkHandler();
+                post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (list == null) return;
+                        if (list.getVisibility() != View.VISIBLE) return;
+                        list.changeStoryEvent(storyId, listID);
+                    }
+                });
             }
         });
     }
 
     //CloseReaderEvent
-    public void closeReader() {
+    public void readerIsClosed() {
         post(new Runnable() {
             @Override
             public void run() {
@@ -64,7 +82,7 @@ public class StoriesListManager implements ListManager {
         });
     }
 
-    public void openReader() {
+    public void readerIsOpened() {
         post(new Runnable() {
             @Override
             public void run() {
@@ -74,14 +92,21 @@ public class StoriesListManager implements ListManager {
         });
     }
 
-    public void changeUserId() {
+    public void userIdChanged() {
         post(new Runnable() {
             @Override
             public void run() {
-                if (list == null) return;
-                list.refreshList();
+                final StoriesList storiesList = list;
+                if (storiesList == null) return;
+                if (storiesList.loadStoriesLaunched)
+                    storiesList.refresh();
             }
         });
+    }
+
+    @Override
+    public void sessionIsOpened(String currentSessionId) {
+        this.currentSessionId = currentSessionId;
     }
 
     public void clearAllFavorites() {
@@ -98,31 +123,19 @@ public class StoriesListManager implements ListManager {
 
     //StoryFavoriteEvent
     public void storyFavorite(final int id, final boolean favStatus, final boolean isEmpty) {
-        if (InAppStoryService.isNull()) {
-            return;
-        }
-        post(new Runnable() {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
-            public void run() {
-                List<FavoriteImage> favImages = InAppStoryService.getInstance().getFavoriteImages();
-                Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(id, Story.StoryType.COMMON);
-                if (story == null) return;
-                if (favStatus) {
-                    FavoriteImage favoriteImage = new FavoriteImage(id, story.getImage(), story.getBackgroundColor());
-                    if (!favImages.contains(favoriteImage))
-                        favImages.add(0, favoriteImage);
-                } else {
-                    for (FavoriteImage favoriteImage : favImages) {
-                        if (favoriteImage.getId() == id) {
-                            favImages.remove(favoriteImage);
-                            break;
-                        }
+            public void use(@NonNull IASCore core) {
+                post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (list == null) return;
+                        if (list.getVisibility() != View.VISIBLE) return;
+                        list.favStory(id, favStatus, isEmpty);
                     }
-                }
-                if (list == null) return;
-                if (list.getVisibility() != View.VISIBLE) return;
-                list.favStory(id, favStatus, favImages, isEmpty);
+                });
             }
         });
+
     }
 }

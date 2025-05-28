@@ -5,9 +5,11 @@ import android.view.View;
 
 import androidx.annotation.NonNull;
 
+import com.inappstory.sdk.core.api.IASCallback;
+
 import java.util.HashMap;
 
-public interface ShareCallback {
+public interface ShareCallback extends IASCallback {
     @NonNull
     View getView(
             @NonNull Context context,
@@ -17,5 +19,7 @@ public interface ShareCallback {
 
     void viewIsVisible(View view);
 
-    boolean onBackPress(@NonNull OverlappingContainerActions actions);
+    void onDestroyView(View shareView);
+
+    boolean onBackPress(View view, @NonNull OverlappingContainerActions actions);
 }

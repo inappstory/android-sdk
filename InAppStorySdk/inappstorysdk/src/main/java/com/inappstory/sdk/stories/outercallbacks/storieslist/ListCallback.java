@@ -1,17 +1,18 @@
 package com.inappstory.sdk.stories.outercallbacks.storieslist;
 
-public interface ListCallback {
-    void storiesLoaded(int size, String feed);
+import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 
-    void storiesUpdated(int size, String feed);
+import java.util.List;
+
+public interface ListCallback {
+    void storiesLoaded(int size, String feed, List<StoryData> storyData);
+
+    void storiesUpdated(int size, String feed, List<StoryData> storyData);
 
     void loadError(String feed);
 
-    void itemClick(int id,
-                   int listIndex,
-                   String title,
-                   String tags,
-                   int slidesCount,
-                   boolean isFavoriteList,
-                   String feed);
+    void itemClick(
+            StoryData storyData,
+            int listIndex
+    );
 }

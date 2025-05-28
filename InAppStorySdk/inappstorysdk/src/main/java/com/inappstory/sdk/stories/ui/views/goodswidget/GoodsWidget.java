@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.inappstory.sdk.AppearanceManager;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.utils.Sizes;
 
 import java.util.ArrayList;
@@ -18,6 +19,12 @@ import java.util.ArrayList;
 public class GoodsWidget extends RecyclerView {
     Context context;
     GoodsWidgetAdapter adapter;
+
+    public void setParentView(View parentView) {
+        this.parentView = parentView;
+    }
+
+    View parentView;
 
     @Nullable
     @Override
@@ -27,15 +34,11 @@ public class GoodsWidget extends RecyclerView {
 
     public static class GoodsWidgetConfig {
         public String widgetId;
-        public int storyId;
-        public String feedId;
-        public int slideIndex;
+        public SlideData slideData;
 
-        public GoodsWidgetConfig(String widgetId, int storyId, int slideIndex, String feedId) {
+        public GoodsWidgetConfig(String widgetId, SlideData slideData) {
             this.widgetId = widgetId;
-            this.storyId = storyId;
-            this.feedId = feedId;
-            this.slideIndex = slideIndex;
+            this.slideData = slideData;
         }
     }
 
@@ -46,15 +49,21 @@ public class GoodsWidget extends RecyclerView {
 
     GoodsWidgetConfig config;
     public void setItems(ArrayList<GoodsItemData> items, GetGoodsDataCallback callback) {
-        adapter = new GoodsWidgetAdapter(items, config, callback);
+        adapter = new GoodsWidgetAdapter(customGoodsWidget, items, config, callback);
         setAdapter(adapter);
     }
+
+    private ICustomGoodsWidget customGoodsWidget;
 
     private void init(Context context) {
         this.context = context;
         setLayoutManager(new LinearLayoutManager(context, HORIZONTAL, false));
-        if (AppearanceManager.getCommonInstance().csCustomGoodsWidget().getDecoration() != null) {
-            addItemDecoration(AppearanceManager.getCommonInstance().csCustomGoodsWidget().getDecoration());
+    }
+
+    public void setCustomGoodsWidget(ICustomGoodsWidget customGoodsWidget) {
+        this.customGoodsWidget = customGoodsWidget;
+        if (customGoodsWidget.getDecoration() != null) {
+            addItemDecoration(customGoodsWidget.getDecoration());
         } else {
             addItemDecoration(new ItemDecoration() {
                 @Override

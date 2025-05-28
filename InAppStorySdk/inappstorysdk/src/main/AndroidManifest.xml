@@ -28,11 +28,9 @@
             android:screenOrientation="portrait"
             android:theme="@style/StoriesSDKAppTheme.Transparent"
             tools:ignore="LockedOrientationActivity" />
-
         <activity
-            android:name="com.inappstory.sdk.stories.ui.reader.StoriesFixedActivity"
+            android:name="com.inappstory.sdk.stories.ui.reader.StoriesTabletActivity"
             android:hardwareAccelerated="true"
-            android:screenOrientation="portrait"
             android:theme="@style/StoriesSDKAppTheme.Transparent"
             tools:ignore="LockedOrientationActivity" />
 

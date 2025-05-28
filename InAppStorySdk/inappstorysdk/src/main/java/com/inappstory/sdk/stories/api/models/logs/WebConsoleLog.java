@@ -5,6 +5,7 @@ public class WebConsoleLog {
     public String logType;
     public String storyId;
     public int slideIndex;
+    public int contentType;
     public String id;
     public String message;
     public String sourceId;

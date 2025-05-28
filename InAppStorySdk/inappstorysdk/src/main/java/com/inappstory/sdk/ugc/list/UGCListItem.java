@@ -11,7 +11,8 @@ import androidx.appcompat.widget.AppCompatImageView;
 
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.R;
-import com.inappstory.sdk.imageloader.RoundedCornerLayout;
+import com.inappstory.sdk.core.ui.widgets.roundedlayout.RoundedCornerLayout;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.ui.list.BaseStoryListItem;
 import com.inappstory.sdk.stories.ui.list.ClickCallback;
 import com.inappstory.sdk.stories.ui.list.UGCListItemSimpleAppearance;
@@ -19,10 +20,14 @@ import com.inappstory.sdk.stories.utils.Sizes;
 
 public class UGCListItem extends BaseStoryListItem {
 
-    public UGCListItem(@NonNull View itemView, AppearanceManager manager) {
-        super(itemView, manager,
+    public UGCListItem(@NonNull View itemView, ViewGroup parent, AppearanceManager manager) {
+        super(
+                itemView,
+                parent,
+                manager,
                 false,
-                true);
+                true
+        );
         ViewGroup vg = itemView.findViewById(R.id.baseLayout);
         vg.removeAllViews();
         vg.addView(getDefaultUGCCell());
@@ -71,9 +76,9 @@ public class UGCListItem extends BaseStoryListItem {
 
     @Override
     public void bind(Integer id, String titleText, Integer titleColor,
-                     String sourceText, String imageUrl,
+                     String imageUrl,
                      Integer backgroundColor, boolean isOpened, boolean hasAudio,
-                     String videoUrl, ClickCallback callback) {
+                     String videoUrl, StoryData storyData, ClickCallback callback) {
 
     }
 

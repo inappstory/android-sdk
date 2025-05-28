@@ -2,6 +2,11 @@ package com.inappstory.sdk.network;
 
 import android.util.Pair;
 
+
+import com.inappstory.sdk.network.annotations.models.Ignore;
+import com.inappstory.sdk.network.annotations.models.Required;
+import com.inappstory.sdk.network.annotations.models.SerializedName;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -15,7 +20,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 
 public class JsonParser {
@@ -131,7 +135,10 @@ public class JsonParser {
     private static List<Pair<String, String>> mapToQueryParams(String mainName, Map<String, Object> map) {
         ArrayList<Pair<String, String>> result = new ArrayList<>();
         for (Map.Entry<String, Object> entry : map.entrySet()) {
-            String newMainName = mainName + "[" + entry.getKey() + "]";
+            String newMainName = entry.getKey();
+            if (mainName != null) {
+                newMainName = mainName + "[" + entry.getKey() + "]";
+            }
             if (entry.getValue() instanceof List) {
                 result.addAll(listToQueryParams(newMainName, (List<Object>) entry.getValue()));
             } else if (entry.getValue() instanceof Map) {
@@ -229,10 +236,11 @@ public class JsonParser {
 
     public static <T> ArrayList<T> listFromJson(String json, Class<T> typeOfT) {
         ArrayList<T> res = new ArrayList<>();
+        if (json == null) return res;
         try {
             JSONTokener jsonT = new JSONTokener(json);
             Object object = jsonT.nextValue();
-            if (object != null && object instanceof JSONArray) {
+            if (object instanceof JSONArray) {
                 for (int i = 0; i < ((JSONArray) object).length(); i++) {
                     Object obj = ((JSONArray) object).get(i);
                     if (typeOfT.isPrimitive() || typeOfT.equals(Integer.class)
@@ -295,7 +303,9 @@ public class JsonParser {
     private static Object getJsonObject(Object instance) throws Exception {
         if (instance == null) return null;
         Class etype = instance.getClass();
-        if (etype.isPrimitive() || etype.equals(Integer.class)
+        if (etype.isEnum()) {
+            return ((Enum) instance).name();
+        } else if (etype.isPrimitive() || etype.equals(Integer.class)
                 || etype.equals(Boolean.class) || etype.equals(Character.class)
                 || etype.equals(Short.class) || etype.equals(Long.class)
                 || etype.equals(Byte.class) || etype.equals(Float.class)
@@ -358,23 +368,19 @@ public class JsonParser {
             } else if (field.getType().equals(Map.class) ||
                     containsInterface(field.getType().getInterfaces(), Map.class)) {
                 JSONObject mapObject = new JSONObject((Map<String, Object>) val);
-                //Map<String, Object> valMap = (Map<String, Object>) val;
-               /* Set<String> keys = valMap.keySet();
-                for (String key : keys) {
-                    Object valObj = valMap.get(key);
-                    if (valObj instanceof List) {
+                Map<String, Object> valMap = (Map<String, Object>) val;
+                for (Map.Entry<String, Object> entry : valMap.entrySet()) {
+                    Object entryVal = entry.getValue();
+                    if (entryVal instanceof List) {
                         JSONArray arr = new JSONArray();
-                        int size = ((List) valObj).size();
-                        for (int i = 0; i < size; i++) {
-                            arr.put(getJsonObject(((List) valObj).get(i)));
+                        for (int i = 0; i < ((List) entryVal).size(); i++) {
+                            arr.put(getJsonObject(((List) entryVal).get(i)));
                         }
-                        mapObject.put(key, arr);
-                    } else if (valObj != null) {
-                        mapObject.put(key, getJsonObject(valObj));
+                        mapObject.put(entry.getKey(), arr);
                     } else {
-                        mapObject.put(key, getJsonObject(null));
+                        mapObject.put(entry.getKey(), getJsonObject(entry.getValue()));
                     }
-                }*/
+                }
                 result = mapObject;
             } else {
                 result = getJsonObject(val);

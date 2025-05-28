@@ -4,25 +4,29 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
-import com.inappstory.sdk.stories.ui.ScreensManager;
+import androidx.annotation.NonNull;
+
+import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.UseIASCoreCallback;
+import com.inappstory.sdk.core.ui.screens.ShareProcessHandler;
+import com.inappstory.sdk.share.IShareCompleteListener;
 
 public class StoryShareBroadcastReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
-        String shareId = null;
-        if (ScreensManager.getInstance().getTempShareId() != null) {
-            shareId = ScreensManager.getInstance().getTempShareId();
-        } else if (ScreensManager.getInstance().getOldTempShareId() != null) {
-            shareId = ScreensManager.getInstance().getOldTempShareId();
-        }
-        if (shareId != null) {
-            if (ScreensManager.getInstance().currentGameActivity != null) {
-                ScreensManager.getInstance().currentGameActivity.shareComplete(
-                        shareId, true);
-            } else {
-                if (ScreensManager.getInstance().currentScreen != null)
-                    ScreensManager.getInstance().currentScreen.shareComplete(true);
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                ShareProcessHandler shareProcessHandler = core.screensManager().getShareProcessHandler();
+                if (shareProcessHandler == null) return;
+                IShareCompleteListener shareCompleteListener = shareProcessHandler.shareCompleteListener();
+                if (shareCompleteListener != null) {
+                    shareCompleteListener.complete(true);
+                }
+                shareProcessHandler.clearShareIds();
             }
-        }
+        });
+
     }
 }

@@ -1,6 +1,8 @@
 package com.inappstory.sdk.stories.api.models.dialogstructure;
 
-public class TextStructure {
+import java.io.Serializable;
+
+public class TextStructure implements Serializable {
     public float size;
     public float lineHeight;
     public String align;
@@ -10,6 +12,8 @@ public class TextStructure {
     String family;
     String weight;
     String style;
+    public int limit;
+    public int maxLines;
 
     public boolean isBold() {
         return weight != null && weight.equals("bold");

@@ -1,8 +1,6 @@
 package com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager;
 
-import static com.inappstory.sdk.AppearanceManager.CS_READER_SETTINGS;
-import static com.inappstory.sdk.AppearanceManager.CS_TIMER_GRADIENT;
-
+import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Parcelable;
 
@@ -11,7 +9,10 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentStatePagerAdapter;
 
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenAppearance;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.ui.reader.ReaderManager;
 
 import java.io.Serializable;
@@ -30,23 +31,24 @@ public class ReaderPagerAdapter extends FragmentStatePagerAdapter {
         super(fm, behavior);
     }
 
-    String readerSettings;
+    LaunchStoryScreenAppearance appearanceSettings;
 
     ReaderManager manager;
-    int source = 0;
+    SourceType source = SourceType.SINGLE;
+    Rect readerContainer = null;
 
     public ReaderPagerAdapter(@NonNull FragmentManager fm,
-                              int source,
-                              String readerSettings,
-                              Serializable timerGradient,
+                              SourceType source,
+                              LaunchStoryScreenAppearance appearanceSettings,
+                              Rect readerContainer,
                               List<Integer> ids,
                               ReaderManager manager) {
         super(fm);
         this.storiesIds.clear();
         this.source = source;
         this.storiesIds.addAll(ids);
-        this.readerSettings = readerSettings;
-        this.timerGradient = timerGradient;
+        this.readerContainer = readerContainer;
+        this.appearanceSettings = appearanceSettings;
         this.manager = manager;
     }
 
@@ -57,7 +59,7 @@ public class ReaderPagerAdapter extends FragmentStatePagerAdapter {
             bundle.putParcelableArray("states", null);
             return bundle;
         } catch (Exception e) {
-            InAppStoryService.createExceptionLog(e);
+            InAppStoryManager.handleException(e);
             return new Bundle();
         }
     }
@@ -82,9 +84,9 @@ public class ReaderPagerAdapter extends FragmentStatePagerAdapter {
         ReaderPageFragment frag = new ReaderPageFragment();
         Bundle a = new Bundle();
         a.putInt("story_id", storiesIds.get(position));
-        a.putInt("source", source);
-        a.putString(CS_READER_SETTINGS, readerSettings);
-        a.putSerializable(CS_TIMER_GRADIENT, timerGradient);
+        a.putSerializable("source", source);
+        a.putParcelable("readerContainer", readerContainer);
+        a.putSerializable(LaunchStoryScreenAppearance.SERIALIZABLE_KEY, appearanceSettings);
         frag.setArguments(a);
         frag.parentManager = manager;
         return frag;

@@ -1,154 +1,175 @@
 package com.inappstory.sdk.stories.managers;
 
-import android.os.Handler;
+import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.stories.api.models.Story;
+import com.inappstory.sdk.UseServiceInstanceCallback;
+import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.api.IASStatisticStoriesV1;
+import com.inappstory.sdk.core.data.IReaderContent;
+import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
-import com.inappstory.sdk.stories.statistic.OldStatisticManager;
-import com.inappstory.sdk.stories.statistic.StatisticManager;
+import com.inappstory.sdk.stories.statistic.GetStatisticV1Callback;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPageManager;
+import com.inappstory.sdk.utils.ScheduledTPEManager;
+
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 public class TimerManager {
-    private Handler timerHandler = new Handler();
-    private long timerStart;
-
-    public void setTimerDuration(long timerDuration) {
-        this.timerDuration = timerDuration;
+    public TimerManager(IASCore core) {
+        this.core = core;
     }
+
+    private final IASCore core;
+    private long timerStartTimestamp;
 
     private long timerDuration;
-    private long totalTimerDuration;
-    private long pauseShift;
 
-    public void setPageManager(ReaderPageManager pageManager) {
-        this.pageManager = pageManager;
-    }
-
-    ReaderPageManager pageManager;
-
-    Runnable timerTask = new Runnable() {
-        @Override
-        public void run() {
-            if (timerDuration > 0 && System.currentTimeMillis() - timerStart >= timerDuration) {
-                timerHandler.removeCallbacks(timerTask);
-                pauseShift = 0;
-                if (pageManager != null)
-                    pageManager.nextSlide(ShowStory.ACTION_AUTO);
-                return;
-            }
-            timerHandler.postDelayed(timerTask, 50);
-        }
-    };
-
-    public void resumeLocalTimer() {
-        startTimer(timerDuration - pauseShift, false);
-    }
+    ScheduledFuture scheduledFuture;
 
     public long startPauseTime;
 
 
     public long pauseTime = 0;
 
-    public void resumeTimer() {
-        StatisticManager.getInstance().cleanFakeEvents();
-        resumeLocalTimer();
-        if (OldStatisticManager.getInstance().currentEvent == null) return;
-        OldStatisticManager.getInstance().currentEvent.eventType = 1;
-        OldStatisticManager.getInstance().currentEvent.timer = System.currentTimeMillis();
-        pauseTime += System.currentTimeMillis() - startPauseTime;
-        if (StatisticManager.getInstance() != null && StatisticManager.getInstance().currentState != null)
-            StatisticManager.getInstance().currentState.storyPause = pauseTime;
-        startPauseTime = 0;
+    ReaderPageManager pageManager;
+
+    private ScheduledTPEManager executorService = new ScheduledTPEManager();
+
+    public void setPageManager(ReaderPageManager pageManager) {
+        this.pageManager = pageManager;
     }
+
+
+    public void setTimerDuration(long timerDuration) {
+        this.timerDuration = timerDuration;
+    }
+
+    Runnable timerTask = new Runnable() {
+        @Override
+        public void run() {
+            if (timerDuration > 0 && System.currentTimeMillis() - timerStartTimestamp >= timerDuration) {
+                if (pageManager != null)
+                    pageManager.nextSlideAuto();
+                cancelTask();
+            }
+        }
+    };
+
+    private void cancelTask() {
+        if (scheduledFuture != null)
+            scheduledFuture.cancel(false);
+        scheduledFuture = null;
+        executorService.shutdown();
+    }
+
 
     public void stopTimer() {
-        try {
-            timerHandler.removeCallbacks(timerTask);
-        } catch (Exception e) {
-
-        }
+        cancelTask();
     }
 
-    public void resumeTimer(int timer) {
-        StatisticManager.getInstance().cleanFakeEvents();
-        startTimer(timer, false);
-        if (OldStatisticManager.getInstance().currentEvent == null) return;
-        OldStatisticManager.getInstance().currentEvent.eventType = 1;
-        OldStatisticManager.getInstance().currentEvent.timer = System.currentTimeMillis();
-        pauseTime += System.currentTimeMillis() - startPauseTime;
-        StatisticManager.getInstance().currentState.storyPause = pauseTime;
-        startPauseTime = 0;
-    }
-
-
-    public void startTimer(long timerDuration, boolean clearDuration) {
-        if (timerDuration == 0) {
+    public void startTimer(long timerDuration, long totalTimerDuration) {
+        if (totalTimerDuration == 0) {
             try {
-                timerHandler.removeCallbacks(timerTask);
-                this.timerDuration = timerDuration;
-                if (clearDuration)
-                    this.totalTimerDuration = timerDuration;
+                cancelTask();
+                this.timerDuration = totalTimerDuration;
             } catch (Exception e) {
 
             }
             return;
         }
-        if (timerDuration < 0) {
+        if (totalTimerDuration <= 0) {
             return;
         }
-        pauseShift = 0;
-        timerStart = System.currentTimeMillis();
+        timerStartTimestamp = System.currentTimeMillis();
         this.timerDuration = timerDuration;
-        try {
-            timerHandler.removeCallbacks(timerTask);
-        } catch (Exception e) {
+        scheduledFuture = executorService.scheduleAtFixedRate(
+                timerTask,
+                1L,
+                50L,
+                TimeUnit.MILLISECONDS
+        );
 
+    }
+
+
+    long currentDuration;
+
+    public void startSlideTimer(long newDuration, long currentTime) {
+        startTimer(newDuration - currentTime, newDuration);
+    }
+
+    public void pauseSlideTimer() {
+        cancelTask();
+    }
+
+    public void resumeTimerAndRefreshStat() {
+
+        core.statistic().storiesV2().cleanFakeEvents();
+        if (pageManager == null) return;
+        core.statistic().storiesV1(
+                pageManager.getParentManager().getSessionId(),
+                new GetStatisticV1Callback() {
+                    @Override
+                    public void get(@NonNull IASStatisticStoriesV1 manager) {
+                        manager.refreshCurrentState();
+                    }
+                }
+        );
+        pauseTime += System.currentTimeMillis() - startPauseTime;
+
+        core.statistic().storiesV2().cleanFakeEvents();
+        core.statistic().storiesV2().changeV2StatePauseTime(pauseTime);
+        startPauseTime = 0;
+    }
+
+    public void moveTimerToPosition(double position) {
+        if (currentDuration >= 0 && currentDuration - position > 0 && position >= 0) {
+            timerDuration = (long) (currentDuration - position);
+            timerStartTimestamp = System.currentTimeMillis();
         }
-        timerHandler.post(timerTask);
     }
 
-    public void restartTimer(long duration) {
-        startTimer(duration, true);
-    }
-
-    public void setCurrentDuration(Integer currentDuration) {
-        if (currentDuration != null)
-            this.currentDuration = currentDuration;
-    }
-
-    int currentDuration;
-
-    public void startCurrentTimer() {
-        if (currentDuration != 0)
-            startTimer(currentDuration, false);
-    }
-
-    public void pauseLocalTimer() {
-        try {
-            timerHandler.removeCallbacks(timerTask);
-        } catch (Exception e) {
-
-        }
-        pauseShift = (System.currentTimeMillis() - timerStart);
-    }
-
-    public void pauseTimer() {
-        if (InAppStoryService.isNull()) {
-            return;
-        }
-        Story.StoryType type = (pageManager != null) ? pageManager.getStoryType() : Story.StoryType.COMMON;
-        Story story = InAppStoryService.getInstance().getDownloadManager()
-                .getStoryById(InAppStoryService.getInstance().getCurrentId(), type);
-        if (story != null) {
-            StatisticManager.getInstance().addFakeEvents(story.id, story.lastIndex, story.getSlidesCount(),
-                    pageManager != null ? pageManager.getFeedId() : null);
-        }
-        pauseLocalTimer();
-        startPauseTime = System.currentTimeMillis();
-        OldStatisticManager.getInstance().closeStatisticEvent(null, true);
-        OldStatisticManager.getInstance().sendStatistic();
-        OldStatisticManager.getInstance().eventCount++;
+    public void pauseTimerAndRefreshStat() {
+        if (pageManager == null) return;
+        core.statistic().storiesV1(
+                pageManager.getParentManager().getSessionId(),
+                new GetStatisticV1Callback() {
+                    @Override
+                    public void get(@NonNull IASStatisticStoriesV1 manager) {
+                        manager.closeStatisticEvent(null, true);
+                        manager.sendStatistic();
+                        manager.increaseEventCount();
+                    }
+                }
+        );
+        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryService service) throws Exception {
+                if (pageManager == null) return;
+                ContentType type = pageManager.getViewContentType();
+                int storyId = core
+                        .screensManager()
+                        .getStoryScreenHolder()
+                        .currentOpenedStoryId();
+                IReaderContent story = core
+                        .contentHolder()
+                        .readerContent()
+                        .getByIdAndType(storyId, type);
+                if (story != null) {
+                    core.statistic().storiesV2().addFakeEvents(
+                            story.id(),
+                            pageManager.getParentManager().getByIdAndIndex(story.id()).index(),
+                            story.slidesCount(),
+                            pageManager != null ? pageManager.getFeedId() : null
+                    );
+                }
+                startPauseTime = System.currentTimeMillis();
+            }
+        });
     }
 
 }

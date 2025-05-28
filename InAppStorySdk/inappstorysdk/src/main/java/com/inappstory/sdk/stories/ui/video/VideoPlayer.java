@@ -1,5 +1,7 @@
 package com.inappstory.sdk.stories.ui.video;
 
+import static androidx.recyclerview.widget.RecyclerView.SCROLL_STATE_IDLE;
+
 import android.content.Context;
 import android.graphics.Matrix;
 import android.graphics.SurfaceTexture;
@@ -8,13 +10,15 @@ import android.util.AttributeSet;
 import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
+import android.view.ViewParent;
 
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.stories.cache.Downloader;
-import com.inappstory.sdk.stories.cache.FileLoadProgressCallback;
 
 import java.io.File;
-import java.io.IOException;
 
 public class VideoPlayer extends TextureView implements TextureView.SurfaceTextureListener {
 
@@ -84,6 +88,7 @@ public class VideoPlayer extends TextureView implements TextureView.SurfaceTextu
 
     public void destroy() {
         if (this.surface != null) this.surface.release();
+        this.surface = null;
         if (mp != null) {
             // this.surface.release();
             mp.stop();
@@ -111,43 +116,14 @@ public class VideoPlayer extends TextureView implements TextureView.SurfaceTextu
 
     File file = null;
 
-    private void downloadCoverVideo(String url) {
-        if (InAppStoryService.isNull()) return;
-        Downloader.downloadFileBackground(url, false, InAppStoryService.getInstance().getFastCache(),
-                new FileLoadProgressCallback() {
-                    @Override
-                    public void onProgress(long loadedSize, long totalSize) {
-
-                    }
-
-                    @Override
-                    public void onSuccess(File file) {
-                        if (mp == null) return;
-                        try {
-                            mp.setDataSource(file.getAbsolutePath());
-                            mp.prepareAsync();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
-
-                    @Override
-                    public void onError(String error) {
-
-                    }
-                });
-    }
-
     public void prepareVideo(SurfaceTexture t) {
+        if (t == null) return;
+        if (parent != null && parent.getScrollState() != SCROLL_STATE_IDLE) return;
         this.surface = new Surface(t);
         if (mp == null)
             mp = new MediaPlayer();
         mp.setSurface(this.surface);
         try {
-            if (file == null) {
-                if (url == null) return;
-                file = Downloader.getCoverVideo(url, InAppStoryService.getInstance().getFastCache());
-            }
             if (file != null && file.exists()) {
                 boolean fileIsNotLocked = file.renameTo(file);
                 if (file.length() > 10 && fileIsNotLocked) {
@@ -155,8 +131,7 @@ public class VideoPlayer extends TextureView implements TextureView.SurfaceTextu
                     mp.prepareAsync();
                 }
             } else {
-                if (url == null) return;
-                downloadCoverVideo(url);
+                return;
             }
             mp.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                 public void onPrepared(MediaPlayer mp) {
@@ -168,7 +143,7 @@ public class VideoPlayer extends TextureView implements TextureView.SurfaceTextu
                 }
             });
         } catch (Exception e) {
-            InAppStoryService.createExceptionLog(e);
+            InAppStoryManager.handleException(e);
             e.printStackTrace();
         }
 
@@ -196,8 +171,49 @@ public class VideoPlayer extends TextureView implements TextureView.SurfaceTextu
     }
 
     @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        if (parent != null) {
+            parent.removeOnScrollListener(scrollListener);
+        }
+        destroy();
+    }
+
+    RecyclerView.OnScrollListener scrollListener = new RecyclerView.OnScrollListener() {
+        @Override
+        public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+            super.onScrollStateChanged(recyclerView, newState);
+            if (lastState == SCROLL_STATE_IDLE && newState != SCROLL_STATE_IDLE) {
+                if (mp != null) mp.pause();
+                //  destroy();
+            } else if (newState == SCROLL_STATE_IDLE && lastState != SCROLL_STATE_IDLE) {
+                if (mp != null) mp.start();
+                else prepareVideo(getSurfaceTexture());
+            }
+            lastState = newState;
+        }
+    };
+
+    @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
+        parent = getParentRecyclerView(this);
+        if (parent != null)
+            parent.addOnScrollListener(scrollListener);
+        prepareVideo(getSurfaceTexture());
+
+    }
+
+    RecyclerView parent;
+    int lastState = SCROLL_STATE_IDLE;
+
+    private RecyclerView getParentRecyclerView(View view) {
+        ViewParent viewParent = view.getParentForAccessibility();
+        if (viewParent instanceof RecyclerView) return (RecyclerView) viewParent;
+        if (viewParent instanceof View) {
+            return getParentRecyclerView((View) viewParent);
+        }
+        return null;
     }
 
     @Override

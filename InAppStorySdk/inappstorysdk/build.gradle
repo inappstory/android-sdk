@@ -1,14 +1,14 @@
 apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion 31
+    compileSdkVersion inappstory_target_sdk
     buildToolsVersion "29.0.3"
 
     defaultConfig {
-        minSdkVersion 19
-        targetSdkVersion 31
-        versionCode 755
-        versionName "1.16.5"
+        minSdkVersion inappstory_min_sdk
+        targetSdkVersion inappstory_target_sdk
+        versionCode inappstory_output_build
+        versionName inappstory_output_version
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles 'consumer-rules.pro'
@@ -37,7 +37,9 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'androidx.appcompat:appcompat:1.5.0'
     implementation 'androidx.recyclerview:recyclerview:1.2.1'
-    implementation 'androidx.webkit:webkit:1.4.0'
+    implementation 'com.google.android.material:material:1.6.0'
+    implementation "androidx.coordinatorlayout:coordinatorlayout:1.2.0"
+    implementation 'androidx.webkit:webkit:1.5.0'
     implementation 'androidx.cardview:cardview:1.0.0'
     implementation 'org.brotli:dec:0.1.2'
     testImplementation 'junit:junit:4.13.2'
@@ -48,4 +50,5 @@ dependencies {
     androidTestImplementation 'androidx.test:runner:1.4.0'
     androidTestImplementation 'androidx.test:rules:1.4.0'
     implementation 'androidx.palette:palette:1.0.0'
+    implementation "com.github.inappstory:android-sdk-utilsconnector:$utils_connector_version"
 }

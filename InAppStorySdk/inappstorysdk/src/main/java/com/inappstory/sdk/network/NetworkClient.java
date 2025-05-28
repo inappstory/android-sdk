@@ -1,219 +1,208 @@
 package com.inappstory.sdk.network;
 
-import android.content.Context;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
-import android.os.Build;
-import android.provider.Settings;
-import android.webkit.WebSettings;
-import android.webkit.WebView;
+import android.util.Log;
+import android.util.Pair;
 
-import com.inappstory.sdk.BuildConfig;
+import androidx.annotation.WorkerThread;
 
-import java.lang.reflect.Constructor;
-import java.util.HashMap;
-import java.util.Locale;
+import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.api.IASDataSettingsHolder;
+import com.inappstory.sdk.network.callbacks.Callback;
+import com.inappstory.sdk.network.dummy.DummyApiInterface;
+import com.inappstory.sdk.network.models.Request;
+import com.inappstory.sdk.network.models.RequestLocalParameters;
+import com.inappstory.sdk.network.models.Response;
+import com.inappstory.sdk.network.utils.RequestSender;
+import com.inappstory.sdk.network.utils.UserAgent;
+import com.inappstory.sdk.network.utils.headers.Header;
+
+import java.lang.reflect.ParameterizedType;
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
+import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 
 public class NetworkClient {
-    private static ApiInterface apiInterface;
-    private static ApiInterface statApiInterface;
-
-    private Context context;
+    private ApiInterface apiInterface;
+    private NetworkHandler networkHandler;
 
     private String baseUrl;
 
-    public Context getContext() {
-        return context;
+    public String userAgent() {
+        return new UserAgent().generate(core);
     }
+
+    private final IASCore core;
 
     public String getBaseUrl() {
         return baseUrl;
     }
 
-    public HashMap<String, String> getHeaders() {
-        return headers;
+
+    public NetworkClient(IASCore core) {
+        this.core = core;
     }
 
-    private HashMap<String, String> headers;
-
-    private static NetworkClient instance;
-    private static NetworkClient statinstance;
-
-    public NetworkClient(Context context, String baseUrl, HashMap<String, String> headers) {
-        this.context = context;
-        this.baseUrl = baseUrl;
-        this.headers = headers;
-    }
-
-    public static class Builder {
-        private Context context;
-        private String baseUrl;
-        private HashMap<String, String> headers;
-
-        public Builder baseUrl(String url) {
-            this.baseUrl = url;
-            return Builder.this;
-        }
-
-        public Builder context(Context context) {
-            this.context = context;
-            return Builder.this;
-        }
-
-        public Builder addHeader(String key, String header) {
-            if (headers == null) headers = new HashMap<>();
-            headers.put(key, header);
-            return Builder.this;
-        }
-
-        public NetworkClient build() {
-            return new NetworkClient(context, baseUrl, headers);
-        }
-    }
-
-    public static NetworkClient getInstance() {
-        if (instance == null) instance = new NetworkClient.Builder().build();
-        return instance;
-    }
-
-
-    public static Context getAppContext() {
-        return appContext;
-    }
-
-    private static Context appContext;
-
-    public static void setContext(Context context) {
-        appContext = context;
-    }
-
-    public static void clear() {
-        instance = null;
-        statinstance = null;
+    public void clear() {
         apiInterface = null;
     }
 
-    private static Object syncLock = new Object();
+    public void setBaseUrl(String baseUrl) {
+        if (this.baseUrl != null && Objects.equals(this.baseUrl, baseUrl)) return;
+        this.apiInterface = null;
+        this.baseUrl = baseUrl;
+        this.networkHandler = new NetworkHandler(baseUrl, core);
+    }
 
-    public static ApiInterface getApi() {
-        synchronized (syncLock) {
-            if (instance == null || instance.getBaseUrl() == null) {
-                if (ApiSettings.getInstance().getCmsUrl() == null) {
-                    return new DumbApiInterface();
-                }
-                String packageName = appContext.getPackageName();
-                String language;
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    language = Locale.getDefault().toLanguageTag();
+    ExecutorService netExecutor = Executors.newFixedThreadPool(10);
+
+    public void enqueue(final Request request,
+                        final Callback callback
+    ) {
+        enqueue(request, callback, null);
+    }
+
+    public void enqueue(final Request request,
+                        final Callback callback,
+                        final RequestLocalParameters requestLocalParameters
+    ) {
+        if (networkHandler == null) {
+            callback.onFailure(
+                    new Response
+                            .Builder().code(-4)
+                            .errorBody("InAppStoryManager wasn't initialized")
+                            .build()
+            );
+            return;
+        }
+        netExecutor.submit(new Callable<Response>() {
+            @Override
+            public Response call() {
+                return execute(request, callback, requestLocalParameters);
+            }
+        });
+    }
+
+    @WorkerThread
+    public Response execute(Request request) {
+        if (networkHandler == null) {
+            return new Response
+                    .Builder().code(-4)
+                    .errorBody("InAppStoryManager wasn't initialized")
+                    .build();
+        }
+        return execute(request, null, null);
+    }
+
+
+    public static final String NC_IS_UNAVAILABLE = "Network client is unavailable";
+
+    @WorkerThread
+    public Response execute(Request request, Callback callback, RequestLocalParameters requestLocalParameters) {
+        Response response;
+        String requestId = UUID.randomUUID().toString();
+        try {
+            response = new RequestSender().send(request, requestId);
+
+            response.logId = requestId;
+            if (callback == null) {
+                return response;
+            }
+            IASDataSettingsHolder dataSettingsHolder = (IASDataSettingsHolder) core.settingsAPI();
+            RequestLocalParameters currentParameters = new RequestLocalParameters(
+                    core.sessionManager().getSession().getSessionId(),
+                    dataSettingsHolder.userId(),
+                    dataSettingsHolder.lang()
+            );
+            if (requestLocalParameters != null && !requestLocalParameters.equals(currentParameters)) {
+                Log.e("StoriesLoadedCallback", "Parameters: " + requestLocalParameters + " " + currentParameters);
+                response = new Response.Builder().code(-5).errorBody("User id or locale was changed").build();
+                response.logId = requestId;
+                callback.onFailure(response);
+                return response;
+            }
+            if (response.code == 204) {
+                callback.onEmptyContent();
+                return response;
+            } else if (response.body != null) {
+                if (callback.getType() == null) {
+                    callback.onSuccess(response);
+                    return response;
                 } else {
-                    language = Locale.getDefault().getLanguage();
+                    Object obj;
+                    if (callback.getType() instanceof ParameterizedType) {
+                        ParameterizedType parameterizedType = (ParameterizedType) callback.getType();
+                        obj = JsonParser.listFromJson(response.body,
+                                (Class) (parameterizedType.getActualTypeArguments()[0]));
+                    } else {
+                        obj = JsonParser.fromJson(response.body, (Class) callback.getType());
+                    }
+                    if (obj != null) {
+                        callback.onSuccess(obj);
+                        return response;
+                    }
                 }
-                instance = new Builder()
-                        .context(appContext)
-                        .baseUrl(ApiSettings.getInstance().getCmsUrl())
-                        .addHeader("Accept", "application/json")
-                        .addHeader("Accept-Language", language)
-                        .addHeader("X-Device-Id", Settings.Secure.getString(appContext.getContentResolver(),
-                                Settings.Secure.ANDROID_ID))
-                        .addHeader("X-APP-PACKAGE-ID", packageName != null ? packageName : "-")
-                        .addHeader("User-Agent", getUAString(appContext))
-                        .addHeader("Authorization", "Bearer " + ApiSettings.getInstance().getApiKey()).build();
-                apiInterface = null;
             }
-            if (apiInterface == null) {
-                apiInterface = NetworkHandler.implement(ApiInterface.class, instance);
+            response = new Response.Builder().code(response.code)
+                    .errorBody(response.errorBody).build();
+            response.logId = requestId;
+            callback.onFailure(response);
+        } catch (SocketTimeoutException e) {
+            response = new Response.Builder().code(-1).errorBody(e.getMessage()).build();
+            response.logId = requestId;
+            if (callback != null) {
+                callback.onFailure(response);
             }
-            return apiInterface;
-        }
-    }
-
-    public static ApiInterface getStatApi() {
-        if (statinstance == null) {
-            statinstance = new NetworkClient.Builder()
-                    .context(appContext)
-                    .baseUrl(ApiSettings.getInstance().getCmsUrl())
-                    .addHeader("User-Agent", getUAString(appContext)).build();
-        }
-        if (statApiInterface == null) {
-            statApiInterface = NetworkHandler.implement(ApiInterface.class, statinstance);
-        }
-        return statApiInterface;
-    }
-
-
-    public static String getDefaultUserAgentString(Context context) {
-        try {
-            return NewApiWrapper.getDefaultUserAgent(context);
-        } catch (Exception e) {
-            return getDefaultUserStringOld(context);
-        }
-    }
-
-    //Test
-    public static String getUAString(Context context) {
-        String userAgent = "";
-        if (context == null) return "InAppStorySDK/" + BuildConfig.VERSION_CODE
-                + " " + getSystemUA();
-        String agentString = getSystemUA();
-        if (!agentString.isEmpty()) {
-            int appVersion = BuildConfig.VERSION_CODE;
-            String appVersionName = BuildConfig.VERSION_NAME;
-            String appPackageName = "";
-            PackageInfo pInfo = null;
-            try {
-                pInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
-                appVersion = pInfo.versionCode;
-                appVersionName = pInfo.versionName;
-                appPackageName = pInfo.packageName;
-            } catch (PackageManager.NameNotFoundException e) {
-                e.printStackTrace();
-            }
-            userAgent = "InAppStorySDK/" + BuildConfig.VERSION_CODE
-                    + " " + agentString + " " + "Application/" + appVersion + " (" + appPackageName + " " + appVersionName + ")";
-        } else {
-            userAgent = getDefaultUserAgentString(context);
-        }
-        String finalUA = "";
-        for (int i = 0; i < userAgent.length(); i++) {
-            char c = userAgent.charAt(i);
-            if (c <= '\u001f' || c >= '\u007f') {
-            } else {
-                finalUA += c;
-            }
-        }
-        return finalUA;
-    }
-
-    private static String getSystemUA() {
-        String res = System.getProperty("http.agent");
-        return (res != null) ? res.trim() : "";
-    }
-
-    //Test
-    public static String getDefaultUserStringOld(Context context) {
-        try {
-            Constructor<WebSettings> constructor = WebSettings.class.getDeclaredConstructor(Context.class, WebView.class);
-            constructor.setAccessible(true);
-            try {
-                WebSettings settings = constructor.newInstance(context, null);
-                return settings.getUserAgentString();
-            } finally {
-                constructor.setAccessible(false);
+        } catch (SocketException e) {
+            response = new Response.Builder().code(-2).errorBody(e.getMessage()).build();
+            response.logId = requestId;
+            if (callback != null) {
+                callback.onFailure(response);
             }
         } catch (Exception e) {
-            try {
-
-                return new WebView(context).getSettings().getUserAgentString();
-            } catch (Exception e2) {
-                return System.getProperty("http.agent");
+            response = new Response.Builder().code(-4).errorBody(e.getMessage()).build();
+            response.logId = requestId;
+            if (callback != null) {
+                callback.onFailure(response);
             }
         }
+        return response;
     }
 
-    static class NewApiWrapper {
-        static String getDefaultUserAgent(Context context) {
-            return WebSettings.getDefaultUserAgent(context);
+    public void setSessionId(String sessionId) {
+        networkHandler.setSessionId(sessionId);
+    }
+
+    public void removeSessionId(String sessionId) {
+        networkHandler.removeSessionId(sessionId);
+    }
+
+    public List<Header> generateHeaders(
+            String[] exclude,
+            List<Pair<String, String>> replace,
+            boolean isFormEncoded,
+            boolean hasBody
+    ) {
+        return networkHandler.generateHeaders(exclude, replace, isFormEncoded, hasBody);
+    }
+
+    public ApiInterface getApi() {
+        if (getBaseUrl() == null) {
+            if (core.projectSettingsAPI().host() == null) {
+                return new DummyApiInterface();
+            }
+            apiInterface = null;
         }
+        if (apiInterface == null) {
+            apiInterface = networkHandler.implement(ApiInterface.class);
+        }
+        return apiInterface;
     }
-
 }

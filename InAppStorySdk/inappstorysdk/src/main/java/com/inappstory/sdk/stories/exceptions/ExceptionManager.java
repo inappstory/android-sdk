@@ -1,14 +1,14 @@
 package com.inappstory.sdk.stories.exceptions;
 
+import android.util.Log;
+
 import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.network.JsonParser;
-import com.inappstory.sdk.network.NetworkCallback;
-import com.inappstory.sdk.network.NetworkClient;
-import com.inappstory.sdk.stories.api.models.Session;
+import com.inappstory.sdk.network.models.RequestLocalParameters;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.api.models.logs.ExceptionLog;
-import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
-import com.inappstory.sdk.stories.utils.SessionManager;
 
 import java.lang.reflect.Type;
 import java.util.UUID;
@@ -16,7 +16,20 @@ import java.util.UUID;
 public class ExceptionManager {
     public static final String SAVED_EX = "saved_exception";
 
-    public void sendException(ExceptionLog log) {
+    public ExceptionManager(IASCore core) {
+        this.core = core;
+    }
+
+    private final IASCore core;
+
+    public void createExceptionLog(Throwable throwable) {
+        ExceptionLog el = generateExceptionLog(throwable);
+        Log.d("EXCEPTION", throwable.getMessage() + "");
+        saveException(el);
+        sendException(el);
+    }
+
+    private void sendException(ExceptionLog log) {
         logException(log);
 
         final ExceptionLog copiedLog = new ExceptionLog();
@@ -26,36 +39,40 @@ public class ExceptionManager {
         copiedLog.file = log.file;
         copiedLog.session = log.session;
         copiedLog.line = log.line;
-        SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
-            @Override
-            public void onSuccess() {
-                if (Session.getInstance().statisticPermissions != null
-                        && Session.getInstance().statisticPermissions.allowCrash)
-                    NetworkClient.getStatApi().sendException(
-                            copiedLog.session,
-                            copiedLog.timestamp / 1000,
-                            copiedLog.message,
-                            copiedLog.file,
-                            copiedLog.line,
-                            copiedLog.stacktrace
-                    ).enqueue(new NetworkCallback() {
-                        @Override
-                        public void onSuccess(Object response) {
-                            SharedPreferencesAPI.removeString(SAVED_EX);
-                        }
 
-                        @Override
-                        public Type getType() {
-                            return null;
+        core.sessionManager().useOrOpenSession(new OpenSessionCallback() {
+            @Override
+            public void onSuccess(RequestLocalParameters requestLocalParameters) {
+                if (core.statistic().exceptions().disabled()) {
+                    core.sharedPreferencesAPI().removeString(SAVED_EX);
+                    return;
+                }
+                core.network().enqueue(
+                        core.network().getApi().sendException(
+                                copiedLog.session,
+                                copiedLog.timestamp / 1000,
+                                copiedLog.message,
+                                copiedLog.file,
+                                copiedLog.line,
+                                copiedLog.stacktrace
+                        ),
+                        new NetworkCallback() {
+                            @Override
+                            public void onSuccess(Object response) {
+                                core.sharedPreferencesAPI().removeString(SAVED_EX);
+                            }
+
+                            @Override
+                            public Type getType() {
+                                return null;
+                            }
                         }
-                    });
-                else
-                    SharedPreferencesAPI.removeString(SAVED_EX);
+                );
             }
 
             @Override
             public void onError() {
-                SharedPreferencesAPI.removeString(SAVED_EX);
+                core.sharedPreferencesAPI().removeString(SAVED_EX);
             }
         });
 
@@ -64,16 +81,16 @@ public class ExceptionManager {
     public void sendSavedException() {
         ExceptionLog log = getSavedException();
         if (log == null) return;
-        sendException(log);
+        //     sendException(log);
     }
 
 
-    public ExceptionLog generateExceptionLog(Throwable throwable) {
+    private ExceptionLog generateExceptionLog(Throwable throwable) {
         ExceptionLog log = new ExceptionLog();
         log.id = UUID.randomUUID().toString();
         log.timestamp = System.currentTimeMillis();
         log.message = throwable.getClass().getCanonicalName() + ": " + throwable.getMessage();
-        log.session = Session.getInstance().id;
+        log.session = core.sessionManager().getSession().getSessionId();
         StackTraceElement[] stackTraceElements = throwable.getStackTrace();
         if (stackTraceElements.length > 0) {
             String stackTrace = "";
@@ -87,16 +104,16 @@ public class ExceptionManager {
         return log;
     }
 
-    public void saveException(ExceptionLog log) {
+    private void saveException(ExceptionLog log) {
         try {
-            SharedPreferencesAPI.saveString(SAVED_EX, JsonParser.getJson(log));
+            core.sharedPreferencesAPI().saveString(SAVED_EX, JsonParser.getJson(log));
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public ExceptionLog getSavedException() {
-        String ex = SharedPreferencesAPI.getString(SAVED_EX, null);
+    private ExceptionLog getSavedException() {
+        String ex = core.sharedPreferencesAPI().getString(SAVED_EX, null);
         if (ex == null) return null;
         return JsonParser.fromJson(ex, ExceptionLog.class);
     }

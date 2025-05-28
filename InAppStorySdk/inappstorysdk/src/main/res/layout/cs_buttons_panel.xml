@@ -10,6 +10,7 @@
         android:layout_width="30dp"
         android:layout_height="30dp"
         android:layout_marginStart="18dp"
+        android:scaleX="@integer/mirrorScaleX"
         android:layout_marginTop="15dp"
         android:layout_marginBottom="15dp"
         app:srcCompat="@drawable/ic_stories_status_like" />
@@ -19,6 +20,7 @@
         android:layout_width="30dp"
         android:layout_height="30dp"
         android:layout_marginStart="8dp"
+        android:scaleX="@integer/mirrorScaleX"
         android:layout_marginTop="15dp"
         android:layout_marginBottom="15dp"
         app:srcCompat="@drawable/ic_stories_status_dislike"/>
@@ -27,6 +29,7 @@
         android:id="@+id/favoriteButton"
         android:layout_width="30dp"
         android:layout_height="30dp"
+        android:scaleX="@integer/mirrorScaleX"
         android:layout_marginStart="8dp"
         android:layout_marginTop="15dp"
         android:layout_marginBottom="15dp"
@@ -43,6 +46,7 @@
         android:layout_width="30dp"
         android:layout_height="30dp"
         android:layout_marginTop="15dp"
+        android:scaleX="@integer/mirrorScaleX"
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="15dp"
         app:srcCompat="@drawable/ic_stories_status_sound" />
@@ -52,6 +56,7 @@
         android:layout_width="30dp"
         android:layout_height="30dp"
         android:layout_marginTop="15dp"
+        android:scaleX="@integer/mirrorScaleX"
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="15dp"
         app:srcCompat="@drawable/ic_share_status" />

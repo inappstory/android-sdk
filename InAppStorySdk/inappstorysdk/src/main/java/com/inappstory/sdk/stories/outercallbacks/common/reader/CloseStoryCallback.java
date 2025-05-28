@@ -1,12 +1,11 @@
 package com.inappstory.sdk.stories.outercallbacks.common.reader;
 
-public interface CloseStoryCallback {
+import com.inappstory.sdk.core.api.IASCallback;
 
-    void closeStory(int id,
-                    String title,
-                    String tags,
-                    int slidesCount,
-                    int index,
-                    CloseReader action,
-                    SourceType source);
+public interface CloseStoryCallback extends IASCallback {
+
+    void closeStory(
+            SlideData slideData,
+            CloseReader action
+    );
 }

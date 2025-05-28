@@ -1,82 +1,81 @@
 package com.inappstory.sdk;
 
+import static com.inappstory.sdk.core.api.impl.IASSettingsImpl.TAG_LIMIT;
 import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_10;
-import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_100;
-import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_200;
 import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_5;
 
 import android.annotation.SuppressLint;
+import android.app.Application;
+import android.content.ContentProvider;
 import android.content.Context;
-import android.os.Handler;
-import android.os.Looper;
+import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Log;
 import android.util.Pair;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.StringRes;
+import androidx.fragment.app.FragmentManager;
 
+import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.IASCoreImpl;
+import com.inappstory.sdk.core.UseIASCoreCallback;
+import com.inappstory.sdk.core.api.IASCallbackType;
+import com.inappstory.sdk.core.api.IASDataSettings;
+import com.inappstory.sdk.core.api.IASDataSettingsHolder;
+import com.inappstory.sdk.core.api.IASStatisticStoriesV1;
+import com.inappstory.sdk.core.data.models.InAppStoryUserSettings;
+import com.inappstory.sdk.inappmessage.CloseInAppMessageCallback;
+import com.inappstory.sdk.inappmessage.InAppMessageLoadCallback;
+import com.inappstory.sdk.inappmessage.InAppMessageOpenSettings;
+import com.inappstory.sdk.inappmessage.InAppMessagePreloadSettings;
+import com.inappstory.sdk.inappmessage.InAppMessageScreenActions;
+import com.inappstory.sdk.inappmessage.InAppMessageWidgetCallback;
+import com.inappstory.sdk.inappmessage.ShowInAppMessageCallback;
 import com.inappstory.sdk.lrudiskcache.CacheSize;
-import com.inappstory.sdk.network.ApiSettings;
-import com.inappstory.sdk.network.JsonParser;
-import com.inappstory.sdk.network.NetworkCallback;
-import com.inappstory.sdk.network.NetworkClient;
-import com.inappstory.sdk.network.Response;
-import com.inappstory.sdk.network.utils.KeyConverter;
-import com.inappstory.sdk.stories.api.models.ExceptionCache;
-import com.inappstory.sdk.stories.api.models.Feed;
+import com.inappstory.sdk.network.utils.HostFromSecretKey;
+import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
-import com.inappstory.sdk.stories.api.models.Story;
-import com.inappstory.sdk.stories.api.models.StoryPlaceholder;
-import com.inappstory.sdk.stories.api.models.callbacks.GetStoryByIdCallback;
-import com.inappstory.sdk.stories.api.models.callbacks.LoadFeedCallback;
-import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.api.models.logs.ApiLogRequest;
 import com.inappstory.sdk.stories.api.models.logs.ApiLogResponse;
 import com.inappstory.sdk.stories.api.models.logs.ExceptionLog;
 import com.inappstory.sdk.stories.api.models.logs.WebConsoleLog;
-import com.inappstory.sdk.stories.callbacks.AppClickCallback;
-import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.callbacks.ExceptionCallback;
 import com.inappstory.sdk.stories.callbacks.IShowStoryCallback;
+import com.inappstory.sdk.stories.callbacks.IShowStoryOnceCallback;
 import com.inappstory.sdk.stories.callbacks.ShareCallback;
-import com.inappstory.sdk.stories.callbacks.UrlClickCallback;
 import com.inappstory.sdk.stories.exceptions.ExceptionManager;
 import com.inappstory.sdk.stories.outercallbacks.common.errors.ErrorCallback;
-import com.inappstory.sdk.stories.outercallbacks.common.gamereader.GameCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.gamereader.GameReaderCallback;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenGameReader;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenInAppMessageReader;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenStoriesReader;
 import com.inappstory.sdk.stories.outercallbacks.common.onboarding.OnboardingLoadCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.CallToActionCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickOnShareStoryCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.CloseStoryCallback;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.CustomActionCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.FavoriteStoryCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.LikeDislikeStoryCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ShowSlideCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ShowStoryCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryWidgetCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.single.SingleLoadCallback;
-import com.inappstory.sdk.stories.outercallbacks.game.GameLoadedCallback;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
-import com.inappstory.sdk.stories.outerevents.ShowStory;
-import com.inappstory.sdk.stories.statistic.OldStatisticManager;
-import com.inappstory.sdk.stories.statistic.ProfilingManager;
-import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
-import com.inappstory.sdk.stories.statistic.StatisticManager;
-import com.inappstory.sdk.stories.ui.ScreensManager;
-import com.inappstory.sdk.stories.ui.reader.StoriesReaderSettings;
-import com.inappstory.sdk.stories.utils.KeyValueStorage;
-import com.inappstory.sdk.stories.utils.SessionManager;
+import com.inappstory.sdk.stories.stackfeed.IStackFeedResult;
+import com.inappstory.sdk.stories.statistic.GetStatisticV1Callback;
+import com.inappstory.sdk.stories.ui.reader.ForceCloseReaderCallback;
+import com.inappstory.sdk.stories.utils.IASBackPressHandler;
+import com.inappstory.sdk.stories.utils.TagsUtils;
 import com.inappstory.sdk.utils.StringsUtils;
+import com.inappstory.sdk.utils.WebViewUtils;
 
-import java.lang.reflect.Type;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
+import java.util.Objects;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 
 /**
@@ -85,33 +84,91 @@ import java.util.Set;
  * Singleton class, can be available with {@link #getInstance()}.
  * Can be reinitialized.
  */
-public class InAppStoryManager {
+public class InAppStoryManager implements IASBackPressHandler {
 
     private static InAppStoryManager INSTANCE;
 
-    public static boolean testGenerated = false;
+    private IASCore core;
 
-    public static boolean isNull() {
+    public IASCore iasCore() {
+        return core;
+    }
+
+    public static void handleException(final Throwable e) {
+        useCoreInSeparateThread(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.exceptionManager().createExceptionLog(e);
+            }
+        });
+    }
+
+    private final ExecutorService coreThread = Executors.newSingleThreadExecutor();
+
+    public static void useCore(UseIASCoreCallback callback) {
         synchronized (lock) {
-            return INSTANCE == null;
+            try {
+                if (INSTANCE == null || INSTANCE.core == null) {
+                    callback.error();
+                } else {
+                    callback.use(INSTANCE.iasCore());
+                }
+            } catch (Exception e) {
+                showELog(IAS_ERROR_TAG, e.getMessage() + "");
+            }
         }
     }
 
-    public static void setInstance(InAppStoryManager manager) {
+    public static void useCoreInSeparateThread(final UseIASCoreCallback callback) {
         synchronized (lock) {
-            INSTANCE = manager;
+            try {
+                if (INSTANCE == null || INSTANCE.core == null) {
+                    callback.error();
+                } else {
+                    final IASCore core = INSTANCE.core;
+                    Runnable runnable = new Runnable() {
+                        @Override
+                        public void run() {
+                            callback.use(core);
+                        }
+                    };
+                    INSTANCE.coreThread.execute(runnable);
+                }
+            } catch (Exception e) {
+                showELog(IAS_ERROR_TAG, e.getMessage() + "");
+            }
         }
     }
 
-    public Context getContext() {
-        return context;
+    public void setCommonAppearanceManager(AppearanceManager appearanceManager) {
+        AppearanceManager.setCommonInstance(appearanceManager);
     }
 
-    Context context;
+    private static void clearLocalData() {
+        useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.storiesListVMHolder().clear();
+                core.contentLoader().storyDownloadManager().clearLocalData();
+                core.contentLoader().inAppMessageDownloadManager().clearLocalData();
+            }
+        });
+    }
 
+    public static void useInstance(@NonNull UseManagerInstanceCallback callback) {
+        InAppStoryManager manager = getInstance();
+        try {
+            if (manager != null) {
+                callback.use(manager);
+            } else {
+                callback.error();
+            }
+        } catch (Exception e) {
+            showELog(IAS_ERROR_TAG, e.getMessage() + "");
+        }
+    }
 
     static final String DEBUG_API = "IAS debug api";
-
 
     @SuppressLint(DEBUG_API)
     public static void debugSDKCalls(String methodName, String args) {
@@ -184,29 +241,13 @@ public class InAppStoryManager {
         if (iasQaLog != null) iasQaLog.getWebConsoleLog(log);
     }
 
-    /**
-     * use set custom callback in case of uncaught exceptions.
-     *
-     * @param callback (callback). Has {@link ExceptionCallback} type
-     */
-    public void setCallback(ExceptionCallback callback) {
-        this.exceptionCallback = callback;
-    }
-
-    public ExceptionCallback getExceptionCallback() {
-        return exceptionCallback;
-    }
-
-    private ExceptionCallback exceptionCallback;
-
 
     /**
-     * @return {@link ArrayList} of tags
+     * @return {@link List} of tags
      */
-    public ArrayList<String> getTags() {
-        synchronized (tagsLock) {
-            return tags;
-        }
+    public List<String> getTags() {
+        if (core == null) return new ArrayList<>();
+        return ((IASDataSettingsHolder) core.settingsAPI()).tags();
     }
 
     //Test
@@ -215,177 +256,287 @@ public class InAppStoryManager {
      * use to clear downloaded files and in-app cache
      */
     public void clearCache() {
-        if (InAppStoryService.isNull()) return;
-        InAppStoryService.getInstance().getDownloadManager().clearCache();
-    }
-    //Test
-
-    /**
-     * use to clear downloaded files and in-app cache without manager
-     */
-    public void clearCache(Context context) {
-        if (InAppStoryService.isNull()) return;
-        InAppStoryService.getInstance().getDownloadManager().clearCache();
-    }
-
-    /**
-     * use to force close story reader
-     */
-    public static void closeStoryReader() {
-        closeStoryReader(CloseStory.CUSTOM);
-    }
-
-    @Deprecated
-    public void openGame(String gameId) {
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service != null && context != null) {
-            service.openGameReaderWithGC(context, null, gameId);
-        }
-    }
-
-    public void openGame(String gameId, @NonNull Context context) {
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service != null) {
-            service.openGameReaderWithGC(context, null, gameId);
-        }
-    }
-
-    public void closeGame() {
-        ScreensManager.getInstance().closeGameReader();
-    }
-
-    /**
-     * use to force close story reader
-     */
-    public static void closeStoryReader(final int action) {
-
-        new Handler(Looper.getMainLooper()).post(new Runnable() {
+        useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
-            public void run() {
-                ScreensManager.getInstance().closeStoryReader(action);
-                ScreensManager.getInstance().hideGoods();
-                ScreensManager.getInstance().closeGameReader();
-                ScreensManager.getInstance().closeUGCEditor();
+            public void use(@NonNull IASCore core) {
+                core.contentLoader().clearCache();
             }
         });
     }
 
     /**
+     * use to close story reader
+     */
+    public static void closeStoryReader() {
+        useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.screensManager()
+                        .getStoryScreenHolder()
+                        .closeScreenWithAction(CloseStory.CUSTOM);
+                core.screensManager().getIAMScreenHolder()
+                        .closeScreen();
+            }
+        });
+    }
+
+    /**
+     * use to close story reader
+     *
+     * @param forceClose               (forceClose) - close reader immediately without animation
+     * @param forceCloseReaderCallback (forceCloseReaderCallback) - triggers after reader is closed and only if {@code forceClose == true}
+     */
+    public static void closeStoryReader(
+            final boolean forceClose,
+            final ForceCloseReaderCallback forceCloseReaderCallback
+    ) {
+        useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                if (forceClose) {
+                    core.screensManager()
+                            .forceCloseAllReaders(forceCloseReaderCallback);
+                } else {
+                    core.screensManager().getStoryScreenHolder()
+                            .closeScreenWithAction(CloseStory.CUSTOM);
+                    core.screensManager().getIAMScreenHolder()
+                            .closeScreen();
+                }
+            }
+        });
+    }
+
+    public boolean onBackPressed() {
+        if (core == null) return false;
+        return core.screensManager().onBackPressed();
+    }
+
+
+    public void openGame(final String gameId, @NonNull final Context context) {
+        useCoreInSeparateThread(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+
+                core.gamesAPI().open(context, gameId);
+            }
+        });
+    }
+
+    public static boolean isStoryReaderOpened() {
+        InAppStoryManager inAppStoryManager = getInstance();
+        return inAppStoryManager != null
+                && inAppStoryManager.core != null
+                && inAppStoryManager.core
+                .screensManager()
+                .getStoryScreenHolder()
+                .isOpened();
+    }
+
+    public static boolean isGameReaderOpened() {
+        InAppStoryManager inAppStoryManager = getInstance();
+        return inAppStoryManager != null
+                && inAppStoryManager.core != null
+                && inAppStoryManager.core
+                .screensManager()
+                .getGameScreenHolder()
+                .isOpened();
+    }
+
+    public static boolean isInAppMessageReaderOpened() {
+        InAppStoryManager inAppStoryManager = getInstance();
+        return inAppStoryManager != null
+                && inAppStoryManager.core != null
+                && inAppStoryManager.core
+                .screensManager()
+                .getIAMScreenHolder()
+                .isOpened();
+    }
+
+    public void closeGame() {
+        useCoreInSeparateThread(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.gamesAPI().close();
+            }
+        });
+    }
+
+    /**
+     * use to force close story reader
+     */
+
+    /**
      * use to set callback on different errors
      */
-    public void setErrorCallback(ErrorCallback errorCallback) {
-        CallbackManager.getInstance().setErrorCallback(errorCallback);
+    public void setErrorCallback(final ErrorCallback errorCallback) {
+        useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+
+                core.callbacksAPI().setCallback(IASCallbackType.ERROR, errorCallback);
+            }
+        });
+    }
+
+
+    /**
+     * use to set callback on different errors
+     */
+    public void setExceptionCallback(final ExceptionCallback exceptionCallback) {
+        useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.callbacksAPI().setCallback(IASCallbackType.EXCEPTION, exceptionCallback);
+            }
+        });
     }
 
     /**
      * use to set callback on share click
      */
-    public void setClickOnShareStoryCallback(ClickOnShareStoryCallback clickOnShareStoryCallback) {
-        CallbackManager.getInstance().setClickOnShareStoryCallback(clickOnShareStoryCallback);
+    public void setClickOnShareStoryCallback(final ClickOnShareStoryCallback clickOnShareStoryCallback) {
+        useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.callbacksAPI().setCallback(IASCallbackType.CLICK_SHARE, clickOnShareStoryCallback);
+            }
+        });
     }
 
-
-    @Deprecated
-    public void setGameCallback(GameCallback gameCallback) {
-        CallbackManager.getInstance().setGameCallback(gameCallback);
-    }
 
     /**
      * use to set callback on game start/close/finish
      */
-    public void setGameReaderCallback(GameReaderCallback gameReaderCallback) {
-        CallbackManager.getInstance().setGameReaderCallback(gameReaderCallback);
+    public void setGameReaderCallback(final GameReaderCallback gameReaderCallback) {
+        useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.gamesAPI().callback(gameReaderCallback);
+            }
+        });
     }
 
     /**
      * use to set callback on onboardings load
      */
-    public void setOnboardingLoadCallback(OnboardingLoadCallback onboardingLoadCallback) {
-        CallbackManager.getInstance().setOnboardingLoadCallback(onboardingLoadCallback);
+    public void setOnboardingLoadCallback(final OnboardingLoadCallback onboardingLoadCallback) {
+        useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.onboardingsAPI().loadCallback(onboardingLoadCallback);
+            }
+        });
     }
 
     /**
      * use to set callback on click on buttons in stories (with info)
      */
-    public void setCallToActionCallback(CallToActionCallback callToActionCallback) {
-        CallbackManager.getInstance().setCallToActionCallback(callToActionCallback);
-    }
-
-    private void setCustomActionCallback(CustomActionCallback customActionCallback) {
-        CallbackManager.getInstance().setCustomActionCallback(customActionCallback);
+    public void setCallToActionCallback(final CallToActionCallback callToActionCallback) {
+        useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.callbacksAPI().setCallback(IASCallbackType.CALL_TO_ACTION, callToActionCallback);
+            }
+        });
     }
 
     /**
      * use to set callback on click on widgets in stories (with info)
      */
-    public void setStoryWidgetCallback(StoryWidgetCallback storyWidgetCallback) {
-        CallbackManager.getInstance().setStoryWidgetCallback(storyWidgetCallback);
+    public void setStoryWidgetCallback(final StoryWidgetCallback storyWidgetCallback) {
+        useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.callbacksAPI().setCallback(IASCallbackType.STORY_WIDGET, storyWidgetCallback);
+            }
+        });
     }
 
 
     /**
      * use to set callback on stories reader closing
      */
-    public void setCloseStoryCallback(CloseStoryCallback closeStoryCallback) {
-        CallbackManager.getInstance().setCloseStoryCallback(closeStoryCallback);
+    public void setCloseStoryCallback(final CloseStoryCallback closeStoryCallback) {
+        useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.callbacksAPI().setCallback(IASCallbackType.CLOSE_STORY, closeStoryCallback);
+            }
+        });
     }
 
     /**
      * use to set callback on favorite action
      */
-    public void setFavoriteStoryCallback(FavoriteStoryCallback favoriteStoryCallback) {
-        CallbackManager.getInstance().setFavoriteStoryCallback(favoriteStoryCallback);
+    public void setFavoriteStoryCallback(final FavoriteStoryCallback favoriteStoryCallback) {
+        useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.callbacksAPI().setCallback(IASCallbackType.FAVORITE, favoriteStoryCallback);
+            }
+        });
     }
 
     /**
      * use to set callback on like/dislike action
      */
-    public void setLikeDislikeStoryCallback(LikeDislikeStoryCallback likeDislikeStoryCallback) {
-        CallbackManager.getInstance().setLikeDislikeStoryCallback(likeDislikeStoryCallback);
+    public void setLikeDislikeStoryCallback(final LikeDislikeStoryCallback likeDislikeStoryCallback) {
+        useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.callbacksAPI().setCallback(IASCallbackType.LIKE_DISLIKE, likeDislikeStoryCallback);
+            }
+        });
     }
 
     /**
      * use to set callback on slide shown in reader
      */
-    public void setShowSlideCallback(ShowSlideCallback showSlideCallback) {
-        CallbackManager.getInstance().setShowSlideCallback(showSlideCallback);
+    public void setShowSlideCallback(final ShowSlideCallback showSlideCallback) {
+        useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.callbacksAPI().setCallback(IASCallbackType.SHOW_SLIDE, showSlideCallback);
+            }
+        });
     }
 
     /**
      * use to set callback on story shown in reader
      */
-    public void setShowStoryCallback(ShowStoryCallback showStoryCallback) {
-        CallbackManager.getInstance().setShowStoryCallback(showStoryCallback);
+    public void setShowStoryCallback(final ShowStoryCallback showStoryCallback) {
+        useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.callbacksAPI().setCallback(IASCallbackType.SHOW_STORY, showStoryCallback);
+            }
+        });
     }
 
     /**
      * use to set callback on single story loading
      */
-    public void setSingleLoadCallback(SingleLoadCallback singleLoadCallback) {
-        CallbackManager.getInstance().setSingleLoadCallback(singleLoadCallback);
-    }
+    public void setSingleLoadCallback(final SingleLoadCallback singleLoadCallback) {
+        useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
 
-    /**
-     * use to set callback on click on buttons in stories (without additional info)
-     */
-    @Deprecated
-    public void setUrlClickCallback(UrlClickCallback urlClickCallback) {
-        CallbackManager.getInstance().setUrlClickCallback(urlClickCallback);
+                core.singleStoryAPI().loadCallback(singleLoadCallback);
+            }
+        });
     }
 
 
     /**
      * use to customize share functional
      */
-    public void setShareCallback(ShareCallback shareCallback) {
-        CallbackManager.getInstance().setShareCallback(shareCallback);
-    }
-
-    /**
-     * use to customize click on non-url buttons in reader
-     */
-    public void setAppClickCallback(AppClickCallback appClickCallback) {
-        CallbackManager.getInstance().setAppClickCallback(appClickCallback);
+    public void setShareCallback(final ShareCallback shareCallback) {
+        useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.callbacksAPI().setCallback(IASCallbackType.SHARE_ADDITIONAL, shareCallback);
+            }
+        });
     }
 
     //Test
@@ -394,10 +545,8 @@ public class InAppStoryManager {
      * @return {@link String} with tags joined by comma
      */
     public String getTagsString() {
-        synchronized (tagsLock) {
-            if (tags == null) return null;
-            return TextUtils.join(",", tags);
-        }
+        if (core == null) return "";
+        return TextUtils.join(",", ((IASDataSettingsHolder) core.settingsAPI()).tags());
     }
 
     /**
@@ -406,21 +555,18 @@ public class InAppStoryManager {
      * @param tags (tags)
      */
 
-    public void setTags(ArrayList<String> tags) {
-        if (tags != null && getBytesLength(TextUtils.join(",", tags)) > TAG_LIMIT) {
-            showELog(IAS_ERROR_TAG, getErrorStringFromContext(context, R.string.ias_setter_tags_length_error));
-            return;
-        }
-        synchronized (tagsLock) {
-            this.tags = tags;
-            clearCachedLists();
-        }
+
+    public void setTags(final List<String> tags) {
+        useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.settingsAPI().setTags(tags);
+            }
+        });
     }
 
 
-    private final static int TAG_LIMIT = 4000;
-
-    private Object tagsLock = new Object();
+    private final Object tagsLock = new Object();
 
     /**
      * use to customize tags in runtime. Adds tags to array.
@@ -428,21 +574,14 @@ public class InAppStoryManager {
      * @param newTags (newTags) - list of additional tags
      */
 
-    public void addTags(ArrayList<String> newTags) {
-        synchronized (tagsLock) {
-            if (newTags == null || newTags.isEmpty()) return;
-            if (tags == null) tags = new ArrayList<>();
-            String oldTagsString = TextUtils.join(",", tags);
-            String newTagsString = TextUtils.join(",", newTags);
-            if (getBytesLength(oldTagsString + newTagsString) > TAG_LIMIT - 1) {
-                showELog(IAS_ERROR_TAG, getErrorStringFromContext(context, R.string.ias_setter_tags_length_error));
-                return;
+    public void addTags(final List<String> newTags) {
+        useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.settingsAPI().addTags(newTags);
             }
-            for (String tag : newTags) {
-                addTag(tag);
-            }
-            clearCachedLists();
-        }
+        });
+
     }
 
     /**
@@ -451,32 +590,13 @@ public class InAppStoryManager {
      * @param removedTags (removedTags) - list of removing tags
      */
 
-    public void removeTags(ArrayList<String> removedTags) {
-        synchronized (tagsLock) {
-            if (tags == null || removedTags == null || removedTags.isEmpty()) return;
-            for (String tag : removedTags) {
-                removeTag(tag);
+    public void removeTags(final List<String> removedTags) {
+        useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.settingsAPI().removeTags(removedTags);
             }
-            clearCachedLists();
-        }
-    }
-
-    /**
-     * use to customize tags in runtime. Adds tag to array.
-     *
-     * @param tag (tag) - single additional tag
-     */
-    private void addTag(String tag) {
-        if (!tags.contains(tag)) tags.add(tag);
-    }
-
-    /**
-     * use to customize tags in runtime. Removes tag from array.
-     *
-     * @param tag (tag) - single removing tags
-     */
-    private void removeTag(String tag) {
-        if (tags.contains(tag)) tags.remove(tag);
+        });
     }
 
     /**
@@ -485,21 +605,14 @@ public class InAppStoryManager {
      * @param key   (key) - what we replace
      * @param value (value) - replacement result
      */
-    public void setPlaceholder(String key, String value) {
-        synchronized (placeholdersLock) {
-            if (defaultPlaceholders == null) defaultPlaceholders = new HashMap<>();
-            if (placeholders == null) placeholders = new HashMap<>();
-            if (value == null) {
-                if (defaultPlaceholders.containsKey(key)) {
-                    placeholders.put(key, defaultPlaceholders.get(key));
-                } else {
-                    placeholders.remove(key);
-                }
-            } else {
-                placeholders.put(key, value);
+    public void setPlaceholder(final String key, final String value) {
+        useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.settingsAPI().setPlaceholder(key, value);
             }
+        });
 
-        }
     }
 
     /**
@@ -507,456 +620,233 @@ public class InAppStoryManager {
      *
      * @param newPlaceholders (newPlaceholders) - key-value map (key - what we replace, value - replacement result)
      */
-    public void setPlaceholders(@NonNull Map<String, String> newPlaceholders) {
-        synchronized (placeholdersLock) {
-            if (defaultPlaceholders == null) defaultPlaceholders = new HashMap<>();
-            if (this.placeholders == null)
-                this.placeholders = new HashMap<>();
-            else
-                this.placeholders.clear();
-            for (String key : newPlaceholders.keySet()) {
-                String value = newPlaceholders.get(key);
-                if (value == null) {
-                    if (defaultPlaceholders.containsKey(key)) {
-                        this.placeholders.put(key, defaultPlaceholders.get(key));
-                    } else {
-                        this.placeholders.remove(key);
-                    }
-                } else {
-                    this.placeholders.put(key, value);
-                }
+    public void setPlaceholders(final @NonNull Map<String, String> newPlaceholders) {
+        useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.settingsAPI().setPlaceholders(newPlaceholders);
             }
-        }
+        });
+
     }
-
-    void setDefaultPlaceholders(@NonNull List<StoryPlaceholder> placeholders) {
-        synchronized (placeholdersLock) {
-            for (StoryPlaceholder placeholder : placeholders) {
-                String key = placeholder.name;
-                this.defaultPlaceholders.put(key,
-                        placeholder.defaultVal);
-                if (!this.placeholders.containsKey(key)) {
-                    InAppStoryManager.getInstance().placeholders.put(key,
-                            placeholder.defaultVal);
-                }
-            }
-        }
-    }
-
-    public Map<String, String> getPlaceholdersCopy() {
-        synchronized (placeholdersLock) {
-            if (placeholders == null) return new HashMap<>();
-            return new HashMap<>(placeholders);
-        }
-    }
-
-    ArrayList<String> tags;
-
-    private final Object placeholdersLock = new Object();
 
     /**
      * Returns map with all default strings replacements
      */
     public Map<String, String> getPlaceholders() {
-        synchronized (placeholdersLock) {
-            if (defaultPlaceholders == null) defaultPlaceholders = new HashMap<>();
-            if (placeholders == null) placeholders = new HashMap<>();
-            return placeholders;
-        }
-    }
-
-    public Map<String, ImagePlaceholderValue> getImagePlaceholdersValues() {
-        synchronized (placeholdersLock) {
-            Map<String, ImagePlaceholderValue> resultPlaceholders = new HashMap<>();
-            if (defaultImagePlaceholders == null) defaultImagePlaceholders = new HashMap<>();
-            if (imagePlaceholders == null) imagePlaceholders = new HashMap<>();
-            resultPlaceholders.putAll(defaultImagePlaceholders);
-            resultPlaceholders.putAll(imagePlaceholders);
-            return resultPlaceholders;
-        }
-    }
-
-    public Map<String, Pair<ImagePlaceholderValue, ImagePlaceholderValue>> getImagePlaceholdersValuesWithDefaults() {
-        synchronized (placeholdersLock) {
-            Map<String, Pair<ImagePlaceholderValue, ImagePlaceholderValue>> resultPlaceholders = new HashMap<>();
-            Map<String, ImagePlaceholderValue> tempPlaceholders = new HashMap<>();
-            if (defaultImagePlaceholders == null) defaultImagePlaceholders = new HashMap<>();
-            if (imagePlaceholders == null) imagePlaceholders = new HashMap<>();
-
-            tempPlaceholders.putAll(defaultImagePlaceholders);
-            tempPlaceholders.putAll(imagePlaceholders);
-            for (Map.Entry<String, ImagePlaceholderValue> entry : tempPlaceholders.entrySet()) {
-                if (defaultImagePlaceholders.containsKey(entry.getKey())) {
-                    resultPlaceholders.put(
-                            entry.getKey(),
-                            new Pair<>(
-                                    entry.getValue(),
-                                    //entry.getValue()
-                                    defaultImagePlaceholders.get(entry.getKey())
-                            )
-                    );
-                } else {
-                    resultPlaceholders.put(
-                            entry.getKey(),
-                            new Pair<>(
-                                    entry.getValue(),
-                                    entry.getValue()
-                            )
-                    );
-                }
-            }
-            return resultPlaceholders;
-        }
+        if (core == null) new HashMap<>();
+        return ((IASDataSettingsHolder) core.settingsAPI()).placeholders();
     }
 
 
-    public void setImagePlaceholders(@NonNull Map<String, ImagePlaceholderValue> placeholders) {
-        synchronized (placeholdersLock) {
-            imagePlaceholders.clear();
-            if (imagePlaceholders == null)
-                imagePlaceholders = new HashMap<>();
-            else
-                imagePlaceholders.clear();
-            imagePlaceholders.putAll(placeholders);
-        }
-    }
-
-    void setDefaultImagePlaceholders(@NonNull Map<String, ImagePlaceholderValue> placeholders) {
-        synchronized (placeholdersLock) {
-            if (defaultImagePlaceholders == null) defaultImagePlaceholders = new HashMap<>();
-            defaultImagePlaceholders.clear();
-            defaultImagePlaceholders.putAll(placeholders);
-        }
-    }
-
-    void setDefaultImagePlaceholder(@NonNull String key, @NonNull ImagePlaceholderValue value) {
-        synchronized (placeholdersLock) {
-            if (defaultImagePlaceholders == null) defaultImagePlaceholders = new HashMap<>();
-            defaultImagePlaceholders.put(key, value);
-        }
-    }
-
-
-    public void setImagePlaceholder(@NonNull String key, ImagePlaceholderValue value) {
-        synchronized (placeholdersLock) {
-            if (imagePlaceholders == null) imagePlaceholders = new HashMap<>();
-            if (value == null) imagePlaceholders.remove(key);
-            else imagePlaceholders.put(key, value);
-        }
-    }
-
-    Map<String, String> placeholders = new HashMap<>();
-    Map<String, ImagePlaceholderValue> imagePlaceholders = new HashMap<>();
-
-    public Map<String, String> getDefaultPlaceholders() {
-        synchronized (placeholdersLock) {
-            if (defaultPlaceholders == null) defaultPlaceholders = new HashMap<>();
-            if (placeholders == null) placeholders = new HashMap<>();
-            return defaultPlaceholders;
-        }
-    }
-
-    Map<String, String> defaultPlaceholders = new HashMap<>();
-    Map<String, ImagePlaceholderValue> defaultImagePlaceholders = new HashMap<>();
-
-    private static final String TEST_DOMAIN = "https://api.test.inappstory.com/";
-    private static final String PRODUCT_DOMAIN = "https://api.inappstory.ru/";
-
-    public String getApiKey() {
-        return API_KEY;
-    }
-
-    public String getTestKey() {
-        return TEST_KEY;
-    }
-
-    String API_KEY = "";
-
-    String TEST_KEY = null;
-
-    public InAppStoryManager() {
-
-    }
-
-    InAppStoryService service;
-
-    Thread serviceThread;
-
-    void createServiceThread(final Context context, final String userId) {
-        if (InAppStoryService.isNotNull()) {
-            InAppStoryService.getInstance().onDestroy();
-        }
-        if (serviceThread != null) {
-            serviceThread.interrupt();
-            serviceThread = null;
-        }
-        serviceThread = new Thread(new Runnable() {
+    public void setImagePlaceholders(final @NonNull Map<String, ImagePlaceholderValue> placeholders) {
+        useCore(new UseIASCoreCallback() {
             @Override
-            public void run() {
-                Looper.prepare();
-                service = new InAppStoryService(userId);
-                service.onCreate(context, exceptionCache);
-                Looper.loop();
+            public void use(@NonNull IASCore core) {
+                core.settingsAPI().setImagePlaceholders(placeholders);
             }
         });
-        //serviceThread.setUncaughtExceptionHandler(new InAppStoryService.DefaultExceptionHandler());
-        serviceThread.start();
+
     }
 
-    void setExceptionCache(ExceptionCache exceptionCache) {
-        this.exceptionCache = exceptionCache;
+    public void setImagePlaceholder(final @NonNull String key, final ImagePlaceholderValue value) {
+        useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.settingsAPI().setImagePlaceholder(key, value);
+            }
+        });
     }
 
-    private ExceptionCache exceptionCache;
 
     public void removeFromFavorite(final int storyId) {
-        if (InAppStoryService.isNull()) return;
-        SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
+        useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
-            public void onSuccess() {
-                favoriteOrRemoveStory(storyId, false);
-            }
-
-            @Override
-            public void onError() {
-
+            public void use(@NonNull IASCore core) {
+                core.favoritesAPI().removeByStoryId(storyId);
             }
         });
+
     }
 
     public void removeAllFavorites() {
-        if (InAppStoryService.isNull()) return;
-        SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
+        useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
-            public void onSuccess() {
-                favoriteRemoveAll();
-            }
-
-            @Override
-            public void onError() {
-
+            public void use(@NonNull IASCore core) {
+                core.favoritesAPI().removeAll();
             }
         });
-    }
 
-    private void favoriteRemoveAll() {
-        if (InAppStoryService.isNull()) return;
-        final String favUID = ProfilingManager.getInstance().addTask("api_favorite_remove_all");
-        NetworkClient.getApi().removeAllFavorites().enqueue(new NetworkCallback<Response>() {
-            @Override
-            public void onSuccess(Response response) {
-                ProfilingManager.getInstance().setReady(favUID);
-                if (InAppStoryService.isNotNull()) {
-                    InAppStoryService.getInstance().getDownloadManager()
-                            .clearAllFavoriteStatus(Story.StoryType.COMMON);
-                    InAppStoryService.getInstance().getDownloadManager()
-                            .clearAllFavoriteStatus(Story.StoryType.UGC);
-                    InAppStoryService.getInstance().getFavoriteImages().clear();
-                    InAppStoryService.getInstance().getListReaderConnector().clearAllFavorites();
-                }
-
-                if (ScreensManager.getInstance().currentScreen != null) {
-                    ScreensManager.getInstance().currentScreen.removeAllStoriesFromFavorite();
-                }
-            }
-
-            @Override
-            public void onError(int code, String message) {
-                ProfilingManager.getInstance().setReady(favUID);
-                super.onError(code, message);
-            }
-
-            @Override
-            public void onTimeout() {
-                super.onTimeout();
-                ProfilingManager.getInstance().setReady(favUID);
-            }
-
-            @Override
-            public Type getType() {
-                return null;
-            }
-        });
     }
 
 
-    private void favoriteOrRemoveStory(final int storyId, final boolean favorite) {
-        if (InAppStoryService.isNull()) return;
-        final String favUID = ProfilingManager.getInstance().addTask("api_favorite");
-        NetworkClient.getApi().storyFavorite(Integer.toString(storyId), favorite ? 1 : 0).enqueue(
-                new NetworkCallback<Response>() {
-                    @Override
-                    public void onSuccess(Response response) {
-                        ProfilingManager.getInstance().setReady(favUID);
-                        if (InAppStoryService.isNotNull()) {
-                            Story story = InAppStoryService.getInstance().getDownloadManager()
-                                    .getStoryById(storyId, Story.StoryType.COMMON);
-                            if (story != null)
-                                story.favorite = favorite;
-                            InAppStoryService.getInstance().getListReaderConnector().storyFavorite(storyId, favorite);
-                        }
-                        if (ScreensManager.getInstance().currentScreen != null) {
-                            ScreensManager.getInstance().currentScreen.removeStoryFromFavorite(storyId);
-                        }
+    public static void initSDK(@NonNull Context context, boolean skipCheck) {
+        StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
+        boolean calledFromApplication = skipCheck;
+        if (!skipCheck)
+            for (StackTraceElement stackTraceElement : stackTraceElements) {
+                try {
+                    if (Application.class.isAssignableFrom(Class.forName(stackTraceElement.getClassName()))) {
+                        calledFromApplication = true;
+                        break;
                     }
+                    if (ContentProvider.class.isAssignableFrom(Class.forName(stackTraceElement.getClassName()))) {
+                        calledFromApplication = true;
+                        break;
+                    }
+                } catch (ClassNotFoundException e) {
 
-                    @Override
-                    public void onError(int code, String message) {
-                        ProfilingManager.getInstance().setReady(favUID);
-                        super.onError(code, message);
-                    }
+                }
+            }
+        if (!(context instanceof Application)) calledFromApplication = false;
+        if (!calledFromApplication)
+            showELog(IAS_ERROR_TAG, "Method must be called from Application class and context has to be an applicationContext");
+        synchronized (lock) {
+            if (INSTANCE == null) {
+                INSTANCE = new InAppStoryManager(context);
+            }
+        }
 
-                    @Override
-                    public void onTimeout() {
-                        super.onTimeout();
-                        ProfilingManager.getInstance().setReady(favUID);
-                    }
+    }
 
-                    @Override
-                    public Type getType() {
-                        return null;
-                    }
-                });
+    public static void initSDK(@NonNull Context context) {
+        initSDK(context, false);
+    }
+
+    private InAppStoryManager(Context context) {
+        try {
+            core = new IASCoreImpl(context);
+            core.contentHolder().clearAll();
+            core.contentLoader().inAppMessageDownloadManager().clearSubscribers();
+            core.settingsAPI().isSoundOn(!context.getResources().getBoolean(R.bool.defaultMuted));
+            core.inAppStoryService().onCreate();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private boolean isSandbox = false;
 
     public final static String IAS_ERROR_TAG = "InAppStory_SDK_error";
+    public final static String IAS_WARN_TAG = "InAppStory_SDK_warn";
 
-    private String getErrorStringFromContext(Context context, @StringRes int resourceId) {
-        if (context != null)
-            return context.getResources().getString(resourceId);
-        return "";
+    private boolean isInitialized = false;
+    private boolean isInitProcess = false;
+
+    private final Object initLock = new Object();
+
+    public boolean isInitialized() {
+        synchronized (initLock) {
+            return isInitialized;
+        }
     }
 
-    private InAppStoryManager(final Builder builder) {
-        if (builder.context == null) {
-            showELog(IAS_ERROR_TAG, "InAppStoryManager.Builder data is not valid. 'context' can't be null");
-            return;
+    public boolean isInitializedOrInitProcess() {
+        synchronized (initLock) {
+            return isInitialized || isInitProcess;
         }
-        if (builder.apiKey == null &&
-                builder.context.getResources().getString(R.string.csApiKey).isEmpty()) {
-            showELog(IAS_ERROR_TAG, getErrorStringFromContext(builder.context, R.string.ias_api_key_error));
-            return;
-        }
-        if (getBytesLength(builder.userId) > 255) {
-            showELog(IAS_ERROR_TAG, getErrorStringFromContext(builder.context, R.string.ias_builder_user_length_error));
-            return;
-        }
-        if (builder.tags != null && getBytesLength(TextUtils.join(",", builder.tags)) > TAG_LIMIT) {
-            showELog(IAS_ERROR_TAG, getErrorStringFromContext(builder.context, R.string.ias_builder_tags_length_error));
-            return;
-        }
-        long freeSpace = builder.context.getCacheDir().getFreeSpace();
-        if (freeSpace < MB_5 + MB_10 + MB_10) {
-            showELog(IAS_ERROR_TAG, getErrorStringFromContext(builder.context, R.string.ias_min_free_space_error));
-            return;
-        }
+    }
 
-        KeyValueStorage.setContext(builder.context);
-        SharedPreferencesAPI.setContext(builder.context);
-        createServiceThread(builder.context, builder.userId);
-        if (InAppStoryService.isNotNull()) {
-            long commonCacheSize = MB_100;
-            long fastCacheSize = MB_10;
-            switch (builder.cacheSize) {
-                case CacheSize.SMALL:
-                    fastCacheSize = MB_5;
-                    commonCacheSize = MB_10;
-                    break;
-                case CacheSize.LARGE:
-                    commonCacheSize = MB_200;
-                    break;
+    private void build(final Builder builder) {
+        Integer errorStringId = null;
+        if (core == null) {
+            showELog(
+                    IAS_ERROR_TAG,
+                    "InAppStoryManager not initialized"
+            );
+            return;
+        }
+        Context context = core.appContext();
+        if (context == null) {
+            errorStringId = R.string.ias_context_is_null;
+        } else if (builder.apiKey == null && context.getResources().getString(R.string.csApiKey).isEmpty()) {
+            errorStringId = R.string.ias_api_key_error;
+        } else if (StringsUtils.getBytesLength(builder.userId) > 255) {
+            errorStringId = R.string.ias_builder_user_length_error;
+        } else if (builder.tags != null) {
+            List<String> filteredList = new ArrayList<>();
+            List<String> copyTags = new ArrayList<>(builder.tags);
+            for (String tag : copyTags) {
+                if (!TagsUtils.checkTagPattern(tag)) {
+                    InAppStoryManager.showELog(
+                            InAppStoryManager.IAS_WARN_TAG,
+                            StringsUtils.getFormattedErrorStringFromContext(
+                                    core.appContext(),
+                                    R.string.ias_tag_pattern_error,
+                                    tag
+                            )
+                    );
+                    continue;
+                }
+                filteredList.add(tag);
             }
-            InAppStoryService.getInstance().getFastCache().setCacheSize(fastCacheSize);
-            InAppStoryService.getInstance().getCommonCache().setCacheSize(commonCacheSize);
+            if (StringsUtils.getBytesLength(TextUtils.join(",", filteredList)) > TAG_LIMIT) {
+                errorStringId = R.string.ias_builder_tags_length_error;
+
+            }
         }
-        String domain = KeyConverter.getStringFromKey(
-                builder.apiKey != null ? builder.apiKey : builder.context
-                        .getResources().getString(R.string.csApiKey));
-        this.isSandbox = builder.sandbox;
-        initManager(builder.context,
-                domain != null ? domain : (builder.sandbox ? TEST_DOMAIN
-                        : PRODUCT_DOMAIN),
-                builder.apiKey != null ? builder.apiKey : builder.context
-                        .getResources().getString(R.string.csApiKey),
-                builder.testKey != null ? builder.testKey : null,
-                builder.userId,
-                builder.tags != null ? builder.tags : null,
-                builder.placeholders != null ? builder.placeholders : null,
-                builder.imagePlaceholders != null ? builder.imagePlaceholders : null);
-        new ExceptionManager().sendSavedException();
-    }
-
-    private static void generateException() {
-        if (InAppStoryService.getInstance() != null) {
-            InAppStoryService.getInstance().genException = true;
-        }
-    }
-
-    private int getBytesLength(String value) {
-        if (value == null) return 0;
-        return value.getBytes(StandardCharsets.UTF_8).length;
-    }
-
-    private void setUserIdInner(String userId) {
-        if (InAppStoryService.isNull()) return;
-        if (userId == null || getBytesLength(userId) > 255) {
-            showELog(IAS_ERROR_TAG, getErrorStringFromContext(context, R.string.ias_setter_user_length_error));
+        if (errorStringId != null) {
+            showELog(
+                    IAS_ERROR_TAG,
+                    StringsUtils.getErrorStringFromContext(
+                            context,
+                            errorStringId
+                    )
+            );
             return;
         }
-        if (this.userId.equals(userId)) return;
-        localOpensKey = null;
-        this.userId = userId;
-        if (InAppStoryService.getInstance().getFavoriteImages() != null)
-            InAppStoryService.getInstance().getFavoriteImages().clear();
-        InAppStoryService.getInstance().getDownloadManager().refreshLocals(Story.StoryType.COMMON);
-        InAppStoryService.getInstance().getDownloadManager().refreshLocals(Story.StoryType.UGC);
-        closeStoryReader(CloseStory.AUTO);
-        SessionManager.getInstance().closeSession(sendStatistic, true);
-        OldStatisticManager.getInstance().eventCount = 0;
-        InAppStoryService.getInstance().getDownloadManager().cleanTasks(false);
-        InAppStoryService.getInstance().setUserId(userId);
-    }
-
-
-    //Test
-
-    /**
-     * use to change user id in runtime
-     *
-     * @param userId (userId) - can't be longer than 255 characters
-     */
-    public void setUserId(@NonNull String userId) {
-        setUserIdInner(userId);
-    }
-
-    private String userId;
-
-    public String getUserId() {
-        return userId;
-    }
-
-    public void clearCachedList(String id) {
-        InAppStoryService inAppStoryService = InAppStoryService.getInstance();
-        if (inAppStoryService != null) {
-            inAppStoryService.listStoriesIds.remove(id);
+        long freeSpace = context.getCacheDir().getFreeSpace();
+        if (freeSpace < MB_5 + MB_10 + MB_10) {
+            showELog(IAS_ERROR_TAG, StringsUtils.getErrorStringFromContext(context,
+                    R.string.ias_min_free_space_error));
+            return;
         }
-    }
-
-
-    public void clearCachedLists() {
-        InAppStoryService inAppStoryService = InAppStoryService.getInstance();
-        if (inAppStoryService != null) {
-            inAppStoryService.listStoriesIds.clear();
+        boolean secondaryInit = false;
+        synchronized (initLock) {
+            if (isInitProcess) {
+                showELog(IAS_ERROR_TAG, "Previous init process still not finished");
+                return;
+            }
+            secondaryInit = isInitialized;
+            isInitialized = false;
+            isInitProcess = true;
         }
+        try {
+            core.contentLoader().setCacheSizes();
+            String domain = new HostFromSecretKey(
+                    builder.apiKey
+            ).get(builder.sandbox);
+            this.isSandbox = builder.sandbox;
+            initManager(
+                    context,
+                    domain,
+                    builder.apiKey() != null ? builder.apiKey() : context.getResources().getString(R.string.csApiKey),
+                    builder.testKey() != null ? builder.testKey() : null,
+                    builder.userId(),
+                    builder.userSign(),
+                    builder.locale(),
+                    builder.gameDemoMode(),
+                    builder.isDeviceIdEnabled(),
+                    builder.tags() != null ? builder.tags() : null,
+                    builder.placeholders() != null ? builder.placeholders() : null,
+                    builder.imagePlaceholders() != null ? builder.imagePlaceholders() : null,
+                    secondaryInit
+            );
+            new ExceptionManager(core).sendSavedException();
+            synchronized (initLock) {
+                isInitialized = true;
+                isInitProcess = false;
+            }
+        } catch (Exception e) {
+            synchronized (initLock) {
+                isInitialized = false;
+                isInitProcess = false;
+            }
+        }
+
     }
 
-    public void setActionBarColor(int actionBarColor) {
-        this.actionBarColor = actionBarColor;
-    }
-
-    public int actionBarColor = -1;
 
     public boolean isSendStatistic() {
         return sendStatistic;
@@ -964,85 +854,111 @@ public class InAppStoryManager {
 
     private boolean sendStatistic = true;
 
-    private void initManager(Context context,
-                             String cmsUrl,
-                             String apiKey,
-                             String testKey,
-                             String userId,
-                             ArrayList<String> tags,
-                             Map<String, String> placeholders,
-                             Map<String, ImagePlaceholderValue> imagePlaceholders) {
-        this.context = context;
-        soundOn = !context.getResources().getBoolean(R.bool.defaultMuted);
+    private void initManager(
+            final Context context,
+            final String host,
+            final String apiKey,
+            final String testKey,
+            final String userId,
+            final String userSign,
+            final Locale locale,
+            final boolean gameDemoMode,
+            final boolean isDeviceIDEnabled,
+            final ArrayList<String> tags,
+            final Map<String, String> placeholders,
+            final Map<String, ImagePlaceholderValue> imagePlaceholders,
+            final boolean secondaryInit
+    ) {
+        if (core == null) return;
+        ForceCloseReaderCallback callback = new ForceCloseReaderCallback() {
+            @Override
+            public void onComplete() {
+                core.projectSettingsAPI()
+                        .apiKey(apiKey)
+                        .cacheDir(context.getCacheDir().getAbsolutePath())
+                        .testKey(testKey)
+                        .host(host);
+                IASDataSettings settings = core.settingsAPI();
+                if (isDeviceIDEnabled) {
+                    settings.deviceId
+                            (
+                                    Settings.Secure.getString(
+                                            context.getContentResolver(),
+                                            Settings.Secure.ANDROID_ID
+                                    )
+                            );
+                }
+                settings.gameDemoMode(gameDemoMode);
+                core.settingsAPI().inAppStorySettings(
+                        new InAppStoryUserSettings()
+                                .userId(userId, userSign)
+                                .lang(locale)
+                                .tags(tags)
+                                .placeholders(placeholders)
+                                .imagePlaceholders(imagePlaceholders)
 
-        synchronized (tagsLock) {
-            this.tags = tags;
-        }
-        if (placeholders != null)
-            setPlaceholders(placeholders);
-        if (imagePlaceholders != null)
-            setImagePlaceholders(imagePlaceholders);
-        this.API_KEY = apiKey;
-        this.TEST_KEY = testKey;
-        NetworkClient.setContext(context);
-        this.userId = userId;
-        if (!isNull()) {
-            localHandler.removeCallbacksAndMessages(null);
-            localDestroy();
-        }
-
-        OldStatisticManager.getInstance().statistic = new ArrayList<>();
-        setInstance(this);
-        ApiSettings
-                .getInstance()
-                .cacheDirPath(context.getCacheDir().getAbsolutePath())
-                .apiKey(this.API_KEY)
-                .testKey(this.TEST_KEY)
-                .setWebUrl(cmsUrl)
-                .cmsUrl(cmsUrl);
-        if (InAppStoryService.isNotNull()) {
-            InAppStoryService.getInstance().getDownloadManager().initDownloaders();
+                );
+            }
+        };
+        if (secondaryInit) {
+            destroy(callback);
+        } else {
+            callback.onComplete();
         }
     }
+
 
     private static final Object lock = new Object();
 
-    public static void logout() {
-        if (!isNull()) {
-            if (InAppStoryService.isNotNull()) {
-                InAppStoryService.getInstance().listStoriesIds.clear();
-                InAppStoryService.getInstance().getListSubscribers().clear();
-                InAppStoryService.getInstance().getDownloadManager().cleanTasks();
-                InAppStoryService.getInstance().logout();
+    public void setAppVersion(@NonNull final String version, final int build) {
+        if (version.isEmpty() || version.length() > 50) {
+            showELog(
+                    IAS_ERROR_TAG,
+                    "App Version must be no more than 50 symbols and not empty"
+            );
+            return;
+        }
+        useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.settingsAPI().setExternalAppVersion(new AppVersion(version, build));
             }
-        }
+        });
     }
 
-    @Deprecated
-    public static void destroy() {
-        logout();
-    }
+    private void destroy(final ForceCloseReaderCallback callback) {
+        InAppStoryManager.useCoreInSeparateThread(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull final IASCore core) {
+                core.screensManager().forceCloseAllReaders(new ForceCloseReaderCallback() {
+                    @Override
+                    public void onComplete() {
+                        core.statistic().storiesV1(new GetStatisticV1Callback() {
+                            @Override
+                            public void get(@NonNull IASStatisticStoriesV1 manager) {
+                                manager.closeStatisticEvent();
+                            }
+                        });
+                        core.settingsAPI().destroy();
+                        core.storiesListVMHolder().clear();
+                        core.storyListCache().clearLocalOpensKey();
+                        core.contentLoader().storyDownloadManager().cleanTasks();
+                        core.contentHolder().favoriteItems().clearByType(ContentType.STORY);
+                        core.contentHolder().favoriteItems().clearByType(ContentType.UGC);
+                        core.contentLoader().storyDownloadManager().refreshLocals(ContentType.STORY);
+                        core.contentLoader().storyDownloadManager().refreshLocals(ContentType.UGC);
+                        core.contentLoader().storyDownloadManager().cleanTasks(false);
+                        core.contentHolder().readerContent().clearByType(ContentType.IN_APP_MESSAGE);
+                        core.contentHolder().readerContent().clearByType(ContentType.STORY);
+                        core.contentLoader().inAppMessageDownloadManager().clearLocalData();
+                        core.contentLoader().inAppMessageDownloadManager().clearSlidesDownloader();
+                        callback.onComplete();
+                    }
+                });
 
-    private static void localDestroy() {
+            }
+        });
 
-        logout();
-        synchronized (lock) {
-            INSTANCE = null;
-        }
-    }
-
-
-    private String localOpensKey;
-
-    public String getLocalOpensKey(Story.StoryType type) {
-        if (localOpensKey == null && userId != null) {
-            localOpensKey = "opened" + userId;
-        }
-        return (type == Story.StoryType.COMMON) ? localOpensKey : type.name() + localOpensKey;
-    }
-
-    public String getLocalOpensKey() {
-        return getLocalOpensKey(Story.StoryType.COMMON);
     }
 
     /**
@@ -1061,400 +977,365 @@ public class InAppStoryManager {
         return new Pair<>(BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE);
     }
 
-    private boolean soundOn = false;
 
-    public void soundOn(boolean isSoundOn) {
-        this.soundOn = isSoundOn;
-    }
-
-    public boolean soundOn() {
-        return soundOn;
-    }
-
-    private Handler localHandler = new Handler();
-    private Object handlerToken = new Object();
-
-    private void showLoadedOnboardings(final List<Story> response, final Context outerContext,
-                                       final AppearanceManager manager, final String feed, final String feedId) {
-        Story.StoryType storyType = Story.StoryType.COMMON;
-        if (response == null || response.size() == 0) {
-            if (CallbackManager.getInstance().getOnboardingLoadCallback() != null) {
-                CallbackManager.getInstance().getOnboardingLoadCallback().onboardingLoad(0, StringsUtils.getNonNull(feed));
-            }
-            return;
-        }
-
-        if (InAppStoryService.isNull()) return;
-        if (ScreensManager.created == -1) {
-            InAppStoryManager.closeStoryReader(CloseStory.AUTO);
-            localHandler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    showLoadedOnboardings(response, outerContext, manager, feed, feedId);
-                    ScreensManager.created = 0;
-                }
-            }, 350);
-            return;
-        } else if (System.currentTimeMillis() - ScreensManager.created < 1000) {
-            localHandler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    showLoadedOnboardings(response, outerContext, manager, feed, feedId);
-                    ScreensManager.created = 0;
-                }
-            }, 350);
-            return;
-        }
-
-        ArrayList<Story> stories = new ArrayList<Story>();
-        ArrayList<Integer> storiesIds = new ArrayList<>();
-        stories.addAll(response);
-        for (Story story : response) {
-            storiesIds.add(story.id);
-        }
-        InAppStoryService.getInstance().getDownloadManager().uploadingAdditional(stories, storyType);
-        ScreensManager.getInstance().openStoriesReader(
-                outerContext,
-                null,
-                manager,
-                storiesIds,
-                0,
-                ShowStory.ONBOARDING,
-                feed,
-                feedId,
-                Story.StoryType.COMMON);
-        if (CallbackManager.getInstance().getOnboardingLoadCallback() != null) {
-            CallbackManager.getInstance().getOnboardingLoadCallback().onboardingLoad(response.size(), StringsUtils.getNonNull(feed));
-        }
-    }
-
-    private void showOnboardingStoriesInner(final Integer limit, final String feed, final List<String> tags, final Context outerContext, final AppearanceManager manager) {
-        if (InAppStoryService.isNull()) {
-            localHandler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    showOnboardingStoriesInner(limit, feed, tags, outerContext, manager);
-                }
-            }, 1000);
-            return;
-        }
-
-        if (tags != null && getBytesLength(TextUtils.join(",", tags)) > TAG_LIMIT) {
-            showELog(IAS_ERROR_TAG, getErrorStringFromContext(context, R.string.ias_setter_user_length_error));
-            return;
-        }
-        SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
+    public void preloadGames() {
+        useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
-            public void onSuccess() {
-                String localTags = null;
-                if (tags != null) {
-                    localTags = TextUtils.join(",", tags);
-                } else if (getTags() != null) {
-                    localTags = TextUtils.join(",", getTags());
-                }
+            public void use(@NonNull IASCore core) {
 
-                final String onboardUID =
-                        ProfilingManager.getInstance().addTask("api_onboarding");
-                final String localFeed;
-                if (feed != null) localFeed = feed;
-                else localFeed = ONBOARDING_FEED;
-                NetworkClient.getApi().getOnboardingFeed(
-                        localFeed,
-                        limit,
-                        localTags == null ? getTagsString() : localTags
-                ).enqueue(new LoadFeedCallback() {
-                    @Override
-                    public void onSuccess(Feed response) {
-                        if (InAppStoryManager.isNull()) return;
-                        ProfilingManager.getInstance().setReady(onboardUID);
-                        List<Story> notOpened = new ArrayList<>();
-                        Set<String> opens = SharedPreferencesAPI.getStringSet(InAppStoryManager.getInstance().getLocalOpensKey());
-                        if (opens == null) opens = new HashSet<>();
-                        if (response.stories != null) {
-                            for (Story story : response.stories) {
-                                boolean add = true;
-                                for (String opened : opens) {
-                                    if (Integer.toString(story.id).equals(opened)) {
-                                        add = false;
-                                    }
-                                }
-                                if (add) notOpened.add(story);
-                            }
-                        }
-                        showLoadedOnboardings(notOpened, outerContext, manager, localFeed, response.getFeedId());
-                    }
-
-                    @Override
-                    public void onError(int code, String message) {
-                        ProfilingManager.getInstance().setReady(onboardUID);
-                        loadOnboardingError(localFeed);
-                    }
-
-                    @Override
-                    public void onTimeout() {
-                        ProfilingManager.getInstance().setReady(onboardUID);
-                        loadOnboardingError(localFeed);
-                    }
-                });
+                core.contentPreload().restartGamePreloader();
             }
-
-            @Override
-            public void onError() {
-                loadOnboardingError(feed);
-            }
-
         });
     }
 
-    private void loadOnboardingError(String feed) {
-        if (CallbackManager.getInstance().getErrorCallback() != null) {
-            CallbackManager.getInstance().getErrorCallback().loadOnboardingError(StringsUtils.getNonNull(feed));
-        }
-    }
-
-
-    /**
-     * Function for loading onboarding stories with custom tags
-     *
-     * @param tags         (tags)
-     * @param outerContext (outerContext) any type of context (preferably - same as for {@link InAppStoryManager}
-     * @param manager      (manager) {@link AppearanceManager} for reader. May be null
-     */
-    public void showOnboardingStories(String feed, List<String> tags, Context outerContext, AppearanceManager manager) {
-        if (feed == null || feed.isEmpty()) feed = ONBOARDING_FEED;
-        showOnboardingStoriesInner(null, feed, tags, outerContext, manager);
-    }
-
-
-    /**
-     * function for loading onboarding stories with default tags (set in InAppStoryManager.Builder)
-     *
-     * @param context (context) any type of context (preferably - same as for {@link InAppStoryManager}
-     * @param manager (manager) {@link AppearanceManager} for reader. May be null
-     */
-    public void showOnboardingStories(String feed, Context context, final AppearanceManager manager) {
-        if (feed == null || feed.isEmpty()) feed = ONBOARDING_FEED;
-        showOnboardingStories(feed, getTags(), context, manager);
-    }
-
-
-    /**
-     * Function for loading onboarding stories with custom tags
-     *
-     * @param tags         (tags)
-     * @param outerContext (outerContext) any type of context (preferably - same as for {@link InAppStoryManager}
-     * @param manager      (manager) {@link AppearanceManager} for reader. May be null
-     */
-    public void showOnboardingStories(List<String> tags, Context outerContext, AppearanceManager manager) {
-        showOnboardingStoriesInner(null, ONBOARDING_FEED, tags, outerContext, manager);
-    }
-
-    /**
-     * function for loading onboarding stories with default tags (set in InAppStoryManager.Builder)
-     *
-     * @param context (context) any type of context (preferably - same as for {@link InAppStoryManager}
-     * @param manager (manager) {@link AppearanceManager} for reader. May be null
-     */
-    public void showOnboardingStories(Context context, final AppearanceManager manager) {
-        showOnboardingStories(ONBOARDING_FEED, getTags(), context, manager);
-    }
-
-    /**
-     * Function for loading onboarding stories with custom tags
-     *
-     * @param tags         (tags)
-     * @param outerContext (outerContext) any type of context (preferably - same as for {@link InAppStoryManager}
-     * @param manager      (manager) {@link AppearanceManager} for reader. May be null
-     */
-    public void showOnboardingStories(int limit, String feed, List<String> tags, Context outerContext, AppearanceManager manager) {
-        if (feed == null || feed.isEmpty()) feed = ONBOARDING_FEED;
-        showOnboardingStoriesInner(limit, feed, tags, outerContext, manager);
-    }
-
-
-    /**
-     * function for loading onboarding stories with default tags (set in InAppStoryManager.Builder)
-     *
-     * @param context (context) any type of context (preferably - same as for {@link InAppStoryManager}
-     * @param manager (manager) {@link AppearanceManager} for reader. May be null
-     */
-    public void showOnboardingStories(int limit, String feed, Context context, final AppearanceManager manager) {
-        if (feed == null || feed.isEmpty()) feed = ONBOARDING_FEED;
-        showOnboardingStories(limit, feed, getTags(), context, manager);
-    }
-
-
-    /**
-     * Function for loading onboarding stories with custom tags
-     *
-     * @param tags         (tags)
-     * @param outerContext (outerContext) any type of context (preferably - same as for {@link InAppStoryManager}
-     * @param manager      (manager) {@link AppearanceManager} for reader. May be null
-     */
-    public void showOnboardingStories(int limit, List<String> tags, Context outerContext, AppearanceManager manager) {
-        showOnboardingStoriesInner(limit, ONBOARDING_FEED, tags, outerContext, manager);
-    }
-
-    /**
-     * function for loading onboarding stories with default tags (set in InAppStoryManager.Builder)
-     *
-     * @param context (context) any type of context (preferably - same as for {@link InAppStoryManager}
-     * @param manager (manager) {@link AppearanceManager} for reader. May be null
-     */
-    public void showOnboardingStories(int limit, Context context, final AppearanceManager manager) {
-        showOnboardingStories(limit, ONBOARDING_FEED, getTags(), context, manager);
-    }
-
-    public boolean isSandbox() {
-        return isSandbox;
-    }
-
-    private final static String ONBOARDING_FEED = "onboarding";
-
-    private String lastSingleOpen = null;
-
-    private void showStoryInner(final String storyId,
-                                final Context context,
-                                final AppearanceManager manager,
-                                final IShowStoryCallback callback,
-                                final Integer slide,
-                                final Story.StoryType type,
-                                final int readerSource,
-                                final int readerAction) {
-        final InAppStoryService service = InAppStoryService.getInstance();
-        if (service == null) {
-            localHandler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    showStoryInner(
-                            storyId,
-                            context,
-                            manager,
-                            callback,
-                            slide,
-                            type,
-                            readerSource,
-                            readerAction
-                    );
-                }
-            }, 1000);
-            return;
-        }
-        if (this.userId == null || getBytesLength(this.userId) > 255) {
-            showELog(IAS_ERROR_TAG, getErrorStringFromContext(context, R.string.ias_setter_user_length_error));
-            return;
-        }
-        if (lastSingleOpen != null &&
-                lastSingleOpen.equals(storyId)) return;
-        lastSingleOpen = storyId;
-
-
-        service.getDownloadManager().getFullStoryByStringId(new GetStoryByIdCallback() {
+    public void setLang(@NonNull final Locale lang) {
+        useCore(new UseIASCoreCallback() {
             @Override
-            public void getStory(Story story) {
-                if (story != null) {
-                    service.getDownloadManager().addCompletedStoryTask(story,
-                            Story.StoryType.COMMON);
-                    if (ScreensManager.created == -1) {
-                        InAppStoryManager.closeStoryReader(CloseStory.AUTO);
-                        localHandler.postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                lastSingleOpen = null;
-                                showStoryInner(
-                                        storyId,
-                                        context,
-                                        manager,
-                                        callback,
-                                        slide,
-                                        type,
-                                        readerSource,
-                                        readerAction
-                                );
-                                // StoriesActivity.destroyed = 0;
-                            }
-                        }, 500);
-                        return;
-                    } else if (System.currentTimeMillis() - ScreensManager.created < 1000) {
-                        localHandler.postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                showStoryInner(
-                                        storyId,
-                                        context,
-                                        manager,
-                                        callback,
-                                        slide,
-                                        type,
-                                        readerSource,
-                                        readerAction
-                                );
-                                ScreensManager.created = 0;
-                            }
-                        }, 350);
-                        return;
-                    }
+            public void use(@NonNull IASCore core) {
+
+                core.settingsAPI().setLang(lang, true);
+            }
+        });
+    }
 
 
-                    try {
-                        int c = Integer.parseInt(lastSingleOpen);
-                        if (c != story.id)
-                            return;
-                    } catch (Exception ignored) {
+    /**
+     * use to change user id in runtime
+     *
+     * @param userId (userId) - can't be longer than 255 characters
+     */
+    public void setUserId(@NonNull final String userId) {
+        useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.settingsAPI().setUserId(userId);
+            }
+        });
+    }
 
-                    }
-                    if (callback != null)
-                        callback.onShow();
-                    service.getDownloadManager().putStories(
-                            InAppStoryService.getInstance().getDownloadManager().getStories(Story.StoryType.COMMON),
-                            type
+    public void setUserId(@NonNull final String userId, final String userSign) {
+        useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.settingsAPI().setUserId(userId, userSign);
+            }
+        });
+    }
+
+    public void userLogout(final InAppStoryUserSettings settings) {
+        useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                if (settings == null) {
+                    core.settingsAPI().inAppStorySettings(
+                            new InAppStoryUserSettings()
+                                    .userId(
+                                            "",
+                                            null
+                                    )
                     );
-                    ArrayList<Integer> stIds = new ArrayList<>();
-                    stIds.add(story.id);
-                    ScreensManager.getInstance().openStoriesReader(
-                            context,
-                            null,
-                            manager,
-                            stIds,
-                            0,
-                            readerSource,
-                            readerAction,
-                            slide,
-                            null,
-                            null,
-                            Story.StoryType.COMMON
-                    );
-                    localHandler.postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            lastSingleOpen = null;
-                        }
-                    }, 1000);
                 } else {
-                    if (callback != null)
-                        callback.onError();
-                    lastSingleOpen = null;
-                    return;
+                    core.settingsAPI().inAppStorySettings(
+                            settings.userId(
+                                    "",
+                                    null
+                            )
+                    );
                 }
             }
+        });
+    }
 
+    public void userLogout() {
+        useCore(new UseIASCoreCallback() {
             @Override
-            public void loadError(int type) {
-                if (callback != null)
-                    callback.onError();
-                lastSingleOpen = null;
+            public void use(@NonNull IASCore core) {
+                core.settingsAPI().inAppStorySettings(
+                        new InAppStoryUserSettings().userId(
+                                "",
+                                null
+                        )
+                );
             }
-
-        }, storyId, type);
+        });
     }
 
-    private void showStoryInner(final String storyId, final Context context,
-                                final AppearanceManager manager,
-                                final IShowStoryCallback callback, Story.StoryType type,
-                                final int readerSource,
-                                final int readerAction) {
-        showStoryInner(storyId, context, manager, callback, null, type, readerSource, readerAction);
+    public void userSettings(final InAppStoryUserSettings settings) {
+        useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                if (settings == null) {
+                    core.settingsAPI().inAppStorySettings(
+                            new InAppStoryUserSettings()
+                                    .userId(
+                                            "",
+                                            null
+                                    )
+                    );
+                } else {
+                    core.settingsAPI().inAppStorySettings(
+                            settings.userId(
+                                    "",
+                                    null
+                            )
+                    );
+                }
+            }
+        });
     }
+
+    public String getApiKey() {
+        if (core == null) return null;
+        return core.projectSettingsAPI().apiKey();
+    }
+
+    public String getTestKey() {
+        if (core == null) return null;
+        return core.projectSettingsAPI().testKey();
+    }
+
+    public String getUserId() {
+        if (core == null) return null;
+        return ((IASDataSettingsHolder) core.settingsAPI()).userId();
+    }
+
+    public void clearCachedListById(final String cacheId) {
+        useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+
+                core.storiesListVMHolder().removeResultById(cacheId);
+            }
+        });
+    }
+
+    public void clearCachedFavoriteList() {
+        useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+
+                core.storiesListVMHolder().removeFavoriteResult();
+            }
+        });
+    }
+
+    public void clearCachedListByFeed(final String feed) {
+        useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+
+                core.storiesListVMHolder().removeResultByFeed(feed);
+            }
+        });
+    }
+
+    public void clearCachedListByIdAndFeed(final String cacheId, final String feed) {
+        useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+
+                core.storiesListVMHolder().removeResultByIdAndFeed(cacheId, feed);
+            }
+        });
+    }
+
+    public void setOpenStoriesReader(@NonNull final IOpenStoriesReader openStoriesReader) {
+        useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+
+                core.screensManager().setOpenStoriesReader(openStoriesReader);
+            }
+        });
+    }
+
+    public void setOpenInAppMessageReader(@NonNull final IOpenInAppMessageReader openInAppMessageReader) {
+        useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+
+                core.screensManager().setOpenInAppMessageReader(openInAppMessageReader);
+            }
+        });
+    }
+
+    public void setOpenGameReader(@NonNull final IOpenGameReader openGameReader) {
+        useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+
+                core.screensManager().setOpenGameReader(openGameReader);
+            }
+        });
+    }
+
+    public void clearCachedLists() {
+        useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.storiesListVMHolder().clear();
+            }
+        });
+    }
+
+    public void soundOn(final boolean isSoundOn) {
+        useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.settingsAPI().isSoundOn(isSoundOn);
+            }
+        });
+    }
+
+    public void getStackFeed(
+            final String feed,
+            final String uniqueStackId,
+            final List<String> tags,
+            final AppearanceManager appearanceManager,
+            final IStackFeedResult stackFeedResult
+    ) {
+        useCoreInSeparateThread(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.stackFeedAPI().get(feed, uniqueStackId, appearanceManager, tags, stackFeedResult);
+            }
+        });
+    }
+
+    /**
+     * Function for loading onboarding stories with custom tags
+     *
+     * @param tags         (tags)
+     * @param outerContext (outerContext) any type of context (preferably - activity)
+     * @param manager      (manager) {@link AppearanceManager} for reader. May be null
+     */
+    public void showOnboardingStories(final String feed, final List<String> tags, final Context outerContext, final AppearanceManager manager) {
+        useCoreInSeparateThread(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.onboardingsAPI().show(outerContext, feed, manager, tags, 1000);
+            }
+        });
+    }
+
+
+    /**
+     * function for loading onboarding stories with default tags (set in InAppStoryManager.Builder)
+     *
+     * @param outerContext (outerContext) any type of context (preferably - activity)
+     * @param manager      (manager) {@link AppearanceManager} for reader. May be null
+     */
+    public void showOnboardingStories(final String feed, final Context outerContext, final AppearanceManager manager) {
+        useCoreInSeparateThread(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+
+                core.onboardingsAPI().show(outerContext, feed, manager, null, 1000);
+            }
+        });
+    }
+
+
+    /**
+     * Function for loading onboarding stories with custom tags
+     *
+     * @param tags         (tags)
+     * @param outerContext (outerContext) any type of context (preferably - activity)
+     * @param manager      (manager) {@link AppearanceManager} for reader. May be null
+     */
+    public void showOnboardingStories(final List<String> tags, final Context outerContext, final AppearanceManager manager) {
+        useCoreInSeparateThread(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+
+                core.onboardingsAPI().show(outerContext, null, manager, tags, 1000);
+            }
+        });
+    }
+
+    /**
+     * function for loading onboarding stories with default tags (set in InAppStoryManager.Builder)
+     *
+     * @param outerContext (outerContext) any type of context (preferably - activity)
+     * @param manager      (manager) {@link AppearanceManager} for reader. May be null
+     */
+    public void showOnboardingStories(final Context outerContext, final AppearanceManager manager) {
+        useCoreInSeparateThread(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+
+                core.onboardingsAPI().show(outerContext, null, manager, null, 1000);
+            }
+        });
+    }
+
+    /**
+     * Function for loading onboarding stories with custom tags
+     *
+     * @param tags         (tags)
+     * @param outerContext (outerContext) any type of context (preferably - activity)
+     * @param manager      (manager) {@link AppearanceManager} for reader. May be null
+     */
+    public void showOnboardingStories(final int limit, final String feed, final List<String> tags, final Context outerContext, final AppearanceManager manager) {
+        useCoreInSeparateThread(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.onboardingsAPI().show(outerContext, feed, manager, tags, limit);
+            }
+        });
+    }
+
+
+    /**
+     * function for loading onboarding stories with default tags (set in InAppStoryManager.Builder)
+     *
+     * @param outerContext (outerContext) any type of context (preferably - activity)
+     * @param manager      (manager) {@link AppearanceManager} for reader. May be null
+     */
+    public void showOnboardingStories(final int limit, final String feed, final Context outerContext, final AppearanceManager manager) {
+        useCoreInSeparateThread(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+
+                core.onboardingsAPI().show(outerContext, feed, manager, null, limit);
+            }
+        });
+    }
+
+
+    /**
+     * Function for loading onboarding stories with custom tags
+     *
+     * @param tags         (tags)
+     * @param outerContext (outerContext) any type of context (preferably - activity)
+     * @param manager      (manager) {@link AppearanceManager} for reader. May be null
+     */
+    public void showOnboardingStories(final int limit, final List<String> tags, final Context outerContext, final AppearanceManager manager) {
+        useCoreInSeparateThread(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+
+                core.onboardingsAPI().show(outerContext, null, manager, tags, limit);
+            }
+        });
+    }
+
+    /**
+     * function for loading onboarding stories with default tags (set in InAppStoryManager.Builder)
+     *
+     * @param outerContext (outerContext) any type of context (preferably - activity)
+     * @param manager      (manager) {@link AppearanceManager} for reader. May be null
+     */
+    public void showOnboardingStories(final int limit, final Context outerContext, final AppearanceManager manager) {
+        useCoreInSeparateThread(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+
+                core.onboardingsAPI().show(outerContext, null, manager, null, limit);
+            }
+        });
+    }
+
 
     /**
      * use to show single story in reader by id
@@ -1464,29 +1345,39 @@ public class InAppStoryManager {
      * @param manager  (manager) {@link AppearanceManager} for reader. May be null
      * @param callback (callback) custom action when story is loaded
      */
-    public void showStory(String storyId, Context context, AppearanceManager manager, IShowStoryCallback callback) {
-        showStoryInner(
-                storyId,
-                context,
-                manager,
-                callback,
-                Story.StoryType.COMMON,
-                ShowStory.SINGLE,
-                ShowStory.ACTION_OPEN
-        );
+    public void showStory(final String storyId, final Context context, final AppearanceManager manager, final IShowStoryCallback callback) {
+        useCoreInSeparateThread(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+
+                core.singleStoryAPI().show(context, storyId, manager, callback, 0);
+            }
+        });
     }
 
-    public void showStory(String storyId, Context context, AppearanceManager manager, IShowStoryCallback callback, Integer slide) {
-        showStoryInner(
-                storyId,
-                context,
-                manager,
-                callback,
-                slide,
-                Story.StoryType.COMMON,
-                ShowStory.SINGLE,
-                ShowStory.ACTION_OPEN
-        );
+    public void showStory(final String storyId, final Context context, final AppearanceManager manager, final IShowStoryCallback callback, final Integer slide) {
+        useCoreInSeparateThread(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+
+                core.singleStoryAPI().show(context, storyId, manager, callback, slide);
+            }
+        });
+    }
+
+
+    public void showStoryOnce(final String storyId,
+                              final Context context,
+                              final AppearanceManager manager,
+                              final IShowStoryOnceCallback callback
+    ) {
+        useCoreInSeparateThread(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+
+                core.singleStoryAPI().showOnce(context, storyId, manager, callback);
+            }
+        });
     }
 
     /**
@@ -1496,49 +1387,105 @@ public class InAppStoryManager {
      * @param context (context) any type of context (preferably - same as for {@link InAppStoryManager}
      * @param manager (manager) {@link AppearanceManager} for reader. May be null
      */
-    public void showStory(String storyId, Context context, AppearanceManager manager) {
-        showStoryInner(storyId, context, manager, null, Story.StoryType.COMMON, ShowStory.SINGLE, ShowStory.ACTION_OPEN);
+    public void showStory(final String storyId, final Context context, final AppearanceManager manager) {
+        useCoreInSeparateThread(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+
+                core.singleStoryAPI().show(context, storyId, manager, null, 0);
+            }
+        });
     }
 
-    public void showStoryCustom(String storyId, Context context, AppearanceManager manager) {
-        showStoryInner(storyId, context, manager, null, Story.StoryType.COMMON, ShowStory.SINGLE, ShowStory.ACTION_CUSTOM);
-    }
-
-    public void showStoryWithSlide(
-            String storyId,
-            Context context,
-            Integer slide,
-            String managerSettings,
-            Story.StoryType type,
-            final int readerSource,
-            final int readerAction
+    public void preloadInAppMessages(
+            final InAppMessagePreloadSettings inAppMessagePreloadSettings,
+            final InAppMessageLoadCallback callback
     ) {
-        AppearanceManager appearanceManager = new AppearanceManager();
-        if (managerSettings != null) {
-            StoriesReaderSettings settings = JsonParser.fromJson(managerSettings, StoriesReaderSettings.class);
-            appearanceManager.csHasLike(settings.hasLike);
-            appearanceManager.csHasFavorite(settings.hasFavorite);
-            appearanceManager.csHasShare(settings.hasShare);
-            appearanceManager.csClosePosition(settings.closePosition);
-            appearanceManager.csCloseOnOverscroll(settings.closeOnOverscroll);
-            appearanceManager.csCloseOnSwipe(settings.closeOnSwipe);
-            appearanceManager.csIsDraggable(true);
-            appearanceManager.csTimerGradientEnable(settings.timerGradientEnable);
-            appearanceManager.csStoryReaderAnimation(settings.readerAnimation);
-            appearanceManager.csCloseIcon(settings.closeIcon);
-            appearanceManager.csDislikeIcon(settings.dislikeIcon);
-            appearanceManager.csLikeIcon(settings.likeIcon);
-            appearanceManager.csRefreshIcon(settings.refreshIcon);
-            appearanceManager.csFavoriteIcon(settings.favoriteIcon);
-            appearanceManager.csShareIcon(settings.shareIcon);
-            appearanceManager.csSoundIcon(settings.soundIcon);
-        }
-        showStoryInner(storyId, context, appearanceManager, null, slide, type, readerSource, readerAction);
+        useCoreInSeparateThread(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+
+                core.inAppMessageAPI().preload(inAppMessagePreloadSettings, callback);
+            }
+        });
+    }
+
+    public void preloadInAppMessages(
+            final InAppMessageLoadCallback callback
+    ) {
+        useCoreInSeparateThread(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+
+                core.inAppMessageAPI().preload(null, callback);
+            }
+        });
+    }
+
+    public void setInAppMessageLoadCallback(final InAppMessageLoadCallback callback) {
+        useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.inAppMessageAPI().callback(callback);
+            }
+        });
+
+    }
+
+    public void setShowInAppMessageCallback(final ShowInAppMessageCallback callback) {
+        useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.callbacksAPI().setCallback(IASCallbackType.SHOW_IN_APP_MESSAGE, callback);
+            }
+        });
+    }
+
+    public void setCloseInAppMessageCallback(final CloseInAppMessageCallback callback) {
+        useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.callbacksAPI().setCallback(IASCallbackType.CLOSE_IN_APP_MESSAGE, callback);
+            }
+        });
+    }
+
+
+    public void setInAppMessageWidgetCallback(final InAppMessageWidgetCallback callback) {
+        useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.callbacksAPI().setCallback(IASCallbackType.IN_APP_MESSAGE_WIDGET, callback);
+            }
+        });
+    }
+
+    public void showInAppMessage(
+            final InAppMessageOpenSettings openData,
+            final FragmentManager fragmentManager,
+            final int containerId,
+            final InAppMessageScreenActions screenActions
+    ) {
+        useCoreInSeparateThread(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.inAppMessageAPI().show(
+                        openData,
+                        fragmentManager,
+                        containerId,
+                        screenActions
+                );
+            }
+        });
+
+    }
+
+
+    public boolean isSandbox() {
+        return isSandbox;
     }
 
     public static class Builder {
-
-        Context context;
 
         public boolean sandbox() {
             return sandbox;
@@ -1548,8 +1495,24 @@ public class InAppStoryManager {
             return userId;
         }
 
+        public String userSign() {
+            return userSign;
+        }
+
         public String apiKey() {
             return apiKey;
+        }
+
+        public Locale locale() {
+            return locale;
+        }
+
+        public boolean gameDemoMode() {
+            return gameDemoMode;
+        }
+
+        public boolean isDeviceIdEnabled() {
+            return deviceIdEnabled;
         }
 
         public String testKey() {
@@ -1568,12 +1531,20 @@ public class InAppStoryManager {
             return placeholders;
         }
 
+        public Map<String, ImagePlaceholderValue> imagePlaceholders() {
+            return imagePlaceholders;
+        }
+
         boolean sandbox;
+        boolean gameDemoMode;
+        boolean deviceIdEnabled = true;
 
         int cacheSize;
         String userId;
+        String userSign;
         String apiKey;
         String testKey;
+        Locale locale = Locale.getDefault();
         ArrayList<String> tags;
         Map<String, String> placeholders;
         Map<String, ImagePlaceholderValue> imagePlaceholders;
@@ -1581,14 +1552,24 @@ public class InAppStoryManager {
         public Builder() {
         }
 
-        public Builder context(Context context) {
-            Builder.this.context = context;
-            return Builder.this;
-        }
-
         @Deprecated
         public Builder sandbox(boolean sandbox) {
             Builder.this.sandbox = sandbox;
+            return Builder.this;
+        }
+
+        public Builder lang(Locale locale) {
+            Builder.this.locale = locale;
+            return Builder.this;
+        }
+
+        public Builder gameDemoMode(boolean gameDemoMode) {
+            Builder.this.gameDemoMode = gameDemoMode;
+            return Builder.this;
+        }
+
+        public Builder isDeviceIDEnabled(boolean deviceIdEnabled) {
+            Builder.this.deviceIdEnabled = deviceIdEnabled;
             return Builder.this;
         }
 
@@ -1629,6 +1610,12 @@ public class InAppStoryManager {
          * @param userId (userId) value for user id. Can't be longer than 255 characters.
          * @return {@link Builder}
          */
+        public Builder userId(@NonNull String userId, String userSign) {
+            Builder.this.userId = userId;
+            Builder.this.userSign = userSign;
+            return Builder.this;
+        }
+
         public Builder userId(@NonNull String userId) {
             Builder.this.userId = userId;
             return Builder.this;
@@ -1679,7 +1666,19 @@ public class InAppStoryManager {
          * @return {@link InAppStoryManager}
          */
         public InAppStoryManager create() {
-            return new InAppStoryManager(Builder.this);
+            synchronized (lock) {
+                if (INSTANCE == null) {
+                    showELog(IAS_ERROR_TAG, "Method InAppStoryManager.init must be called from Application class");
+                    return null;
+                }
+            }
+            if (INSTANCE.core != null)
+                if (!WebViewUtils.isWebViewEnabled(INSTANCE.core)) {
+                    showELog(IAS_ERROR_TAG, "Can't find Chromium WebView on a device");
+                    return null;
+                }
+            INSTANCE.build(Builder.this);
+            return INSTANCE;
         }
     }
 }

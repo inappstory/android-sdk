@@ -2,55 +2,42 @@ package com.inappstory.sdk.stories.statistic;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.util.Log;
 
+import com.inappstory.sdk.core.IASCore;
+
+import java.util.HashSet;
 import java.util.Set;
 
 public class SharedPreferencesAPI {
-    public static void setContext(Context context) {
+    private final IASCore core;
 
-        synchronized (contextLock) {
-            SharedPreferencesAPI.context = context;
-        }
-    }
-
-    private static Context context;
-
-    public static boolean hasContext() {
-
-        synchronized (contextLock) {
-            return context != null;
-        }
+    public SharedPreferencesAPI(IASCore core) {
+        this.core = core;
     }
 
     private static final String SHARED_PREFERENCES_DEFAULT = "default_n";
 
 
-    public static SharedPreferences getDefaultPreferences() {
-        synchronized (contextLock) {
-            if (context == null) return null;
-            return context.getSharedPreferences(SHARED_PREFERENCES_DEFAULT, Context.MODE_PRIVATE);
-        }
+    private SharedPreferences getDefaultPreferences() {
+        return core.appContext().getApplicationContext()
+                .getSharedPreferences(SHARED_PREFERENCES_DEFAULT, Context.MODE_PRIVATE);
     }
 
     /**
      * Сохранение строки
      */
-    private static Object sharedPrefLock = new Object();
-    private static Object contextLock = new Object();
+    private final Object sharedPrefLock = new Object();
 
 
-    public static void saveString(final String key, final String value) {
-
-        synchronized (contextLock) {
-            if (context == null) return;
-        }
+    public void saveString(final String key, final String value) {
         new Thread(new Runnable() {
             @Override
             public void run() {
                 synchronized (sharedPrefLock) {
                     SharedPreferences.Editor editor = getDefaultPreferences().edit();
                     editor.putString(key, value);
-                    editor.apply();
+                    editor.commit();
                 }
             }
         }).start();
@@ -60,7 +47,7 @@ public class SharedPreferencesAPI {
     /**
      * Получение строки
      */
-    public static String getString(String key) {
+    public String getString(String key) {
         synchronized (sharedPrefLock) {
             SharedPreferences preferences = getDefaultPreferences();
             if (preferences == null) return null;
@@ -71,11 +58,7 @@ public class SharedPreferencesAPI {
     /**
      * Получение строки
      */
-    public static void removeString(String key) {
-
-        synchronized (contextLock) {
-            if (context == null) return;
-        }
+    public void removeString(String key) {
         synchronized (sharedPrefLock) {
             SharedPreferences.Editor editor = getDefaultPreferences().edit();
             editor.remove(key);
@@ -87,7 +70,7 @@ public class SharedPreferencesAPI {
     /**
      * Получение строки
      */
-    public static String getString(String key, String def) {
+    public String getString(String key, String def) {
         synchronized (sharedPrefLock) {
             SharedPreferences preferences = getDefaultPreferences();
             if (preferences == null) return null;
@@ -98,18 +81,15 @@ public class SharedPreferencesAPI {
     /**
      * Сохранение массива строк
      */
-    public static void saveStringSet(final String key, final Set<String> value) {
-
-        synchronized (contextLock) {
-            if (context == null) return;
-        }
+    public void saveStringSet(final String key, final Set<String> value) {
         new Thread(new Runnable() {
             @Override
             public void run() {
                 synchronized (sharedPrefLock) {
                     SharedPreferences.Editor editor = getDefaultPreferences().edit();
                     editor.putStringSet(key, value);
-                    editor.apply();
+                    boolean isCommitted = editor.commit();
+                    Log.e("saveStringSet", isCommitted + "");
                 }
             }
         }).start();
@@ -120,11 +100,13 @@ public class SharedPreferencesAPI {
     /**
      * Получение массива строк
      */
-    public static Set<String> getStringSet(String key) {
+    public Set<String> getStringSet(String key) {
         synchronized (sharedPrefLock) {
             SharedPreferences preferences = getDefaultPreferences();
             if (preferences == null) return null;
-            return preferences.getStringSet(key, null);
+            Set<String> resSet = preferences.getStringSet(key, null);
+            if (resSet != null) return new HashSet<>(resSet);
+            return null;
         }
     }
 
@@ -132,11 +114,7 @@ public class SharedPreferencesAPI {
     /**
      * Удаление значения по ключу
      */
-    public static void remove(final String key) {
-
-        synchronized (contextLock) {
-            if (context == null) return;
-        }
+    public void remove(final String key) {
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -147,14 +125,12 @@ public class SharedPreferencesAPI {
                 }
             }
         }).start();
-
-
     }
 
     /**
      * Очистка SharedPreferences
      */
-    public static void clear() {
+    public void clear() {
         synchronized (sharedPrefLock) {
             getDefaultPreferences().edit().clear().apply();
         }

@@ -1,7 +1,7 @@
 package com.inappstory.sdk.stories.utils;
 
 public interface ShowGoodsCallback {
-    void onPause();
-    void onResume(String widgetId);
-    void onEmptyResume(String widgetId);
+    void goodsIsOpened();
+    void goodsIsClosed(String widgetId);
+    void goodsIsCanceled(String widgetId);
 }

@@ -7,6 +7,7 @@
 
     <item name="ias_black_top" type="id"/>
     <item name="ias_buttons_panel" type="id"/>
+    <item name="ias_above_buttons_panel" type="id"/>
     <item name="ias_progress" type="id"/>
     <item name="ias_black_mask" type="id"/>
     <item name="ias_stories_view" type="id"/>
@@ -14,6 +15,11 @@
     <item name="ias_timeline" type="id"/>
     <item name="ias_reader_gradient" type="id"/>
     <item name="ias_close_button" type="id"/>
+    <item name="ias_dialog_container" type="id"/>
+    <item name="ias_outer_top_container" type="id"/>
     <item name="ias_black_bottom" type="id"/>
     <item name="ias_refresh_button" type="id"/>
+
+    <item name="ias_iam_reader_content" type="id"/>
+    <item name="ias_iam_reader_container" type="id"/>
 </resources>

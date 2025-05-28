@@ -1,7 +1,8 @@
 package com.inappstory.sdk.stories.ui.views;
 
-public interface IProgressLoaderView {
-    void setProgress(int progress, int max);
+import android.content.Context;
+import android.view.View;
 
-    void setIndeterminate(boolean indeterminate);
+public interface IProgressLoaderView extends IProgressLoader {
+    View getView(Context context);
 }

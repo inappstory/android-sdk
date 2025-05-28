@@ -1,21 +1,24 @@
 package com.inappstory.sdk.stories.ui.widgets.readerscreen.buttonspanel;
 
-import android.os.Build;
+import androidx.annotation.NonNull;
 
-import com.inappstory.sdk.InAppStoryManager;
-import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.api.IASCallbackType;
+import com.inappstory.sdk.core.api.UseIASCallback;
+import com.inappstory.sdk.core.data.IContentWithStatus;
+import com.inappstory.sdk.core.data.IReaderContent;
+import com.inappstory.sdk.core.ui.screens.ShareProcessHandler;
 import com.inappstory.sdk.inner.share.InnerShareData;
-import com.inappstory.sdk.network.NetworkCallback;
-import com.inappstory.sdk.network.NetworkClient;
-import com.inappstory.sdk.network.Response;
+import com.inappstory.sdk.network.callbacks.NetworkCallback;
+import com.inappstory.sdk.network.models.Response;
+import com.inappstory.sdk.share.IShareCompleteListener;
+import com.inappstory.sdk.stories.api.models.ContentIdWithIndex;
+import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.ShareObject;
-import com.inappstory.sdk.stories.api.models.Story;
-import com.inappstory.sdk.stories.callbacks.CallbackManager;
-import com.inappstory.sdk.stories.statistic.ProfilingManager;
-import com.inappstory.sdk.stories.statistic.StatisticManager;
-import com.inappstory.sdk.stories.ui.ScreensManager;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickOnShareStoryCallback;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.FavoriteStoryCallback;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.LikeDislikeStoryCallback;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPageManager;
-import com.inappstory.sdk.utils.StringsUtils;
 
 import java.lang.reflect.Type;
 
@@ -26,26 +29,34 @@ public class ButtonsPanelManager {
 
     int storyId;
 
-    public ReaderPageManager getParentManager() {
-        return parentManager;
+    private final IASCore core;
+
+    public ReaderPageManager getPageManager() {
+        return pageManager;
     }
 
-    public void setParentManager(ReaderPageManager parentManager) {
-        this.parentManager = parentManager;
+    public void setPageManager(ReaderPageManager pageManager) {
+        this.pageManager = pageManager;
     }
 
     public void unlockShareButton() {
         if (panel != null && panel.share != null) {
-            panel.share.setClickable(true);
-            panel.share.setEnabled(true);
+            panel.share.post(new Runnable() {
+                @Override
+                public void run() {
+                    panel.share.setClickable(true);
+                    panel.share.setEnabled(true);
+                }
+            });
         }
     }
 
-    public ButtonsPanelManager(ButtonsPanel panel) {
+    public ButtonsPanelManager(ButtonsPanel panel, IASCore core) {
+        this.core = core;
         this.panel = panel;
     }
 
-    ReaderPageManager parentManager;
+    ReaderPageManager pageManager;
 
     public void likeClick(ButtonClickCallback callback) {
         likeDislikeClick(callback, true);
@@ -55,79 +66,71 @@ public class ButtonsPanelManager {
         likeDislikeClick(callback, false);
     }
 
-    private void likeDislikeClick(final ButtonClickCallback callback, boolean like) {
-        if (InAppStoryManager.isNull()) return;
-        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId, parentManager.getStoryType());
+    private void likeDislikeClick(final ButtonClickCallback callback, final boolean like) {
+
+        final IContentWithStatus content =
+                core.contentHolder().getByIdAndType(
+                        storyId, pageManager.getViewContentType()
+                );
+        if (!(content instanceof IReaderContent)) return;
+        final IReaderContent story = (IReaderContent) content;
         final int val;
-        if (like) {
-            if (story.liked()) {
-                if (CallbackManager.getInstance().getLikeDislikeStoryCallback() != null) {
-                    CallbackManager.getInstance().getLikeDislikeStoryCallback().likeStory(
-                            story.id, StringsUtils.getNonNull(story.statTitle),
-                            StringsUtils.getNonNull(story.tags), story.getSlidesCount(),
-                            story.lastIndex, false);
+        ContentIdWithIndex idWithIndex = pageManager.getParentManager().getByIdAndIndex(storyId);
+        core.callbacksAPI().useCallback(
+                IASCallbackType.LIKE_DISLIKE,
+                new UseIASCallback<LikeDislikeStoryCallback>() {
+                    @Override
+                    public void use(@NonNull LikeDislikeStoryCallback callback) {
+                        if (like) {
+                            callback.likeStory(
+                                    pageManager.getSlideData(story),
+                                    story.like() != 1
+                            );
+                        } else {
+                            callback.dislikeStory(
+                                    pageManager.getSlideData(story),
+                                    story.like() != -1
+                            );
+                        }
+                    }
                 }
-                val = 0;
-            } else {
-                if (CallbackManager.getInstance().getLikeDislikeStoryCallback() != null) {
-                    CallbackManager.getInstance().getLikeDislikeStoryCallback().likeStory(
-                            story.id, StringsUtils.getNonNull(story.statTitle),
-                            StringsUtils.getNonNull(story.tags), story.getSlidesCount(),
-                            story.lastIndex, true);
-                }
-                StatisticManager.getInstance().sendLikeStory(story.id, story.lastIndex,
-                        parentManager != null ? parentManager.getFeedId() : null);
-                val = 1;
-            }
+        );
+        if (like && story.like() != 1) {
+            core.statistic().storiesV2().sendLikeStory(idWithIndex.id(), idWithIndex.index(),
+                    pageManager != null ? pageManager.getFeedId() : null);
+
+            val = 1;
+        } else if (!like && story.like() != -1) {
+            core.statistic().storiesV2().sendDislikeStory(idWithIndex.id(), idWithIndex.index(),
+                    pageManager != null ? pageManager.getFeedId() : null);
+            val = -1;
         } else {
-            if (story.disliked()) {
-                if (CallbackManager.getInstance().getLikeDislikeStoryCallback() != null) {
-                    CallbackManager.getInstance().getLikeDislikeStoryCallback().dislikeStory(
-                            story.id, StringsUtils.getNonNull(story.statTitle),
-                            StringsUtils.getNonNull(story.tags), story.getSlidesCount(),
-                            story.lastIndex, false);
-                }
-                val = 0;
-            } else {
-                if (CallbackManager.getInstance().getLikeDislikeStoryCallback() != null) {
-                    CallbackManager.getInstance().getLikeDislikeStoryCallback().dislikeStory(
-                            story.id, StringsUtils.getNonNull(story.statTitle),
-                            StringsUtils.getNonNull(story.tags), story.getSlidesCount(),
-                            story.lastIndex, true);
-                }
-                StatisticManager.getInstance().sendDislikeStory(story.id, story.lastIndex,
-                        parentManager != null ? parentManager.getFeedId() : null);
-                val = -1;
-            }
+            val = 0;
         }
         final String likeUID =
-                ProfilingManager.getInstance().addTask("api_like");
-        NetworkClient.getApi().storyLike(Integer.toString(storyId), val).enqueue(
+                core.statistic().profiling().addTask("api_like");
+        core.network().enqueue(
+                core.network().getApi().storyLike(
+                        Integer.toString(storyId),
+                        val
+                ),
                 new NetworkCallback<Response>() {
                     @Override
                     public void onSuccess(Response response) {
-                        ProfilingManager.getInstance().setReady(likeUID);
-                        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId, parentManager.getStoryType());
-                        if (story != null)
-                            story.like = val;
+                        core.statistic().profiling().setReady(likeUID);
+                        core.contentHolder().like(
+                                storyId, pageManager.getViewContentType(), val
+                        );
                         if (callback != null)
                             callback.onSuccess(val);
                     }
 
 
                     @Override
-                    public void onError(int code, String message) {
-
-                        ProfilingManager.getInstance().setReady(likeUID);
-                        super.onError(code, message);
+                    public void errorDefault(String message) {
+                        core.statistic().profiling().setReady(likeUID);
                         if (callback != null)
                             callback.onError();
-                    }
-
-                    @Override
-                    public void onTimeout() {
-                        super.onTimeout();
-                        ProfilingManager.getInstance().setReady(likeUID);
                     }
 
                     @Override
@@ -143,66 +146,72 @@ public class ButtonsPanelManager {
     }
 
     public void favoriteClick(final ButtonClickCallback callback) {
-        if (InAppStoryManager.isNull()) return;
-        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId, parentManager.getStoryType());
-        final boolean val = story.favorite;
-        if (!story.favorite)
-            StatisticManager.getInstance().sendFavoriteStory(story.id, story.lastIndex,
-                    parentManager != null ? parentManager.getFeedId() : null);
-        if (CallbackManager.getInstance().getFavoriteStoryCallback() != null) {
-            CallbackManager.getInstance().getFavoriteStoryCallback().favoriteStory(
-                    story.id, StringsUtils.getNonNull(story.statTitle),
-                    StringsUtils.getNonNull(story.tags), story.getSlidesCount(),
-                    story.lastIndex, !story.favorite);
-        }
-        final String favUID = ProfilingManager.getInstance().addTask("api_favorite");
-        NetworkClient.getApi().storyFavorite(Integer.toString(storyId), val ? 0 : 1).enqueue(
+        final ContentType contentType = pageManager.getViewContentType();
+        final IContentWithStatus content =
+                core.contentHolder().getByIdAndType(
+                        storyId, pageManager.getViewContentType()
+                );
+        if (!(content instanceof IReaderContent)) return;
+        final IReaderContent story = (IReaderContent) content;
+        ContentIdWithIndex idWithIndex = pageManager.getParentManager().getByIdAndIndex(storyId);
+        final boolean val = story.favorite();
+        if (!val)
+            core.statistic().storiesV2().sendFavoriteStory(idWithIndex.id(), idWithIndex.index(),
+                    pageManager != null ? pageManager.getFeedId() : null);
+        core.callbacksAPI().useCallback(
+                IASCallbackType.FAVORITE,
+                new UseIASCallback<FavoriteStoryCallback>() {
+                    @Override
+                    public void use(@NonNull FavoriteStoryCallback callback) {
+                        callback.favoriteStory(
+                                pageManager.getSlideData(story),
+                                !val
+                        );
+                    }
+                });
+        final String favUID = core.statistic().profiling().addTask("api_favorite");
+        core.network().enqueue(
+                core.network().getApi().storyFavorite(
+                        Integer.toString(storyId),
+                        val ? 0 : 1
+                ),
                 new NetworkCallback<Response>() {
                     @Override
                     public void onSuccess(Response response) {
-                        ProfilingManager.getInstance().setReady(favUID);
-                        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId, parentManager.getStoryType());
+                        core.statistic().profiling().setReady(favUID);
                         boolean res = !val;
-                        if (story != null)
-                            story.favorite = res;
+                        core.contentHolder().favorite(storyId, contentType, res);
                         if (callback != null)
                             callback.onSuccess(res ? 1 : 0);
-                        if (InAppStoryService.isNotNull())
-                            InAppStoryService.getInstance().getListReaderConnector().storyFavorite(storyId, res);
+                        core.inAppStoryService()
+                                .getListReaderConnector().storyFavorite(storyId, res);
                     }
 
-                    @Override
-                    public void onError(int code, String message) {
 
-                        ProfilingManager.getInstance().setReady(favUID);
-                        super.onError(code, message);
+                    @Override
+                    public void errorDefault(String message) {
+                        core.statistic().profiling().setReady(favUID);
                         if (callback != null)
                             callback.onError();
-                    }
-
-                    @Override
-                    public void onTimeout() {
-                        super.onTimeout();
-
-                        ProfilingManager.getInstance().setReady(favUID);
                     }
 
                     @Override
                     public Type getType() {
                         return null;
                     }
-                });
+                }
+        );
     }
 
     ButtonsPanel panel;
 
     public void soundClick() {
-        parentManager.changeSoundStatus();
+        pageManager.changeSoundStatus();
     }
 
     public void refreshSoundStatus() {
         if (panel != null)
-            panel.refreshSoundStatus();
+            panel.refreshSoundStatus(core);
     }
 
     public abstract static class ShareButtonClickCallback implements ButtonClickCallback {
@@ -210,62 +219,66 @@ public class ButtonsPanelManager {
     }
 
     public void shareClick(final ShareButtonClickCallback callback) {
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service == null || service.isShareProcess())
-            return;
-        if (InAppStoryManager.isNull()) return;
-        final Story story = service.getDownloadManager().getStoryById(storyId, parentManager.getStoryType());
-        if (story == null) return;
-        final int slideIndex = story.lastIndex;
-        StatisticManager.getInstance().sendShareStory(story.id, slideIndex,
-                story.shareType(slideIndex),
-                parentManager != null ? parentManager.getFeedId() : null);
 
-        if (CallbackManager.getInstance().getClickOnShareStoryCallback() != null) {
-            CallbackManager.getInstance().getClickOnShareStoryCallback().shareClick(story.id, StringsUtils.getNonNull(story.statTitle),
-                    StringsUtils.getNonNull(story.tags), story.getSlidesCount(), slideIndex);
-        }
-        if (story.isScreenshotShare(slideIndex)) {
-            parentManager.screenshotShare();
+        final ShareProcessHandler shareProcessHandler = core.screensManager().getShareProcessHandler();
+        if (shareProcessHandler == null || shareProcessHandler.isShareProcess()) return;
+        ContentIdWithIndex idWithIndex = pageManager.getParentManager().getByIdAndIndex(storyId);
+        final IReaderContent story = core.contentHolder().readerContent().getByIdAndType(
+                storyId, pageManager.getViewContentType()
+        );
+        if (story == null) return;
+        final int slideIndex = idWithIndex.index();
+        final int shareType = story.shareType(slideIndex);
+        core.statistic().storiesV2().sendShareStory(storyId, slideIndex,
+                shareType,
+                pageManager != null ? pageManager.getFeedId() : null);
+        core.callbacksAPI().useCallback(
+                IASCallbackType.CLICK_SHARE,
+                new UseIASCallback<ClickOnShareStoryCallback>() {
+                    @Override
+                    public void use(@NonNull ClickOnShareStoryCallback callback) {
+                        callback.shareClick(
+                                pageManager.getSlideData(story)
+                        );
+                    }
+                });
+        if (shareType == 1) {
+            pageManager.screenshotShare();
             return;
         }
-        service.isShareProcess(true);
+        shareProcessHandler.isShareProcess(true);
         if (callback != null)
             callback.onClick();
-        final String shareUID = ProfilingManager.getInstance().addTask("api_share");
-        NetworkClient.getApi().share(Integer.toString(storyId), null)
-                .enqueue(new NetworkCallback<ShareObject>() {
+        final String shareUID = core.statistic().profiling().addTask("api_share");
+        core.network().enqueue(
+                core.network().getApi().share(
+                        Integer.toString(storyId),
+                        null
+                ),
+                new NetworkCallback<ShareObject>() {
                     @Override
                     public void onSuccess(ShareObject response) {
-                        ProfilingManager.getInstance().setReady(shareUID);
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
-                            ScreensManager.getInstance().setTempShareId(null);
-                            ScreensManager.getInstance().setTempShareStoryId(storyId);
-                        } else {
-                            ScreensManager.getInstance().setOldTempShareId(null);
-                            ScreensManager.getInstance().setOldTempShareStoryId(storyId);
-                        }
+                        core.statistic().profiling().setReady(shareUID);
                         InnerShareData shareData = new InnerShareData();
                         shareData.text = response.getUrl();
-                        shareData.payload = story.getSlideEventPayload(slideIndex);
-                        if (parentManager != null) {
-                            parentManager.showShareView(shareData);
+                        shareData.payload = story.slideEventPayload(slideIndex);
+                        if (pageManager != null) {
+                            pageManager.showShareView(shareData);
                         }
                     }
 
                     @Override
-                    public void onError(int code, String message) {
-                        super.onError(code, message);
+                    public void errorDefault(String message) {
                         if (callback != null)
                             callback.onError();
-                        InAppStoryService service = InAppStoryService.getInstance();
-                        if (service != null) service.isShareProcess(false);
+                        shareProcessHandler.isShareProcess(false);
                     }
 
                     @Override
                     public Type getType() {
                         return ShareObject.class;
                     }
-                });
+                }
+        );
     }
 }

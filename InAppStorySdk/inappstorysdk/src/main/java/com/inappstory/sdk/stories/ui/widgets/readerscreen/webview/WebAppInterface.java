@@ -1,34 +1,36 @@
 package com.inappstory.sdk.stories.ui.widgets.readerscreen.webview;
 
-import android.content.Context;
-import android.util.Log;
+import static com.inappstory.sdk.utils.DebugUtils.getMethodName;
+
 import android.webkit.JavascriptInterface;
 
 import com.inappstory.sdk.InAppStoryManager;
-import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.StoryLoadedData;
+import com.inappstory.sdk.stories.api.models.UpdateTimelineData;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.StoriesViewManager;
-import com.inappstory.sdk.stories.utils.KeyValueStorage;
 
 public class WebAppInterface {
-    StoriesViewManager manager;
+    private final StoriesViewManager manager;
+    private final IASCore core;
+
+    private final Object lock = new Object();
 
     /**
      * Instantiate the interface and set the context
      */
-    WebAppInterface(Context c, StoriesViewManager manager) {
-        //mContext = c;
+    WebAppInterface(
+            StoriesViewManager manager,
+            IASCore core
+    ) {
         this.manager = manager;
+        this.core = core;
     }
 
-    static String getMethodName() {
-        final StackTraceElement[] ste = Thread.currentThread().getStackTrace();
-        return ste[4].getMethodName();
-    }
 
     private void logMethod(String payload) {
-
         InAppStoryManager.showDLog("JS_method_test",
                 manager.storyId + " " + getMethodName() + " " + payload);
     }
@@ -38,10 +40,27 @@ public class WebAppInterface {
      */
     @JavascriptInterface
     public void storyClick(String payload) {
-        manager.storyClick(payload);
+        manager.slideClick(payload);
         logMethod(payload);
     }
 
+    @JavascriptInterface
+    public void updateTimeline(String data) {
+        if (data != null) {
+            UpdateTimelineData updateTimelineData = JsonParser.fromJson(data, UpdateTimelineData.class);
+            manager.updateTimeline(updateTimelineData);
+        }
+        logMethod(data);
+    }
+
+    @JavascriptInterface
+    public void storyLoadingFailed(String data) {
+        if (data != null) {
+            StoryLoadedData loadedData = JsonParser.fromJson(data, StoryLoadedData.class);
+            manager.slideLoadError(loadedData.index);
+        }
+        logMethod("");
+    }
 
     @JavascriptInterface
     public void storyShowSlide(int index) {
@@ -66,11 +85,10 @@ public class WebAppInterface {
         manager.sendApiRequest(data);
     }
 
+
     @JavascriptInterface
-    public void openGameReader(String gameFile, String coverFile,
-                               String initCode, String gameResources, String options) {
-        manager.openGameReaderWithoutGameCenter(gameFile, coverFile, initCode, gameResources, options);
-        logMethod(gameFile);
+    public void vibrate(int[] vibratePattern) {
+        manager.vibrate(vibratePattern);
     }
 
     @JavascriptInterface
@@ -78,14 +96,6 @@ public class WebAppInterface {
         manager.openGameReaderFromGameCenter(gameInstanceId);
         logMethod(gameInstanceId);
     }
-
-    @JavascriptInterface
-    public void openGameReader(String gameFile, String coverFile,
-                               String initCode, String gameResources) {
-        manager.openGameReaderWithoutGameCenter(gameFile, coverFile, initCode, gameResources, null);
-        logMethod(gameFile);
-    }
-
 
     @JavascriptInterface
     public void setAudioManagerMode(String mode) {
@@ -107,20 +117,17 @@ public class WebAppInterface {
     }
 
     @JavascriptInterface
-    public void resetTimers() {
-        manager.resetTimers();
-        logMethod("");
-    }
-
-    @JavascriptInterface
     public void storyShowNextSlide(long delay) {
-        if (delay != 0) {
-            InAppStoryManager.showDLog("jsDuration", delay + " showNext");
-            manager.restartStoryWithDuration(delay);
-        } else {
+        if (delay == 0) {
             manager.changeIndex(manager.index + 1);
         }
         logMethod("" + delay);
+    }
+
+    @JavascriptInterface
+    public void storyShowNextSlide() {
+        manager.changeIndex(manager.index + 1);
+        logMethod("");
     }
 
     @JavascriptInterface
@@ -133,7 +140,6 @@ public class WebAppInterface {
     public void storyStarted() {
         manager.storyStartedEvent();
         manager.pageFinished();
-
         logMethod("");
     }
 
@@ -141,14 +147,6 @@ public class WebAppInterface {
     public void storyStarted(double startTime) {
         manager.storyStartedEvent();
         manager.pageFinished();
-        logMethod("" + startTime);
-    }
-
-
-    @JavascriptInterface
-    public void storyResumed(double startTime) {
-        manager.storyResumedEvent(startTime);
-
         logMethod("" + startTime);
     }
 
@@ -176,26 +174,19 @@ public class WebAppInterface {
             String data,
             String eventData
     ) {
-        manager.sendStoryWidgetEvent(name, data, eventData);
+        manager.sendStoryWidgetEvent(name, data, eventData, false);
         logMethod(name + " " + data + " " + eventData);
-    }
-
-    @JavascriptInterface
-    public void storyLoadingFailed(String data) {
-        if (data != null) {
-            StoryLoadedData loadedData = JsonParser.fromJson(data, StoryLoadedData.class);
-            manager.slideLoadError(loadedData.index);
-        }
-        logMethod("");
     }
 
     @JavascriptInterface
     public void storyStatisticEvent(
             String name,
-            String data
+            String data,
+            String eventData,
+            boolean forceEnableStatisticV2
     ) {
-        manager.sendStoryWidgetEvent(name, data, data);
-        logMethod(name + " " + data);
+        manager.sendStoryWidgetEvent(name, data, eventData, forceEnableStatisticV2);
+        logMethod(name + " " + data + " " + eventData + " " + forceEnableStatisticV2);
     }
 
     @JavascriptInterface
@@ -215,18 +206,36 @@ public class WebAppInterface {
         logMethod("");
     }
 
+
     @JavascriptInterface
-    public void storyPauseUI() {
-        manager.pauseUI();
+    public void storyUnfreezeUI() {
+        manager.unfreezeUI();
         logMethod("");
     }
 
     @JavascriptInterface
-    public void storyResumeUI() {
-        manager.resumeUI();
+    public void disableVerticalSwipeGesture() {
+        manager.swipeVerticalGestureEnabled(false);
         logMethod("");
     }
 
+    @JavascriptInterface
+    public void enableVerticalSwipeGesture() {
+        manager.swipeVerticalGestureEnabled(true);
+        logMethod("");
+    }
+
+    @JavascriptInterface
+    public void disableBackpress() {
+        manager.backPressEnabled(false);
+        logMethod("");
+    }
+
+    @JavascriptInterface
+    public void enableBackpress() {
+        manager.backPressEnabled(true);
+        logMethod("");
+    }
 
     @JavascriptInterface
     public void storySendData(String data) {
@@ -236,28 +245,36 @@ public class WebAppInterface {
 
     @JavascriptInterface
     public void storySetLocalData(String data, boolean sendToServer) {
-        synchronized (manager) {
+        synchronized (lock) {
             manager.storySetLocalData(data, sendToServer);
             logMethod(data + " " + sendToServer);
         }
     }
 
+    @JavascriptInterface
+    public void closeStory(String reason) {
+        manager.closeStory(reason.toLowerCase());
+        logMethod(reason);
+    }
 
     @JavascriptInterface
     public String storyGetLocalData() {
-        synchronized (manager) {
-            String res = KeyValueStorage.getString("story" + manager.storyId
-                    + "__" + InAppStoryService.getInstance().getUserId());
+        synchronized (lock) {
+            String res = core.keyValueStorage().getString("story" + manager.storyId
+                    + "__" + ((IASDataSettingsHolder) core.settingsAPI()).userId());
             logMethod(res != null ? res : "");
             return res == null ? "" : res;
         }
     }
 
+    @JavascriptInterface
+    public void shareSlideScreenshotCb(String shareId, boolean result) {
+        manager.screenshotShareCallback(shareId);
+    }
+
 
     @JavascriptInterface
     public void defaultTap(String val) {
-
-
         logMethod(val);
     }
 }

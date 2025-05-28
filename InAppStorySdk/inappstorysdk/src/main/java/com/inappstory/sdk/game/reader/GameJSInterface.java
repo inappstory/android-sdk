@@ -1,23 +1,24 @@
 package com.inappstory.sdk.game.reader;
 
-import android.content.Context;
+import static com.inappstory.sdk.utils.DebugUtils.getMethodName;
+
 import android.webkit.JavascriptInterface;
 
-import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
 
 
 public class GameJSInterface {
-    Context mContext;
     GameManager manager;
-
+    private final IASCore core;
 
     /**
      * Instantiate the interface and set the context
      */
-    GameJSInterface(Context c, GameManager gameManager) {
-
-        mContext = c;
+    GameJSInterface(GameManager gameManager) {
+        this.core = gameManager.core();
         this.manager = gameManager;
     }
 
@@ -32,13 +33,13 @@ public class GameJSInterface {
     }
 
     @JavascriptInterface
-    public void storySetLocalData(int storyId, String data, boolean sendToServer) {
-        manager.storySetData(data, sendToServer);
+    public void openUrl(String data) {
+        manager.openUrl(data);
     }
 
     @JavascriptInterface
-    public void openUrl(String data) {
-        manager.openUrl(data);
+    public void vibrate(int[] vibratePattern) {
+        manager.vibrate(vibratePattern);
     }
 
     @JavascriptInterface
@@ -48,36 +49,84 @@ public class GameJSInterface {
 
     @JavascriptInterface
     public String gameInstanceGetLocalData(String gameInstanceId) {
-        if (InAppStoryService.isNull()) return "";
+        IASDataSettingsHolder settingsHolder =
+                (IASDataSettingsHolder) core.settingsAPI();
         String id = gameInstanceId;
         if (id == null) id = manager.gameCenterId;
         if (id == null) return "";
-        String res = KeyValueStorage.getString("gameInstance_" + id
-                + "__" + InAppStoryService.getInstance().getUserId());
+        String res = core.keyValueStorage().getString("gameInstance_" + id
+                + "__" + settingsHolder.userId());
         return res == null ? "" : res;
     }
 
     @JavascriptInterface
-    public String storyGetLocalData(int storyId) {
-        if (InAppStoryService.isNull()) return "";
-        String res = KeyValueStorage.getString("story" + storyId
-                + "__" + InAppStoryService.getInstance().getUserId());
-        return res == null ? "" : res;
+    public void event(
+            String name,
+            String data
+    ) {
+        manager.jsEvent(name, data);
+        logMethod("name:" + name + " | data:" + data);
     }
 
     @JavascriptInterface
-    public void gameLoaded(String data) {
-        manager.gameLoaded(data);
+    public void gameShouldForegroundCallback(String data) {
+        manager.gameShouldForegroundCallback(data);
+        logMethod(data);
+    }
+
+
+    @JavascriptInterface
+    public void gameLoaded() {
+        manager.gameLoaded();
+        logMethod("");
+    }
+
+    private void logMethod(String payload) {
+        InAppStoryManager.showDLog("JS_game_method_test",
+                manager.gameCenterId + " " + getMethodName() + " " + payload);
+    }
+
+    @JavascriptInterface
+    public void gameLoadFailed(String reason, boolean canTryReload) {
+        manager.gameLoadFailed(reason, canTryReload);
+        logMethod("reason:" + reason + " | canTryReload:" + canTryReload);
+    }
+
+    @JavascriptInterface
+    public void reloadGameReader() {
+        manager.clearTries();
+        manager.reloadGame();
+        logMethod("null");
+    }
+
+    @JavascriptInterface
+    public void initUserAccelerationSensor(String options) {
+        manager.initUserAccelerationSensor(options);
+        logMethod(options);
+    }
+
+    @JavascriptInterface
+    public void startUserAccelerationSensor() {
+        manager.startUserAccelerationSensor();
+        logMethod("null");
+    }
+
+    @JavascriptInterface
+    public void stopUserAccelerationSensor() {
+        manager.stopUserAccelerationSensor();
+        logMethod("null");
     }
 
     @JavascriptInterface
     public void sendApiRequest(String data) {
         manager.sendApiRequest(data);
+        logMethod(data);
     }
 
     @JavascriptInterface
     public void gameComplete(String data) {
         manager.gameCompleted(data, null, null);
+        logMethod(data);
     }
 
     @JavascriptInterface
@@ -86,13 +135,15 @@ public class GameJSInterface {
     }
 
     @JavascriptInterface
-    public void gameComplete(String data, String eventData, String deeplink) {
-        manager.gameCompleted(data, deeplink, eventData);
+    public void gameComplete(String data, String eventData, String urlOrOptions) {
+        manager.gameCompleted(data, urlOrOptions, eventData);
+        logMethod("data:" + data + " | deeplink:" + urlOrOptions + " | eventData:" + eventData);
     }
 
     @JavascriptInterface
     public void gameStatisticEvent(String name, String data) {
         manager.sendGameStat(name, data);
+        logMethod("name:" + name + " | data:" + data);
     }
 
     @JavascriptInterface
@@ -108,5 +159,16 @@ public class GameJSInterface {
     @JavascriptInterface
     public void share(String id, String data) {
         manager.shareData(id, data);
+    }
+
+
+    @JavascriptInterface
+    public void openFilePicker(String data) {
+        manager.openFilePicker(data);
+    }
+
+    @JavascriptInterface
+    public boolean hasFilePicker() {
+        return manager.hasFilePicker();
     }
 }
