@@ -1074,10 +1074,7 @@ public class InAppStoryManager implements IASBackPressHandler {
                     );
                 } else {
                     core.settingsAPI().inAppStorySettings(
-                            settings.userId(
-                                    "",
-                                    null
-                            )
+                            settings
                     );
                 }
             }

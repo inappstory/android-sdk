@@ -299,7 +299,7 @@ public class ReaderManager {
             core.statistic().storiesV1(getSessionId(), new GetStatisticV1Callback() {
                 @Override
                 public void get(@NonNull IASStatisticStoriesV1 manager) {
-                    manager.addLinkOpenStatistic(storyId, slideIndex);
+                    manager.addLinkOpenStatistic(ReaderManager.this.currentStoryId, slideIndex);
                 }
             });
         for (int i = 0; i < storiesIds.size(); i++) {
