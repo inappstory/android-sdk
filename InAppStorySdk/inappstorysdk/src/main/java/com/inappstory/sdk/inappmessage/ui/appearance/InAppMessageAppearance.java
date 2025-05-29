@@ -4,4 +4,5 @@ import java.io.Serializable;
 
 public interface InAppMessageAppearance extends Serializable {
     String backgroundColor();
+    InAppMessageBackground background();
 }

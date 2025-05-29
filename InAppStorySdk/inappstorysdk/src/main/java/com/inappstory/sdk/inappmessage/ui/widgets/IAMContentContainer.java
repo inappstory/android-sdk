@@ -64,7 +64,7 @@ public abstract class IAMContentContainer<T extends InAppMessageAppearance> exte
         double contrast2 = ColorUtils.getColorsContrast(backgroundColor, Color.WHITE);
         loaderContainer = new FrameLayout(getContext());
         loaderContainer.setClickable(true);
-        loaderContainer.setBackgroundColor(backgroundColor);
+        loaderContainer.setBackgroundColor(Color.TRANSPARENT);
         loaderContainer.setVisibility(GONE);
         loaderContainer.setLayoutParams(
                 new FrameLayout.LayoutParams(

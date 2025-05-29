@@ -409,8 +409,9 @@ public class SessionManager {
                             @Override
                             public void onSuccess(SessionResponse response) {
                                 core.statistic().profiling().setReady(sessionCloseUID, true);
-                                if (changeUserIdOrLocale)
+                                if (changeUserIdOrLocale) {
                                     core.inAppStoryService().getListReaderConnector().userIdChanged();
+                                }
                             }
 
                             @Override
@@ -421,8 +422,9 @@ public class SessionManager {
                             @Override
                             public void errorDefault(String message) {
                                 core.statistic().profiling().setReady(sessionCloseUID);
-                                if (changeUserIdOrLocale)
+                                if (changeUserIdOrLocale) {
                                     core.inAppStoryService().getListReaderConnector().userIdChanged();
+                                }
                             }
                         }
                 );

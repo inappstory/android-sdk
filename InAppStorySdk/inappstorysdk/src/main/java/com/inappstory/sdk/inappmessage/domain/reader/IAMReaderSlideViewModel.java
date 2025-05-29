@@ -119,7 +119,7 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
     public String modifyContent(String content) {
         String backgroundColor = readerViewModel.getCurrentState().appearance.backgroundColor();
         return content.replace("<head>",
-                "<head>" + "<style> html { background: " + backgroundColor + " !important; } </style>");
+                "<head>" + "<style> html { background: #00000000 !important; } </style>");
     }
 
     public void slideClick(String payload) {

@@ -1,6 +1,7 @@
 package com.inappstory.sdk.inappmessage.ui.appearance.impl;
 
 
+import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageBackground;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageFullscreenAppearance;
 import com.inappstory.sdk.utils.NumberUtils;
 
@@ -10,6 +11,7 @@ public class InAppMessageFullscreenSettings implements InAppMessageFullscreenApp
     private String backgroundColor;
     private Integer closeButtonPosition;
     private Integer animationType;
+    private InAppMessageBackground background;
 
     public InAppMessageFullscreenSettings() {
     }
@@ -19,6 +21,7 @@ public class InAppMessageFullscreenSettings implements InAppMessageFullscreenApp
         String closeButtonPositionKey = "close_button_position";
         String animationTypeKey = "animation_type";
         String backgroundColorKey = "background_color";
+        String backgroundKey = "background";
         NumberUtils numberUtils = new NumberUtils();
         if (appearance.containsKey(closeButtonPositionKey)) {
             closeButtonPosition = numberUtils.convertNumberToInt(appearance.get(closeButtonPositionKey));
@@ -28,6 +31,11 @@ public class InAppMessageFullscreenSettings implements InAppMessageFullscreenApp
         }
         if (appearance.containsKey(backgroundColorKey)) {
             backgroundColor = (String) appearance.get(backgroundColorKey);
+        }
+        if (appearance.containsKey(backgroundKey)) {
+            background = new InAppMessageBackgroundSettings(
+                    (Map<String, Object>) appearance.get(backgroundKey)
+            );
         }
     }
 
@@ -55,5 +63,10 @@ public class InAppMessageFullscreenSettings implements InAppMessageFullscreenApp
     @Override
     public String backgroundColor() {
         return backgroundColor != null ? backgroundColor : "#FFFFFF";
+    }
+
+    @Override
+    public InAppMessageBackground background() {
+        return background;
     }
 }

@@ -74,6 +74,7 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
         }
         final String currentUserId;
         final Locale currentLang;
+        final boolean sendStatistic;
         synchronized (settingsLock) {
             currentUserId = userId;
             if (currentUserId != null && currentUserId.equals(newUserId)) {
@@ -81,14 +82,17 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
             }
             userSign = newUserSign;
             currentLang = lang;
+            sendStatistic = this.sendStatistic;
             userId = newUserId;
         }
-        refreshSession(currentUserId, currentLang);
+        refreshSession(currentUserId, currentLang, sendStatistic, true);
     }
 
     private void refreshSession(
             final String currentUserId,
-            final Locale currentLang
+            final Locale currentLang,
+            final boolean sendStatistic,
+            final boolean refreshContent
     ) {
         final String sessionId = core.sessionManager().getSession().getSessionId();
         core.storiesListVMHolder().clear();
@@ -108,7 +112,7 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
                     core.contentLoader().inAppMessageDownloadManager().clearSlidesDownloader();
                     core.sessionManager().closeSession(
                             sendStatistic,
-                            true,
+                            refreshContent,
                             currentLang.toLanguageTag(),
                             currentUserId,
                             sessionId
@@ -129,15 +133,17 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
     public void setLang(final Locale newLang, final boolean changeLayoutDirection) {
         final Locale currentLang;
         final String currentUserId;
+        final boolean sendStatistic;
         if (newLang == null) return;
         synchronized (settingsLock) {
             if (lang.toLanguageTag().equals(newLang.toLanguageTag())) return;
             currentLang = lang;
             lang = newLang;
+            sendStatistic = this.sendStatistic;
             this.changeLayoutDirection = changeLayoutDirection;
             currentUserId = userId;
         }
-        refreshSession(currentUserId, currentLang);
+        refreshSession(currentUserId, currentLang, sendStatistic, true);
     }
 
     @Override
@@ -372,9 +378,11 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
     public void inAppStorySettings(IInAppStoryUserSettings settings) {
         final Locale currentLang;
         final String currentUserId;
+        final boolean sendStatistic;
         boolean needToReloadSession = false;
         synchronized (settingsLock) {
             currentLang = lang;
+            sendStatistic = this.sendStatistic;
             currentUserId = userId;
             if (settings.userId() != null) {
                 if (deviceId == null && settings.userId().isEmpty()) {
@@ -477,7 +485,7 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
             }
         }
         if (needToReloadSession) {
-            refreshSession(currentUserId, currentLang);
+            refreshSession(currentUserId, currentLang, sendStatistic, true);
         }
     }
 
@@ -636,8 +644,18 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
         return gameDemoMode;
     }
 
-    public void sendStatistic(boolean sendStatistic) {
-        this.sendStatistic = sendStatistic;
+    public void sendStatistic(boolean sendStatistic, boolean refreshContent) {
+        if (this.sendStatistic == sendStatistic) return;
+        final Locale currentLang;
+        final String currentUserId;
+        final boolean currentSendStatistic;
+        synchronized (settingsLock) {
+            currentSendStatistic = this.sendStatistic;
+            currentLang = lang;
+            currentUserId = userId;
+            this.sendStatistic = sendStatistic;
+        }
+        refreshSession(currentUserId, currentLang, currentSendStatistic, refreshContent);
     }
 
     private boolean sendStatistic = true;

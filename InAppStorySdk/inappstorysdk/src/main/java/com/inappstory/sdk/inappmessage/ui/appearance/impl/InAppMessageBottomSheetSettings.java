@@ -2,6 +2,7 @@ package com.inappstory.sdk.inappmessage.ui.appearance.impl;
 
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageBSLineAppearance;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageBackdrop;
+import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageBackground;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageBottomSheetAppearance;
 import com.inappstory.sdk.utils.NumberUtils;
 
@@ -27,6 +28,7 @@ public class InAppMessageBottomSheetSettings implements InAppMessageBottomSheetA
     private String backgroundColor;
     private InAppMessageBSLineAppearance lineAppearance;
     private InAppMessageBackdrop backdrop;
+    private InAppMessageBackground background;
 
     public InAppMessageBottomSheetSettings() {
     }
@@ -37,6 +39,7 @@ public class InAppMessageBottomSheetSettings implements InAppMessageBottomSheetA
         String cornerRadiusKey = "corner_radius";
         String lineAppearanceKey = "close_button";
         String backgroundColorKey = "background_color";
+        String backgroundKey = "background";
         String backdropKey = "backdrop";
         NumberUtils numberUtils = new NumberUtils();
         if (appearance.containsKey(contentRatioKey)) {
@@ -54,6 +57,11 @@ public class InAppMessageBottomSheetSettings implements InAppMessageBottomSheetA
         if (appearance.containsKey(backgroundColorKey)) {
             backgroundColor = (String) appearance.get(backgroundColorKey);
         }
+        if (appearance.containsKey(backgroundKey)) {
+            background = new InAppMessageBackgroundSettings(
+                    (Map<String, Object>) appearance.get(backgroundKey)
+            );
+        }
     }
 
     @Override
@@ -70,6 +78,11 @@ public class InAppMessageBottomSheetSettings implements InAppMessageBottomSheetA
     @Override
     public String backgroundColor() {
         return backgroundColor != null ? backgroundColor : "#FFFFFF";
+    }
+
+    @Override
+    public InAppMessageBackground background() {
+        return background;
     }
 
     @Override

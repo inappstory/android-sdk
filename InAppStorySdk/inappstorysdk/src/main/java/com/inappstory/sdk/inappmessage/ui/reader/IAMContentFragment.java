@@ -266,7 +266,7 @@ public class IAMContentFragment extends Fragment implements Observer<IAMReaderSl
                                 .backgroundColor()
                 );
             }
-            contentWebView.setBackgroundColor(backgroundColor);
+            contentWebView.setBackgroundColor(Color.argb(1, 255, 255, 255));
         }
     }
 

@@ -60,7 +60,7 @@ public class FullscreenContentContainer extends IAMContentContainer<InAppMessage
         int backgroundColor = ColorUtils.parseColorRGBA(
                 appearance.backgroundColor()
         );
-        content.setBackgroundColor(backgroundColor);
+        content.setBackground(appearance.background().getBackgroundDrawable());
         generateLoader(backgroundColor);
         container.addView(loaderContainer);
         switch (appearance.closeButtonPosition()) {
