@@ -18,3 +18,4 @@
 /.idea/jarRepositories.xml
 /examples/
 /.idea/deploymentTargetDropDown.xml
+/settings.gradle

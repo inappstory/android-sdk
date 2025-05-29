@@ -295,13 +295,15 @@ public class ReaderManager {
     public void showSingleStory(final int storyId, final int slideIndex) {
         final StoriesContentFragment host = getHost();
         if (host == null) return;
-        if (contentType == ContentType.STORY)
+        if (contentType == ContentType.STORY) {
+            final int currentStId = currentStoryId;
             core.statistic().storiesV1(getSessionId(), new GetStatisticV1Callback() {
                 @Override
                 public void get(@NonNull IASStatisticStoriesV1 manager) {
-                    manager.addLinkOpenStatistic(ReaderManager.this.currentStoryId, slideIndex);
+                    manager.addLinkOpenStatistic(currentStId, slideIndex);
                 }
             });
+        }
         for (int i = 0; i < storiesIds.size(); i++) {
             final int tempIndex = i;
             if (storiesIds.get(tempIndex).id() == storyId) {
