@@ -397,7 +397,8 @@ public class ContactDialogFragment extends Fragment implements IASBackPressHandl
         FrameLayout.LayoutParams dialogAreaParams = new FrameLayout.LayoutParams(dialogWidth, WRAP_CONTENT);
         int topMargin = (int) (fullHeight * startedCenterStructure.y / 100 - dialogHeight / 2);
         int leftMargin = (int) (fullWidth * startedCenterStructure.x / 100 - dialogWidth / 2);
-        dialogAreaParams.setMargins(leftMargin, topMargin, 0, 0);
+        dialogAreaParams.setMargins(0, topMargin, 0, 0);
+        dialogAreaParams.setMarginStart(leftMargin);
         dialogArea.setLayoutParams(dialogAreaParams);
         buttonText.setPaddingRelative(
                 getSize(dialogStructure.configV2.main.button.padding.left),
