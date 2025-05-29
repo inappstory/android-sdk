@@ -21,7 +21,7 @@ public interface IASDataSettings {
     void gameDemoMode(boolean gameDemoMode);
     void setLang(Locale lang, boolean changeLayoutDirection);
     void isSoundOn(boolean isSoundOn);
-    void sendStatistic(boolean sendStatistic, boolean refreshContent);
+    void sendStatistic(boolean sendStatistic);
     void switchSoundOn();
     void setPlaceholders(@NonNull Map<String, String> newPlaceholders);
     void setImagePlaceholders(@NonNull Map<String, ImagePlaceholderValue> newPlaceholders);

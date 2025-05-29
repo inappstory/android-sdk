@@ -854,11 +854,11 @@ public class InAppStoryManager implements IASBackPressHandler {
 
     private boolean sendStatistic = true;
 
-    private void sendStatistic(final boolean sendStatistic, final boolean refreshContent) {
+    private void sendStatistic(final boolean sendStatistic) {
         useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-                core.settingsAPI().sendStatistic(sendStatistic, refreshContent);
+                core.settingsAPI().sendStatistic(sendStatistic);
             }
         });
         InAppStoryManager.this.sendStatistic = sendStatistic;

@@ -644,7 +644,8 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
         return gameDemoMode;
     }
 
-    public void sendStatistic(boolean sendStatistic, boolean refreshContent) {
+    @Override
+    public void sendStatistic(boolean sendStatistic) {
         if (this.sendStatistic == sendStatistic) return;
         final Locale currentLang;
         final String currentUserId;
@@ -655,7 +656,7 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
             currentUserId = userId;
             this.sendStatistic = sendStatistic;
         }
-        refreshSession(currentUserId, currentLang, currentSendStatistic, refreshContent);
+        refreshSession(currentUserId, currentLang, currentSendStatistic, true);
     }
 
     private boolean sendStatistic = true;

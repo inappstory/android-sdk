@@ -99,11 +99,11 @@ public class IASSettingsExternalAPIImpl implements IASDataSettings {
     }
 
     @Override
-    public void sendStatistic(final boolean sendStatistic, final boolean refreshContent) {
+    public void sendStatistic(final boolean sendStatistic) {
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-                core.settingsAPI().sendStatistic(sendStatistic, refreshContent);
+                core.settingsAPI().sendStatistic(sendStatistic);
             }
         });
     }
