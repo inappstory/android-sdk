@@ -2,6 +2,7 @@ package com.inappstory.sdk.inappmessage.ui.widgets.impl;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Color;
 import android.graphics.Rect;
 import android.os.Build;
 import android.util.AttributeSet;
@@ -105,6 +106,13 @@ public class FullscreenContentContainer extends IAMContentContainer<InAppMessage
             }
         }
     }
+
+    @Override
+    public void clearContentBackground() {
+        content.setBackground(null);
+        content.setBackgroundColor(Color.RED);
+    }
+
 
     @Override
     public void showWithAnimation() {

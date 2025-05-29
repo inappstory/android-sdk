@@ -3,6 +3,7 @@ package com.inappstory.sdk.inappmessage.ui.reader;
 import static com.inappstory.sdk.inappmessage.ui.widgets.IAMContentContainer.CONTAINER_ID;
 import static com.inappstory.sdk.inappmessage.ui.widgets.IAMContentContainer.CONTENT_ID;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -222,6 +223,7 @@ public class InAppMessageMainFragment extends Fragment implements Observer<IAMRe
                     currentUIState != IAMReaderUIStates.OPENING) {
                 readerViewModel.updateCurrentUiState(IAMReaderUIStates.OPENING);
             }
+            //contentContainer.clearContentBackground();
             if (!contentIsPreloaded && contentContainer != null) {
                 contentContainer.hideLoader();
             }

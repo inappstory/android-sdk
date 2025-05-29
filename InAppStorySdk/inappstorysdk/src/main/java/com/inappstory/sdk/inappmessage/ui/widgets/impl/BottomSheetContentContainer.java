@@ -210,6 +210,12 @@ public final class BottomSheetContentContainer extends IAMContentContainer<InApp
     private int bsState = 0;
 
     @Override
+    public void clearContentBackground() {
+        content.setBackground(null);
+        content.setBackgroundColor(Color.RED);
+    }
+
+    @Override
     public void showWithAnimation() {
         setVisibility(VISIBLE);
         bottomSheetBehavior.setState(STATE_EXPANDED);

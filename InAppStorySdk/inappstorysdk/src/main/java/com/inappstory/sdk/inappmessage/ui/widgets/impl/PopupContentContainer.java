@@ -81,6 +81,13 @@ public class PopupContentContainer extends IAMContentContainer<InAppMessagePopup
         closeButton.requestLayout();
     }
 
+    @Override
+    public void clearContentBackground() {
+        content.setBackground(null);
+        content.setBackgroundColor(Color.RED);
+    }
+
+
     public void showWithAnimation() {
         if (appearance != null) {
             switch (appearance.animationType()) {

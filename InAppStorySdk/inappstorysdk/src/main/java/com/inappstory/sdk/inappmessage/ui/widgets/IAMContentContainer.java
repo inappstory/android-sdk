@@ -26,6 +26,8 @@ public abstract class IAMContentContainer<T extends InAppMessageAppearance> exte
     protected FrameLayout loaderContainer;
     protected Rect externalContainerRect = new Rect();
 
+    public abstract void clearContentBackground();
+
     protected IAMContainerCallback callback;
 
     public void showLoader() {

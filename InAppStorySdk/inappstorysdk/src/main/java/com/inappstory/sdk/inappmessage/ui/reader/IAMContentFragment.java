@@ -311,6 +311,7 @@ public class IAMContentFragment extends Fragment implements Observer<IAMReaderSl
                                 new Runnable() {
                                     @Override
                                     public void run() {
+
                                         contentWebView.startSlide(null);
                                         contentWebView.resumeSlide();
                                     }

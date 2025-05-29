@@ -11,22 +11,23 @@ import android.graphics.drawable.shapes.RectShape;
 import com.inappstory.sdk.core.utils.ColorUtils;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageBackground;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageLinearGradientBackground;
+import com.inappstory.sdk.utils.NumberUtils;
 
 import java.util.Map;
 
 public class InAppMessageBackgroundSettings implements InAppMessageBackground {
 
-    private boolean isTransparent;
+    private float alpha = 1f;
     private String solid;
     private InAppMessageLinearGradientSettings linearGradient;
 
     public InAppMessageBackgroundSettings(Map<String, Object> appearance) {
         if (appearance == null) return;
-        String isTransparentKey = "is_transparent";
+        String alphaKey = "alpha";
         String solidKey = "solid";
         String linearGradientKey = "linear_gradient";
-        if (appearance.containsKey(isTransparentKey)) {
-            isTransparent = (boolean) appearance.get(isTransparentKey);
+        if (appearance.containsKey(alphaKey)) {
+            alpha = new NumberUtils().convertNumberToFloat(appearance.get(alphaKey));
         }
         if (appearance.containsKey(linearGradientKey)) {
             linearGradient = new InAppMessageLinearGradientSettings(
@@ -41,8 +42,8 @@ public class InAppMessageBackgroundSettings implements InAppMessageBackground {
     }
 
     @Override
-    public boolean isTransparent() {
-        return isTransparent;
+    public float alpha() {
+        return alpha;
     }
 
     @Override
@@ -52,7 +53,7 @@ public class InAppMessageBackgroundSettings implements InAppMessageBackground {
             ShapeDrawable.ShaderFactory sf = new ShapeDrawable.ShaderFactory() {
                 @Override
                 public Shader resize(int width, int height) {
-                    return linearGradient().gradientValue(width, height);
+                    return linearGradient.gradientValue(width, height);
                 }
             };
             drawable = new PaintDrawable();
@@ -66,15 +67,5 @@ public class InAppMessageBackgroundSettings implements InAppMessageBackground {
             ((ColorDrawable) drawable).setColor(Color.WHITE);
         }
         return drawable;
-    }
-
-    @Override
-    public String solid() {
-        return solid;
-    }
-
-    @Override
-    public InAppMessageLinearGradientBackground linearGradient() {
-        return linearGradient;
     }
 }

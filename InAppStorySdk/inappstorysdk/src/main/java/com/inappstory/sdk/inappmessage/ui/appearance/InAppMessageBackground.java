@@ -3,8 +3,6 @@ package com.inappstory.sdk.inappmessage.ui.appearance;
 import android.graphics.drawable.Drawable;
 
 public interface InAppMessageBackground {
-    boolean isTransparent();
+    float alpha();
     Drawable getBackgroundDrawable();
-    String solid();
-    InAppMessageLinearGradientBackground linearGradient();
 }
