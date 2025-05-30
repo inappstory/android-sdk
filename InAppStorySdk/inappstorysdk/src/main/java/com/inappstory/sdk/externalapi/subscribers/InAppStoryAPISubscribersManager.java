@@ -72,6 +72,7 @@ public class InAppStoryAPISubscribersManager {
 
     public final Map<String, String> urlLocalPath = new HashMap<>();
 
+
     public void clearCache() {
         shownStories.clear();
         storyFavoriteItemAPIData.clear();
@@ -87,6 +88,7 @@ public class InAppStoryAPISubscribersManager {
     public HashMap<String, IASStoryListRequestData> requestsData = new HashMap<>();
 
     public void refreshAllLists() {
+        clearData();
         for (IASStoryListRequestData requestData : requestsData.values()) {
             getStoryList(requestData);
         }
