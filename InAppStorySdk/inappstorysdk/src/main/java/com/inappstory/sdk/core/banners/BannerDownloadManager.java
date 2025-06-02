@@ -1,34 +1,30 @@
-package com.inappstory.sdk.core.inappmessages;
+package com.inappstory.sdk.core.banners;
 
 import androidx.annotation.NonNull;
 
+import com.inappstory.sdk.banners.BannerLoadCallback;
 import com.inappstory.sdk.core.IASCore;
-import com.inappstory.sdk.core.api.IASAssetsHolder;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.data.IReaderContent;
-import com.inappstory.sdk.core.network.content.usecase.InAppMessageByIdUseCase;
 import com.inappstory.sdk.core.ui.screens.IReaderSlideViewModel;
-import com.inappstory.sdk.game.cache.SessionAssetsIsReadyCallback;
-import com.inappstory.sdk.inappmessage.InAppMessageLoadCallback;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.cache.ContentIdAndType;
 import com.inappstory.sdk.stories.cache.SlideTaskKey;
 import com.inappstory.sdk.stories.cache.SlidesDownloader;
-import com.inappstory.sdk.utils.ISessionHolder;
 
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class InAppMessageDownloadManager {
+public class BannerDownloadManager {
     private final IASCore core;
 
     private final SlidesDownloader slidesDownloader;
-    private final Set<Integer> loadedInAppMessages = new HashSet<>();
+    private final Set<Integer> loadedBanners = new HashSet<>();
 
-    public InAppMessageDownloadManager(IASCore core) {
+    public BannerDownloadManager(IASCore core) {
         this.core = core;
         this.slidesDownloader = new SlidesDownloader(
                 core,
@@ -37,46 +33,20 @@ public class InAppMessageDownloadManager {
         this.slidesDownloader.init();
     }
 
-    public void addInAppMessageTask(
-            final int inAppMessageId,
-            final InAppMessageLoadCallback callback
+    public void addBannerTask(
+            final int bannerId,
+            final BannerLoadCallback callback
     ) {
-        ContentType type = ContentType.IN_APP_MESSAGE;
+        ContentType type = ContentType.BANNER;
         IReaderContent readerContent =
-                core.contentHolder().readerContent().getByIdAndType(inAppMessageId, type);
+                core.contentHolder().readerContent().getByIdAndType(bannerId, type);
         if (readerContent != null) {
             addSlides(readerContent, callback);
-        } else {
-            new InAppMessageByIdUseCase(core, inAppMessageId).get(
-                    new InAppMessageByIdCallback() {
-                        @Override
-                        public void success(IReaderContent readerContent) {
-                            addSlides(readerContent, callback);
-                        }
-
-                        @Override
-                        public void error() {
-                            if (callback != null)
-                                callback.loadError(inAppMessageId);
-                            core.callbacksAPI().useCallback(
-                                    IASCallbackType.IN_APP_MESSAGE_LOAD,
-                                    new UseIASCallback<InAppMessageLoadCallback>() {
-                                        @Override
-                                        public void use(@NonNull InAppMessageLoadCallback callback) {
-                                            callback.loadError(
-                                                    inAppMessageId
-                                            );
-                                        }
-                                    }
-                            );
-                        }
-                    }
-            );
         }
     }
 
     public boolean allSlidesLoaded(IReaderContent readerContent) {
-        return slidesDownloader.allSlidesLoaded(readerContent, ContentType.IN_APP_MESSAGE);
+        return slidesDownloader.allSlidesLoaded(readerContent, ContentType.BANNER);
     }
 
     public boolean checkBundleResources(
@@ -92,17 +62,17 @@ public class InAppMessageDownloadManager {
         return core.assetsHolder().assetsIsDownloaded();
     }
 
-    private void addSlides(@NonNull final IReaderContent readerContent, final InAppMessageLoadCallback callback) {
+    private void addSlides(@NonNull final IReaderContent readerContent, final BannerLoadCallback callback) {
         if (allSlidesLoaded(readerContent)) {
             contentIsLoaded(readerContent, callback);
         }
-        core.contentLoader().inAppMessageDownloadManager().addSubscriber(
+        core.contentLoader().bannerDownloadManager().addSubscriber(
                 new IReaderSlideViewModel() {
                     @Override
                     public ContentIdAndType contentIdAndType() {
                         return new ContentIdAndType(
                                 readerContent.id(),
-                                ContentType.IN_APP_MESSAGE
+                                ContentType.BANNER
                         );
                     }
 
@@ -114,10 +84,10 @@ public class InAppMessageDownloadManager {
                     @Override
                     public void contentLoadError() {
                         core.callbacksAPI().useCallback(
-                                IASCallbackType.IN_APP_MESSAGE_LOAD,
-                                new UseIASCallback<InAppMessageLoadCallback>() {
+                                IASCallbackType.BANNER_LOAD,
+                                new UseIASCallback<BannerLoadCallback>() {
                                     @Override
-                                    public void use(@NonNull InAppMessageLoadCallback callback) {
+                                    public void use(@NonNull BannerLoadCallback callback) {
                                         callback.loadError(
                                                 readerContent.id()
                                         );
@@ -129,10 +99,10 @@ public class InAppMessageDownloadManager {
                     @Override
                     public void slideLoadError(int index) {
                         core.callbacksAPI().useCallback(
-                                IASCallbackType.IN_APP_MESSAGE_LOAD,
-                                new UseIASCallback<InAppMessageLoadCallback>() {
+                                IASCallbackType.BANNER_LOAD,
+                                new UseIASCallback<BannerLoadCallback>() {
                                     @Override
-                                    public void use(@NonNull InAppMessageLoadCallback callback) {
+                                    public void use(@NonNull BannerLoadCallback callback) {
                                         callback.loadError(
                                                 readerContent.id()
                                         );
@@ -148,7 +118,7 @@ public class InAppMessageDownloadManager {
 
                     @Override
                     public void slideLoadSuccess(int index) {
-                        if (core.contentLoader().inAppMessageDownloadManager()
+                        if (core.contentLoader().bannerDownloadManager()
                                 .allSlidesLoaded(readerContent)) {
                             contentIsLoaded(readerContent, callback);
                         }
@@ -164,7 +134,7 @@ public class InAppMessageDownloadManager {
 
         slidesDownloader.addStorySlides(
                 new ContentIdAndType(readerContent.id(),
-                        ContentType.IN_APP_MESSAGE
+                        ContentType.BANNER
                 ),
                 readerContent,
                 3,
@@ -172,8 +142,8 @@ public class InAppMessageDownloadManager {
         );
     }
 
-    private void contentIsLoaded(final IReaderContent readerContent, InAppMessageLoadCallback callback) {
-        loadedInAppMessages.add(readerContent.id());
+    private void contentIsLoaded(final IReaderContent readerContent, BannerLoadCallback callback) {
+        loadedBanners.add(readerContent.id());
         if (callback != null) {
             callback.loaded(readerContent.id());
             if (allContentIsLoaded()) {
@@ -181,10 +151,10 @@ public class InAppMessageDownloadManager {
             }
         }
         core.callbacksAPI().useCallback(
-                IASCallbackType.IN_APP_MESSAGE_LOAD,
-                new UseIASCallback<InAppMessageLoadCallback>() {
+                IASCallbackType.BANNER_LOAD,
+                new UseIASCallback<BannerLoadCallback>() {
                     @Override
-                    public void use(@NonNull InAppMessageLoadCallback callback) {
+                    public void use(@NonNull BannerLoadCallback callback) {
                         callback.loaded(
                                 readerContent.id()
                         );
@@ -199,9 +169,9 @@ public class InAppMessageDownloadManager {
 
     public boolean allContentIsLoaded() {
         List<IReaderContent> readerContentList =
-                core.contentHolder().readerContent().getByType(ContentType.IN_APP_MESSAGE);
+                core.contentHolder().readerContent().getByType(ContentType.BANNER);
         for (IReaderContent readerContent : readerContentList) {
-            if (!loadedInAppMessages.contains(readerContent.id())) return false;
+            if (!loadedBanners.contains(readerContent.id())) return false;
         }
         return true;
     }
@@ -237,7 +207,7 @@ public class InAppMessageDownloadManager {
     }
 
     public void clearLocalData() {
-        core.contentHolder().readerContent().clearByType(ContentType.IN_APP_MESSAGE);
-        loadedInAppMessages.clear();
+        core.contentHolder().readerContent().clearByType(ContentType.BANNER);
+        loadedBanners.clear();
     }
 }

@@ -5,6 +5,7 @@ import android.content.Context;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.core.api.IASAssetsHolder;
+import com.inappstory.sdk.core.api.IASBanners;
 import com.inappstory.sdk.core.api.IASCallbacks;
 import com.inappstory.sdk.core.api.IASContentLoader;
 import com.inappstory.sdk.core.api.IASContentPreload;
@@ -52,6 +53,7 @@ public interface IASCore {
     IASProjectSettingsInternal projectSettingsAPI();
     IASLimitsHolder limitsHolder();
     IASInAppMessage inAppMessageAPI();
+    IASBanners bannersAPI();
     IASSingleStory singleStoryAPI();
     IASStackFeed stackFeedAPI();
     IASStoryList storyListAPI();

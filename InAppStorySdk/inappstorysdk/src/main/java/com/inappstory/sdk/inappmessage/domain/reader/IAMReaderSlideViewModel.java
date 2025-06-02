@@ -460,7 +460,7 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
                 readerViewModel.updateCurrentLoadState(IAMReaderLoadStates.FAILED);
             } else {
                 readerViewModel.updateCurrentLoadState(IAMReaderLoadStates.LOADING);
-                downloadManager.addInAppMessageTask(state.iamId, ContentType.IN_APP_MESSAGE, null);
+                downloadManager.addInAppMessageTask(state.iamId, null);
             }
         }
         return true;

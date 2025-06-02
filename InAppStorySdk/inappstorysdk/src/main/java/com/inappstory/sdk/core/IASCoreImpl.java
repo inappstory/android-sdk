@@ -5,6 +5,7 @@ import android.content.Context;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.core.api.IASAssetsHolder;
+import com.inappstory.sdk.core.api.IASBanners;
 import com.inappstory.sdk.core.api.IASCallbacks;
 import com.inappstory.sdk.core.api.IASContentLoader;
 import com.inappstory.sdk.core.api.IASContentPreload;
@@ -26,6 +27,7 @@ import com.inappstory.sdk.core.api.IASStatistic;
 import com.inappstory.sdk.core.api.IASStoryList;
 import com.inappstory.sdk.core.api.IASStoriesOpenedCache;
 import com.inappstory.sdk.core.api.impl.IASAssetsHolderImpl;
+import com.inappstory.sdk.core.api.impl.IASBannersImpl;
 import com.inappstory.sdk.core.api.impl.IASCallbacksImpl;
 import com.inappstory.sdk.core.api.impl.IASContentLoaderImpl;
 import com.inappstory.sdk.core.api.impl.IASContentPreloadImpl;
@@ -88,6 +90,7 @@ public class IASCoreImpl implements IASCore {
     private final SharedPreferencesAPI sharedPreferencesAPI;
     private final IContentHolder contentHolder;
     private final IASInAppMessage inAppMessages;
+    private final IASBanners banners;
     private final IASAssetsHolder assetsHolder;
     private final IASLimitsHolder limitsHolder;
 
@@ -119,6 +122,7 @@ public class IASCoreImpl implements IASCore {
         iasLogs = new IASLogsImpl(this);
         inAppStoryService = new InAppStoryService(this);
         inAppMessages = new IASInAppMessageImpl(this);
+        banners = new IASBannersImpl(this);
         assetsHolder = new IASAssetsHolderImpl(this);
         limitsHolder = new IASLimitsHolderImpl();
         projectSettings = new IASProjectSettingsImpl(this);
@@ -190,6 +194,11 @@ public class IASCoreImpl implements IASCore {
     @Override
     public IASInAppMessage inAppMessageAPI() {
         return inAppMessages;
+    }
+
+    @Override
+    public IASBanners bannersAPI() {
+        return banners;
     }
 
     @Override

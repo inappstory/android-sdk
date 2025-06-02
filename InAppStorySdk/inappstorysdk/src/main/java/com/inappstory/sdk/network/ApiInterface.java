@@ -26,6 +26,17 @@ import java.util.List;
  */
 
 public interface ApiInterface {
+    @GET("v2/banner/place/{id}")
+    Request getBannerPlace(
+            @Path("id") String id,
+            @Query("srcList") Integer srcList,
+            @Query("tags") String tags,
+            @Query("fields") String fields,
+            @Query("expand") String expand,
+            @ReplaceHeader(HeadersKeys.USER_ID) String xUserId,
+            @ReplaceHeader(HeadersKeys.AUTH_SESSION_ID) String xSessionId,
+            @ReplaceHeader(HeadersKeys.ACCEPT_LANGUAGE) String lang
+    );
 
     @GET("v2/inappmessaging")
     Request getInAppMessages(
