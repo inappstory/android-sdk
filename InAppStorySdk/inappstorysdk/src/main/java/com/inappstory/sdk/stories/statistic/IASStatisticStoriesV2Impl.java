@@ -37,6 +37,7 @@ public class IASStatisticStoriesV2Impl implements IASStatisticStoriesV2 {
     }
 
     private final ExecutorService netExecutor = Executors.newFixedThreadPool(1);
+    private final ExecutorService initExecutor = Executors.newFixedThreadPool(1);
     private final ExecutorService runnableExecutor = Executors.newFixedThreadPool(1);
 
     public static final String NEXT = "next";
@@ -156,23 +157,28 @@ public class IASStatisticStoriesV2Impl implements IASStatisticStoriesV2 {
 
 
     private void init() {
-        String tasksJson = core.sharedPreferencesAPI().getString(TASKS_KEY);
-        String fakeTasksJson = core.sharedPreferencesAPI().getString(FAKE_TASKS_KEY);
-        synchronized (statisticTasksLock) {
-            if (tasksJson != null) {
-                tasks = JsonParser.listFromJson(tasksJson, StoryStatisticV2Task.class);
-            } else {
-                tasks = new ArrayList<>();
-            }
-            if (fakeTasksJson != null) {
-                tasks.addAll(JsonParser.listFromJson(fakeTasksJson, StoryStatisticV2Task.class));
-            }
-            for (StoryStatisticV2Task task : tasks) {
-                task.isFake = false;
-            }
+        initExecutor.submit(new Runnable() {
+            @Override
+            public void run() {
+                String tasksJson = core.sharedPreferencesAPI().getString(TASKS_KEY);
+                String fakeTasksJson = core.sharedPreferencesAPI().getString(FAKE_TASKS_KEY);
+                synchronized (statisticTasksLock) {
+                    if (tasksJson != null) {
+                        tasks = JsonParser.listFromJson(tasksJson, StoryStatisticV2Task.class);
+                    } else {
+                        tasks = new ArrayList<>();
+                    }
+                    if (fakeTasksJson != null) {
+                        tasks.addAll(JsonParser.listFromJson(fakeTasksJson, StoryStatisticV2Task.class));
+                    }
+                    for (StoryStatisticV2Task task : tasks) {
+                        task.isFake = false;
+                    }
 
-            core.sharedPreferencesAPI().remove(FAKE_TASKS_KEY);
-        }
+                    core.sharedPreferencesAPI().remove(FAKE_TASKS_KEY);
+                }
+            }
+        });
         loopedExecutor.init(queueTasksRunnable);
     }
 
