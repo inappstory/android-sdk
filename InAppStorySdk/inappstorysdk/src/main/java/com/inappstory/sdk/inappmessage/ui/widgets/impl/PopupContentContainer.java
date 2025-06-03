@@ -62,7 +62,7 @@ public class PopupContentContainer extends IAMContentContainer<InAppMessagePopup
         int backgroundColor = ColorUtils.parseColorRGBA(
                 appearance.backgroundColor()
         );
-        content.setBackground(appearance.background().getBackgroundDrawable());
+        content.setBackground(appearance.backgroundDrawable());
         generateLoader(backgroundColor);
         roundedCornerLayout.addView(loaderContainer);
         switch (appearance.closeButtonPosition()) {
