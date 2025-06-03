@@ -1,10 +1,13 @@
 package com.inappstory.sdk.stories.cache;
 
 
+import android.os.Handler;
+
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.lrudiskcache.CacheSize;
 import com.inappstory.sdk.lrudiskcache.LruCachesHolder;
 import com.inappstory.sdk.stories.cache.usecases.FinishDownloadFileCallback;
+import com.inappstory.sdk.stories.cache.vod.EmptyVODCacheJournal;
 import com.inappstory.sdk.stories.cache.vod.VODCacheJournal;
 
 import java.io.File;
@@ -12,6 +15,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class FilesDownloadManager {
 
@@ -23,9 +28,11 @@ public class FilesDownloadManager {
         return vodCacheJournal;
     }
 
-    public final VODCacheJournal vodCacheJournal;
+    public VODCacheJournal vodCacheJournal = new EmptyVODCacheJournal();
 
-    private final LruCachesHolder cachesHolder;
+    private final ExecutorService initExecutor = Executors.newFixedThreadPool(1);
+
+    private LruCachesHolder cachesHolder;
     private final DownloadThreadsHolder downloadThreadsHolder;
 
     private final Map<String, List<FinishDownloadFileCallback>> downloadFileCallbacks = new HashMap<>();
@@ -60,17 +67,25 @@ public class FilesDownloadManager {
         }
     }
 
-    public FilesDownloadManager(IASCore core) {
+    public FilesDownloadManager(final IASCore core) {
         cachesHolder = new LruCachesHolder(core, core.appContext(), CacheSize.MEDIUM);
-        File file = new File(
-                core.appContext().getFilesDir() +
-                        File.separator +
-                        "ias" +
-                        File.separator +
-                        "vod",
-                "vod_journal.bin"
-        );
-        vodCacheJournal = new VODCacheJournal(file);
+
+        initExecutor.submit(new Runnable() {
+            @Override
+            public void run() {
+                File file = new File(
+                        core.appContext().getFilesDir() +
+                                File.separator +
+                                "ias" +
+                                File.separator +
+                                "vod",
+                        "vod_journal.bin"
+                );
+                vodCacheJournal = new VODCacheJournal();
+                vodCacheJournal.initCacheJournal(file);
+            }
+        });
+
         downloadThreadsHolder = new DownloadThreadsHolder();
     }
 

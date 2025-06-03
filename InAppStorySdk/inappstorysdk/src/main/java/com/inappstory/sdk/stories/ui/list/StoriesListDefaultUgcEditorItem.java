@@ -21,9 +21,11 @@ public class StoriesListDefaultUgcEditorItem implements IStoriesListUGCItem {
     Context context;
     View container;
     private RoundedCornerLayout cornerLayout;
+    int layoutDirection;
 
-    public StoriesListDefaultUgcEditorItem(AppearanceManager appearanceManager, Context context) {
+    public StoriesListDefaultUgcEditorItem(AppearanceManager appearanceManager, Context context, int layoutDirection) {
         this.context = context;
+        this.layoutDirection = layoutDirection;
         this.appearanceManager = appearanceManager;
     }
 

@@ -10,8 +10,8 @@ import java.util.Set;
 
 public class LruDiskCache {
 
-    private final CacheJournal journal;
-    private final FileManager manager;
+    private CacheJournal journal;
+    private FileManager manager;
     private long cacheSize;
 
     public CacheType cacheType;
@@ -34,11 +34,15 @@ public class LruDiskCache {
             String subPath,
             long cacheSize,
             CacheType cacheType
-    ) throws IOException {
-        this.manager = new FileManager(core, cacheDir, subPath);
-        this.journal = new CacheJournal(core, manager);
-        this.cacheSize = cacheSize;
-        this.cacheType = cacheType;
+    ) {
+        try {
+            if (core == null) return;
+            this.manager = new FileManager(core, cacheDir, subPath);
+            this.journal = new CacheJournal(core, manager);
+            this.cacheSize = cacheSize;
+            this.cacheType = cacheType;
+        } catch (Exception e) {
+        }
     }
 
 

@@ -20,7 +20,7 @@ public class VODCacheJournal {
     private final Map<String, VODCacheJournalItem> vodItems = new HashMap<>();
 
     public static final int VERSION = 1;
-    private final File journalFile;
+    private File journalFile;
     private final Object lock = new Object();
 
     public void clear() {
@@ -28,7 +28,8 @@ public class VODCacheJournal {
         writeJournal();
     }
 
-    public VODCacheJournal(File journalFile) {
+
+    public void initCacheJournal(File journalFile) {
         if (!journalFile.exists()) {
             try {
                 journalFile.getParentFile().mkdirs();
@@ -39,6 +40,10 @@ public class VODCacheJournal {
         }
         this.journalFile = journalFile;
         readJournal();
+    }
+
+    public VODCacheJournal() {
+
     }
 
     public VODCacheJournalItem getItem(String key) {

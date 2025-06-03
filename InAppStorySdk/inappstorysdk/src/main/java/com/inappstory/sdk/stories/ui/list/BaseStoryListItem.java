@@ -54,12 +54,13 @@ public abstract class BaseStoryListItem extends RecyclerView.ViewHolder {
         getFavoriteListItem = manager.csFavoriteListItemInterface();
         getListItem = manager.csListItemInterface();
         getUGCListItem = manager.csListUGCItemInterface();
+
         if (getListItem == null)
-            getListItem = new StoriesListDefaultItem(manager, context);
+            getListItem = new StoriesListDefaultItem(manager, context, parent.getLayoutDirection());
         if (getFavoriteListItem == null || getFavoriteListItem.getFavoriteItem() == null)
-            getFavoriteListItem = new StoriesListDefaultFavoriteItem(manager, context);
+            getFavoriteListItem = new StoriesListDefaultFavoriteItem(manager, context, parent.getLayoutDirection());
         if (getUGCListItem == null)
-            getUGCListItem = new StoriesListDefaultUgcEditorItem(manager, context);
+            getUGCListItem = new StoriesListDefaultUgcEditorItem(manager, context, parent.getLayoutDirection());
         if (manager.csListItemMargin(context) >= 0) {
             RecyclerView.LayoutParams lp = (RecyclerView.LayoutParams) itemView.getLayoutParams();
             lp.setMargins(manager.csListItemMargin(context) / 2, 0,

@@ -35,11 +35,12 @@ public final class StoriesListDefaultFavoriteItem implements IGetFavoriteListIte
 
 
     IStoriesListDefaultFavoriteItemPresenter manager = new StoriesListDefaultFavoriteItemPresenter();
+    int layoutDirection;
 
-
-    public StoriesListDefaultFavoriteItem(AppearanceManager appearanceManager, Context context) {
+    public StoriesListDefaultFavoriteItem(AppearanceManager appearanceManager, Context context, int layoutDirection) {
         this.context = context;
         this.appearanceManager = appearanceManager;
+        this.layoutDirection = layoutDirection;
     }
 
 

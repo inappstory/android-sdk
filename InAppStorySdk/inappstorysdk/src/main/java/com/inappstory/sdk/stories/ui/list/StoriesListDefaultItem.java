@@ -3,6 +3,7 @@ package com.inappstory.sdk.stories.ui.list;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.util.LayoutDirection;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
@@ -35,10 +36,12 @@ public final class StoriesListDefaultItem implements IStoriesListItem {
 
     IStoriesListDefaultItemPresenter manager = new StoriesListDefaultItemPresenter();
     Context context;
+    int layoutDirection;
 
-    public StoriesListDefaultItem(AppearanceManager appearanceManager, Context context) {
+    public StoriesListDefaultItem(AppearanceManager appearanceManager, Context context, int layoutDirection) {
         this.context = context;
         this.appearanceManager = appearanceManager;
+        this.layoutDirection = layoutDirection;
     }
 
     @Override
@@ -101,6 +104,7 @@ public final class StoriesListDefaultItem implements IStoriesListItem {
         cornerLayout = parent.findViewById(R.id.item_cv);
         titleView = parent.findViewById(R.id.title);
         hasAudioIcon = parent.findViewById(R.id.hasAudio);
+        hasAudioIcon.setScaleX(layoutDirection == LayoutDirection.RTL ? -1 : 1);
         image = parent.findViewById(R.id.image);
         borderView = parent.findViewById(R.id.border);
         gradient = parent.findViewById(R.id.cell_gradient);
