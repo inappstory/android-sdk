@@ -1,5 +1,9 @@
 package com.inappstory.sdk.inappmessage.ui.appearance.impl;
 
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
+
+import com.inappstory.sdk.core.utils.ColorUtils;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageBSLineAppearance;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageBackdrop;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageBackground;
@@ -83,6 +87,14 @@ public class InAppMessageBottomSheetSettings implements InAppMessageBottomSheetA
     @Override
     public InAppMessageBackground background() {
         return background;
+    }
+
+    @Override
+    public Drawable backgroundDrawable() {
+        if (background != null) return background.getBackgroundDrawable();
+        ColorDrawable drawable = new ColorDrawable();
+        drawable.setColor(ColorUtils.parseColorRGBA(backgroundColor()));
+        return drawable;
     }
 
     @Override

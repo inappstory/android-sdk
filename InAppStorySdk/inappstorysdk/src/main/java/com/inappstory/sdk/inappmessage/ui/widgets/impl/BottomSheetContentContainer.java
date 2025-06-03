@@ -175,7 +175,7 @@ public final class BottomSheetContentContainer extends IAMContentContainer<InApp
         int backgroundColor = ColorUtils.parseColorRGBA(
                 appearance.backgroundColor()
         );
-        content.setBackground(appearance.background().getBackgroundDrawable());
+        content.setBackground(appearance.backgroundDrawable());
         generateLoader(backgroundColor);
         roundedCornerLayout.addView(loaderContainer);
         if (appearance.lineAppearance().height() == 0) {
