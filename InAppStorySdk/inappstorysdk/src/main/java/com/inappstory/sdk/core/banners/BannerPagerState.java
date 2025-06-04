@@ -1,6 +1,11 @@
 package com.inappstory.sdk.core.banners;
 
 
+import com.inappstory.sdk.core.data.IBanner;
+
+import java.util.ArrayList;
+import java.util.List;
+
 public class BannerPagerState {
     public BannerPlaceAppearance getAppearance() {
         return appearance;
@@ -10,21 +15,18 @@ public class BannerPagerState {
         return currentIndex;
     }
 
-    public boolean isLoading() {
-        return loading;
+    public BannerPagerLoadStates loadState() {
+        return loadState;
     }
 
-    public int[] getItemsIds() {
-        return itemsIds;
+    public List<IBanner> getItems() {
+        return items;
     }
 
     public String place() {
         return place;
     }
 
-    public boolean loaded() {
-        return loaded;
-    }
 
     public BannerPagerState appearance(BannerPlaceAppearance appearance) {
         this.appearance = appearance;
@@ -36,18 +38,13 @@ public class BannerPagerState {
         return this;
     }
 
-    public BannerPagerState isLoading(boolean loading) {
-        this.loading = loading;
+    public BannerPagerState loadState(BannerPagerLoadStates loadState) {
+        this.loadState = loadState;
         return this;
     }
 
-    public BannerPagerState loaded(boolean loaded) {
-        this.loaded = loaded;
-        return this;
-    }
-
-    public BannerPagerState itemsIds(int[] itemsIds) {
-        this.itemsIds = itemsIds;
+    public BannerPagerState items(List<IBanner> items) {
+        this.items = items;
         return this;
     }
 
@@ -59,18 +56,16 @@ public class BannerPagerState {
     BannerPlaceAppearance appearance;
     int currentIndex = 0;
     String place = "";
-    boolean loading = false;
-    boolean loaded = false;
-    int[] itemsIds = new int[0];
+    BannerPagerLoadStates loadState;
+    List<IBanner> items = new ArrayList<>();
 
 
     public BannerPagerState copy() {
         return new BannerPagerState()
-                .itemsIds(this.itemsIds)
+                .items(this.items)
                 .currentIndex(this.currentIndex)
                 .appearance(this.appearance)
                 .place(this.place)
-                .loaded(this.loaded)
-                .isLoading(this.loading);
+                .loadState(this.loadState);
     }
 }

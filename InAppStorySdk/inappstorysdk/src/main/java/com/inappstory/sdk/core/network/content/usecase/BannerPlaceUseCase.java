@@ -7,6 +7,7 @@ import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.banners.LoadBannerPlaceCallback;
 import com.inappstory.sdk.core.data.IBanner;
 import com.inappstory.sdk.core.data.IInAppMessage;
+import com.inappstory.sdk.core.data.IReaderContent;
 import com.inappstory.sdk.core.inappmessages.InAppMessageFeedCallback;
 import com.inappstory.sdk.core.network.content.models.BannerPlace;
 import com.inappstory.sdk.core.network.content.models.InAppMessageFeed;
@@ -78,11 +79,17 @@ public class BannerPlaceUseCase {
                                             loadCallback.isEmpty();
                                             return;
                                         }
-                                        loadCallback.success(
-                                                core.contentHolder()
-                                                        .readerContent()
-                                                        .getByType(ContentType.BANNER)
-                                        );
+                                        List<IBanner> banners = new ArrayList<>();
+                                        List<IReaderContent> nonCasted = core.contentHolder()
+                                                .readerContent()
+                                                .getByType(ContentType.BANNER);
+                                        if (nonCasted != null) {
+                                            for (IReaderContent readerContent : nonCasted) {
+                                                if (readerContent instanceof IBanner)
+                                                    banners.add((IBanner) readerContent);
+                                            }
+                                        }
+                                        loadCallback.success(banners);
                                     }
 
                                     @Override

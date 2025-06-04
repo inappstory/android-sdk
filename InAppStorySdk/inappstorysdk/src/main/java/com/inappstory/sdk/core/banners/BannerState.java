@@ -2,6 +2,7 @@ package com.inappstory.sdk.core.banners;
 
 public class BannerState {
     private Integer bannerId;
+    private String bannerPlace;
     private String content;
     private BannerLoadStates bannerLoadState = BannerLoadStates.EMPTY;
     int contentStatus = 0;
@@ -18,6 +19,10 @@ public class BannerState {
 
     public Integer bannerId() {
         return bannerId;
+    }
+
+    public String bannerPlace() {
+        return bannerPlace;
     }
 
     public String content() {
@@ -45,6 +50,11 @@ public class BannerState {
         return this;
     }
 
+    public BannerState bannerPlace(String bannerPlace) {
+        this.bannerPlace = bannerPlace;
+        return this;
+    }
+
     public BannerState loadState(BannerLoadStates loadState) {
         this.bannerLoadState = loadState;
         return this;
@@ -64,6 +74,7 @@ public class BannerState {
                 .loadState(this.bannerLoadState)
                 .contentStatus(this.contentStatus)
                 .slideJSStatus(this.slideJSStatus)
+                .bannerPlace(this.bannerPlace)
                 .bannerId(this.bannerId);
     }
 }

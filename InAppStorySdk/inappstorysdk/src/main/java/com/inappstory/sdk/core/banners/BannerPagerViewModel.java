@@ -1,5 +1,6 @@
 package com.inappstory.sdk.core.banners;
 
+import com.inappstory.sdk.banners.BannerLoadCallback;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.inappmessage.domain.stedata.STETypeAndData;
 import com.inappstory.sdk.stories.utils.Observable;
@@ -26,22 +27,22 @@ public class BannerPagerViewModel implements IBannerPagerViewModel {
             new SingleTimeEvent<>();
 
     @Override
-    public void loadBanners() {
-
-    }
-
-    @Override
     public BannerPagerState getCurrentBannerPagerState() {
         return bannerPagerStateObservable.getValue();
     }
 
     @Override
+    public void updateState(BannerPagerState bannerPagerState) {
+        bannerPagerStateObservable.updateValue(bannerPagerState);
+    }
+
+    @Override
     public void addSubscriber(Observer<BannerPagerState> observer) {
-        this.bannerPagerStateObservable.subscribe(observer);
+        this.bannerPagerStateObservable.subscribeAndGetValue(observer);
     }
 
     @Override
     public void removeSubscriber(Observer<BannerPagerState> observer) {
-        this.bannerPagerStateObservable.subscribe(observer);
+        this.bannerPagerStateObservable.unsubscribe(observer);
     }
 }

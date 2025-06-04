@@ -5,31 +5,31 @@ import com.inappstory.sdk.stories.api.models.ContentType;
 public class BannerData extends ContentData {
     private int id;
 
-    private String title;
+    private String bannerPlace;
 
     public BannerData(
             int id,
-            String campaignName,
+            String bannerPlace,
             SourceType sourceType
     ) {
         super(sourceType, ContentType.BANNER);
         this.id = id;
-        this.title = campaignName;
+        this.bannerPlace = bannerPlace;
     }
 
     public int id() {
         return id;
     }
 
-    public String title() {
-        return title;
+    public String bannerPlace() {
+        return bannerPlace;
     }
 
     @Override
     public String toString() {
         return "BannerData{" +
                 "id=" + id() +
-                ", title='" + title() + '\'' +
+                ", title='" + bannerPlace() + '\'' +
                 '}';
     }
 }

@@ -30,6 +30,7 @@ import com.inappstory.sdk.core.data.IAppVersion;
 import com.inappstory.sdk.core.dataholders.IContentHolder;
 import com.inappstory.sdk.core.dataholders.IStoriesListVMHolder;
 import com.inappstory.sdk.core.ui.screens.ScreensManager;
+import com.inappstory.sdk.domain.IWidgetsViewModels;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.stories.cache.FilesDownloadManager;
 import com.inappstory.sdk.stories.exceptions.ExceptionManager;
@@ -54,6 +55,7 @@ public interface IASCore {
     IASLimitsHolder limitsHolder();
     IASInAppMessage inAppMessageAPI();
     IASBanners bannersAPI();
+    IWidgetsViewModels widgetViewModels();
     IASSingleStory singleStoryAPI();
     IASStackFeed stackFeedAPI();
     IASStoryList storyListAPI();

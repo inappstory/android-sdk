@@ -1,7 +1,5 @@
 package com.inappstory.sdk.core.banners;
 
-import android.util.Log;
-
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.banners.BannerWidgetCallback;
@@ -9,8 +7,6 @@ import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.data.IReaderContent;
-import com.inappstory.sdk.inappmessage.InAppMessageWidgetCallback;
-import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderLoadStates;
 import com.inappstory.sdk.inappmessage.domain.stedata.CallToActionData;
 import com.inappstory.sdk.inappmessage.domain.stedata.JsSendApiRequestData;
 import com.inappstory.sdk.inappmessage.domain.stedata.STEDataType;
@@ -23,7 +19,6 @@ import com.inappstory.sdk.stories.api.models.SlideLinkObject;
 import com.inappstory.sdk.stories.cache.ContentIdAndType;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.BannerData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickAction;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.InAppMessageData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.utils.Observable;
 import com.inappstory.sdk.stories.utils.Observer;
@@ -37,6 +32,7 @@ import java.util.Map;
 public class BannerViewModel implements IBannerViewModel {
 
     private final int bannerId;
+    private final String bannerPlace;
     private final Observable<BannerState> stateObservable =
             new Observable<>(new BannerState());
 
@@ -49,12 +45,14 @@ public class BannerViewModel implements IBannerViewModel {
     private final SingleTimeEvent<STETypeAndData> singleTimeEvents =
             new SingleTimeEvent<>();
 
-    public BannerViewModel(int bannerId, IASCore core) {
+    public BannerViewModel(int bannerId, String bannerPlace, IASCore core) {
         this.bannerId = bannerId;
+        this.bannerPlace = bannerPlace;
         this.core = core;
         stateObservable.setValue(
                 new BannerState()
                         .bannerId(bannerId)
+                        .bannerPlace(bannerPlace)
                         .loadState(BannerLoadStates.EMPTY)
         );
     }
@@ -68,7 +66,7 @@ public class BannerViewModel implements IBannerViewModel {
     public BannerData getCurrentBannerData() {
         return new BannerData(
                 bannerId,
-                null,
+                bannerPlace,
                 SourceType.BANNER_PLACE
         );
     }

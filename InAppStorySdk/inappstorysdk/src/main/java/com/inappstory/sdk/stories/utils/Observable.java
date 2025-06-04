@@ -16,7 +16,15 @@ public class Observable<T> {
     }
 
     public void subscribe(Observer<T> listener) {
+        if (listeners.contains(listener)) return;
         listeners.add(listener);
+    }
+
+
+    public void subscribeAndGetValue(Observer<T> listener) {
+        if (listeners.contains(listener)) return;
+        listeners.add(listener);
+        listener.onUpdate(value);
     }
 
     public void unsubscribe(Observer<T> listener) {
@@ -33,7 +41,7 @@ public class Observable<T> {
 
     public void updateValue(T value) {
         setValue(value);
-        for (Observer<T> listener: listeners) {
+        for (Observer<T> listener : listeners) {
             listener.onUpdate(value);
         }
     }

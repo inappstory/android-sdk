@@ -3,6 +3,7 @@ package com.inappstory.sdk.core.api;
 import com.inappstory.sdk.banners.BannerLoadCallback;
 
 public interface IASBanners {
+
     void preload(
             BannerLoadCallback callback
     );

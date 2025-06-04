@@ -50,6 +50,8 @@ import com.inappstory.sdk.core.dataholders.IContentHolder;
 import com.inappstory.sdk.core.dataholders.IStoriesListVMHolder;
 import com.inappstory.sdk.core.dataholders.StoriesListVMHolder;
 import com.inappstory.sdk.core.ui.screens.ScreensManager;
+import com.inappstory.sdk.domain.IWidgetsViewModels;
+import com.inappstory.sdk.domain.WidgetsViewModels;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.stories.exceptions.ExceptionManager;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
@@ -83,6 +85,7 @@ public class IASCoreImpl implements IASCore {
     private final IASExternalUtilsAPI externalUtilsAPI;
     private final IASContentLoader contentLoader;
     private final IASLogs iasLogs;
+    private final IWidgetsViewModels widgetsViewModels;
     private final Context context;
     private final InAppStoryService inAppStoryService;
     private final NetworkClient networkClient;
@@ -96,6 +99,7 @@ public class IASCoreImpl implements IASCore {
 
     public IASCoreImpl(Context context) {
         this.context = context;
+        widgetsViewModels = new WidgetsViewModels(this);
         exceptionManager = new ExceptionManager(this);
         contentHolder = new ContentHolder();
         contentLoader = new IASContentLoaderImpl(this);
@@ -199,6 +203,11 @@ public class IASCoreImpl implements IASCore {
     @Override
     public IASBanners bannersAPI() {
         return banners;
+    }
+
+    @Override
+    public IWidgetsViewModels widgetViewModels() {
+        return widgetsViewModels;
     }
 
     @Override

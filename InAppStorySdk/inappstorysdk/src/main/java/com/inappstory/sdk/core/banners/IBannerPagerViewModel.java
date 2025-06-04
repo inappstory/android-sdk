@@ -4,8 +4,7 @@ import com.inappstory.sdk.stories.utils.Observer;
 
 public interface IBannerPagerViewModel {
     BannerPagerState getCurrentBannerPagerState();
-    void loadBanners();
-
+    void updateState(BannerPagerState bannerPagerState);
     void addSubscriber(Observer<BannerPagerState> observer);
     void removeSubscriber(Observer<BannerPagerState> observer);
 }
