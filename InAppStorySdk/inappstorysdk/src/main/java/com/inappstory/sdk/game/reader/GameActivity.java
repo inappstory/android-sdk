@@ -3,6 +3,7 @@ package com.inappstory.sdk.game.reader;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
+import android.view.WindowManager;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
@@ -39,6 +40,7 @@ public class GameActivity extends IASActivity implements BaseGameScreen {
         setTheme(theme);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.cs_game_reader_layout);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
