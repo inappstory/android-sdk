@@ -4,9 +4,9 @@ import com.inappstory.sdk.network.annotations.models.SerializedName;
 
 public class InAppMessageEvent {
     @SerializedName("id")
-    int id;
+    public int id;
     @SerializedName("name")
-    String name;
+    public String name;
     @SerializedName("priority")
-    int priority;
+    public int priority;
 }

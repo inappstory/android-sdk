@@ -12,6 +12,9 @@ import android.widget.RelativeLayout;
 
 import androidx.annotation.NonNull;
 
+import com.inappstory.sdk.banners.DefaultBannerPlace;
+import com.inappstory.sdk.core.banners.IBannerPlaceAppearance;
+import com.inappstory.sdk.core.banners.ICustomBannerPlace;
 import com.inappstory.sdk.stories.ui.widgets.LoadProgressBar;
 import com.inappstory.sdk.stories.api.models.CachedSessionData;
 import com.inappstory.sdk.core.network.content.models.Image;
@@ -113,6 +116,7 @@ public class AppearanceManager {
         this.csListItemHeight = other.csListItemHeight;
         this.csListItemBorderVisibility = other.csListItemBorderVisibility;
         this.csListItemBorderColor = other.csListItemBorderColor;
+        this.csBannerPlaceInterface = other.csBannerPlaceInterface;
         this.csFavoriteListItemInterface = other.csFavoriteListItemInterface;
         this.csListItemInterface = other.csListItemInterface;
         this.csListUGCItemInterface = other.csListUGCItemInterface;
@@ -181,6 +185,8 @@ public class AppearanceManager {
     private IGetFavoriteListItem csFavoriteListItemInterface;
     private IStoriesListItem csListItemInterface;
     private IStoriesListUGCItem csListUGCItemInterface;
+
+    private ICustomBannerPlace csBannerPlaceInterface = new DefaultBannerPlace();
 
     private IStoryReaderLoaderView csStoryLoaderView;
 
@@ -1038,6 +1044,15 @@ public class AppearanceManager {
 
     public AppearanceManager csListItemInterface(IStoriesListItem csListItemInterface) {
         this.csListItemInterface = csListItemInterface;
+        return AppearanceManager.this;
+    }
+
+    public ICustomBannerPlace csBannerPlaceInterface() {
+        return csBannerPlaceInterface != null ? csBannerPlaceInterface : new DefaultBannerPlace();
+    }
+
+    public AppearanceManager csBannerPlaceInterface(ICustomBannerPlace csBannerPlaceInterface) {
+        this.csBannerPlaceInterface = csBannerPlaceInterface;
         return AppearanceManager.this;
     }
 

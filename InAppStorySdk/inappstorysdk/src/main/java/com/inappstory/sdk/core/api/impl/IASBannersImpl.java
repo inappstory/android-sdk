@@ -1,5 +1,7 @@
 package com.inappstory.sdk.core.api.impl;
 
+import android.util.Log;
+
 import com.inappstory.sdk.banners.BannerLoadCallback;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASBanners;
@@ -28,7 +30,7 @@ public class IASBannersImpl implements IASBanners {
 
     @Override
     public void loadBannerPlace(final String bannerPlace, BannerLoadCallback callback) {
-        BannerPlaceUseCase bannerPlaceUseCase = new BannerPlaceUseCase(core, bannerPlace, new ArrayList<String>());
+        BannerPlaceUseCase bannerPlaceUseCase = new BannerPlaceUseCase(core, bannerPlace, null);
 
         final IBannerPagerViewModel bannerPagerViewModel =
                 core.widgetViewModels().bannerPlaceViewModels().get(bannerPlace);
@@ -39,7 +41,7 @@ public class IASBannersImpl implements IASBanners {
                                 BannerPagerLoadStates.LOADING
                         )
         );
-
+        Log.e("bannerPlace", "loadBannerPlace " + bannerPagerViewModel);
         bannerPlaceUseCase.get(new LoadBannerPlaceCallback() {
             @Override
             public void success(List<IBanner> content) {

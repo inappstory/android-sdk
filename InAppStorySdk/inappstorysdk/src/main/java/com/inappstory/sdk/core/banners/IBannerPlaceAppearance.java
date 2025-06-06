@@ -9,7 +9,7 @@ public interface IBannerPlaceAppearance {
 
     boolean autoplay(); // default = false?
 
-    boolean autoplayDelay(); // default = 1000ms?
+    int autoplayDelay(); // default = 1000ms?
 
     int animationSpeed(); // in ms, default = 300ms
 }

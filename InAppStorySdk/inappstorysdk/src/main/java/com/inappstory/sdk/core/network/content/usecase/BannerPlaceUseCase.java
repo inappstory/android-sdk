@@ -9,7 +9,9 @@ import com.inappstory.sdk.core.data.IBanner;
 import com.inappstory.sdk.core.data.IInAppMessage;
 import com.inappstory.sdk.core.data.IReaderContent;
 import com.inappstory.sdk.core.inappmessages.InAppMessageFeedCallback;
+import com.inappstory.sdk.core.network.content.mock.MockBanners;
 import com.inappstory.sdk.core.network.content.models.BannerPlace;
+import com.inappstory.sdk.core.network.content.models.InAppMessage;
 import com.inappstory.sdk.core.network.content.models.InAppMessageFeed;
 import com.inappstory.sdk.core.utils.ConnectionCheck;
 import com.inappstory.sdk.core.utils.ConnectionCheckCallback;
@@ -58,16 +60,17 @@ public class BannerPlaceUseCase {
                         OpenSessionCallback openSessionCallback = new OpenSessionCallback() {
                             @Override
                             public void onSuccess(final RequestLocalParameters sessionParameters) {
-                                NetworkCallback<BannerPlace> networkCallback = new NetworkCallback<BannerPlace>() {
+                                NetworkCallback<InAppMessageFeed> networkCallback = new NetworkCallback<InAppMessageFeed>() {
                                     @Override
                                     public void onSuccess(
-                                            BannerPlace bannerPlaceResponse
+                                            InAppMessageFeed inAppMessages
                                     ) {
-                                        if (bannerPlaceResponse == null) {
+                                        if (inAppMessages == null) {
                                             loadError(loadCallback);
                                             return;
                                         }
-                                        core.contentLoader().changeIamWereLoadedStatus(TagsUtils.tagsHash(localTags));
+                                        BannerPlace bannerPlaceResponse =
+                                                new MockBanners().getMockBannerPlace(inAppMessages.messages(), placeId);
                                         boolean hasDeviceSupportedMessage = false;
                                         for (IBanner banner : bannerPlaceResponse.banners()) {
                                             hasDeviceSupportedMessage = true;
@@ -94,7 +97,7 @@ public class BannerPlaceUseCase {
 
                                     @Override
                                     public Type getType() {
-                                        return BannerPlace.class;
+                                        return InAppMessageFeed.class;
                                     }
 
                                     @Override
@@ -114,12 +117,12 @@ public class BannerPlaceUseCase {
                                     }
                                 };
                                 core.network().enqueue(
-                                        core.network().getApi().getBannerPlace(
-                                                placeId,
+                                        core.network().getApi().getInAppMessages(
                                                 1,
+                                                null,
                                                 TextUtils.join(",", localTags),
                                                 null,
-                                                "banners.slides",
+                                                "messages.slides",
                                                 sessionParameters.userId,
                                                 sessionParameters.sessionId,
                                                 sessionParameters.locale

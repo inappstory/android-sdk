@@ -1,6 +1,7 @@
 package com.inappstory.sdk.core.network.content.models;
 
 
+import com.inappstory.sdk.core.banners.BannerPlaceAppearance;
 import com.inappstory.sdk.core.banners.IBannerPlaceAppearance;
 import com.inappstory.sdk.core.data.IBanner;
 import com.inappstory.sdk.core.data.IReaderContentSlide;
@@ -205,6 +206,6 @@ public class Banner implements IBanner {
 
     @Override
     public IBannerPlaceAppearance bannerAppearance() {
-        return null;
+        return new BannerPlaceAppearance(appearance);
     }
 }
