@@ -69,6 +69,11 @@ public class IAMReaderJavascriptInterface {
     }
 
     @JavascriptInterface
+    public void writeToClipboard(String payload) {
+        slideViewModel.writeToClipboard(payload);
+    }
+
+    @JavascriptInterface
     public void storyShowNextSlide(long delay) {
         slideViewModel.storyShowNextSlide(delay);
     }

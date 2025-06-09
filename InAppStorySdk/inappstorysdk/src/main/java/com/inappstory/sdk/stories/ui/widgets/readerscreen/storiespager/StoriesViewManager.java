@@ -1,5 +1,9 @@
 package com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager;
 
+import static android.content.Context.CLIPBOARD_SERVICE;
+
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.media.AudioManager;
 import android.os.Handler;
@@ -24,6 +28,7 @@ import com.inappstory.sdk.core.utils.ConnectionCheck;
 import com.inappstory.sdk.core.utils.ConnectionCheckCallback;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.UpdateTimelineData;
+import com.inappstory.sdk.stories.api.models.WriteClipboardData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.ui.widgets.LoadProgressBar;
@@ -46,9 +51,11 @@ import com.inappstory.sdk.stories.ui.widgets.readerscreen.webview.StoriesWebView
 import com.inappstory.sdk.stories.utils.AudioModes;
 import com.inappstory.sdk.stories.utils.WebPageConvertCallback;
 import com.inappstory.sdk.stories.utils.WebPageConverter;
+import com.inappstory.sdk.utils.ClipboardUtils;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.util.Objects;
 import java.util.regex.Pattern;
 
 public class StoriesViewManager {
@@ -414,6 +421,10 @@ public class StoriesViewManager {
                     readerScreen
             );
         }
+    }
+
+    public void writeToClipboard(String payload) {
+        ClipboardUtils.writeToClipboard(payload, core.appContext());
     }
 
     public void slideClick(String payload) {

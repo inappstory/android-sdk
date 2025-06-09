@@ -44,6 +44,13 @@ public class WebAppInterface {
         logMethod(payload);
     }
 
+
+    @JavascriptInterface
+    public void writeToClipboard(String payload) {
+        manager.writeToClipboard(payload);
+        logMethod(payload);
+    }
+
     @JavascriptInterface
     public void updateTimeline(String data) {
         if (data != null) {

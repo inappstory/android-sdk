@@ -1,5 +1,9 @@
 package com.inappstory.sdk.game.reader;
 
+import static android.content.Context.CLIPBOARD_SERVICE;
+
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.media.AudioManager;
 import android.webkit.JavascriptInterface;
@@ -29,6 +33,7 @@ import com.inappstory.sdk.network.models.Response;
 import com.inappstory.sdk.share.IShareCompleteListener;
 import com.inappstory.sdk.stories.api.models.UrlObject;
 import com.inappstory.sdk.stories.api.models.WebResource;
+import com.inappstory.sdk.stories.api.models.WriteClipboardData;
 import com.inappstory.sdk.stories.outercallbacks.common.gamereader.GameReaderCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.CallToActionCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickAction;
@@ -37,11 +42,13 @@ import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.ui.views.IASWebView;
+import com.inappstory.sdk.utils.ClipboardUtils;
 import com.inappstory.sdk.utils.IAcceleratorInitCallback;
 import com.inappstory.sdk.utils.StringsUtils;
 
 import java.lang.reflect.Type;
 import java.util.List;
+import java.util.Objects;
 
 public class GameManager {
     public IASCore core() {
@@ -338,6 +345,10 @@ public class GameManager {
         return am.requestAudioFocus(host.audioFocusChangeListener,
                 AudioManager.STREAM_MUSIC,
                 AudioManager.AUDIOFOCUS_GAIN);
+    }
+
+    public void writeToClipboard(String payload) {
+        ClipboardUtils.writeToClipboard(payload, core.appContext());
     }
 
     void gameLoaded() {

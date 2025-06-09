@@ -1,6 +1,10 @@
 package com.inappstory.sdk.inappmessage.domain.reader;
 
 
+import static android.content.Context.CLIPBOARD_SERVICE;
+
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -22,6 +26,7 @@ import com.inappstory.sdk.stories.api.models.ContentId;
 import com.inappstory.sdk.stories.api.models.ContentIdWithIndex;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.SlideLinkObject;
+import com.inappstory.sdk.stories.api.models.WriteClipboardData;
 import com.inappstory.sdk.stories.cache.ContentIdAndType;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickAction;
 import com.inappstory.sdk.inappmessage.domain.stedata.CallToActionData;
@@ -30,10 +35,12 @@ import com.inappstory.sdk.stories.utils.Observer;
 import com.inappstory.sdk.stories.utils.SingleTimeEvent;
 import com.inappstory.sdk.stories.utils.WebPageConvertCallback;
 import com.inappstory.sdk.stories.utils.WebPageConverter;
+import com.inappstory.sdk.utils.ClipboardUtils;
 import com.inappstory.sdk.utils.StringsUtils;
 
 import java.lang.reflect.Type;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
 public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
@@ -216,6 +223,11 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
 
     public void storyShowPrev() {
 
+    }
+
+    @Override
+    public void writeToClipboard(String payload) {
+        ClipboardUtils.writeToClipboard(payload, core.appContext());
     }
 
     public void storyShowNextSlide(long delay) {

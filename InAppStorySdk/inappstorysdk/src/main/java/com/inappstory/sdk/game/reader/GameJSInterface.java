@@ -81,6 +81,13 @@ public class GameJSInterface {
         logMethod("");
     }
 
+
+    @JavascriptInterface
+    public void writeToClipboard(String payload) {
+        manager.writeToClipboard(payload);
+        logMethod(payload);
+    }
+
     private void logMethod(String payload) {
         InAppStoryManager.showDLog("JS_game_method_test",
                 manager.gameCenterId + " " + getMethodName() + " " + payload);

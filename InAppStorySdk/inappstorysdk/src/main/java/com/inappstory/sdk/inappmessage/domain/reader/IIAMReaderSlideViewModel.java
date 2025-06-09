@@ -47,6 +47,8 @@ public interface IIAMReaderSlideViewModel extends IReaderSlideViewModel {
 
     void storyShowPrev();
 
+    void writeToClipboard(String payload);
+
     void storyShowNextSlide(long delay);
 
     void storyShowNextSlide();
