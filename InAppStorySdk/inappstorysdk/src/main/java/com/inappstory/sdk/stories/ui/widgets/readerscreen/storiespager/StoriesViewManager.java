@@ -726,11 +726,6 @@ public class StoriesViewManager {
     }
 
     public void updateTimeline(final UpdateTimelineData data) {
-        if (data.action == null) return;
-        if (data.action.equals("before_start")) {
-            getPageManager().timelineManager.setCurrentIndex(data.slideIndex);
-            return;
-        }
         if (data.showError) {
             slideLoadError(data.slideIndex);
             getPageManager().clearSlideTimerFromJS();
@@ -744,12 +739,15 @@ public class StoriesViewManager {
             clearShowLoader();
             pageManager.host.storyLoadedSuccess();
         }
+        if (data.action == null) return;
         if (data.action.equals("start")) {
             getPageManager().startSlideTimerFromJS(data.duration, data.currentTime, data.slideIndex);
         } else if (data.action.equals("pause")) {
             getPageManager().pauseSlideTimerFromJS();
         } else if (data.action.equals("stop")) {
             getPageManager().pauseSlideTimerFromJS();
+        } else if (data.action.equals("before_start")) {
+            getPageManager().timelineManager.setCurrentIndex(data.slideIndex);
         }
     }
 
