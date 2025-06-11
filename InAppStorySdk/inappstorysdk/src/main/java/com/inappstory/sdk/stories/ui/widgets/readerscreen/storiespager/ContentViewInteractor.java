@@ -13,7 +13,7 @@ public interface ContentViewInteractor {
     void pauseSlide();
     void startSlide(IASCore core);
     void restartSlide(IASCore core);
-    void stopSlide();
+    void stopSlide(boolean newPage);
     void swipeUp();
 
     void clearSlide(int index);

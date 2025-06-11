@@ -145,14 +145,14 @@ public class IAMWebView extends IASWebView implements ContentViewInteractor {
     }
 
     @Override
-    public void stopSlide() {
+    public void stopSlide(boolean newPage) {
+        String funAfterCheck = "story_slide_stop('{\"prepareForRestart\": false}'); ";
         loadUrl("javascript:(function(){" +
                 "if ('story_slide_stop' in window) " +
                 "{" +
-                " window.story_slide_stop(); " +
-                "}" +
+                " window." + funAfterCheck +
+                " }" +
                 "})()");
-
         logMethod("story_slide_stop");
     }
 

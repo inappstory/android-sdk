@@ -539,12 +539,12 @@ public class StoriesViewManager {
         storyIsLoaded = true;
         int lastIndex = pageManager.parentManager.getByIdAndIndex(storyId).index();
         if ((slideIndex >= 0 && lastIndex != slideIndex)) {
-            stopStory();
+            stopStory(false);
         } else if (core
                 .screensManager()
                 .getStoryScreenHolder()
                 .currentOpenedStoryId() != storyId) {
-            stopStory();
+            stopStory(true);
             setLatestVisibleIndex(slideIndex);
         } else {
             setLatestVisibleIndex(slideIndex);
@@ -685,12 +685,12 @@ public class StoriesViewManager {
         );
     }
 
-    public void stopStory() {
-        storiesView.stopSlide();
+    public void stopStory(boolean newPage) {
+        storiesView.stopSlide(newPage);
     }
 
     public void autoSlideEnd() {
-        ((StoriesWebView)storiesView).autoSlideEnd();
+        ((StoriesWebView) storiesView).autoSlideEnd();
     }
 
     public void restartStory() {
@@ -745,6 +745,8 @@ public class StoriesViewManager {
             getPageManager().pauseSlideTimerFromJS();
         } else if (data.action.equals("stop")) {
             getPageManager().pauseSlideTimerFromJS();
+        } else if (data.action.equals("before_start")) {
+            getPageManager().timelineManager.setCurrentIndex(data.slideIndex);
         }
     }
 

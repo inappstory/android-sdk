@@ -1,16 +1,9 @@
 package com.inappstory.sdk.stories.ui.widgets.readerscreen.progresstimeline;
 
-import android.os.Looper;
-import android.util.Log;
-import android.view.View;
-
 import com.inappstory.sdk.core.data.IContentWithTimeline;
 import com.inappstory.sdk.utils.ScheduledTPEManager;
 
-import java.util.Objects;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 public class StoryTimelineManager {
@@ -128,7 +121,7 @@ public class StoryTimelineManager {
         }
     }
 
-    private void setProgress(final float progress) {
+    public void setProgress(final float progress) {
         StoryTimeline localHost = host;
         if (localHost != null) {
             localHost.post(new Runnable() {

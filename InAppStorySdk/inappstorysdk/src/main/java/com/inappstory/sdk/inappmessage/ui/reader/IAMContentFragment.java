@@ -67,7 +67,7 @@ public class IAMContentFragment extends Fragment implements Observer<IAMReaderSl
             readerSlideViewModel.removeSubscriber(this);
             readerSlideViewModel.singleTimeEvents().unsubscribe(callToActionDataObserver);
         }
-        contentWebView.stopSlide();
+        contentWebView.stopSlide(false);
         super.onDestroyView();
     }
 

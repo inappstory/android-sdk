@@ -291,7 +291,7 @@ public class ReaderPageManager implements IReaderSlideViewModel {
         isPaused = false;
         if (storyId != this.storyId) {
             pauseTimers();
-            webViewManager.stopStory();
+            webViewManager.stopStory(true);
         } else {
             webViewManager.playStory();
             webViewManager.resumeStory();
@@ -308,13 +308,17 @@ public class ReaderPageManager implements IReaderSlideViewModel {
         if (currentId == storyId) return;
         if (checkIfManagersIsNull()) return;
         pauseTimers();
-        webViewManager.stopStory();
+        webViewManager.stopStory(true);
         isPaused = false;
         //stop timers and timelines
     }
 
     public void pauseSlideTimerFromJS() {
         pauseTimers();
+    }
+
+    public void stopSlideTimerFromJS() {
+        stopTimers();
     }
 
     public void clearSlideTimerFromJS() {
@@ -435,6 +439,7 @@ public class ReaderPageManager implements IReaderSlideViewModel {
     public void nextSlideAuto() {
         if (webViewManager == null) return;
         pauseTimers();
+        webViewManager.stopStory(false);
         webViewManager.autoSlideEnd();
     }
 
@@ -447,7 +452,7 @@ public class ReaderPageManager implements IReaderSlideViewModel {
         int lastIndex = slideIndex;
         if (lastIndex < story.slidesCount() - 1) {
             if (webViewManager == null) return;
-            webViewManager.stopStory();
+            webViewManager.stopStory(false);
             lastIndex++;
             parentManager.getByIdAndIndex(storyId).index(lastIndex);
             slideIndex = lastIndex;
@@ -458,6 +463,11 @@ public class ReaderPageManager implements IReaderSlideViewModel {
     }
 
     private void pauseTimers() {
+        timerManager.pauseSlideTimer();
+        timelineManager.stopTimer();
+    }
+
+    private void stopTimers() {
         timerManager.pauseSlideTimer();
         timelineManager.stopTimer();
     }
@@ -535,7 +545,7 @@ public class ReaderPageManager implements IReaderSlideViewModel {
         int lastIndex = slideIndex;
         if (lastIndex > 0) {
             if (webViewManager == null) return;
-            webViewManager.stopStory();
+            webViewManager.stopStory(false);
             lastIndex--;
             parentManager.getByIdAndIndex(storyId).index(lastIndex);
             slideIndex = lastIndex;
