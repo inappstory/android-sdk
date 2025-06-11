@@ -726,6 +726,7 @@ public class StoriesViewManager {
     }
 
     public void updateTimeline(final UpdateTimelineData data) {
+        if (loadedIndex != data.slideIndex) return;
         if (data.showError) {
             slideLoadError(data.slideIndex);
             getPageManager().clearSlideTimerFromJS();
