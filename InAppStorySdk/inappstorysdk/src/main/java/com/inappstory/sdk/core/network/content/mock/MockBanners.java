@@ -24,7 +24,7 @@ public class MockBanners {
 
     public Banner getMockBanner(InAppMessage inAppMessage) {
         Banner banner = new Banner();
-        banner.id = random.nextInt(1000);
+        banner.id = inAppMessage.id();
         banner.appearance = new HashMap<>();
         banner.appearance.put("single_banner_aspect_ratio", 2f);
         banner.appearance.put("corner_radius", 16);

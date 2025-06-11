@@ -9,6 +9,7 @@ import androidx.viewpager.widget.PagerAdapter;
 
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.banners.IBannerViewModel;
 import com.inappstory.sdk.core.banners.ICustomBannerPlace;
 import com.inappstory.sdk.core.data.IBanner;
 
@@ -43,20 +44,21 @@ public class BannerPagerAdapter extends PagerAdapter {
     @Override
     public Object instantiateItem(@NonNull ViewGroup container, int position) {
         BannerView bannerView = new BannerView(container.getContext());
+        Log.e("BannerPagerAdapter", "instantiateItem " + position);
         IBanner banner = banners.get(position % banners.size());
         int bannerId = banner.id();
-        // bannerView.setSizes(itemWidth, maxHeight, banner.bannerAppearance().singleBannerAspectRatio());
+        IBannerViewModel bannerViewModel = core
+                .widgetViewModels()
+                .bannerViewModels()
+                .get(
+                        bannerId,
+                        bannerPlace
+                );
         bannerView.viewModel(
-                core
-                        .widgetViewModels()
-                        .bannerViewModels()
-                        .get(
-                                bannerId,
-                                bannerPlace
-                        )
+                bannerViewModel
         );
+        bannerViewModel.loadContent();
         container.addView(bannerView);
-        Log.e("getPageWidth", "" + getPageWidth(position));
         return bannerView;
     }
 
@@ -67,6 +69,7 @@ public class BannerPagerAdapter extends PagerAdapter {
 
     @Override
     public void destroyItem(@NonNull ViewGroup container, int position, @NonNull Object object) {
+        Log.e("BannerPagerAdapter", "destroyItem " + position);
         if (object instanceof BannerView)
             container.removeView((BannerView) object);
     }

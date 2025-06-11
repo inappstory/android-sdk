@@ -22,6 +22,7 @@ import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
+import com.inappstory.sdk.core.ui.screens.IReaderSlideViewModel;
 import com.inappstory.sdk.inappmessage.domain.reader.IIAMReaderSlideViewModel;
 import com.inappstory.sdk.stories.ui.views.IASWebView;
 import com.inappstory.sdk.stories.ui.views.IASWebViewClient;
@@ -389,7 +390,7 @@ public class StoriesWebView extends IASWebView implements ContentViewInteractor 
     }
 
     @Override
-    public void slideViewModel(IIAMReaderSlideViewModel slideViewModel) {
+    public void slideViewModel(IReaderSlideViewModel slideViewModel) {
 
     }
 

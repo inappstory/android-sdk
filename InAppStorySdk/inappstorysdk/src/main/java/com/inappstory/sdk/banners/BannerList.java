@@ -143,11 +143,11 @@ public class BannerList extends RelativeLayout implements Observer<BannerPagerSt
                                 0
                         );
                         bannerPager.setPageMargin(Sizes.dpToPxExt(customBannerPlace.bannersGap(), getContext()));
-                        float iw = (Sizes.getScreenSize(getContext()).x -
-                                Sizes.dpToPxExt((int) ((1 + customBannerPlace.bannersOnScreen()) * customBannerPlace.bannersGap() +
-                                        customBannerPlace.prevBannerOffset() + customBannerPlace.nextBannerOffset()
-                                ), getContext())) / (1f * customBannerPlace.bannersOnScreen());
-                      //  float prec = (width - 1.5f * Sizes.dpToPxExt(customBannerPlace.bannersGap(), getContext())) / width;
+                        float iw = Sizes.getScreenSize(getContext()).x - Sizes.dpToPxExt(customBannerPlace.prevBannerOffset(), getContext()) - Sizes.dpToPxExt(customBannerPlace.nextBannerOffset(), getContext());
+                        for (int i = 0; i < customBannerPlace.bannersOnScreen() - 1; i++) {
+                            iw -= Sizes.dpToPxExt(customBannerPlace.bannersGap(), getContext());
+                        }
+                        float igap = Sizes.getScreenSize(getContext()).x - Sizes.dpToPxExt(customBannerPlace.prevBannerOffset(), getContext()) - Sizes.dpToPxExt(customBannerPlace.nextBannerOffset(), getContext());
                         bannerPager.requestLayout();
                         bannerPager.setAdapter(
                                 new BannerPagerAdapter(
@@ -155,7 +155,7 @@ public class BannerList extends RelativeLayout implements Observer<BannerPagerSt
                                         newValue.getItems(),
                                         bannerPlace,
                                         false,
-                                        0.5f,
+                                        (iw / igap) / customBannerPlace.bannersOnScreen(),
                                         height
                                 )
                         );

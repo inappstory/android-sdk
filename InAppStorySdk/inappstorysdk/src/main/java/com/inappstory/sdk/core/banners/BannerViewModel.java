@@ -118,6 +118,7 @@ public class BannerViewModel implements IBannerViewModel {
                 stateObservable.updateValue(
                         readerState
                                 .copy()
+                                .loadState(BannerLoadStates.LOADED)
                                 .contentStatus(1)
                                 .content(firstData)
                 );
@@ -142,7 +143,7 @@ public class BannerViewModel implements IBannerViewModel {
         BannerDownloadManager downloadManager = core.contentLoader().bannerDownloadManager();
         downloadManager.addSubscriber(this);
         if (readerContent != null && downloadManager.allSlidesLoaded(readerContent)) {
-            updateCurrentLoadState(BannerLoadStates.LOADED);
+        //    updateCurrentLoadState(BannerLoadStates.LOADED);
             slideLoadSuccess(0);
         } else {
             if (state.loadState() != BannerLoadStates.LOADING) {
@@ -155,7 +156,7 @@ public class BannerViewModel implements IBannerViewModel {
 
     @Override
     public void addSubscriber(Observer<BannerState> observable) {
-        this.stateObservable.subscribe(observable);
+        this.stateObservable.subscribeAndGetValue(observable);
     }
 
     @Override
@@ -252,7 +253,7 @@ public class BannerViewModel implements IBannerViewModel {
 
     @Override
     public void slideLoaded(String data) {
-        updateCurrentLoadState(BannerLoadStates.LOADED);
+        //updateCurrentLoadState(BannerLoadStates.LOADED);
         stateObservable.updateValue(
                 stateObservable
                         .getValue()

@@ -66,7 +66,7 @@ public class IASWebView extends WebView {
     public void sendWebConsoleLog(
             ConsoleMessage consoleMessage,
             String storyId,
-            int contentType, // 0 - story, 1 - iam
+            int contentType, // 0 - story, 1 - iam, 2 - banner
             int slideIndex
     ) {
         WebConsoleLog log = new WebConsoleLog();

@@ -1,4 +1,4 @@
-package com.inappstory.sdk.inappmessage.ui.reader;
+package com.inappstory.sdk.banners;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -16,71 +16,44 @@ import androidx.annotation.Nullable;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
-import com.inappstory.sdk.core.exceptions.NotImplementedMethodException;
+import com.inappstory.sdk.core.banners.BannerJavascriptInterface;
+import com.inappstory.sdk.core.banners.BannerViewModel;
+import com.inappstory.sdk.core.banners.IBannerViewModel;
 import com.inappstory.sdk.core.ui.screens.IReaderSlideViewModel;
-import com.inappstory.sdk.inappmessage.domain.reader.IIAMReaderSlideViewModel;
+import com.inappstory.sdk.inappmessage.ui.reader.IAMReaderJavascriptInterface;
 import com.inappstory.sdk.stories.api.models.ContentIdWithIndex;
 import com.inappstory.sdk.stories.ui.views.IASWebView;
 import com.inappstory.sdk.stories.ui.views.IASWebViewClient;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ContentViewInteractor;
-import com.inappstory.sdk.utils.OnSwipeTouchListener;
 
-public class IAMWebView extends IASWebView implements ContentViewInteractor {
+public class BannerWebView extends IASWebView implements ContentViewInteractor {
     private boolean clientIsSet = false;
 
-    @Override
-    public void slideViewModel(IReaderSlideViewModel slideViewModel) {
-        this.slideViewModel = (IIAMReaderSlideViewModel) slideViewModel;
-    }
-
-    private IIAMReaderSlideViewModel slideViewModel;
-
-    public IAMWebView(
-            @NonNull Context context
-    ) {
+    public BannerWebView(@NonNull Context context) {
         super(context);
     }
 
-    public IAMWebView(
-            @NonNull Context context,
-            @Nullable AttributeSet attrs
-    ) {
+    public BannerWebView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
     }
 
-    public IAMWebView(
-            @NonNull Context context,
-            @Nullable AttributeSet attrs,
-            int defStyleAttr
-    ) {
+    public BannerWebView(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
     }
 
-    @Override
-    protected void init() {
-        super.init();
-        setOnTouchListener(new OnSwipeTouchListener(getContext()) {
-            @Override
-            public void onSwipeUp() {
-                swipeUp();
-            }
-        });
-    }
+    IBannerViewModel slideViewModel;
 
     private void logMethod(String payload) {
         if (slideViewModel == null) return;
-        ContentIdWithIndex contentIdWithIndex = slideViewModel.iamId();
-        if (contentIdWithIndex != null)
-            InAppStoryManager.showDLog("JS_method_call",
-                    contentIdWithIndex.id() + " " + contentIdWithIndex.index() + " " + payload);
+        int contentIdWithIndex = slideViewModel.contentIdAndType().contentId;
+        InAppStoryManager.showDLog("JS_method_call",
+                contentIdWithIndex + " " + 0 + " " + payload);
     }
 
     @Override
     public void loadSlide(String content) {
         if (slideViewModel == null) return;
-        String newContent = slideViewModel.modifyContent(
-                setDir(content)
-        );
+        String newContent = setDir(content);
         loadDataWithBaseURL(
                 "file:///data/",
                 newContent,
@@ -90,15 +63,20 @@ public class IAMWebView extends IASWebView implements ContentViewInteractor {
         );
     }
 
-    @Deprecated
-    private String temporaryUpdateToWhiteBackground(String html) {
-        return updateHead(html, "<style> html { background: white !important; } </style>");
+    @Override
+    public void replaceSlide(String newContent) {
+
     }
 
     @Override
-    public void replaceSlide(String newContent) {
-        evaluateJavascript("(function(){show_slide(\"" + newContent + "\");})()", null);
-        logMethod("show_slide");
+    public void startSlide(IASCore core) {
+        loadUrl("javascript:(function(){" +
+                "if ('story_slide_start' in window) " +
+                "{" +
+                " window.story_slide_start('{\"muted\": false}');" +
+                "}" +
+                "})()");
+        logMethod("story_slide_start");
     }
 
 
@@ -112,17 +90,6 @@ public class IAMWebView extends IASWebView implements ContentViewInteractor {
                 "})()");
 
         logMethod("story_slide_pause");
-    }
-
-    @Override
-    public void startSlide(IASCore core) {
-        loadUrl("javascript:(function(){" +
-                "if ('story_slide_start' in window) " +
-                "{" +
-                " window.story_slide_start('{\"muted\": false}');" +
-                "}" +
-                "})()");
-        logMethod("story_slide_start");
     }
 
     @Override
@@ -161,8 +128,7 @@ public class IAMWebView extends IASWebView implements ContentViewInteractor {
 
     @Override
     public void swipeUp() {
-        loadUrl("javascript:window.story_slide_swipe_up()");
-        logMethod("story_slide_swipe_up");
+
     }
 
     @Override
@@ -176,7 +142,6 @@ public class IAMWebView extends IASWebView implements ContentViewInteractor {
     public void loadJsApiResponse(String result, String cb) {
         evaluateJavascript(cb + "('" + result + "');", null);
     }
-
 
     @Override
     public Context getActivityContext() {
@@ -194,17 +159,12 @@ public class IAMWebView extends IASWebView implements ContentViewInteractor {
 
     @Override
     public void cancelDialog(String id) {
-        throw new NotImplementedMethodException();
+
     }
 
     @Override
     public void sendDialog(String id, String data) {
-        throw new NotImplementedMethodException();
-    }
 
-    @Override
-    public void destroyView() {
-        super.destroyView();
     }
 
     @Override
@@ -214,26 +174,25 @@ public class IAMWebView extends IASWebView implements ContentViewInteractor {
 
     @Override
     public void shareComplete(String stId, boolean success) {
-        throw new NotImplementedMethodException();
+
     }
 
     @Override
     public void freezeUI() {
-        throw new NotImplementedMethodException();
+
     }
 
     @Override
     public void unfreezeUI() {
-        throw new NotImplementedMethodException();
-    }
 
+    }
 
     @Override
     public void checkIfClientIsSet() {
         if (!clientIsSet) {
             if (slideViewModel == null) return;
             addJavascriptInterface(
-                    new IAMReaderJavascriptInterface(slideViewModel),
+                    new BannerJavascriptInterface(slideViewModel),
                     "Android"
             );
             setWebViewClient(new IASWebViewClient());
@@ -258,15 +217,13 @@ public class IAMWebView extends IASWebView implements ContentViewInteractor {
 
                 @Override
                 public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
-                    ContentIdWithIndex idWithIndex = slideViewModel.iamId();
-                    if (idWithIndex != null) {
-                        sendWebConsoleLog(
-                                consoleMessage,
-                                Integer.toString(idWithIndex.id()),
-                                1,
-                                idWithIndex.index()
-                        );
-                    }
+                    int id = slideViewModel.contentIdAndType().contentId;
+                    sendWebConsoleLog(
+                            consoleMessage,
+                            Integer.toString(id),
+                            2,
+                            0
+                    );
 
                     Log.d("InAppStory_SDK_Web", consoleMessage.messageLevel().name() + ": "
                             + consoleMessage.message() + " -- From line "
@@ -282,13 +239,16 @@ public class IAMWebView extends IASWebView implements ContentViewInteractor {
 
     @Override
     public void screenshotShare(String id) {
-        evaluateJavascript("share_slide_screenshot(\"" + id + "\");", null);
-        logMethod("share_slide_screenshot");
+
     }
 
     @Override
     public void goodsWidgetComplete(String widgetId) {
-        throw new NotImplementedMethodException();
+
     }
 
+    @Override
+    public void slideViewModel(IReaderSlideViewModel slideViewModel) {
+        this.slideViewModel = (IBannerViewModel) slideViewModel;
+    }
 }

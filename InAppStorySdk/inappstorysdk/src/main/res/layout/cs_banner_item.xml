@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:id="@+id/bannerContainer"
     android:layout_height="match_parent">
-    <com.inappstory.sdk.stories.ui.views.IASWebView
+    <com.inappstory.sdk.banners.BannerWebView
         android:layout_width="match_parent"
         android:id="@+id/contentWebView"
         android:layout_height="match_parent"/>

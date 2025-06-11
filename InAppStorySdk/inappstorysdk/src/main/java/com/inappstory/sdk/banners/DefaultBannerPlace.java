@@ -9,7 +9,7 @@ import com.inappstory.sdk.core.banners.ICustomBannerPlace;
 public class DefaultBannerPlace implements ICustomBannerPlace {
     @Override
     public int bannersOnScreen() {
-        return 2;
+        return 1;
     }
 
     @Override

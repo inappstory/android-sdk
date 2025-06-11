@@ -7,6 +7,7 @@ import com.inappstory.sdk.stories.utils.Observer;
 public interface IBannerViewModel extends IReaderSlideViewModel {
     BannerState getCurrentBannerState();
     BannerData getCurrentBannerData();
+
     void addSubscriber(Observer<BannerState> observer);
     void removeSubscriber(Observer<BannerState> observer);
     void updateCurrentLoadState(BannerLoadStates bannerLoadState);

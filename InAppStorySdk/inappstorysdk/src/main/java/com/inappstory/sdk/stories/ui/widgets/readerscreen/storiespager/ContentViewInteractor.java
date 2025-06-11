@@ -3,6 +3,7 @@ package com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager;
 import android.content.Context;
 
 import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.ui.screens.IReaderSlideViewModel;
 import com.inappstory.sdk.inappmessage.domain.reader.IIAMReaderSlideViewModel;
 
 public interface ContentViewInteractor {
@@ -10,15 +11,15 @@ public interface ContentViewInteractor {
     void loadSlide(String content);
     void replaceSlide(String newContent);
 
-    void pauseSlide();
     void startSlide(IASCore core);
+    void pauseSlide();
+    void resumeSlide();
     void restartSlide(IASCore core);
     void stopSlide();
-    void swipeUp();
 
+    void swipeUp();
     void clearSlide(int index);
     void loadJsApiResponse(String result, String cb);
-    void resumeSlide();
     Context getActivityContext();
     void changeSoundStatus(IASCore core);
     void cancelDialog(String id);
@@ -32,5 +33,5 @@ public interface ContentViewInteractor {
     void screenshotShare(String id);
     void goodsWidgetComplete(String widgetId);
 
-    void slideViewModel(IIAMReaderSlideViewModel slideViewModel);
+    void slideViewModel(IReaderSlideViewModel slideViewModel);
 }
