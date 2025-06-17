@@ -446,19 +446,7 @@ public class StoriesActivity extends IASActivity implements BaseStoryScreen, Sho
         }
 
         IASCore core = inAppStoryManager.iasCore();
-        Locale lang = ((IASDataSettingsHolder)core.settingsAPI()).lang();
 
-        Resources resources = getResources();
-        Configuration configuration = resources.getConfiguration();
-        configuration.setLocale(lang);
-        configuration.setLayoutDirection(lang);
-        Locale.setDefault(lang);
-        resources.updateConfiguration(configuration, resources.getDisplayMetrics());
-
-
-        int navColor = appearanceSettings.csNavBarColor();
-        //   if (navColor != 0)
-        //       SystemUiUtils.setNavBarColor(navColor, getWindow());
         core.screensManager().getStoryScreenHolder().subscribeScreen(StoriesActivity.this);
         View view = getCurrentFocus();
         if (view != null) {
