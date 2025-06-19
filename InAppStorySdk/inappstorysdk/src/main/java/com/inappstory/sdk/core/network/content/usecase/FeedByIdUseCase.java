@@ -198,7 +198,7 @@ public class FeedByIdUseCase {
                         core.sessionManager().useOrOpenSession(
                                 new OpenSessionCallback() {
                                     @Override
-                                    public void onSuccess(final RequestLocalParameters requestLocalParameters) {
+                                    public void onSuccess(final RequestLocalParameters sessionParameters) {
                                         final String loadStoriesUID =
                                                 core.statistic().profiling().addTask("api_story_list");
                                         core.network().enqueue(
@@ -210,9 +210,9 @@ public class FeedByIdUseCase {
                                                                 ((IASDataSettingsHolder) core.settingsAPI()).tags()),
                                                         null,
                                                         "stories.slides",
-                                                        requestLocalParameters.userId,
-                                                        requestLocalParameters.sessionId,
-                                                        requestLocalParameters.locale
+                                                        sessionParameters.userId,
+                                                        sessionParameters.sessionId,
+                                                        sessionParameters.locale
                                                 ),
                                                 new LoadFeedCallback() {
                                                     @Override
@@ -224,7 +224,7 @@ public class FeedByIdUseCase {
                                                             core.statistic().profiling().setReady(loadStoriesUID);
                                                             callback.onSuccess(
                                                                     response.stories,
-                                                                    requestLocalParameters,
+                                                                    sessionParameters,
                                                                     response.hasFavorite(),
                                                                     response.getFeedId()
                                                             );
@@ -247,16 +247,16 @@ public class FeedByIdUseCase {
                                                         core.sessionManager().closeSession(
                                                                 true,
                                                                 false,
-                                                                requestLocalParameters.locale,
-                                                                requestLocalParameters.userId,
-                                                                requestLocalParameters.sessionId
+                                                                sessionParameters.locale,
+                                                                sessionParameters.userId,
+                                                                sessionParameters.sessionId
                                                         );
 
                                                         if (retry)
                                                             loadFeed(feed, callback, false);
                                                     }
                                                 },
-                                                requestLocalParameters
+                                                sessionParameters
                                         );
                                     }
 

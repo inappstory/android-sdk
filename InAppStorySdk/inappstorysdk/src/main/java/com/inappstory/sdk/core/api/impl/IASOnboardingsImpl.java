@@ -98,7 +98,7 @@ public class IASOnboardingsImpl implements IASOnboardings {
         }
         core.sessionManager().useOrOpenSession(new OpenSessionCallback() {
             @Override
-            public void onSuccess(final RequestLocalParameters requestLocalParameters) {
+            public void onSuccess(final RequestLocalParameters sessionParameters) {
                 final String onboardUID =
                         core.statistic().profiling().addTask("api_onboarding");
                 core.network().enqueue(
@@ -108,9 +108,9 @@ public class IASOnboardingsImpl implements IASOnboardings {
                                 limit,
                                 localTags,
                                 "stories.slides",
-                                requestLocalParameters.userId,
-                                requestLocalParameters.sessionId,
-                                requestLocalParameters.locale
+                                sessionParameters.userId,
+                                sessionParameters.sessionId,
+                                sessionParameters.locale
                         ),
                         new LoadFeedCallback() {
                             @Override
@@ -139,7 +139,7 @@ public class IASOnboardingsImpl implements IASOnboardings {
                                         notOpened,
                                         context,
                                         appearanceManager,
-                                        requestLocalParameters.sessionId,
+                                        sessionParameters.sessionId,
                                         usedFeed
                                 );
                             }
@@ -156,7 +156,7 @@ public class IASOnboardingsImpl implements IASOnboardings {
                                 loadOnboardingError(usedFeed, "Can't load onboardings: timeout");
                             }
                         },
-                        requestLocalParameters
+                        sessionParameters
                 );
             }
 

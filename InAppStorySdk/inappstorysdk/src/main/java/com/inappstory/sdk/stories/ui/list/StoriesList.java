@@ -369,7 +369,7 @@ public class StoriesList extends RecyclerView {
                         core.sessionManager().useOrOpenSession(
                                 new OpenSessionCallback() {
                                     @Override
-                                    public void onSuccess(RequestLocalParameters requestLocalParameters) {
+                                    public void onSuccess(RequestLocalParameters sessionParameters) {
                                         core.statistic().storiesV2().sendViewStory(
                                                 newIndexes,
                                                 isFavoriteList ?
@@ -378,7 +378,7 @@ public class StoriesList extends RecyclerView {
                                                 feedId
                                         );
                                         core.statistic().storiesV1(
-                                                requestLocalParameters.sessionId,
+                                                sessionParameters.sessionId,
                                                 new GetStatisticV1Callback() {
                                                     @Override
                                                     public void get(@NonNull IASStatisticStoriesV1 manager) {

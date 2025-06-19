@@ -32,7 +32,7 @@ public class InAppMessageByIdUseCase {
                     public void success() {
                         core.sessionManager().useOrOpenSession(new OpenSessionCallback() {
                             @Override
-                            public void onSuccess(RequestLocalParameters requestLocalParameters) {
+                            public void onSuccess(RequestLocalParameters sessionParameters) {
                                 NetworkClient networkClient = core.network();
                                 networkClient.enqueue(
                                         networkClient.getApi().getInAppMessage(
@@ -40,9 +40,9 @@ public class InAppMessageByIdUseCase {
                                                 1,
                                                 null,
                                                 "slides,layout",
-                                                requestLocalParameters.userId,
-                                                requestLocalParameters.sessionId,
-                                                requestLocalParameters.locale
+                                                sessionParameters.userId,
+                                                sessionParameters.sessionId,
+                                                sessionParameters.locale
                                         ),
                                         new NetworkCallback<InAppMessage>() {
                                             @Override
@@ -68,7 +68,7 @@ public class InAppMessageByIdUseCase {
                                                 return InAppMessage.class;
                                             }
                                         },
-                                        requestLocalParameters
+                                        sessionParameters
                                 );
                             }
 

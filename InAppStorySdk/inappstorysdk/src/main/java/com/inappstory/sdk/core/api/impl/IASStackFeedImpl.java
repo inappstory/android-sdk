@@ -92,7 +92,7 @@ public class IASStackFeedImpl implements IASStackFeed {
                         : AppearanceManager.getCommonInstance();
         core.sessionManager().useOrOpenSession(new OpenSessionCallback() {
             @Override
-            public void onSuccess(final RequestLocalParameters requestLocalParameters) {
+            public void onSuccess(final RequestLocalParameters sessionParameters) {
                 core.network().enqueue(
                         core.network().getApi().getFeed(
                                 localFeed,
@@ -101,9 +101,9 @@ public class IASStackFeedImpl implements IASStackFeed {
                                 localTags,
                                 null,
                                 "stories.slides",
-                                requestLocalParameters.userId,
-                                requestLocalParameters.sessionId,
-                                requestLocalParameters.locale
+                                sessionParameters.userId,
+                                sessionParameters.sessionId,
+                                sessionParameters.locale
                         ),
                         new LoadFeedCallback() {
                             @Override
@@ -120,7 +120,7 @@ public class IASStackFeedImpl implements IASStackFeed {
                                     final StackStoryObserver observer = new StackStoryObserver(
                                             core,
                                             response.stories,
-                                            requestLocalParameters.sessionId,
+                                            sessionParameters.sessionId,
                                             localAppearanceManager,
                                             localUniqueStackId,
                                             localFeed,
@@ -175,7 +175,7 @@ public class IASStackFeedImpl implements IASStackFeed {
                                 stackFeedResult.error();
                             }
                         },
-                        requestLocalParameters
+                        sessionParameters
                 );
             }
 

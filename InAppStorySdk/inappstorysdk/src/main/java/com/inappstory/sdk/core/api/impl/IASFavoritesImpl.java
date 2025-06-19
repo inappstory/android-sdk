@@ -23,7 +23,7 @@ public class IASFavoritesImpl implements IASFavorites {
     public void removeAll() {
         core.sessionManager().useOrOpenSession(new OpenSessionCallback() {
             @Override
-            public void onSuccess(RequestLocalParameters requestLocalParameters) {
+            public void onSuccess(RequestLocalParameters sessionParameters) {
                 favoriteRemoveAll();
             }
 
@@ -38,7 +38,7 @@ public class IASFavoritesImpl implements IASFavorites {
     public void removeByStoryId(final int storyId) {
         core.sessionManager().useOrOpenSession(new OpenSessionCallback() {
             @Override
-            public void onSuccess(RequestLocalParameters requestLocalParameters) {
+            public void onSuccess(RequestLocalParameters sessionParameters) {
                 favoriteOrRemoveStory(storyId, false);
             }
 

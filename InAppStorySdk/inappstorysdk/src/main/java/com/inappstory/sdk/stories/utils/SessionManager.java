@@ -173,6 +173,7 @@ public class SessionManager {
             SessionRequestFields.preloadGame,
             SessionRequestFields.imagePlaceholders
     });
+
     private final String SESSION_EXPAND = TextUtils.join(",", new String[]{
             SessionRequestFields.sessionAssets
     });
@@ -340,6 +341,7 @@ public class SessionManager {
                                             callbacks.clear();
                                             localStaticCallbacks.addAll(staticCallbacks);
                                         }
+
                                         new Handler(Looper.getMainLooper()).post(new Runnable() {
                                             @Override
                                             public void run() {

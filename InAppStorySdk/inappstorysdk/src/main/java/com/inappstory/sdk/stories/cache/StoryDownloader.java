@@ -266,7 +266,7 @@ class StoryDownloader {
                     core.sessionManager().openSession(
                             new OpenSessionCallback() {
                                 @Override
-                                public void onSuccess(RequestLocalParameters requestLocalParameters) {
+                                public void onSuccess(RequestLocalParameters sessionParameters) {
                                     isRefreshing = false;
                                 }
 
@@ -392,7 +392,7 @@ class StoryDownloader {
 
         core.sessionManager().useOrOpenSession(new OpenSessionCallback() {
             @Override
-            public void onSuccess(final RequestLocalParameters requestLocalParameters) {
+            public void onSuccess(final RequestLocalParameters sessionParameters) {
                 final String loadStoriesUID = core.statistic().profiling().addTask("api_ugc_story_list");
                 core.network().enqueue(
                         core.network().getApi().getUgcStories(
@@ -430,7 +430,7 @@ class StoryDownloader {
                                 core.statistic().profiling().setReady(loadStoriesUID);
                                 generateCommonLoadListError(null);
                                 callback.onError(message);
-                                closeSessionIf424(requestLocalParameters.sessionId);
+                                closeSessionIf424(sessionParameters.sessionId);
                                 loadUgcStoryList(callback, payload);
                             }
                         });
@@ -456,7 +456,7 @@ class StoryDownloader {
                     public void success() {
                         core.sessionManager().useOrOpenSession(new OpenSessionCallback() {
                             @Override
-                            public void onSuccess(final RequestLocalParameters requestLocalParameters) {
+                            public void onSuccess(final RequestLocalParameters sessionParameters) {
                                 final String loadStoriesUID =
                                         core.statistic().profiling().addTask("api_story_list");
                                 String tags = TextUtils.join(
@@ -471,9 +471,9 @@ class StoryDownloader {
                                                 tags.isEmpty() ? null : tags,
                                                 null,
                                                 "stories.slides",
-                                                requestLocalParameters.userId,
-                                                requestLocalParameters.sessionId,
-                                                requestLocalParameters.locale
+                                                sessionParameters.userId,
+                                                sessionParameters.sessionId,
+                                                sessionParameters.locale
                                         ),
                                         new LoadFeedCallback() {
                                             @Override
@@ -485,7 +485,7 @@ class StoryDownloader {
                                                     core.statistic().profiling().setReady(loadStoriesUID);
                                                     callback.onSuccess(
                                                             response.stories,
-                                                            requestLocalParameters,
+                                                            sessionParameters,
                                                             response.hasFavorite(),
                                                             response.getFeedId()
                                                     );
@@ -505,12 +505,12 @@ class StoryDownloader {
                                                 core.statistic().profiling().setReady(loadStoriesUID);
                                                 generateCommonLoadListError(null);
                                                 callback.onError(message);
-                                                closeSessionIf424(requestLocalParameters.sessionId);
+                                                closeSessionIf424(sessionParameters.sessionId);
                                                 if (retry)
                                                     loadStoryListByFeed(feed, callback, false);
                                             }
                                         },
-                                        requestLocalParameters
+                                        sessionParameters
                                 );
                             }
 
@@ -541,7 +541,7 @@ class StoryDownloader {
         core.sessionManager().useOrOpenSession(
                 new OpenSessionCallback() {
                     @Override
-                    public void onSuccess(final RequestLocalParameters requestLocalParameters) {
+                    public void onSuccess(final RequestLocalParameters sessionParameters) {
                         final String loadStoriesUID = core.statistic().profiling().addTask(
                                 isFavorite ?
                                         "api_favorite_list" :
@@ -556,9 +556,9 @@ class StoryDownloader {
                                                         ((IASDataSettingsHolder) core.settingsAPI()).tags()),
                                         null,
                                         "slides",
-                                        requestLocalParameters.userId,
-                                        requestLocalParameters.sessionId,
-                                        requestLocalParameters.locale
+                                        sessionParameters.userId,
+                                        sessionParameters.sessionId,
+                                        sessionParameters.locale
                                 ),
                                 new LoadListCallback() {
                                     @Override
@@ -568,7 +568,7 @@ class StoryDownloader {
                                             callback.onError("");
                                         } else {
                                             core.statistic().profiling().setReady(loadStoriesUID);
-                                            callback.onSuccess(response, requestLocalParameters);
+                                            callback.onSuccess(response, sessionParameters);
                                         }
                                     }
 
@@ -585,12 +585,12 @@ class StoryDownloader {
                                         core.statistic().profiling().setReady(loadStoriesUID);
                                         generateCommonLoadListError(null);
                                         callback.onError(message);
-                                        closeSessionIf424(requestLocalParameters.sessionId);
+                                        closeSessionIf424(sessionParameters.sessionId);
                                         if (retry)
                                             loadStoryList(callback, isFavorite, false);
                                     }
                                 },
-                                requestLocalParameters
+                                sessionParameters
                         );
                     }
 

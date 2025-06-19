@@ -57,7 +57,7 @@ public class JsApiClient {
         core.sessionManager().useOrOpenSession(
                 new OpenSessionCallback() {
                     @Override
-                    public void onSuccess(RequestLocalParameters requestLocalParameters) {
+                    public void onSuccess(RequestLocalParameters sessionParameters) {
                         sendRequest(
                                 method,
                                 path,

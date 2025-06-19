@@ -38,7 +38,7 @@ public class StoryByStringIdUseCase {
                 new OpenSessionCallback() {
                     @Override
                     public void onSuccess(
-                            final RequestLocalParameters requestLocalParameters
+                            final RequestLocalParameters sessionParameters
                     ) {
                         final String storyUID = core.statistic().profiling().addTask("api_story");
                         core.network().enqueue(
@@ -48,9 +48,9 @@ public class StoryByStringIdUseCase {
                                         showOnce ? 1 : 0,
                                         1,
                                         EXPAND_STRING,
-                                        requestLocalParameters.userId,
-                                        requestLocalParameters.sessionId,
-                                        requestLocalParameters.locale
+                                        sessionParameters.userId,
+                                        sessionParameters.sessionId,
+                                        sessionParameters.locale
                                 ),
                                 new NetworkCallback<Story>() {
                                     @Override
@@ -78,7 +78,7 @@ public class StoryByStringIdUseCase {
                                         if (storyByIdCallback != null)
                                             storyByIdCallback.getStory(
                                                     response,
-                                                    requestLocalParameters.sessionId
+                                                    sessionParameters.sessionId
                                             );
                                     }
 
@@ -109,7 +109,7 @@ public class StoryByStringIdUseCase {
                                             storyByIdCallback.loadError(-1);
                                     }
                                 },
-                                requestLocalParameters
+                                sessionParameters
                         );
                     }
 

@@ -31,7 +31,7 @@ public class GetGameModelUseCase {
         inAppStoryManager.iasCore().sessionManager().useOrOpenSession(
                 new OpenSessionCallback() {
                     @Override
-                    public void onSuccess(RequestLocalParameters requestLocalParameters) {
+                    public void onSuccess(RequestLocalParameters sessionParameters) {
                         networkClient.enqueue(
                                 networkClient.getApi().getGameByInstanceId(
                                         gameId,
