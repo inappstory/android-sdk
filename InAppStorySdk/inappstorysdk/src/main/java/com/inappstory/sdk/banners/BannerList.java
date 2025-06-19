@@ -87,6 +87,7 @@ public class BannerList extends RelativeLayout implements Observer<BannerPagerSt
     private void init(Context context) {
         View.inflate(context, R.layout.cs_banner_widget, this);
         bannerPager = findViewById(R.id.banner_pager);
+        setVisibility(GONE);
     }
 
     public void setAppearanceManager(AppearanceManager appearanceManager) {
@@ -124,6 +125,7 @@ public class BannerList extends RelativeLayout implements Observer<BannerPagerSt
         Log.e("bannerPlace", "onUpdate " + bannerPagerViewModel);
         switch (newValue.loadState()) {
             case EMPTY:
+                setVisibility(GONE);
             case FAILED:
             case NONE:
             case LOADING:
@@ -133,6 +135,7 @@ public class BannerList extends RelativeLayout implements Observer<BannerPagerSt
                 new Handler(Looper.getMainLooper()).post(new Runnable() {
                     @Override
                     public void run() {
+                        setVisibility(VISIBLE);
                         ViewGroup.LayoutParams layoutParams = bannerPager.getLayoutParams();
                         int height = calculateHeight(newValue.getItems());
                         layoutParams.height = height;

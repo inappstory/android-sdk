@@ -14,4 +14,5 @@ public interface ICustomBannerPlace {
     IBannerPlaceArrowsNavigation arrowsNavigation();
 
     IBannerPlaceDotNavigation dotNavigation();
+
 }
