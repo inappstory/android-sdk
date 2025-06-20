@@ -7,5 +7,5 @@ import android.view.View;
 public interface ICustomIcon {
     View createIconView(Context context, SizeF maxSizeInPx);
 
-    void updateState(View iconView, CustomIconState iconState);
+    void updateState(View iconView, boolean active, boolean enabled);
 }

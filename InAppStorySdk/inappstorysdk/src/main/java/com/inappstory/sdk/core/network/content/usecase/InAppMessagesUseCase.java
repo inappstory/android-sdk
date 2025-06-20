@@ -107,7 +107,7 @@ public class InAppMessagesUseCase {
                                         core.network().getApi().getInAppMessages(
                                                 1,
                                                 ids,
-                                                TextUtils.join(",", localTags),
+                                                !localTags.isEmpty() ? TextUtils.join(",", localTags) : null,
                                                 null,
                                                 "messages.slides",
                                                 sessionParameters.userId,

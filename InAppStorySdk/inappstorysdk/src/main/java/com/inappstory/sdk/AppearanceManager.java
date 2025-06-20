@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.util.Log;
+import android.util.SizeF;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +14,7 @@ import android.widget.RelativeLayout;
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.core.ui.widgets.customicons.IASDefaultAppearanceIcons;
+import com.inappstory.sdk.core.ui.widgets.customicons.IASDefaultIcon;
 import com.inappstory.sdk.stories.ui.widgets.LoadProgressBar;
 import com.inappstory.sdk.stories.api.models.CachedSessionData;
 import com.inappstory.sdk.core.network.content.models.Image;
@@ -588,6 +590,80 @@ public class AppearanceManager {
         if (customAppearanceIcons == null) {
             customAppearanceIcons = new IASDefaultAppearanceIcons(AppearanceManager.this);
         }
+        return customAppearanceIcons;
+    }
+
+    private ICustomIcon generateDefaultIcon(final int iconId) {
+        return new ICustomIcon() {
+            @Override
+            public View createIconView(Context context, SizeF maxSizeInPx) {
+                return new IASDefaultIcon(context).setIconId(iconId);
+            }
+
+            @Override
+            public void updateState(View iconView, boolean active, boolean enabled) {
+                if (iconView instanceof IASDefaultIcon) {
+                    ((IASDefaultIcon) iconView).updateState(active, enabled);
+                }
+            }
+        };
+    }
+
+    private ICustomIconWithoutStates generateDefaultStatelessIcon(final int iconId) {
+        return new ICustomIconWithoutStates() {
+            @Override
+            public View createIconView(Context context, SizeF maxSizeInPx) {
+                return new IASDefaultIcon(context).setIconId(iconId);
+            }
+        };
+    }
+
+    public AppearanceManager csCustomIcons(
+            final ICustomIcon favorite,
+            final ICustomIcon like,
+            final ICustomIcon dislike,
+            final ICustomIcon share,
+            final ICustomIcon sound,
+            final ICustomIconWithoutStates close,
+            final ICustomIconWithoutStates refresh
+    ) {
+        customAppearanceIcons = new ICustomAppearanceIcons() {
+            @Override
+            public ICustomIcon favoriteIcon() {
+                return favorite != null ? favorite : generateDefaultIcon(csFavoriteIcon());
+            }
+
+            @Override
+            public ICustomIcon likeIcon() {
+                return like != null ? like : generateDefaultIcon(csLikeIcon());
+            }
+
+            @Override
+            public ICustomIcon dislikeIcon() {
+                return dislike != null ? dislike : generateDefaultIcon(csDislikeIcon());
+            }
+
+            @Override
+            public ICustomIcon shareIcon() {
+                return share != null ? share : generateDefaultIcon(csShareIcon());
+            }
+
+            @Override
+            public ICustomIcon soundIcon() {
+                return sound != null ? sound : generateDefaultIcon(csSoundIcon());
+            }
+
+            @Override
+            public ICustomIconWithoutStates closeIcon() {
+                return close != null ? close : generateDefaultStatelessIcon(csCloseIcon());
+            }
+
+            @Override
+            public ICustomIconWithoutStates refreshIcon() {
+                return refresh != null ? refresh : generateDefaultStatelessIcon(csRefreshIcon());
+            }
+        };
+        return this;
     }
 
     public int csFavoriteIcon() {

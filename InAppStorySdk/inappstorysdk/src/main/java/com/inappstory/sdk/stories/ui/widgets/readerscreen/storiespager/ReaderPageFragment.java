@@ -585,7 +585,7 @@ public class ReaderPageFragment extends Fragment {
         buttonsPanel.setOrientation(LinearLayout.HORIZONTAL);
         buttonsPanel.setBackgroundColor(Color.BLACK);
         buttonsPanel.setLayoutParams(buttonsPanelParams);
-        buttonsPanel.setIcons(appearanceSettings);
+        //buttonsPanel.setIcons(appearanceSettings);
     }
 
     private void addGradient(Context context, RelativeLayout relativeLayout) {

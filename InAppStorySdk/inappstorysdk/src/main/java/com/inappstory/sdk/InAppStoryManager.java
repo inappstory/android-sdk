@@ -852,7 +852,7 @@ public class InAppStoryManager implements IASBackPressHandler {
         return sendStatistic;
     }
 
-    private boolean sendStatistic = true;
+    private boolean sendStatistic = false;
 
     private void sendStatistic(final boolean sendStatistic) {
         useCore(new UseIASCoreCallback() {

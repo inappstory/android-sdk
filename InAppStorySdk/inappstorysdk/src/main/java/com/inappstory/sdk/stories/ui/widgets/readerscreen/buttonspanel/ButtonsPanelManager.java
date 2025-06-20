@@ -40,15 +40,7 @@ public class ButtonsPanelManager {
     }
 
     public void unlockShareButton() {
-        if (panel != null && panel.share != null) {
-            panel.share.post(new Runnable() {
-                @Override
-                public void run() {
-                    panel.share.setClickable(true);
-                    panel.share.setEnabled(true);
-                }
-            });
-        }
+        if (panel != null) panel.unlockShareButton();
     }
 
     public ButtonsPanelManager(ButtonsPanel panel, IASCore core) {

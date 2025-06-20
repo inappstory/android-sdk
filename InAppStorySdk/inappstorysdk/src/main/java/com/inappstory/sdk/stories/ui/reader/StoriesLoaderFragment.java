@@ -363,7 +363,7 @@ public class StoriesLoaderFragment extends Fragment {
         buttonsPanel.setOrientation(LinearLayout.HORIZONTAL);
         buttonsPanel.setBackgroundColor(Color.BLACK);
         buttonsPanel.setLayoutParams(buttonsPanelParams);
-        buttonsPanel.setIcons(appearanceSettings);
+        //buttonsPanel.setIcons(appearanceSettings);
         return buttonsPanel;
     }
 

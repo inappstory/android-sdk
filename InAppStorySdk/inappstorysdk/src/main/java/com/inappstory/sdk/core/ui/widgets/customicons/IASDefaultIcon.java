@@ -12,24 +12,29 @@ import androidx.appcompat.widget.AppCompatImageView;
 import com.inappstory.sdk.CustomIconState;
 import com.inappstory.sdk.R;
 
-public abstract class IASDefaultIcon extends FrameLayout {
+public class IASDefaultIcon extends FrameLayout {
     public IASDefaultIcon(@NonNull Context context) {
         super(context);
         init(context);
     }
 
+    public IASDefaultIcon setIconId(int iconId) {
+        image.setImageDrawable(getResources().getDrawable(iconId));
+        return this;
+    }
+
     AppCompatImageView image;
 
     private void init(Context context) {
-        View.inflate(context, R.layout.cs_custom_icon, null);
+        inflate(context, R.layout.cs_custom_icon, this);
         image = findViewById(R.id.image);
-        updateState(CustomIconState.ENABLE_ACTIVE);
+        image.setEnabled(true);
+        image.setActivated(true);
     }
 
-    abstract int getImageIconId(CustomIconState state);
-
     @SuppressLint("UseCompatLoadingForDrawables")
-    public void updateState(CustomIconState state) {
-        image.setImageDrawable(getResources().getDrawable(getImageIconId(state)));
+    public void updateState(boolean active, boolean enabled) {
+        image.setEnabled(enabled);
+        image.setActivated(active);
     }
 }

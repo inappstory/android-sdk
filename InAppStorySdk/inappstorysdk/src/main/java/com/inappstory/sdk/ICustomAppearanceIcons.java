@@ -1,9 +1,8 @@
 package com.inappstory.sdk;
 
-import android.content.Context;
 
 public interface ICustomAppearanceIcons {
-    ICustomIcon favoriteIcon(Context context);
+    ICustomIcon favoriteIcon();
     ICustomIcon likeIcon();
     ICustomIcon dislikeIcon();
     ICustomIcon shareIcon();
