@@ -12,6 +12,7 @@ import android.widget.RelativeLayout;
 
 import androidx.annotation.NonNull;
 
+import com.inappstory.sdk.core.ui.widgets.customicons.IASDefaultAppearanceIcons;
 import com.inappstory.sdk.stories.ui.widgets.LoadProgressBar;
 import com.inappstory.sdk.stories.api.models.CachedSessionData;
 import com.inappstory.sdk.core.network.content.models.Image;
@@ -209,6 +210,7 @@ public class AppearanceManager {
     private int csNavBarColor = Color.BLACK;
     private int csNightNavBarColor = Color.BLACK;
     private int csReaderBackgroundColor = Color.BLACK;
+    private ICustomAppearanceIcons customAppearanceIcons;
 
     private Typeface csCustomFont;
 
@@ -580,6 +582,12 @@ public class AppearanceManager {
 
     public boolean csHasShare() {
         return csHasShare;
+    }
+
+    public ICustomAppearanceIcons csCustomIcons() {
+        if (customAppearanceIcons == null) {
+            customAppearanceIcons = new IASDefaultAppearanceIcons(AppearanceManager.this);
+        }
     }
 
     public int csFavoriteIcon() {
