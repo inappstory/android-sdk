@@ -355,6 +355,11 @@ public class StoriesLoaderFragment extends Fragment {
                 BaseStoryScreen screen = getStoriesReader();
                 if (screen != null)
                     screen.closeWithAction(CloseStory.CLICK);
+                try {
+                    customCloseIconInterface.clickEvent(customCloseView);
+                } catch (Exception e) {
+
+                }
             }
         });
         close.setTouchListener(new View.OnTouchListener() {

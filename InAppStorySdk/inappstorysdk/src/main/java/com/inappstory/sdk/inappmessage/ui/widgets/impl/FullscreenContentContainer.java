@@ -333,6 +333,11 @@ public class FullscreenContentContainer extends IAMContentContainer<InAppMessage
         closeButton.setClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
+                try {
+                    closeIconInterface.clickEvent(closeView);
+                } catch (Exception e) {
+
+                }
                 closeWithAnimation();
             }
         });

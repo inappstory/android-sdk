@@ -471,7 +471,13 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                                 downloadGame(true);
                             }
                         }, 500);
+                        try {
+                            final CustomIconWithoutStates refreshIconInterface =
+                                    AppearanceManager.getCommonInstance().csCustomIcons().refreshIcon();
+                            refreshIconInterface.clickEvent(refreshGame.getChildAt(0));
+                        } catch (Exception e) {
 
+                        }
                     }
                 });
                 if (Sizes.isTablet(getContext()) && baseContainer != null) {
@@ -485,6 +491,13 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                 closeButton.setClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
+                        try {
+                            final CustomIconWithoutStates closeIconInterface =
+                                    AppearanceManager.getCommonInstance().csCustomIcons().closeIcon();
+                            closeIconInterface.clickEvent(closeButton.getChildAt(0));
+                        } catch (Exception e) {
+
+                        }
                         closeGame();
                     }
                 });

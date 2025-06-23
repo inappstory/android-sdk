@@ -311,6 +311,15 @@ public class ReaderPageFragment extends Fragment {
                             }
                         }
                     }
+                    try {
+                        final CustomIconWithoutStates customCloseIconInterface = AppearanceManager.
+                                getCommonInstance().
+                                csCustomIcons().
+                                closeIcon();
+                        customCloseIconInterface.clickEvent(close.getChildAt(0));
+                    } catch (Exception e) {
+
+                    }
                 }
             });
         }
@@ -318,6 +327,15 @@ public class ReaderPageFragment extends Fragment {
             refresh.setClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
+                    try {
+                        final CustomIconWithoutStates customRefreshIconInterface = AppearanceManager.
+                                getCommonInstance().
+                                csCustomIcons().
+                                refreshIcon();
+                        customRefreshIconInterface.clickEvent(refresh.getChildAt(0));
+                    } catch (Exception e) {
+
+                    }
                     view.setVisibility(View.GONE);
                     if (loader == null) return;
                     loader.setAlpha(1f);

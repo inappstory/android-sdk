@@ -175,6 +175,11 @@ public class ButtonsPanel extends LinearLayout {
                         @Override
                         public void onClick(View v) {
                             likeClick();
+                            try {
+                                likeInterface.clickEvent(like);
+                            } catch (Exception e) {
+
+                            }
                         }
                     });
                     likeLayout.setTouchListener(new OnTouchListener() {
@@ -190,6 +195,11 @@ public class ButtonsPanel extends LinearLayout {
                         @Override
                         public void onClick(View v) {
                             dislikeClick();
+                            try {
+                                dislikeInterface.clickEvent(dislike);
+                            } catch (Exception e) {
+
+                            }
                         }
                     });
                     dislikeLayout.setTouchListener(new OnTouchListener() {
@@ -205,6 +215,11 @@ public class ButtonsPanel extends LinearLayout {
                         @Override
                         public void onClick(View v) {
                             favoriteClick();
+                            try {
+                                favoriteInterface.clickEvent(favorite);
+                            } catch (Exception e) {
+
+                            }
                         }
                     });
                     favoriteLayout.setTouchListener(new OnTouchListener() {
@@ -220,6 +235,11 @@ public class ButtonsPanel extends LinearLayout {
                         @Override
                         public void onClick(View v) {
                             shareClick();
+                            try {
+                                shareInterface.clickEvent(share);
+                            } catch (Exception e) {
+
+                            }
                         }
                     });
                     shareLayout.setTouchListener(new OnTouchListener() {
@@ -235,6 +255,11 @@ public class ButtonsPanel extends LinearLayout {
                         @Override
                         public void onClick(View v) {
                             soundClick();
+                            try {
+                                soundInterface.clickEvent(sound);
+                            } catch (Exception e) {
+
+                            }
                         }
                     });
                     soundLayout.setTouchListener(new OnTouchListener() {
