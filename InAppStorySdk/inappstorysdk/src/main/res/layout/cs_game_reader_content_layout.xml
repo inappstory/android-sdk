@@ -50,14 +50,13 @@
                     android:layout_height="match_parent"
                     android:scaleType="centerCrop" />
 
-                <ImageView
+                <com.inappstory.sdk.stories.ui.widgets.TouchFrameLayout
                     android:id="@+id/gameRefresh"
                     android:layout_width="40dp"
                     android:layout_height="40dp"
                     android:layout_centerInParent="true"
                     android:alpha="0"
                     android:elevation="4dp"
-                    android:src="@drawable/ic_refresh"
                     android:visibility="gone" />
 
                 <com.inappstory.sdk.game.ui.GameProgressLoader
@@ -77,7 +76,7 @@
             android:layout_height="0dp" />
     </LinearLayout>
 
-    <androidx.appcompat.widget.AppCompatImageView
+    <com.inappstory.sdk.stories.ui.widgets.TouchFrameLayout
         android:id="@+id/close_button"
         android:layout_width="30dp"
         android:layout_height="30dp"
@@ -87,7 +86,6 @@
         android:layout_marginBottom="8dp"
         android:background="@null"
         android:elevation="10dp"
-        android:visibility="gone"
-        app:srcCompat="@drawable/ic_stories_close" />
+        android:visibility="gone"/>
 </RelativeLayout>
 

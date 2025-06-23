@@ -128,13 +128,13 @@ public class LaunchStoryScreenAppearance implements SerializableWithKey {
         appearanceManager.csIsDraggable(csIsDraggable());
         appearanceManager.csTimerGradientEnable(csTimerGradientEnable());
         appearanceManager.csStoryReaderAnimation(csStoryReaderAnimation());
-        appearanceManager.csCloseIcon(csCloseIcon());
-        appearanceManager.csDislikeIcon(csDislikeIcon());
-        appearanceManager.csLikeIcon(csLikeIcon());
-        appearanceManager.csRefreshIcon(csRefreshIcon());
-        appearanceManager.csFavoriteIcon(csFavoriteIcon());
-        appearanceManager.csShareIcon(csShareIcon());
-        appearanceManager.csSoundIcon(csSoundIcon());
+     //   appearanceManager.csCloseIcon(csCloseIcon());
+      //  appearanceManager.csDislikeIcon(csDislikeIcon());
+     //   appearanceManager.csLikeIcon(csLikeIcon());
+    //    appearanceManager.csRefreshIcon(csRefreshIcon());
+    //    appearanceManager.csFavoriteIcon(csFavoriteIcon());
+   //     appearanceManager.csShareIcon(csShareIcon());
+    //    appearanceManager.csSoundIcon(csSoundIcon());
         appearanceManager.csStoryReaderPresentationStyle(
                 csStoryReaderPresentationStyle()
         );
@@ -157,13 +157,13 @@ public class LaunchStoryScreenAppearance implements SerializableWithKey {
         csIsDraggable = manager.csIsDraggable();//
         csHasFavorite = manager.csHasFavorite();//
         csHasShare = manager.csHasShare();//
-        csCloseIcon = manager.csCloseIcon();//
-        csRefreshIcon = manager.csRefreshIcon();//
-        csSoundIcon = manager.csSoundIcon();//
-        csFavoriteIcon = manager.csFavoriteIcon();//
-        csLikeIcon = manager.csLikeIcon();//
-        csDislikeIcon = manager.csDislikeIcon();//
-        csShareIcon = manager.csShareIcon();//
+      //  csCloseIcon = manager.csCloseIcon();//
+      ///  csRefreshIcon = manager.csRefreshIcon();//
+   //     csSoundIcon = manager.csSoundIcon();//
+     //   csFavoriteIcon = manager.csFavoriteIcon();//
+     //   csLikeIcon = manager.csLikeIcon();//
+     //   csDislikeIcon = manager.csDislikeIcon();//
+     //   csShareIcon = manager.csShareIcon();//
         csReaderRadius = manager.csReaderRadius(context);
         csTimerGradientEnable = manager.csTimerGradientEnable();//
         csReaderBackgroundColor = manager.csReaderBackgroundColor();
