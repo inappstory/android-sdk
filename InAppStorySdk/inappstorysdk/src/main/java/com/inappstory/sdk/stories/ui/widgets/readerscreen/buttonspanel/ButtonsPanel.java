@@ -3,6 +3,7 @@ package com.inappstory.sdk.stories.ui.widgets.readerscreen.buttonspanel;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.util.SizeF;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -20,6 +21,7 @@ import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenAppearance;
+import com.inappstory.sdk.stories.ui.widgets.TouchFrameLayout;
 import com.inappstory.sdk.stories.utils.Sizes;
 
 public class ButtonsPanel extends LinearLayout {
@@ -36,11 +38,11 @@ public class ButtonsPanel extends LinearLayout {
     private ICustomIcon favoriteInterface;
     private ICustomIcon shareInterface;
 
-    private FrameLayout likeLayout;
-    private FrameLayout dislikeLayout;
-    private FrameLayout soundLayout;
-    private FrameLayout favoriteLayout;
-    private FrameLayout shareLayout;
+    private TouchFrameLayout likeLayout;
+    private TouchFrameLayout dislikeLayout;
+    private TouchFrameLayout soundLayout;
+    private TouchFrameLayout favoriteLayout;
+    private TouchFrameLayout shareLayout;
 
     private boolean likeActive = false;
     private boolean dislikeActive = false;
@@ -168,39 +170,78 @@ public class ButtonsPanel extends LinearLayout {
             @Override
             public void use(@NonNull IASCore core) {
                 manager = new ButtonsPanelManager(ButtonsPanel.this, core);
-                if (likeLayout != null)
-                    likeLayout.setOnClickListener(new OnClickListener() {
+                if (likeLayout != null) {
+                    likeLayout.setClickListener(new OnClickListener() {
                         @Override
                         public void onClick(View v) {
                             likeClick();
                         }
                     });
-                if (dislikeLayout != null)
-                    dislikeLayout.setOnClickListener(new OnClickListener() {
+                    likeLayout.setTouchListener(new OnTouchListener() {
+                        @Override
+                        public boolean onTouch(View v, MotionEvent event) {
+                            likeInterface.touchEvent(like, event);
+                            return false;
+                        }
+                    });
+                }
+                if (dislikeLayout != null) {
+                    dislikeLayout.setClickListener(new OnClickListener() {
                         @Override
                         public void onClick(View v) {
                             dislikeClick();
                         }
                     });
-                if (favoriteLayout != null)
-                    favoriteLayout.setOnClickListener(new OnClickListener() {
+                    dislikeLayout.setTouchListener(new OnTouchListener() {
+                        @Override
+                        public boolean onTouch(View v, MotionEvent event) {
+                            dislikeInterface.touchEvent(dislike, event);
+                            return false;
+                        }
+                    });
+                }
+                if (favoriteLayout != null) {
+                    favoriteLayout.setClickListener(new OnClickListener() {
                         @Override
                         public void onClick(View v) {
                             favoriteClick();
                         }
                     });
-                if (shareLayout != null)
-                    shareLayout.setOnClickListener(new OnClickListener() {
+                    favoriteLayout.setTouchListener(new OnTouchListener() {
+                        @Override
+                        public boolean onTouch(View v, MotionEvent event) {
+                            favoriteInterface.touchEvent(favorite, event);
+                            return false;
+                        }
+                    });
+                }
+                if (shareLayout != null) {
+                    shareLayout.setClickListener(new OnClickListener() {
                         @Override
                         public void onClick(View v) {
                             shareClick();
                         }
                     });
+                    shareLayout.setTouchListener(new OnTouchListener() {
+                        @Override
+                        public boolean onTouch(View v, MotionEvent event) {
+                            shareInterface.touchEvent(share, event);
+                            return false;
+                        }
+                    });
+                }
                 if (soundLayout != null) {
-                    soundLayout.setOnClickListener(new OnClickListener() {
+                    soundLayout.setClickListener(new OnClickListener() {
                         @Override
                         public void onClick(View v) {
                             soundClick();
+                        }
+                    });
+                    soundLayout.setTouchListener(new OnTouchListener() {
+                        @Override
+                        public boolean onTouch(View v, MotionEvent event) {
+                            soundInterface.touchEvent(sound, event);
+                            return false;
                         }
                     });
                     soundInterface.updateState(sound, ((IASDataSettingsHolder) core.settingsAPI()).isSoundOn(), true);
@@ -220,7 +261,7 @@ public class ButtonsPanel extends LinearLayout {
 
     public void likeClick() {
         likeInterface.updateState(like, likeActive, false);
-        dislikeInterface.updateState(like, dislikeActive, false);
+        dislikeInterface.updateState(dislike, dislikeActive, false);
         likeLayout.setClickable(false);
         dislikeLayout.setClickable(false);
         manager.likeClick(new ButtonClickCallback() {
@@ -232,7 +273,7 @@ public class ButtonsPanel extends LinearLayout {
                         likeActive = val == 1;
                         dislikeActive = val == -1;
                         likeInterface.updateState(like, likeActive, true);
-                        dislikeInterface.updateState(like, dislikeActive, true);
+                        dislikeInterface.updateState(dislike, dislikeActive, true);
                         likeLayout.setClickable(true);
                         dislikeLayout.setClickable(true);
                     }
@@ -245,7 +286,7 @@ public class ButtonsPanel extends LinearLayout {
                     @Override
                     public void run() {
                         likeInterface.updateState(like, likeActive, true);
-                        dislikeInterface.updateState(like, dislikeActive, true);
+                        dislikeInterface.updateState(dislike, dislikeActive, true);
                         likeLayout.setClickable(true);
                         dislikeLayout.setClickable(true);
                     }
@@ -259,7 +300,7 @@ public class ButtonsPanel extends LinearLayout {
         dislikeInterface.updateState(dislike, dislikeActive, false);
         likeLayout.setClickable(false);
         dislikeLayout.setClickable(false);
-        manager.likeClick(new ButtonClickCallback() {
+        manager.dislikeClick(new ButtonClickCallback() {
             @Override
             public void onSuccess(final int val) {
                 post(new Runnable() {

@@ -2,11 +2,11 @@ package com.inappstory.sdk;
 
 
 public interface ICustomAppearanceIcons {
-    ICustomIcon favoriteIcon();
-    ICustomIcon likeIcon();
-    ICustomIcon dislikeIcon();
-    ICustomIcon shareIcon();
-    ICustomIcon soundIcon();
-    ICustomIconWithoutStates closeIcon();
-    ICustomIconWithoutStates refreshIcon();
+    CustomIconWithStates favoriteIcon();
+    CustomIconWithStates likeIcon();
+    CustomIconWithStates dislikeIcon();
+    CustomIconWithStates shareIcon();
+    CustomIconWithStates soundIcon();
+    CustomIconWithoutStates closeIcon();
+    CustomIconWithoutStates refreshIcon();
 }

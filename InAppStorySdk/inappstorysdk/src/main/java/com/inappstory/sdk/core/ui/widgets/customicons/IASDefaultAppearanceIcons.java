@@ -7,10 +7,10 @@ import android.view.View;
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.AppearanceManager;
-import com.inappstory.sdk.CustomIconState;
+import com.inappstory.sdk.CustomIconWithStates;
 import com.inappstory.sdk.ICustomAppearanceIcons;
 import com.inappstory.sdk.ICustomIcon;
-import com.inappstory.sdk.ICustomIconWithoutStates;
+import com.inappstory.sdk.CustomIconWithoutStates;
 
 public class IASDefaultAppearanceIcons implements ICustomAppearanceIcons {
     private final AppearanceManager appearanceManager;
@@ -20,8 +20,8 @@ public class IASDefaultAppearanceIcons implements ICustomAppearanceIcons {
     }
 
     @Override
-    public ICustomIcon favoriteIcon() {
-        return new ICustomIcon() {
+    public CustomIconWithStates favoriteIcon() {
+        return new CustomIconWithStates() {
             @Override
             public View createIconView(Context context, SizeF maxSizeInPx) {
                 return new IASDefaultIcon(context).setIconId(appearanceManager.csFavoriteIcon());
@@ -37,8 +37,8 @@ public class IASDefaultAppearanceIcons implements ICustomAppearanceIcons {
     }
 
     @Override
-    public ICustomIcon likeIcon() {
-        return new ICustomIcon() {
+    public CustomIconWithStates likeIcon() {
+        return new CustomIconWithStates() {
             @Override
             public View createIconView(Context context, SizeF maxSizeInPx) {
                 return new IASDefaultIcon(context).setIconId(appearanceManager.csLikeIcon());
@@ -54,8 +54,8 @@ public class IASDefaultAppearanceIcons implements ICustomAppearanceIcons {
     }
 
     @Override
-    public ICustomIcon dislikeIcon() {
-        return new ICustomIcon() {
+    public CustomIconWithStates dislikeIcon() {
+        return new CustomIconWithStates() {
             @Override
             public View createIconView(Context context, SizeF maxSizeInPx) {
                 return new IASDefaultIcon(context).setIconId(appearanceManager.csDislikeIcon());
@@ -71,8 +71,8 @@ public class IASDefaultAppearanceIcons implements ICustomAppearanceIcons {
     }
 
     @Override
-    public ICustomIcon shareIcon() {
-        return new ICustomIcon() {
+    public CustomIconWithStates shareIcon() {
+        return new CustomIconWithStates() {
             @Override
             public View createIconView(Context context, SizeF maxSizeInPx) {
                 return new IASDefaultIcon(context).setIconId(appearanceManager.csShareIcon());
@@ -88,8 +88,8 @@ public class IASDefaultAppearanceIcons implements ICustomAppearanceIcons {
     }
 
     @Override
-    public ICustomIcon soundIcon() {
-        return new ICustomIcon() {
+    public CustomIconWithStates soundIcon() {
+        return new CustomIconWithStates() {
             @Override
             public View createIconView(Context context, SizeF maxSizeInPx) {
                 return new IASDefaultIcon(context).setIconId(appearanceManager.csSoundIcon());
@@ -105,8 +105,8 @@ public class IASDefaultAppearanceIcons implements ICustomAppearanceIcons {
     }
 
     @Override
-    public ICustomIconWithoutStates closeIcon() {
-        return new ICustomIconWithoutStates() {
+    public CustomIconWithoutStates closeIcon() {
+        return new CustomIconWithoutStates() {
             @Override
             public View createIconView(Context context, SizeF maxSizeInPx) {
                 return new IASDefaultIcon(context).setIconId(appearanceManager.csCloseIcon());
@@ -115,8 +115,8 @@ public class IASDefaultAppearanceIcons implements ICustomAppearanceIcons {
     }
 
     @Override
-    public ICustomIconWithoutStates refreshIcon() {
-        return new ICustomIconWithoutStates() {
+    public CustomIconWithoutStates refreshIcon() {
+        return new CustomIconWithoutStates() {
             @Override
             public View createIconView(Context context, SizeF maxSizeInPx) {
                 return new IASDefaultIcon(context).setIconId(appearanceManager.csRefreshIcon());

@@ -3,13 +3,11 @@ package com.inappstory.sdk;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Typeface;
-import android.util.Log;
 import android.util.SizeF;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
-import android.widget.RelativeLayout;
 
 import androidx.annotation.NonNull;
 
@@ -30,8 +28,6 @@ import com.inappstory.sdk.stories.ui.views.goodswidget.ICustomGoodsItem;
 import com.inappstory.sdk.stories.ui.views.goodswidget.ICustomGoodsWidget;
 import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.ugc.list.IStoriesListUGCItem;
-
-import java.util.UUID;
 
 /**
  * Defines appearance of the stories list, as well as some elements of the reader.
@@ -593,8 +589,8 @@ public class AppearanceManager {
         return customAppearanceIcons;
     }
 
-    private ICustomIcon generateDefaultIcon(final int iconId) {
-        return new ICustomIcon() {
+    private CustomIconWithStates generateDefaultIcon(final int iconId) {
+        return new CustomIconWithStates() {
             @Override
             public View createIconView(Context context, SizeF maxSizeInPx) {
                 return new IASDefaultIcon(context).setIconId(iconId);
@@ -609,8 +605,8 @@ public class AppearanceManager {
         };
     }
 
-    private ICustomIconWithoutStates generateDefaultStatelessIcon(final int iconId) {
-        return new ICustomIconWithoutStates() {
+    private CustomIconWithoutStates generateDefaultStatelessIcon(final int iconId) {
+        return new CustomIconWithoutStates() {
             @Override
             public View createIconView(Context context, SizeF maxSizeInPx) {
                 return new IASDefaultIcon(context).setIconId(iconId);
@@ -619,47 +615,47 @@ public class AppearanceManager {
     }
 
     public AppearanceManager csCustomIcons(
-            final ICustomIcon favorite,
-            final ICustomIcon like,
-            final ICustomIcon dislike,
-            final ICustomIcon share,
-            final ICustomIcon sound,
-            final ICustomIconWithoutStates close,
-            final ICustomIconWithoutStates refresh
+            final CustomIconWithStates favorite,
+            final CustomIconWithStates like,
+            final CustomIconWithStates dislike,
+            final CustomIconWithStates share,
+            final CustomIconWithStates sound,
+            final CustomIconWithoutStates close,
+            final CustomIconWithoutStates refresh
     ) {
         customAppearanceIcons = new ICustomAppearanceIcons() {
             @Override
-            public ICustomIcon favoriteIcon() {
+            public CustomIconWithStates favoriteIcon() {
                 return favorite != null ? favorite : generateDefaultIcon(csFavoriteIcon());
             }
 
             @Override
-            public ICustomIcon likeIcon() {
+            public CustomIconWithStates likeIcon() {
                 return like != null ? like : generateDefaultIcon(csLikeIcon());
             }
 
             @Override
-            public ICustomIcon dislikeIcon() {
+            public CustomIconWithStates dislikeIcon() {
                 return dislike != null ? dislike : generateDefaultIcon(csDislikeIcon());
             }
 
             @Override
-            public ICustomIcon shareIcon() {
+            public CustomIconWithStates shareIcon() {
                 return share != null ? share : generateDefaultIcon(csShareIcon());
             }
 
             @Override
-            public ICustomIcon soundIcon() {
+            public CustomIconWithStates soundIcon() {
                 return sound != null ? sound : generateDefaultIcon(csSoundIcon());
             }
 
             @Override
-            public ICustomIconWithoutStates closeIcon() {
+            public CustomIconWithoutStates closeIcon() {
                 return close != null ? close : generateDefaultStatelessIcon(csCloseIcon());
             }
 
             @Override
-            public ICustomIconWithoutStates refreshIcon() {
+            public CustomIconWithoutStates refreshIcon() {
                 return refresh != null ? refresh : generateDefaultStatelessIcon(csRefreshIcon());
             }
         };
