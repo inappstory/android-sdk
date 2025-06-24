@@ -122,7 +122,7 @@ public class BannerPlaceUseCase {
                                                 placeId,
                                                 1,
                                                 null,
-                                                "banners.slides",
+                                                "banners.slides,banners.layout",
                                                 new BannerPlaceFilterObject(localTags),
                                                 sessionParameters.userId,
                                                 sessionParameters.sessionId,
