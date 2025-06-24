@@ -23,6 +23,7 @@ import com.inappstory.sdk.stories.ui.views.IASWebView;
 import com.inappstory.sdk.stories.ui.views.IASWebViewClient;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ContentViewInteractor;
 import com.inappstory.sdk.utils.OnSwipeTouchListener;
+import com.inappstory.sdk.utils.StringsUtils;
 
 public class IAMWebView extends IASWebView implements ContentViewInteractor {
     private boolean clientIsSet = false;
@@ -171,7 +172,7 @@ public class IAMWebView extends IASWebView implements ContentViewInteractor {
 
     @Override
     public void loadJsApiResponse(String result, String cb) {
-        evaluateJavascript(cb + "('" + result + "');", null);
+        evaluateJavascript(cb + "('" + StringsUtils.escapeSingleQuotes(result) + "');", null);
     }
 
 

@@ -323,8 +323,8 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         Map<String, Object> payloadMap = new HashMap<>();
         payloadMap.put("id", cbId);
         payloadMap.put("response", filesWithTypes);
-        String payload = JsonParser.mapToJsonString(payloadMap).replaceAll(Pattern.quote("'"), "\\'");
-        String webString = "window." + cbName + "('" + payload + "');";
+        String payload = JsonParser.mapToJsonString(payloadMap);
+        String webString = "window." + cbName + "('" + StringsUtils.escapeSingleQuotes(payload) + "');";
         Log.e("webString", webString);
         webView.evaluateJavascript(webString, null);
     }
@@ -1434,7 +1434,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
     }
 
     void loadJsApiResponse(String gameResponse, String cb) {
-        webView.evaluateJavascript(cb + "('" + gameResponse + "');", null);
+        webView.evaluateJavascript(cb + "('" + StringsUtils.escapeSingleQuotes(gameResponse) + "');", null);
     }
 
     boolean shareViewIsShown = false;

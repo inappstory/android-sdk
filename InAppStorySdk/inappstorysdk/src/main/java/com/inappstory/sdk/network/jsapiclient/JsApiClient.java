@@ -8,8 +8,8 @@ import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.models.RequestLocalParameters;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
-import com.inappstory.sdk.stories.statistic.IASStatisticProfilingImpl;
 import com.inappstory.sdk.stories.utils.TaskRunner;
+import com.inappstory.sdk.utils.StringsUtils;
 
 import org.json.JSONObject;
 
@@ -80,13 +80,15 @@ public class JsApiClient {
         );
     }
 
-    String oldEscape(String raw) {
+    String escapeString(String raw) {
         String escaped = JSONObject.quote(raw)
                 .replaceFirst("^\"(.*)\"$", "$1")
                 .replaceAll("\n", " ")
                 .replaceAll("\r", " ");
         return escaped;
     }
+
+
 
 
     void sendRequest(final String method,
@@ -124,7 +126,7 @@ public class JsApiClient {
                             JSONObject resultJson = new JSONObject();
                             resultJson.put("requestId", result.requestId);
                             resultJson.put("status", result.status);
-                            resultJson.put("data", oldEscape(result.data));
+                            resultJson.put("data", escapeString(result.data));
                             try {
                                 resultJson.put("headers", new JSONObject(result.headers));
                             } catch (Exception e) {

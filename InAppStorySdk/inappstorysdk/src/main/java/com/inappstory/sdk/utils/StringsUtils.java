@@ -13,6 +13,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.regex.Pattern;
 
 public class StringsUtils {
     public static @NonNull String getNonNull(String str) {
@@ -106,5 +107,9 @@ public class StringsUtils {
             }
         }
         return new ContentRange(start, end, length);
+    }
+
+    public static String escapeSingleQuotes(String raw) {
+        return raw.replaceAll(Pattern.quote("'"), "'").replaceAll("'", "\\\\'");
     }
 }

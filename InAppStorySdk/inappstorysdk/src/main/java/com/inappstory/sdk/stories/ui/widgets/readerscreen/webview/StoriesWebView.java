@@ -29,6 +29,7 @@ import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPag
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ContentViewInteractor;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.StoriesViewManager;
 import com.inappstory.sdk.stories.utils.Sizes;
+import com.inappstory.sdk.utils.StringsUtils;
 
 /**
  * Created by Paperrose on 07.06.2018.
@@ -64,7 +65,7 @@ public class StoriesWebView extends IASWebView implements ContentViewInteractor 
 
     public void gameComplete(String data) {
         if (data != null)
-            loadUrl("javascript:game_complete('" + data + "')");
+            loadUrl("javascript:game_complete('" + StringsUtils.escapeSingleQuotes(data) + "')");
         else
             loadUrl("javascript:game_complete()");
         logMethod("game_complete " + data);
@@ -181,7 +182,7 @@ public class StoriesWebView extends IASWebView implements ContentViewInteractor 
 
     @Override
     public void loadJsApiResponse(String result, String cb) {
-        evaluateJavascript(cb + "('" + result + "');", null);
+        evaluateJavascript(cb + "('" + StringsUtils.escapeSingleQuotes(result) + "');", null);
     }
 
     public void resumeSlide() {
