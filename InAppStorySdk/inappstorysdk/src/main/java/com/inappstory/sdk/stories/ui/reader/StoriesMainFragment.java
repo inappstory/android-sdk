@@ -509,7 +509,10 @@ public abstract class StoriesMainFragment extends Fragment implements
             animateFirst = false;
             closeAnim();
         } else {
-            requireActivity().getSupportFragmentManager().popBackStack();
+            try {
+                requireActivity().getSupportFragmentManager().popBackStack();
+            } catch (Exception e) {
+            }
         }
     }
 

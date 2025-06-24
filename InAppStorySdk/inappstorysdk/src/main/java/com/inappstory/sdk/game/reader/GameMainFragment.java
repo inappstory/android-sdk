@@ -95,7 +95,10 @@ public class GameMainFragment extends Fragment
 
     @Override
     public void forceFinish() {
-        getParentFragmentManager().popBackStack();
+        try {
+            getParentFragmentManager().popBackStack();
+        } catch (Exception e) {
+        }
     }
 
     @Override
