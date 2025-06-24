@@ -198,20 +198,28 @@ public abstract class StoriesMainFragment extends Fragment implements
     }
 
     private void createStoriesFragment(Bundle savedInstanceState, Rect readerContainer) {
-        if (savedInstanceState == null) {
-            StoriesContentFragment storiesContentFragment = new StoriesContentFragment();
-            Bundle args = new Bundle();
-            args.putAll(getArguments());
-            args.putParcelable("readerContainer", readerContainer);
-            storiesContentFragment.setArguments(args);
-            FragmentManager fragmentManager = getChildFragmentManager();
-            FragmentTransaction t = fragmentManager.beginTransaction()
-                    .replace(R.id.stories_fragments_layout, storiesContentFragment, "STORIES_FRAGMENT");
-            t.addToBackStack("STORIES_FRAGMENT");
-            t.commitAllowingStateLoss();
+        if (!isAdded()) {
+            forceFinish();
         }
+        try {
+            if (savedInstanceState == null) {
+                StoriesContentFragment storiesContentFragment = new StoriesContentFragment();
+                Bundle args = new Bundle();
+                args.putAll(getArguments());
+                args.putParcelable("readerContainer", readerContainer);
+                storiesContentFragment.setArguments(args);
+                FragmentManager fragmentManager = getChildFragmentManager();
+                FragmentTransaction t = fragmentManager.beginTransaction()
+                        .replace(R.id.stories_fragments_layout, storiesContentFragment, "STORIES_FRAGMENT");
+                t.addToBackStack("STORIES_FRAGMENT");
+                t.commitAllowingStateLoss();
+            }
 
-        disableDrag(appearanceSettings != null && !appearanceSettings.csCloseOnSwipe());
+            disableDrag(appearanceSettings != null && !appearanceSettings.csCloseOnSwipe());
+        } catch (Exception e) {
+            InAppStoryService.createExceptionLog(e);
+            forceFinish();
+        }
     }
 
     @Override
@@ -713,6 +721,9 @@ public abstract class StoriesMainFragment extends Fragment implements
 
     private void setLoaderFragment(Bundle savedInstanceState, Rect readerContainer) {
         if (savedInstanceState != null) return;
+        if (!isAdded()) {
+            forceFinish();
+        }
         try {
             FragmentManager fragmentManager = getChildFragmentManager();
             StoriesLoaderFragment storiesLoaderFragment = new StoriesLoaderFragment();
