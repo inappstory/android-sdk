@@ -11,15 +11,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AccelerateInterpolator;
 import android.widget.FrameLayout;
-import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.inappstory.sdk.AppearanceManager;
-import com.inappstory.sdk.CustomIconWithoutStates;
-import com.inappstory.sdk.R;
+import com.inappstory.sdk.core.ui.widgets.customicons.CustomIconWithoutStates;
 import com.inappstory.sdk.core.ui.widgets.roundedlayout.RoundedCornerLayout;
 import com.inappstory.sdk.core.utils.ColorUtils;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessagePopupAppearance;

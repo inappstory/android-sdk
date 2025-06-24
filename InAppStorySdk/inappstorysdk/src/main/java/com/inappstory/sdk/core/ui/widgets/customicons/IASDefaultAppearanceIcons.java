@@ -7,10 +7,7 @@ import android.view.View;
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.AppearanceManager;
-import com.inappstory.sdk.CustomIconWithStates;
 import com.inappstory.sdk.ICustomAppearanceIcons;
-import com.inappstory.sdk.ICustomIcon;
-import com.inappstory.sdk.CustomIconWithoutStates;
 
 public class IASDefaultAppearanceIcons implements ICustomAppearanceIcons {
     private final AppearanceManager appearanceManager;

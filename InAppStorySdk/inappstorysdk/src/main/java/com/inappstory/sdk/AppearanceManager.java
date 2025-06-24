@@ -13,6 +13,8 @@ import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.core.ui.widgets.customicons.IASDefaultAppearanceIcons;
 import com.inappstory.sdk.core.ui.widgets.customicons.IASDefaultIcon;
+import com.inappstory.sdk.core.ui.widgets.customicons.IASDefaultIconCreator;
+import com.inappstory.sdk.core.ui.widgets.customicons.IIASDefaultIconCreator;
 import com.inappstory.sdk.stories.ui.widgets.LoadProgressBar;
 import com.inappstory.sdk.stories.api.models.CachedSessionData;
 import com.inappstory.sdk.core.network.content.models.Image;
@@ -28,6 +30,8 @@ import com.inappstory.sdk.stories.ui.views.goodswidget.ICustomGoodsItem;
 import com.inappstory.sdk.stories.ui.views.goodswidget.ICustomGoodsWidget;
 import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.ugc.list.IStoriesListUGCItem;
+import com.inappstory.sdk.core.ui.widgets.customicons.CustomIconWithStates;
+import com.inappstory.sdk.core.ui.widgets.customicons.CustomIconWithoutStates;
 
 /**
  * Defines appearance of the stories list, as well as some elements of the reader.
@@ -589,74 +593,50 @@ public class AppearanceManager {
         return customAppearanceIcons;
     }
 
-    private CustomIconWithStates generateDefaultIcon(final int iconId) {
-        return new CustomIconWithStates() {
-            @Override
-            public View createIconView(Context context, SizeF maxSizeInPx) {
-                return new IASDefaultIcon(context).setIconId(iconId);
-            }
-
-            @Override
-            public void updateState(View iconView, boolean active, boolean enabled) {
-                if (iconView instanceof IASDefaultIcon) {
-                    ((IASDefaultIcon) iconView).updateState(active, enabled);
-                }
-            }
-        };
-    }
-
-    private CustomIconWithoutStates generateDefaultStatelessIcon(final int iconId) {
-        return new CustomIconWithoutStates() {
-            @Override
-            public View createIconView(Context context, SizeF maxSizeInPx) {
-                return new IASDefaultIcon(context).setIconId(iconId);
-            }
-        };
-    }
-
     public AppearanceManager csCustomIcons(
-            final CustomIconWithStates favorite,
-            final CustomIconWithStates like,
-            final CustomIconWithStates dislike,
-            final CustomIconWithStates share,
-            final CustomIconWithStates sound,
-            final CustomIconWithoutStates close,
-            final CustomIconWithoutStates refresh
+            final CustomFavoriteIconInterface favorite,
+            final CustomLikeIconInterface like,
+            final CustomDislikeIconInterface dislike,
+            final CustomShareIconInterface share,
+            final CustomSoundIconInterface sound,
+            final CustomCloseIconInterface close,
+            final CustomRefreshIconInterface refresh
     ) {
+        final IIASDefaultIconCreator creator = new IASDefaultIconCreator();
         customAppearanceIcons = new ICustomAppearanceIcons() {
             @Override
             public CustomIconWithStates favoriteIcon() {
-                return favorite != null ? favorite : generateDefaultIcon(csFavoriteIcon());
+                return favorite != null ? favorite : creator.generateDefaultIcon(csFavoriteIcon());
             }
 
             @Override
             public CustomIconWithStates likeIcon() {
-                return like != null ? like : generateDefaultIcon(csLikeIcon());
+                return like != null ? like : creator.generateDefaultIcon(csLikeIcon());
             }
 
             @Override
             public CustomIconWithStates dislikeIcon() {
-                return dislike != null ? dislike : generateDefaultIcon(csDislikeIcon());
+                return dislike != null ? dislike : creator.generateDefaultIcon(csDislikeIcon());
             }
 
             @Override
             public CustomIconWithStates shareIcon() {
-                return share != null ? share : generateDefaultIcon(csShareIcon());
+                return share != null ? share : creator.generateDefaultIcon(csShareIcon());
             }
 
             @Override
             public CustomIconWithStates soundIcon() {
-                return sound != null ? sound : generateDefaultIcon(csSoundIcon());
+                return sound != null ? sound : creator.generateDefaultIcon(csSoundIcon());
             }
 
             @Override
             public CustomIconWithoutStates closeIcon() {
-                return close != null ? close : generateDefaultStatelessIcon(csCloseIcon());
+                return close != null ? close : creator.generateDefaultStatelessIcon(csCloseIcon());
             }
 
             @Override
             public CustomIconWithoutStates refreshIcon() {
-                return refresh != null ? refresh : generateDefaultStatelessIcon(csRefreshIcon());
+                return refresh != null ? refresh : creator.generateDefaultStatelessIcon(csRefreshIcon());
             }
         };
         return this;

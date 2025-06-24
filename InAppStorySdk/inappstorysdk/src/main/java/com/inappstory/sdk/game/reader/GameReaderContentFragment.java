@@ -50,7 +50,7 @@ import com.inappstory.iasutilsconnector.filepicker.IFilePicker;
 import com.inappstory.iasutilsconnector.filepicker.OnFilesChooseCallback;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.BuildConfig;
-import com.inappstory.sdk.CustomIconWithoutStates;
+import com.inappstory.sdk.core.ui.widgets.customicons.CustomIconWithoutStates;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.IASCore;

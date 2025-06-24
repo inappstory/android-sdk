@@ -2,14 +2,11 @@ package com.inappstory.sdk.core.ui.widgets.customicons;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.view.View;
 import android.widget.FrameLayout;
-import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.AppCompatImageView;
 
-import com.inappstory.sdk.CustomIconState;
 import com.inappstory.sdk.R;
 
 public class IASDefaultIcon extends FrameLayout {

@@ -19,7 +19,6 @@ import android.os.Build;
 import android.os.Bundle;
 
 import android.util.SizeF;
-import android.view.DisplayCutout;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -29,14 +28,12 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
 import androidx.annotation.Nullable;
-import androidx.appcompat.widget.AppCompatImageView;
 import androidx.cardview.widget.CardView;
 import androidx.fragment.app.Fragment;
 
 import com.inappstory.sdk.AppearanceManager;
-import com.inappstory.sdk.CustomIconWithoutStates;
+import com.inappstory.sdk.core.ui.widgets.customicons.CustomIconWithoutStates;
 import com.inappstory.sdk.InAppStoryManager;
-import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.data.IContentWithTimeline;
 import com.inappstory.sdk.core.data.IListItemContent;

@@ -1,7 +1,9 @@
-package com.inappstory.sdk;
+package com.inappstory.sdk.core.ui.widgets.customicons;
 
 import android.view.MotionEvent;
 import android.view.View;
+
+import com.inappstory.sdk.ICustomIcon;
 
 
 public abstract class CustomIconWithoutStates implements ICustomIcon {
