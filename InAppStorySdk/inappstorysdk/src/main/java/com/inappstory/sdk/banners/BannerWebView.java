@@ -6,6 +6,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.webkit.ConsoleMessage;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
@@ -25,9 +26,16 @@ import com.inappstory.sdk.stories.api.models.ContentIdWithIndex;
 import com.inappstory.sdk.stories.ui.views.IASWebView;
 import com.inappstory.sdk.stories.ui.views.IASWebViewClient;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ContentViewInteractor;
+import com.inappstory.sdk.stories.utils.Sizes;
 
 public class BannerWebView extends IASWebView implements ContentViewInteractor {
     private boolean clientIsSet = false;
+
+    public void setHost(BannerView host) {
+        this.host = host;
+    }
+
+    private BannerView host;
 
     public BannerWebView(@NonNull Context context) {
         super(context);
@@ -48,6 +56,30 @@ public class BannerWebView extends IASWebView implements ContentViewInteractor {
         int contentIdWithIndex = slideViewModel.contentIdAndType().contentId;
         InAppStoryManager.showDLog("JS_method_call",
                 contentIdWithIndex + " " + 0 + " " + payload);
+    }
+
+
+    boolean touchSlider = false;
+
+    @Override
+    public boolean onInterceptTouchEvent(MotionEvent motionEvent) {
+        boolean c = super.onInterceptTouchEvent(motionEvent);
+        if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
+            if (host != null) host.pauseBanner();
+        } else if (motionEvent.getAction() == MotionEvent.ACTION_UP || motionEvent.getAction() == MotionEvent.ACTION_CANCEL) {
+            touchSlider = false;
+            getParentForAccessibility().requestDisallowInterceptTouchEvent(false);
+        }
+        return c || touchSlider;
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent motionEvent) {
+        boolean c = super.onTouchEvent(motionEvent);
+        if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
+            if (host != null) host.resumeBanner();
+        }
+        return c;
     }
 
     @Override
@@ -225,7 +257,7 @@ public class BannerWebView extends IASWebView implements ContentViewInteractor {
                             0
                     );
 
-                    Log.d("InAppStory_SDK_Web", consoleMessage.messageLevel().name() + ": "
+                    Log.d("InAppStory_SDK_Banners", consoleMessage.messageLevel().name() + ": "
                             + consoleMessage.message() + " -- From line "
                             + consoleMessage.lineNumber() + " of "
                             + consoleMessage.sourceId());

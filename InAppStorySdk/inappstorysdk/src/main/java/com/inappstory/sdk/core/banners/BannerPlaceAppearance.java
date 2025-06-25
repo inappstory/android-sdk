@@ -8,12 +8,12 @@ import java.util.Map;
 import java.util.Objects;
 
 public class BannerPlaceAppearance implements IBannerPlaceAppearance {
-    private float singleBannerAspectRatio = 2f;
-    private float cornerRadius = 16f;
+    private Float singleBannerAspectRatio = 2f;
+    private Float cornerRadius;
     private boolean loop = true;
     private boolean autoplay = false;
-    private int autoplayDelay = 1000;
-    private int animationSpeed = 300;
+    private Integer autoplayDelay = 1000;
+    private Integer animationSpeed = 300;
 
     public BannerPlaceAppearance(Map<String, Object> appearanceMap) {
         if (appearanceMap == null) return;
@@ -28,13 +28,13 @@ public class BannerPlaceAppearance implements IBannerPlaceAppearance {
 
     @Override
     public float singleBannerAspectRatio() {
-        return singleBannerAspectRatio;
+        return singleBannerAspectRatio != null ? singleBannerAspectRatio : 2f;
     }
 
 
     @Override
     public float cornerRadius() {
-        return cornerRadius;
+        return cornerRadius != null ? cornerRadius : 16f;
     }
 
     @Override
@@ -49,12 +49,12 @@ public class BannerPlaceAppearance implements IBannerPlaceAppearance {
 
     @Override
     public int autoplayDelay() {
-        return autoplayDelay;
+        return autoplayDelay != null ? autoplayDelay : 1000;
     }
 
     @Override
     public int animationSpeed() {
-        return animationSpeed;
+        return animationSpeed != null ? animationSpeed : 300;
     }
 
 }

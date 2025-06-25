@@ -18,7 +18,7 @@ import java.util.Map;
 import java.util.Objects;
 
 public class InAppMessageSlide implements IReaderContentSlide {
-    @SerializedName("slide_index")
+    @SerializedName("id")
     public int slideIndex;
     @SerializedName("event_payload")
     public SlidePayload slidePayload;

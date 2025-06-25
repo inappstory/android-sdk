@@ -15,6 +15,7 @@ import android.widget.RelativeLayout;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.viewpager.widget.ViewPager;
 
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
@@ -36,6 +37,41 @@ public class BannerList extends RelativeLayout implements Observer<BannerPagerSt
     private String bannerPlace;
     private IASCore core;
     private ICustomBannerPlace customBannerPlace = new DefaultBannerPlace();
+    private String lastLaunchedTag = "banner_0";
+
+    BannerPager.PageChangeListener pageChangeListener = new BannerPager.PageChangeListener() {
+        @Override
+        public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+            BannerView currentBannerView = bannerPager.findViewWithTag("banner_" + position);
+        }
+
+        @Override
+        public void onPageSelected(int position) {
+            String newLaunchedTag = "banner_" + position;
+            if (!lastLaunchedTag.isEmpty() && !(lastLaunchedTag.equals(newLaunchedTag))) {
+                BannerView currentBannerView = bannerPager.findViewWithTag(lastLaunchedTag);
+                if (currentBannerView != null) currentBannerView.stopBanner();
+            }
+            BannerView currentBannerView = bannerPager.findViewWithTag(newLaunchedTag);
+            if (currentBannerView != null) {
+                currentBannerView.startBanner();
+                currentBannerView.resumeBanner();
+            }
+            lastLaunchedTag = newLaunchedTag;
+        }
+
+        @Override
+        public void onPageScrollStateChanged(int state) {
+            String newLaunchedTag = "banner_" +  bannerPager.getCurrentItem();
+            if (state == ViewPager.SCROLL_STATE_IDLE) {
+                if (newLaunchedTag.equals(lastLaunchedTag)) {
+                    BannerView currentBannerView = bannerPager.findViewWithTag(lastLaunchedTag);
+                    if (currentBannerView != null) currentBannerView.resumeBanner();
+                }
+            }
+
+        }
+    };
 
     public void setBannerPlace(final String bannerPlace) {
         this.bannerPlace = bannerPlace;
@@ -87,6 +123,7 @@ public class BannerList extends RelativeLayout implements Observer<BannerPagerSt
     private void init(Context context) {
         View.inflate(context, R.layout.cs_banner_widget, this);
         bannerPager = findViewById(R.id.banner_pager);
+        bannerPager.addOnPageChangeListener(pageChangeListener);
         setVisibility(GONE);
     }
 
@@ -162,6 +199,7 @@ public class BannerList extends RelativeLayout implements Observer<BannerPagerSt
                                         height
                                 )
                         );
+                        bannerPager.setCurrentItem(0);
                     }
                 });
                 break;

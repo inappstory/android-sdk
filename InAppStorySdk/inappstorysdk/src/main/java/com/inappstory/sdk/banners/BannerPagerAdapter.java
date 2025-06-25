@@ -44,6 +44,7 @@ public class BannerPagerAdapter extends PagerAdapter {
     @Override
     public Object instantiateItem(@NonNull ViewGroup container, int position) {
         BannerView bannerView = new BannerView(container.getContext());
+        bannerView.setTag("banner_" + position);
         Log.e("BannerPagerAdapter", "instantiateItem " + position);
         IBanner banner = banners.get(position % banners.size());
         int bannerId = banner.id();

@@ -41,6 +41,12 @@ public class BannerView extends FrameLayout implements Observer<BannerState> {
     private View loader;
     private View refresh;
 
+    public boolean isLoaded() {
+        return isLoaded;
+    }
+
+    private boolean isLoaded;
+
     void viewModel(IBannerViewModel bannerViewModel) {
         this.bannerViewModel = bannerViewModel;
         bannerWebView.slideViewModel(bannerViewModel);
@@ -56,9 +62,62 @@ public class BannerView extends FrameLayout implements Observer<BannerState> {
         container = findViewById(R.id.bannerContainer);
         loaderContainer = findViewById(R.id.loaderContainer);
         bannerWebView = findViewById(R.id.contentWebView);
+        bannerWebView.setHost(this);
         loaderContainer.addView(createLoader(context));
         loaderContainer.addView(createRefresh(context));
         Log.e("BannerPagerAdapter", "initView");
+    }
+
+    void stopBanner() {
+        if (!isLoaded) return;
+        if (bannerWebView == null) return;
+        bannerWebView.post(
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        bannerWebView.stopSlide();
+                    }
+                }
+        );
+    }
+
+    void resumeBanner() {
+        if (!isLoaded) return;
+        if (bannerWebView == null) return;
+        bannerWebView.post(
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        bannerWebView.resumeSlide();
+                    }
+                }
+        );
+    }
+
+    void pauseBanner() {
+        if (!isLoaded) return;
+        if (bannerWebView == null) return;
+        bannerWebView.post(
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        bannerWebView.pauseSlide();
+                    }
+                }
+        );
+    }
+
+    void startBanner() {
+        if (!isLoaded) return;
+        if (bannerWebView == null) return;
+        bannerWebView.post(
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        bannerWebView.startSlide(null);
+                    }
+                }
+        );
     }
 
     private View createLoader(Context context) {
@@ -184,6 +243,7 @@ public class BannerView extends FrameLayout implements Observer<BannerState> {
                     break;
                 case 1:
                     if (bannerWebView instanceof View) {
+                        isLoaded = true;
                         ((View) bannerWebView).post(
                                 new Runnable() {
                                     @Override

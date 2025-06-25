@@ -5,12 +5,17 @@ public class BannerState {
     private String bannerPlace;
     private String content;
     private BannerLoadStates bannerLoadState = BannerLoadStates.EMPTY;
+    private boolean bannerIsPaused = false;
     int contentStatus = 0;
 
     int slideJSStatus = 0;
 
     public int contentStatus() {
         return contentStatus;
+    }
+
+    public boolean bannerIsPaused() {
+        return bannerIsPaused;
     }
 
     public int slideJSStatus() {

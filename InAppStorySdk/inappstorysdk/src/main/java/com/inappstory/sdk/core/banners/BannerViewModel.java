@@ -174,6 +174,16 @@ public class BannerViewModel implements IBannerViewModel {
     }
 
     @Override
+    public void pauseSlide() {
+
+    }
+
+    @Override
+    public void resumeSlide() {
+
+    }
+
+    @Override
     public void slideClick(String payload) {
         if (payload != null && !payload.isEmpty()) {
             SlideLinkObject object = JsonParser.fromJson(payload, SlideLinkObject.class);

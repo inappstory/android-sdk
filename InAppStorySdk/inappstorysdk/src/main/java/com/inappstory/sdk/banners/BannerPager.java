@@ -27,6 +27,9 @@ public class BannerPager extends ViewPager {
         init();
     }
 
+    public static abstract class PageChangeListener implements OnPageChangeListener {
+    }
+
 
     private void init() {}
 }
