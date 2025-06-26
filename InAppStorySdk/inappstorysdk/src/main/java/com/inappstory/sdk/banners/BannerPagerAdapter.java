@@ -21,8 +21,8 @@ public class BannerPagerAdapter extends PagerAdapter {
     private final IASCore core;
     private final String bannerPlace;
     private final float itemWidth;
-    private final int maxHeight;
     private final boolean loop;
+    private final float bannerRadius;
 
     public BannerPagerAdapter(
             IASCore core,
@@ -30,20 +30,21 @@ public class BannerPagerAdapter extends PagerAdapter {
             String bannerPlace,
             boolean loop,
             float itemWidth,
-            int maxHeight
+            float bannerRadius
     ) {
         this.itemWidth = itemWidth;
-        this.maxHeight = maxHeight;
         this.banners = banners;
         this.bannerPlace = bannerPlace;
         this.loop = loop;
         this.core = core;
+        this.bannerRadius = bannerRadius;
     }
 
     @NonNull
     @Override
     public Object instantiateItem(@NonNull ViewGroup container, int position) {
         BannerView bannerView = new BannerView(container.getContext());
+        bannerView.setBannerRadius(bannerRadius);
         bannerView.setTag("banner_" + position);
         Log.e("BannerPagerAdapter", "instantiateItem " + position);
         IBanner banner = banners.get(position % banners.size());

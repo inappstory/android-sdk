@@ -15,19 +15,23 @@ import android.widget.RelativeLayout;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.cardview.widget.CardView;
 
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.banners.BannerState;
 import com.inappstory.sdk.core.banners.IBannerViewModel;
+import com.inappstory.sdk.core.banners.ICustomBannerPlace;
+import com.inappstory.sdk.core.utils.ColorUtils;
 import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderSlideState;
+import com.inappstory.sdk.stories.api.models.slidestructure.Background;
 import com.inappstory.sdk.stories.ui.views.IASWebView;
 import com.inappstory.sdk.stories.utils.Observer;
 import com.inappstory.sdk.stories.utils.Sizes;
 
 import java.util.Random;
 
-public class BannerView extends FrameLayout implements Observer<BannerState> {
+public class BannerView extends CardView implements Observer<BannerState> {
 
     public BannerView(@NonNull Context context) {
         super(context);
@@ -36,10 +40,16 @@ public class BannerView extends FrameLayout implements Observer<BannerState> {
 
     private IBannerViewModel bannerViewModel;
     private BannerWebView bannerWebView;
-    private FrameLayout container;
+    private CardView container;
     private RelativeLayout loaderContainer;
     private View loader;
     private View refresh;
+
+    public void setBannerPager(BannerPager bannerPager) {
+        this.bannerPager = bannerPager;
+    }
+
+    private BannerPager bannerPager;
 
     public boolean isLoaded() {
         return isLoaded;
@@ -59,7 +69,7 @@ public class BannerView extends FrameLayout implements Observer<BannerState> {
     @SuppressLint("WrongViewCast")
     private void init(Context context) {
         View.inflate(context, R.layout.cs_banner_item, this);
-        container = findViewById(R.id.bannerContainer);
+        //container = findViewById(R.id.bannerContainer);
         loaderContainer = findViewById(R.id.loaderContainer);
         bannerWebView = findViewById(R.id.contentWebView);
         bannerWebView.setHost(this);
@@ -79,6 +89,14 @@ public class BannerView extends FrameLayout implements Observer<BannerState> {
                     }
                 }
         );
+    }
+
+    public void setBannerRadius(float radius) {
+        this.setRadius(radius);
+    }
+
+    public void setBannerBackground(String backgroundColor) {
+        setCardBackgroundColor(ColorUtils.parseColorRGBA(backgroundColor));
     }
 
     void resumeBanner() {
@@ -235,7 +253,7 @@ public class BannerView extends FrameLayout implements Observer<BannerState> {
             }
 
         }
-        if (currentState != null &&
+        if (currentState == null ||
                 (newValue.slideJSStatus() != currentState.slideJSStatus())
         ) {
             switch (newValue.slideJSStatus()) {

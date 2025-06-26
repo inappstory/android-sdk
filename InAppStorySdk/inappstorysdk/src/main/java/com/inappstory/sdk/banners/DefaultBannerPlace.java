@@ -14,31 +14,32 @@ public class DefaultBannerPlace implements ICustomBannerPlace {
 
     @Override
     public int nextBannerOffset() {
-        return 24;
+        return 0;
     }
 
     @Override
     public int prevBannerOffset() {
-        return 24;
+        return 0;
     }
 
     @Override
     public int bannersGap() {
-        return 8;
+        return 4;
     }
 
     @Override
-    public int maxHeight() {
-        return MATCH_PARENT;
+    public int cornerRadius() {
+        return 16;
     }
 
     @Override
-    public IBannerPlaceArrowsNavigation arrowsNavigation() {
-        return null;
+    public boolean loop() {
+        return true;
     }
 
     @Override
-    public IBannerPlaceDotNavigation dotNavigation() {
-        return null;
+    public int animationSpeed() {
+        return 300;
     }
+
 }

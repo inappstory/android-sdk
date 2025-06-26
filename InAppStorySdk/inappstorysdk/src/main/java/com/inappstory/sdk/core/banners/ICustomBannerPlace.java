@@ -9,10 +9,9 @@ public interface ICustomBannerPlace {
 
     int bannersGap(); // in dp, default = 0dp
 
-    int maxHeight(); // in dp, default = -1
+    int cornerRadius(); // in dp, default = 0dp
 
-    IBannerPlaceArrowsNavigation arrowsNavigation();
+    boolean loop(); // default = false
 
-    IBannerPlaceDotNavigation dotNavigation();
-
+    int animationSpeed(); //is ms, default = 300ms
 }

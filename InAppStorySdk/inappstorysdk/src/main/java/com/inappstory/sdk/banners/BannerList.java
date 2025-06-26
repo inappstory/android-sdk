@@ -62,7 +62,7 @@ public class BannerList extends RelativeLayout implements Observer<BannerPagerSt
 
         @Override
         public void onPageScrollStateChanged(int state) {
-            String newLaunchedTag = "banner_" +  bannerPager.getCurrentItem();
+            String newLaunchedTag = "banner_" + bannerPager.getCurrentItem();
             if (state == ViewPager.SCROLL_STATE_IDLE) {
                 if (newLaunchedTag.equals(lastLaunchedTag)) {
                     BannerView currentBannerView = bannerPager.findViewWithTag(lastLaunchedTag);
@@ -139,13 +139,8 @@ public class BannerList extends RelativeLayout implements Observer<BannerPagerSt
             if (tempRatio < maxHeightRatio) maxHeightRatio = tempRatio;
         }
         float realWidth = calculateItemWidth();
-        if (customBannerPlace.maxHeight() == -1)
-            return Math.min((int) (realWidth / maxHeightRatio),
-                    Sizes.getScreenSize(getContext()).y);
         return Math.min((int) (realWidth / maxHeightRatio),
-                Math.min(customBannerPlace.maxHeight(),
-                        Sizes.getScreenSize(getContext()).y)
-        );
+                Sizes.getScreenSize(getContext()).y);
     }
 
     private float calculateItemWidth() {
@@ -194,12 +189,15 @@ public class BannerList extends RelativeLayout implements Observer<BannerPagerSt
                                         core,
                                         newValue.getItems(),
                                         bannerPlace,
-                                        false,
+                                        customBannerPlace.loop(),
                                         (iw / igap) / customBannerPlace.bannersOnScreen(),
-                                        height
+                                        Sizes.dpToPxExt(
+                                                customBannerPlace.cornerRadius(),
+                                                getContext()
+                                        )
                                 )
                         );
-                        bannerPager.setCurrentItem(0);
+                        bannerPager.setCurrentItem((customBannerPlace.loop() ? (newValue.getItems().size() * 200) : 0));
                     }
                 });
                 break;
