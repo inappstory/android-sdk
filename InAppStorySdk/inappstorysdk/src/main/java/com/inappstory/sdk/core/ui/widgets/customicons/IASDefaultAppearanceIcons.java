@@ -8,6 +8,7 @@ import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.ICustomAppearanceIcons;
+import com.inappstory.sdk.ICustomIconState;
 
 public class IASDefaultAppearanceIcons implements ICustomAppearanceIcons {
     private final AppearanceManager appearanceManager;
@@ -25,9 +26,9 @@ public class IASDefaultAppearanceIcons implements ICustomAppearanceIcons {
             }
 
             @Override
-            public void updateState(View iconView, boolean active, boolean enabled) {
+            public void updateState(View iconView, ICustomIconState iconState) {
                 if (iconView instanceof IASDefaultIcon) {
-                    ((IASDefaultIcon) iconView).updateState(active, enabled);
+                    ((IASDefaultIcon) iconView).updateState(iconState);
                 }
             }
         };
@@ -42,9 +43,9 @@ public class IASDefaultAppearanceIcons implements ICustomAppearanceIcons {
             }
 
             @Override
-            public void updateState(View iconView, boolean active, boolean enabled) {
+            public void updateState(View iconView, ICustomIconState iconState) {
                 if (iconView instanceof IASDefaultIcon) {
-                    ((IASDefaultIcon) iconView).updateState(active, enabled);
+                    ((IASDefaultIcon) iconView).updateState(iconState);
                 }
             }
         };
@@ -59,9 +60,9 @@ public class IASDefaultAppearanceIcons implements ICustomAppearanceIcons {
             }
 
             @Override
-            public void updateState(View iconView, boolean active, boolean enabled) {
+            public void updateState(View iconView, ICustomIconState iconState) {
                 if (iconView instanceof IASDefaultIcon) {
-                    ((IASDefaultIcon) iconView).updateState(active, enabled);
+                    ((IASDefaultIcon) iconView).updateState(iconState);
                 }
             }
         };
@@ -76,9 +77,9 @@ public class IASDefaultAppearanceIcons implements ICustomAppearanceIcons {
             }
 
             @Override
-            public void updateState(View iconView, boolean active, boolean enabled) {
+            public void updateState(View iconView, ICustomIconState iconState) {
                 if (iconView instanceof IASDefaultIcon) {
-                    ((IASDefaultIcon) iconView).updateState(active, enabled);
+                    ((IASDefaultIcon) iconView).updateState(iconState);
                 }
             }
         };
@@ -93,9 +94,9 @@ public class IASDefaultAppearanceIcons implements ICustomAppearanceIcons {
             }
 
             @Override
-            public void updateState(View iconView, boolean active, boolean enabled) {
+            public void updateState(View iconView, ICustomIconState iconState) {
                 if (iconView instanceof IASDefaultIcon) {
-                    ((IASDefaultIcon) iconView).updateState(active, enabled);
+                    ((IASDefaultIcon) iconView).updateState(iconState);
                 }
             }
         };

@@ -11,9 +11,4 @@ public abstract class CustomIconWithStates implements ICustomIcon {
     public void touchEvent(View iconView, MotionEvent event) {
 
     }
-
-    @Override
-    public void clickEvent(View iconView) {
-
-    }
 }

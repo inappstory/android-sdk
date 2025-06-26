@@ -7,6 +7,7 @@ import android.widget.FrameLayout;
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.AppCompatImageView;
 
+import com.inappstory.sdk.ICustomIconState;
 import com.inappstory.sdk.R;
 
 public class IASDefaultIcon extends FrameLayout {
@@ -30,8 +31,8 @@ public class IASDefaultIcon extends FrameLayout {
     }
 
     @SuppressLint("UseCompatLoadingForDrawables")
-    public void updateState(boolean active, boolean enabled) {
-        image.setEnabled(enabled);
-        image.setActivated(active);
+    public void updateState(ICustomIconState iconState) {
+        image.setEnabled(iconState.enabled());
+        image.setActivated(iconState.active());
     }
 }
