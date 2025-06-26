@@ -11,4 +11,6 @@ public interface ICustomIcon {
     void updateState(View iconView, ICustomIconState iconState);
 
     void touchEvent(View iconView, MotionEvent event);
+
+    void clickEvent(View iconView);
 }

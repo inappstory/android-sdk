@@ -21,6 +21,7 @@ import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenAppearance;
+import com.inappstory.sdk.core.ui.widgets.customicons.CustomIconState;
 import com.inappstory.sdk.stories.ui.widgets.TouchFrameLayout;
 import com.inappstory.sdk.stories.utils.Sizes;
 
@@ -69,7 +70,7 @@ public class ButtonsPanel extends LinearLayout {
                 @Override
                 public void run() {
                     shareLayout.setClickable(true);
-                    shareInterface.updateState(share, true, true);
+                    shareInterface.updateState(share, new CustomIconState(true, true));
                 }
             });
         }
@@ -77,11 +78,11 @@ public class ButtonsPanel extends LinearLayout {
 
     public void setButtonsStatus(int likeVal, int favVal) {
         if (likeLayout != null)
-            likeInterface.updateState(like, likeVal == 1, true);
+            likeInterface.updateState(like, new CustomIconState(likeVal == 1, true));
         if (dislikeLayout != null)
-            dislikeInterface.updateState(dislike, likeVal == -1, true);
+            dislikeInterface.updateState(dislike, new CustomIconState(likeVal == -1, true));
         if (favoriteLayout != null)
-            favoriteInterface.updateState(favorite, favVal == 1, true);
+            favoriteInterface.updateState(favorite, new CustomIconState(favVal == 1, true));
     }
 
     public boolean panelIsVisible() {
@@ -109,7 +110,13 @@ public class ButtonsPanel extends LinearLayout {
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-                soundInterface.updateState(sound, ((IASDataSettingsHolder) core.settingsAPI()).isSoundOn(), true);
+                soundInterface.updateState(
+                        sound,
+                        new CustomIconState(
+                                ((IASDataSettingsHolder) core.settingsAPI()).isSoundOn(),
+                                true
+                        )
+                );
             }
         });
         this.isVisible = (hasFavorite || hasLike || hasShare || hasSound);
@@ -132,7 +139,13 @@ public class ButtonsPanel extends LinearLayout {
 
 
     public void refreshSoundStatus(IASCore core) {
-        soundInterface.updateState(sound, ((IASDataSettingsHolder) core.settingsAPI()).isSoundOn(), true);
+        soundInterface.updateState(
+                sound,
+                new CustomIconState(
+                        ((IASDataSettingsHolder) core.settingsAPI()).isSoundOn(),
+                        true
+                )
+        );
     }
 
     ButtonsPanelManager manager;
@@ -269,7 +282,13 @@ public class ButtonsPanel extends LinearLayout {
                             return false;
                         }
                     });
-                    soundInterface.updateState(sound, ((IASDataSettingsHolder) core.settingsAPI()).isSoundOn(), true);
+                    soundInterface.updateState(
+                            sound,
+                            new CustomIconState(
+                                    ((IASDataSettingsHolder) core.settingsAPI()).isSoundOn(),
+                                    true
+                            )
+                    );
                 }
             }
         });
@@ -285,8 +304,8 @@ public class ButtonsPanel extends LinearLayout {
     }*/
 
     public void likeClick() {
-        likeInterface.updateState(like, likeActive, false);
-        dislikeInterface.updateState(dislike, dislikeActive, false);
+        likeInterface.updateState(like, new CustomIconState(likeActive, false));
+        dislikeInterface.updateState(dislike, new CustomIconState(dislikeActive, false));
         likeLayout.setClickable(false);
         dislikeLayout.setClickable(false);
         manager.likeClick(new ButtonClickCallback() {
@@ -297,8 +316,8 @@ public class ButtonsPanel extends LinearLayout {
                     public void run() {
                         likeActive = val == 1;
                         dislikeActive = val == -1;
-                        likeInterface.updateState(like, likeActive, true);
-                        dislikeInterface.updateState(dislike, dislikeActive, true);
+                        likeInterface.updateState(like, new CustomIconState(likeActive, true));
+                        dislikeInterface.updateState(dislike, new CustomIconState(dislikeActive, true));
                         likeLayout.setClickable(true);
                         dislikeLayout.setClickable(true);
                     }
@@ -310,8 +329,8 @@ public class ButtonsPanel extends LinearLayout {
                 post(new Runnable() {
                     @Override
                     public void run() {
-                        likeInterface.updateState(like, likeActive, true);
-                        dislikeInterface.updateState(dislike, dislikeActive, true);
+                        likeInterface.updateState(like, new CustomIconState(likeActive, true));
+                        dislikeInterface.updateState(dislike, new CustomIconState(dislikeActive, true));
                         likeLayout.setClickable(true);
                         dislikeLayout.setClickable(true);
                     }
@@ -321,8 +340,8 @@ public class ButtonsPanel extends LinearLayout {
     }
 
     public void dislikeClick() {
-        likeInterface.updateState(like, likeActive, false);
-        dislikeInterface.updateState(dislike, dislikeActive, false);
+        likeInterface.updateState(like, new CustomIconState(likeActive, false));
+        dislikeInterface.updateState(dislike, new CustomIconState(dislikeActive, false));
         likeLayout.setClickable(false);
         dislikeLayout.setClickable(false);
         manager.dislikeClick(new ButtonClickCallback() {
@@ -333,8 +352,8 @@ public class ButtonsPanel extends LinearLayout {
                     public void run() {
                         likeActive = val == 1;
                         dislikeActive = val == -1;
-                        likeInterface.updateState(like, likeActive, true);
-                        dislikeInterface.updateState(dislike, dislikeActive, true);
+                        likeInterface.updateState(like, new CustomIconState(likeActive, true));
+                        dislikeInterface.updateState(dislike, new CustomIconState(dislikeActive, true));
                         likeLayout.setClickable(true);
                         dislikeLayout.setClickable(true);
                     }
@@ -346,8 +365,8 @@ public class ButtonsPanel extends LinearLayout {
                 post(new Runnable() {
                     @Override
                     public void run() {
-                        likeInterface.updateState(like, likeActive, true);
-                        dislikeInterface.updateState(dislike, dislikeActive, true);
+                        likeInterface.updateState(like, new CustomIconState(likeActive, true));
+                        dislikeInterface.updateState(dislike, new CustomIconState(dislikeActive, true));
                         likeLayout.setClickable(true);
                         dislikeLayout.setClickable(true);
                     }
@@ -362,7 +381,7 @@ public class ButtonsPanel extends LinearLayout {
             public void run() {
                 if (favoriteLayout != null) {
                     favoriteActive = false;
-                    favoriteInterface.updateState(favorite, true, false);
+                    favoriteInterface.updateState(favorite, new CustomIconState(true, false));
                     favoriteLayout.setClickable(true);
                 }
             }
@@ -370,7 +389,7 @@ public class ButtonsPanel extends LinearLayout {
     }
 
     public void favoriteClick() {
-        favoriteInterface.updateState(favorite, favoriteActive, false);
+        favoriteInterface.updateState(favorite, new CustomIconState(favoriteActive, false));
         favoriteLayout.setClickable(false);
         manager.favoriteClick(new ButtonClickCallback() {
             @Override
@@ -380,7 +399,7 @@ public class ButtonsPanel extends LinearLayout {
                     public void run() {
                         favoriteActive = val == 1;
                         favoriteLayout.setClickable(true);
-                        favoriteInterface.updateState(favorite, favoriteActive, true);
+                        favoriteInterface.updateState(favorite, new CustomIconState(favoriteActive, true));
                     }
                 });
             }
@@ -391,7 +410,7 @@ public class ButtonsPanel extends LinearLayout {
                     @Override
                     public void run() {
                         favoriteLayout.setClickable(true);
-                        favoriteInterface.updateState(favorite, favoriteActive, true);
+                        favoriteInterface.updateState(favorite, new CustomIconState(favoriteActive, true));
                     }
                 });
             }
@@ -403,7 +422,7 @@ public class ButtonsPanel extends LinearLayout {
     }
 
     public void shareClick() {
-        shareInterface.updateState(share, true, false);
+        shareInterface.updateState(share, new CustomIconState(true, false));
         shareLayout.setClickable(false);
         manager.shareClick(new ButtonsPanelManager.ShareButtonClickCallback() {
             @Override
@@ -421,7 +440,7 @@ public class ButtonsPanel extends LinearLayout {
                 post(new Runnable() {
                     @Override
                     public void run() {
-                        shareInterface.updateState(share, true, true);
+                        shareInterface.updateState(share, new CustomIconState(true, true));
                         shareLayout.setClickable(true);
                     }
                 });

@@ -4,6 +4,8 @@ import android.content.Context;
 import android.util.SizeF;
 import android.view.View;
 
+import com.inappstory.sdk.ICustomIconState;
+
 public class IASDefaultIconCreator implements IIASDefaultIconCreator {
     public CustomIconWithStates generateDefaultIcon(final int iconId) {
         return new CustomIconWithStates() {
@@ -13,9 +15,9 @@ public class IASDefaultIconCreator implements IIASDefaultIconCreator {
             }
 
             @Override
-            public void updateState(View iconView, boolean active, boolean enabled) {
+            public void updateState(View iconView, ICustomIconState state) {
                 if (iconView instanceof IASDefaultIcon) {
-                    ((IASDefaultIcon) iconView).updateState(active, enabled);
+                    ((IASDefaultIcon) iconView).updateState(state);
                 }
             }
         };
