@@ -55,6 +55,7 @@ import com.inappstory.sdk.utils.ScheduledTPEManager;
 import com.inappstory.sdk.utils.StringsUtils;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -71,13 +72,22 @@ public class StoriesList extends RecyclerView {
 
     public static String DEFAULT_FEED = "default";
 
+
+    private final Object scrolledItemsLock = new Object();
+
     public void updateVisibleArea(boolean triggerScrollCallback) {
         getVisibleItems();
-        if (triggerScrollCallback && scrollCallback != null && !scrolledItems.isEmpty()) {
-            scrollCallback.onVisibleAreaUpdated(
-                    new ArrayList<>(scrolledItems.values())
-            );
+        Collection<ShownStoriesListItem> values = null;
+        synchronized (scrolledItemsLock) {
+            if (scrolledItems != null && !scrolledItems.isEmpty()) {
+                values = scrolledItems.values();
+            }
             scrolledItems.clear();
+        }
+        if (triggerScrollCallback && scrollCallback != null && values != null) {
+            scrollCallback.onVisibleAreaUpdated(
+                    new ArrayList<>(values)
+            );
         }
     }
 
@@ -298,13 +308,19 @@ public class StoriesList extends RecyclerView {
             public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
                 super.onScrollStateChanged(recyclerView, newState);
                 if (newState == SCROLL_STATE_IDLE) {
-                    if (scrollCallback != null && !scrolledItems.isEmpty()) {
+                    Collection<ShownStoriesListItem> values = null;
+                    synchronized (scrolledItemsLock) {
+                        if (scrolledItems != null && !scrolledItems.isEmpty()) {
+                            values = scrolledItems.values();
+                        }
+                        scrolledItems.clear();
+                    }
+                    if (scrollCallback != null && values != null) {
                         scrollCallback.onVisibleAreaUpdated(
-                                new ArrayList<>(scrolledItems.values())
+                                new ArrayList<>(values)
                         );
                         scrollCallback.scrollEnd();
                     }
-                    scrolledItems.clear();
                 }
             }
         });
@@ -442,7 +458,10 @@ public class StoriesList extends RecyclerView {
                         float currentPercentage =
                                 (float) (rectHeight * rectWidth) /
                                         (holder.getWidth() * holder.getHeight());
-                        ShownStoriesListItem cachedData = scrolledItems.get(i);
+                        ShownStoriesListItem cachedData = null;
+                        synchronized (scrolledItemsLock) {
+                            cachedData = scrolledItems.get(i);
+                        }
                         if (cachedData != null) {
                             currentPercentage = Math.max(currentPercentage, cachedData.areaPercent);
                         }
@@ -456,15 +475,22 @@ public class StoriesList extends RecyclerView {
                                             ContentType.STORY
                                     );
                         if (current != null && currentPercentage > 0) {
-                            scrolledItems.put(i, new ShownStoriesListItem(
-                                    new StoryData(
-                                            current,
-                                            feed,
-                                            isFavoriteList ? SourceType.FAVORITE : SourceType.LIST
-                                    ),
-                                    i,
-                                    currentPercentage
-                            ));
+                            synchronized (scrolledItemsLock) {
+                                scrolledItems.put(
+                                        i,
+                                        new ShownStoriesListItem(
+                                                new StoryData(
+                                                        current,
+                                                        feed,
+                                                        isFavoriteList ?
+                                                                SourceType.FAVORITE :
+                                                                SourceType.LIST
+                                                ),
+                                                i,
+                                                currentPercentage
+                                        )
+                                );
+                            }
                         }
                     }
                 }
@@ -824,7 +850,7 @@ public class StoriesList extends RecyclerView {
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-                IASDataSettingsHolder dataSettingsHolder = ((IASDataSettingsHolder)core.settingsAPI());
+                IASDataSettingsHolder dataSettingsHolder = ((IASDataSettingsHolder) core.settingsAPI());
                 if (dataSettingsHolder.changeLayoutDirection()) {
                     Configuration configuration = new Configuration();
                     configuration.setLocale(dataSettingsHolder.lang());
@@ -872,13 +898,18 @@ public class StoriesList extends RecyclerView {
                         new Runnable() {
                             @Override
                             public void run() {
-                                if (scrollCallback != null && !scrolledItems.isEmpty()) {
-
+                                Collection<ShownStoriesListItem> values = null;
+                                synchronized (scrolledItemsLock) {
+                                    if (scrolledItems != null && !scrolledItems.isEmpty()) {
+                                        values = scrolledItems.values();
+                                    }
+                                    scrolledItems.clear();
+                                }
+                                if (scrollCallback != null && values != null) {
                                     scrollCallback.onVisibleAreaUpdated(
-                                            new ArrayList<>(scrolledItems.values())
+                                            new ArrayList<>(values)
                                     );
                                 }
-                                scrolledItems.clear();
                             }
                         }
                 );
