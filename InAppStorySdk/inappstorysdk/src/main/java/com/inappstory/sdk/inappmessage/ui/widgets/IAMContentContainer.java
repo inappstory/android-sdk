@@ -25,10 +25,13 @@ public abstract class IAMContentContainer<T extends InAppMessageAppearance> exte
     protected View background;
     protected FrameLayout loaderContainer;
     protected Rect externalContainerRect = new Rect();
+    protected FrameLayout content;
 
     public abstract void clearContentBackground();
 
     protected IAMContainerCallback callback;
+
+    public void showContent() {}
 
     public void showLoader() {
         loaderContainer.setVisibility(VISIBLE);
@@ -102,19 +105,24 @@ public abstract class IAMContentContainer<T extends InAppMessageAppearance> exte
         });
         addView(background);
         setId(CONTAINER_ID);
+    }
+
+    protected abstract void visibleRectIsCalculated();
+
+    public interface AppearanceCallback {
+        void invoke();
+    }
+
+    public void appearance(T appearance) {
+        this.appearance = appearance;
         post(new Runnable() {
             @Override
             public void run() {
                 getGlobalVisibleRect(externalContainerRect);
                 visibleRectIsCalculated();
+                content.setVisibility(VISIBLE);
             }
         });
-    }
-
-    protected abstract void visibleRectIsCalculated();
-
-    public void appearance(T appearance) {
-        this.appearance = appearance;
     }
 
     protected T appearance;

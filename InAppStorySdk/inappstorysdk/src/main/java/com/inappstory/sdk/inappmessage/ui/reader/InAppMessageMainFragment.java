@@ -3,7 +3,6 @@ package com.inappstory.sdk.inappmessage.ui.reader;
 import static com.inappstory.sdk.inappmessage.ui.widgets.IAMContentContainer.CONTAINER_ID;
 import static com.inappstory.sdk.inappmessage.ui.widgets.IAMContentContainer.CONTENT_ID;
 
-import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -155,6 +154,8 @@ public class InAppMessageMainFragment extends Fragment implements Observer<IAMRe
         );*/
     }
 
+    IAMContentFragment contentFragment;
+
     @Override
     public void onViewCreated(
             @NonNull View view,
@@ -172,7 +173,7 @@ public class InAppMessageMainFragment extends Fragment implements Observer<IAMRe
                         .getIAMScreenHolder().subscribeScreen(InAppMessageMainFragment.this);
             }
         });
-        IAMContentFragment contentFragment = new IAMContentFragment();
+        contentFragment = new IAMContentFragment();
         FragmentTransaction t = getChildFragmentManager().beginTransaction()
                 .add(
                         CONTENT_ID,

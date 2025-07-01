@@ -28,7 +28,6 @@ import com.inappstory.sdk.utils.animation.IndependentAnimatorListener;
 
 public class FullscreenContentContainer extends IAMContentContainer<InAppMessageFullscreenAppearance> {
 
-    FrameLayout content;
     RelativeLayout container;
     RelativeLayout.LayoutParams closeButtonLayoutParams;
     ImageView closeButton;
@@ -305,6 +304,7 @@ public class FullscreenContentContainer extends IAMContentContainer<InAppMessage
                 )
         );
         content.setId(CONTENT_ID);
+        content.setVisibility(GONE);
         container.addView(content);
         closeButton = new ImageView(context);
         closeButtonLayoutParams = new RelativeLayout.LayoutParams(

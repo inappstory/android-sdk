@@ -33,7 +33,6 @@ public final class BottomSheetContentContainer extends IAMContentContainer<InApp
     private BottomSheetBehavior<RoundedCornerLayout> bottomSheetBehavior;
     private RoundedCornerLayout roundedCornerLayout;
     private CoordinatorLayout.LayoutParams layoutParams;
-    private FrameLayout content;
     private BottomSheetLine bottomSheetLine;
     private FrameLayout bottomSheetLineContainer;
 
@@ -85,6 +84,7 @@ public final class BottomSheetContentContainer extends IAMContentContainer<InApp
                         ViewGroup.LayoutParams.MATCH_PARENT
                 )
         );
+        content.setVisibility(GONE);
         content.setId(CONTENT_ID);
         roundedCornerLayout.addView(content);
         bottomSheetLine = new BottomSheetLine(context);

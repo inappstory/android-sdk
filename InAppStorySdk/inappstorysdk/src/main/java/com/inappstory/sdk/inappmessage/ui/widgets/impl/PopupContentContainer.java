@@ -26,7 +26,6 @@ import com.inappstory.sdk.utils.animation.IndependentAnimatorListener;
 
 public class PopupContentContainer extends IAMContentContainer<InAppMessagePopupAppearance> {
     private RoundedCornerLayout roundedCornerLayout;
-    private FrameLayout content;
     private FrameLayout.LayoutParams layoutParams;
     private RelativeLayout.LayoutParams closeButtonLayoutParams;
     private ImageView closeButton;
@@ -322,8 +321,7 @@ public class PopupContentContainer extends IAMContentContainer<InAppMessagePopup
                         ViewGroup.LayoutParams.MATCH_PARENT
                 )
         );
-
-
+        content.setVisibility(GONE);
         closeButton = new ImageView(context);
         closeButtonLayoutParams = new RelativeLayout.LayoutParams(
                 Sizes.dpToPxExt(32, context),
