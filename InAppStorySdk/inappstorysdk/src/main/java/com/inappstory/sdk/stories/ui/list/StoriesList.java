@@ -77,16 +77,18 @@ public class StoriesList extends RecyclerView {
 
     public void updateVisibleArea(boolean triggerScrollCallback) {
         getVisibleItems();
-        Collection<ShownStoriesListItem> values = null;
+        List<ShownStoriesListItem> values = null;
         synchronized (scrolledItemsLock) {
-            if (scrolledItems != null && !scrolledItems.isEmpty()) {
-                values = scrolledItems.values();
+            if (scrolledItems != null) {
+                if (!scrolledItems.isEmpty()) {
+                    values = new ArrayList<>(scrolledItems.values());
+                }
+                scrolledItems.clear();
             }
-            scrolledItems.clear();
         }
         if (triggerScrollCallback && scrollCallback != null && values != null) {
             scrollCallback.onVisibleAreaUpdated(
-                    new ArrayList<>(values)
+                    values
             );
         }
     }
@@ -308,16 +310,18 @@ public class StoriesList extends RecyclerView {
             public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
                 super.onScrollStateChanged(recyclerView, newState);
                 if (newState == SCROLL_STATE_IDLE) {
-                    Collection<ShownStoriesListItem> values = null;
+                    List<ShownStoriesListItem> values = null;
                     synchronized (scrolledItemsLock) {
-                        if (scrolledItems != null && !scrolledItems.isEmpty()) {
-                            values = scrolledItems.values();
+                        if (scrolledItems != null) {
+                            if (!scrolledItems.isEmpty()) {
+                                values = new ArrayList<>(scrolledItems.values());
+                            }
+                            scrolledItems.clear();
                         }
-                        scrolledItems.clear();
                     }
                     if (scrollCallback != null && values != null) {
                         scrollCallback.onVisibleAreaUpdated(
-                                new ArrayList<>(values)
+                                values
                         );
                         scrollCallback.scrollEnd();
                     }
@@ -898,16 +902,18 @@ public class StoriesList extends RecyclerView {
                         new Runnable() {
                             @Override
                             public void run() {
-                                Collection<ShownStoriesListItem> values = null;
+                                List<ShownStoriesListItem> values = null;
                                 synchronized (scrolledItemsLock) {
-                                    if (scrolledItems != null && !scrolledItems.isEmpty()) {
-                                        values = scrolledItems.values();
+                                    if (scrolledItems != null) {
+                                        if (!scrolledItems.isEmpty()) {
+                                            values = new ArrayList<>(scrolledItems.values());
+                                        }
+                                        scrolledItems.clear();
                                     }
-                                    scrolledItems.clear();
                                 }
                                 if (scrollCallback != null && values != null) {
                                     scrollCallback.onVisibleAreaUpdated(
-                                            new ArrayList<>(values)
+                                            values
                                     );
                                 }
                             }
