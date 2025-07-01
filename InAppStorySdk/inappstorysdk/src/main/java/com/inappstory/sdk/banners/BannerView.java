@@ -78,6 +78,10 @@ public class BannerView extends CardView implements Observer<BannerState> {
         Log.e("BannerPagerAdapter", "initView");
     }
 
+    void setLoadingPlaceholder(View view) {
+        ((ViewGroup) loader).addView(view);
+    }
+
     void stopBanner() {
         if (!isLoaded) return;
         if (bannerWebView == null) return;
@@ -143,7 +147,6 @@ public class BannerView extends CardView implements Observer<BannerState> {
         loader.setLayoutParams(new RelativeLayout.LayoutParams(MATCH_PARENT,
                 MATCH_PARENT));
         loader.setElevation(8);
-        ((ViewGroup) loader).addView(AppearanceManager.getLoader(context, Color.WHITE));
         return loader;
     }
 

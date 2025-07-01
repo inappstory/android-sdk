@@ -3,6 +3,7 @@ package com.inappstory.sdk.banners;
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.graphics.Point;
 import android.os.Handler;
 import android.os.Looper;
@@ -26,9 +27,11 @@ import com.inappstory.sdk.core.banners.BannerPagerState;
 import com.inappstory.sdk.core.banners.IBannerPagerViewModel;
 import com.inappstory.sdk.core.banners.ICustomBannerPlace;
 import com.inappstory.sdk.core.data.IBanner;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.BannerData;
 import com.inappstory.sdk.stories.utils.Observer;
 import com.inappstory.sdk.stories.utils.Sizes;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class BannerList extends RelativeLayout implements Observer<BannerPagerState> {
@@ -39,10 +42,31 @@ public class BannerList extends RelativeLayout implements Observer<BannerPagerSt
     private ICustomBannerPlace customBannerPlace = new DefaultBannerPlace();
     private String lastLaunchedTag = "banner_0";
 
+    public void bannerListLoadCallback(BannerListLoadCallback bannerListLoadCallback) {
+        this.bannerListLoadCallback = bannerListLoadCallback;
+    }
+
+    private BannerListLoadCallback bannerListLoadCallback;
+
+    public void bannerListNavigationCallback(BannerListNavigationCallback bannerListNavigationCallback) {
+        this.bannerListNavigationCallback = bannerListNavigationCallback;
+    }
+
+    private BannerListNavigationCallback bannerListNavigationCallback;
+
+
     BannerPager.PageChangeListener pageChangeListener = new BannerPager.PageChangeListener() {
         @Override
         public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-            BannerView currentBannerView = bannerPager.findViewWithTag("banner_" + position);
+            try {
+                if (bannerListNavigationCallback != null)
+                    bannerListNavigationCallback.onPageScrolled(
+                            position,
+                            positionOffset,
+                            positionOffsetPixels
+                    );
+            } catch (Exception e) {
+            }
         }
 
         @Override
@@ -58,6 +82,13 @@ public class BannerList extends RelativeLayout implements Observer<BannerPagerSt
                 currentBannerView.resumeBanner();
             }
             lastLaunchedTag = newLaunchedTag;
+            try {
+                if (bannerListNavigationCallback != null)
+                    bannerListNavigationCallback.onPageSelected(
+                            position
+                    );
+            } catch (Exception e) {
+            }
         }
 
         @Override
@@ -69,9 +100,55 @@ public class BannerList extends RelativeLayout implements Observer<BannerPagerSt
                     if (currentBannerView != null) currentBannerView.resumeBanner();
                 }
             }
-
         }
     };
+
+    public void showNext() {
+        int currentItem = bannerPager.getCurrentItem();
+        BannerPagerAdapter pagerAdapter = (BannerPagerAdapter) bannerPager.getAdapter();
+        if (pagerAdapter != null) {
+            if (currentItem + 1 >= pagerAdapter.getCount()) {
+                if (pagerAdapter.isLoop()) {
+                    bannerPager.setCurrentItem((currentItem + 1) % pagerAdapter.getDataCount(), true);
+                } else {
+                    //TODO log error
+                }
+            } else {
+                bannerPager.setCurrentItem(currentItem + 1, true);
+            }
+        }
+    }
+
+    public void showPrev() {
+        int currentItem = bannerPager.getCurrentItem();
+        BannerPagerAdapter pagerAdapter = (BannerPagerAdapter) bannerPager.getAdapter();
+        if (pagerAdapter != null) {
+            if (currentItem - 1 < 0) {
+                if (pagerAdapter.isLoop()) {
+                    bannerPager.setCurrentItem((currentItem - 1) % pagerAdapter.getDataCount(), true);
+                } else {
+                    //TODO log error
+                }
+            } else {
+                bannerPager.setCurrentItem(currentItem - 1, true);
+            }
+        }
+    }
+
+    public void showByIndex(int index) {
+        BannerPagerAdapter pagerAdapter = (BannerPagerAdapter) bannerPager.getAdapter();
+        if (pagerAdapter != null) {
+            if (index < 0 || index >= pagerAdapter.getCount()) {
+                if (pagerAdapter.isLoop()) {
+                    bannerPager.setCurrentItem(index % pagerAdapter.getDataCount(), true);
+                } else {
+                    //TODO log error
+                }
+            } else {
+                bannerPager.setCurrentItem(index, true);
+            }
+        }
+    }
 
     public void setBannerPlace(final String bannerPlace) {
         this.bannerPlace = bannerPlace;
@@ -95,6 +172,10 @@ public class BannerList extends RelativeLayout implements Observer<BannerPagerSt
     protected void onAttachedToWindow() {
         if (bannerPagerViewModel != null)
             bannerPagerViewModel.addSubscriber(BannerList.this);
+        if (bannerPager.getAdapter() != null) {
+            BannerPagerAdapter pagerAdapter = (BannerPagerAdapter) bannerPager.getAdapter();
+            pagerAdapter.subscribeToFirst();
+        }
         super.onAttachedToWindow();
     }
 
@@ -102,6 +183,10 @@ public class BannerList extends RelativeLayout implements Observer<BannerPagerSt
     protected void onDetachedFromWindow() {
         if (bannerPagerViewModel != null)
             bannerPagerViewModel.removeSubscriber(BannerList.this);
+        if (bannerPager.getAdapter() != null) {
+            BannerPagerAdapter pagerAdapter = (BannerPagerAdapter) bannerPager.getAdapter();
+            pagerAdapter.unsubscribeFromFirst();
+        }
         super.onDetachedFromWindow();
     }
 
@@ -157,13 +242,41 @@ public class BannerList extends RelativeLayout implements Observer<BannerPagerSt
         Log.e("bannerPlace", "onUpdate " + bannerPagerViewModel);
         switch (newValue.loadState()) {
             case EMPTY:
+                try {
+                    if (bannerListLoadCallback != null)
+                        bannerListLoadCallback.bannerPlaceLoaded(
+                                0,
+                                bannerPlace,
+                                new ArrayList<BannerData>()
+                        );
+                } catch (Exception e) {
+                }
                 setVisibility(GONE);
+                break;
             case FAILED:
+                try {
+                    if (bannerListLoadCallback != null)
+                        bannerListLoadCallback.loadError(
+                                bannerPlace
+                        );
+                } catch (Exception e) {
+                }
+                setVisibility(GONE);
+                break;
             case NONE:
             case LOADING:
                 //TODO ?
                 break;
             case LOADED:
+                try {
+                    if (bannerListLoadCallback != null)
+                        bannerListLoadCallback.bannerPlaceLoaded(
+                                newValue.getItems().size(),
+                                bannerPlace,
+                                new ArrayList<BannerData>()
+                        );
+                } catch (Exception e) {
+                }
                 new Handler(Looper.getMainLooper()).post(new Runnable() {
                     @Override
                     public void run() {
@@ -189,6 +302,17 @@ public class BannerList extends RelativeLayout implements Observer<BannerPagerSt
                                         core,
                                         newValue.getItems(),
                                         bannerPlace,
+                                        new ICustomBannerPlaceholder() {
+                                            @Override
+                                            public View onCreate(Context context) {
+                                                View v = customBannerPlace.loadingPlaceholder(context);
+                                                if (v == null) {
+                                                    v = AppearanceManager.getLoader(context, Color.WHITE);
+                                                }
+                                                return v;
+                                            }
+                                        },
+                                        bannerListLoadCallback,
                                         customBannerPlace.loop(),
                                         (iw / igap) / customBannerPlace.bannersOnScreen(),
                                         Sizes.dpToPxExt(
@@ -197,7 +321,9 @@ public class BannerList extends RelativeLayout implements Observer<BannerPagerSt
                                         )
                                 )
                         );
-                        bannerPager.setCurrentItem((customBannerPlace.loop() ? (newValue.getItems().size() * 200) : 0));
+                        bannerPager.setCurrentItem(
+                                (customBannerPlace.loop() ? (newValue.getItems().size() * 200) : 0)
+                        );
                     }
                 });
                 break;
