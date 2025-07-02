@@ -22,7 +22,9 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
+import android.util.SizeF;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowInsets;
@@ -48,6 +50,7 @@ import com.inappstory.iasutilsconnector.filepicker.IFilePicker;
 import com.inappstory.iasutilsconnector.filepicker.OnFilesChooseCallback;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.BuildConfig;
+import com.inappstory.sdk.core.ui.widgets.customicons.CustomIconWithoutStates;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.IASCore;
@@ -73,6 +76,7 @@ import com.inappstory.sdk.memcache.IGetBitmapFromMemoryCache;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ContentData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.InAppMessageData;
+import com.inappstory.sdk.stories.ui.widgets.TouchFrameLayout;
 import com.inappstory.sdk.utils.IAcceleratorSubscriber;
 import com.inappstory.sdk.utils.UrlEncoder;
 import com.inappstory.sdk.network.utils.UserAgent;
@@ -113,7 +117,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
     private IASWebView webView;
     private ImageView loader;
     private FrameLayout gameWebViewContainer;
-    private View closeButton;
+    private TouchFrameLayout closeButton;
     private View blackTop;
     private View blackBottom;
     private View webViewAndLoaderContainer;
@@ -123,7 +127,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
 
     public static final int GAME_READER_REQUEST = 405;
 
-    private ImageView refreshGame;
+    private TouchFrameLayout refreshGame;
 
     private boolean onBackPressedLocked = false;
 
@@ -448,7 +452,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                 if (activity != null)
                     oldOrientation = activity.getRequestedOrientation();
                 initWebView();
-                refreshGame.setOnClickListener(new View.OnClickListener() {
+                refreshGame.setClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         interruption.active = false;
@@ -467,7 +471,13 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                                 downloadGame(true);
                             }
                         }, 500);
+                        try {
+                            final CustomIconWithoutStates refreshIconInterface =
+                                    AppearanceManager.getCommonInstance().csCustomIcons().refreshIcon();
+                            refreshIconInterface.clickEvent(refreshGame.getChildAt(0));
+                        } catch (Exception e) {
 
+                        }
                     }
                 });
                 if (Sizes.isTablet(getContext()) && baseContainer != null) {
@@ -478,9 +488,16 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                         }
                     });
                 }
-                closeButton.setOnClickListener(new View.OnClickListener() {
+                closeButton.setClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
+                        try {
+                            final CustomIconWithoutStates closeIconInterface =
+                                    AppearanceManager.getCommonInstance().csCustomIcons().closeIcon();
+                            closeIconInterface.clickEvent(closeButton.getChildAt(0));
+                        } catch (Exception e) {
+
+                        }
                         closeGame();
                     }
                 });
@@ -1377,13 +1394,37 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         progressLoader = view.findViewById(R.id.gameProgressLoader);
         blackTop = view.findViewById(R.id.ias_black_top);
         blackBottom = view.findViewById(R.id.ias_black_bottom);
+        Context context = view.getContext();
+
         refreshGame = view.findViewById(R.id.gameRefresh);
-        refreshGame.setImageDrawable(
-                getResources().getDrawable(
-                        AppearanceManager.getCommonInstance().csRefreshIcon()
-                )
-        );
+        int maxRefreshSize = Sizes.dpToPxExt(40, context);
+        final CustomIconWithoutStates refreshIconInterface = AppearanceManager.getCommonInstance().csCustomIcons().refreshIcon();
+        final View refreshView = refreshIconInterface.createIconView(context, new SizeF(maxRefreshSize, maxRefreshSize));
+        refreshView.setClickable(false);
+        refreshGame.addView(refreshView);
+        refreshGame.setTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                refreshIconInterface.touchEvent(refreshView, event);
+                return false;
+            }
+        });
+
         closeButton = view.findViewById(R.id.close_button);
+        int maxCloseSize = Sizes.dpToPxExt(30, context);
+        final CustomIconWithoutStates closeIconInterface = AppearanceManager.getCommonInstance().csCustomIcons().closeIcon();
+        final View closeView = closeIconInterface.createIconView(context, new SizeF(maxCloseSize, maxCloseSize));
+        closeView.setClickable(false);
+        closeButton.addView(closeView);
+        closeButton.setTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                closeIconInterface.touchEvent(closeView, event);
+                return false;
+            }
+        });
+
+
         return view;
     }
 

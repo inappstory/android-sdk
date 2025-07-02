@@ -3,15 +3,18 @@ package com.inappstory.sdk;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Typeface;
-import android.util.Log;
+import android.util.SizeF;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
-import android.widget.RelativeLayout;
 
 import androidx.annotation.NonNull;
 
+import com.inappstory.sdk.core.ui.widgets.customicons.IASDefaultAppearanceIcons;
+import com.inappstory.sdk.core.ui.widgets.customicons.IASDefaultIcon;
+import com.inappstory.sdk.core.ui.widgets.customicons.IASDefaultIconCreator;
+import com.inappstory.sdk.core.ui.widgets.customicons.IIASDefaultIconCreator;
 import com.inappstory.sdk.stories.ui.widgets.LoadProgressBar;
 import com.inappstory.sdk.stories.api.models.CachedSessionData;
 import com.inappstory.sdk.core.network.content.models.Image;
@@ -27,8 +30,8 @@ import com.inappstory.sdk.stories.ui.views.goodswidget.ICustomGoodsItem;
 import com.inappstory.sdk.stories.ui.views.goodswidget.ICustomGoodsWidget;
 import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.ugc.list.IStoriesListUGCItem;
-
-import java.util.UUID;
+import com.inappstory.sdk.core.ui.widgets.customicons.CustomIconWithStates;
+import com.inappstory.sdk.core.ui.widgets.customicons.CustomIconWithoutStates;
 
 /**
  * Defines appearance of the stories list, as well as some elements of the reader.
@@ -209,6 +212,7 @@ public class AppearanceManager {
     private int csNavBarColor = Color.BLACK;
     private int csNightNavBarColor = Color.BLACK;
     private int csReaderBackgroundColor = Color.BLACK;
+    private ICustomAppearanceIcons customAppearanceIcons;
 
     private Typeface csCustomFont;
 
@@ -580,6 +584,62 @@ public class AppearanceManager {
 
     public boolean csHasShare() {
         return csHasShare;
+    }
+
+    public ICustomAppearanceIcons csCustomIcons() {
+        if (customAppearanceIcons == null) {
+            customAppearanceIcons = new IASDefaultAppearanceIcons(AppearanceManager.this);
+        }
+        return customAppearanceIcons;
+    }
+
+    public AppearanceManager csCustomIcons(
+            final CustomFavoriteIconInterface favorite,
+            final CustomLikeIconInterface like,
+            final CustomDislikeIconInterface dislike,
+            final CustomShareIconInterface share,
+            final CustomSoundIconInterface sound,
+            final CustomCloseIconInterface close,
+            final CustomRefreshIconInterface refresh
+    ) {
+        final IIASDefaultIconCreator creator = new IASDefaultIconCreator();
+        customAppearanceIcons = new ICustomAppearanceIcons() {
+            @Override
+            public CustomIconWithStates favoriteIcon() {
+                return favorite != null ? favorite : creator.generateDefaultIcon(csFavoriteIcon());
+            }
+
+            @Override
+            public CustomIconWithStates likeIcon() {
+                return like != null ? like : creator.generateDefaultIcon(csLikeIcon());
+            }
+
+            @Override
+            public CustomIconWithStates dislikeIcon() {
+                return dislike != null ? dislike : creator.generateDefaultIcon(csDislikeIcon());
+            }
+
+            @Override
+            public CustomIconWithStates shareIcon() {
+                return share != null ? share : creator.generateDefaultIcon(csShareIcon());
+            }
+
+            @Override
+            public CustomIconWithStates soundIcon() {
+                return sound != null ? sound : creator.generateDefaultIcon(csSoundIcon());
+            }
+
+            @Override
+            public CustomIconWithoutStates closeIcon() {
+                return close != null ? close : creator.generateDefaultStatelessIcon(csCloseIcon());
+            }
+
+            @Override
+            public CustomIconWithoutStates refreshIcon() {
+                return refresh != null ? refresh : creator.generateDefaultStatelessIcon(csRefreshIcon());
+            }
+        };
+        return this;
     }
 
     public int csFavoriteIcon() {

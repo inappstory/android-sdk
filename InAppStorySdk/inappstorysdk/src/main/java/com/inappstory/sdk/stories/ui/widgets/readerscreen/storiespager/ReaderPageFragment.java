@@ -26,25 +26,24 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
-import android.view.DisplayCutout;
+import android.util.SizeF;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowInsets;
 import android.widget.FrameLayout;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.widget.AppCompatImageView;
 import androidx.cardview.widget.CardView;
 import androidx.fragment.app.Fragment;
 
 import com.inappstory.sdk.AppearanceManager;
+import com.inappstory.sdk.core.ui.widgets.customicons.CustomIconWithoutStates;
 import com.inappstory.sdk.InAppStoryManager;
-import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
@@ -57,6 +56,7 @@ import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.ui.reader.ReaderManager;
 import com.inappstory.sdk.stories.ui.reader.StoriesContentFragment;
 import com.inappstory.sdk.stories.ui.reader.StoriesGradientObject;
+import com.inappstory.sdk.stories.ui.widgets.TouchFrameLayout;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.buttonspanel.ButtonsPanel;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.progresstimeline.StoryTimeline;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.webview.StoriesWebView;
@@ -74,8 +74,8 @@ public class ReaderPageFragment extends Fragment {
 
     View blackTop;
     View blackBottom;
-    View refresh;
-    AppCompatImageView close;
+    TouchFrameLayout refresh;
+    TouchFrameLayout close;
     int storyId;
 
     boolean setManagers(IASCore core) {
@@ -294,8 +294,8 @@ public class ReaderPageFragment extends Fragment {
     View loader;
 
     void setActions() {
-        if (close != null)
-            close.setOnClickListener(new View.OnClickListener() {
+        if (close != null) {
+            close.setClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     if (parentManager != null) {
@@ -306,14 +306,32 @@ public class ReaderPageFragment extends Fragment {
                                 screen.closeWithAction(CloseStory.CLICK);
                             }
                         }
+                    }
+                    try {
+                        final CustomIconWithoutStates customCloseIconInterface = AppearanceManager.
+                                getCommonInstance().
+                                csCustomIcons().
+                                closeIcon();
+                        customCloseIconInterface.clickEvent(close.getChildAt(0));
+                    } catch (Exception e) {
 
                     }
                 }
             });
+        }
         if (refresh != null)
-            refresh.setOnClickListener(new View.OnClickListener() {
+            refresh.setClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
+                    try {
+                        final CustomIconWithoutStates customRefreshIconInterface = AppearanceManager.
+                                getCommonInstance().
+                                csCustomIcons().
+                                refreshIcon();
+                        customRefreshIconInterface.clickEvent(refresh.getChildAt(0));
+                    } catch (Exception e) {
+
+                    }
                     view.setVisibility(View.GONE);
                     if (loader == null) return;
                     loader.setAlpha(1f);
@@ -443,17 +461,30 @@ public class ReaderPageFragment extends Fragment {
 
     @SuppressLint("UseCompatLoadingForDrawables")
     private void createRefreshButton(Context context) {
-        refresh = new ImageView(context);
+        refresh = new TouchFrameLayout(context);
         refresh.setId(R.id.ias_refresh_button);
+        int maxSize = Sizes.dpToPxExt(40, getContext());
         RelativeLayout.LayoutParams refreshLp = new RelativeLayout.LayoutParams(
-                Sizes.dpToPxExt(40, getContext()),
-                Sizes.dpToPxExt(40, getContext())
+                maxSize,
+                maxSize
         );
         refreshLp.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
         refresh.setElevation(18);
-        ((ImageView) refresh).setScaleType(ImageView.ScaleType.FIT_XY);
         refresh.setVisibility(View.GONE);
-        ((ImageView) refresh).setImageDrawable(getResources().getDrawable(appearanceSettings.csRefreshIcon()));
+        final CustomIconWithoutStates customRefreshIconInterface = AppearanceManager.
+                getCommonInstance().
+                csCustomIcons().
+                refreshIcon();
+        final View customRefreshView = customRefreshIconInterface.createIconView(context, new SizeF(maxSize, maxSize));
+        refresh.addView(customRefreshView);
+        customRefreshView.setClickable(false);
+        refresh.setTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                customRefreshIconInterface.touchEvent(customRefreshView, event);
+                return false;
+            }
+        });
         refresh.setLayoutParams(refreshLp);
     }
 
@@ -585,7 +616,7 @@ public class ReaderPageFragment extends Fragment {
         buttonsPanel.setOrientation(LinearLayout.HORIZONTAL);
         buttonsPanel.setBackgroundColor(Color.BLACK);
         buttonsPanel.setLayoutParams(buttonsPanelParams);
-        buttonsPanel.setIcons(appearanceSettings);
+        //buttonsPanel.setIcons(appearanceSettings);
     }
 
     private void addGradient(Context context, RelativeLayout relativeLayout) {
@@ -661,14 +692,29 @@ public class ReaderPageFragment extends Fragment {
         timeline.setLayoutParams(new RelativeLayout.LayoutParams(MATCH_PARENT,
                 Sizes.dpToPxExt(3, getContext())));
 
-        close = new AppCompatImageView(context);
+        close = new TouchFrameLayout(context);
+        final CustomIconWithoutStates customCloseIconInterface = AppearanceManager.
+                getCommonInstance().
+                csCustomIcons().
+                closeIcon();
+        int maxSize = Sizes.dpToPxExt(30, getContext());
+        final View customCloseView = customCloseIconInterface.createIconView(context, new SizeF(maxSize, maxSize));
         close.setId(R.id.ias_close_button);
         close.setLayoutParams(new RelativeLayout.LayoutParams(
-                Sizes.dpToPxExt(30, getContext()),
-                Sizes.dpToPxExt(30, getContext()))
+                maxSize,
+                maxSize)
         );
-        close.setBackground(null);
-        close.setImageDrawable(getResources().getDrawable(appearanceSettings.csCloseIcon()));
+        close.setTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                customCloseIconInterface.touchEvent(customCloseView, event);
+                return false;
+            }
+        });
+        close.addView(customCloseView);
+
+        customCloseView.setClickable(false);
+
         timelineContainer.addView(timeline);
         timelineContainer.addView(close);
 

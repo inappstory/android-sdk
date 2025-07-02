@@ -18,8 +18,9 @@ import android.graphics.Rect;
 import android.os.Build;
 import android.os.Bundle;
 
-import android.view.DisplayCutout;
+import android.util.SizeF;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowInsets;
@@ -27,12 +28,12 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
 import androidx.annotation.Nullable;
-import androidx.appcompat.widget.AppCompatImageView;
 import androidx.cardview.widget.CardView;
 import androidx.fragment.app.Fragment;
 
+import com.inappstory.sdk.AppearanceManager;
+import com.inappstory.sdk.core.ui.widgets.customicons.CustomIconWithoutStates;
 import com.inappstory.sdk.InAppStoryManager;
-import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.data.IContentWithTimeline;
 import com.inappstory.sdk.core.data.IListItemContent;
@@ -40,6 +41,7 @@ import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryScreen;
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenAppearance;
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenData;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
+import com.inappstory.sdk.stories.ui.widgets.TouchFrameLayout;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.buttonspanel.ButtonsPanel;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.progresstimeline.StoryTimeline;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.progresstimeline.StoryTimelineState;
@@ -321,30 +323,47 @@ public class StoriesLoaderFragment extends Fragment {
         RelativeLayout.LayoutParams tclp = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,
                 RelativeLayout.LayoutParams.WRAP_CONTENT);
         int offset = Sizes.dpToPxExt(Math.max(0, appearanceSettings.csReaderRadius() - 16), getContext()) / 2;
+        int maxSize = Sizes.dpToPxExt(30, getContext());
         tclp.setMargins(offset, Sizes.dpToPxExt(8, getContext()) + offset, offset, 0);
         timelineContainer.setLayoutParams(tclp);
         timelineContainer.setId(R.id.ias_timeline_container);
-        timelineContainer.setMinimumHeight(Sizes.dpToPxExt(30, getContext()));
+        timelineContainer.setMinimumHeight(maxSize);
         timelineContainer.setElevation(20);
         StoryTimeline timeline = new StoryTimeline(context);
         timeline.setId(R.id.ias_timeline);
         timeline.setLayoutParams(new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,
                 Sizes.dpToPxExt(3, getContext())));
-
-        AppCompatImageView close = new AppCompatImageView(context);
+        TouchFrameLayout close = new TouchFrameLayout(context);
+        final CustomIconWithoutStates customCloseIconInterface = AppearanceManager.
+                getCommonInstance().
+                csCustomIcons().
+                closeIcon();
+        final View customCloseView = customCloseIconInterface.createIconView(context, new SizeF(maxSize, maxSize));
         close.setId(R.id.ias_close_button);
         close.setLayoutParams(new RelativeLayout.LayoutParams(
-                Sizes.dpToPxExt(30, getContext()),
-                Sizes.dpToPxExt(30, getContext()))
+                maxSize,
+                maxSize)
         );
-        close.setBackground(null);
-        close.setImageDrawable(getResources().getDrawable(appearanceSettings.csCloseIcon()));
-        close.setOnClickListener(new View.OnClickListener() {
+        close.addView(customCloseView);
+        customCloseView.setClickable(false);
+        close.setClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 BaseStoryScreen screen = getStoriesReader();
                 if (screen != null)
                     screen.closeWithAction(CloseStory.CLICK);
+                try {
+                    customCloseIconInterface.clickEvent(customCloseView);
+                } catch (Exception e) {
+
+                }
+            }
+        });
+        close.setTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                customCloseIconInterface.touchEvent(customCloseView, event);
+                return false;
             }
         });
         timelineContainer.addView(timeline);
@@ -363,7 +382,7 @@ public class StoriesLoaderFragment extends Fragment {
         buttonsPanel.setOrientation(LinearLayout.HORIZONTAL);
         buttonsPanel.setBackgroundColor(Color.BLACK);
         buttonsPanel.setLayoutParams(buttonsPanelParams);
-        buttonsPanel.setIcons(appearanceSettings);
+        //buttonsPanel.setIcons(appearanceSettings);
         return buttonsPanel;
     }
 

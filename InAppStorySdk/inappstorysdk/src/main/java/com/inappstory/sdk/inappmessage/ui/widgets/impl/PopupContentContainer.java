@@ -4,22 +4,25 @@ import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.util.AttributeSet;
+import android.util.SizeF;
 import android.view.Gravity;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AccelerateInterpolator;
 import android.widget.FrameLayout;
-import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.inappstory.sdk.R;
+import com.inappstory.sdk.AppearanceManager;
+import com.inappstory.sdk.core.ui.widgets.customicons.CustomIconWithoutStates;
 import com.inappstory.sdk.core.ui.widgets.roundedlayout.RoundedCornerLayout;
 import com.inappstory.sdk.core.utils.ColorUtils;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessagePopupAppearance;
 import com.inappstory.sdk.inappmessage.ui.widgets.IAMContentContainer;
+import com.inappstory.sdk.stories.ui.widgets.TouchFrameLayout;
 import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.utils.animation.IndependentAnimator;
 import com.inappstory.sdk.utils.animation.IndependentAnimatorListener;
@@ -28,7 +31,7 @@ public class PopupContentContainer extends IAMContentContainer<InAppMessagePopup
     private RoundedCornerLayout roundedCornerLayout;
     private FrameLayout.LayoutParams layoutParams;
     private RelativeLayout.LayoutParams closeButtonLayoutParams;
-    private ImageView closeButton;
+    private TouchFrameLayout closeButton;
 
     public PopupContentContainer(
             @NonNull Context context
@@ -322,19 +325,35 @@ public class PopupContentContainer extends IAMContentContainer<InAppMessagePopup
                 )
         );
         content.setVisibility(GONE);
-        closeButton = new ImageView(context);
+        closeButton = new TouchFrameLayout(context);
+        int maxSize = Sizes.dpToPxExt(30, context);
         closeButtonLayoutParams = new RelativeLayout.LayoutParams(
-                Sizes.dpToPxExt(32, context),
-                Sizes.dpToPxExt(32, context)
+                maxSize,
+                maxSize
         );
         closeButton.setElevation(8f);
-        closeButton.setOnClickListener(new OnClickListener() {
+        final CustomIconWithoutStates closeIconInterface = AppearanceManager.getCommonInstance().csCustomIcons().closeIcon();
+        final View closeView = closeIconInterface.createIconView(context, new SizeF(maxSize, maxSize));
+        closeView.setClickable(false);
+        closeButton.addView(closeView);
+        closeButton.setTouchListener(new OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                closeIconInterface.touchEvent(closeView, event);
+                return false;
+            }
+        });
+        closeButton.setClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
+                try {
+                    closeIconInterface.clickEvent(closeView);
+                } catch (Exception e) {
+
+                }
                 closeWithAnimation();
             }
         });
-        closeButton.setImageDrawable(getResources().getDrawable(R.drawable.ic_stories_close));
         int closeButtonMargin = Sizes.dpToPxExt(16, context);
         closeButtonLayoutParams.setMargins(
                 closeButtonMargin,

@@ -39,7 +39,7 @@ public class LaunchStoryScreenAppearance implements SerializableWithKey {
         return csHasShare;
     }
 
-    public int csCloseIcon() {
+   /* public int csCloseIcon() {
         return csCloseIcon;
     }
 
@@ -65,7 +65,7 @@ public class LaunchStoryScreenAppearance implements SerializableWithKey {
 
     public int csShareIcon() {
         return csShareIcon;
-    }
+    }*/
 
     public int csReaderRadius() {
         return csReaderRadius;
@@ -103,13 +103,13 @@ public class LaunchStoryScreenAppearance implements SerializableWithKey {
     private final boolean csHasLike;
     private final boolean csHasFavorite;
     private final boolean csHasShare;
-    private final int csCloseIcon;
-    private final int csRefreshIcon;
-    private final int csSoundIcon;
-    private final int csFavoriteIcon;
-    private final int csLikeIcon;
-    private final int csDislikeIcon;
-    private final int csShareIcon;
+   // private final int csCloseIcon;
+  //  private final int csRefreshIcon;
+   // private final int csSoundIcon;
+   // private final int csFavoriteIcon;
+   // private final int csLikeIcon;
+   // private final int csDislikeIcon;
+  //  private final int csShareIcon;
     private final int csReaderRadius;
     private final boolean csTimerGradientEnable;
     private final int csReaderBackgroundColor;
@@ -128,13 +128,13 @@ public class LaunchStoryScreenAppearance implements SerializableWithKey {
         appearanceManager.csIsDraggable(csIsDraggable());
         appearanceManager.csTimerGradientEnable(csTimerGradientEnable());
         appearanceManager.csStoryReaderAnimation(csStoryReaderAnimation());
-        appearanceManager.csCloseIcon(csCloseIcon());
-        appearanceManager.csDislikeIcon(csDislikeIcon());
-        appearanceManager.csLikeIcon(csLikeIcon());
-        appearanceManager.csRefreshIcon(csRefreshIcon());
-        appearanceManager.csFavoriteIcon(csFavoriteIcon());
-        appearanceManager.csShareIcon(csShareIcon());
-        appearanceManager.csSoundIcon(csSoundIcon());
+     //   appearanceManager.csCloseIcon(csCloseIcon());
+      //  appearanceManager.csDislikeIcon(csDislikeIcon());
+     //   appearanceManager.csLikeIcon(csLikeIcon());
+    //    appearanceManager.csRefreshIcon(csRefreshIcon());
+    //    appearanceManager.csFavoriteIcon(csFavoriteIcon());
+   //     appearanceManager.csShareIcon(csShareIcon());
+    //    appearanceManager.csSoundIcon(csSoundIcon());
         appearanceManager.csStoryReaderPresentationStyle(
                 csStoryReaderPresentationStyle()
         );
@@ -157,13 +157,13 @@ public class LaunchStoryScreenAppearance implements SerializableWithKey {
         csIsDraggable = manager.csIsDraggable();//
         csHasFavorite = manager.csHasFavorite();//
         csHasShare = manager.csHasShare();//
-        csCloseIcon = manager.csCloseIcon();//
-        csRefreshIcon = manager.csRefreshIcon();//
-        csSoundIcon = manager.csSoundIcon();//
-        csFavoriteIcon = manager.csFavoriteIcon();//
-        csLikeIcon = manager.csLikeIcon();//
-        csDislikeIcon = manager.csDislikeIcon();//
-        csShareIcon = manager.csShareIcon();//
+      //  csCloseIcon = manager.csCloseIcon();//
+      ///  csRefreshIcon = manager.csRefreshIcon();//
+   //     csSoundIcon = manager.csSoundIcon();//
+     //   csFavoriteIcon = manager.csFavoriteIcon();//
+     //   csLikeIcon = manager.csLikeIcon();//
+     //   csDislikeIcon = manager.csDislikeIcon();//
+     //   csShareIcon = manager.csShareIcon();//
         csReaderRadius = manager.csReaderRadius(context);
         csTimerGradientEnable = manager.csTimerGradientEnable();//
         csReaderBackgroundColor = manager.csReaderBackgroundColor();
