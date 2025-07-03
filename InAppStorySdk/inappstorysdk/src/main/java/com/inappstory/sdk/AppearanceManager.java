@@ -745,6 +745,9 @@ public class AppearanceManager {
      * @return {@link AppearanceManager}
      */
     public AppearanceManager csFavoriteIcon(int favoriteIcon) {
+        if (this != getCommonInstance()) {
+            getCommonInstance().csFavoriteIcon(favoriteIcon);
+        }
         csFavoriteIcon = favoriteIcon;
         return AppearanceManager.this;
     }
@@ -756,6 +759,9 @@ public class AppearanceManager {
      * @return {@link AppearanceManager}
      */
     public AppearanceManager csLikeIcon(int likeIcon) {
+        if (this != getCommonInstance()) {
+            getCommonInstance().csLikeIcon(likeIcon);
+        }
         csLikeIcon = likeIcon;
         return AppearanceManager.this;
     }
@@ -767,6 +773,9 @@ public class AppearanceManager {
      * @return {@link AppearanceManager}
      */
     public AppearanceManager csDislikeIcon(int dislikeIcon) {
+        if (this != getCommonInstance()) {
+            getCommonInstance().csDislikeIcon(dislikeIcon);
+        }
         csDislikeIcon = dislikeIcon;
         return AppearanceManager.this;
     }
@@ -778,6 +787,9 @@ public class AppearanceManager {
      * @return {@link AppearanceManager}
      */
     public AppearanceManager csShareIcon(int shareIcon) {
+        if (this != getCommonInstance()) {
+            getCommonInstance().csShareIcon(shareIcon);
+        }
         csShareIcon = shareIcon;
         return AppearanceManager.this;
     }
@@ -790,6 +802,9 @@ public class AppearanceManager {
      * @return {@link AppearanceManager}
      */
     public AppearanceManager csCloseIcon(int closeIcon) {
+        if (this != getCommonInstance()) {
+            getCommonInstance().csCloseIcon(closeIcon);
+        }
         csCloseIcon = closeIcon;
         return AppearanceManager.this;
     }
@@ -801,6 +816,9 @@ public class AppearanceManager {
      * @return {@link AppearanceManager}
      */
     public AppearanceManager csRefreshIcon(int refreshIcon) {
+        if (this != getCommonInstance()) {
+            getCommonInstance().csRefreshIcon(refreshIcon);
+        }
         csRefreshIcon = refreshIcon;
         return AppearanceManager.this;
     }
@@ -812,6 +830,9 @@ public class AppearanceManager {
      * @return {@link AppearanceManager}
      */
     public AppearanceManager csSoundIcon(int soundIcon) {
+        if (this != getCommonInstance()) {
+            getCommonInstance().csSoundIcon(soundIcon);
+        }
         csSoundIcon = soundIcon;
         return AppearanceManager.this;
     }
