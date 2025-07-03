@@ -202,13 +202,13 @@ public class AppearanceManager {
     private boolean csTimerGradientEnable = true;
     private boolean csListItemGradientEnable = true;
 
-    private int csFavoriteIcon;
-    private int csLikeIcon;
-    private int csDislikeIcon;
-    private int csShareIcon;
-    private int csCloseIcon;
-    private int csRefreshIcon;
-    private int csSoundIcon;
+    int csFavoriteIcon;
+    int csLikeIcon;
+    int csDislikeIcon;
+    int csShareIcon;
+    int csCloseIcon;
+    int csRefreshIcon;
+    int csSoundIcon;
     private int csNavBarColor = Color.BLACK;
     private int csNightNavBarColor = Color.BLACK;
     private int csReaderBackgroundColor = Color.BLACK;
@@ -746,7 +746,8 @@ public class AppearanceManager {
      */
     public AppearanceManager csFavoriteIcon(int favoriteIcon) {
         if (this != getCommonInstance()) {
-            getCommonInstance().csFavoriteIcon(favoriteIcon);
+            if (getCommonInstance().csFavoriteIcon == 0)
+                getCommonInstance().csFavoriteIcon(favoriteIcon);
         }
         csFavoriteIcon = favoriteIcon;
         return AppearanceManager.this;
@@ -760,7 +761,8 @@ public class AppearanceManager {
      */
     public AppearanceManager csLikeIcon(int likeIcon) {
         if (this != getCommonInstance()) {
-            getCommonInstance().csLikeIcon(likeIcon);
+            if (getCommonInstance().csLikeIcon == 0)
+                getCommonInstance().csLikeIcon(likeIcon);
         }
         csLikeIcon = likeIcon;
         return AppearanceManager.this;
@@ -774,7 +776,8 @@ public class AppearanceManager {
      */
     public AppearanceManager csDislikeIcon(int dislikeIcon) {
         if (this != getCommonInstance()) {
-            getCommonInstance().csDislikeIcon(dislikeIcon);
+            if (getCommonInstance().csDislikeIcon == 0)
+                getCommonInstance().csDislikeIcon(dislikeIcon);
         }
         csDislikeIcon = dislikeIcon;
         return AppearanceManager.this;
@@ -788,7 +791,8 @@ public class AppearanceManager {
      */
     public AppearanceManager csShareIcon(int shareIcon) {
         if (this != getCommonInstance()) {
-            getCommonInstance().csShareIcon(shareIcon);
+            if (getCommonInstance().csShareIcon == 0)
+                getCommonInstance().csShareIcon(shareIcon);
         }
         csShareIcon = shareIcon;
         return AppearanceManager.this;
@@ -803,7 +807,8 @@ public class AppearanceManager {
      */
     public AppearanceManager csCloseIcon(int closeIcon) {
         if (this != getCommonInstance()) {
-            getCommonInstance().csCloseIcon(closeIcon);
+            if (getCommonInstance().csCloseIcon == 0)
+                getCommonInstance().csCloseIcon(closeIcon);
         }
         csCloseIcon = closeIcon;
         return AppearanceManager.this;
@@ -817,7 +822,8 @@ public class AppearanceManager {
      */
     public AppearanceManager csRefreshIcon(int refreshIcon) {
         if (this != getCommonInstance()) {
-            getCommonInstance().csRefreshIcon(refreshIcon);
+            if (getCommonInstance().csRefreshIcon == 0)
+                getCommonInstance().csRefreshIcon(refreshIcon);
         }
         csRefreshIcon = refreshIcon;
         return AppearanceManager.this;
@@ -831,7 +837,8 @@ public class AppearanceManager {
      */
     public AppearanceManager csSoundIcon(int soundIcon) {
         if (this != getCommonInstance()) {
-            getCommonInstance().csSoundIcon(soundIcon);
+            if (getCommonInstance().csSoundIcon == 0)
+                getCommonInstance().csSoundIcon(soundIcon);
         }
         csSoundIcon = soundIcon;
         return AppearanceManager.this;
