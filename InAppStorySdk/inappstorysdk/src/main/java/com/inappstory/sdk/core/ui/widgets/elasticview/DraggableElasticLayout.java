@@ -43,6 +43,9 @@ public class DraggableElasticLayout extends FrameLayout {
     private boolean draggingUp = false;
     private int mLastActionEvent;
 
+    private float lastX;
+    private float lastY;
+
     private boolean disabled = false;
     private boolean swipeUpDisabled = false;
     private boolean verticalGesturesEnabled = true;
@@ -208,12 +211,17 @@ public class DraggableElasticLayout extends FrameLayout {
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
         mLastActionEvent = ev.getAction();
-        if (mLastActionEvent == MotionEvent.ACTION_MOVE) {
+        if (mLastActionEvent == MotionEvent.ACTION_DOWN) {
+            lastX = ev.getX();
+            lastY = ev.getY();
+        } else if (mLastActionEvent == MotionEvent.ACTION_MOVE) {
             if (!verticalGesturesEnabled) return false;
-            if (!isPaused) {
+            if (!isPaused && (ev.getY() != lastY || ev.getX() != lastX)) {
                 isPaused = true;
+                touchPause();
             }
-            touchPause();
+            lastX = ev.getX();
+            lastY = ev.getY();
         } else if (mLastActionEvent == MotionEvent.ACTION_UP || mLastActionEvent == MotionEvent.ACTION_CANCEL) {
             if (isPaused) {
                 isPaused = false;

@@ -8,6 +8,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ViewParent;
 import android.webkit.ConsoleMessage;
@@ -25,6 +26,7 @@ import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.inappmessage.domain.reader.IIAMReaderSlideViewModel;
 import com.inappstory.sdk.stories.ui.views.IASWebView;
 import com.inappstory.sdk.stories.ui.views.IASWebViewClient;
+import com.inappstory.sdk.stories.ui.widgets.TouchFrameLayout;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ContentViewInteractor;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.StoriesViewManager;
@@ -38,6 +40,9 @@ import com.inappstory.sdk.utils.StringsUtils;
 public class StoriesWebView extends IASWebView implements ContentViewInteractor {
 
     private boolean clientIsSet = false;
+
+    GestureDetector gestureDetector;
+
 
     public void restartSlide(IASCore core) {
         boolean isSoundOn = ((IASDataSettingsHolder) core.settingsAPI()).isSoundOn();
@@ -236,6 +241,15 @@ public class StoriesWebView extends IASWebView implements ContentViewInteractor 
 
     public StoriesWebView(final Context context) {
         super(context.getApplicationContext());
+        gestureDetector = new GestureDetector(context, new GestureDetector.SimpleOnGestureListener() {
+            @Override
+            public void onLongPress(MotionEvent e) {
+                getManager().getPageManager().pauseSlide(false);
+                Log.e("pauseSlide", "StoriesWebView onLongPress");
+                super.onLongPress(e);
+            }
+        });
+
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
@@ -447,6 +461,7 @@ public class StoriesWebView extends IASWebView implements ContentViewInteractor 
     public boolean onTouchEvent(MotionEvent motionEvent) {
         Log.e("ViewPagerTouch", "WebView onTouchEvent " + motionEvent);
         if (checkIfParentsHasCubeAnimation(getParentForAccessibility())) return false;
+        if (gestureDetector.onTouchEvent(motionEvent)) return true;
         boolean c = super.onTouchEvent(motionEvent);
         if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
             if (System.currentTimeMillis() - lastTap < 1500) {
@@ -470,8 +485,7 @@ public class StoriesWebView extends IASWebView implements ContentViewInteractor 
             if (System.currentTimeMillis() - lastTap < 1500) {
                 return false;
             }
-            getManager().getPageManager().pauseSlide(false);
-
+        //    getManager().getPageManager().pauseSlide(false);
             lastTap = System.currentTimeMillis();
         } else if (motionEvent.getAction() == MotionEvent.ACTION_UP || motionEvent.getAction() == MotionEvent.ACTION_CANCEL) {
             touchSlider = false;
