@@ -212,6 +212,7 @@ public class DraggableElasticLayout extends FrameLayout {
     public boolean onInterceptTouchEvent(MotionEvent ev) {
         mLastActionEvent = ev.getAction();
         if (mLastActionEvent == MotionEvent.ACTION_DOWN) {
+            isPaused = false;
             lastX = ev.getX();
             lastY = ev.getY();
         } else if (mLastActionEvent == MotionEvent.ACTION_MOVE) {
