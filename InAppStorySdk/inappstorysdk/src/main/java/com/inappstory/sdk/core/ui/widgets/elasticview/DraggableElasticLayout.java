@@ -217,10 +217,7 @@ public class DraggableElasticLayout extends FrameLayout {
             lastY = ev.getY();
         } else if (mLastActionEvent == MotionEvent.ACTION_MOVE) {
             if (!verticalGesturesEnabled) return false;
-            if (!isPaused && (ev.getY() != lastY || ev.getX() != lastX)) {
-                isPaused = true;
-                touchPause();
-            }
+
             lastX = ev.getX();
             lastY = ev.getY();
         } else if (mLastActionEvent == MotionEvent.ACTION_UP || mLastActionEvent == MotionEvent.ACTION_CANCEL) {
@@ -311,6 +308,10 @@ public class DraggableElasticLayout extends FrameLayout {
         // dragging down until they reach the 'natural' position
         if (scroll < 0 && !draggingUp && !draggingDown) {
             draggingDown = true;
+            if (!isPaused) {
+                isPaused = true;
+                touchPause();
+            }
             if (shouldScale) setPivotY(getHeight());
         } else if (scroll > 0 && !draggingDown && !draggingUp) {
             draggingUp = true;

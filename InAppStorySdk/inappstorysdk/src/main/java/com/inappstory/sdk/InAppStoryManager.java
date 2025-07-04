@@ -679,7 +679,6 @@ public class InAppStoryManager implements IASBackPressHandler {
 
     }
 
-
     public static void initSDK(@NonNull Context context, boolean skipCheck) {
         StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
         boolean calledFromApplication = skipCheck;

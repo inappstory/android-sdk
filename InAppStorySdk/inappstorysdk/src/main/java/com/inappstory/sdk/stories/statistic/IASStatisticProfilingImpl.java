@@ -182,7 +182,7 @@ public class IASStatisticProfilingImpl implements IASStatisticProfiling {
                                 .build()
                 )
                 .openConnection();
-        connection.setRequestProperty("User-Agent", new UserAgent().generate(core.appContext()));
+        connection.setRequestProperty("User-Agent", new UserAgent().generate(core));
         connection.setConnectTimeout(30000);
         connection.setReadTimeout(30000);
         connection.setRequestMethod("POST");

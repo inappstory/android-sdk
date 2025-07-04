@@ -11,6 +11,7 @@ import java.util.Map;
 
 public interface IASDataSettingsHolder {
     IAppVersion externalAppVersion();
+    String agentPrefix();
     String deviceId();
     String userId();
     String userSign();

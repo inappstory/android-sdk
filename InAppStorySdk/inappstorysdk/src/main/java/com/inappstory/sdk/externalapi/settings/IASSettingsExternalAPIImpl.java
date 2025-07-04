@@ -19,6 +19,11 @@ import java.util.Map;
 
 public class IASSettingsExternalAPIImpl implements IASDataSettings {
     @Override
+    public void agentPrefix(String prefix) {
+
+    }
+
+    @Override
     public void destroy() {
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override

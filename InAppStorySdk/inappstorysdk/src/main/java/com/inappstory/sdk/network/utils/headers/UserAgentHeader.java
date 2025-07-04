@@ -1,18 +1,15 @@
 package com.inappstory.sdk.network.utils.headers;
 
-import android.content.Context;
 
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.network.utils.UserAgent;
 
 public class UserAgentHeader implements Header {
-    private Context appContext;
+    private IASCore core;
 
-    public UserAgentHeader(Context context) {
-        if (context != null)
-            this.appContext = context.getApplicationContext();
+    public UserAgentHeader(IASCore core) {
+        this.core = core;
     }
-
-
 
     @Override
     public String getKey() {
@@ -21,6 +18,6 @@ public class UserAgentHeader implements Header {
 
     @Override
     public String getValue() {
-        return new UserAgent().generate(appContext);
+        return new UserAgent().generate(core);
     }
 }

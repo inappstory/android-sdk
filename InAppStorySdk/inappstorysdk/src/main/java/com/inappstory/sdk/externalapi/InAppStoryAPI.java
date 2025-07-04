@@ -49,6 +49,17 @@ public class InAppStoryAPI {
     public IASInAppMessage inAppMessage = new IASInAppMessageAPIImpl();
     public IASLogger logger;
 
+    public void setExternalPlatform(final ExternalPlatforms externalPlatform) {
+        this.externalPlatform = externalPlatform;
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.settingsAPI().agentPrefix(externalPlatform.getPrefix());
+            }
+        });
+    }
+
+    private ExternalPlatforms externalPlatform = ExternalPlatforms.NONE;
 
     public void addSubscriber(final IAPISubscriber subscriber) {
         InAppStoryManager.useCore(new UseIASCoreCallback() {
@@ -88,6 +99,12 @@ public class InAppStoryAPI {
 
     public void init(Context context) {
         InAppStoryManager.initSDK(context);
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.settingsAPI().agentPrefix(externalPlatform.getPrefix());
+            }
+        });
         InAppStoryManager.logger = new InAppStoryManager.IASLogger() {
             @Override
             public void showELog(String tag, String message) {

@@ -211,7 +211,7 @@ public final class NetworkHandler implements InvocationHandler {
         if (!excludeList.contains(HeadersKeys.REQUEST_ID))
             resHeaders.add(new XRequestIdHeader());
         if (!excludeList.contains(HeadersKeys.USER_AGENT))
-            resHeaders.add(new UserAgentHeader(core.appContext()));
+            resHeaders.add(new UserAgentHeader(core));
         if (!excludeList.contains(HeadersKeys.USER_ID))
             resHeaders.add(new XUserIdHeader());
         for (Header header : resHeaders) {

@@ -9,6 +9,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -110,6 +111,10 @@ public class StoriesContentFragment extends Fragment
         } else {
             if (invMask.getVisibility() != View.VISIBLE) {
                 invMask.setVisibility(View.VISIBLE);
+            }
+            if (lastState == 1) {
+                Log.e("StoriesViewPager", lastState + " onPageScrolled");
+                readerManager.pauseCurrent(false);
             }
         }
         storiesViewPager.pageScrolled(positionOffset);
@@ -653,9 +658,13 @@ public class StoriesContentFragment extends Fragment
     }
 
 
+    int lastState = 0;
+
     @Override
     public void onPageScrollStateChanged(int state) {
         readerManager.onPageScrollStateChanged(state);
+        lastState = state;
+        Log.e("StoriesViewPager", state + " onPageScrollStateChanged");
     }
 
     public void setCurrentItem(int ind) {

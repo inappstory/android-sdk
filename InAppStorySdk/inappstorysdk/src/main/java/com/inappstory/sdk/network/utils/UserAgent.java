@@ -10,15 +10,17 @@ import com.inappstory.sdk.BuildConfig;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.data.IAppVersion;
+import com.inappstory.sdk.externalapi.ExternalPlatforms;
 
 public class UserAgent {
     public String generate(IASCore core) {
         String userAgent = "";
         if (core == null)
-            return "InAppStorySDK/" + BuildConfig.VERSION_CODE
+            return ExternalPlatforms.NONE.getPrefix() + "/" + BuildConfig.VERSION_CODE
                     + " " + getSystemUA();
         String agentString = getSystemUA();
         Context context = core.appContext();
+        String prefix = ((IASDataSettingsHolder) core.settingsAPI()).agentPrefix();
         if (!agentString.isEmpty()) {
             int appVersion = BuildConfig.VERSION_CODE;
             String appVersionName = BuildConfig.VERSION_NAME;
@@ -32,12 +34,12 @@ public class UserAgent {
             } catch (PackageManager.NameNotFoundException e) {
                 e.printStackTrace();
             }
-            IAppVersion externalAppVersion = ((IASDataSettingsHolder)core.settingsAPI()).externalAppVersion();
+            IAppVersion externalAppVersion = ((IASDataSettingsHolder) core.settingsAPI()).externalAppVersion();
             if (externalAppVersion != null) {
                 appVersionName = externalAppVersion.versionName();
                 appVersion = externalAppVersion.versionBuild();
             }
-            userAgent = "InAppStorySDK/" + BuildConfig.VERSION_CODE
+            userAgent = prefix + "/" + BuildConfig.VERSION_CODE
                     + " " + agentString + " " + "Application/" + appVersion + " (" + appPackageName + " " + appVersionName + ")";
         } else {
             userAgent = getDefaultUserAgentString(context);
@@ -55,7 +57,7 @@ public class UserAgent {
     public String generate(Context context) {
         String userAgent = "";
         if (context == null)
-            return "InAppStorySDK/" + BuildConfig.VERSION_CODE
+            return ExternalPlatforms.NONE.getPrefix() + "/" + BuildConfig.VERSION_CODE
                     + " " + getSystemUA();
         String agentString = getSystemUA();
         if (!agentString.isEmpty()) {

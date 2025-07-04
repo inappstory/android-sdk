@@ -14,6 +14,7 @@ import com.inappstory.sdk.core.api.IASDataSettings;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.data.IAppVersion;
 import com.inappstory.sdk.core.data.IInAppStoryUserSettings;
+import com.inappstory.sdk.externalapi.ExternalPlatforms;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
 import com.inappstory.sdk.core.network.content.models.StoryPlaceholder;
@@ -32,6 +33,7 @@ import java.util.Set;
 
 public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
     private final IASCore core;
+    private String agentPrefix = ExternalPlatforms.NONE.getPrefix();
     private boolean isSoundOn = true;
     private Locale lang = Locale.getDefault();
     private final Map<String, String> userPlaceholders = new HashMap<>();
@@ -349,6 +351,13 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
     }
 
     @Override
+    public void agentPrefix(String prefix) {
+        synchronized (settingsLock) {
+            this.agentPrefix = prefix;
+        }
+    }
+
+    @Override
     public void destroy() {
         final Locale currentLang;
         final String currentUserId;
@@ -504,6 +513,13 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
     @Override
     public IAppVersion externalAppVersion() {
         return externalAppVersion;
+    }
+
+    @Override
+    public String agentPrefix() {
+        synchronized (settingsLock) {
+            return agentPrefix;
+        }
     }
 
     @Override
