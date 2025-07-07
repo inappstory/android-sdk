@@ -97,9 +97,34 @@ public interface ApiInterface {
             @Query("was") Integer widgetAnswerScore
     );
 
+
+    @POST("v2/inappmessaging/banner/{id}/event/{event_name}")
+    Request sendBannerStat(
+            @Path("id") String id,
+            @Path("event_name") String eventName,
+            @Query("ei") String eventId,
+            @Query("ii") String iterationId,
+            @Query("si") Integer slideIndex,
+            @Query("st") Integer slideTotal,
+            @Query("d") Long durationMs,
+            @Query("wi") String widgetId,
+            @Query("wl") String widgetLabel,
+            @Query("wv") String widgetValue,
+            @Query("wa") Integer widgetAnswer,
+            @Query("wal") String widgetAnswerLabel,
+            @Query("was") Integer widgetAnswerScore
+    );
+
+
     @FormUrlEncoded
     @PUT("v2/inappmessaging/message/{id}/data")
     Request sendIAMUserData(
+            @Path("id") String id,
+            @Field("data") String data);
+
+    @FormUrlEncoded
+    @PUT("v2/inappmessaging/banner/{id}/data")
+    Request sendBannerUserData(
             @Path("id") String id,
             @Field("data") String data);
 
