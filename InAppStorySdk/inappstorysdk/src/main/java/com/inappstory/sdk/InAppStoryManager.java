@@ -106,37 +106,47 @@ public class InAppStoryManager implements IASBackPressHandler {
     private final ExecutorService coreThread = Executors.newSingleThreadExecutor();
 
     public static void useCore(UseIASCoreCallback callback) {
+        IASCore localCore = null;
         synchronized (lock) {
-            try {
-                if (INSTANCE == null || INSTANCE.core == null) {
-                    callback.error();
-                } else {
-                    callback.use(INSTANCE.iasCore());
-                }
-            } catch (Exception e) {
-                showELog(IAS_ERROR_TAG, e.getMessage() + "");
+            if (INSTANCE != null && INSTANCE.core != null) {
+                localCore = INSTANCE.core;
             }
+        }
+        try {
+            if (localCore == null) {
+                callback.error();
+            } else {
+                callback.use(localCore);
+            }
+        } catch (Exception e) {
+            showELog(IAS_ERROR_TAG, e.getMessage() + "");
         }
     }
 
     public static void useCoreInSeparateThread(final UseIASCoreCallback callback) {
+        IASCore localCore = null;
+        ExecutorService localExecService = null;
         synchronized (lock) {
-            try {
-                if (INSTANCE == null || INSTANCE.core == null) {
-                    callback.error();
-                } else {
-                    final IASCore core = INSTANCE.core;
-                    Runnable runnable = new Runnable() {
-                        @Override
-                        public void run() {
-                            callback.use(core);
-                        }
-                    };
-                    INSTANCE.coreThread.execute(runnable);
-                }
-            } catch (Exception e) {
-                showELog(IAS_ERROR_TAG, e.getMessage() + "");
+            if (INSTANCE != null && INSTANCE.core != null) {
+                localCore = INSTANCE.core;
+                localExecService = INSTANCE.coreThread;
             }
+        }
+        try {
+            if (localCore == null) {
+                callback.error();
+            } else {
+                final IASCore finalLocalCore = localCore;
+                Runnable runnable = new Runnable() {
+                    @Override
+                    public void run() {
+                        callback.use(finalLocalCore);
+                    }
+                };
+                localExecService.execute(runnable);
+            }
+        } catch (Exception e) {
+            showELog(IAS_ERROR_TAG, e.getMessage() + "");
         }
     }
 
