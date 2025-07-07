@@ -106,6 +106,7 @@ public class InAppStoryManager implements IASBackPressHandler {
     private final ExecutorService coreThread = Executors.newSingleThreadExecutor();
 
     public static void useCore(UseIASCoreCallback callback) {
+        if (callback == null) return;
         IASCore localCore = null;
         synchronized (lock) {
             if (INSTANCE != null && INSTANCE.core != null) {
@@ -124,6 +125,7 @@ public class InAppStoryManager implements IASBackPressHandler {
     }
 
     public static void useCoreInSeparateThread(final UseIASCoreCallback callback) {
+        if (callback == null) return;
         IASCore localCore = null;
         ExecutorService localExecService = null;
         synchronized (lock) {
