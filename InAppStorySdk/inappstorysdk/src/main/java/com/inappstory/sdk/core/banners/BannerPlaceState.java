@@ -5,17 +5,23 @@ import com.inappstory.sdk.core.data.IBanner;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
-public class BannerPagerState {
+public class BannerPlaceState {
     public BannerPlaceAppearance getAppearance() {
         return appearance;
     }
 
-    public int getCurrentIndex() {
+    public Integer currentIndex() {
         return currentIndex;
     }
 
-    public BannerPagerLoadStates loadState() {
+
+    public String iterationId() {
+        return iterationId;
+    }
+
+    public BannerPlaceLoadStates loadState() {
         return loadState;
     }
 
@@ -28,42 +34,49 @@ public class BannerPagerState {
     }
 
 
-    public BannerPagerState appearance(BannerPlaceAppearance appearance) {
+    public BannerPlaceState appearance(BannerPlaceAppearance appearance) {
         this.appearance = appearance;
         return this;
     }
 
-    public BannerPagerState currentIndex(int currentIndex) {
+    public BannerPlaceState currentIndex(Integer currentIndex) {
         this.currentIndex = currentIndex;
         return this;
     }
 
-    public BannerPagerState loadState(BannerPagerLoadStates loadState) {
+    public BannerPlaceState iterationId(String iterationId) {
+        this.iterationId = iterationId;
+        return this;
+    }
+
+    public BannerPlaceState loadState(BannerPlaceLoadStates loadState) {
         this.loadState = loadState;
         return this;
     }
 
-    public BannerPagerState items(List<IBanner> items) {
+    public BannerPlaceState items(List<IBanner> items) {
         this.items = items;
         return this;
     }
 
-    public BannerPagerState place(String place) {
+    public BannerPlaceState place(String place) {
         this.place = place;
         return this;
     }
 
     BannerPlaceAppearance appearance;
-    int currentIndex = 0;
+    Integer currentIndex;
     String place = "";
-    BannerPagerLoadStates loadState;
+    String iterationId = UUID.randomUUID().toString();
+    BannerPlaceLoadStates loadState;
     List<IBanner> items = new ArrayList<>();
 
 
-    public BannerPagerState copy() {
-        return new BannerPagerState()
+    public BannerPlaceState copy() {
+        return new BannerPlaceState()
                 .items(this.items)
                 .currentIndex(this.currentIndex)
+                .iterationId(this.iterationId)
                 .appearance(this.appearance)
                 .place(this.place)
                 .loadState(this.loadState);

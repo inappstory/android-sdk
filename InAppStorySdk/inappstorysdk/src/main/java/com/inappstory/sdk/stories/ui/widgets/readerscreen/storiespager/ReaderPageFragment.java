@@ -26,7 +26,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
-import android.view.DisplayCutout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -44,7 +43,6 @@ import androidx.fragment.app.Fragment;
 
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
-import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
@@ -52,7 +50,7 @@ import com.inappstory.sdk.core.data.IReaderContent;
 import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryScreen;
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenAppearance;
 import com.inappstory.sdk.core.network.content.models.Story;
-import com.inappstory.sdk.stories.managers.TimerManager;
+import com.inappstory.sdk.stories.managers.StoriesTimerManager;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.ui.reader.ReaderManager;
 import com.inappstory.sdk.stories.ui.reader.StoriesContentFragment;
@@ -92,7 +90,7 @@ public class ReaderPageFragment extends Fragment {
             manager.setWebViewManager(storiesView.getManager(), storyId);
         else
             readerInitSuccess = false;
-        manager.setTimerManager(new TimerManager(core));
+        manager.setTimerManager(new StoriesTimerManager(core));
         return readerInitSuccess;
     }
 
@@ -760,7 +758,7 @@ public class ReaderPageFragment extends Fragment {
         if (storiesView != null)
             storiesView.destroyView();
         if (manager != null) {
-            manager.timerManager.pauseSlideTimer();
+            manager.storiesTimerManager.pauseSlideTimer();
             if (parentManager != null) {
                 parentManager.removeSubscriber(manager);
             }

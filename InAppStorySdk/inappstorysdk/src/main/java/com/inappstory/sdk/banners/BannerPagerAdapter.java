@@ -32,6 +32,7 @@ public class BannerPagerAdapter extends PagerAdapter implements Observer<BannerS
 
     private final boolean loop;
     private final float bannerRadius;
+    private final String iterationId;
     private final ICustomBannerPlaceholder bannerPlaceholderCreator;
 
     public BannerPagerAdapter(
@@ -40,6 +41,7 @@ public class BannerPagerAdapter extends PagerAdapter implements Observer<BannerS
             String bannerPlace,
             ICustomBannerPlaceholder bannerPlaceholderCreator,
             BannerListLoadCallback bannerListLoadCallback,
+            String iterationId,
             boolean loop,
             float itemWidth,
             float bannerRadius
@@ -48,6 +50,7 @@ public class BannerPagerAdapter extends PagerAdapter implements Observer<BannerS
         this.bannerPlaceholderCreator = bannerPlaceholderCreator;
         this.listLoadCallback = bannerListLoadCallback;
         this.banners = banners;
+        this.iterationId = iterationId;
         this.bannerPlace = bannerPlace;
         this.loop = loop;
         this.core = core;
@@ -72,6 +75,7 @@ public class BannerPagerAdapter extends PagerAdapter implements Observer<BannerS
                         bannerId,
                         bannerPlace
                 );
+        bannerViewModel.iterationId(iterationId);
         bannerView.viewModel(
                 bannerViewModel
         );
@@ -145,14 +149,16 @@ public class BannerPagerAdapter extends PagerAdapter implements Observer<BannerS
                 (newValue.loadState() != currentState.loadState())
         ) {
             if (Objects.requireNonNull(newValue.loadState()) == BannerLoadStates.FAILED) {
-                listLoadCallback.firstBannerLoadError(newValue.bannerId(), bannerPlace);
+                if (listLoadCallback != null)
+                    listLoadCallback.firstBannerLoadError(newValue.bannerId(), bannerPlace);
             }
         }
         if (currentState == null ||
                 (newValue.slideJSStatus() != currentState.slideJSStatus())
         ) {
             if (newValue.slideJSStatus() == 1) {
-                listLoadCallback.firstBannerLoaded(newValue.bannerId(), bannerPlace);
+                if (listLoadCallback != null)
+                    listLoadCallback.firstBannerLoaded(newValue.bannerId(), bannerPlace);
             }
 
         }

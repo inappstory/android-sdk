@@ -1,12 +1,17 @@
 package com.inappstory.sdk.core.banners;
 
 import com.inappstory.sdk.core.ui.screens.IReaderSlideViewModel;
+import com.inappstory.sdk.inappmessage.domain.stedata.STETypeAndData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.BannerData;
 import com.inappstory.sdk.stories.utils.Observer;
+import com.inappstory.sdk.stories.utils.SingleTimeEvent;
 
 public interface IBannerViewModel extends IReaderSlideViewModel {
     BannerState getCurrentBannerState();
     BannerData getCurrentBannerData();
+
+
+    SingleTimeEvent<STETypeAndData> singleTimeEvents();
 
     void addSubscriber(Observer<BannerState> observer);
     void removeSubscriber(Observer<BannerState> observer);
@@ -14,6 +19,11 @@ public interface IBannerViewModel extends IReaderSlideViewModel {
 
     void pauseSlide();
     void resumeSlide();
+
+    void stopSlide();
+
+    void iterationId(String iterationId);
+
 
     void slideClick(String payload);
     void slideLoadingFailed(String data);
@@ -36,4 +46,9 @@ public interface IBannerViewModel extends IReaderSlideViewModel {
     void setLocalUserData(String data, boolean sendToServer);
     String getLocalUserData();
     void shareSlideScreenshotCb(String shareId, boolean result);
+
+
+    void bannerIsShown();
+    boolean bannerIsActive();
+    void bannerIsActive(boolean active);
 }

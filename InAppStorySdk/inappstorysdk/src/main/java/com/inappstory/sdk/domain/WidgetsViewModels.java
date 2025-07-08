@@ -1,18 +1,18 @@
 package com.inappstory.sdk.domain;
 
 import com.inappstory.sdk.core.IASCore;
-import com.inappstory.sdk.core.banners.BannerPagerViewModelsHolder;
+import com.inappstory.sdk.core.banners.BannerPlaceViewModelsHolder;
 import com.inappstory.sdk.core.banners.BannerViewModelsHolder;
 
 public class WidgetsViewModels implements IWidgetsViewModels {
 
-    private final BannerPagerViewModelsHolder bannerPagerViewModelsHolder;
+    private final BannerPlaceViewModelsHolder bannerPlaceViewModelsHolder;
     private final BannerViewModelsHolder bannerViewModelsHolder;
     private final IASCore core;
 
     public WidgetsViewModels(IASCore core) {
         this.core = core;
-        bannerPagerViewModelsHolder = new BannerPagerViewModelsHolder(core);
+        bannerPlaceViewModelsHolder = new BannerPlaceViewModelsHolder(core);
         bannerViewModelsHolder = new BannerViewModelsHolder(core);
     }
 
@@ -22,7 +22,7 @@ public class WidgetsViewModels implements IWidgetsViewModels {
     }
 
     @Override
-    public BannerPagerViewModelsHolder bannerPlaceViewModels() {
-        return bannerPagerViewModelsHolder;
+    public BannerPlaceViewModelsHolder bannerPlaceViewModels() {
+        return bannerPlaceViewModelsHolder;
     }
 }

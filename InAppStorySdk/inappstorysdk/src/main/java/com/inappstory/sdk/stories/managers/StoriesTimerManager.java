@@ -13,13 +13,11 @@ import com.inappstory.sdk.stories.statistic.GetStatisticV1Callback;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPageManager;
 import com.inappstory.sdk.utils.ScheduledTPEManager;
 
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-public class TimerManager {
-    public TimerManager(IASCore core) {
+public class StoriesTimerManager {
+    public StoriesTimerManager(IASCore core) {
         this.core = core;
     }
 
@@ -28,7 +26,6 @@ public class TimerManager {
 
     private long timerDuration;
 
-    ScheduledFuture scheduledFuture;
 
     public long startPauseTime;
 
@@ -37,7 +34,8 @@ public class TimerManager {
 
     ReaderPageManager pageManager;
 
-    private ScheduledTPEManager executorService = new ScheduledTPEManager();
+    private ScheduledFuture scheduledFuture;
+    private final ScheduledTPEManager executorService = new ScheduledTPEManager();
 
     public void setPageManager(ReaderPageManager pageManager) {
         this.pageManager = pageManager;
@@ -146,30 +144,25 @@ public class TimerManager {
                     }
                 }
         );
-        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
-            @Override
-            public void use(@NonNull InAppStoryService service) throws Exception {
-                if (pageManager == null) return;
-                ContentType type = pageManager.getViewContentType();
-                int storyId = core
-                        .screensManager()
-                        .getStoryScreenHolder()
-                        .currentOpenedStoryId();
-                IReaderContent story = core
-                        .contentHolder()
-                        .readerContent()
-                        .getByIdAndType(storyId, type);
-                if (story != null) {
-                    core.statistic().storiesV2().addFakeEvents(
-                            story.id(),
-                            pageManager.getParentManager().getByIdAndIndex(story.id()).index(),
-                            story.slidesCount(),
-                            pageManager != null ? pageManager.getFeedId() : null
-                    );
-                }
-                startPauseTime = System.currentTimeMillis();
-            }
-        });
+        if (pageManager == null) return;
+        ContentType type = pageManager.getViewContentType();
+        int storyId = core
+                .screensManager()
+                .getStoryScreenHolder()
+                .currentOpenedStoryId();
+        IReaderContent story = core
+                .contentHolder()
+                .readerContent()
+                .getByIdAndType(storyId, type);
+        if (story != null) {
+            core.statistic().storiesV2().addFakeEvents(
+                    story.id(),
+                    pageManager.getParentManager().getByIdAndIndex(story.id()).index(),
+                    story.slidesCount(),
+                    pageManager != null ? pageManager.getFeedId() : null
+            );
+        }
+        startPauseTime = System.currentTimeMillis();
     }
 
 }

@@ -3,8 +3,11 @@ package com.inappstory.sdk.banners;
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
+import android.net.Uri;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
@@ -18,13 +21,32 @@ import androidx.annotation.Nullable;
 import androidx.cardview.widget.CardView;
 
 import com.inappstory.sdk.AppearanceManager;
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.UseIASCoreCallback;
+import com.inappstory.sdk.core.api.IASCallbackType;
+import com.inappstory.sdk.core.api.UseIASCallback;
+import com.inappstory.sdk.core.api.impl.IASSingleStoryImpl;
 import com.inappstory.sdk.core.banners.BannerState;
 import com.inappstory.sdk.core.banners.IBannerViewModel;
 import com.inappstory.sdk.core.banners.ICustomBannerPlace;
+import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenData;
+import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenStrategy;
 import com.inappstory.sdk.core.utils.ColorUtils;
 import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderSlideState;
+import com.inappstory.sdk.inappmessage.domain.reader.IIAMReaderViewModel;
+import com.inappstory.sdk.inappmessage.domain.stedata.CallToActionData;
+import com.inappstory.sdk.inappmessage.domain.stedata.JsSendApiRequestData;
+import com.inappstory.sdk.inappmessage.domain.stedata.STETypeAndData;
+import com.inappstory.sdk.network.jsapiclient.JsApiClient;
+import com.inappstory.sdk.network.jsapiclient.JsApiResponseCallback;
+import com.inappstory.sdk.stories.api.models.ContentId;
+import com.inappstory.sdk.stories.api.models.ContentIdWithIndex;
 import com.inappstory.sdk.stories.api.models.slidestructure.Background;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.CallToActionCallback;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
+import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.ui.views.IASWebView;
 import com.inappstory.sdk.stories.utils.Observer;
 import com.inappstory.sdk.stories.utils.Sizes;
@@ -85,6 +107,9 @@ public class BannerView extends CardView implements Observer<BannerState> {
     void stopBanner() {
         if (!isLoaded) return;
         if (bannerWebView == null) return;
+        if (bannerViewModel != null) {
+            bannerViewModel.stopSlide();
+        }
         bannerWebView.post(
                 new Runnable() {
                     @Override
@@ -106,6 +131,9 @@ public class BannerView extends CardView implements Observer<BannerState> {
     void resumeBanner() {
         if (!isLoaded) return;
         if (bannerWebView == null) return;
+        if (bannerViewModel != null) {
+            bannerViewModel.resumeSlide();
+        }
         bannerWebView.post(
                 new Runnable() {
                     @Override
@@ -119,6 +147,9 @@ public class BannerView extends CardView implements Observer<BannerState> {
     void pauseBanner() {
         if (!isLoaded) return;
         if (bannerWebView == null) return;
+        if (bannerViewModel != null) {
+            bannerViewModel.pauseSlide();
+        }
         bannerWebView.post(
                 new Runnable() {
                     @Override
@@ -132,6 +163,9 @@ public class BannerView extends CardView implements Observer<BannerState> {
     void startBanner() {
         if (!isLoaded) return;
         if (bannerWebView == null) return;
+        if (bannerViewModel != null) {
+            bannerViewModel.bannerIsShown();
+        }
         bannerWebView.post(
                 new Runnable() {
                     @Override
@@ -166,6 +200,139 @@ public class BannerView extends CardView implements Observer<BannerState> {
         refresh.setLayoutParams(refreshLp);
         return refresh;
     }
+
+    Observer<STETypeAndData> callToActionDataObserver = new Observer<STETypeAndData>() {
+        @Override
+        public void onUpdate(final STETypeAndData newValue) {
+            if (newValue == null) return;
+            InAppStoryManager.useCoreInSeparateThread(new UseIASCoreCallback() {
+                @Override
+                public void use(@NonNull IASCore core) {
+                    switch (newValue.type()) {
+                        case CALL_TO_ACTION:
+                            callToActionHandle(
+                                    core,
+                                    (CallToActionData) newValue.data()
+                            );
+                            break;
+                        case JS_SEND_API_REQUEST:
+                            jsSendApiRequestHandle(
+                                    core,
+                                    (JsSendApiRequestData) newValue.data()
+                            );
+                            break;
+                        case OPEN_STORY:
+                            openStoryHandle(
+                                    core,
+                                    (ContentIdWithIndex) newValue.data()
+                            );
+                            break;
+                        case OPEN_GAME:
+                            openGameHandle(
+                                    core,
+                                    (ContentId) newValue.data()
+                            );
+                            break;
+
+                    }
+                }
+            });
+        }
+    };
+
+    private void openStoryHandle(IASCore core, final ContentIdWithIndex contentIdWithIndex) {
+        try {
+            if (!(getContext() instanceof Activity)) return;
+            AppearanceManager appearanceManager = AppearanceManager.checkOrCreateAppearanceManager(null);
+            ((IASSingleStoryImpl) core.singleStoryAPI()).show(
+                    (Activity) getContext(),
+                    contentIdWithIndex.id() + "",
+                    appearanceManager,
+                    null,
+                    contentIdWithIndex.index(),
+                    false,
+                    SourceType.SINGLE,
+                    ShowStory.ACTION_CUSTOM
+            );
+        } catch (Exception e) {
+
+        }
+
+    }
+
+    private void openGameHandle(IASCore core, final ContentId contentId) {
+        try {
+            if (bannerViewModel == null || !(getContext() instanceof Activity)) return;
+            core.screensManager().openScreen(
+                    (Activity) getContext(),
+                    new LaunchGameScreenStrategy(core, false)
+                            .data(new LaunchGameScreenData(
+                                    null,
+                                    bannerViewModel.getCurrentBannerData(),
+                                    contentId.id()
+                            ))
+            );
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void jsSendApiRequestHandle(
+            IASCore core,
+            JsSendApiRequestData apiRequestData
+    ) {
+        new JsApiClient(
+                core,
+                getContext(),
+                core.projectSettingsAPI().host()
+        ).sendApiRequest(apiRequestData.data(), new JsApiResponseCallback() {
+            @Override
+            public void onJsApiResponse(String result, String cb) {
+                bannerWebView.loadJsApiResponse(result, cb);
+            }
+        });
+    }
+
+
+    private void callToActionHandle(
+            IASCore core,
+            final CallToActionData data
+    ) {
+        core.callbacksAPI().useCallback(
+                IASCallbackType.CALL_TO_ACTION,
+                new UseIASCallback<CallToActionCallback>() {
+                    @Override
+                    public void use(@NonNull CallToActionCallback callback) {
+                        callback.callToAction(
+                                getContext(),
+                                data.contentData(),
+                                data.link(),
+                                data.clickAction()
+                        );
+                    }
+
+                    @Override
+                    public void onDefault() {
+                        defaultUrlClick(data.link());
+                    }
+                }
+        );
+    }
+
+    private void defaultUrlClick(String url) {
+        Intent i = new Intent(Intent.ACTION_VIEW);
+        i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        i.setData(Uri.parse(url));
+        try {
+            getContext().startActivity(i);
+            if (getContext() instanceof Activity) {
+                ((Activity) getContext()).overridePendingTransition(R.anim.popup_show, R.anim.empty_animation);
+            }
+        } catch (Exception e) {
+
+        }
+    }
+
 
     private void showRefresh() {
         loaderContainer.post(new Runnable() {
@@ -213,13 +380,24 @@ public class BannerView extends CardView implements Observer<BannerState> {
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
-        if (bannerViewModel != null) bannerViewModel.addSubscriber(this);
+        if (bannerViewModel != null) {
+            bannerViewModel.addSubscriber(this);
+            bannerViewModel.singleTimeEvents().subscribe(
+                    callToActionDataObserver
+            );
+        }
+
     }
 
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
-        if (bannerViewModel != null) bannerViewModel.removeSubscriber(this);
+        if (bannerViewModel != null) {
+            bannerViewModel.removeSubscriber(this);
+            bannerViewModel.singleTimeEvents().unsubscribe(
+                    callToActionDataObserver
+            );
+        }
     }
 
     @Override
@@ -269,8 +447,10 @@ public class BannerView extends CardView implements Observer<BannerState> {
                                 new Runnable() {
                                     @Override
                                     public void run() {
-                                        bannerWebView.startSlide(null);
-                                        bannerWebView.resumeSlide();
+                                        if (bannerViewModel != null && bannerViewModel.bannerIsActive()) {
+                                            bannerWebView.startSlide(null);
+                                            bannerWebView.resumeSlide();
+                                        }
                                     }
                                 }
                         );

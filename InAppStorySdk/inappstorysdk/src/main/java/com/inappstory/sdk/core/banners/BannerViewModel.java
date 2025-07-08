@@ -1,8 +1,11 @@
 package com.inappstory.sdk.core.banners;
 
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.banners.BannerWidgetCallback;
+import com.inappstory.sdk.banners.ShowBannerCallback;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.UseIASCallback;
@@ -18,16 +21,22 @@ import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.SlideLinkObject;
 import com.inappstory.sdk.stories.cache.ContentIdAndType;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.BannerData;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.CallToActionCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickAction;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
+import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.utils.Observable;
 import com.inappstory.sdk.stories.utils.Observer;
 import com.inappstory.sdk.stories.utils.SingleTimeEvent;
 import com.inappstory.sdk.stories.utils.WebPageConvertCallback;
 import com.inappstory.sdk.stories.utils.WebPageConverter;
+import com.inappstory.sdk.utils.ScheduledTPEManager;
 import com.inappstory.sdk.utils.StringsUtils;
 
 import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 public class BannerViewModel implements IBannerViewModel {
 
@@ -37,6 +46,15 @@ public class BannerViewModel implements IBannerViewModel {
             new Observable<>(new BannerState());
 
     private final IASCore core;
+
+    private ScheduledFuture scheduledFuture;
+    private final ScheduledTPEManager executorService = new ScheduledTPEManager();
+
+    public void iterationId(String iterationId) {
+        this.iterationId = iterationId;
+    }
+
+    private String iterationId = UUID.randomUUID().toString();
 
     public SingleTimeEvent<STETypeAndData> singleTimeEvents() {
         return singleTimeEvents;
@@ -56,6 +74,7 @@ public class BannerViewModel implements IBannerViewModel {
                         .loadState(BannerLoadStates.EMPTY)
         );
     }
+
 
     @Override
     public BannerState getCurrentBannerState() {
@@ -143,7 +162,7 @@ public class BannerViewModel implements IBannerViewModel {
         BannerDownloadManager downloadManager = core.contentLoader().bannerDownloadManager();
         downloadManager.addSubscriber(this);
         if (readerContent != null && downloadManager.allSlidesLoaded(readerContent)) {
-        //    updateCurrentLoadState(BannerLoadStates.LOADED);
+            //    updateCurrentLoadState(BannerLoadStates.LOADED);
             slideLoadSuccess(0);
         } else {
             if (state.loadState() != BannerLoadStates.LOADING) {
@@ -175,12 +194,38 @@ public class BannerViewModel implements IBannerViewModel {
 
     @Override
     public void pauseSlide() {
-
+        synchronized (timerLock) {
+            pauseShiftStart = System.currentTimeMillis();
+        }
     }
 
     @Override
     public void resumeSlide() {
+        synchronized (timerLock) {
+            if (pauseShiftStart != 0) {
+                pauseShift += System.currentTimeMillis() - pauseShiftStart;
+            }
+        }
+    }
 
+    @Override
+    public void stopSlide() {
+        stopTimer();
+    }
+
+    private final Object timerLock = new Object();
+
+    private void stopTimer() {
+        synchronized (timerLock) {
+            if (lastStartTimer == -1) return;
+        }
+        Log.e("BannerTimers", bannerId + " STOP " + (System.currentTimeMillis() - pauseShift - lastStartTimer));
+        cancelTask();
+        synchronized (timerLock) {
+            pauseShift = 0;
+            paused = false;
+            lastStartTimer = -1;
+        }
     }
 
     @Override
@@ -274,16 +319,24 @@ public class BannerViewModel implements IBannerViewModel {
 
     @Override
     public void statisticEvent(final String name, String data, String eventData) {
+        long shift = 0;
+        long lastTimer = 0;
+        synchronized (timerLock) {
+            if (lastStartTimer == -1) return;
+            lastTimer = lastStartTimer;
+            shift = pauseShift;
+        }
         if (data != null) {
-           /* core.statistic().iamV1().sendWidgetEvent(
+            core.statistic().bannersV1().sendWidgetEvent(
                     name,
                     data,
-                    iamId,
+                    bannerId,
                     0,
                     1,
-                    slideTimeState.totalTime(),
-                    slideTimeState.iterationId()
-            );*/
+                    System.currentTimeMillis() - shift - lastTimer,
+                    iterationId
+            );
+            // TODO Add duration first
         }
         if (eventData != null) {
             final Map<String, String> widgetEventMap = JsonParser.toMap(eventData);
@@ -335,5 +388,81 @@ public class BannerViewModel implements IBannerViewModel {
     @Override
     public void shareSlideScreenshotCb(String shareId, boolean result) {
 
+    }
+
+
+    private long lastStartTimer = -1;
+    private long pauseShift = 0;
+    private long pauseShiftStart = 0;
+    private boolean paused;
+    private int timerDuration = 0;
+
+    Runnable timerTask = new Runnable() {
+        @Override
+        public void run() {
+            boolean cancel = false;
+            synchronized (timerLock) {
+                if (paused) return;
+                cancel = timerDuration > 0 && System.currentTimeMillis() - lastStartTimer - pauseShift >= timerDuration;
+            }
+            if (cancel) {
+                cancelTask();
+            }
+            synchronized (timerLock) {
+                pauseShift = 0;
+                paused = false;
+                lastStartTimer = -1;
+            }
+        }
+    };
+
+
+    private void cancelTask() {
+        if (scheduledFuture != null)
+            scheduledFuture.cancel(false);
+        scheduledFuture = null;
+        executorService.shutdown();
+    }
+
+    private void startTimer() {
+        synchronized (timerLock) {
+            lastStartTimer = System.currentTimeMillis();
+            pauseShift = 0;
+        }
+        scheduledFuture = executorService.scheduleAtFixedRate(
+                timerTask,
+                1L,
+                50L,
+                TimeUnit.MILLISECONDS
+        );
+    }
+
+    @Override
+    public void bannerIsShown() {
+        core.callbacksAPI().useCallback(
+                IASCallbackType.SHOW_BANNER,
+                new UseIASCallback<ShowBannerCallback>() {
+                    @Override
+                    public void use(@NonNull ShowBannerCallback callback) {
+                        callback.showBanner(
+                                getCurrentBannerData()
+                        );
+                    }
+                }
+        );
+        startTimer();
+        core.statistic().bannersV1().sendOpenEvent(bannerId, 0, 1, iterationId);
+    }
+
+    private boolean bannerIsActive;
+
+    @Override
+    public boolean bannerIsActive() {
+        return bannerIsActive;
+    }
+
+    @Override
+    public void bannerIsActive(boolean active) {
+        this.bannerIsActive = active;
     }
 }

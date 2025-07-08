@@ -20,7 +20,7 @@ import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.core.network.content.models.Story;
 import com.inappstory.sdk.stories.api.models.SlideLinkObject;
 import com.inappstory.sdk.stories.cache.ContentIdAndType;
-import com.inappstory.sdk.stories.managers.TimerManager;
+import com.inappstory.sdk.stories.managers.StoriesTimerManager;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.CallToActionCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickAction;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
@@ -46,7 +46,7 @@ public class ReaderPageManager implements IReaderSlideViewModel {
     StoryTimelineManager timelineManager;
     ButtonsPanelManager buttonsPanelManager;
     StoriesViewManager webViewManager;
-    TimerManager timerManager;
+    StoriesTimerManager storiesTimerManager;
     ReaderPageFragment host;
     public boolean swipeGestureEnabled = true;
     public boolean backPressEnabled = true;
@@ -160,7 +160,7 @@ public class ReaderPageManager implements IReaderSlideViewModel {
         if (this.slideIndex == slideIndex) return;
         if (checkIfManagersIsNull()) return;
         this.slideIndex = slideIndex;
-        timerManager.stopTimer();
+        storiesTimerManager.stopTimer();
         timelineManager.stopTimer();
 
     }
@@ -300,7 +300,7 @@ public class ReaderPageManager implements IReaderSlideViewModel {
 
 
     private boolean checkIfManagersIsNull() {
-        return webViewManager == null || timerManager == null
+        return webViewManager == null || storiesTimerManager == null
                 || timelineManager == null || buttonsPanelManager == null;
     }
 
@@ -327,7 +327,7 @@ public class ReaderPageManager implements IReaderSlideViewModel {
         if (!withBackground && isPaused) return;
         isPaused = true;
         if (withBackground) {
-            timerManager.pauseTimerAndRefreshStat();
+            storiesTimerManager.pauseTimerAndRefreshStat();
         }
         webViewManager.pauseStory();
     }
@@ -339,13 +339,13 @@ public class ReaderPageManager implements IReaderSlideViewModel {
         if (!isPaused) return;
         isPaused = false;
         if (withBackground) {
-            timerManager.resumeTimerAndRefreshStat();
+            storiesTimerManager.resumeTimerAndRefreshStat();
         }
         webViewManager.resumeStory();
     }
 
     public void startSlideTimerFromJS(long newDuration, long currentTime, int slideIndex) {
-        timerManager.startSlideTimer(newDuration, currentTime);
+        storiesTimerManager.startSlideTimer(newDuration, currentTime);
         timelineManager.startTimer(currentTime, slideIndex, newDuration);
     }
 
@@ -420,14 +420,14 @@ public class ReaderPageManager implements IReaderSlideViewModel {
 
     public void nextStory(int action) {
         if (checkIfManagersIsNull()) return;
-        timerManager.setTimerDuration(0);
+        storiesTimerManager.setTimerDuration(0);
         timelineManager.stopTimer();
         parentManager.nextStory(action);
     }
 
     public void prevStory(int action) {
         if (checkIfManagersIsNull()) return;
-        timerManager.setTimerDuration(0);
+        storiesTimerManager.setTimerDuration(0);
         timelineManager.stopTimer();
         parentManager.prevStory(action);
     }
@@ -452,7 +452,7 @@ public class ReaderPageManager implements IReaderSlideViewModel {
     }
 
     private void pauseTimers() {
-        timerManager.pauseSlideTimer();
+        storiesTimerManager.pauseSlideTimer();
         timelineManager.stopTimer();
     }
 
@@ -591,9 +591,9 @@ public class ReaderPageManager implements IReaderSlideViewModel {
         this.webViewManager.setStoryId(storyId);
     }
 
-    public void setTimerManager(TimerManager timerManager) {
-        timerManager.setPageManager(this);
-        this.timerManager = timerManager;
+    public void setTimerManager(StoriesTimerManager storiesTimerManager) {
+        storiesTimerManager.setPageManager(this);
+        this.storiesTimerManager = storiesTimerManager;
     }
 
     public void storyLoadStart() {
