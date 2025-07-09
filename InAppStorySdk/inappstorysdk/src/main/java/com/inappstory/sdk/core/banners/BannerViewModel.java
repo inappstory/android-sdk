@@ -19,6 +19,7 @@ import com.inappstory.sdk.stories.api.models.ContentId;
 import com.inappstory.sdk.stories.api.models.ContentIdWithIndex;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.SlideLinkObject;
+import com.inappstory.sdk.stories.api.models.UpdateTimelineData;
 import com.inappstory.sdk.stories.cache.ContentIdAndType;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.BannerData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.CallToActionCallback;
@@ -52,6 +53,13 @@ public class BannerViewModel implements IBannerViewModel {
 
     public void iterationId(String iterationId) {
         this.iterationId = iterationId;
+    }
+
+    @Override
+    public void updateTimeline(String data) {
+        if (data != null) {
+            UpdateTimelineData updateTimelineData = JsonParser.fromJson(data, UpdateTimelineData.class);
+        }
     }
 
     private String iterationId = UUID.randomUUID().toString();

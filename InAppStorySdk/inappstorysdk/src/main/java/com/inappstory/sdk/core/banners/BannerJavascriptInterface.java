@@ -22,6 +22,10 @@ public class BannerJavascriptInterface {
         slideViewModel.slideLoadingFailed(data);
     }
 
+    @JavascriptInterface
+    public void updateTimeline(String data) {
+        slideViewModel.updateTimeline(data);
+    }
 
     @JavascriptInterface
     public void showSingleStory(int id, int index) {

@@ -25,6 +25,7 @@ public interface IBannerViewModel extends IReaderSlideViewModel {
     void iterationId(String iterationId);
 
 
+    void updateTimeline(String data);
     void slideClick(String payload);
     void slideLoadingFailed(String data);
     void showSingleStory(int id, int index);
