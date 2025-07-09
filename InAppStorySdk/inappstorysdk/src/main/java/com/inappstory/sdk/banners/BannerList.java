@@ -38,7 +38,7 @@ public class BannerList extends RelativeLayout implements Observer<BannerPlaceSt
     private String bannerPlace;
     private IASCore core;
     private ICustomBannerPlace customBannerPlace = new DefaultBannerPlace();
-    private String lastLaunchedTag = "banner_0";
+    private String lastLaunchedTag = "";
 
     public void bannerListLoadCallback(BannerListLoadCallback bannerListLoadCallback) {
         this.bannerListLoadCallback = bannerListLoadCallback != null ?
@@ -106,14 +106,8 @@ public class BannerList extends RelativeLayout implements Observer<BannerPlaceSt
 
         @Override
         public void onPageSelected(int position) {
-            Integer realPos = position;
-            if (bannerPlaceViewModel != null) {
-                realPos = bannerPlaceViewModel.getCurrentBannerPagerState().currentIndex();
-                if (realPos == null && !bannerPlaceViewModel.getCurrentBannerPagerState().getItems().isEmpty()) {
-                    realPos = position % bannerPlaceViewModel.getCurrentBannerPagerState().getItems().size();
-                }
-            }
-            String newLaunchedTag = "banner_" + realPos;
+
+            String newLaunchedTag = "banner_" + position;
             if (!lastLaunchedTag.isEmpty() && !(lastLaunchedTag.equals(newLaunchedTag))) {
                 BannerView currentBannerView = bannerPager.findViewWithTag(lastLaunchedTag);
                 if (currentBannerView != null) currentBannerView.stopBanner();
@@ -342,39 +336,41 @@ public class BannerList extends RelativeLayout implements Observer<BannerPlaceSt
                         }
                         float igap = Sizes.getScreenSize(getContext()).x - Sizes.dpToPxExt(customBannerPlace.prevBannerOffset(), getContext()) - Sizes.dpToPxExt(customBannerPlace.nextBannerOffset(), getContext());
                         bannerPager.requestLayout();
-                        bannerPager.setAdapter(
-                                new BannerPagerAdapter(
-                                        core,
-                                        newValue.getItems(),
-                                        bannerPlace,
-                                        new ICustomBannerPlaceholder() {
-                                            @Override
-                                            public View onCreate(Context context) {
-                                                View v = customBannerPlace.loadingPlaceholder(context);
-                                                if (v == null) {
-                                                    v = AppearanceManager.getLoader(context, Color.WHITE);
-                                                }
-                                                return v;
-                                            }
-                                        },
-                                        bannerListLoadCallback,
-                                        newValue.iterationId(),
-                                        customBannerPlace.loop(),
-                                        (iw / igap) / customBannerPlace.bannersOnScreen(),
-                                        Sizes.dpToPxExt(
-                                                customBannerPlace.cornerRadius(),
-                                                getContext()
-                                        )
+                        BannerPagerAdapter adapter = new BannerPagerAdapter(
+                                core,
+                                newValue.getItems(),
+                                bannerPlace,
+                                new ICustomBannerPlaceholder() {
+                                    @Override
+                                    public View onCreate(Context context) {
+                                        View v = customBannerPlace.loadingPlaceholder(context);
+                                        if (v == null) {
+                                            v = AppearanceManager.getLoader(context, Color.WHITE);
+                                        }
+                                        return v;
+                                    }
+                                },
+                                bannerListLoadCallback,
+                                newValue.iterationId(),
+                                customBannerPlace.loop(),
+                                (iw / igap) / customBannerPlace.bannersOnScreen(),
+                                Sizes.dpToPxExt(
+                                        customBannerPlace.cornerRadius(),
+                                        getContext()
                                 )
                         );
-                        bannerPager.setCurrentItem(
-                                (newValue.currentIndex() == null) ?
-                                        (customBannerPlace.loop() ?
-                                                (newValue.getItems().size() * 200) :
-                                                0
-                                        ) :
-                                        newValue.currentIndex()
+                        bannerPager.setAdapter(
+                                adapter
                         );
+                        int index = (newValue.currentIndex() == null) ?
+                                adapter.getStartedIndex() :
+                                newValue.currentIndex();
+                        if (bannerPager.getCurrentItem() == index) {
+                            pageChangeListener.onPageSelected(index);
+                        } else {
+                            bannerPager.setCurrentItem(index);
+                        }
+
                     }
                 });
                 break;

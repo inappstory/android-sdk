@@ -137,6 +137,10 @@ public class BannerPagerAdapter extends PagerAdapter implements Observer<BannerS
         return banners.size();
     }
 
+    public int getStartedIndex() {
+        return (loop ? 200 : 0) * banners.size();
+    }
+
     @Override
     public boolean isViewFromObject(@NonNull View view, @NonNull Object object) {
         return view == object;

@@ -77,9 +77,10 @@ public class BannerPlaceViewModel implements IBannerPlaceViewModel {
             }
 
         }
-        bannerPlaceStateObservable.updateValue(
-                bannerPlaceStateObservable.getValue().copy().currentIndex(realIndex)
-        );
+        bannerPlaceStateObservable.setValue(bannerPlaceStateObservable.getValue().copy().currentIndex(realIndex));
+       /* bannerPlaceStateObservable.updateValue(
+
+        );*/
     }
 
     @NonNull
