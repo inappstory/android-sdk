@@ -39,9 +39,9 @@ public class InAppMessageDownloadManager {
 
     public void addInAppMessageTask(
             final int inAppMessageId,
-            ContentType type,
             final InAppMessageLoadCallback callback
     ) {
+        ContentType type = ContentType.IN_APP_MESSAGE;
         IReaderContent readerContent =
                 core.contentHolder().readerContent().getByIdAndType(inAppMessageId, type);
         if (readerContent != null) {

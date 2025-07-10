@@ -4,6 +4,7 @@ import static com.inappstory.sdk.core.network.content.models.ContentResource.VOD
 
 import com.inappstory.sdk.core.data.IReaderContentSlide;
 import com.inappstory.sdk.core.data.IResource;
+import com.inappstory.sdk.core.data.ISlideTimeline;
 import com.inappstory.sdk.core.exceptions.NotImplementedMethodException;
 import com.inappstory.sdk.network.annotations.models.SerializedName;
 import com.inappstory.sdk.stories.api.models.SlidePayload;
@@ -27,6 +28,11 @@ public class BannerSlide implements IReaderContentSlide {
     public List<ContentResource> resources;
     @SerializedName("img_placeholders_resources")
     public List<ContentResource> placeholders;
+
+    @Override
+    public ISlideTimeline slideTimeline() {
+        return null;
+    }
 
     @Override
     public int index() {
