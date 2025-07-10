@@ -3,6 +3,7 @@ package com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager;
 import android.content.Context;
 
 import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.ui.screens.IReaderSlideViewModel;
 import com.inappstory.sdk.inappmessage.domain.reader.IIAMReaderSlideViewModel;
 
 public interface ContentViewInteractor {
@@ -32,5 +33,5 @@ public interface ContentViewInteractor {
     void screenshotShare(String id);
     void goodsWidgetComplete(String widgetId);
 
-    void slideViewModel(IIAMReaderSlideViewModel slideViewModel);
+    void slideViewModel(IReaderSlideViewModel slideViewModel);
 }

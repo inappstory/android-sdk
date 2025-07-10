@@ -147,7 +147,7 @@ public class BannerWebView extends IASWebView implements ContentViewInteractor {
     }
 
     @Override
-    public void stopSlide() {
+    public void stopSlide(boolean newPage) {
         loadUrl("javascript:(function(){" +
                 "if ('story_slide_stop' in window) " +
                 "{" +
