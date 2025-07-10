@@ -60,29 +60,25 @@ public class BannerViewModel implements IBannerViewModel {
     public void updateTimeline(String strData) {
         if (strData != null && !strData.isEmpty()) {
             UpdateTimelineData data = JsonParser.fromJson(strData, UpdateTimelineData.class);
-            /*if (data.showError) {
+            if (data.showError) {
                 slideLoadError(0);
-                getPageManager().clearSlideTimerFromJS();
+                updateCurrentLoadState(BannerLoadStates.FAILED);
+                cancelTask();
             } else if (data.showLoader) {
                 Log.e("updateTimeline", "showLoader");
-                synchronized (latestIndexLock) {
-                    showLoader = new StoriesViewManager.ShowLoader(index, false, false);
-                    showRefreshHandler.post(showLoader);
-                }
+                updateCurrentLoadState(BannerLoadStates.LOADING);
+                cancelTask();
             } else {
-                clearShowLoader();
-                pageManager.host.storyLoadedSuccess();
+                updateCurrentLoadState(BannerLoadStates.LOADED);
             }
             if (data.action == null) return;
             if (data.action.equals("start")) {
-                getPageManager().startSlideTimerFromJS(data.duration, data.currentTime, data.slideIndex);
+                startTimer(data.duration, data.duration - data.currentTime);
             } else if (data.action.equals("pause")) {
-                getPageManager().pauseSlideTimerFromJS();
+                pauseSlide();
             } else if (data.action.equals("stop")) {
-                getPageManager().pauseSlideTimerFromJS();
-            } else if (data.action.equals("before_start")) {
-                getPageManager().timelineManager.setCurrentIndex(data.slideIndex);
-            }*/
+                stopSlide();
+            }
         }
     }
 
@@ -429,7 +425,7 @@ public class BannerViewModel implements IBannerViewModel {
     private long pauseShift = 0;
     private long pauseShiftStart = 0;
     private boolean paused;
-    private int timerDuration = 0;
+    private long timerDuration = 0L;
 
     Runnable timerTask = new Runnable() {
         @Override
@@ -437,7 +433,7 @@ public class BannerViewModel implements IBannerViewModel {
             boolean cancel = false;
             synchronized (timerLock) {
                 if (paused) return;
-                cancel = timerDuration > 0 && System.currentTimeMillis() - lastStartTimer - pauseShift >= timerDuration;
+                cancel = timerDuration > 0 && System.currentTimeMillis() - lastStartTimer >= timerDuration;
             }
             if (cancel) {
                 cancelTask();
@@ -458,10 +454,12 @@ public class BannerViewModel implements IBannerViewModel {
         executorService.shutdown();
     }
 
-    private void startTimer() {
+    private void startTimer(long maxTimerDuration, long timerDuration) {
+        if (maxTimerDuration == 0) return;
         synchronized (timerLock) {
             lastStartTimer = System.currentTimeMillis();
             pauseShift = 0;
+            this.timerDuration = timerDuration;
         }
         scheduledFuture = executorService.scheduleAtFixedRate(
                 timerTask,
@@ -484,7 +482,6 @@ public class BannerViewModel implements IBannerViewModel {
                     }
                 }
         );
-        startTimer();
         core.statistic().bannersV1().sendOpenEvent(bannerId, 0, 1, iterationId);
     }
 
