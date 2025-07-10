@@ -114,7 +114,7 @@ public class BannerView extends CardView implements Observer<BannerState> {
                 new Runnable() {
                     @Override
                     public void run() {
-                        bannerWebView.stopSlide();
+                        bannerWebView.stopSlide(false);
                     }
                 }
         );
@@ -131,8 +131,8 @@ public class BannerView extends CardView implements Observer<BannerState> {
     void resumeBanner() {
         if (!isLoaded) return;
         if (bannerWebView == null) return;
-        if (bannerViewModel != null) {
-            bannerViewModel.resumeSlide();
+        synchronized (pauseLock) {
+            if (!paused) return;
         }
         bannerWebView.post(
                 new Runnable() {
@@ -144,16 +144,19 @@ public class BannerView extends CardView implements Observer<BannerState> {
         );
     }
 
+    private boolean paused = false;
+    private final Object pauseLock = new Object();
+
     void pauseBanner() {
         if (!isLoaded) return;
         if (bannerWebView == null) return;
-        if (bannerViewModel != null) {
-            bannerViewModel.pauseSlide();
-        }
         bannerWebView.post(
                 new Runnable() {
                     @Override
                     public void run() {
+                        synchronized (pauseLock) {
+                            paused = true;
+                        }
                         bannerWebView.pauseSlide();
                     }
                 }

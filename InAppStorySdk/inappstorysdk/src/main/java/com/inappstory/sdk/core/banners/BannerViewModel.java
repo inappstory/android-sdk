@@ -26,6 +26,7 @@ import com.inappstory.sdk.stories.outercallbacks.common.reader.CallToActionCallb
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickAction;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
+import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.StoriesViewManager;
 import com.inappstory.sdk.stories.utils.Observable;
 import com.inappstory.sdk.stories.utils.Observer;
 import com.inappstory.sdk.stories.utils.SingleTimeEvent;
@@ -56,9 +57,32 @@ public class BannerViewModel implements IBannerViewModel {
     }
 
     @Override
-    public void updateTimeline(String data) {
-        if (data != null) {
-            UpdateTimelineData updateTimelineData = JsonParser.fromJson(data, UpdateTimelineData.class);
+    public void updateTimeline(String strData) {
+        if (strData != null && !strData.isEmpty()) {
+            UpdateTimelineData data = JsonParser.fromJson(strData, UpdateTimelineData.class);
+            /*if (data.showError) {
+                slideLoadError(0);
+                getPageManager().clearSlideTimerFromJS();
+            } else if (data.showLoader) {
+                Log.e("updateTimeline", "showLoader");
+                synchronized (latestIndexLock) {
+                    showLoader = new StoriesViewManager.ShowLoader(index, false, false);
+                    showRefreshHandler.post(showLoader);
+                }
+            } else {
+                clearShowLoader();
+                pageManager.host.storyLoadedSuccess();
+            }
+            if (data.action == null) return;
+            if (data.action.equals("start")) {
+                getPageManager().startSlideTimerFromJS(data.duration, data.currentTime, data.slideIndex);
+            } else if (data.action.equals("pause")) {
+                getPageManager().pauseSlideTimerFromJS();
+            } else if (data.action.equals("stop")) {
+                getPageManager().pauseSlideTimerFromJS();
+            } else if (data.action.equals("before_start")) {
+                getPageManager().timelineManager.setCurrentIndex(data.slideIndex);
+            }*/
         }
     }
 
@@ -203,6 +227,7 @@ public class BannerViewModel implements IBannerViewModel {
     @Override
     public void pauseSlide() {
         synchronized (timerLock) {
+            paused = true;
             pauseShiftStart = System.currentTimeMillis();
         }
     }
@@ -212,6 +237,7 @@ public class BannerViewModel implements IBannerViewModel {
         synchronized (timerLock) {
             if (pauseShiftStart != 0) {
                 pauseShift += System.currentTimeMillis() - pauseShiftStart;
+                paused = false;
             }
         }
     }

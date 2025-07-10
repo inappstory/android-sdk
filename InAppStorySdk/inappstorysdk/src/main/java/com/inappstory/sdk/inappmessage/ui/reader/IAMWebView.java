@@ -17,6 +17,7 @@ import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.exceptions.NotImplementedMethodException;
+import com.inappstory.sdk.core.ui.screens.IReaderSlideViewModel;
 import com.inappstory.sdk.inappmessage.domain.reader.IIAMReaderSlideViewModel;
 import com.inappstory.sdk.stories.api.models.ContentIdWithIndex;
 import com.inappstory.sdk.stories.ui.views.IASWebView;
@@ -29,8 +30,10 @@ public class IAMWebView extends IASWebView implements ContentViewInteractor {
     private boolean clientIsSet = false;
 
     @Override
-    public void slideViewModel(IIAMReaderSlideViewModel slideViewModel) {
-        this.slideViewModel = slideViewModel;
+    public void slideViewModel(IReaderSlideViewModel slideViewModel) {
+        if (slideViewModel instanceof IIAMReaderSlideViewModel) {
+            this.slideViewModel = (IIAMReaderSlideViewModel) slideViewModel;
+        }
     }
 
     private IIAMReaderSlideViewModel slideViewModel;

@@ -85,7 +85,7 @@ public class BannerWebView extends IASWebView implements ContentViewInteractor {
     @Override
     public void loadSlide(String content) {
         if (slideViewModel == null) return;
-        String newContent = setDir(content);
+        String newContent = setDir(content, getContext());
         loadDataWithBaseURL(
                 "file:///data/",
                 newContent,
