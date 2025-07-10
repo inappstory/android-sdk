@@ -119,6 +119,10 @@ public class SessionManager {
                 response.isAllowStatV1 ||
                         response.isAllowStatV2)
         ));
+        core.statistic().bannersV1().disabled(!(isSendStatistic && (
+                response.isAllowStatV1 ||
+                        response.isAllowStatV2)
+        ));
         ((IASSettingsImpl) core.settingsAPI()).sessionPlaceholders(response.placeholders);
         ((IASSettingsImpl) core.settingsAPI()).sessionImagePlaceholders(response.imagePlaceholders);
     }

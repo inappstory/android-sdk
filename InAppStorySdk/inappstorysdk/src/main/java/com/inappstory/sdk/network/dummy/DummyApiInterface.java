@@ -11,6 +11,16 @@ public class DummyApiInterface implements ApiInterface {
 
 
     @Override
+    public Request getBannerPlace(String id, Integer srcList, String fields, String expand, String xUserId, String xSessionId, String lang) {
+        return new DummyRequest();
+    }
+
+    @Override
+    public Request getBannerPlace(String id, Integer srcList, String fields, String expand, BannerPlaceFilterObject filterObject, String xUserId, String xSessionId, String lang) {
+        return new DummyRequest();
+    }
+
+    @Override
     public Request getInAppMessages(Integer srcList, String ids, String tags, String fields, String expand, String xUserId, String xSessionId, String lang) {
         return new DummyRequest();
     }
@@ -31,7 +41,17 @@ public class DummyApiInterface implements ApiInterface {
     }
 
     @Override
+    public Request sendBannerStat(String id, String eventName, String eventId, String iterationId, Integer slideIndex, Integer slideTotal, Long durationMs, String widgetId, String widgetLabel, String widgetValue, Integer widgetAnswer, String widgetAnswerLabel, Integer widgetAnswerScore) {
+        return new DummyRequest();
+    }
+
+    @Override
     public Request sendIAMUserData(String id, String data) {
+        return new DummyRequest();
+    }
+
+    @Override
+    public Request sendBannerUserData(String id, String data) {
         return new DummyRequest();
     }
 

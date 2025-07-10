@@ -16,6 +16,7 @@ import com.inappstory.sdk.network.annotations.api.QueryVars;
 import com.inappstory.sdk.network.annotations.api.ReplaceHeader;
 import com.inappstory.sdk.network.models.Request;
 import com.inappstory.sdk.network.utils.headers.HeadersKeys;
+import com.inappstory.sdk.stories.api.models.BannerPlaceFilterObject;
 import com.inappstory.sdk.stories.api.models.GameLaunchConfigObject;
 import com.inappstory.sdk.stories.api.models.StatisticSendObject;
 
@@ -26,6 +27,52 @@ import java.util.List;
  */
 
 public interface ApiInterface {
+
+    @GET("v2/banner/place/{id}")
+    Request getBannerPlace(
+            @Path("id") String id,
+            @Query("srcList") Integer srcList,
+            @Query("fields") String fields,
+            @Query("expand") String expand,
+            @ReplaceHeader(HeadersKeys.USER_ID) String xUserId,
+            @ReplaceHeader(HeadersKeys.AUTH_SESSION_ID) String xSessionId,
+            @ReplaceHeader(HeadersKeys.ACCEPT_LANGUAGE) String lang
+    );
+
+    @POST("v2/banner/place/{id}")
+    Request getBannerPlace(
+            @Path("id") String id,
+            @Query("srcList") Integer srcList,
+            @Query("fields") String fields,
+            @Query("expand") String expand,
+            @Body BannerPlaceFilterObject filterObject,
+            @ReplaceHeader(HeadersKeys.USER_ID) String xUserId,
+            @ReplaceHeader(HeadersKeys.AUTH_SESSION_ID) String xSessionId,
+            @ReplaceHeader(HeadersKeys.ACCEPT_LANGUAGE) String lang
+    );
+
+    @FormUrlEncoded
+    @PUT("v2/inappmessaging/banner/{id}/data")
+    Request sendBannerUserData(
+            @Path("id") String id,
+            @Field("data") String data);
+
+    @POST("v2/inappmessaging/banner/{id}/event/{event_name}")
+    Request sendBannerStat(
+            @Path("id") String id,
+            @Path("event_name") String eventName,
+            @Query("ei") String eventId,
+            @Query("ii") String iterationId,
+            @Query("si") Integer slideIndex,
+            @Query("st") Integer slideTotal,
+            @Query("d") Long durationMs,
+            @Query("wi") String widgetId,
+            @Query("wl") String widgetLabel,
+            @Query("wv") String widgetValue,
+            @Query("wa") Integer widgetAnswer,
+            @Query("wal") String widgetAnswerLabel,
+            @Query("was") Integer widgetAnswerScore
+    );
 
     @GET("v2/inappmessaging")
     Request getInAppMessages(

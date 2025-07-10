@@ -5,6 +5,7 @@ import android.content.Context;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.core.api.IASAssetsHolder;
+import com.inappstory.sdk.core.api.IASBanners;
 import com.inappstory.sdk.core.api.IASCallbacks;
 import com.inappstory.sdk.core.api.IASContentLoader;
 import com.inappstory.sdk.core.api.IASContentPreload;
@@ -26,6 +27,7 @@ import com.inappstory.sdk.core.api.IASStatistic;
 import com.inappstory.sdk.core.api.IASStoryList;
 import com.inappstory.sdk.core.api.IASStoriesOpenedCache;
 import com.inappstory.sdk.core.api.impl.IASAssetsHolderImpl;
+import com.inappstory.sdk.core.api.impl.IASBannersImpl;
 import com.inappstory.sdk.core.api.impl.IASCallbacksImpl;
 import com.inappstory.sdk.core.api.impl.IASContentLoaderImpl;
 import com.inappstory.sdk.core.api.impl.IASContentPreloadImpl;
@@ -48,6 +50,8 @@ import com.inappstory.sdk.core.dataholders.IContentHolder;
 import com.inappstory.sdk.core.dataholders.IStoriesListVMHolder;
 import com.inappstory.sdk.core.dataholders.StoriesListVMHolder;
 import com.inappstory.sdk.core.ui.screens.ScreensManager;
+import com.inappstory.sdk.domain.IWidgetsViewModels;
+import com.inappstory.sdk.domain.WidgetsViewModels;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.stories.exceptions.ExceptionManager;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
@@ -81,6 +85,7 @@ public class IASCoreImpl implements IASCore {
     private final IASExternalUtilsAPI externalUtilsAPI;
     private final IASContentLoader contentLoader;
     private final IASLogs iasLogs;
+    private final IWidgetsViewModels widgetsViewModels;
     private final Context context;
     private final InAppStoryService inAppStoryService;
     private final NetworkClient networkClient;
@@ -88,11 +93,13 @@ public class IASCoreImpl implements IASCore {
     private final SharedPreferencesAPI sharedPreferencesAPI;
     private final IContentHolder contentHolder;
     private final IASInAppMessage inAppMessages;
+    private final IASBanners banners;
     private final IASAssetsHolder assetsHolder;
     private final IASLimitsHolder limitsHolder;
 
     public IASCoreImpl(Context context) {
         this.context = context;
+        widgetsViewModels = new WidgetsViewModels(this);
         exceptionManager = new ExceptionManager(this);
         contentHolder = new ContentHolder();
         contentLoader = new IASContentLoaderImpl(this);
@@ -119,6 +126,7 @@ public class IASCoreImpl implements IASCore {
         iasLogs = new IASLogsImpl(this);
         inAppStoryService = new InAppStoryService(this);
         inAppMessages = new IASInAppMessageImpl(this);
+        banners = new IASBannersImpl(this);
         assetsHolder = new IASAssetsHolderImpl(this);
         limitsHolder = new IASLimitsHolderImpl();
         projectSettings = new IASProjectSettingsImpl(this);
@@ -190,6 +198,16 @@ public class IASCoreImpl implements IASCore {
     @Override
     public IASInAppMessage inAppMessageAPI() {
         return inAppMessages;
+    }
+
+    @Override
+    public IASBanners bannersAPI() {
+        return banners;
+    }
+
+    @Override
+    public IWidgetsViewModels widgetViewModels() {
+        return widgetsViewModels;
     }
 
     @Override

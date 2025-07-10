@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+    <com.inappstory.sdk.banners.BannerPager
+        android:layout_width="match_parent"
+        android:id="@+id/banner_pager"
+        android:layout_height="wrap_content"/>
+    <FrameLayout
+        android:layout_width="wrap_content"
+        android:visibility="gone"
+        android:id="@+id/bottom_navigation"
+        android:layout_height="wrap_content"/>
+    <FrameLayout
+        android:layout_width="wrap_content"
+        android:visibility="gone"
+        android:id="@+id/left_arrow_navigation"
+        android:layout_height="wrap_content"/>
+    <FrameLayout
+        android:layout_width="wrap_content"
+        android:visibility="gone"
+        android:id="@+id/right_arrow_navigation"
+        android:layout_height="wrap_content"/>
+</RelativeLayout>

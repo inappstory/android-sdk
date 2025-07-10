@@ -161,7 +161,6 @@ public class IASContentPreloadImpl implements IASContentPreload {
     private void downloadInAppMessageContent(final IReaderContent content, final InAppMessageLoadCallback callback) {
         core.contentLoader().inAppMessageDownloadManager().addInAppMessageTask(
                 content.id(),
-                ContentType.IN_APP_MESSAGE,
                 callback
         );
     }

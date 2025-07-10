@@ -4,10 +4,12 @@ import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.util.SizeF;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.RelativeLayout;
 
 import androidx.annotation.NonNull;
 
@@ -15,6 +17,10 @@ import com.inappstory.sdk.core.ui.widgets.customicons.IASDefaultAppearanceIcons;
 import com.inappstory.sdk.core.ui.widgets.customicons.IASDefaultIcon;
 import com.inappstory.sdk.core.ui.widgets.customicons.IASDefaultIconCreator;
 import com.inappstory.sdk.core.ui.widgets.customicons.IIASDefaultIconCreator;
+import com.inappstory.sdk.stories.ui.widgets.LoadProgressBar;
+import com.inappstory.sdk.banners.DefaultBannerPlace;
+import com.inappstory.sdk.core.banners.IBannerPlaceAppearance;
+import com.inappstory.sdk.core.banners.ICustomBannerPlace;
 import com.inappstory.sdk.stories.ui.widgets.LoadProgressBar;
 import com.inappstory.sdk.stories.api.models.CachedSessionData;
 import com.inappstory.sdk.core.network.content.models.Image;
@@ -33,9 +39,11 @@ import com.inappstory.sdk.ugc.list.IStoriesListUGCItem;
 import com.inappstory.sdk.core.ui.widgets.customicons.CustomIconWithStates;
 import com.inappstory.sdk.core.ui.widgets.customicons.CustomIconWithoutStates;
 
+import java.util.UUID;
+
 /**
  * Defines appearance of the stories list, as well as some elements of the reader.
- * It must be set globally for the library, or separately for the list before calling {@link StoriesList#loadStories()}.
+ * It must be set globally for the library, or separately for the list before calling {@link StoriesList#loadStoriesInner()}.
  * For a global setting, you must call the static method of the class {@link #setCommonInstance(AppearanceManager)}.
  */
 public class AppearanceManager {
@@ -116,6 +124,7 @@ public class AppearanceManager {
         this.csListItemHeight = other.csListItemHeight;
         this.csListItemBorderVisibility = other.csListItemBorderVisibility;
         this.csListItemBorderColor = other.csListItemBorderColor;
+        this.csBannerPlaceInterface = other.csBannerPlaceInterface;
         this.csFavoriteListItemInterface = other.csFavoriteListItemInterface;
         this.csListItemInterface = other.csListItemInterface;
         this.csListUGCItemInterface = other.csListUGCItemInterface;
@@ -184,6 +193,8 @@ public class AppearanceManager {
     private IGetFavoriteListItem csFavoriteListItemInterface;
     private IStoriesListItem csListItemInterface;
     private IStoriesListUGCItem csListUGCItemInterface;
+
+    private ICustomBannerPlace csBannerPlaceInterface = new DefaultBannerPlace();
 
     private IStoryReaderLoaderView csStoryLoaderView;
 
@@ -1126,6 +1137,15 @@ public class AppearanceManager {
 
     public AppearanceManager csListItemInterface(IStoriesListItem csListItemInterface) {
         this.csListItemInterface = csListItemInterface;
+        return AppearanceManager.this;
+    }
+
+    public ICustomBannerPlace csBannerPlaceInterface() {
+        return csBannerPlaceInterface != null ? csBannerPlaceInterface : new DefaultBannerPlace();
+    }
+
+    public AppearanceManager csBannerPlaceInterface(ICustomBannerPlace csBannerPlaceInterface) {
+        this.csBannerPlaceInterface = csBannerPlaceInterface;
         return AppearanceManager.this;
     }
 

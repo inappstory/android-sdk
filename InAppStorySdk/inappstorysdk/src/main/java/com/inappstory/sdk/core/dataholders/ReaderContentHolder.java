@@ -37,6 +37,7 @@ public class ReaderContentHolder implements IReaderContentHolder {
     private final List<IReaderContent> stories = new ArrayList<>();
     private final List<IReaderContent> ugcStories = new ArrayList<>();
     private final List<IReaderContent> inAppMessages = new ArrayList<>();
+    private final List<IReaderContent> banners = new ArrayList<>();
 
     private List<IReaderContent> getContentList(ContentType type) {
         switch (type) {
@@ -46,6 +47,8 @@ public class ReaderContentHolder implements IReaderContentHolder {
                 return ugcStories;
             case IN_APP_MESSAGE:
                 return inAppMessages;
+            case BANNER:
+                return banners;
             default:
                 return null;
         }
@@ -100,6 +103,7 @@ public class ReaderContentHolder implements IReaderContentHolder {
             stories.clear();
             ugcStories.clear();
             inAppMessages.clear();
+            banners.clear();
         }
     }
 }

@@ -1,0 +1,53 @@
+package com.inappstory.sdk.banners;
+
+import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
+
+import android.content.Context;
+import android.view.View;
+
+import com.inappstory.sdk.core.banners.IBannerPlaceArrowsNavigation;
+import com.inappstory.sdk.core.banners.IBannerPlaceDotNavigation;
+import com.inappstory.sdk.core.banners.ICustomBannerPlace;
+
+public class DefaultBannerPlace implements ICustomBannerPlace {
+    @Override
+    public int bannersOnScreen() {
+        return 1;
+    }
+
+    @Override
+    public int nextBannerOffset() {
+        return 0;
+    }
+
+    @Override
+    public int prevBannerOffset() {
+        return 0;
+    }
+
+    @Override
+    public int bannersGap() {
+        return 4;
+    }
+
+    @Override
+    public int cornerRadius() {
+        return 16;
+    }
+
+    @Override
+    public boolean loop() {
+        return true;
+    }
+
+    @Override
+    public int animationSpeed() {
+        return 300;
+    }
+
+    @Override
+    public View loadingPlaceholder(Context context) {
+        return null;
+    }
+
+}

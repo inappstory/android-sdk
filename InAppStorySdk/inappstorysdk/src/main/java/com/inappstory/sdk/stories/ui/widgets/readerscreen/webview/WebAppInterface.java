@@ -44,6 +44,23 @@ public class WebAppInterface {
         logMethod(payload);
     }
 
+    @JavascriptInterface
+    public void updateTimeline(String data) {
+        if (data != null) {
+            UpdateTimelineData updateTimelineData = JsonParser.fromJson(data, UpdateTimelineData.class);
+            manager.updateTimeline(updateTimelineData);
+        }
+        logMethod(data);
+    }
+
+    @JavascriptInterface
+    public void storyLoadingFailed(String data) {
+        if (data != null) {
+            StoryLoadedData loadedData = JsonParser.fromJson(data, StoryLoadedData.class);
+            manager.slideLoadError(loadedData.index);
+        }
+        logMethod("");
+    }
 
     @JavascriptInterface
     public void writeToClipboard(String payload) {

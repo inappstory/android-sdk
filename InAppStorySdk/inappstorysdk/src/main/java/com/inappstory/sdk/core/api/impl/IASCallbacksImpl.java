@@ -2,6 +2,8 @@ package com.inappstory.sdk.core.api.impl;
 
 import androidx.annotation.NonNull;
 
+import com.inappstory.sdk.banners.BannerWidgetCallback;
+import com.inappstory.sdk.banners.ShowBannerCallback;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASCallback;
 import com.inappstory.sdk.core.api.IASCallbackType;
@@ -152,6 +154,18 @@ public class IASCallbacksImpl implements IASCallbacks {
                     return;
                 }
                 break;
+            case SHOW_BANNER:
+                if (showBannerCallback != null) {
+                    useIASCallback.use(showBannerCallback);
+                    return;
+                }
+                break;
+            case BANNER_WIDGET:
+                if (bannerWidgetCallback != null) {
+                    useIASCallback.use(bannerWidgetCallback);
+                    return;
+                }
+                break;
             default:
                 break;
         }
@@ -215,6 +229,12 @@ public class IASCallbacksImpl implements IASCallbacks {
             case IN_APP_MESSAGE_WIDGET:
                 inAppMessageWidgetCallback = (InAppMessageWidgetCallback) callback;
                 return;
+            case SHOW_BANNER:
+                showBannerCallback = (ShowBannerCallback) callback;
+                return;
+            case BANNER_WIDGET:
+                bannerWidgetCallback = (BannerWidgetCallback) callback;
+                return;
             default:
                 break;
         }
@@ -233,8 +253,10 @@ public class IASCallbacksImpl implements IASCallbacks {
     private LikeDislikeStoryCallback likeDislikeStoryCallback;
     private InAppMessageLoadCallback inAppMessageLoadCallback;
     private ShowInAppMessageCallback showInAppMessageCallback;
-    private CloseInAppMessageCallback closeInAppMessageCallback;
     private InAppMessageWidgetCallback inAppMessageWidgetCallback;
+    private CloseInAppMessageCallback closeInAppMessageCallback;
+    private ShowBannerCallback showBannerCallback;
+    private BannerWidgetCallback bannerWidgetCallback;
     private ShowSlideCallback showSlideCallback;
     private ShowStoryCallback showStoryCallback;
     private SingleLoadCallback singleLoadCallback;
