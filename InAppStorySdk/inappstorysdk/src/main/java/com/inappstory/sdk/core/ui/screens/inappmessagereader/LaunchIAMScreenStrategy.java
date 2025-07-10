@@ -408,8 +408,10 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
                 int messagePriority = inAppMessage.getEventPriority(event);
                 if (messagePriority >= 0 && checkContentForShownFrequency(inAppMessage)) {
                     contentIds.add(content.id());
-                    if (messagePriority >= currentPriority) {
+                    if (messagePriority > currentPriority) {
                         currentPriority = messagePriority;
+                        resContent = inAppMessage;
+                    } else if (messagePriority == currentPriority && resContent == null) {
                         resContent = inAppMessage;
                     }
                 }
