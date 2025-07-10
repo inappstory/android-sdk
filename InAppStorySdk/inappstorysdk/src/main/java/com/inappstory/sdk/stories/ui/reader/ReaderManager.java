@@ -653,7 +653,9 @@ public class ReaderManager {
     }
 
     public BaseStoryScreen getReaderScreen() {
-        return getHost().getStoriesReader();
+        StoriesContentFragment contentFragment = getHost();
+        if (contentFragment == null) return null;
+        return contentFragment.getStoriesReader();
     }
 
     private final HashSet<ReaderPageManager> subscribers = new HashSet<>();
