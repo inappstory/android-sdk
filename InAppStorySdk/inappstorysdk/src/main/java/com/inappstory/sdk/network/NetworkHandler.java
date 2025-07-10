@@ -177,7 +177,7 @@ public final class NetworkHandler implements InvocationHandler {
         if (!excludeList.contains(HeadersKeys.ACCEPT))
             resHeaders.add(new AcceptHeader());
         if (!excludeList.contains(HeadersKeys.ACCEPT_LANGUAGE))
-            resHeaders.add(new AcceptLanguageHeader());
+            resHeaders.add(new AcceptLanguageHeader(core));
         if (!excludeList.contains(HeadersKeys.ACCEPT_ENCODING))
             resHeaders.add(new AcceptEncodingHeader());
         if (!excludeList.contains(HeadersKeys.AUTHORIZATION))

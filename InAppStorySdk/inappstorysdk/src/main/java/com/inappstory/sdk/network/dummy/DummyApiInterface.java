@@ -2,6 +2,7 @@ package com.inappstory.sdk.network.dummy;
 
 import com.inappstory.sdk.network.ApiInterface;
 import com.inappstory.sdk.network.models.Request;
+import com.inappstory.sdk.stories.api.models.BannerPlaceFilterObject;
 import com.inappstory.sdk.stories.api.models.GameLaunchConfigObject;
 import com.inappstory.sdk.stories.api.models.StatisticSendObject;
 
