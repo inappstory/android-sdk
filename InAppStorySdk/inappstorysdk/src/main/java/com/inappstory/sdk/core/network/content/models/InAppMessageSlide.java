@@ -32,11 +32,6 @@ public class InAppMessageSlide implements IReaderContentSlide {
     public List<ContentResource> placeholders;
 
     @Override
-    public ISlideTimeline slideTimeline() {
-        throw new NotImplementedMethodException();
-    }
-
-    @Override
     public int index() {
         return slideIndex;
     }

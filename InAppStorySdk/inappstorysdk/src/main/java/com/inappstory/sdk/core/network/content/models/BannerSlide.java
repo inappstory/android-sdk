@@ -30,11 +30,6 @@ public class BannerSlide implements IReaderContentSlide {
     public List<ContentResource> placeholders;
 
     @Override
-    public ISlideTimeline slideTimeline() {
-        return null;
-    }
-
-    @Override
     public int index() {
         return slideIndex;
     }
