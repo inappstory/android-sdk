@@ -2,8 +2,6 @@ package com.inappstory.sdk.core.banners;
 
 import android.webkit.JavascriptInterface;
 
-import com.inappstory.sdk.inappmessage.domain.reader.IIAMReaderSlideViewModel;
-
 public class BannerJavascriptInterface {
     private final IBannerViewModel slideViewModel;
 
@@ -99,7 +97,7 @@ public class BannerJavascriptInterface {
 
     @JavascriptInterface
     public void storySendData(String data) {
-        slideViewModel.storySendData(data);
+        slideViewModel.sendData(data);
     }
 
     @JavascriptInterface

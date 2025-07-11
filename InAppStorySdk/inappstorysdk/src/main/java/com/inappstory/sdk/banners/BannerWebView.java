@@ -6,7 +6,9 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.GestureDetector;
 import android.view.MotionEvent;
+import android.view.View;
 import android.webkit.ConsoleMessage;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
@@ -39,14 +41,36 @@ public class BannerWebView extends IASWebView implements ContentViewInteractor {
 
     public BannerWebView(@NonNull Context context) {
         super(context);
+        init(context);
     }
 
     public BannerWebView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
+        init(context);
     }
 
     public BannerWebView(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
+        init(context);
+    }
+
+    GestureDetector gestureDetector;
+
+    private void init(Context context) {
+        gestureDetector = new GestureDetector(context, new GestureDetector.SimpleOnGestureListener() {
+            @Override
+            public void onLongPress(MotionEvent e) {
+                if (host != null) host.pauseBanner();
+                super.onLongPress(e);
+            }
+        });
+        setOnTouchListener(new OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                gestureDetector.onTouchEvent(event);
+                return onTouchEvent(event);
+            }
+        });
     }
 
     IBannerViewModel slideViewModel;
@@ -64,9 +88,7 @@ public class BannerWebView extends IASWebView implements ContentViewInteractor {
     @Override
     public boolean onInterceptTouchEvent(MotionEvent motionEvent) {
         boolean c = super.onInterceptTouchEvent(motionEvent);
-        if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
-            if (host != null) host.pauseBanner();
-        } else if (motionEvent.getAction() == MotionEvent.ACTION_UP || motionEvent.getAction() == MotionEvent.ACTION_CANCEL) {
+        if (motionEvent.getAction() == MotionEvent.ACTION_UP || motionEvent.getAction() == MotionEvent.ACTION_CANCEL) {
             touchSlider = false;
             getParentForAccessibility().requestDisallowInterceptTouchEvent(false);
         }
@@ -75,6 +97,7 @@ public class BannerWebView extends IASWebView implements ContentViewInteractor {
 
     @Override
     public boolean onTouchEvent(MotionEvent motionEvent) {
+        gestureDetector.onTouchEvent(motionEvent);
         boolean c = super.onTouchEvent(motionEvent);
         if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
             if (host != null) host.resumeBanner();

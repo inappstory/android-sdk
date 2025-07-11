@@ -8,6 +8,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.RelativeLayout;
@@ -187,6 +188,18 @@ public class BannerList extends RelativeLayout implements Observer<BannerPlaceSt
                 bannerPager.setCurrentItem(index, true);
             }
         }
+    }
+
+
+    @Override
+    public boolean onInterceptTouchEvent(MotionEvent event) {
+        if (event.getAction() == MotionEvent.ACTION_CANCEL && !lastLaunchedTag.isEmpty()) {
+            BannerView currentBannerView = bannerPager.findViewWithTag(lastLaunchedTag);
+            if (currentBannerView != null) {
+                currentBannerView.resumeBanner();
+            }
+        }
+        return super.onInterceptTouchEvent(event);
     }
 
     public void setBannerPlace(final String bannerPlace) {

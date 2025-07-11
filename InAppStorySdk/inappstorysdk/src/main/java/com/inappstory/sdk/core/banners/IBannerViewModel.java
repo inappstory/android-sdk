@@ -43,7 +43,7 @@ public interface IBannerViewModel extends IReaderSlideViewModel {
     void share(String id, String data);
     void freezeUI();
     void unfreezeUI();
-    void storySendData(String data);
+    void sendData(String data);
     void setLocalUserData(String data, boolean sendToServer);
     String getLocalUserData();
     void shareSlideScreenshotCb(String shareId, boolean result);

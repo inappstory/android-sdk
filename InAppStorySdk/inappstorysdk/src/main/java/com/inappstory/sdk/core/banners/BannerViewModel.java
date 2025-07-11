@@ -8,13 +8,17 @@ import com.inappstory.sdk.banners.BannerWidgetCallback;
 import com.inappstory.sdk.banners.ShowBannerCallback;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASCallbackType;
+import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.data.IReaderContent;
+import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderState;
 import com.inappstory.sdk.inappmessage.domain.stedata.CallToActionData;
 import com.inappstory.sdk.inappmessage.domain.stedata.JsSendApiRequestData;
 import com.inappstory.sdk.inappmessage.domain.stedata.STEDataType;
 import com.inappstory.sdk.inappmessage.domain.stedata.STETypeAndData;
 import com.inappstory.sdk.network.JsonParser;
+import com.inappstory.sdk.network.callbacks.NetworkCallback;
+import com.inappstory.sdk.network.models.Response;
 import com.inappstory.sdk.stories.api.models.ContentId;
 import com.inappstory.sdk.stories.api.models.ContentIdWithIndex;
 import com.inappstory.sdk.stories.api.models.ContentType;
@@ -35,6 +39,7 @@ import com.inappstory.sdk.stories.utils.WebPageConverter;
 import com.inappstory.sdk.utils.ScheduledTPEManager;
 import com.inappstory.sdk.utils.StringsUtils;
 
+import java.lang.reflect.Type;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ScheduledFuture;
@@ -249,7 +254,6 @@ public class BannerViewModel implements IBannerViewModel {
         synchronized (timerLock) {
             if (lastStartTimer == -1) return;
         }
-        Log.e("BannerTimers", bannerId + " STOP " + (System.currentTimeMillis() - pauseShift - lastStartTimer));
         cancelTask();
         synchronized (timerLock) {
             pauseShift = 0;
@@ -400,19 +404,71 @@ public class BannerViewModel implements IBannerViewModel {
 
     }
 
-    @Override
-    public void storySendData(String data) {
+    private final Object localDataLock = new Object();
 
+    @Override
+    public String getLocalUserData() {
+        synchronized (localDataLock) {
+            String res = core.keyValueStorage().getString("banner" +
+                    getCurrentBannerState().bannerId()
+                    + "__" + ((IASDataSettingsHolder) core.settingsAPI()).userId());
+            return res == null ? "" : res;
+        }
+    }
+
+    @Override
+    public void sendData(String data) {
+        BannerState bannerState = getCurrentBannerState();
+        if (bannerState == null) return;
+        if (core.statistic().iamV1().disabled()) return;
+        core.network().enqueue(
+                core.network().getApi().sendBannerUserData(
+                        Integer.toString(bannerState.bannerId()),
+                        data
+                ),
+                new NetworkCallback<Response>() {
+                    @Override
+                    public void onSuccess(Response response) {
+
+                    }
+
+                    @Override
+                    public Type getType() {
+                        return null;
+                    }
+                }
+        );
     }
 
     @Override
     public void setLocalUserData(String data, boolean sendToServer) {
+        BannerState bannerState = getCurrentBannerState();
+        if (bannerState == null) return;
+        synchronized (localDataLock) {
+            core.keyValueStorage().saveString("banner" +
+                    bannerState.bannerId() + "__" +
+                    ((IASDataSettingsHolder) core.settingsAPI()).userId(), data);
+        }
+        if (core.statistic().iamV1().disabled()) return;
+        if (sendToServer) {
+            core.network().enqueue(
+                    core.network().getApi().sendBannerUserData(
+                            Integer.toString(bannerState.bannerId()),
+                            data
+                    ),
+                    new NetworkCallback<Response>() {
+                        @Override
+                        public void onSuccess(Response response) {
 
-    }
+                        }
 
-    @Override
-    public String getLocalUserData() {
-        return null;
+                        @Override
+                        public Type getType() {
+                            return null;
+                        }
+                    }
+            );
+        }
     }
 
     @Override
