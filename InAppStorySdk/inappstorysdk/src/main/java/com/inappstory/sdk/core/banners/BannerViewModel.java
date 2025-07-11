@@ -12,6 +12,7 @@ import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.data.IReaderContent;
 import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderState;
+import com.inappstory.sdk.inappmessage.domain.stedata.AutoSlideEndData;
 import com.inappstory.sdk.inappmessage.domain.stedata.CallToActionData;
 import com.inappstory.sdk.inappmessage.domain.stedata.JsSendApiRequestData;
 import com.inappstory.sdk.inappmessage.domain.stedata.STEDataType;
@@ -96,7 +97,9 @@ public class BannerViewModel implements IBannerViewModel {
     private final SingleTimeEvent<STETypeAndData> singleTimeEvents =
             new SingleTimeEvent<>();
 
-    public BannerViewModel(int bannerId, String bannerPlace, IASCore core) {
+    private final IBannerPlaceViewModel bannerPlaceViewModel;
+
+    public BannerViewModel(int bannerId, String bannerPlace, IASCore core, IBannerPlaceViewModel bannerPlaceViewModel) {
         this.bannerId = bannerId;
         this.bannerPlace = bannerPlace;
         this.core = core;
@@ -106,6 +109,7 @@ public class BannerViewModel implements IBannerViewModel {
                         .bannerPlace(bannerPlace)
                         .loadState(BannerLoadStates.EMPTY)
         );
+        this.bannerPlaceViewModel = bannerPlaceViewModel;
     }
 
 
@@ -441,6 +445,11 @@ public class BannerViewModel implements IBannerViewModel {
     }
 
     @Override
+    public void showNext() {
+        if (bannerPlaceViewModel != null) bannerPlaceViewModel.showNext();
+    }
+
+    @Override
     public void setLocalUserData(String data, boolean sendToServer) {
         BannerState bannerState = getCurrentBannerState();
         if (bannerState == null) return;
@@ -493,15 +502,25 @@ public class BannerViewModel implements IBannerViewModel {
             }
             if (cancel) {
                 cancelTask();
+                synchronized (timerLock) {
+                    pauseShift = 0;
+                    paused = false;
+                    lastStartTimer = -1;
+                }
+                autoSlideEnd();
             }
-            synchronized (timerLock) {
-                pauseShift = 0;
-                paused = false;
-                lastStartTimer = -1;
-            }
+
         }
     };
 
+    private void autoSlideEnd() {
+        singleTimeEvents.updateValue(
+                new STETypeAndData(
+                        STEDataType.AUTO_SLIDE_END,
+                        new AutoSlideEndData()
+                )
+        );
+    }
 
     private void cancelTask() {
         if (scheduledFuture != null)

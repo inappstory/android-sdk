@@ -134,6 +134,14 @@ public class BannerWebView extends IASWebView implements ContentViewInteractor {
         logMethod("story_slide_start");
     }
 
+    public void autoSlideEnd() {
+        loadUrl("javascript:(function(){" +
+                "if ('story_slide_timer_end' in window) " +
+                "{" +
+                " window.story_slide_timer_end(); " +
+                "}" +
+                "})()");
+    }
 
     @Override
     public void pauseSlide() {

@@ -6,11 +6,9 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Color;
 import android.net.Uri;
 import android.util.AttributeSet;
 import android.util.Log;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -31,12 +29,9 @@ import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.api.impl.IASSingleStoryImpl;
 import com.inappstory.sdk.core.banners.BannerState;
 import com.inappstory.sdk.core.banners.IBannerViewModel;
-import com.inappstory.sdk.core.banners.ICustomBannerPlace;
 import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenData;
 import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenStrategy;
 import com.inappstory.sdk.core.utils.ColorUtils;
-import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderSlideState;
-import com.inappstory.sdk.inappmessage.domain.reader.IIAMReaderViewModel;
 import com.inappstory.sdk.inappmessage.domain.stedata.CallToActionData;
 import com.inappstory.sdk.inappmessage.domain.stedata.JsSendApiRequestData;
 import com.inappstory.sdk.inappmessage.domain.stedata.STETypeAndData;
@@ -44,15 +39,11 @@ import com.inappstory.sdk.network.jsapiclient.JsApiClient;
 import com.inappstory.sdk.network.jsapiclient.JsApiResponseCallback;
 import com.inappstory.sdk.stories.api.models.ContentId;
 import com.inappstory.sdk.stories.api.models.ContentIdWithIndex;
-import com.inappstory.sdk.stories.api.models.slidestructure.Background;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.CallToActionCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
-import com.inappstory.sdk.stories.ui.views.IASWebView;
 import com.inappstory.sdk.stories.utils.Observer;
 import com.inappstory.sdk.stories.utils.Sizes;
-
-import java.util.Random;
 
 public class BannerView extends CardView implements Observer<BannerState> {
 
@@ -205,7 +196,7 @@ public class BannerView extends CardView implements Observer<BannerState> {
         return refresh;
     }
 
-    Observer<STETypeAndData> callToActionDataObserver = new Observer<STETypeAndData>() {
+    Observer<STETypeAndData> steTypeAndDataObserver = new Observer<STETypeAndData>() {
         @Override
         public void onUpdate(final STETypeAndData newValue) {
             if (newValue == null) return;
@@ -213,6 +204,16 @@ public class BannerView extends CardView implements Observer<BannerState> {
                 @Override
                 public void use(@NonNull IASCore core) {
                     switch (newValue.type()) {
+                        case AUTO_SLIDE_END:
+                            final BannerWebView bannerWebView1 = bannerWebView;
+                            if (bannerWebView1 != null)
+                                bannerWebView1.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        bannerWebView1.autoSlideEnd();
+                                    }
+                                });
+                            break;
                         case CALL_TO_ACTION:
                             callToActionHandle(
                                     core,
@@ -387,7 +388,7 @@ public class BannerView extends CardView implements Observer<BannerState> {
         if (bannerViewModel != null) {
             bannerViewModel.addSubscriber(this);
             bannerViewModel.singleTimeEvents().subscribe(
-                    callToActionDataObserver
+                    steTypeAndDataObserver
             );
         }
 
@@ -399,7 +400,7 @@ public class BannerView extends CardView implements Observer<BannerState> {
         if (bannerViewModel != null) {
             bannerViewModel.removeSubscriber(this);
             bannerViewModel.singleTimeEvents().unsubscribe(
-                    callToActionDataObserver
+                    steTypeAndDataObserver
             );
         }
     }

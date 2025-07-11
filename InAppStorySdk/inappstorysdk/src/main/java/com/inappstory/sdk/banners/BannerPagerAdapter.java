@@ -11,6 +11,7 @@ import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.banners.BannerLoadStates;
 import com.inappstory.sdk.core.banners.BannerState;
+import com.inappstory.sdk.core.banners.IBannerPlaceViewModel;
 import com.inappstory.sdk.core.banners.IBannerViewModel;
 import com.inappstory.sdk.core.banners.ICustomBannerPlace;
 import com.inappstory.sdk.core.data.IBanner;
@@ -68,13 +69,8 @@ public class BannerPagerAdapter extends PagerAdapter implements Observer<BannerS
         Log.e("BannerPagerAdapter", "instantiateItem " + position);
         IBanner banner = banners.get(position % banners.size());
         int bannerId = banner.id();
-        IBannerViewModel bannerViewModel = core
-                .widgetViewModels()
-                .bannerViewModels()
-                .get(
-                        bannerId,
-                        bannerPlace
-                );
+        IBannerViewModel bannerViewModel  = core
+                .widgetViewModels().bannerPlaceViewModels().get(bannerPlace).getBannerViewModel(bannerId);
         bannerViewModel.iterationId(iterationId);
         bannerView.viewModel(
                 bannerViewModel
@@ -90,13 +86,9 @@ public class BannerPagerAdapter extends PagerAdapter implements Observer<BannerS
         if (banners.isEmpty()) return;
         IBanner banner = banners.get(0);
         int bannerId = banner.id();
-        IBannerViewModel bannerViewModel = core
-                .widgetViewModels()
-                .bannerViewModels()
-                .get(
-                        bannerId,
-                        bannerPlace
-                );
+
+        IBannerViewModel bannerViewModel  = core
+                .widgetViewModels().bannerPlaceViewModels().get(bannerPlace).getBannerViewModel(bannerId);
         bannerViewModel.addSubscriber(this);
     }
 
@@ -104,13 +96,9 @@ public class BannerPagerAdapter extends PagerAdapter implements Observer<BannerS
         if (banners.isEmpty()) return;
         IBanner banner = banners.get(0);
         int bannerId = banner.id();
-        IBannerViewModel bannerViewModel = core
-                .widgetViewModels()
-                .bannerViewModels()
-                .get(
-                        bannerId,
-                        bannerPlace
-                );
+
+        IBannerViewModel bannerViewModel  = core
+                .widgetViewModels().bannerPlaceViewModels().get(bannerPlace).getBannerViewModel(bannerId);
         bannerViewModel.removeSubscriber(this);
     }
 

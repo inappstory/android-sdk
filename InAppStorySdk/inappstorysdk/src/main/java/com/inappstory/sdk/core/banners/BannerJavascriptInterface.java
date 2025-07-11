@@ -101,6 +101,12 @@ public class BannerJavascriptInterface {
     }
 
     @JavascriptInterface
+    public void storyShowNext() {
+        slideViewModel.showNext();
+    }
+
+
+    @JavascriptInterface
     public void storySetLocalData(String data, boolean sendToServer) {
         slideViewModel.setLocalUserData(data, sendToServer);
     }

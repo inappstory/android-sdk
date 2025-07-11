@@ -287,11 +287,24 @@ public class BannerList extends RelativeLayout implements Observer<BannerPlaceSt
                 ), getContext())) / (1f * customBannerPlace.bannersOnScreen());
     }
 
+    int lastIndex = -1;
+
     @Override
     public void onUpdate(final BannerPlaceState newValue) {
         if (newValue == null || newValue.loadState() == null) return;
         if (bannerPlaceViewModel == null) return;
         Log.e("bannerPlace", "onUpdate " + bannerPlaceViewModel);
+        if (newValue.currentIndex() != null) {
+            if (bannerPager.getCurrentItem() != newValue.currentIndex()) {
+                bannerPager.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        bannerPager.setCurrentItem(newValue.currentIndex());
+                    }
+                });
+            }
+            return;
+        }
         switch (newValue.loadState()) {
             case EMPTY:
                 try {

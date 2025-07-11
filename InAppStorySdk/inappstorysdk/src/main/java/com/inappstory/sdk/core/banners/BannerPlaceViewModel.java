@@ -19,9 +19,11 @@ public class BannerPlaceViewModel implements IBannerPlaceViewModel {
     private final IASCore core;
     private final String bannerPlace;
     private final String uid = UUID.randomUUID().toString();
+    BannerViewModelsHolder bannerViewModelsHolder;
 
     public BannerPlaceViewModel(IASCore core, String bannerPlace) {
         this.bannerPlace = bannerPlace;
+        bannerViewModelsHolder = new BannerViewModelsHolder(core, this);
         this.core = core;
         updateState(getCurrentBannerPagerState().copy().place(bannerPlace));
     }
@@ -54,15 +56,22 @@ public class BannerPlaceViewModel implements IBannerPlaceViewModel {
     }
 
     @Override
+    public IBannerViewModel getBannerViewModel(int id) {
+        return bannerViewModelsHolder
+                .get(
+                        id,
+                        bannerPlace
+                );
+    }
+
+    @Override
     public void updateCurrentIndex(int index) {
         BannerPlaceState placeState = bannerPlaceStateObservable.getValue();
         List<IBanner> items = placeState.items;
         int total = items.size();
         int realIndex = index % total;
         for (int i = 0; i < items.size(); i++) {
-            IBannerViewModel bannerViewModel = core
-                    .widgetViewModels()
-                    .bannerViewModels()
+            IBannerViewModel bannerViewModel = bannerViewModelsHolder
                     .get(
                             items.get(i).id(),
                             bannerPlace
@@ -81,6 +90,15 @@ public class BannerPlaceViewModel implements IBannerPlaceViewModel {
        /* bannerPlaceStateObservable.updateValue(
 
         );*/
+    }
+
+    @Override
+    public void showNext() {
+        BannerPlaceState placeState = getCurrentBannerPagerState();
+        int newIndex = 1;
+        Integer currentIndex = placeState.currentIndex;
+        if (currentIndex != null) newIndex = currentIndex+1;
+        bannerPlaceStateObservable.updateValue(placeState.copy().currentIndex(newIndex));
     }
 
     @NonNull

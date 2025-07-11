@@ -4,10 +4,12 @@ import com.inappstory.sdk.stories.utils.Observer;
 
 public interface IBannerPlaceViewModel {
     BannerPlaceState getCurrentBannerPagerState();
+    IBannerViewModel getBannerViewModel(int id);
     void updateState(BannerPlaceState bannerPlaceState);
     void addSubscriber(Observer<BannerPlaceState> observer);
     void removeSubscriber(Observer<BannerPlaceState> observer);
 
     void updateCurrentIndex(int index);
+    void showNext();
 
 }
