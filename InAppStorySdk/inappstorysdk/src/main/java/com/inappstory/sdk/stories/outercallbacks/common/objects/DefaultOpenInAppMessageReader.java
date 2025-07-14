@@ -8,6 +8,7 @@ import androidx.fragment.app.FragmentTransaction;
 
 import com.inappstory.sdk.core.data.IInAppMessage;
 import com.inappstory.sdk.inappmessage.InAppMessageScreenActions;
+import com.inappstory.sdk.inappmessage.ui.reader.InAppMessageCloseAction;
 import com.inappstory.sdk.inappmessage.ui.reader.InAppMessageMainFragment;
 
 
@@ -20,7 +21,7 @@ public class DefaultOpenInAppMessageReader implements IOpenInAppMessageReader {
             boolean showOnlyIfLoaded,
             FragmentManager fragmentManager,
             int containerId,
-            InAppMessageScreenActions screenActions
+            final InAppMessageScreenActions screenActions
     ) {
         try {
             InAppMessageMainFragment inAppMessageFragment =
@@ -33,7 +34,12 @@ public class DefaultOpenInAppMessageReader implements IOpenInAppMessageReader {
                     );
             //   t.addToBackStack(IN_APP_MESSAGE_FRAGMENT);
             t.commit();
-
+            inAppMessageFragment.setOnCloseAction(new InAppMessageCloseAction() {
+                @Override
+                public void onClose() {
+                    screenActions.readerIsClosed();
+                }
+            });
             Log.e("ShowIAMLog", System.currentTimeMillis() + "_finish");
         } catch (Exception e) {
 

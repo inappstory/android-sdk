@@ -45,6 +45,12 @@ public class InAppMessageMainFragment extends Fragment implements Observer<IAMRe
     private InAppMessageAppearance appearance = new InAppMessageBottomSheetSettings();
     private IAMContentContainer contentContainer;
 
+    public void setOnCloseAction(InAppMessageCloseAction onCloseAction) {
+        this.onCloseAction = onCloseAction;
+    }
+
+    private InAppMessageCloseAction onCloseAction;
+
     @Override
     public void onDestroyView() {
         if (readerViewModel != null) {
@@ -67,6 +73,11 @@ public class InAppMessageMainFragment extends Fragment implements Observer<IAMRe
             }
         });
         super.onDestroyView();
+        try {
+            if (onCloseAction != null) onCloseAction.onClose();
+        } catch (Exception e) {
+
+        }
     }
 
 

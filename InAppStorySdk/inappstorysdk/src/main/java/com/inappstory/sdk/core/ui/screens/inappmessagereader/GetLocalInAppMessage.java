@@ -6,5 +6,5 @@ import com.inappstory.sdk.core.data.IInAppMessage;
 
 public interface GetLocalInAppMessage {
     void get(@NonNull IInAppMessage readerContent);
-    void error();
+    void error(String error);
 }
