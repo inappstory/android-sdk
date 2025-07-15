@@ -111,11 +111,11 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
             if (inAppMessage != null) {
                 getLocalInAppMessage.get(inAppMessage);
             } else {
-                getLocalInAppMessage.error();
+                getLocalInAppMessage.error(null);
             }
         } else if (inAppMessageOpenSettings.event() != null) {
             if (tagsToCheck != null && !core.contentLoader().getIamWereLoadedStatus(TagsUtils.tagsHash(tagsToCheck))) {
-                getLocalInAppMessage.error();
+                getLocalInAppMessage.error(null);
             } else {
                 getContentByEvent(
                         getLocalInAppMessage,
@@ -123,7 +123,7 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
                 );
             }
         } else {
-            getLocalInAppMessage.error();
+            getLocalInAppMessage.error(null);
         }
     }
 
@@ -227,7 +227,7 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
                     }
 
                     @Override
-                    public void error() {
+                    public void error(String errorMessage) {
                         if (localSettings.showOnlyIfLoaded()) {
                             launchScreenError("Need to preload InAppMessages and session bundles first");
                         } else {
@@ -287,7 +287,7 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
                                                             }
 
                                                             @Override
-                                                            public void error() {
+                                                            public void error(String errorMessage) {
                                                                 launchScreenError(
                                                                         "Can't load InAppMessage with settings: [id: "
                                                                                 + localSettings.id() +
@@ -306,7 +306,9 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
 
                                             @Override
                                             public void error() {
-                                                launchScreenError("Can't load InAppMessages");
+                                                launchScreenError( "Can't load InAppMessage with settings: [id: "
+                                                        + localSettings.id() +
+                                                        ", event: " + localSettings.event() + "]");
                                             }
                                         }
                                 );
@@ -408,8 +410,10 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
                 int messagePriority = inAppMessage.getEventPriority(event);
                 if (messagePriority >= 0 && checkContentForShownFrequency(inAppMessage)) {
                     contentIds.add(content.id());
-                    if (messagePriority >= currentPriority) {
+                    if (messagePriority > currentPriority) {
                         currentPriority = messagePriority;
+                        resContent = inAppMessage;
+                    } else if (messagePriority == currentPriority && resContent == null) {
                         resContent = inAppMessage;
                     }
                 }
@@ -435,8 +439,10 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
                                         continue;
                                     int messagePriority = inAppMessage.getEventPriority(event);
                                     if (messagePriority >= 0 && checkContentForShownFrequency(inAppMessage)) {
-                                        if (messagePriority >= currentPriority) {
+                                        if (messagePriority > currentPriority) {
                                             currentPriority = messagePriority;
+                                            resContent = inAppMessage;
+                                        } else if (messagePriority == currentPriority && resContent == null) {
                                             resContent = inAppMessage;
                                         }
                                     }
@@ -444,12 +450,12 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
                                 if (resContent != null)
                                     getLocalInAppMessage.get(resContent);
                                 else
-                                    getLocalInAppMessage.error();
+                                    getLocalInAppMessage.error("No InAppMessage matching the display limits was found.");
                             }
 
                             @Override
                             public void error() {
-                                getLocalInAppMessage.error();
+                                getLocalInAppMessage.error("Can't load limits for InAppMessages");
                             }
                         }
                 );
@@ -457,10 +463,10 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
                 if (resContent != null)
                     getLocalInAppMessage.get(resContent);
                 else
-                    getLocalInAppMessage.error();
+                    getLocalInAppMessage.error("No InAppMessage was found that satisfies the conditions.");
             }
         } else {
-            getLocalInAppMessage.error();
+            getLocalInAppMessage.error("No InAppMessage was found that satisfies the conditions.");
         }
     }
 

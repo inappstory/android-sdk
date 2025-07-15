@@ -631,7 +631,7 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
     @Override
     public List<String> tags() {
         synchronized (settingsLock) {
-            return tags;
+            return new ArrayList<>(tags);
         }
     }
 

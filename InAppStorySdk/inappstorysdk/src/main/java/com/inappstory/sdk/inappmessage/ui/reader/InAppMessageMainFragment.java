@@ -67,7 +67,18 @@ public class InAppMessageMainFragment extends Fragment implements Observer<IAMRe
             }
         });
         super.onDestroyView();
+        try {
+            if (onCloseAction != null) onCloseAction.onClose();
+        } catch (Exception e) {
+
+        }
     }
+
+    public void setOnCloseAction(InAppMessageCloseAction onCloseAction) {
+        this.onCloseAction = onCloseAction;
+    }
+
+    private InAppMessageCloseAction onCloseAction;
 
 
     @Nullable
