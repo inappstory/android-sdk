@@ -4,4 +4,5 @@ import com.inappstory.sdk.stories.cache.DownloadFileState;
 
 public interface FinishDownloadFileCallback {
     void finish(DownloadFileState state);
+    void waiting();
 }

@@ -71,6 +71,11 @@ public class StoryCoverUseCase extends GetCacheFileUseCase<Void> {
                                         }
                                         getStoryCoverCallback.success(filePath);
                                     }
+
+                                    @Override
+                                    public void waiting() {
+
+                                    }
                                 };
                                 core
                                         .contentLoader()

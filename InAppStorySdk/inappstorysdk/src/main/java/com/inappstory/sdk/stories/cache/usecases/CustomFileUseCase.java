@@ -72,6 +72,11 @@ public class CustomFileUseCase extends GetCacheFileUseCase<Void> {
                                         }
                                         getFileCallback.onSuccess(new File(filePath));
                                     }
+
+                                    @Override
+                                    public void waiting() {
+
+                                    }
                                 };
                                 core
                                         .contentLoader()

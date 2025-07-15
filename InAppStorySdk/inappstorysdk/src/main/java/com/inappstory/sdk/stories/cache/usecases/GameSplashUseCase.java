@@ -73,6 +73,11 @@ public class GameSplashUseCase extends GetCacheFileUseCase<DownloadFileState> {
                                     fileState[0] = state;
                                 }
                             }
+
+                            @Override
+                            public void waiting() {
+
+                            }
                         };
                 core
                         .contentLoader()

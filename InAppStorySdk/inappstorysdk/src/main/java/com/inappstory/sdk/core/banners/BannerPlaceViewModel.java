@@ -9,6 +9,8 @@ import com.inappstory.sdk.stories.utils.Observable;
 import com.inappstory.sdk.stories.utils.Observer;
 import com.inappstory.sdk.stories.utils.SingleTimeEvent;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
@@ -65,6 +67,18 @@ public class BannerPlaceViewModel implements IBannerPlaceViewModel {
     }
 
     @Override
+    public List<IBannerViewModel> getBannerViewModels() {
+        BannerPlaceState placeState = bannerPlaceStateObservable.getValue();
+        List<IBanner> items = placeState.items;
+        List<IBannerViewModel> bannerViewModels = new ArrayList<>();
+        if (items == null) return bannerViewModels;
+        for (IBanner banner : items) {
+            bannerViewModels.add(bannerViewModelsHolder.get(banner.id(), bannerPlace));
+        }
+        return bannerViewModels;
+    }
+
+    @Override
     public void updateCurrentIndex(int index) {
         BannerPlaceState placeState = bannerPlaceStateObservable.getValue();
         List<IBanner> items = placeState.items;
@@ -97,7 +111,7 @@ public class BannerPlaceViewModel implements IBannerPlaceViewModel {
         BannerPlaceState placeState = getCurrentBannerPagerState();
         int newIndex = 1;
         Integer currentIndex = placeState.currentIndex;
-        if (currentIndex != null) newIndex = currentIndex+1;
+        if (currentIndex != null) newIndex = currentIndex + 1;
         bannerPlaceStateObservable.updateValue(placeState.copy().currentIndex(newIndex));
     }
 

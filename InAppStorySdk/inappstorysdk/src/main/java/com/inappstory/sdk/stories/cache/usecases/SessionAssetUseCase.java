@@ -76,6 +76,11 @@ public class SessionAssetUseCase extends GetCacheFileUseCase<Void> {
                     }
                     useCaseCallback.onSuccess(fileState.file);
                 }
+
+                @Override
+                public void waiting() {
+
+                }
             };
 
             if (cacheObject.url.contains("widgets/poll.css")) {

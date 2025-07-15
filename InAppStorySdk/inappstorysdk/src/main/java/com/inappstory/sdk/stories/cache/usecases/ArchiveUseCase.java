@@ -217,6 +217,11 @@ public class ArchiveUseCase extends GetCacheFileUseCase<Void> {
                         useCaseCallback.onError("File downloading was interrupted");
                     }
                 }
+
+                @Override
+                public void waiting() {
+
+                }
             };
             core
                     .contentLoader()

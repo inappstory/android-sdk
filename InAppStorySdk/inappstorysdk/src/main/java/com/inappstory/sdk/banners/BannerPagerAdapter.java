@@ -7,13 +7,10 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.viewpager.widget.PagerAdapter;
 
-import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.banners.BannerLoadStates;
 import com.inappstory.sdk.core.banners.BannerState;
-import com.inappstory.sdk.core.banners.IBannerPlaceViewModel;
 import com.inappstory.sdk.core.banners.IBannerViewModel;
-import com.inappstory.sdk.core.banners.ICustomBannerPlace;
 import com.inappstory.sdk.core.data.IBanner;
 import com.inappstory.sdk.stories.utils.Observer;
 
@@ -41,7 +38,7 @@ public class BannerPagerAdapter extends PagerAdapter implements Observer<BannerS
             @NonNull List<IBanner> banners,
             String bannerPlace,
             ICustomBannerPlaceholder bannerPlaceholderCreator,
-            BannerListLoadCallback bannerListLoadCallback,
+            BannerPlaceLoadCallback bannerPlaceLoadCallback,
             String iterationId,
             boolean loop,
             float itemWidth,
@@ -49,7 +46,7 @@ public class BannerPagerAdapter extends PagerAdapter implements Observer<BannerS
     ) {
         this.itemWidth = itemWidth;
         this.bannerPlaceholderCreator = bannerPlaceholderCreator;
-        this.listLoadCallback = bannerListLoadCallback;
+        this.listLoadCallback = bannerPlaceLoadCallback;
         this.banners = banners;
         this.iterationId = iterationId;
         this.bannerPlace = bannerPlace;
@@ -80,7 +77,7 @@ public class BannerPagerAdapter extends PagerAdapter implements Observer<BannerS
         return bannerView;
     }
 
-    private BannerListLoadCallback listLoadCallback;
+    private BannerPlaceLoadCallback listLoadCallback;
 
     public void subscribeToFirst() {
         if (banners.isEmpty()) return;

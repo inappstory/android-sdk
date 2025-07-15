@@ -159,6 +159,11 @@ public class GameResourceUseCase extends GetCacheFileUseCase<Void> {
                                     }
                                 }
                             }
+
+                            @Override
+                            public void waiting() {
+
+                            }
                         };
                 core
                         .contentLoader()

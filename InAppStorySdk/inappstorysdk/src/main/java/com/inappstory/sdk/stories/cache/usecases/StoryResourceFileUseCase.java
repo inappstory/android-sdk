@@ -1,6 +1,8 @@
 package com.inappstory.sdk.stories.cache.usecases;
 
 
+import android.util.Log;
+
 import androidx.annotation.WorkerThread;
 
 import com.inappstory.sdk.core.IASCore;
@@ -47,6 +49,7 @@ public class StoryResourceFileUseCase extends GetCacheFileUseCase<DownloadFileSt
                 FinishDownloadFileCallback callback = new FinishDownloadFileCallback() {
                     @Override
                     public void finish(DownloadFileState state) {
+                        Log.e("downloadStaticCallback", url + " " + state);
                         downloadLog.sendResponseLog();
                         if (state == null || state.downloadedSize != state.totalSize) {
                             return;
@@ -60,6 +63,11 @@ public class StoryResourceFileUseCase extends GetCacheFileUseCase<DownloadFileSt
                         }
                         fileState[0] = state;
                     }
+
+                    @Override
+                    public void waiting() {
+
+                    }
                 };
                 core
                         .contentLoader()
@@ -72,7 +80,6 @@ public class StoryResourceFileUseCase extends GetCacheFileUseCase<DownloadFileSt
                                 null,
                                 callback
                         );
-
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -80,6 +87,7 @@ public class StoryResourceFileUseCase extends GetCacheFileUseCase<DownloadFileSt
             downloadLog.generateResponseLog(true, filePath);
             downloadLog.sendRequestResponseLog();
         }
+        Log.e("downloadStaticCallback", "FileState " + url + fileState[0]);
         return fileState[0];
     }
 

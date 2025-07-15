@@ -41,12 +41,12 @@ public class BannerList extends RelativeLayout implements Observer<BannerPlaceSt
     private ICustomBannerPlace customBannerPlace = new DefaultBannerPlace();
     private String lastLaunchedTag = "";
 
-    public void bannerListLoadCallback(BannerListLoadCallback bannerListLoadCallback) {
-        this.bannerListLoadCallback = bannerListLoadCallback != null ?
-                bannerListLoadCallback : emptyBannerListLoadCallback;
+    public void bannerListLoadCallback(BannerPlaceLoadCallback bannerPlaceLoadCallback) {
+        this.bannerPlaceLoadCallback = bannerPlaceLoadCallback != null ?
+                bannerPlaceLoadCallback : emptyBannerPlaceLoadCallback;
     }
 
-    private final BannerListLoadCallback emptyBannerListLoadCallback = new BannerListLoadCallback() {
+    private final BannerPlaceLoadCallback emptyBannerPlaceLoadCallback = new BannerPlaceLoadCallback() {
         @Override
         public void bannerPlaceLoaded(int size, String bannerPlace, List<BannerData> bannerData) {
 
@@ -68,7 +68,7 @@ public class BannerList extends RelativeLayout implements Observer<BannerPlaceSt
         }
     };
 
-    private BannerListLoadCallback bannerListLoadCallback = emptyBannerListLoadCallback;
+    private BannerPlaceLoadCallback bannerPlaceLoadCallback = emptyBannerPlaceLoadCallback;
 
     public void bannerListNavigationCallback(BannerListNavigationCallback bannerListNavigationCallback) {
         this.bannerListNavigationCallback = bannerListNavigationCallback != null ?
@@ -308,8 +308,8 @@ public class BannerList extends RelativeLayout implements Observer<BannerPlaceSt
         switch (newValue.loadState()) {
             case EMPTY:
                 try {
-                    if (bannerListLoadCallback != null)
-                        bannerListLoadCallback.bannerPlaceLoaded(
+                    if (bannerPlaceLoadCallback != null)
+                        bannerPlaceLoadCallback.bannerPlaceLoaded(
                                 0,
                                 bannerPlace,
                                 new ArrayList<BannerData>()
@@ -320,8 +320,8 @@ public class BannerList extends RelativeLayout implements Observer<BannerPlaceSt
                 break;
             case FAILED:
                 try {
-                    if (bannerListLoadCallback != null)
-                        bannerListLoadCallback.loadError(
+                    if (bannerPlaceLoadCallback != null)
+                        bannerPlaceLoadCallback.loadError(
                                 bannerPlace
                         );
                 } catch (Exception e) {
@@ -334,8 +334,8 @@ public class BannerList extends RelativeLayout implements Observer<BannerPlaceSt
                 break;
             case LOADED:
                 try {
-                    if (bannerListLoadCallback != null)
-                        bannerListLoadCallback.bannerPlaceLoaded(
+                    if (bannerPlaceLoadCallback != null)
+                        bannerPlaceLoadCallback.bannerPlaceLoaded(
                                 newValue.getItems().size(),
                                 bannerPlace,
                                 new ArrayList<BannerData>()
@@ -376,7 +376,7 @@ public class BannerList extends RelativeLayout implements Observer<BannerPlaceSt
                                         return v;
                                     }
                                 },
-                                bannerListLoadCallback,
+                                bannerPlaceLoadCallback,
                                 newValue.iterationId(),
                                 customBannerPlace.loop(),
                                 (iw / igap) / customBannerPlace.bannersOnScreen(),
