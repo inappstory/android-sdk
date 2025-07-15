@@ -1200,9 +1200,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         options.fullScreen = isFullscreen;
         InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
         final IASCore core = inAppStoryManager != null ? inAppStoryManager.iasCore() : null;
-
         if (core != null) {
-
             if (context == null) context = core.appContext();
             IASDataSettingsHolder dataSettingsHolder = ((IASDataSettingsHolder) core.settingsAPI());
             options.apiBaseUrl = core.network().getBaseUrl();
@@ -1229,7 +1227,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
             );
             options.sessionId = "";
         }
-
+        if (context == null) return "{}";
         int orientation = Configuration.ORIENTATION_PORTRAIT;
         try {
             orientation = context.getResources().getConfiguration().orientation;
