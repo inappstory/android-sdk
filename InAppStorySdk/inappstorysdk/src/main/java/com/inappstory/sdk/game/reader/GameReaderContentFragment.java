@@ -1202,6 +1202,8 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         final IASCore core = inAppStoryManager != null ? inAppStoryManager.iasCore() : null;
 
         if (core != null) {
+
+            if (context == null) context = core.appContext();
             IASDataSettingsHolder dataSettingsHolder = ((IASDataSettingsHolder) core.settingsAPI());
             options.apiBaseUrl = core.network().getBaseUrl();
             options.deviceId = dataSettingsHolder.deviceId();
@@ -1228,13 +1230,18 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
             options.sessionId = "";
         }
 
-        int orientation = getResources().getConfiguration().orientation;
+        int orientation = Configuration.ORIENTATION_PORTRAIT;
+        try {
+            orientation = context.getResources().getConfiguration().orientation;
+        } catch (Exception e) {
+
+        }
         options.screenOrientation =
                 (orientation == Configuration.ORIENTATION_LANDSCAPE) ? "landscape" : "portrait";
         String appPackageName = "";
         try {
             appPackageName = context.getPackageManager().getPackageInfo(context.getPackageName(), 0).packageName;
-        } catch (PackageManager.NameNotFoundException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         options.appPackageId = appPackageName;
@@ -1242,16 +1249,19 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                 BuildConfig.VERSION_NAME
         );
         SafeAreaInsets insets = new SafeAreaInsets();
-        if (Build.VERSION.SDK_INT >= 28) {
-            if (getActivity() != null) {
-                WindowInsets windowInsets = getActivity().getWindow().getDecorView().getRootWindowInsets();
-                if (windowInsets != null) {
-                    insets.top = Sizes.pxToDpExt(windowInsets.getStableInsetTop(), context);
-                    insets.bottom = Sizes.pxToDpExt(windowInsets.getStableInsetBottom(), context);
-                    insets.left = Sizes.pxToDpExt(windowInsets.getStableInsetLeft(), context);
-                    insets.right = Sizes.pxToDpExt(windowInsets.getStableInsetRight(), context);
+        try {
+            if (Build.VERSION.SDK_INT >= 28) {
+                if (getActivity() != null) {
+                    WindowInsets windowInsets = getActivity().getWindow().getDecorView().getRootWindowInsets();
+                    if (windowInsets != null) {
+                        insets.top = Sizes.pxToDpExt(windowInsets.getStableInsetTop(), context);
+                        insets.bottom = Sizes.pxToDpExt(windowInsets.getStableInsetBottom(), context);
+                        insets.left = Sizes.pxToDpExt(windowInsets.getStableInsetLeft(), context);
+                        insets.right = Sizes.pxToDpExt(windowInsets.getStableInsetRight(), context);
+                    }
                 }
             }
+        } catch (Exception e) {
         }
         options.safeAreaInsets = insets;
         String gameId = gameReaderLaunchData.getGameId();
