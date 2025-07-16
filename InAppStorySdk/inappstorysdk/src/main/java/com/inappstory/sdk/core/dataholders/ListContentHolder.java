@@ -118,6 +118,7 @@ public class ListContentHolder implements IListsContentHolder {
     public void clear() {
         synchronized (contentLock) {
             stories.clear();
+            urlToPath.clear();
             ugcStories.clear();
         }
     }

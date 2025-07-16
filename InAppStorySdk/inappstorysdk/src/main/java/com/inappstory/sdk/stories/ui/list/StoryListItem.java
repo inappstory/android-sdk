@@ -75,6 +75,7 @@ public class StoryListItem extends BaseStoryListItem {
                                 @Override
                                 public void success(final String file) {
                                     core.contentHolder().listsContent().setPathByUrl(imageUrl, file);
+                                    if (coverIsSent) return;
                                     itemView.post(new Runnable() {
                                         @Override
                                         public void run() {
@@ -87,6 +88,7 @@ public class StoryListItem extends BaseStoryListItem {
 
                                 @Override
                                 public void error() {
+                                    if (coverIsSent) return;
                                     itemView.post(new Runnable() {
                                         @Override
                                         public void run() {
@@ -99,7 +101,7 @@ public class StoryListItem extends BaseStoryListItem {
                             }
                     ).getFile();
                 } else {
-                    if (viewCanBeUsed(itemView, getParent())) {
+                    if (viewCanBeUsed(itemView, getParent()) && !coverIsSent) {
                         getListItem.setImage(itemView, null, backgroundColor);
                     }
                 }
@@ -132,6 +134,7 @@ public class StoryListItem extends BaseStoryListItem {
 
             @Override
             public void error() {
+                if (coverIsSent) return;
                 itemView.post(new Runnable() {
                     @Override
                     public void run() {
@@ -144,6 +147,8 @@ public class StoryListItem extends BaseStoryListItem {
         });
     }
 
+    private boolean coverIsSent = false;
+
     public void bind(Integer id,
                      String titleText,
                      Integer titleColor,
@@ -155,6 +160,7 @@ public class StoryListItem extends BaseStoryListItem {
                      StoryData storyData,
                      ClickCallback callback) {
         this.callback = callback;
+        coverIsSent = false;
         itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -195,6 +201,7 @@ public class StoryListItem extends BaseStoryListItem {
                     @Override
                     public void use(@NonNull IASCore core) {
                         String path = core.contentHolder().listsContent().getPathByUrl(imageUrl);
+                        coverIsSent = (path != null);
                         getListItem.setImage(itemView, path, StoryListItem.this.backgroundColor);
                     }
                 });
