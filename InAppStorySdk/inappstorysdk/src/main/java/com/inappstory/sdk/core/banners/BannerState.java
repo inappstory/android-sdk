@@ -6,6 +6,8 @@ public class BannerState {
     private String content;
     private BannerLoadStates bannerLoadState = BannerLoadStates.EMPTY;
     private boolean bannerIsPaused = false;
+
+    private boolean bannerIsActive = false;
     int contentStatus = 0;
 
     int slideJSStatus = 0;
@@ -16,6 +18,11 @@ public class BannerState {
 
     public boolean bannerIsPaused() {
         return bannerIsPaused;
+    }
+
+
+    public boolean bannerIsActive() {
+        return bannerIsActive;
     }
 
     public int slideJSStatus() {
@@ -41,6 +48,20 @@ public class BannerState {
 
     public BannerState contentStatus(int contentStatus) {
         this.contentStatus = contentStatus;
+        return this;
+    }
+
+
+
+    public BannerState bannerIsPaused(boolean bannerIsPaused) {
+        this.bannerIsPaused = bannerIsPaused;
+        return this;
+    }
+
+
+
+    public BannerState bannerIsActive(boolean bannerIsActive) {
+        this.bannerIsActive = bannerIsActive;
         return this;
     }
 
@@ -80,6 +101,8 @@ public class BannerState {
                 .contentStatus(this.contentStatus)
                 .slideJSStatus(this.slideJSStatus)
                 .bannerPlace(this.bannerPlace)
+                .bannerIsPaused(this.bannerIsPaused)
+                .bannerIsActive(this.bannerIsActive)
                 .bannerId(this.bannerId);
     }
 }

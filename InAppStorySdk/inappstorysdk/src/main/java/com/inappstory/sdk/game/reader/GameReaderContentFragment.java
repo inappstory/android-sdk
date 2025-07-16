@@ -1218,6 +1218,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
             options.sessionId = core.sessionManager().getSession().getSessionId();
             options.apiKey = core.projectSettingsAPI().apiKey();
             options.placeholders = generatePlaceholders(dataSettingsHolder);
+            if (context == null) context = core.appContext();
         } else {
             options.lang = Locale.getDefault().toLanguageTag();
             options.deviceId = "";
@@ -1227,7 +1228,9 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
             );
             options.sessionId = "";
         }
-
+        if (context == null) {
+            return "{}";
+        }
         int orientation = getResources().getConfiguration().orientation;
         options.screenOrientation =
                 (orientation == Configuration.ORIENTATION_LANDSCAPE) ? "landscape" : "portrait";

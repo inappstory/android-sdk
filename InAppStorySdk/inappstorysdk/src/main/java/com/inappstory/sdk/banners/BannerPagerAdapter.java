@@ -8,6 +8,7 @@ import androidx.annotation.NonNull;
 import androidx.viewpager.widget.PagerAdapter;
 
 import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.banners.BannerDownloadManager;
 import com.inappstory.sdk.core.banners.BannerLoadStates;
 import com.inappstory.sdk.core.banners.BannerState;
 import com.inappstory.sdk.core.banners.IBannerViewModel;
@@ -38,7 +39,7 @@ public class BannerPagerAdapter extends PagerAdapter implements Observer<BannerS
             @NonNull List<IBanner> banners,
             String bannerPlace,
             ICustomBannerPlaceholder bannerPlaceholderCreator,
-            BannerPlaceLoadCallback bannerPlaceLoadCallback,
+            IBannerPlaceLoadCallback bannerPlaceLoadCallback,
             String iterationId,
             boolean loop,
             float itemWidth,
@@ -72,12 +73,14 @@ public class BannerPagerAdapter extends PagerAdapter implements Observer<BannerS
         bannerView.viewModel(
                 bannerViewModel
         );
-        bannerViewModel.loadContent();
+        BannerDownloadManager bannerDownloadManager = core.contentLoader().bannerDownloadManager();
+        bannerDownloadManager.setMaxPriority(bannerId, false);
+        bannerViewModel.loadContent(false, null);
         container.addView(bannerView);
         return bannerView;
     }
 
-    private BannerPlaceLoadCallback listLoadCallback;
+    private IBannerPlaceLoadCallback listLoadCallback;
 
     public void subscribeToFirst() {
         if (banners.isEmpty()) return;
@@ -139,7 +142,7 @@ public class BannerPagerAdapter extends PagerAdapter implements Observer<BannerS
         ) {
             if (Objects.requireNonNull(newValue.loadState()) == BannerLoadStates.FAILED) {
                 if (listLoadCallback != null)
-                    listLoadCallback.firstBannerLoadError(newValue.bannerId(), bannerPlace);
+                    listLoadCallback.bannerLoadError(newValue.bannerId(), newValue.bannerIsActive());
             }
         }
         if (currentState == null ||
@@ -147,7 +150,7 @@ public class BannerPagerAdapter extends PagerAdapter implements Observer<BannerS
         ) {
             if (newValue.slideJSStatus() == 1) {
                 if (listLoadCallback != null)
-                    listLoadCallback.firstBannerLoaded(newValue.bannerId(), bannerPlace);
+                    listLoadCallback.bannerLoaded(newValue.bannerId(), newValue.bannerIsActive());
             }
 
         }

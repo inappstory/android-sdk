@@ -3,19 +3,16 @@ package com.inappstory.sdk.core.inappmessages;
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.core.IASCore;
-import com.inappstory.sdk.core.api.IASAssetsHolder;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.data.IReaderContent;
 import com.inappstory.sdk.core.network.content.usecase.InAppMessageByIdUseCase;
 import com.inappstory.sdk.core.ui.screens.IReaderSlideViewModel;
-import com.inappstory.sdk.game.cache.SessionAssetsIsReadyCallback;
 import com.inappstory.sdk.inappmessage.InAppMessageLoadCallback;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.cache.ContentIdAndType;
 import com.inappstory.sdk.stories.cache.SlideTaskKey;
 import com.inappstory.sdk.stories.cache.SlidesDownloader;
-import com.inappstory.sdk.utils.ISessionHolder;
 
 import java.io.IOException;
 import java.util.HashSet;
@@ -162,7 +159,7 @@ public class InAppMessageDownloadManager {
         );
 
 
-        slidesDownloader.addStorySlides(
+        slidesDownloader.addSlides(
                 new ContentIdAndType(readerContent.id(),
                         ContentType.IN_APP_MESSAGE
                 ),

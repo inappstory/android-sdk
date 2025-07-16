@@ -8,5 +8,5 @@ public enum SourceType {
     STACK,
     EVENT_IN_APP_MESSAGE,
     SINGLE_IN_APP_MESSAGE,
-    BANNER_PLACE
+    BANNERS
 }

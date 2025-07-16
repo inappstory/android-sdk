@@ -1,13 +1,13 @@
 package com.inappstory.sdk.banners;
 
-import com.inappstory.sdk.core.api.IASCallback;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.BannerData;
+public abstract class BannerPlaceLoadCallback implements IBannerPlaceLoadCallback {
+    private final String bannerPlace;
 
-import java.util.List;
+    public BannerPlaceLoadCallback(String bannerPlace) {
+        this.bannerPlace = bannerPlace;
+    }
 
-public interface BannerPlaceLoadCallback extends IASCallback {
-    void bannerPlaceLoaded(int size, String bannerPlace, List<BannerData> bannerData);
-    void loadError(String bannerPlace);
-    void firstBannerLoaded(int bannerId, String bannerPlace);
-    void firstBannerLoadError(int bannerId, String bannerPlace);
+    public String bannerPlace() {
+        return bannerPlace;
+    }
 }

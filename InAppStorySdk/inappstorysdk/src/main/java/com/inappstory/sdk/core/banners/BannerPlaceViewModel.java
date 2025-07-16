@@ -81,9 +81,16 @@ public class BannerPlaceViewModel implements IBannerPlaceViewModel {
     @Override
     public void updateCurrentIndex(int index) {
         BannerPlaceState placeState = bannerPlaceStateObservable.getValue();
+        bannerPlaceStateObservable.setValue(placeState.copy().currentIndex(index));
         List<IBanner> items = placeState.items;
         int total = items.size();
         int realIndex = index % total;
+        int prevInd = (realIndex - 1 + total) % total;
+        int nextInd = (realIndex + 1) % total;
+        BannerDownloadManager bannerDownloadManager = core.contentLoader().bannerDownloadManager();
+        bannerDownloadManager.setMaxPriority(items.get(prevInd).id(), true);
+        bannerDownloadManager.setMaxPriority(items.get(nextInd).id(), true);
+        bannerDownloadManager.setMaxPriority(items.get(realIndex).id(), true);
         for (int i = 0; i < items.size(); i++) {
             IBannerViewModel bannerViewModel = bannerViewModelsHolder
                     .get(
@@ -100,7 +107,6 @@ public class BannerPlaceViewModel implements IBannerPlaceViewModel {
             }
 
         }
-        bannerPlaceStateObservable.setValue(bannerPlaceStateObservable.getValue().copy().currentIndex(realIndex));
        /* bannerPlaceStateObservable.updateValue(
 
         );*/

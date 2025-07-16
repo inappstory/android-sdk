@@ -1,7 +1,5 @@
 package com.inappstory.sdk.stories.cache;
 
-import android.util.Log;
-
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.core.IASCore;
@@ -167,7 +165,7 @@ public class StoryDownloadManager {
             public void onDownload(IReaderContent story, int loadType, ContentType type) {
                 storyLoaded(story, type);
                 try {
-                    slidesDownloader.addStorySlides(
+                    slidesDownloader.addSlides(
                             new ContentIdAndType(story.id(), type),
                             story,
                             loadType,
@@ -225,7 +223,7 @@ public class StoryDownloadManager {
             storyDownloader.addCompletedStoryTask(story.id(), type);
             storyLoaded(story, type);
             try {
-                slidesDownloader.addStorySlides(
+                slidesDownloader.addSlides(
                         new ContentIdAndType(story.id(), type),
                         story,
                         3,

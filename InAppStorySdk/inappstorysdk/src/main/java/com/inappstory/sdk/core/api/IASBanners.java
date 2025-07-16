@@ -1,27 +1,16 @@
 package com.inappstory.sdk.core.api;
 
-import androidx.annotation.NonNull;
-
-import com.inappstory.sdk.banners.BannersLoadCallback;
+import com.inappstory.sdk.banners.BannerPlacePreloadCallback;
 
 public interface IASBanners {
 
     void preload(
             String bannerPlace,
-            BannersLoadCallback callback
+            BannerPlacePreloadCallback callback
     );
 
     void loadBannerPlace(
             String bannerPlace
     );
 
-    void addPreloadCallback(
-            @NonNull BannersLoadCallback callback
-    );
-
-    void removePreloadCallback(
-            @NonNull BannersLoadCallback callback
-    );
-
-    BannersLoadCallback getPreloadCallback(String bannerPlace);
 }

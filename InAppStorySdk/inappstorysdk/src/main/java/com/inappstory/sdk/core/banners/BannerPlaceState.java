@@ -1,6 +1,8 @@
 package com.inappstory.sdk.core.banners;
 
 
+import android.util.Log;
+
 import com.inappstory.sdk.core.data.IBanner;
 
 import java.util.ArrayList;
@@ -33,6 +35,14 @@ public class BannerPlaceState {
         return place;
     }
 
+    public BannerPlaceState() {
+        Log.e("BannerPlaceState", "Create");
+    }
+
+    private BannerPlaceState(List<IBanner> items) {
+        Log.e("BannerPlaceState", "Copy");
+        this.items = new ArrayList<>(items);
+    }
 
     public BannerPlaceState appearance(BannerPlaceAppearance appearance) {
         this.appearance = appearance;
@@ -40,6 +50,7 @@ public class BannerPlaceState {
     }
 
     public BannerPlaceState currentIndex(Integer currentIndex) {
+        Log.e("BannerPlaceState", "currentIndex " + currentIndex);
         this.currentIndex = currentIndex;
         return this;
     }
@@ -73,8 +84,7 @@ public class BannerPlaceState {
 
 
     public BannerPlaceState copy() {
-        return new BannerPlaceState()
-                .items(this.items)
+        return new BannerPlaceState(this.items)
                 .currentIndex(this.currentIndex)
                 .iterationId(this.iterationId)
                 .appearance(this.appearance)

@@ -41,34 +41,49 @@ public class BannerList extends RelativeLayout implements Observer<BannerPlaceSt
     private ICustomBannerPlace customBannerPlace = new DefaultBannerPlace();
     private String lastLaunchedTag = "";
 
-    public void bannerListLoadCallback(BannerPlaceLoadCallback bannerPlaceLoadCallback) {
+    public void loadBanners() {
+        final String localBannerPlace = bannerPlace;
+        if (localBannerPlace == null) {
+            //TODO Log error
+            return;
+        }
+        InAppStoryManager.useCoreInSeparateThread(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.bannersAPI().loadBannerPlace(localBannerPlace);
+            }
+        });
+    }
+
+    public void setLoadCallback(BannerPlaceLoadCallback bannerPlaceLoadCallback) {
         this.bannerPlaceLoadCallback = bannerPlaceLoadCallback != null ?
                 bannerPlaceLoadCallback : emptyBannerPlaceLoadCallback;
     }
 
-    private final BannerPlaceLoadCallback emptyBannerPlaceLoadCallback = new BannerPlaceLoadCallback() {
+    private final IBannerPlaceLoadCallback emptyBannerPlaceLoadCallback = new IBannerPlaceLoadCallback() {
         @Override
-        public void bannerPlaceLoaded(int size, String bannerPlace, List<BannerData> bannerData) {
+        public void bannerPlaceLoaded(int size, List<BannerData> bannerData) {
 
         }
 
         @Override
-        public void loadError(String bannerPlace) {
+        public void loadError() {
 
         }
 
         @Override
-        public void firstBannerLoaded(int bannerId, String bannerPlace) {
+        public void bannerLoaded(int bannerId, boolean isCurrent) {
 
         }
 
         @Override
-        public void firstBannerLoadError(int bannerId, String bannerPlace) {
+        public void bannerLoadError(int bannerId, boolean isCurrent) {
 
         }
+
     };
 
-    private BannerPlaceLoadCallback bannerPlaceLoadCallback = emptyBannerPlaceLoadCallback;
+    private IBannerPlaceLoadCallback bannerPlaceLoadCallback = emptyBannerPlaceLoadCallback;
 
     public void bannerListNavigationCallback(BannerListNavigationCallback bannerListNavigationCallback) {
         this.bannerListNavigationCallback = bannerListNavigationCallback != null ?
@@ -299,7 +314,9 @@ public class BannerList extends RelativeLayout implements Observer<BannerPlaceSt
                 bannerPager.post(new Runnable() {
                     @Override
                     public void run() {
+                        Log.e("BannerPagerIndex", "indexes: " + bannerPager.getCurrentItem() + " " + newValue.currentIndex());
                         bannerPager.setCurrentItem(newValue.currentIndex());
+                        bannerPlaceViewModel.updateCurrentIndex(newValue.currentIndex());
                     }
                 });
             }
@@ -311,7 +328,6 @@ public class BannerList extends RelativeLayout implements Observer<BannerPlaceSt
                     if (bannerPlaceLoadCallback != null)
                         bannerPlaceLoadCallback.bannerPlaceLoaded(
                                 0,
-                                bannerPlace,
                                 new ArrayList<BannerData>()
                         );
                 } catch (Exception e) {
@@ -321,9 +337,7 @@ public class BannerList extends RelativeLayout implements Observer<BannerPlaceSt
             case FAILED:
                 try {
                     if (bannerPlaceLoadCallback != null)
-                        bannerPlaceLoadCallback.loadError(
-                                bannerPlace
-                        );
+                        bannerPlaceLoadCallback.loadError();
                 } catch (Exception e) {
                 }
                 setVisibility(GONE);
@@ -334,12 +348,19 @@ public class BannerList extends RelativeLayout implements Observer<BannerPlaceSt
                 break;
             case LOADED:
                 try {
-                    if (bannerPlaceLoadCallback != null)
-                        bannerPlaceLoadCallback.bannerPlaceLoaded(
-                                newValue.getItems().size(),
-                                bannerPlace,
-                                new ArrayList<BannerData>()
-                        );
+                    if (bannerPlaceLoadCallback != null) {
+                        List<IBanner> content = newValue.getItems();
+                        if (content != null) {
+                            List<BannerData> bannerData = new ArrayList<>();
+                            for (IBanner banner : content) {
+                                bannerData.add(new BannerData(banner.id(), bannerPlace));
+                            }
+                            bannerPlaceLoadCallback.bannerPlaceLoaded(
+                                    content.size(),
+                                    bannerData
+                            );
+                        }
+                    }
                 } catch (Exception e) {
                 }
                 new Handler(Looper.getMainLooper()).post(new Runnable() {
@@ -394,6 +415,7 @@ public class BannerList extends RelativeLayout implements Observer<BannerPlaceSt
                         if (bannerPager.getCurrentItem() == index) {
                             pageChangeListener.onPageSelected(index);
                         } else {
+                            Log.e("BannerPagerIndex", "onUpdate indexes: " + bannerPager.getCurrentItem() + " " + index);
                             bannerPager.setCurrentItem(index);
                         }
 

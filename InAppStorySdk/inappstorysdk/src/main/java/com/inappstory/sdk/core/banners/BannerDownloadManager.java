@@ -2,10 +2,8 @@ package com.inappstory.sdk.core.banners;
 
 import androidx.annotation.NonNull;
 
-import com.inappstory.sdk.banners.BannerLoadCallback;
+import com.inappstory.sdk.banners.BannerPlacePreloadCallback;
 import com.inappstory.sdk.core.IASCore;
-import com.inappstory.sdk.core.api.IASCallbackType;
-import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.data.IReaderContent;
 import com.inappstory.sdk.core.ui.screens.IReaderSlideViewModel;
 import com.inappstory.sdk.stories.api.models.ContentType;
@@ -35,13 +33,14 @@ public class BannerDownloadManager {
 
     public void addBannerTask(
             final int bannerId,
-            final BannerLoadCallback callback
+            final BannerPlacePreloadCallback callback,
+            boolean isFirst
     ) {
         ContentType type = ContentType.BANNER;
         IReaderContent readerContent =
                 core.contentHolder().readerContent().getByIdAndType(bannerId, type);
         if (readerContent != null) {
-            addSlides(readerContent, callback);
+            addSlides(readerContent, callback, isFirst);
         }
     }
 
@@ -62,9 +61,13 @@ public class BannerDownloadManager {
         return core.assetsHolder().assetsIsDownloaded();
     }
 
-    private void addSlides(@NonNull final IReaderContent readerContent, final BannerLoadCallback callback) {
+    private void addSlides(
+            @NonNull final IReaderContent readerContent,
+            final BannerPlacePreloadCallback callback,
+            final boolean isFirst
+    ) {
         if (allSlidesLoaded(readerContent)) {
-            contentIsLoaded(readerContent, callback);
+            contentIsLoaded(readerContent, callback, isFirst);
         }
         core.contentLoader().bannerDownloadManager().addSubscriber(
                 new IReaderSlideViewModel() {
@@ -83,32 +86,14 @@ public class BannerDownloadManager {
 
                     @Override
                     public void contentLoadError() {
-                        core.callbacksAPI().useCallback(
-                                IASCallbackType.BANNER_LOAD,
-                                new UseIASCallback<BannerLoadCallback>() {
-                                    @Override
-                                    public void use(@NonNull BannerLoadCallback callback) {
-                                        callback.loadError(
-                                                readerContent.id()
-                                        );
-                                    }
-                                }
-                        );
+                        if (callback != null)
+                            callback.bannerContentLoadError(readerContent.id(), isFirst);
                     }
 
                     @Override
                     public void slideLoadError(int index) {
-                        core.callbacksAPI().useCallback(
-                                IASCallbackType.BANNER_LOAD,
-                                new UseIASCallback<BannerLoadCallback>() {
-                                    @Override
-                                    public void use(@NonNull BannerLoadCallback callback) {
-                                        callback.loadError(
-                                                readerContent.id()
-                                        );
-                                    }
-                                }
-                        );
+                        if (callback != null)
+                            callback.bannerContentLoadError(readerContent.id(), isFirst);
                     }
 
                     @Override
@@ -120,7 +105,7 @@ public class BannerDownloadManager {
                     public void slideLoadSuccess(int index) {
                         if (core.contentLoader().bannerDownloadManager()
                                 .allSlidesLoaded(readerContent)) {
-                            contentIsLoaded(readerContent, callback);
+                            contentIsLoaded(readerContent, callback, isFirst);
                         }
                     }
 
@@ -132,7 +117,7 @@ public class BannerDownloadManager {
         );
 
 
-        slidesDownloader.addStorySlides(
+        slidesDownloader.addSlides(
                 new ContentIdAndType(readerContent.id(),
                         ContentType.BANNER
                 ),
@@ -142,28 +127,25 @@ public class BannerDownloadManager {
         );
     }
 
-    private void contentIsLoaded(final IReaderContent readerContent, BannerLoadCallback callback) {
+    public void setMaxPriority(int bannerId, boolean firstPosition) {
+        slidesDownloader.setMaxPriority(
+                new ContentIdAndType(bannerId,
+                        ContentType.BANNER
+                ),
+                0,
+                firstPosition
+        );
+    }
+
+    private void contentIsLoaded(
+            final IReaderContent readerContent,
+            BannerPlacePreloadCallback callback,
+            boolean isFirst
+    ) {
         loadedBanners.add(readerContent.id());
         if (callback != null) {
-            callback.loaded(readerContent.id());
-            if (allContentIsLoaded()) {
-                callback.allLoaded();
-            }
+            callback.bannerContentLoaded(readerContent.id(), isFirst);
         }
-        core.callbacksAPI().useCallback(
-                IASCallbackType.BANNER_LOAD,
-                new UseIASCallback<BannerLoadCallback>() {
-                    @Override
-                    public void use(@NonNull BannerLoadCallback callback) {
-                        callback.loaded(
-                                readerContent.id()
-                        );
-                        if (allContentIsLoaded()) {
-                            callback.allLoaded();
-                        }
-                    }
-                }
-        );
 
     }
 

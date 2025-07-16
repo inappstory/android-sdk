@@ -22,7 +22,6 @@ import com.inappstory.sdk.stories.cache.usecases.GenerateSlideTaskUseCase;
 import com.inappstory.sdk.stories.cache.usecases.LoadSlideUseCase;
 import com.inappstory.sdk.stories.outercallbacks.common.errors.ErrorCallback;
 import com.inappstory.sdk.stories.utils.LoopedExecutor;
-import com.inappstory.sdk.utils.ISessionHolder;
 import com.inappstory.sdk.utils.StringsUtils;
 
 import java.io.IOException;
@@ -51,6 +50,7 @@ public class SlidesDownloader {
             slideTasks.clear();
             firstPriority.clear();
             secondPriority.clear();
+            maxPriority.clear();
         }
     }
 
@@ -127,6 +127,7 @@ public class SlidesDownloader {
 
 
     List<SlideTaskKey> firstPriority = new ArrayList<>();
+    List<SlideTaskKey> maxPriority = new ArrayList<>();
     List<SlideTaskKey> secondPriority = new ArrayList<>();
 
     //adjacent - for next and prev story
@@ -218,7 +219,24 @@ public class SlidesDownloader {
         }
     }
 
-    public void addStorySlides(
+    public void setMaxPriority(ContentIdAndType contentIdAndType, int slideIndex, boolean firstPosition) {
+        SlideTaskKey slideTaskKey = new SlideTaskKey(contentIdAndType, slideIndex);
+        synchronized (slideTasksLock) {
+            if (maxPriority.contains(slideTaskKey)) {
+                if (firstPosition) {
+                    maxPriority.remove(slideTaskKey);
+                    maxPriority.add(0, slideTaskKey);
+                }
+                return;
+            }
+            if (firstPosition)
+                maxPriority.add(0, slideTaskKey);
+            else
+                maxPriority.add(slideTaskKey);
+        }
+    }
+
+    public void addSlides(
             ContentIdAndType contentIdAndType,
             IReaderContent readerContent,
             int loadType,
@@ -317,6 +335,8 @@ public class SlidesDownloader {
         loopedExecutor.freeExecutor();
     }
 
+    private boolean locked = false;
+
     private final Runnable queueLoadSlideRunnable = new Runnable() {
 
         @Override
@@ -328,13 +348,19 @@ public class SlidesDownloader {
                 return;
             }
             synchronized (slideTasksLock) {
+                if (locked) return;
+                locked = true;
                 Objects.requireNonNull(slideTasks.get(key)).loadType = 1;
             }
             loadSlide(key);
+            synchronized (slideTasksLock) {
+                locked = false;
+            }
         }
     };
 
     private void loadSlide(SlideTaskKey slideTaskKey) {
+        Log.e("loadSlide", "start " + slideTaskKey);
         try {
             SlideTask slideTask;
             synchronized (slideTasksLock) {
@@ -343,11 +369,13 @@ public class SlidesDownloader {
             Log.e("slidesDownloader", "loadSlide start " + slideTaskKey + " " + slideTask);
             if (slideTask == null) {
                 loopedExecutor.freeExecutor();
+                Log.e("loadSlide", "end no task " + slideTaskKey);
                 return;
             }
             if (!(new LoadSlideUseCase(slideTask, core).loadWithResult())) {
                 Log.e("slidesDownloader", "loadSlide error " + slideTaskKey);
                 loadSlideError(slideTaskKey);
+                Log.e("loadSlide", "end error " + slideTaskKey);
                 return;
             }
             Log.e("slidesDownloader", "loadSlide end sync " + slideTaskKey);
@@ -359,8 +387,10 @@ public class SlidesDownloader {
             loopedExecutor.freeExecutor();
         } catch (Throwable t) {
             Log.e("slidesDownloader", "loadSlide error " + slideTaskKey + " " + t.getMessage());
+            Log.e("loadSlide", "end error " + slideTaskKey);
             loadSlideError(slideTaskKey);
         }
+        Log.e("loadSlide", "end " + slideTaskKey);
     }
 
     public boolean allSlidesLoaded(
@@ -430,6 +460,11 @@ public class SlidesDownloader {
         synchronized (slideTasksLock) {
             if (slideTasks == null || slideTasks.size() == 0) return null;
             if (firstPriority == null || secondPriority == null) return null;
+            for (SlideTaskKey key : maxPriority) {
+                if (!slideTasks.containsKey(key)) continue;
+                if (Objects.requireNonNull(slideTasks.get(key)).loadType != 0) continue;
+                return key;
+            }
             for (SlideTaskKey key : firstPriority) {
                 if (!slideTasks.containsKey(key)) continue;
                 if (Objects.requireNonNull(slideTasks.get(key)).loadType != 0) continue;

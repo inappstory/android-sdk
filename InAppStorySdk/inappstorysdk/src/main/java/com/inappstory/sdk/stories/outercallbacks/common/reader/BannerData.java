@@ -9,10 +9,9 @@ public class BannerData extends ContentData {
 
     public BannerData(
             int id,
-            String bannerPlace,
-            SourceType sourceType
+            String bannerPlace
     ) {
-        super(sourceType, ContentType.BANNER);
+        super(SourceType.BANNERS, ContentType.BANNER);
         this.id = id;
         this.bannerPlace = bannerPlace;
     }

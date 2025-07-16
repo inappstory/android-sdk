@@ -4,6 +4,7 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
+import com.inappstory.sdk.banners.BannerPlacePreloadCallback;
 import com.inappstory.sdk.banners.BannerWidgetCallback;
 import com.inappstory.sdk.banners.ShowBannerCallback;
 import com.inappstory.sdk.core.IASCore;
@@ -11,7 +12,7 @@ import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.data.IReaderContent;
-import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderState;
+import com.inappstory.sdk.core.exceptions.NotImplementedMethodException;
 import com.inappstory.sdk.inappmessage.domain.stedata.AutoSlideEndData;
 import com.inappstory.sdk.inappmessage.domain.stedata.CallToActionData;
 import com.inappstory.sdk.inappmessage.domain.stedata.JsSendApiRequestData;
@@ -27,11 +28,8 @@ import com.inappstory.sdk.stories.api.models.SlideLinkObject;
 import com.inappstory.sdk.stories.api.models.UpdateTimelineData;
 import com.inappstory.sdk.stories.cache.ContentIdAndType;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.BannerData;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.CallToActionCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickAction;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
-import com.inappstory.sdk.stories.outerevents.ShowStory;
-import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.StoriesViewManager;
 import com.inappstory.sdk.stories.utils.Observable;
 import com.inappstory.sdk.stories.utils.Observer;
 import com.inappstory.sdk.stories.utils.SingleTimeEvent;
@@ -99,7 +97,12 @@ public class BannerViewModel implements IBannerViewModel {
 
     private final IBannerPlaceViewModel bannerPlaceViewModel;
 
-    public BannerViewModel(int bannerId, String bannerPlace, IASCore core, IBannerPlaceViewModel bannerPlaceViewModel) {
+    public BannerViewModel(
+            int bannerId,
+            String bannerPlace,
+            IASCore core,
+            IBannerPlaceViewModel bannerPlaceViewModel
+    ) {
         this.bannerId = bannerId;
         this.bannerPlace = bannerPlace;
         this.core = core;
@@ -122,8 +125,7 @@ public class BannerViewModel implements IBannerViewModel {
     public BannerData getCurrentBannerData() {
         return new BannerData(
                 bannerId,
-                bannerPlace,
-                SourceType.BANNER_PLACE
+                bannerPlace
         );
     }
 
@@ -189,25 +191,9 @@ public class BannerViewModel implements IBannerViewModel {
         return null;
     }
 
+    @Override
     public boolean loadContent() {
-        final BannerState state = getCurrentBannerState();
-        IReaderContent readerContent =
-                core.contentHolder().readerContent().getByIdAndType(
-                        bannerId,
-                        ContentType.BANNER
-                );
-        BannerDownloadManager downloadManager = core.contentLoader().bannerDownloadManager();
-        downloadManager.addSubscriber(this);
-        if (readerContent != null && downloadManager.allSlidesLoaded(readerContent)) {
-            //    updateCurrentLoadState(BannerLoadStates.LOADED);
-            slideLoadSuccess(0);
-        } else {
-            if (state.loadState() != BannerLoadStates.LOADING) {
-                updateCurrentLoadState(BannerLoadStates.LOADING);
-            }
-            downloadManager.addBannerTask(bannerId, null);
-        }
-        return true;
+        throw new NotImplementedMethodException();
     }
 
     @Override
@@ -570,5 +556,27 @@ public class BannerViewModel implements IBannerViewModel {
     @Override
     public void bannerIsActive(boolean active) {
         this.bannerIsActive = active;
+    }
+
+    @Override
+    public boolean loadContent(boolean isFirst, BannerPlacePreloadCallback callback) {
+        final BannerState state = getCurrentBannerState();
+        IReaderContent readerContent =
+                core.contentHolder().readerContent().getByIdAndType(
+                        bannerId,
+                        ContentType.BANNER
+                );
+        BannerDownloadManager downloadManager = core.contentLoader().bannerDownloadManager();
+        downloadManager.addSubscriber(this);
+        if (readerContent != null && downloadManager.allSlidesLoaded(readerContent)) {
+            //    updateCurrentLoadState(BannerLoadStates.LOADED);
+            slideLoadSuccess(0);
+        } else {
+            if (state.loadState() != BannerLoadStates.LOADING) {
+                updateCurrentLoadState(BannerLoadStates.LOADING);
+            }
+            downloadManager.addBannerTask(bannerId, callback, isFirst);
+        }
+        return true;
     }
 }

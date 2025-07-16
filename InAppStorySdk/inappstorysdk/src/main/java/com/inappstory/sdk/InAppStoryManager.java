@@ -16,6 +16,7 @@ import android.util.Pair;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.FragmentManager;
 
+import com.inappstory.sdk.banners.BannerPlacePreloadCallback;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.IASCoreImpl;
 import com.inappstory.sdk.core.UseIASCoreCallback;
@@ -1383,6 +1384,23 @@ public class InAppStoryManager implements IASBackPressHandler {
         });
     }
 
+    public void loadBannerPlace(final String bannerPlace) {
+        InAppStoryManager.useCoreInSeparateThread(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.bannersAPI().loadBannerPlace(bannerPlace);
+            }
+        });
+    }
+
+    public void preloadBannerPlace(final String bannerPlace, final BannerPlacePreloadCallback callback) {
+        InAppStoryManager.useCoreInSeparateThread(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.bannersAPI().preload(bannerPlace, callback);
+            }
+        });
+    }
 
     public void showStoryOnce(final String storyId,
                               final Context context,

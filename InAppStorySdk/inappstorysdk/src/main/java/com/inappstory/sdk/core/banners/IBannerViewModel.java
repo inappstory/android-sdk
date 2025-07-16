@@ -1,5 +1,6 @@
 package com.inappstory.sdk.core.banners;
 
+import com.inappstory.sdk.banners.BannerPlacePreloadCallback;
 import com.inappstory.sdk.core.ui.screens.IReaderSlideViewModel;
 import com.inappstory.sdk.inappmessage.domain.stedata.STETypeAndData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.BannerData;
@@ -52,4 +53,6 @@ public interface IBannerViewModel extends IReaderSlideViewModel {
     void bannerIsShown();
     boolean bannerIsActive();
     void bannerIsActive(boolean active);
+
+    boolean loadContent(boolean isFirst, BannerPlacePreloadCallback callback);
 }
