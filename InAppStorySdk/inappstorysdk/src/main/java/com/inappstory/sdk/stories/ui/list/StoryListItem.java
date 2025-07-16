@@ -13,6 +13,7 @@ import com.inappstory.sdk.UseManagerInstanceCallback;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.ui.screens.storyreader.StoryScreenHolder;
+import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.cache.usecases.IGetStoryCoverCallback;
 import com.inappstory.sdk.stories.cache.usecases.StoryCoverUseCase;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoryItemCoordinates;
@@ -66,7 +67,7 @@ public class StoryListItem extends BaseStoryListItem {
                             final String videoUrl) {
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
-            public void use(@NonNull IASCore core) {
+            public void use(@NonNull final IASCore core) {
                 if (imageUrl != null) {
                     new StoryCoverUseCase(
                             core,
@@ -74,6 +75,7 @@ public class StoryListItem extends BaseStoryListItem {
                             new IGetStoryCoverCallback() {
                                 @Override
                                 public void success(final String file) {
+                                    core.contentHolder().listsContent().setPathByUrl(imageUrl, file);
                                     itemView.post(new Runnable() {
                                         @Override
                                         public void run() {
@@ -183,6 +185,13 @@ public class StoryListItem extends BaseStoryListItem {
             this.backgroundColor = backgroundColor;
             if (viewCanBeUsed(itemView, getParent())) {
                 getListItem.setId(itemView, id);
+                InAppStoryManager.useCore(new UseIASCoreCallback() {
+                    @Override
+                    public void use(@NonNull IASCore core) {
+                        String path = core.contentHolder().listsContent().getPathByUrl(imageUrl);
+                        getListItem.setImage(itemView, path, StoryListItem.this.backgroundColor);
+                    }
+                });
                 getListItem.setTitle(itemView, titleText, titleColor);
                 getListItem.setHasAudio(itemView, hasAudio);
                 getListItem.setOpened(itemView, isOpened);

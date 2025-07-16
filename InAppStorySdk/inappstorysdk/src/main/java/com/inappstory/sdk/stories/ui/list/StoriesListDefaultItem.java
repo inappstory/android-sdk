@@ -9,11 +9,15 @@ import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.widget.AppCompatImageView;
 import androidx.appcompat.widget.AppCompatTextView;
 
 import com.inappstory.sdk.AppearanceManager;
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.ui.widgets.roundedlayout.RoundedCornerLayout;
 import com.inappstory.sdk.memcache.IGetBitmap;
 import com.inappstory.sdk.stories.ui.video.VideoPlayer;
@@ -142,6 +146,12 @@ public final class StoriesListDefaultItem implements IStoriesListItem {
 
             return;
         }
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+
+            }
+        });
         manager.getBitmap(path, new IGetBitmap() {
             @Override
             public void onSuccess(Bitmap bitmap) {
