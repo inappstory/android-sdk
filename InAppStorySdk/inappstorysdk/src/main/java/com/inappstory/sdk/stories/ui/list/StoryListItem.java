@@ -66,7 +66,7 @@ public class StoryListItem extends BaseStoryListItem {
                             final String videoUrl) {
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
-            public void use(@NonNull IASCore core) {
+            public void use(@NonNull final IASCore core) {
                 if (imageUrl != null) {
                     new StoryCoverUseCase(
                             core,
@@ -74,6 +74,7 @@ public class StoryListItem extends BaseStoryListItem {
                             new IGetStoryCoverCallback() {
                                 @Override
                                 public void success(final String file) {
+                                    core.contentHolder().listsContent().setPathByUrl(imageUrl, file);
                                     itemView.post(new Runnable() {
                                         @Override
                                         public void run() {
@@ -183,13 +184,20 @@ public class StoryListItem extends BaseStoryListItem {
             this.backgroundColor = backgroundColor;
             if (viewCanBeUsed(itemView, getParent())) {
                 getListItem.setId(itemView, id);
+
                 getListItem.setTitle(itemView, titleText, titleColor);
                 getListItem.setHasAudio(itemView, hasAudio);
                 getListItem.setOpened(itemView, isOpened);
-
                 if (getListItem instanceof IStoriesListItemWithStoryData) {
                     ((IStoriesListItemWithStoryData) getListItem).setCustomData(itemView, storyData);
                 }
+                InAppStoryManager.useCore(new UseIASCoreCallback() {
+                    @Override
+                    public void use(@NonNull IASCore core) {
+                        String path = core.contentHolder().listsContent().getPathByUrl(imageUrl);
+                        getListItem.setImage(itemView, path, StoryListItem.this.backgroundColor);
+                    }
+                });
             }
             loadCovers(getListItem, imageUrl, backgroundColor, videoUrl);
         }

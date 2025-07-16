@@ -56,6 +56,8 @@ public class GetBitmapFromCacheWithFilePath {
                 public void run() {
                     try {
                         final Bitmap result = (new GetBitmapFromFilePath(filePath)).call();
+                        if (result != null)
+                            bitmapCacheHolder.addBitmapToCache(filePath, result);
                         new Handler(Looper.getMainLooper()).post(new Runnable() {
                             @Override
                             public void run() {

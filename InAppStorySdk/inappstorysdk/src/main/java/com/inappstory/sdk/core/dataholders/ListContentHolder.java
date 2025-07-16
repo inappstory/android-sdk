@@ -1,11 +1,15 @@
 package com.inappstory.sdk.core.dataholders;
 
+import android.graphics.Bitmap;
+
 import com.inappstory.sdk.core.data.IListItemContent;
 import com.inappstory.sdk.stories.api.models.ContentType;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
 
 public class ListContentHolder implements IListsContentHolder {
 
@@ -46,6 +50,24 @@ public class ListContentHolder implements IListsContentHolder {
                 return ugcStories;
             default:
                 return null;
+        }
+    }
+
+    private final Map<String, String> urlToPath = new HashMap<>();
+
+    @Override
+    public String getPathByUrl(String url) {
+        if (url == null) return null;
+        synchronized (contentLock) {
+            return urlToPath.get(url);
+        }
+    }
+
+    @Override
+    public void setPathByUrl(String url, String path) {
+        if (url == null) return;
+        synchronized (contentLock) {
+            urlToPath.put(url, path);
         }
     }
 
