@@ -1,7 +1,5 @@
 package com.inappstory.sdk.core.dataholders;
 
-import android.graphics.Bitmap;
-
 import com.inappstory.sdk.core.data.IListItemContent;
 import com.inappstory.sdk.stories.api.models.ContentType;
 
@@ -44,7 +42,7 @@ public class ListContentHolder implements IListsContentHolder {
 
     private final Map<String, String> urlToPath = new HashMap<>();
 
-
+    @Override
     public String getPathByUrl(String url) {
         if (url == null) return null;
         synchronized (contentLock) {
@@ -53,15 +51,6 @@ public class ListContentHolder implements IListsContentHolder {
     }
 
     @Override
-    public Bitmap getBitmapByPath(String path) {
-        return null;
-    }
-
-    @Override
-    public void setBitmapByPath(String path, Bitmap bitmap) {
-        synchronized (contentLock) {}
-    }
-
     public void setPathByUrl(String url, String path) {
         if (url == null) return;
         synchronized (contentLock) {
