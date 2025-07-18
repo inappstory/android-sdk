@@ -199,6 +199,12 @@ public class BannerPlaceViewModel implements IBannerPlaceViewModel {
         bannerPlaceStateObservable.updateValue(placeState.copy().currentIndex(newIndex));
     }
 
+    @Override
+    public void clear() {
+        bannerPlaceStateObservable.setValue(new BannerPlaceState());
+        bannerViewModelsHolder.clearViewModels();
+    }
+
     @NonNull
     @Override
     public String toString() {

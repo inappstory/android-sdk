@@ -26,4 +26,6 @@ public interface IBannerPlaceViewModel {
 
     void showNext();
 
+    void clear();
+
 }

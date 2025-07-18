@@ -586,4 +586,15 @@ public class BannerViewModel implements IBannerViewModel {
         }
         return true;
     }
+
+    @Override
+    public void clear() {
+        stopTimer();
+        stateObservable.setValue(
+                new BannerState()
+                        .bannerId(bannerId)
+                        .bannerPlace(bannerPlace)
+                        .loadState(BannerLoadStates.EMPTY)
+        );
+    }
 }

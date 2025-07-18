@@ -55,4 +55,6 @@ public interface IBannerViewModel extends IReaderSlideViewModel {
     void bannerIsActive(boolean active);
 
     boolean loadContent(boolean isFirst, BannerPlacePreloadCallback callback);
+
+    void clear();
 }

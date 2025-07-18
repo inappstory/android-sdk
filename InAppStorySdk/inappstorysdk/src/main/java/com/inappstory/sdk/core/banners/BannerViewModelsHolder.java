@@ -2,6 +2,7 @@ package com.inappstory.sdk.core.banners;
 
 import com.inappstory.sdk.core.IASCore;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -16,6 +17,15 @@ public class BannerViewModelsHolder {
     public BannerViewModelsHolder(IASCore core, IBannerPlaceViewModel bannerPlaceViewModel) {
         this.core = core;
         this.bannerPlaceViewModel = bannerPlaceViewModel;
+    }
+
+    public void clearViewModels() {
+        synchronized (lock) {
+            List<IBannerViewModel> bannerViewModels = new ArrayList<>(viewModels.values());
+            for (IBannerViewModel bannerViewModel : bannerViewModels) {
+                if (bannerViewModel != null) bannerViewModel.clear();
+            }
+        }
     }
 
     public IBannerViewModel get(int bannerId, String bannerPlace) {

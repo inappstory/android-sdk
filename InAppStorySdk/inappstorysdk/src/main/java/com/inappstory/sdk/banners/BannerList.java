@@ -47,6 +47,9 @@ public class BannerList extends RelativeLayout implements Observer<BannerPlaceSt
             //TODO Log error
             return;
         }
+        if (bannerPlaceViewModel != null) {
+            bannerPlaceViewModel.clear();
+        }
         InAppStoryManager.useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
