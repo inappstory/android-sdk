@@ -76,12 +76,17 @@ public class BannerViewModel implements IBannerViewModel {
                 updateCurrentLoadState(BannerLoadStates.LOADED);
             }
             if (data.action == null) return;
-            if (data.action.equals("start")) {
-                startTimer(data.duration, data.duration - data.currentTime);
-            } else if (data.action.equals("pause")) {
-                pauseSlide();
-            } else if (data.action.equals("stop")) {
-                stopSlide();
+            Log.e("VisibilityChanged", data.toString());
+            switch (data.action) {
+                case "start":
+                    startTimer(data.duration, data.duration - data.currentTime);
+                    break;
+                case "pause":
+                    pauseSlide();
+                    break;
+                case "stop":
+                    stopSlide();
+                    break;
             }
         }
     }
@@ -518,6 +523,7 @@ public class BannerViewModel implements IBannerViewModel {
     private void startTimer(long maxTimerDuration, long timerDuration) {
         if (maxTimerDuration == 0) return;
         synchronized (timerLock) {
+            paused = false;
             lastStartTimer = System.currentTimeMillis();
             pauseShift = 0;
             this.timerDuration = timerDuration;
@@ -556,6 +562,7 @@ public class BannerViewModel implements IBannerViewModel {
     @Override
     public void bannerIsActive(boolean active) {
         this.bannerIsActive = active;
+        stateObservable.setValue(getCurrentBannerState().copy().bannerIsActive(active));
     }
 
     @Override

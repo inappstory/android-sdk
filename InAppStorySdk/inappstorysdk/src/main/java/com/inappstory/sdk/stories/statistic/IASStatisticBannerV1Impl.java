@@ -1,5 +1,7 @@
 package com.inappstory.sdk.stories.statistic;
 
+import android.util.Log;
+
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASStatisticBannerV1;
 import com.inappstory.sdk.core.api.IASStatisticIAMV1;
@@ -128,6 +130,7 @@ public class IASStatisticBannerV1Impl implements IASStatisticBannerV1 {
             long duration,
             String iterationId
     ) {
+        Log.e("BannerStat", "Widget event " + bannerId + " " + widgetName + " " + widgetData);
         if (disabled) return;
         String eventId = UUID.randomUUID().toString();
         BannerStatisticV1Task task = JsonParser.fromJson(
@@ -151,6 +154,7 @@ public class IASStatisticBannerV1Impl implements IASStatisticBannerV1 {
             int slidesTotal,
             String iterationId
     ) {
+        Log.e("BannerStat", "Open event " + bannerId);
         if (disabled) return;
         String eventId = UUID.randomUUID().toString();
         BannerStatisticV1Task task = new BannerStatisticV1Task();

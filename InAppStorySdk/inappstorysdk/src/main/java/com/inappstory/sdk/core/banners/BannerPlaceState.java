@@ -79,7 +79,7 @@ public class BannerPlaceState {
     Integer currentIndex;
     String place = "";
     String iterationId = UUID.randomUUID().toString();
-    BannerPlaceLoadStates loadState;
+    BannerPlaceLoadStates loadState = BannerPlaceLoadStates.NONE;
     List<IBanner> items = new ArrayList<>();
 
 

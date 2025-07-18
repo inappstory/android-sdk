@@ -52,12 +52,12 @@ public interface ApiInterface {
     );
 
     @FormUrlEncoded
-    @PUT("v2/inappmessaging/banner/{id}/data")
+    @PUT("v2/banner/{id}/data")
     Request sendBannerUserData(
             @Path("id") String id,
             @Field("data") String data);
 
-    @POST("v2/inappmessaging/banner/{id}/event/{event_name}")
+    @POST("v2/banner/{id}/event/{event_name}")
     Request sendBannerStat(
             @Path("id") String id,
             @Path("event_name") String eventName,

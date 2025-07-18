@@ -423,8 +423,8 @@ public class BannerView extends CardView implements Observer<BannerState> {
                 case LOADED:
                     if (newValue.content() != null &&
                             !newValue.content().isEmpty()) {
-                        if (bannerWebView instanceof View) {
-                            ((View) bannerWebView).post(
+                        if (bannerWebView != null) {
+                            bannerWebView.post(
                                     new Runnable() {
                                         @Override
                                         public void run() {
@@ -446,13 +446,14 @@ public class BannerView extends CardView implements Observer<BannerState> {
                 case 0:
                     break;
                 case 1:
-                    if (bannerWebView instanceof View) {
+                    if (bannerWebView != null) {
                         isLoaded = true;
-                        ((View) bannerWebView).post(
+                        bannerWebView.post(
                                 new Runnable() {
                                     @Override
                                     public void run() {
                                         if (bannerViewModel != null && bannerViewModel.bannerIsActive()) {
+                                            bannerViewModel.bannerIsShown();
                                             bannerWebView.startSlide(null);
                                             bannerWebView.resumeSlide();
                                         }

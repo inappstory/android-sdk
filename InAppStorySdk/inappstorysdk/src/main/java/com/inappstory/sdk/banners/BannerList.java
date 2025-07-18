@@ -58,7 +58,10 @@ public class BannerList extends RelativeLayout implements Observer<BannerPlaceSt
     public void setLoadCallback(BannerPlaceLoadCallback bannerPlaceLoadCallback) {
         this.bannerPlaceLoadCallback = bannerPlaceLoadCallback != null ?
                 bannerPlaceLoadCallback : emptyBannerPlaceLoadCallback;
+        if (bannerPlaceViewModel != null && bannerPlaceLoadCallback != null)
+            bannerPlaceViewModel.addBannerPlaceLoadCallback(bannerPlaceLoadCallback);
     }
+
 
     private final IBannerPlaceLoadCallback emptyBannerPlaceLoadCallback = new IBannerPlaceLoadCallback() {
         @Override
@@ -91,13 +94,14 @@ public class BannerList extends RelativeLayout implements Observer<BannerPlaceSt
     }
 
     private BannerListNavigationCallback emptyBannerListNavigationCallback = new BannerListNavigationCallback() {
+
         @Override
-        public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+        public void onPageScrolled(int position, int total, float positionOffset, int positionOffsetPixels) {
 
         }
 
         @Override
-        public void onPageSelected(int position) {
+        public void onPageSelected(int position, int total) {
 
         }
     };
@@ -108,21 +112,27 @@ public class BannerList extends RelativeLayout implements Observer<BannerPlaceSt
     BannerPager.PageChangeListener pageChangeListener = new BannerPager.PageChangeListener() {
         @Override
         public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-            try {
-                if (bannerListNavigationCallback != null)
-                    bannerListNavigationCallback.onPageScrolled(
-                            position,
-                            positionOffset,
-                            positionOffsetPixels
-                    );
-            } catch (Exception e) {
+            if (bannerPlaceViewModel != null) {
+                BannerPlaceState placeState = bannerPlaceViewModel.getCurrentBannerPagerState();
+                try {
+                    if (bannerListNavigationCallback != null && !placeState.getItems().isEmpty()) {
+                        int size = placeState.getItems().size();
+                        int pos = ((position % size) + size) % size;
+                        bannerListNavigationCallback.onPageScrolled(
+                                pos,
+                                size,
+                                positionOffset,
+                                positionOffsetPixels
+                        );
+                    }
+                } catch (Exception e) {
+                }
             }
         }
 
 
         @Override
         public void onPageSelected(int position) {
-
             String newLaunchedTag = "banner_" + position;
             if (!lastLaunchedTag.isEmpty() && !(lastLaunchedTag.equals(newLaunchedTag))) {
                 BannerView currentBannerView = bannerPager.findViewWithTag(lastLaunchedTag);
@@ -136,14 +146,19 @@ public class BannerList extends RelativeLayout implements Observer<BannerPlaceSt
             lastLaunchedTag = newLaunchedTag;
             if (bannerPlaceViewModel != null) {
                 bannerPlaceViewModel.updateCurrentIndex(position);
+                BannerPlaceState placeState = bannerPlaceViewModel.getCurrentBannerPagerState();
+                try {
+                    if (bannerListNavigationCallback != null && !placeState.getItems().isEmpty()) {
+                        int size = placeState.getItems().size();
+                        int pos = ((position % size) + size) % size;
+                        bannerListNavigationCallback.onPageSelected(
+                                pos, size
+                        );
+                    }
+                } catch (Exception e) {
+                }
             }
-            try {
-                if (bannerListNavigationCallback != null)
-                    bannerListNavigationCallback.onPageSelected(
-                            position
-                    );
-            } catch (Exception e) {
-            }
+
         }
 
         @Override
@@ -153,6 +168,11 @@ public class BannerList extends RelativeLayout implements Observer<BannerPlaceSt
                 if (newLaunchedTag.equals(lastLaunchedTag)) {
                     BannerView currentBannerView = bannerPager.findViewWithTag(lastLaunchedTag);
                     if (currentBannerView != null) currentBannerView.resumeBanner();
+                }
+            } else if (state == ViewPager.SCROLL_STATE_DRAGGING) {
+                if (newLaunchedTag.equals(lastLaunchedTag)) {
+                    BannerView currentBannerView = bannerPager.findViewWithTag(lastLaunchedTag);
+                    if (currentBannerView != null) currentBannerView.pauseBanner();
                 }
             }
         }
@@ -247,6 +267,19 @@ public class BannerList extends RelativeLayout implements Observer<BannerPlaceSt
     }
 
     @Override
+    public void onWindowFocusChanged(boolean hasWindowFocus) {
+        super.onWindowFocusChanged(hasWindowFocus);
+        BannerView currentBannerView = bannerPager.findViewWithTag(lastLaunchedTag);
+        if (currentBannerView != null) {
+            if (hasWindowFocus)
+                currentBannerView.resumeBanner();
+            else
+                currentBannerView.pauseBanner();
+        }
+        //TODO add view pause/resume
+    }
+
+    @Override
     protected void onDetachedFromWindow() {
         if (bannerPlaceViewModel != null)
             bannerPlaceViewModel.removeSubscriber(BannerList.this);
@@ -276,7 +309,6 @@ public class BannerList extends RelativeLayout implements Observer<BannerPlaceSt
         View.inflate(context, R.layout.cs_banner_widget, this);
         bannerPager = findViewById(R.id.banner_pager);
         bannerPager.addOnPageChangeListener(pageChangeListener);
-        setVisibility(GONE);
     }
 
     public void setAppearanceManager(AppearanceManager appearanceManager) {
@@ -324,49 +356,14 @@ public class BannerList extends RelativeLayout implements Observer<BannerPlaceSt
         }
         switch (newValue.loadState()) {
             case EMPTY:
-                try {
-                    if (bannerPlaceLoadCallback != null)
-                        bannerPlaceLoadCallback.bannerPlaceLoaded(
-                                0,
-                                new ArrayList<BannerData>()
-                        );
-                } catch (Exception e) {
-                }
-                setVisibility(GONE);
-                break;
             case FAILED:
-                try {
-                    if (bannerPlaceLoadCallback != null)
-                        bannerPlaceLoadCallback.loadError();
-                } catch (Exception e) {
-                }
-                setVisibility(GONE);
-                break;
             case NONE:
             case LOADING:
-                //TODO ?
                 break;
             case LOADED:
-                try {
-                    if (bannerPlaceLoadCallback != null) {
-                        List<IBanner> content = newValue.getItems();
-                        if (content != null) {
-                            List<BannerData> bannerData = new ArrayList<>();
-                            for (IBanner banner : content) {
-                                bannerData.add(new BannerData(banner.id(), bannerPlace));
-                            }
-                            bannerPlaceLoadCallback.bannerPlaceLoaded(
-                                    content.size(),
-                                    bannerData
-                            );
-                        }
-                    }
-                } catch (Exception e) {
-                }
                 new Handler(Looper.getMainLooper()).post(new Runnable() {
                     @Override
                     public void run() {
-                        setVisibility(VISIBLE);
                         ViewGroup.LayoutParams layoutParams = bannerPager.getLayoutParams();
                         int height = calculateHeight(newValue.getItems());
                         layoutParams.height = height;

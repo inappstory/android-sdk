@@ -2,16 +2,20 @@ package com.inappstory.sdk.core.banners;
 
 import androidx.annotation.NonNull;
 
+import com.inappstory.sdk.banners.BannerPlaceLoadCallback;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.data.IBanner;
 import com.inappstory.sdk.inappmessage.domain.stedata.STETypeAndData;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.BannerData;
 import com.inappstory.sdk.stories.utils.Observable;
 import com.inappstory.sdk.stories.utils.Observer;
 import com.inappstory.sdk.stories.utils.SingleTimeEvent;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 public class BannerPlaceViewModel implements IBannerPlaceViewModel {
@@ -27,8 +31,28 @@ public class BannerPlaceViewModel implements IBannerPlaceViewModel {
         this.bannerPlace = bannerPlace;
         bannerViewModelsHolder = new BannerViewModelsHolder(core, this);
         this.core = core;
+        addSubscriber(localObserver);
         updateState(getCurrentBannerPagerState().copy().place(bannerPlace));
     }
+
+    private final Set<BannerPlaceLoadCallback> callbacks = new HashSet<>();
+
+    private final Object callbacksLock = new Object();
+
+    @Override
+    public void addBannerPlaceLoadCallback(BannerPlaceLoadCallback callback) {
+        synchronized (callbacksLock) {
+            callbacks.add(callback);
+        }
+    }
+
+    @Override
+    public void removeBannerPlaceLoadCallback(BannerPlaceLoadCallback callback) {
+        synchronized (callbacksLock) {
+            callbacks.remove(callback);
+        }
+    }
+
 
     public SingleTimeEvent<STETypeAndData> singleTimeEvents() {
         return singleTimeEvents;
@@ -41,6 +65,60 @@ public class BannerPlaceViewModel implements IBannerPlaceViewModel {
     public BannerPlaceState getCurrentBannerPagerState() {
         return bannerPlaceStateObservable.getValue();
     }
+
+    Observer<BannerPlaceState> localObserver = new Observer<BannerPlaceState>() {
+        @Override
+        public void onUpdate(BannerPlaceState newValue) {
+            Set<BannerPlaceLoadCallback> callbacks = new HashSet<>();
+            List<IBanner> content = newValue.getItems();
+            List<BannerData> bannerData = new ArrayList<>();
+            synchronized (callbacksLock) {
+                callbacks.addAll(BannerPlaceViewModel.this.callbacks);
+            }
+            switch (newValue.loadState()) {
+                case EMPTY:
+                    for (BannerPlaceLoadCallback callback : callbacks) {
+                        try {
+                            callback.bannerPlaceLoaded(
+                                    0,
+                                    new ArrayList<BannerData>()
+                            );
+                        } catch (Exception e) {
+                        }
+                    }
+                    break;
+                case FAILED:
+                    for (BannerPlaceLoadCallback callback : callbacks) {
+                        try {
+                            callback.loadError();
+                        } catch (Exception e) {
+                        }
+                    }
+                    break;
+                case NONE:
+                case LOADING:
+                    break;
+                case LOADED:
+                    if (content != null) {
+                        for (IBanner banner : content) {
+                            bannerData.add(new BannerData(banner.id(), bannerPlace));
+                        }
+                    }
+
+                    for (BannerPlaceLoadCallback callback : callbacks) {
+                        try {
+                            callback.bannerPlaceLoaded(
+                                    content.size(),
+                                    bannerData
+                            );
+                        } catch (Exception e) {
+                        }
+                    }
+                    break;
+            }
+
+        }
+    };
 
     @Override
     public void updateState(BannerPlaceState bannerPlaceState) {
