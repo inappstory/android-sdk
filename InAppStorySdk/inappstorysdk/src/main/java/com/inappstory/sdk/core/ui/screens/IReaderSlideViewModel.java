@@ -4,6 +4,7 @@ import com.inappstory.sdk.core.data.IReaderContent;
 import com.inappstory.sdk.stories.cache.ContentIdAndType;
 
 public interface IReaderSlideViewModel {
+
     ContentIdAndType contentIdAndType();
     void contentLoadError();
     void slideLoadError(int index);
