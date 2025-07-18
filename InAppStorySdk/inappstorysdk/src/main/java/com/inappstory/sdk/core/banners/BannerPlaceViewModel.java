@@ -12,7 +12,6 @@ import com.inappstory.sdk.stories.utils.Observer;
 import com.inappstory.sdk.stories.utils.SingleTimeEvent;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -44,6 +43,45 @@ public class BannerPlaceViewModel implements IBannerPlaceViewModel {
         synchronized (callbacksLock) {
             callbacks.add(callback);
         }
+        BannerPlaceState placeState = getCurrentBannerPagerState();
+        List<IBanner> content = placeState.getItems();
+        List<BannerData> bannerData = new ArrayList<>();
+        switch (placeState.loadState()) {
+            case EMPTY:
+                try {
+                    callback.bannerPlaceLoaded(
+                            0,
+                            new ArrayList<BannerData>()
+                    );
+                } catch (Exception e) {
+                }
+                break;
+            case FAILED:
+                try {
+                    callback.loadError();
+                } catch (Exception e) {
+                }
+                break;
+            case NONE:
+            case LOADING:
+                break;
+            case LOADED:
+                if (content != null) {
+                    for (IBanner banner : content) {
+                        bannerData.add(new BannerData(banner.id(), bannerPlace));
+                    }
+                }
+
+                try {
+                    callback.bannerPlaceLoaded(
+                            content.size(),
+                            bannerData
+                    );
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                break;
+        }
     }
 
     @Override
@@ -67,14 +105,19 @@ public class BannerPlaceViewModel implements IBannerPlaceViewModel {
     }
 
     Observer<BannerPlaceState> localObserver = new Observer<BannerPlaceState>() {
+        BannerPlaceLoadStates bannerPlaceLoadState = BannerPlaceLoadStates.NONE;
+
         @Override
         public void onUpdate(BannerPlaceState newValue) {
+            if (newValue.loadState() == null || bannerPlaceLoadState.equals(newValue.loadState()))
+                return;
             Set<BannerPlaceLoadCallback> callbacks = new HashSet<>();
             List<IBanner> content = newValue.getItems();
             List<BannerData> bannerData = new ArrayList<>();
             synchronized (callbacksLock) {
                 callbacks.addAll(BannerPlaceViewModel.this.callbacks);
             }
+            bannerPlaceLoadState = newValue.loadState();
             switch (newValue.loadState()) {
                 case EMPTY:
                     for (BannerPlaceLoadCallback callback : callbacks) {
@@ -131,6 +174,11 @@ public class BannerPlaceViewModel implements IBannerPlaceViewModel {
     }
 
     @Override
+    public void addSubscriberAndCheckLocal(Observer<BannerPlaceState> observer) {
+        this.bannerPlaceStateObservable.subscribeAndGetValue(observer);
+    }
+
+    @Override
     public void removeSubscriber(Observer<BannerPlaceState> observer) {
         this.bannerPlaceStateObservable.unsubscribe(observer);
     }
@@ -162,6 +210,7 @@ public class BannerPlaceViewModel implements IBannerPlaceViewModel {
         bannerPlaceStateObservable.setValue(placeState.copy().currentIndex(index));
         List<IBanner> items = placeState.items;
         int total = items.size();
+        if (total == 0) return;
         int realIndex = index % total;
         int prevInd = (realIndex - 1 + total) % total;
         int nextInd = (realIndex + 1) % total;
@@ -202,6 +251,11 @@ public class BannerPlaceViewModel implements IBannerPlaceViewModel {
     @Override
     public void clear() {
         bannerPlaceStateObservable.setValue(new BannerPlaceState());
+        bannerViewModelsHolder.clearViewModels();
+    }
+
+    @Override
+    public void clearBanners() {
         bannerViewModelsHolder.clearViewModels();
     }
 

@@ -16,6 +16,8 @@ public interface IBannerPlaceViewModel {
 
     void addSubscriber(Observer<BannerPlaceState> observer);
 
+    void addSubscriberAndCheckLocal(Observer<BannerPlaceState> observer);
+
     void removeSubscriber(Observer<BannerPlaceState> observer);
 
     void addBannerPlaceLoadCallback(BannerPlaceLoadCallback callback);
@@ -27,5 +29,7 @@ public interface IBannerPlaceViewModel {
     void showNext();
 
     void clear();
+
+    void clearBanners();
 
 }

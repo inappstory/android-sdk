@@ -17,7 +17,7 @@ public class BannerJavascriptInterface {
 
     @JavascriptInterface
     public void storyLoadingFailed(String data) {
-        slideViewModel.slideLoadingFailed(data);
+      //  slideViewModel.slideLoadingFailed(data);
     }
 
     @JavascriptInterface

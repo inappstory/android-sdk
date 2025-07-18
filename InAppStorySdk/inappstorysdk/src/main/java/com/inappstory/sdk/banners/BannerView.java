@@ -385,6 +385,7 @@ public class BannerView extends CardView implements Observer<BannerState> {
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
+        Log.e("ViewIsAttached", toString());
         if (bannerViewModel != null) {
             bannerViewModel.addSubscriber(this);
             bannerViewModel.singleTimeEvents().subscribe(

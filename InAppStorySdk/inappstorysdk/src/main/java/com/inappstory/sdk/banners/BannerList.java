@@ -22,6 +22,7 @@ import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
+import com.inappstory.sdk.core.banners.BannerPlaceLoadStates;
 import com.inappstory.sdk.core.banners.BannerPlaceState;
 import com.inappstory.sdk.core.banners.IBannerPlaceViewModel;
 import com.inappstory.sdk.core.banners.ICustomBannerPlace;
@@ -246,13 +247,11 @@ public class BannerList extends RelativeLayout implements Observer<BannerPlaceSt
             @Override
             public void use(@NonNull IASCore core) {
                 BannerList.this.core = core;
-                if (bannerPlaceViewModel != null)
-                    bannerPlaceViewModel.removeSubscriber(BannerList.this);
                 bannerPlaceViewModel = core
                         .widgetViewModels()
                         .bannerPlaceViewModels()
                         .get(bannerPlace);
-                bannerPlaceViewModel.addSubscriber(BannerList.this);
+                bannerPlaceViewModel.addSubscriberAndCheckLocal(BannerList.this);
                 Log.e("bannerPlace", "setBannerPlace " + bannerPlaceViewModel.toString());
             }
         });
@@ -260,8 +259,11 @@ public class BannerList extends RelativeLayout implements Observer<BannerPlaceSt
 
     @Override
     protected void onAttachedToWindow() {
-        if (bannerPlaceViewModel != null)
-            bannerPlaceViewModel.addSubscriber(BannerList.this);
+        if (bannerPlaceViewModel != null) {
+            bannerPlaceViewModel.addSubscriberAndCheckLocal(BannerList.this);
+            if (bannerPlaceLoadCallback instanceof BannerPlaceLoadCallback)
+                bannerPlaceViewModel.addBannerPlaceLoadCallback((BannerPlaceLoadCallback) bannerPlaceLoadCallback);
+        }
         if (bannerPager.getAdapter() != null) {
             BannerPagerAdapter pagerAdapter = (BannerPagerAdapter) bannerPager.getAdapter();
             pagerAdapter.subscribeToFirst();
@@ -279,13 +281,16 @@ public class BannerList extends RelativeLayout implements Observer<BannerPlaceSt
             else
                 currentBannerView.pauseBanner();
         }
-        //TODO add view pause/resume
     }
 
     @Override
     protected void onDetachedFromWindow() {
-        if (bannerPlaceViewModel != null)
+        if (bannerPlaceViewModel != null) {
             bannerPlaceViewModel.removeSubscriber(BannerList.this);
+            bannerPlaceViewModel.clearBanners();
+            if (bannerPlaceLoadCallback instanceof BannerPlaceLoadCallback)
+                bannerPlaceViewModel.removeBannerPlaceLoadCallback((BannerPlaceLoadCallback) bannerPlaceLoadCallback);
+        }
         if (bannerPager.getAdapter() != null) {
             BannerPagerAdapter pagerAdapter = (BannerPagerAdapter) bannerPager.getAdapter();
             pagerAdapter.unsubscribeFromFirst();
@@ -337,14 +342,15 @@ public class BannerList extends RelativeLayout implements Observer<BannerPlaceSt
                 ), getContext())) / (1f * customBannerPlace.bannersOnScreen());
     }
 
-    int lastIndex = -1;
+    private BannerPlaceLoadStates currentLoadState = BannerPlaceLoadStates.EMPTY;
+
 
     @Override
     public void onUpdate(final BannerPlaceState newValue) {
         if (newValue == null || newValue.loadState() == null) return;
         if (bannerPlaceViewModel == null) return;
         Log.e("bannerPlace", "onUpdate " + bannerPlaceViewModel);
-        if (newValue.currentIndex() != null) {
+        if (currentLoadState == BannerPlaceLoadStates.LOADED && newValue.currentIndex() != null) {
             if (bannerPager.getCurrentItem() != newValue.currentIndex()) {
                 bannerPager.post(new Runnable() {
                     @Override
@@ -357,6 +363,7 @@ public class BannerList extends RelativeLayout implements Observer<BannerPlaceSt
             }
             return;
         }
+        currentLoadState = newValue.loadState();
         switch (newValue.loadState()) {
             case EMPTY:
             case FAILED:
@@ -406,6 +413,7 @@ public class BannerList extends RelativeLayout implements Observer<BannerPlaceSt
                                         getContext()
                                 )
                         );
+                        bannerPager.setOffscreenPageLimit(1);
                         bannerPager.setAdapter(
                                 adapter
                         );

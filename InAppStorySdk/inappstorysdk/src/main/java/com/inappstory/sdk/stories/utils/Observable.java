@@ -15,16 +15,18 @@ public class Observable<T> {
         this.value = initialValue;
     }
 
-    public void subscribe(Observer<T> listener) {
-        if (listeners.contains(listener)) return;
+    public boolean subscribe(Observer<T> listener) {
+        if (listeners.contains(listener)) return false;
         listeners.add(listener);
+        return true;
     }
 
 
-    public void subscribeAndGetValue(Observer<T> listener) {
-        if (listeners.contains(listener)) return;
+    public boolean subscribeAndGetValue(Observer<T> listener) {
+        if (listeners.contains(listener)) return false;
         listeners.add(listener);
         listener.onUpdate(value);
+        return true;
     }
 
     public void unsubscribe(Observer<T> listener) {
