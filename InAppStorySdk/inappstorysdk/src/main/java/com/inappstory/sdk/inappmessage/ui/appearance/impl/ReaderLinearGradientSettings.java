@@ -5,19 +5,19 @@ import android.graphics.RectF;
 import android.graphics.Shader;
 
 import com.inappstory.sdk.core.utils.ColorUtils;
-import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageLinearGradientBackground;
+import com.inappstory.sdk.inappmessage.ui.appearance.ReaderLinearGradientBackground;
 import com.inappstory.sdk.utils.NumberUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class InAppMessageLinearGradientSettings implements InAppMessageLinearGradientBackground {
+public class ReaderLinearGradientSettings implements ReaderLinearGradientBackground {
     List<Float> positions = new ArrayList<>();
     List<String> colors = new ArrayList<>();
     int angle = 0;
 
-    public InAppMessageLinearGradientSettings(Map<String, Object> appearance) {
+    public ReaderLinearGradientSettings(Map<String, Object> appearance) {
         if (appearance == null) return;
         String angleKey = "angle";
         String colorStepListKey = "color_step_list";
@@ -52,7 +52,7 @@ public class InAppMessageLinearGradientSettings implements InAppMessageLinearGra
         }
     }
 
-    public InAppMessageLinearGradientSettings() {
+    public ReaderLinearGradientSettings() {
     }
 
     private RectF getLine(int width, int height, int angle) {

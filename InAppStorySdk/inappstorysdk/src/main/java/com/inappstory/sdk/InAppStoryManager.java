@@ -157,17 +157,6 @@ public class InAppStoryManager implements IASBackPressHandler {
         AppearanceManager.setCommonInstance(appearanceManager);
     }
 
-    private static void clearLocalData() {
-        useCore(new UseIASCoreCallback() {
-            @Override
-            public void use(@NonNull IASCore core) {
-                core.storiesListVMHolder().clear();
-                core.contentLoader().storyDownloadManager().clearLocalData();
-                core.contentLoader().inAppMessageDownloadManager().clearLocalData();
-            }
-        });
-    }
-
     public static void useInstance(@NonNull UseManagerInstanceCallback callback) {
         InAppStoryManager manager = getInstance();
         try {

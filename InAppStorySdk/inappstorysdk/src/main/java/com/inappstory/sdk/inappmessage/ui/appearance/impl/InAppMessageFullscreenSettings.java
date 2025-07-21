@@ -5,7 +5,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 
 import com.inappstory.sdk.core.utils.ColorUtils;
-import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageBackground;
+import com.inappstory.sdk.inappmessage.ui.appearance.IReaderBackground;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageFullscreenAppearance;
 import com.inappstory.sdk.utils.NumberUtils;
 
@@ -15,7 +15,7 @@ public class InAppMessageFullscreenSettings implements InAppMessageFullscreenApp
     private String backgroundColor;
     private Integer closeButtonPosition;
     private Integer animationType;
-    private InAppMessageBackground background;
+    private IReaderBackground background;
 
     public InAppMessageFullscreenSettings() {
     }
@@ -37,7 +37,7 @@ public class InAppMessageFullscreenSettings implements InAppMessageFullscreenApp
             backgroundColor = (String) appearance.get(backgroundColorKey);
         }
         if (appearance.containsKey(backgroundKey)) {
-            background = new InAppMessageBackgroundSettings(
+            background = new ReaderBackgroundSettings(
                     (Map<String, Object>) appearance.get(backgroundKey)
             );
         }
@@ -70,7 +70,7 @@ public class InAppMessageFullscreenSettings implements InAppMessageFullscreenApp
     }
 
     @Override
-    public InAppMessageBackground background() {
+    public IReaderBackground background() {
         return background;
     }
 

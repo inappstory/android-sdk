@@ -1,7 +1,11 @@
 package com.inappstory.sdk.core.banners;
 
-import androidx.annotation.NonNull;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 
+import com.inappstory.sdk.core.utils.ColorUtils;
+import com.inappstory.sdk.inappmessage.ui.appearance.IReaderBackground;
+import com.inappstory.sdk.inappmessage.ui.appearance.impl.ReaderBackgroundSettings;
 import com.inappstory.sdk.utils.NumberUtils;
 
 import java.util.Map;
@@ -10,20 +14,25 @@ import java.util.Objects;
 public class BannerPlaceAppearance implements IBannerPlaceAppearance {
     private Float singleBannerAspectRatio = 2f;
     private Float cornerRadius;
-    private boolean loop = true;
-    private boolean autoplay = false;
-    private Integer autoplayDelay = 1000;
-    private Integer animationSpeed = 300;
+    private String backgroundColor;
+    private IReaderBackground background;
 
     public BannerPlaceAppearance(Map<String, Object> appearanceMap) {
         if (appearanceMap == null) return;
         NumberUtils numberUtils = new NumberUtils();
         singleBannerAspectRatio = numberUtils.convertNumberToFloat(appearanceMap.get("content_ratio"));
         cornerRadius = numberUtils.convertNumberToFloat(appearanceMap.get("corner_radius"));
-        loop = Objects.equals(appearanceMap.get("loop"), true);
-        autoplay = Objects.equals(appearanceMap.get("autoplay"), false);
-        autoplayDelay = numberUtils.convertNumberToInt(appearanceMap.get("autoplay_delay"));
-        animationSpeed = numberUtils.convertNumberToInt(appearanceMap.get("animation_speed"));
+
+        String backgroundColorKey = "background_color";
+        String backgroundKey = "background";
+        if (appearanceMap.containsKey(backgroundColorKey)) {
+            backgroundColor = (String) appearanceMap.get(backgroundColorKey);
+        }
+        if (appearanceMap.containsKey(backgroundKey)) {
+            background = new ReaderBackgroundSettings(
+                    (Map<String, Object>) appearanceMap.get(backgroundKey)
+            );
+        }
     }
 
     @Override
@@ -38,23 +47,22 @@ public class BannerPlaceAppearance implements IBannerPlaceAppearance {
     }
 
     @Override
-    public boolean loop() {
-        return loop;
+    public IReaderBackground background() {
+        return background;
     }
 
     @Override
-    public boolean autoplay() {
-        return autoplay;
+    public String backgroundColor() {
+        return backgroundColor != null ? backgroundColor : "#FFFFFF";
     }
 
     @Override
-    public int autoplayDelay() {
-        return autoplayDelay != null ? autoplayDelay : 1000;
+    public Drawable backgroundDrawable() {
+        if (background != null) return background.getBackgroundDrawable();
+        ColorDrawable drawable = new ColorDrawable();
+        drawable.setColor(ColorUtils.parseColorRGBA(backgroundColor()));
+        return drawable;
     }
 
-    @Override
-    public int animationSpeed() {
-        return animationSpeed != null ? animationSpeed : 300;
-    }
 
 }

@@ -6,6 +6,8 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -54,6 +56,7 @@ public class BannerView extends CardView implements Observer<BannerState> {
 
     private IBannerViewModel bannerViewModel;
     private BannerWebView bannerWebView;
+    private View backgroundView;
     private CardView container;
     private RelativeLayout loaderContainer;
     private View loader;
@@ -84,12 +87,17 @@ public class BannerView extends CardView implements Observer<BannerState> {
     private void init(Context context) {
         View.inflate(context, R.layout.cs_banner_item, this);
         //container = findViewById(R.id.bannerContainer);
+        setCardBackgroundColor(Color.TRANSPARENT);
+        setCardElevation(0f);
+        setUseCompatPadding(false);
         loaderContainer = findViewById(R.id.loaderContainer);
         bannerWebView = findViewById(R.id.contentWebView);
+        backgroundView = findViewById(R.id.background);
         bannerWebView.setHost(this);
         loaderContainer.addView(createLoader(context));
         loaderContainer.addView(createRefresh(context));
         Log.e("BannerPagerAdapter", "initView");
+        bannerWebView.setBackgroundColor(Color.argb(1, 255, 255, 255));
     }
 
     void setLoadingPlaceholder(View view) {
@@ -116,8 +124,8 @@ public class BannerView extends CardView implements Observer<BannerState> {
         this.setRadius(radius);
     }
 
-    public void setBannerBackground(String backgroundColor) {
-        setCardBackgroundColor(ColorUtils.parseColorRGBA(backgroundColor));
+    public void setBannerBackground(Drawable background) {
+        backgroundView.setBackground(background);
     }
 
     void resumeBanner() {
@@ -422,18 +430,33 @@ public class BannerView extends CardView implements Observer<BannerState> {
                     showRefresh();
                     break;
                 case LOADED:
+                    Log.e("UpdateBannerState", "Loaded Event " + newValue.bannerId());
                     if (newValue.content() != null &&
                             !newValue.content().isEmpty()) {
                         if (bannerWebView != null) {
-                            bannerWebView.post(
-                                    new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            hideLoaderContainer();
-                                            bannerWebView.loadSlide(newValue.content());
+                            if (bannerViewModel.bannerIsActive()) {
+                                bannerWebView.post(
+                                        new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                Log.e("UpdateBannerState", "Loaded Event Post " + newValue.bannerId());
+                                                hideLoaderContainer();
+                                                bannerWebView.loadSlide(newValue.content());
+                                            }
                                         }
-                                    }
-                            );
+                                );
+                            } else {
+                                bannerWebView.postDelayed(
+                                        new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                Log.e("UpdateBannerState", "Loaded Event Post " + newValue.bannerId());
+                                                hideLoaderContainer();
+                                                bannerWebView.loadSlide(newValue.content());
+                                            }
+                                        }, 130
+                                );
+                            }
                         }
                     }
                     break;
@@ -449,10 +472,12 @@ public class BannerView extends CardView implements Observer<BannerState> {
                 case 1:
                     if (bannerWebView != null) {
                         isLoaded = true;
+                        Log.e("UpdateBannerState", "slideJSStatus " + newValue.bannerId());
                         bannerWebView.post(
                                 new Runnable() {
                                     @Override
                                     public void run() {
+                                        Log.e("UpdateBannerState", "slideJSStatus Post " + newValue.bannerId());
                                         if (bannerViewModel != null && bannerViewModel.bannerIsActive()) {
                                             bannerViewModel.bannerIsShown();
                                             bannerWebView.startSlide(null);

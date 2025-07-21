@@ -1,5 +1,6 @@
 package com.inappstory.sdk.core.banners;
 
+
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.banners.BannerPlaceLoadCallback;
@@ -250,7 +251,7 @@ public class BannerPlaceViewModel implements IBannerPlaceViewModel {
 
     @Override
     public void clear() {
-        bannerPlaceStateObservable.setValue(new BannerPlaceState());
+        bannerPlaceStateObservable.setValue(new BannerPlaceState().place(bannerPlace));
         bannerViewModelsHolder.clearViewModels();
     }
 

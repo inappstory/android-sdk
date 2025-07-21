@@ -5,7 +5,7 @@ import android.graphics.drawable.Drawable;
 
 import com.inappstory.sdk.core.utils.ColorUtils;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageBackdrop;
-import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageBackground;
+import com.inappstory.sdk.inappmessage.ui.appearance.IReaderBackground;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessagePopupAppearance;
 import com.inappstory.sdk.utils.NumberUtils;
 
@@ -65,7 +65,7 @@ public class InAppMessagePopupSettings implements InAppMessagePopupAppearance {
             backgroundColor = (String) appearance.get(backgroundColorKey);
         }
         if (appearance.containsKey(backgroundKey)) {
-            background = new InAppMessageBackgroundSettings(
+            background = new ReaderBackgroundSettings(
                     (Map<String, Object>) appearance.get(backgroundKey)
             );
         }
@@ -78,7 +78,7 @@ public class InAppMessagePopupSettings implements InAppMessagePopupAppearance {
     private Integer animationType;
     private String backgroundColor;
     private InAppMessageBackdrop backdrop;
-    private InAppMessageBackground background;
+    private IReaderBackground background;
 
     @Override
     public float contentRatio() {
@@ -117,7 +117,7 @@ public class InAppMessagePopupSettings implements InAppMessagePopupAppearance {
     }
 
     @Override
-    public InAppMessageBackground background() {
+    public IReaderBackground background() {
         return background;
     }
 

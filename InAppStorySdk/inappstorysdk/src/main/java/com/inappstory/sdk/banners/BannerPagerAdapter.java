@@ -66,8 +66,9 @@ public class BannerPagerAdapter extends PagerAdapter implements Observer<BannerS
         bannerView.setTag("banner_" + position);
         Log.e("BannerPagerAdapter", "instantiateItem " + position);
         IBanner banner = banners.get(position % banners.size());
+        bannerView.setBannerBackground(banner.bannerAppearance().backgroundDrawable());
         int bannerId = banner.id();
-        IBannerViewModel bannerViewModel  = core
+        IBannerViewModel bannerViewModel = core
                 .widgetViewModels().bannerPlaceViewModels().get(bannerPlace).getBannerViewModel(bannerId);
         bannerViewModel.iterationId(iterationId);
         bannerView.viewModel(
@@ -87,7 +88,7 @@ public class BannerPagerAdapter extends PagerAdapter implements Observer<BannerS
         IBanner banner = banners.get(0);
         int bannerId = banner.id();
 
-        IBannerViewModel bannerViewModel  = core
+        IBannerViewModel bannerViewModel = core
                 .widgetViewModels().bannerPlaceViewModels().get(bannerPlace).getBannerViewModel(bannerId);
         bannerViewModel.addSubscriber(this);
     }
@@ -97,7 +98,7 @@ public class BannerPagerAdapter extends PagerAdapter implements Observer<BannerS
         IBanner banner = banners.get(0);
         int bannerId = banner.id();
 
-        IBannerViewModel bannerViewModel  = core
+        IBannerViewModel bannerViewModel = core
                 .widgetViewModels().bannerPlaceViewModels().get(bannerPlace).getBannerViewModel(bannerId);
         bannerViewModel.removeSubscriber(this);
     }

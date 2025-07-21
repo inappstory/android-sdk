@@ -167,6 +167,7 @@ public class BannerViewModel implements IBannerViewModel {
         BannerDownloadManager downloadManager = core.contentLoader().bannerDownloadManager();
         downloadManager.removeSubscriber(this);
         final BannerState readerState = getCurrentBannerState();
+        if (readerState.contentStatus() == 1) return;
         IReaderContent readerContent =
                 core.contentHolder().readerContent().getByIdAndType(
                         bannerId,
@@ -338,6 +339,8 @@ public class BannerViewModel implements IBannerViewModel {
     @Override
     public void slideLoaded(String data) {
         //updateCurrentLoadState(BannerLoadStates.LOADED);
+
+        Log.e("UpdateBannerState", "slideLoaded " + bannerId);
         stateObservable.updateValue(
                 stateObservable
                         .getValue()

@@ -9,19 +9,18 @@ import android.graphics.drawable.ShapeDrawable;
 import android.graphics.drawable.shapes.RectShape;
 
 import com.inappstory.sdk.core.utils.ColorUtils;
-import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageBackground;
-import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageLinearGradientBackground;
+import com.inappstory.sdk.inappmessage.ui.appearance.IReaderBackground;
 import com.inappstory.sdk.utils.NumberUtils;
 
 import java.util.Map;
 
-public class InAppMessageBackgroundSettings implements InAppMessageBackground {
+public class ReaderBackgroundSettings implements IReaderBackground {
 
     private float alpha = 1f;
     private String solid;
-    private InAppMessageLinearGradientSettings linearGradient;
+    private ReaderLinearGradientSettings linearGradient;
 
-    public InAppMessageBackgroundSettings(Map<String, Object> appearance) {
+    public ReaderBackgroundSettings(Map<String, Object> appearance) {
         if (appearance == null) return;
         String alphaKey = "alpha";
         String solidKey = "solid";
@@ -30,7 +29,7 @@ public class InAppMessageBackgroundSettings implements InAppMessageBackground {
             alpha = new NumberUtils().convertNumberToFloat(appearance.get(alphaKey));
         }
         if (appearance.containsKey(linearGradientKey)) {
-            linearGradient = new InAppMessageLinearGradientSettings(
+            linearGradient = new ReaderLinearGradientSettings(
                     (Map<String, Object>) appearance.get(linearGradientKey)
             );
         } else if (appearance.containsKey(solidKey)) {
@@ -38,7 +37,7 @@ public class InAppMessageBackgroundSettings implements InAppMessageBackground {
         }
     }
 
-    public InAppMessageBackgroundSettings() {
+    public ReaderBackgroundSettings() {
     }
 
     @Override

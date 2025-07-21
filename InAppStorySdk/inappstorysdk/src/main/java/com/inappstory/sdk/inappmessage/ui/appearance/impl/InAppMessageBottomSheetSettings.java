@@ -6,7 +6,7 @@ import android.graphics.drawable.Drawable;
 import com.inappstory.sdk.core.utils.ColorUtils;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageBSLineAppearance;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageBackdrop;
-import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageBackground;
+import com.inappstory.sdk.inappmessage.ui.appearance.IReaderBackground;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageBottomSheetAppearance;
 import com.inappstory.sdk.utils.NumberUtils;
 
@@ -30,9 +30,9 @@ public class InAppMessageBottomSheetSettings implements InAppMessageBottomSheetA
     private Float contentRatio;
     private Integer cornerRadius;
     private String backgroundColor;
+    private IReaderBackground background;
     private InAppMessageBSLineAppearance lineAppearance;
     private InAppMessageBackdrop backdrop;
-    private InAppMessageBackground background;
 
     public InAppMessageBottomSheetSettings() {
     }
@@ -62,7 +62,7 @@ public class InAppMessageBottomSheetSettings implements InAppMessageBottomSheetA
             backgroundColor = (String) appearance.get(backgroundColorKey);
         }
         if (appearance.containsKey(backgroundKey)) {
-            background = new InAppMessageBackgroundSettings(
+            background = new ReaderBackgroundSettings(
                     (Map<String, Object>) appearance.get(backgroundKey)
             );
         }
@@ -85,7 +85,7 @@ public class InAppMessageBottomSheetSettings implements InAppMessageBottomSheetA
     }
 
     @Override
-    public InAppMessageBackground background() {
+    public IReaderBackground background() {
         return background;
     }
 

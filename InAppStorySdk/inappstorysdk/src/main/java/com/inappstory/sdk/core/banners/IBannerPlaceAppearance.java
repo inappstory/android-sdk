@@ -1,15 +1,17 @@
 package com.inappstory.sdk.core.banners;
 
+import android.graphics.drawable.Drawable;
+
+import com.inappstory.sdk.inappmessage.ui.appearance.IReaderBackground;
+
 public interface IBannerPlaceAppearance {
     float singleBannerAspectRatio();
 
     float cornerRadius(); // in pt
 
-    boolean loop(); // default = true?
+    IReaderBackground background(); // in pt
 
-    boolean autoplay(); // default = false?
+    String backgroundColor(); // in pt
 
-    int autoplayDelay(); // default = 1000ms?
-
-    int animationSpeed(); // in ms, default = 300ms
+    Drawable backgroundDrawable();
 }

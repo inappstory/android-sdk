@@ -20,11 +20,12 @@ public class BannerViewModelsHolder {
     }
 
     public void clearViewModels() {
+        List<IBannerViewModel> bannerViewModels;
         synchronized (lock) {
-            List<IBannerViewModel> bannerViewModels = new ArrayList<>(viewModels.values());
-            for (IBannerViewModel bannerViewModel : bannerViewModels) {
-                if (bannerViewModel != null) bannerViewModel.clear();
-            }
+            bannerViewModels = new ArrayList<>(viewModels.values());
+        }
+        for (IBannerViewModel bannerViewModel : bannerViewModels) {
+            if (bannerViewModel != null) bannerViewModel.clear();
         }
     }
 

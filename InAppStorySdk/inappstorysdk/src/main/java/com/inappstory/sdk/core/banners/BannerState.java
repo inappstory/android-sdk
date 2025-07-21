@@ -105,4 +105,17 @@ public class BannerState {
                 .bannerIsActive(this.bannerIsActive)
                 .bannerId(this.bannerId);
     }
+
+    @Override
+    public String toString() {
+        return "BannerState{" +
+                "bannerId=" + bannerId +
+                ", bannerPlace='" + bannerPlace + '\'' +
+                ", bannerLoadState=" + bannerLoadState +
+                ", bannerIsPaused=" + bannerIsPaused +
+                ", bannerIsActive=" + bannerIsActive +
+                ", contentStatus=" + contentStatus +
+                ", slideJSStatus=" + slideJSStatus +
+                '}';
+    }
 }
