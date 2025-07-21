@@ -1,5 +1,7 @@
 package com.inappstory.sdk.core.banners;
 
+import android.util.Log;
+
 import com.inappstory.sdk.core.IASCore;
 
 import java.util.ArrayList;

@@ -1,5 +1,7 @@
 package com.inappstory.sdk.stories.utils;
 
+
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,7 +24,7 @@ public class Observable<T> {
     }
 
 
-    public boolean subscribeAndGetValue(Observer<T> listener) {
+    public boolean subscribeAndGetValue(final Observer<T> listener) {
         if (listeners.contains(listener)) return false;
         listeners.add(listener);
         listener.onUpdate(value);
@@ -41,7 +43,7 @@ public class Observable<T> {
         this.value = value;
     }
 
-    public void updateValue(T value) {
+    public void updateValue(final T value) {
         setValue(value);
         for (Observer<T> listener : listeners) {
             listener.onUpdate(value);

@@ -77,6 +77,9 @@ public class BannerView extends CardView implements Observer<BannerState> {
     void viewModel(IBannerViewModel bannerViewModel) {
         this.bannerViewModel = bannerViewModel;
         bannerWebView.slideViewModel(bannerViewModel);
+        BannerState state = bannerViewModel.getCurrentBannerState();
+        Log.e("UpdateBannerState", state.toString());
+        onUpdate(state);
         bannerWebView.checkIfClientIsSet();
     }
 

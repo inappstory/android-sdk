@@ -7,7 +7,9 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.viewpager.widget.PagerAdapter;
 
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.banners.BannerDownloadManager;
 import com.inappstory.sdk.core.banners.BannerLoadStates;
 import com.inappstory.sdk.core.banners.BannerState;
@@ -67,16 +69,22 @@ public class BannerPagerAdapter extends PagerAdapter implements Observer<BannerS
         Log.e("BannerPagerAdapter", "instantiateItem " + position);
         IBanner banner = banners.get(position % banners.size());
         bannerView.setBannerBackground(banner.bannerAppearance().backgroundDrawable());
-        int bannerId = banner.id();
-        IBannerViewModel bannerViewModel = core
+        final int bannerId = banner.id();
+        final IBannerViewModel bannerViewModel = core
                 .widgetViewModels().bannerPlaceViewModels().get(bannerPlace).getBannerViewModel(bannerId);
         bannerViewModel.iterationId(iterationId);
         bannerView.viewModel(
                 bannerViewModel
         );
-        BannerDownloadManager bannerDownloadManager = core.contentLoader().bannerDownloadManager();
-        bannerDownloadManager.setMaxPriority(bannerId, false);
-        bannerViewModel.loadContent(false, null);
+        InAppStoryManager.useCoreInSeparateThread(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                BannerDownloadManager bannerDownloadManager = core.contentLoader().bannerDownloadManager();
+                bannerDownloadManager.setMaxPriority(bannerId, false);
+                bannerViewModel.loadContent(false, null);
+            }
+        });
+
         container.addView(bannerView);
         return bannerView;
     }
@@ -138,6 +146,8 @@ public class BannerPagerAdapter extends PagerAdapter implements Observer<BannerS
     @Override
     public void onUpdate(BannerState newValue) {
         if (newValue == null) return;
+
+        Log.e("ObserverUpdate", Thread.currentThread().getName() + " PagerAdapter onUpdate " + newValue);
         if (currentState == null ||
                 (newValue.loadState() != currentState.loadState())
         ) {
