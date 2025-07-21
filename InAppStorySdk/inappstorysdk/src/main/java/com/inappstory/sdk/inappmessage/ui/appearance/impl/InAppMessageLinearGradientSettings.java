@@ -104,6 +104,7 @@ public class InAppMessageLinearGradientSettings implements InAppMessageLinearGra
             rectF.left = width;
             if (angle == 180) {
                 rectF.bottom = height;
+                rectF.left = 0f;
                 rectF.right = 0f;
                 return rectF;
             }
