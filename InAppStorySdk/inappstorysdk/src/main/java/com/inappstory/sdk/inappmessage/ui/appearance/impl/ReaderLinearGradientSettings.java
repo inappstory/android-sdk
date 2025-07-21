@@ -105,6 +105,7 @@ public class ReaderLinearGradientSettings implements ReaderLinearGradientBackgro
             if (angle == 180) {
                 rectF.bottom = height;
                 rectF.right = 0f;
+                rectF.left = 0f;
                 return rectF;
             }
             double tan = Math.tan(Math.toRadians(angle - 180));
