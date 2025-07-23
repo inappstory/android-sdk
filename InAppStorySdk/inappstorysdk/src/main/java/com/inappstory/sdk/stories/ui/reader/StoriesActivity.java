@@ -659,6 +659,12 @@ public class StoriesActivity extends IASActivity implements BaseStoryScreen, Sho
                 core.inAppStoryService().getListReaderConnector().readerIsClosed();
             }
         });
+        ContentIdWithIndex idWithIndex = null;
+        if (storiesContentFragment != null && story[0] != null) {
+            ReaderManager readerManager = storiesContentFragment.readerManager;
+            if (readerManager != null)
+                idWithIndex = readerManager.getByIdAndIndex(story[0].id()).copy();
+        }
         cleanReader();
         animateFirst = true;
         new Handler(Looper.getMainLooper()).post(new Runnable() {
@@ -671,16 +677,12 @@ public class StoriesActivity extends IASActivity implements BaseStoryScreen, Sho
             }
         });
         if (story[0] != null) {
-            sendCloseStatistic(story[0], action);
+            sendCloseStatistic(story[0], action, idWithIndex);
         }
     }
 
-    private void sendCloseStatistic(final @NonNull IReaderContent story, final int action) {
-        if (storiesContentFragment == null)
-            return;
-        final ReaderManager readerManager = storiesContentFragment.readerManager;
-        if (readerManager == null) return;
-        final ContentIdWithIndex idWithIndex = readerManager.getByIdAndIndex(story.id());
+    private void sendCloseStatistic(final @NonNull IReaderContent story, final int action, final ContentIdWithIndex idWithIndex) {
+        if (idWithIndex == null) return;
         if (launchData != null) {
             InAppStoryManager.useCore(new UseIASCoreCallback() {
                 @Override
@@ -752,6 +754,12 @@ public class StoriesActivity extends IASActivity implements BaseStoryScreen, Sho
         if (service != null) {
             service.getListReaderConnector().readerIsClosed();
         }
+        ContentIdWithIndex idWithIndex = null;
+        if (storiesContentFragment != null) {
+            ReaderManager readerManager = storiesContentFragment.readerManager;
+            if (readerManager != null)
+                idWithIndex = readerManager.getByIdAndIndex(story[0].id()).copy();
+        }
         cleanReader();
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
@@ -763,7 +771,7 @@ public class StoriesActivity extends IASActivity implements BaseStoryScreen, Sho
             }
         });
         if (story[0] != null) {
-            sendCloseStatistic(story[0], CloseStory.CUSTOM);
+            sendCloseStatistic(story[0], CloseStory.CUSTOM, idWithIndex);
         }
     }
 
