@@ -390,10 +390,10 @@ public class BannerList extends FrameLayout implements Observer<BannerPlaceState
                             iw -= Sizes.dpToPxExt(customBannerPlace.bannersGap(), getContext());
                         }
                         float igap = Sizes.getScreenSize(getContext()).x - Sizes.dpToPxExt(customBannerPlace.prevBannerOffset(), getContext()) - Sizes.dpToPxExt(customBannerPlace.nextBannerOffset(), getContext());
-                        //bannerPager.requestLayout();
+                        List<IBanner> items = newValue.getItems();
                         BannerPagerAdapter adapter = new BannerPagerAdapter(
                                 core,
-                                newValue.getItems(),
+                                items,
                                 bannerPlace,
                                 new ICustomBannerPlaceholder() {
                                     @Override
@@ -407,7 +407,8 @@ public class BannerList extends FrameLayout implements Observer<BannerPlaceState
                                 },
                                 bannerPlaceLoadCallback,
                                 newValue.iterationId(),
-                                customBannerPlace.loop(),
+                                customBannerPlace.loop() &&
+                                        (items.size() >= customBannerPlace.bannersOnScreen() + 1),
                                 (iw / igap) / customBannerPlace.bannersOnScreen(),
                                 Sizes.dpToPxExt(
                                         customBannerPlace.cornerRadius(),

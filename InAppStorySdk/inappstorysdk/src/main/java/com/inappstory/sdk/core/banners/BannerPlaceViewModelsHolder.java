@@ -9,6 +9,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class BannerPlaceViewModelsHolder {
     private Map<String, IBannerPlaceViewModel> viewModels = new HashMap<>();
@@ -28,13 +29,26 @@ public class BannerPlaceViewModelsHolder {
         }
     }
 
+    public void reloadSession() {
+        List<IBannerPlaceViewModel> placeViewModels;
+        synchronized (lock) {
+            placeViewModels = new ArrayList<>(viewModels.values());
+           // viewModels.clear();
+        }
+        for (IBannerPlaceViewModel placeViewModel : placeViewModels) {
+            placeViewModel.reloadSubscriber();
+        }
+    }
+
     public void clear() {
         List<IBannerPlaceViewModel> placeViewModels;
         synchronized (lock) {
             placeViewModels = new ArrayList<>(viewModels.values());
+            viewModels.clear();
         }
         for (IBannerPlaceViewModel placeViewModel : placeViewModels) {
             placeViewModel.clear();
+            placeViewModel.dataIsCleared();
         }
     }
 }

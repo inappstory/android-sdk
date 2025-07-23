@@ -3,8 +3,10 @@ package com.inappstory.sdk.core.banners;
 
 import androidx.annotation.NonNull;
 
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.banners.BannerPlaceLoadCallback;
 import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.data.IBanner;
 import com.inappstory.sdk.inappmessage.domain.stedata.STETypeAndData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.BannerData;
@@ -32,7 +34,7 @@ public class BannerPlaceViewModel implements IBannerPlaceViewModel {
         bannerViewModelsHolder = new BannerViewModelsHolder(core, this);
         this.core = core;
         addSubscriber(localObserver);
-        updateState(getCurrentBannerPagerState().copy().place(bannerPlace));
+        updateState(new BannerPlaceState().place(bannerPlace));
     }
 
     private final Set<BannerPlaceLoadCallback> callbacks = new HashSet<>();
@@ -258,6 +260,30 @@ public class BannerPlaceViewModel implements IBannerPlaceViewModel {
     @Override
     public void clearBanners() {
         bannerViewModelsHolder.clearViewModels();
+    }
+
+    @Override
+    public void reloadSubscriber() {
+        List<Observer<BannerPlaceState>> subscribers = bannerPlaceStateObservable.getSubscribers();
+        boolean hasUISubs = false;
+        for (Observer<BannerPlaceState> subscriber: subscribers) {
+            if (subscriber == localObserver) continue;
+            hasUISubs = true;
+        }
+        clear();
+        if (hasUISubs) {
+            InAppStoryManager.useCoreInSeparateThread(new UseIASCoreCallback() {
+                @Override
+                public void use(@NonNull IASCore core) {
+                    core.bannersAPI().loadBannerPlace(bannerPlace);
+                }
+            });
+        }
+    }
+
+    @Override
+    public void dataIsCleared() {
+
     }
 
     @NonNull

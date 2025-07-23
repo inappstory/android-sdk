@@ -31,6 +31,12 @@ public class BannerViewModelsHolder {
         }
     }
 
+    public void removeViewModels() {
+        synchronized (lock) {
+            viewModels.clear();
+        }
+    }
+
     public IBannerViewModel get(int bannerId, String bannerPlace) {
         BannerViewModelKey key = new BannerViewModelKey(bannerId, bannerPlace);
         synchronized (lock) {

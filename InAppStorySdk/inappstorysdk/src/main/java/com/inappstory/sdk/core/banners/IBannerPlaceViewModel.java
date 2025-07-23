@@ -32,4 +32,8 @@ public interface IBannerPlaceViewModel {
 
     void clearBanners();
 
+    void reloadSubscriber();
+
+    void dataIsCleared();
+
 }

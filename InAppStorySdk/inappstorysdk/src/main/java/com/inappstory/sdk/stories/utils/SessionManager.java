@@ -414,6 +414,7 @@ public class SessionManager {
                             public void onSuccess(SessionResponse response) {
                                 core.statistic().profiling().setReady(sessionCloseUID, true);
                                 if (changeUserIdOrLocale) {
+                                    core.widgetViewModels().bannerPlaceViewModels().reloadSession();
                                     core.inAppStoryService().getListReaderConnector().userIdChanged();
                                 }
                             }
@@ -428,6 +429,7 @@ public class SessionManager {
                                 core.statistic().profiling().setReady(sessionCloseUID);
                                 if (changeUserIdOrLocale) {
                                     core.inAppStoryService().getListReaderConnector().userIdChanged();
+                                    core.widgetViewModels().bannerPlaceViewModels().reloadSession();
                                 }
                             }
                         }

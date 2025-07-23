@@ -37,8 +37,8 @@ public class IASBannersImpl implements IASBanners {
         final IBannerPlaceViewModel bannerPagerViewModel =
                 core.widgetViewModels().bannerPlaceViewModels().get(bannerPlace);
         bannerPagerViewModel.updateState(
-                bannerPagerViewModel
-                        .getCurrentBannerPagerState()
+                new BannerPlaceState()
+                        .place(bannerPlace)
                         .loadState(
                                 BannerPlaceLoadStates.LOADING
                         )
@@ -76,6 +76,7 @@ public class IASBannersImpl implements IASBanners {
             }
         });
     }
+
     @Override
     public void preload(final String bannerPlace, final BannerPlacePreloadCallback preloadCallback) {
         if (bannerPlace == null) {

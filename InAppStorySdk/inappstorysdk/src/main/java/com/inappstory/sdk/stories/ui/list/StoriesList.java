@@ -387,6 +387,7 @@ public class StoriesList extends RecyclerView {
                     @Override
                     public void use(@NonNull final IASCore core) {
                         final List<Integer> newIndexes = core.statistic().newStatisticPreviews(indexes);
+                        if (newIndexes.isEmpty()) return;
                         core.sessionManager().useOrOpenSession(
                                 new OpenSessionCallback() {
                                     @Override

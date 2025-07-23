@@ -112,6 +112,8 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
                     core.contentHolder().readerContent().clearByType(ContentType.STORY);
                     core.contentLoader().inAppMessageDownloadManager().clearLocalData();
                     core.contentLoader().inAppMessageDownloadManager().clearSlidesDownloader();
+                    core.contentLoader().bannerDownloadManager().clearLocalData();
+                    core.contentLoader().bannerDownloadManager().clearSlidesDownloader();
                     core.sessionManager().closeSession(
                             sendStatistic,
                             refreshContent,
@@ -121,6 +123,7 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
                     );
                 } else {
                     core.inAppStoryService().getListReaderConnector().userIdChanged();
+                    core.widgetViewModels().bannerPlaceViewModels().reloadSession();
                 }
             }
         });
