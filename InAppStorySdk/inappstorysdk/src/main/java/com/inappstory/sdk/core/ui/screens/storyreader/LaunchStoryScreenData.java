@@ -98,6 +98,11 @@ public class LaunchStoryScreenData implements SerializableWithKey {
     private final String listUniqueId;
     private final String sessionId;
     private final List<Integer> storiesIds;
+
+    public void setListIndex(int listIndex) {
+        this.listIndex = listIndex;
+    }
+
     private int listIndex;
     private final SourceType sourceType;
     private int firstAction;
