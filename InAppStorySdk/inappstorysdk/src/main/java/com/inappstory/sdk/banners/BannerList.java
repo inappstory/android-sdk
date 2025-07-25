@@ -425,7 +425,6 @@ public class BannerList extends FrameLayout implements Observer<BannerPlaceState
                         if (bannerPager.getCurrentItem() == index) {
                             pageChangeListener.onPageSelected(index);
                         } else {
-                            Log.e("BannerPagerIndex", "onUpdate indexes: " + bannerPager.getCurrentItem() + " " + index);
                             bannerPager.setCurrentItem(index);
                         }
 
