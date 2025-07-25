@@ -9,9 +9,7 @@ public interface IBannerPlaceAppearance {
 
     float cornerRadius(); // in pt
 
-    IReaderBackground background(); // in pt
-
-    String backgroundColor(); // in pt
+    String backgroundColor();
 
     Drawable backgroundDrawable();
 }

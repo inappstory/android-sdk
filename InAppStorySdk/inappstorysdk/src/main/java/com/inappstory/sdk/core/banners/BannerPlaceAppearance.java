@@ -46,10 +46,6 @@ public class BannerPlaceAppearance implements IBannerPlaceAppearance {
         return cornerRadius != null ? cornerRadius : 16f;
     }
 
-    @Override
-    public IReaderBackground background() {
-        return background;
-    }
 
     @Override
     public String backgroundColor() {

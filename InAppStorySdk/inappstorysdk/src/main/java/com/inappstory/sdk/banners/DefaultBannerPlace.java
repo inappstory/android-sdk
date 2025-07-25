@@ -1,12 +1,9 @@
 package com.inappstory.sdk.banners;
 
-import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 
 import android.content.Context;
 import android.view.View;
 
-import com.inappstory.sdk.core.banners.IBannerPlaceArrowsNavigation;
-import com.inappstory.sdk.core.banners.IBannerPlaceDotNavigation;
 import com.inappstory.sdk.core.banners.ICustomBannerPlace;
 
 public class DefaultBannerPlace implements ICustomBannerPlace {
