@@ -4,6 +4,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/bannerContainer"
     app:cardElevation="0dp"
+    app:cardCornerRadius="0dp"
     app:cardUseCompatPadding="false"
     app:cardBackgroundColor="@android:color/transparent"
     android:layout_height="match_parent">
