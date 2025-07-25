@@ -16,7 +16,5 @@ public interface ICustomBannerPlace {
 
     boolean loop(); // default = false
 
-    int animationSpeed(); //is ms, default = 300ms
-
     View loadingPlaceholder(Context context);
 }

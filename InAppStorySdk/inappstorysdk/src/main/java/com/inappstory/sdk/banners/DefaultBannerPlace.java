@@ -27,22 +27,17 @@ public class DefaultBannerPlace implements ICustomBannerPlace {
 
     @Override
     public int bannersGap() {
-        return 4;
+        return 0;
     }
 
     @Override
     public int cornerRadius() {
-        return 16;
+        return 0;
     }
 
     @Override
     public boolean loop() {
         return true;
-    }
-
-    @Override
-    public int animationSpeed() {
-        return 300;
     }
 
     @Override
