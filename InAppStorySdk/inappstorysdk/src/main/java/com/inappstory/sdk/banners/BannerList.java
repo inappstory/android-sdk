@@ -225,6 +225,7 @@ public class BannerList extends FrameLayout implements Observer<BannerPlaceState
             int dataCount = pagerAdapter.getDataCount();
             int zeroItem = currentItem - (currentItem % pagerAdapter.getDataCount());
             int indexItem = zeroItem + ((index % dataCount + dataCount) % dataCount);
+            if (indexItem == currentItem) return;
             bannerPager.setCurrentItem(indexItem, false);
         }
     }

@@ -442,8 +442,6 @@ public class BannerView extends CardView implements Observer<BannerState> {
                                         new Runnable() {
                                             @Override
                                             public void run() {
-                                                Log.e("UpdateBannerState", "Loaded Event Post " + newValue.bannerId());
-                                                hideLoaderContainer();
                                                 bannerWebView.loadSlide(newValue.content());
                                             }
                                         }
@@ -453,8 +451,6 @@ public class BannerView extends CardView implements Observer<BannerState> {
                                         new Runnable() {
                                             @Override
                                             public void run() {
-                                                Log.e("UpdateBannerState", "Loaded Event Post " + newValue.bannerId());
-                                                hideLoaderContainer();
                                                 bannerWebView.loadSlide(newValue.content());
                                             }
                                         }, 130
@@ -480,8 +476,8 @@ public class BannerView extends CardView implements Observer<BannerState> {
                                 new Runnable() {
                                     @Override
                                     public void run() {
-                                        Log.e("UpdateBannerState", "slideJSStatus Post " + newValue.bannerId());
                                         if (bannerViewModel != null && bannerViewModel.bannerIsActive()) {
+                                            hideLoaderContainer();
                                             bannerViewModel.bannerIsShown();
                                             bannerWebView.startSlide(null);
                                             bannerWebView.resumeSlide();
