@@ -1,5 +1,7 @@
 package com.inappstory.sdk.stories.ui;
 
+import static com.inappstory.sdk.InAppStoryManager.IAS_ERROR_TAG;
+import static com.inappstory.sdk.InAppStoryManager.showELog;
 import static java.util.UUID.randomUUID;
 
 import android.content.Context;
@@ -308,7 +310,7 @@ public class ScreensManager {
         if (service == null) return;
         synchronized (gameReaderScreenLock) {
             if (currentGameScreen != null) {
-                InAppStoryManager.showELog("GameReader", "Game reader already opened");
+                showELog("GameReader", "Game reader already opened");
                 return;
             }
         }
@@ -366,6 +368,14 @@ public class ScreensManager {
     ) {
         InAppStoryService service = InAppStoryService.getInstance();
         if (service == null || service.getSession().getSessionId().isEmpty()) return;
+        if (launchData.getStoriesIds().isEmpty()) {
+            showELog(IAS_ERROR_TAG, "No story from list can be opened in reader.");
+            return;
+        }
+        if (launchData.getListIndex() >= launchData.getStoriesIds().size()) {
+            showELog(IAS_ERROR_TAG, "Can't open reader from this story index.");
+            return;
+        }
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
