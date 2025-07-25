@@ -422,7 +422,6 @@ public class BannerList extends FrameLayout implements Observer<BannerPlaceState
                         int index = (newValue.currentIndex() == null) ?
                                 adapter.getStartedIndex() :
                                 newValue.currentIndex();
-                        if (1 == 1) return;
                         if (bannerPager.getCurrentItem() == index) {
                             pageChangeListener.onPageSelected(index);
                         } else {
