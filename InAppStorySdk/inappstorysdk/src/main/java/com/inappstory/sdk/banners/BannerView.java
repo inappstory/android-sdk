@@ -476,8 +476,8 @@ public class BannerView extends CardView implements Observer<BannerState> {
                                 new Runnable() {
                                     @Override
                                     public void run() {
+                                        hideLoaderContainer();
                                         if (bannerViewModel != null && bannerViewModel.bannerIsActive()) {
-                                            hideLoaderContainer();
                                             bannerViewModel.bannerIsShown();
                                             bannerWebView.startSlide(null);
                                             bannerWebView.resumeSlide();
