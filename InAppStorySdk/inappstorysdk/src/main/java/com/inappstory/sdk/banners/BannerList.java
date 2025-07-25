@@ -217,14 +217,14 @@ public class BannerList extends FrameLayout implements Observer<BannerPlaceState
     public void showByIndex(int index) {
         BannerPagerAdapter pagerAdapter = (BannerPagerAdapter) bannerPager.getAdapter();
         if (pagerAdapter != null) {
-            if (index < 0 || index >= pagerAdapter.getCount()) {
-                if (pagerAdapter.isLoop()) {
-                    bannerPager.setCurrentItem(index % pagerAdapter.getDataCount(), true);
-                } else {
-                    //TODO log error
-                }
+            int currentItem = bannerPager.getCurrentItem();
+            int dataCount = pagerAdapter.getDataCount();
+            int zeroItem = currentItem - (currentItem % pagerAdapter.getDataCount());
+            int indexItem = zeroItem + ((index % dataCount + dataCount) % dataCount);
+            if ((index < 0 || index >= pagerAdapter.getCount()) && !pagerAdapter.isLoop()) {
+                //TODO log error
             } else {
-                bannerPager.setCurrentItem(index, true);
+                bannerPager.setCurrentItem(indexItem, false);
             }
         }
     }
