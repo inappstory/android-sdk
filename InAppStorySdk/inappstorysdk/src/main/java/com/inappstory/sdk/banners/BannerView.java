@@ -73,11 +73,13 @@ public class BannerView extends CardView implements Observer<BannerState> {
     }
 
     private boolean isLoaded;
+    private Integer bannerId;
 
     void viewModel(IBannerViewModel bannerViewModel) {
         this.bannerViewModel = bannerViewModel;
         bannerWebView.slideViewModel(bannerViewModel);
         BannerState state = bannerViewModel.getCurrentBannerState();
+        bannerId = state.bannerId();
         Log.e("UpdateBannerState", state.toString());
         onUpdate(state);
         bannerWebView.checkIfClientIsSet();
@@ -176,6 +178,7 @@ public class BannerView extends CardView implements Observer<BannerState> {
                 new Runnable() {
                     @Override
                     public void run() {
+                        Log.e("SlideLC", "startBanner " + bannerId);
                         bannerWebView.startSlide(null);
                     }
                 }
@@ -410,6 +413,7 @@ public class BannerView extends CardView implements Observer<BannerState> {
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
         if (bannerViewModel != null) {
+            bannerViewModel.clearJsStatus();
             bannerViewModel.removeSubscriber(this);
             bannerViewModel.singleTimeEvents().unsubscribe(
                     steTypeAndDataObserver
@@ -471,16 +475,16 @@ public class BannerView extends CardView implements Observer<BannerState> {
                 case 1:
                     if (bannerWebView != null) {
                         isLoaded = true;
-                        Log.e("UpdateBannerState", "slideJSStatus " + newValue.bannerId());
                         bannerWebView.post(
                                 new Runnable() {
                                     @Override
                                     public void run() {
                                         hideLoaderContainer();
                                         if (bannerViewModel != null && bannerViewModel.bannerIsActive()) {
+                                            Log.e("SlideLC", "slideJSStatus " + newValue.bannerId());
                                             bannerViewModel.bannerIsShown();
                                             bannerWebView.startSlide(null);
-                                            bannerWebView.resumeSlide();
+                                         //   bannerWebView.resumeSlide();
                                         }
                                     }
                                 }

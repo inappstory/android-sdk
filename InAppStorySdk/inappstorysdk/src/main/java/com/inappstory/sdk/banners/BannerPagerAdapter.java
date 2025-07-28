@@ -17,6 +17,7 @@ import com.inappstory.sdk.core.banners.IBannerViewModel;
 import com.inappstory.sdk.core.data.IBanner;
 import com.inappstory.sdk.stories.utils.Observer;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -101,6 +102,10 @@ public class BannerPagerAdapter extends PagerAdapter implements Observer<BannerS
         bannerViewModel.addSubscriber(this);
     }
 
+    public void clear() {
+        this.banners.clear();
+    }
+
     public void unsubscribeFromFirst() {
         if (banners.isEmpty()) return;
         IBanner banner = banners.get(0);
@@ -120,7 +125,6 @@ public class BannerPagerAdapter extends PagerAdapter implements Observer<BannerS
 
     @Override
     public void destroyItem(@NonNull ViewGroup container, int position, @NonNull Object object) {
-        Log.e("BannerPagerAdapter", "destroyItem " + position);
         if (object instanceof BannerView)
             container.removeView((BannerView) object);
     }

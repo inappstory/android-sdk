@@ -57,4 +57,6 @@ public interface IBannerViewModel extends IReaderSlideViewModel {
     boolean loadContent(boolean isFirst, BannerPlacePreloadCallback callback);
 
     void clear();
+
+    void clearJsStatus();
 }

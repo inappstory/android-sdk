@@ -4,7 +4,7 @@ package com.inappstory.sdk.core.banners;
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.InAppStoryManager;
-import com.inappstory.sdk.banners.BannerPlaceLoadCallback;
+import com.inappstory.sdk.banners.InnerBannerPlaceLoadCallback;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.data.IBanner;
@@ -37,24 +37,22 @@ public class BannerPlaceViewModel implements IBannerPlaceViewModel {
         updateState(new BannerPlaceState().place(bannerPlace));
     }
 
-    private final Set<BannerPlaceLoadCallback> callbacks = new HashSet<>();
+    private final Set<InnerBannerPlaceLoadCallback> callbacks = new HashSet<>();
 
     private final Object callbacksLock = new Object();
 
     @Override
-    public void addBannerPlaceLoadCallback(BannerPlaceLoadCallback callback) {
+    public void addBannerPlaceLoadCallback(InnerBannerPlaceLoadCallback callback) {
         synchronized (callbacksLock) {
             callbacks.add(callback);
         }
         BannerPlaceState placeState = getCurrentBannerPagerState();
         List<IBanner> content = placeState.getItems();
-        List<BannerData> bannerData = new ArrayList<>();
         switch (placeState.loadState()) {
             case EMPTY:
                 try {
                     callback.bannerPlaceLoaded(
-                            0,
-                            new ArrayList<BannerData>()
+                            content
                     );
                 } catch (Exception e) {
                 }
@@ -70,25 +68,20 @@ public class BannerPlaceViewModel implements IBannerPlaceViewModel {
                 break;
             case LOADED:
                 if (content != null) {
-                    for (IBanner banner : content) {
-                        bannerData.add(new BannerData(banner.id(), bannerPlace));
+                    try {
+                        callback.bannerPlaceLoaded(
+                                content
+                        );
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
-                }
-
-                try {
-                    callback.bannerPlaceLoaded(
-                            content.size(),
-                            bannerData
-                    );
-                } catch (Exception e) {
-                    e.printStackTrace();
                 }
                 break;
         }
     }
 
     @Override
-    public void removeBannerPlaceLoadCallback(BannerPlaceLoadCallback callback) {
+    public void removeBannerPlaceLoadCallback(InnerBannerPlaceLoadCallback callback) {
         synchronized (callbacksLock) {
             callbacks.remove(callback);
         }
@@ -114,27 +107,25 @@ public class BannerPlaceViewModel implements IBannerPlaceViewModel {
         public void onUpdate(BannerPlaceState newValue) {
             if (newValue.loadState() == null || bannerPlaceLoadState.equals(newValue.loadState()))
                 return;
-            Set<BannerPlaceLoadCallback> callbacks = new HashSet<>();
+            Set<InnerBannerPlaceLoadCallback> callbacks = new HashSet<>();
             List<IBanner> content = newValue.getItems();
-            List<BannerData> bannerData = new ArrayList<>();
             synchronized (callbacksLock) {
                 callbacks.addAll(BannerPlaceViewModel.this.callbacks);
             }
             bannerPlaceLoadState = newValue.loadState();
             switch (newValue.loadState()) {
                 case EMPTY:
-                    for (BannerPlaceLoadCallback callback : callbacks) {
+                    for (InnerBannerPlaceLoadCallback callback : callbacks) {
                         try {
                             callback.bannerPlaceLoaded(
-                                    0,
-                                    new ArrayList<BannerData>()
+                                    content
                             );
                         } catch (Exception e) {
                         }
                     }
                     break;
                 case FAILED:
-                    for (BannerPlaceLoadCallback callback : callbacks) {
+                    for (InnerBannerPlaceLoadCallback callback : callbacks) {
                         try {
                             callback.loadError();
                         } catch (Exception e) {
@@ -145,17 +136,10 @@ public class BannerPlaceViewModel implements IBannerPlaceViewModel {
                 case LOADING:
                     break;
                 case LOADED:
-                    if (content != null) {
-                        for (IBanner banner : content) {
-                            bannerData.add(new BannerData(banner.id(), bannerPlace));
-                        }
-                    }
-
-                    for (BannerPlaceLoadCallback callback : callbacks) {
+                    for (InnerBannerPlaceLoadCallback callback : callbacks) {
                         try {
                             callback.bannerPlaceLoaded(
-                                    content.size(),
-                                    bannerData
+                                    content
                             );
                         } catch (Exception e) {
                         }
@@ -266,7 +250,7 @@ public class BannerPlaceViewModel implements IBannerPlaceViewModel {
     public void reloadSubscriber() {
         List<Observer<BannerPlaceState>> subscribers = bannerPlaceStateObservable.getSubscribers();
         boolean hasUISubs = false;
-        for (Observer<BannerPlaceState> subscriber: subscribers) {
+        for (Observer<BannerPlaceState> subscriber : subscribers) {
             if (subscriber == localObserver) continue;
             hasUISubs = true;
         }

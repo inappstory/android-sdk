@@ -340,7 +340,7 @@ public class BannerViewModel implements IBannerViewModel {
     public void slideLoaded(String data) {
         //updateCurrentLoadState(BannerLoadStates.LOADED);
 
-        Log.e("UpdateBannerState", "slideLoaded " + bannerId);
+        Log.e("SlideLC", "slideLoaded " + bannerId);
         stateObservable.updateValue(
                 stateObservable
                         .getValue()
@@ -598,6 +598,13 @@ public class BannerViewModel implements IBannerViewModel {
                         .bannerId(bannerId)
                         .bannerPlace(bannerPlace)
                         .loadState(BannerLoadStates.EMPTY)
+        );
+    }
+
+    @Override
+    public void clearJsStatus() {
+        stateObservable.setValue(
+                getCurrentBannerState().slideJSStatus(0)
         );
     }
 }

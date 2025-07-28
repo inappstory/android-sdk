@@ -1,6 +1,7 @@
 package com.inappstory.sdk.banners;
 
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
+import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 
 import android.content.Context;
 import android.graphics.Color;
@@ -33,6 +34,7 @@ import com.inappstory.sdk.stories.utils.Sizes;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class BannerList extends FrameLayout implements Observer<BannerPlaceState> {
     private BannerPager bannerPager;
@@ -42,7 +44,7 @@ public class BannerList extends FrameLayout implements Observer<BannerPlaceState
     private ICustomBannerPlace customBannerPlace = new DefaultBannerPlace();
     private String lastLaunchedTag = "";
 
-    public void loadBanners() {
+    private void loadBanners() {
         final String localBannerPlace = bannerPlace;
         if (localBannerPlace == null) {
             //TODO Log error
@@ -60,37 +62,54 @@ public class BannerList extends FrameLayout implements Observer<BannerPlaceState
     }
 
     public void setLoadCallback(BannerPlaceLoadCallback bannerPlaceLoadCallback) {
-        this.bannerPlaceLoadCallback = bannerPlaceLoadCallback != null ?
-                bannerPlaceLoadCallback : emptyBannerPlaceLoadCallback;
-        if (bannerPlaceViewModel != null && bannerPlaceLoadCallback != null)
-            bannerPlaceViewModel.addBannerPlaceLoadCallback(bannerPlaceLoadCallback);
+        this.bannerPlaceLoadCallback = bannerPlaceLoadCallback;
     }
 
 
-    private final IBannerPlaceLoadCallback emptyBannerPlaceLoadCallback = new IBannerPlaceLoadCallback() {
+    final IBannerPlaceLoadCallback internalBannerPlaceLoadCallback = new InnerBannerPlaceLoadCallback() {
         @Override
-        public void bannerPlaceLoaded(int size, List<BannerData> bannerData) {
-
+        public void bannerPlaceLoaded(List<IBanner> banners) {
+            List<BannerData> bannerData = new ArrayList<>();
+            if (bannerPlaceLoadCallback != null) {
+                if (banners == null || banners.isEmpty()) {
+                    bannerPlaceLoadCallback.bannerPlaceLoaded(0, new ArrayList<BannerData>(), WRAP_CONTENT);
+                } else {
+                    for (IBanner banner : banners) {
+                        bannerData.add(new BannerData(banner.id(), bannerPlace));
+                    }
+                    bannerPlaceLoadCallback.bannerPlaceLoaded(
+                            bannerData.size(),
+                            bannerData,
+                            calculateHeight(banners)
+                    );
+                }
+            }
         }
 
         @Override
         public void loadError() {
+            if (bannerPlaceLoadCallback != null) bannerPlaceLoadCallback.loadError();
 
         }
 
         @Override
         public void bannerLoaded(int bannerId, boolean isCurrent) {
+            if (bannerPlaceLoadCallback != null) bannerLoaded(bannerId, isCurrent);
 
         }
 
         @Override
         public void bannerLoadError(int bannerId, boolean isCurrent) {
-
+            if (bannerPlaceLoadCallback != null) bannerLoadError(bannerId, isCurrent);
         }
 
+        @Override
+        String bannerPlace() {
+            return bannerPlace;
+        }
     };
 
-    private IBannerPlaceLoadCallback bannerPlaceLoadCallback = emptyBannerPlaceLoadCallback;
+    private BannerPlaceLoadCallback bannerPlaceLoadCallback = null;
 
     public void bannerListNavigationCallback(BannerListNavigationCallback bannerListNavigationCallback) {
         this.bannerListNavigationCallback = bannerListNavigationCallback != null ?
@@ -198,6 +217,20 @@ public class BannerList extends FrameLayout implements Observer<BannerPlaceState
         }
     }
 
+    public void stop() {
+        BannerView currentBannerView = bannerPager.findViewWithTag(lastLaunchedTag);
+        if (currentBannerView != null) {
+            currentBannerView.pauseBanner();
+        }
+    }
+
+    public void play() {
+        BannerView currentBannerView = bannerPager.findViewWithTag(lastLaunchedTag);
+        if (currentBannerView != null) {
+            currentBannerView.resumeBanner();
+        }
+    }
+
     public void showPrev() {
         int currentItem = bannerPager.getCurrentItem();
         BannerPagerAdapter pagerAdapter = (BannerPagerAdapter) bannerPager.getAdapter();
@@ -242,8 +275,11 @@ public class BannerList extends FrameLayout implements Observer<BannerPlaceState
         return super.onInterceptTouchEvent(event);
     }
 
-    public void setBannerPlace(final String bannerPlace) {
-        this.bannerPlace = bannerPlace;
+    private boolean initialized = false;
+
+    private void init() {
+        if (initialized) return;
+        initialized = true;
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
@@ -252,24 +288,65 @@ public class BannerList extends FrameLayout implements Observer<BannerPlaceState
                         .widgetViewModels()
                         .bannerPlaceViewModels()
                         .get(bannerPlace);
+                bannerPlaceViewModel.addBannerPlaceLoadCallback((InnerBannerPlaceLoadCallback) internalBannerPlaceLoadCallback);
                 bannerPlaceViewModel.addSubscriberAndCheckLocal(BannerList.this);
-                Log.e("bannerPlace", "setBannerPlace " + bannerPlaceViewModel.toString());
             }
         });
     }
 
-    @Override
-    protected void onAttachedToWindow() {
-      /*  if (bannerPlaceViewModel != null) {
-            bannerPlaceViewModel.addSubscriberAndCheckLocal(BannerList.this);
-            if (bannerPlaceLoadCallback instanceof BannerPlaceLoadCallback)
-                bannerPlaceViewModel.addBannerPlaceLoadCallback((BannerPlaceLoadCallback) bannerPlaceLoadCallback);
+    private void deInit() {
+        initialized = false;
+        if (bannerPlaceViewModel != null) {
+            bannerPlaceViewModel.removeSubscriber(BannerList.this);
+            bannerPlaceViewModel.removeBannerPlaceLoadCallback((InnerBannerPlaceLoadCallback) internalBannerPlaceLoadCallback);
+            bannerPlaceViewModel.clearBanners();
+            bannerPlaceViewModel = null;
         }
+        currentLoadState = null;
+        bannerPager.setSaveFromParentEnabled(false);
         if (bannerPager.getAdapter() != null) {
             BannerPagerAdapter pagerAdapter = (BannerPagerAdapter) bannerPager.getAdapter();
-            pagerAdapter.subscribeToFirst();
-        }*/
+            pagerAdapter.unsubscribeFromFirst();
+            float iw = Sizes.getScreenSize(getContext()).x -
+                    Sizes.dpToPxExt(customBannerPlace.prevBannerOffset(), getContext())
+                    - Sizes.dpToPxExt(customBannerPlace.nextBannerOffset(), getContext());
+            for (int i = 0; i < customBannerPlace.bannersOnScreen() - 1; i++) {
+                iw -= Sizes.dpToPxExt(customBannerPlace.bannersGap(), getContext());
+            }
+            BannerPagerAdapter adapter = new BannerPagerAdapter(
+                    core,
+                    new ArrayList<IBanner>(),
+                    null,
+                    null,
+                    null,
+                    "",
+                    false,
+                    -1,
+                    -1
+            );
+            ViewGroup.LayoutParams layoutParams = bannerPager.getLayoutParams();
+            layoutParams.height = WRAP_CONTENT;
+            bannerPager.setAdapter(adapter);
+            pagerAdapter.clear();
+        }
+    }
+
+    public void setBannerPlace(final String bannerPlace) {
+        if (Objects.equals(this.bannerPlace, bannerPlace)) return;
+        this.bannerPlace = bannerPlace;
+        if (bannerPlace != null && !bannerPlace.isEmpty()) {
+            init();
+        } else {
+            deInit();
+        }
+    }
+
+    @Override
+    protected void onAttachedToWindow() {
         super.onAttachedToWindow();
+        if (bannerPlaceViewModel != null && bannerPlace != null && !bannerPlace.isEmpty()) {
+            init();
+        }
     }
 
     @Override
@@ -286,16 +363,7 @@ public class BannerList extends FrameLayout implements Observer<BannerPlaceState
 
     @Override
     protected void onDetachedFromWindow() {
-        if (bannerPlaceViewModel != null) {
-            bannerPlaceViewModel.removeSubscriber(BannerList.this);
-            bannerPlaceViewModel.clearBanners();
-            if (bannerPlaceLoadCallback instanceof BannerPlaceLoadCallback)
-                bannerPlaceViewModel.removeBannerPlaceLoadCallback((BannerPlaceLoadCallback) bannerPlaceLoadCallback);
-        }
-        if (bannerPager.getAdapter() != null) {
-            BannerPagerAdapter pagerAdapter = (BannerPagerAdapter) bannerPager.getAdapter();
-            pagerAdapter.unsubscribeFromFirst();
-        }
+        deInit();
         super.onDetachedFromWindow();
     }
 
@@ -345,19 +413,15 @@ public class BannerList extends FrameLayout implements Observer<BannerPlaceState
 
     private BannerPlaceLoadStates currentLoadState = BannerPlaceLoadStates.EMPTY;
 
-
     @Override
     public void onUpdate(final BannerPlaceState newValue) {
         if (newValue == null || newValue.loadState() == null) return;
         if (bannerPlaceViewModel == null) return;
-        Log.e("ObserverUpdate", Thread.currentThread().getName() + " BannerList onUpdate " + newValue);
         if (currentLoadState == BannerPlaceLoadStates.LOADED && newValue.currentIndex() != null) {
             if (bannerPager.getCurrentItem() != newValue.currentIndex()) {
                 bannerPager.post(new Runnable() {
                     @Override
                     public void run() {
-                        if (1 == 1) return;
-                        Log.e("BannerPagerIndex", "indexes: " + bannerPager.getCurrentItem() + " " + newValue.currentIndex());
                         bannerPager.setCurrentItem(newValue.currentIndex());
                         bannerPlaceViewModel.updateCurrentIndex(newValue.currentIndex());
                     }
