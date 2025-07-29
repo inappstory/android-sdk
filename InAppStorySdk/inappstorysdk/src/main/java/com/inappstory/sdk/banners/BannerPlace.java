@@ -129,6 +129,9 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
     };
 
 
+    private boolean scrollManage = false;
+    private final Object scrollManageLock = new Object();
+
     private BannerListNavigationCallback bannerListNavigationCallback = emptyBannerListNavigationCallback;
 
     BannerPager.PageChangeListener pageChangeListener = new BannerPager.PageChangeListener() {
@@ -187,14 +190,23 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
         public void onPageScrollStateChanged(int state) {
             String newLaunchedTag = "banner_" + bannerPager.getCurrentItem();
             if (state == ViewPager.SCROLL_STATE_IDLE) {
+                synchronized (scrollManageLock) {
+                    scrollManage = false;
+                }
                 if (newLaunchedTag.equals(lastLaunchedTag)) {
                     BannerView currentBannerView = bannerPager.findViewWithTag(lastLaunchedTag);
                     if (currentBannerView != null) currentBannerView.resumeBanner();
                 }
-            } else if (state == ViewPager.SCROLL_STATE_DRAGGING) {
-                if (newLaunchedTag.equals(lastLaunchedTag)) {
-                    BannerView currentBannerView = bannerPager.findViewWithTag(lastLaunchedTag);
-                    if (currentBannerView != null) currentBannerView.pauseBanner();
+            } else {
+                synchronized (scrollManageLock) {
+                    scrollManage = true;
+                }
+                if (state == ViewPager.SCROLL_STATE_DRAGGING) {
+
+                    if (newLaunchedTag.equals(lastLaunchedTag)) {
+                        BannerView currentBannerView = bannerPager.findViewWithTag(lastLaunchedTag);
+                        if (currentBannerView != null) currentBannerView.pauseBanner();
+                    }
                 }
             }
         }
@@ -217,16 +229,22 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
     }
 
     public void resumeAutoscroll() {
+        synchronized (scrollManageLock) {
+            if (scrollManage) return;
+        }
         BannerView currentBannerView = bannerPager.findViewWithTag(lastLaunchedTag);
         if (currentBannerView != null) {
-            currentBannerView.pauseBanner();
+            currentBannerView.resumeBanner();
         }
     }
 
     public void pauseAutoscroll() {
+        synchronized (scrollManageLock) {
+            if (scrollManage) return;
+        }
         BannerView currentBannerView = bannerPager.findViewWithTag(lastLaunchedTag);
         if (currentBannerView != null) {
-            currentBannerView.resumeBanner();
+            currentBannerView.pauseBanner();
         }
     }
 
