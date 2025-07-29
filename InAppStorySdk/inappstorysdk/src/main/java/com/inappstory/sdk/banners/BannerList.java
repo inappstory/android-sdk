@@ -300,6 +300,7 @@ public class BannerList extends FrameLayout implements Observer<BannerPlaceState
             bannerPlaceViewModel.removeSubscriber(BannerList.this);
             bannerPlaceViewModel.removeBannerPlaceLoadCallback((InnerBannerPlaceLoadCallback) internalBannerPlaceLoadCallback);
             bannerPlaceViewModel.clearBanners();
+            bannerPlaceViewModel.clear();
             bannerPlaceViewModel = null;
         }
         currentLoadState = null;
