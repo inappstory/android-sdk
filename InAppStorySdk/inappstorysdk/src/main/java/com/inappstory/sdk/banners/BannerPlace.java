@@ -8,7 +8,6 @@ import android.graphics.Color;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,7 +25,7 @@ import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.banners.BannerPlaceLoadStates;
 import com.inappstory.sdk.core.banners.BannerPlaceState;
 import com.inappstory.sdk.core.banners.IBannerPlaceViewModel;
-import com.inappstory.sdk.core.banners.ICustomBannerPlace;
+import com.inappstory.sdk.core.banners.ICustomBannerPlaceAppearance;
 import com.inappstory.sdk.core.data.IBanner;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.BannerData;
 import com.inappstory.sdk.stories.utils.Observer;
@@ -36,12 +35,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class BannerList extends FrameLayout implements Observer<BannerPlaceState> {
+public class BannerPlace extends FrameLayout implements Observer<BannerPlaceState> {
     private BannerPager bannerPager;
     private IBannerPlaceViewModel bannerPlaceViewModel;
     private String bannerPlace;
     private IASCore core;
-    private ICustomBannerPlace customBannerPlace = new DefaultBannerPlace();
+    private ICustomBannerPlaceAppearance customBannerPlace = new DefaultBannerPlaceAppearance();
     private String lastLaunchedTag = "";
 
     private void loadBanners() {
@@ -217,14 +216,14 @@ public class BannerList extends FrameLayout implements Observer<BannerPlaceState
         }
     }
 
-    public void stop() {
+    public void resumeAutoscroll() {
         BannerView currentBannerView = bannerPager.findViewWithTag(lastLaunchedTag);
         if (currentBannerView != null) {
             currentBannerView.pauseBanner();
         }
     }
 
-    public void play() {
+    public void pauseAutoscroll() {
         BannerView currentBannerView = bannerPager.findViewWithTag(lastLaunchedTag);
         if (currentBannerView != null) {
             currentBannerView.resumeBanner();
@@ -283,13 +282,13 @@ public class BannerList extends FrameLayout implements Observer<BannerPlaceState
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-                BannerList.this.core = core;
+                BannerPlace.this.core = core;
                 bannerPlaceViewModel = core
                         .widgetViewModels()
                         .bannerPlaceViewModels()
                         .get(bannerPlace);
                 bannerPlaceViewModel.addBannerPlaceLoadCallback((InnerBannerPlaceLoadCallback) internalBannerPlaceLoadCallback);
-                bannerPlaceViewModel.addSubscriberAndCheckLocal(BannerList.this);
+                bannerPlaceViewModel.addSubscriberAndCheckLocal(BannerPlace.this);
             }
         });
     }
@@ -297,7 +296,7 @@ public class BannerList extends FrameLayout implements Observer<BannerPlaceState
     private void deInit() {
         initialized = false;
         if (bannerPlaceViewModel != null) {
-            bannerPlaceViewModel.removeSubscriber(BannerList.this);
+            bannerPlaceViewModel.removeSubscriber(BannerPlace.this);
             bannerPlaceViewModel.removeBannerPlaceLoadCallback((InnerBannerPlaceLoadCallback) internalBannerPlaceLoadCallback);
             bannerPlaceViewModel.clearBanners();
             bannerPlaceViewModel.clear();
@@ -368,17 +367,17 @@ public class BannerList extends FrameLayout implements Observer<BannerPlaceState
         super.onDetachedFromWindow();
     }
 
-    public BannerList(@NonNull Context context) {
+    public BannerPlace(@NonNull Context context) {
         super(context);
         init(context);
     }
 
-    public BannerList(@NonNull Context context, @Nullable AttributeSet attrs) {
+    public BannerPlace(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
         init(context);
     }
 
-    public BannerList(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+    public BannerPlace(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         init(context);
     }

@@ -1,14 +1,11 @@
 package com.inappstory.sdk.core.network.content.mock;
 
 
-import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.network.content.models.Banner;
-import com.inappstory.sdk.core.network.content.models.BannerPlace;
+import com.inappstory.sdk.core.network.content.models.BannerPlaceModel;
 import com.inappstory.sdk.core.network.content.models.BannerSlide;
 import com.inappstory.sdk.core.network.content.models.InAppMessage;
-import com.inappstory.sdk.core.network.content.models.InAppMessageEvent;
 import com.inappstory.sdk.core.network.content.models.InAppMessageSlide;
-import com.inappstory.sdk.stories.api.models.ContentType;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -54,8 +51,8 @@ public class MockBanners {
         return bannerSlide;
     }
 
-    public BannerPlace getMockBannerPlace(List<InAppMessage> inAppMessageList, String place) {
-        BannerPlace bannerPlace = new BannerPlace();
+    public BannerPlaceModel getMockBannerPlace(List<InAppMessage> inAppMessageList, String place) {
+        BannerPlaceModel bannerPlace = new BannerPlaceModel();
         bannerPlace.id = 1;
         bannerPlace.banners = new ArrayList<>();
         int i = 0;

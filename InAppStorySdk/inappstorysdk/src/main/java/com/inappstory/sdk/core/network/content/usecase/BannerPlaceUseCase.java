@@ -1,18 +1,11 @@
 package com.inappstory.sdk.core.network.content.usecase;
 
-import android.text.TextUtils;
-
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.banners.LoadBannerPlaceCallback;
 import com.inappstory.sdk.core.data.IBanner;
-import com.inappstory.sdk.core.data.IInAppMessage;
 import com.inappstory.sdk.core.data.IReaderContent;
-import com.inappstory.sdk.core.inappmessages.InAppMessageFeedCallback;
-import com.inappstory.sdk.core.network.content.mock.MockBanners;
-import com.inappstory.sdk.core.network.content.models.BannerPlace;
-import com.inappstory.sdk.core.network.content.models.InAppMessage;
-import com.inappstory.sdk.core.network.content.models.InAppMessageFeed;
+import com.inappstory.sdk.core.network.content.models.BannerPlaceModel;
 import com.inappstory.sdk.core.utils.ConnectionCheck;
 import com.inappstory.sdk.core.utils.ConnectionCheckCallback;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
@@ -20,7 +13,6 @@ import com.inappstory.sdk.network.models.RequestLocalParameters;
 import com.inappstory.sdk.stories.api.models.BannerPlaceFilterObject;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
-import com.inappstory.sdk.stories.utils.TagsUtils;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -61,10 +53,10 @@ public class BannerPlaceUseCase {
                         OpenSessionCallback openSessionCallback = new OpenSessionCallback() {
                             @Override
                             public void onSuccess(final RequestLocalParameters sessionParameters) {
-                                NetworkCallback<BannerPlace> networkCallback = new NetworkCallback<BannerPlace>() {
+                                NetworkCallback<BannerPlaceModel> networkCallback = new NetworkCallback<BannerPlaceModel>() {
                                     @Override
                                     public void onSuccess(
-                                            BannerPlace bannerPlaceResponse
+                                            BannerPlaceModel bannerPlaceResponse
                                     ) {
                                         if (bannerPlaceResponse == null) {
                                             loadError(loadCallback);
@@ -98,7 +90,7 @@ public class BannerPlaceUseCase {
 
                                     @Override
                                     public Type getType() {
-                                        return BannerPlace.class;
+                                        return BannerPlaceModel.class;
                                     }
 
                                     @Override

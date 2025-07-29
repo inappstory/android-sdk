@@ -1,12 +1,12 @@
 package com.inappstory.sdk.core.network.content.models;
 
-import com.inappstory.sdk.core.data.IBannerPlace;
+import com.inappstory.sdk.core.data.IBannerPlaceModel;
 import com.inappstory.sdk.network.annotations.models.SerializedName;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class BannerPlace implements IBannerPlace<Banner> {
+public class BannerPlaceModel implements IBannerPlaceModel<Banner> {
 
     @SerializedName("banners")
     public List<Banner> banners;
