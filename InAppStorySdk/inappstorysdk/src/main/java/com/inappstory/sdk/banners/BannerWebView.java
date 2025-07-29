@@ -128,7 +128,7 @@ public class BannerWebView extends IASWebView implements ContentViewInteractor {
         loadUrl("javascript:(function(){" +
                 "if ('story_slide_start' in window) " +
                 "{" +
-                " window.story_slide_start('{\"muted\": false}');" +
+                " window.story_slide_start('{\"muted\": true}');" +
                 "}" +
                 "})()");
         logMethod("story_slide_start");
@@ -171,7 +171,7 @@ public class BannerWebView extends IASWebView implements ContentViewInteractor {
         loadUrl("javascript:(function(){" +
                 "if ('story_slide_restart' in window) " +
                 "{" +
-                " window.story_slide_restart('{\"muted\": false}');" +
+                " window.story_slide_restart('{\"muted\": true}');" +
                 "}" +
                 "})()");
         logMethod("story_slide_restart");
