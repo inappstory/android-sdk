@@ -25,4 +25,9 @@ public class ContentIdWithIndex implements Serializable, STEData {
         this.id = id;
         this.index = index;
     }
+
+    public ContentIdWithIndex copy() {
+        return new ContentIdWithIndex(this.id, this.index);
+    }
+
 }
