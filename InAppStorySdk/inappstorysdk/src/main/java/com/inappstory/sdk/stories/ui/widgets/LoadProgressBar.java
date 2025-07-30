@@ -38,8 +38,8 @@ public class LoadProgressBar extends View implements IProgressLoaderView {
     private float STROKE_WIDTH = Sizes.dpToPxExt(strokeWidthDP, null);
     private float STROKE_SIZE_HALF = STROKE_WIDTH / 2;
 
-    private static Paint COLOR_PAINT;
-    private static Paint GRADIENT_PAINT;
+    private Paint COLOR_PAINT;
+    private Paint GRADIENT_PAINT;
 
     public void setColor(int color) {
         getColorPaint(null).setColor(color);
