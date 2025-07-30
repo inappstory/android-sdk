@@ -69,6 +69,25 @@ public class WebAppInterface {
     }
 
     @JavascriptInterface
+    public void vibrate(int[] vibratePattern) {
+        manager.vibrate(vibratePattern);
+    }
+
+
+    @JavascriptInterface
+    public void storyFreezeUI() {
+        manager.freezeUI();
+        logMethod("");
+    }
+
+
+    @JavascriptInterface
+    public void storyUnfreezeUI() {
+        manager.unfreezeUI();
+        logMethod("");
+    }
+
+    @JavascriptInterface
     public void storyShowSlide(int index) {
         if (manager.index != index) {
             manager.changeIndex(index);
@@ -91,11 +110,6 @@ public class WebAppInterface {
         manager.sendApiRequest(data);
     }
 
-
-    @JavascriptInterface
-    public void vibrate(int[] vibratePattern) {
-        manager.vibrate(vibratePattern);
-    }
 
     @JavascriptInterface
     public void openGame(String gameInstanceId) {
@@ -206,18 +220,6 @@ public class WebAppInterface {
         logMethod(id + " " + data);
     }
 
-    @JavascriptInterface
-    public void storyFreezeUI() {
-        manager.freezeUI();
-        logMethod("");
-    }
-
-
-    @JavascriptInterface
-    public void storyUnfreezeUI() {
-        manager.unfreezeUI();
-        logMethod("");
-    }
 
     @JavascriptInterface
     public void disableVerticalSwipeGesture() {

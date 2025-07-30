@@ -69,14 +69,12 @@ public class BannerViewModel implements IBannerViewModel {
                 updateCurrentLoadState(BannerLoadStates.FAILED);
                 cancelTask();
             } else if (data.showLoader) {
-                Log.e("updateTimeline", "showLoader");
                 updateCurrentLoadState(BannerLoadStates.LOADING);
                 cancelTask();
             } else {
                 updateCurrentLoadState(BannerLoadStates.LOADED);
             }
             if (data.action == null) return;
-            Log.e("VisibilityChanged", data.toString());
             switch (data.action) {
                 case "start":
                     startTimer(data.duration, data.duration - data.currentTime);
