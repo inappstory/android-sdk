@@ -26,6 +26,7 @@ public class StoryCoverUseCase extends GetCacheFileUseCase<Void> {
         this.getStoryCoverCallback = getStoryCoverCallback;
         this.url = url;
         this.uniqueKey = StringsUtils.md5(url);
+        if (filesDownloadManager == null) return;
         this.filePath = getCache().getCacheDir().getAbsolutePath() +
                 File.separator +
                 "v2" +
@@ -41,6 +42,7 @@ public class StoryCoverUseCase extends GetCacheFileUseCase<Void> {
     @Override
     public Void getFile() {
         downloadLog.generateRequestLog(url);
+        if (filesDownloadManager == null) return null;
         filesDownloadManager.useLocalFilesThread(new Runnable() {
             @Override
             public void run() {
@@ -117,6 +119,7 @@ public class StoryCoverUseCase extends GetCacheFileUseCase<Void> {
 
     @Override
     protected LruDiskCache getCache() {
+        if (filesDownloadManager == null) return null;
         return filesDownloadManager.getCachesHolder().getFastCache();
     }
 }

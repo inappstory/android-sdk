@@ -12,6 +12,7 @@ import androidx.annotation.NonNull;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.stories.cache.FilesDownloadManager;
 import com.inappstory.sdk.stories.cache.usecases.IGetStoryCoverCallback;
 import com.inappstory.sdk.stories.cache.usecases.StoryCoverUseCase;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoryItemCoordinates;
@@ -102,10 +103,10 @@ public class StoryListItem extends BaseStoryListItem {
             }
             InAppStoryService service = InAppStoryService.getInstance();
             if (service == null) return;
-
-            if (imageUrl != null) {
+            FilesDownloadManager downloadManager = service.getFilesDownloadManager();
+            if (imageUrl != null && downloadManager != null) {
                 new StoryCoverUseCase(
-                        service.getFilesDownloadManager(),
+                        downloadManager,
                         imageUrl,
                         new IGetStoryCoverCallback() {
                             @Override
@@ -142,9 +143,9 @@ public class StoryListItem extends BaseStoryListItem {
                 }
             }
 
-            if (videoUrl != null) {
+            if (videoUrl != null && downloadManager != null) {
                 new StoryCoverUseCase(
-                        service.getFilesDownloadManager(),
+                        downloadManager,
                         videoUrl,
                         new IGetStoryCoverCallback() {
                             @Override
