@@ -37,4 +37,6 @@ public interface IBannerPlaceViewModel {
 
     void dataIsCleared();
 
+    boolean hasSubscribers(Observer<BannerPlaceState> observer);
+
 }

@@ -27,6 +27,7 @@ public class BannerPlaceViewModel implements IBannerPlaceViewModel {
     private final IASCore core;
     private final String bannerPlace;
     private final String uid = UUID.randomUUID().toString();
+    private final List<String> tags = new ArrayList<>();
     BannerViewModelsHolder bannerViewModelsHolder;
 
     public BannerPlaceViewModel(IASCore core, String bannerPlace) {
@@ -48,6 +49,10 @@ public class BannerPlaceViewModel implements IBannerPlaceViewModel {
         }
         BannerPlaceState placeState = getCurrentBannerPagerState();
         List<IBanner> content = placeState.getItems();
+        if (placeState.tags() != null) {
+            tags.clear();
+            tags.addAll(placeState.tags());
+        }
         switch (placeState.loadState()) {
             case EMPTY:
                 try {
@@ -114,16 +119,6 @@ public class BannerPlaceViewModel implements IBannerPlaceViewModel {
             }
             bannerPlaceLoadState = newValue.loadState();
             switch (newValue.loadState()) {
-                case EMPTY:
-                    for (InnerBannerPlaceLoadCallback callback : callbacks) {
-                        try {
-                            callback.bannerPlaceLoaded(
-                                    content
-                            );
-                        } catch (Exception e) {
-                        }
-                    }
-                    break;
                 case FAILED:
                     for (InnerBannerPlaceLoadCallback callback : callbacks) {
                         try {
@@ -136,6 +131,7 @@ public class BannerPlaceViewModel implements IBannerPlaceViewModel {
                 case LOADING:
                     break;
                 case LOADED:
+                case EMPTY:
                     for (InnerBannerPlaceLoadCallback callback : callbacks) {
                         try {
                             callback.bannerPlaceLoaded(
@@ -237,7 +233,14 @@ public class BannerPlaceViewModel implements IBannerPlaceViewModel {
 
     @Override
     public void clear() {
-        bannerPlaceStateObservable.setValue(new BannerPlaceState().place(bannerPlace));
+        BannerPlaceState bannerPlaceState = bannerPlaceStateObservable.getValue();
+        List<String> tags = null;
+        if (bannerPlaceState != null) tags = bannerPlaceState.tags();
+        bannerPlaceStateObservable.setValue(
+                new BannerPlaceState()
+                        .place(bannerPlace)
+                        .tags(tags)
+        );
         bannerViewModelsHolder.clearViewModels();
     }
 
@@ -259,7 +262,14 @@ public class BannerPlaceViewModel implements IBannerPlaceViewModel {
             InAppStoryManager.useCoreInSeparateThread(new UseIASCoreCallback() {
                 @Override
                 public void use(@NonNull IASCore core) {
-                    core.bannersAPI().loadBannerPlace(bannerPlace);
+                    core.bannersAPI().loadBannerPlace(
+                            new BannerPlaceLoadSettings()
+                                    .placeId(bannerPlace)
+                                    .tags(
+                                            tags.isEmpty() ? null :
+                                                    new ArrayList<>(tags)
+                                    )
+                    );
                 }
             });
         }
@@ -268,6 +278,18 @@ public class BannerPlaceViewModel implements IBannerPlaceViewModel {
     @Override
     public void dataIsCleared() {
 
+    }
+
+    @Override
+    public boolean hasSubscribers(Observer<BannerPlaceState> observer) {
+        List<Observer<BannerPlaceState>> subscribers = bannerPlaceStateObservable.getSubscribers();
+        boolean hasUISubs = false;
+        for (Observer<BannerPlaceState> subscriber : subscribers) {
+            if (subscriber == localObserver) continue;
+            if (subscriber == observer) continue;
+            hasUISubs = true;
+        }
+        return hasUISubs;
     }
 
     @NonNull

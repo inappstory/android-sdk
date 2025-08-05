@@ -18,6 +18,9 @@ public class BannerPlaceState {
         return currentIndex;
     }
 
+    public List<String> tags() {
+        return tags;
+    }
 
     public String iterationId() {
         return iterationId;
@@ -70,6 +73,11 @@ public class BannerPlaceState {
         return this;
     }
 
+    public BannerPlaceState tags(List<String> tags) {
+        this.tags = tags;
+        return this;
+    }
+
     public BannerPlaceState place(String place) {
         this.place = place;
         return this;
@@ -81,12 +89,13 @@ public class BannerPlaceState {
     String iterationId = UUID.randomUUID().toString();
     BannerPlaceLoadStates loadState = BannerPlaceLoadStates.NONE;
     List<IBanner> items = new ArrayList<>();
-
+    List<String> tags = new ArrayList<>();
 
     public BannerPlaceState copy() {
         return new BannerPlaceState(this.items)
                 .currentIndex(this.currentIndex)
                 .iterationId(this.iterationId)
+                .tags(this.tags)
                 .appearance(this.appearance)
                 .place(this.place)
                 .loadState(this.loadState);

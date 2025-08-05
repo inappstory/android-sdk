@@ -15,6 +15,7 @@ import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.data.IInAppMessage;
 import com.inappstory.sdk.core.data.IInAppMessageLimit;
 import com.inappstory.sdk.core.data.IReaderContent;
+import com.inappstory.sdk.core.data.IShownTime;
 import com.inappstory.sdk.core.inappmessages.InAppMessageByIdCallback;
 import com.inappstory.sdk.core.inappmessages.InAppMessageDownloadManager;
 import com.inappstory.sdk.core.inappmessages.InAppMessageFeedCallback;
@@ -142,10 +143,10 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
         Long lastTime = null;
         if (opens != null) {
             for (String open : opens) {
-                IAMShownTime shownTime = new IAMShownTime(open);
-                if (shownTime.iamId == inAppMessage.id()) {
-                    openedId = shownTime.iamId;
-                    lastTime = shownTime.latestShownTime;
+                IShownTime shownTime = new IAMShownTime(open);
+                if (shownTime.id() == inAppMessage.id()) {
+                    openedId = shownTime.id();
+                    lastTime = shownTime.latestShownTime();
                 }
             }
         }
@@ -368,11 +369,11 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
             localOpensKey += settingsHolder.userId();
         }
         Set<String> opens = core.sharedPreferencesAPI().getStringSet(localOpensKey);
-        IAMShownTime savedShownTime = null;
+        IShownTime savedShownTime = null;
         if (opens != null) {
             for (Iterator<String> iterator = opens.iterator(); iterator.hasNext(); ) {
-                IAMShownTime shownTime = new IAMShownTime(iterator.next());
-                if (shownTime.iamId == iamId) {
+                IShownTime shownTime = new IAMShownTime(iterator.next());
+                if (shownTime.id() == iamId) {
                     shownTime.updateLatestShownTime();
                     savedShownTime = shownTime;
                     iterator.remove();

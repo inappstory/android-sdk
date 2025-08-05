@@ -5,6 +5,7 @@ import androidx.annotation.NonNull;
 import com.inappstory.sdk.banners.BannerPlacePreloadCallback;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASBanners;
+import com.inappstory.sdk.core.banners.BannerPlaceLoadSettings;
 import com.inappstory.sdk.core.banners.BannerPlaceLoadStates;
 import com.inappstory.sdk.core.banners.BannerPlaceState;
 import com.inappstory.sdk.core.banners.IBannerPlaceViewModel;
@@ -31,14 +32,24 @@ public class IASBannersImpl implements IASBanners {
     }
 
     @Override
-    public void loadBannerPlace(final String bannerPlace) {
-        BannerPlaceUseCase bannerPlaceUseCase = new BannerPlaceUseCase(core, bannerPlace, null);
+    public void loadBannerPlace(final BannerPlaceLoadSettings settings) {
+        if (settings == null || settings.placeId() == null || settings.placeId().isEmpty()) {
+            //TODO log error
+            return;
+        }
+        final String placeId = settings.placeId();
+        BannerPlaceUseCase bannerPlaceUseCase = new BannerPlaceUseCase(
+                core,
+                placeId,
+                settings.tags()
+        );
 
         final IBannerPlaceViewModel bannerPagerViewModel =
-                core.widgetViewModels().bannerPlaceViewModels().get(bannerPlace);
+                core.widgetViewModels().bannerPlaceViewModels().get(placeId);
         bannerPagerViewModel.updateState(
                 new BannerPlaceState()
-                        .place(bannerPlace)
+                        .place(placeId)
+                        .tags(settings.tags())
                         .loadState(
                                 BannerPlaceLoadStates.LOADING
                         )
@@ -78,23 +89,29 @@ public class IASBannersImpl implements IASBanners {
     }
 
     @Override
-    public void preload(final String bannerPlace, final BannerPlacePreloadCallback preloadCallback) {
-        if (bannerPlace == null) {
+    public void preload(final BannerPlaceLoadSettings settings, final BannerPlacePreloadCallback preloadCallback) {
+        if (settings == null || settings.placeId() == null || settings.placeId().isEmpty()) {
             //TODO log error
             return;
         }
+        final String placeId = settings.placeId();
         if (preloadCallback != null) {
-            if (!Objects.equals(bannerPlace, preloadCallback.bannerPlace())) {
+            if (!Objects.equals(placeId, preloadCallback.bannerPlace())) {
                 //TODO log error
                 return;
             }
         }
-        BannerPlaceUseCase bannerPlaceUseCase = new BannerPlaceUseCase(core, bannerPlace, null);
+        BannerPlaceUseCase bannerPlaceUseCase = new BannerPlaceUseCase(
+                core,
+                placeId,
+                settings.tags()
+        );
         final IBannerPlaceViewModel bannerPagerViewModel =
-                core.widgetViewModels().bannerPlaceViewModels().get(bannerPlace);
+                core.widgetViewModels().bannerPlaceViewModels().get(placeId);
         bannerPagerViewModel.updateState(
-                bannerPagerViewModel
-                        .getCurrentBannerPagerState()
+                new BannerPlaceState()
+                        .place(placeId)
+                        .tags(settings.tags())
                         .loadState(
                                 BannerPlaceLoadStates.LOADING
                         )
@@ -110,7 +127,7 @@ public class IASBannersImpl implements IASBanners {
                 }
                 List<BannerData> bannerData = new ArrayList<>();
                 for (IBanner banner : content) {
-                    bannerData.add(new BannerData(banner.id(), bannerPlace));
+                    bannerData.add(new BannerData(banner.id(), placeId));
                 }
                 if (preloadCallback != null) {
                     preloadCallback.bannerPlaceLoaded(content.size(), bannerData);

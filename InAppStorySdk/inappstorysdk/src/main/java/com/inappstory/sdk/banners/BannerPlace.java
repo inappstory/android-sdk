@@ -24,6 +24,7 @@ import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.banners.BannerPlaceLoadStates;
 import com.inappstory.sdk.core.banners.BannerPlaceState;
+import com.inappstory.sdk.core.banners.BannerPlaceViewModel;
 import com.inappstory.sdk.core.banners.IBannerPlaceViewModel;
 import com.inappstory.sdk.core.banners.ICustomBannerPlaceAppearance;
 import com.inappstory.sdk.core.data.IBanner;
@@ -43,7 +44,7 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
     private ICustomBannerPlaceAppearance customBannerPlace = new DefaultBannerPlaceAppearance();
     private String lastLaunchedTag = "";
 
-    private void loadBanners() {
+   /* private void loadBanners() {
         final String localBannerPlace = bannerPlace;
         if (localBannerPlace == null) {
             //TODO Log error
@@ -58,7 +59,7 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
                 core.bannersAPI().loadBannerPlace(localBannerPlace);
             }
         });
-    }
+    }*/
 
     public void setLoadCallback(BannerPlaceLoadCallback bannerPlaceLoadCallback) {
         this.bannerPlaceLoadCallback = bannerPlaceLoadCallback;
@@ -349,8 +350,20 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
         }
     }
 
+    private boolean checkViewModelForSubscribers(String bannerPlace) {
+        IBannerPlaceViewModel bannerPlaceViewModel = core
+                .widgetViewModels()
+                .bannerPlaceViewModels()
+                .get(bannerPlace);
+        return bannerPlaceViewModel.hasSubscribers(this);
+    }
+
     public void setBannerPlace(final String bannerPlace) {
         if (Objects.equals(this.bannerPlace, bannerPlace)) return;
+        if (checkViewModelForSubscribers(bannerPlace)) {
+            //TODO Log error
+            return;
+        }
         this.bannerPlace = bannerPlace;
         if (bannerPlace != null && !bannerPlace.isEmpty()) {
             init();
@@ -363,6 +376,7 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
         if (bannerPlaceViewModel != null && bannerPlace != null && !bannerPlace.isEmpty()) {
+            if (checkViewModelForSubscribers(bannerPlace))
             init();
         }
     }

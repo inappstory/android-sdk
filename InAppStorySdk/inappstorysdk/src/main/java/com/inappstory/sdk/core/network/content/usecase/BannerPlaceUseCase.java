@@ -2,10 +2,14 @@ package com.inappstory.sdk.core.network.content.usecase;
 
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
+import com.inappstory.sdk.core.banners.BannerShownTime;
 import com.inappstory.sdk.core.banners.LoadBannerPlaceCallback;
 import com.inappstory.sdk.core.data.IBanner;
+import com.inappstory.sdk.core.data.IInAppMessage;
 import com.inappstory.sdk.core.data.IReaderContent;
+import com.inappstory.sdk.core.data.IShownTime;
 import com.inappstory.sdk.core.network.content.models.BannerPlaceModel;
+import com.inappstory.sdk.core.ui.screens.inappmessagereader.IAMShownTime;
 import com.inappstory.sdk.core.utils.ConnectionCheck;
 import com.inappstory.sdk.core.utils.ConnectionCheckCallback;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
@@ -17,6 +21,7 @@ import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class BannerPlaceUseCase {
     private final IASCore core;
@@ -81,8 +86,10 @@ public class BannerPlaceUseCase {
                                                 .getByType(ContentType.BANNER);
                                         if (nonCasted != null) {
                                             for (IReaderContent readerContent : nonCasted) {
-                                                if (readerContent instanceof IBanner)
-                                                    banners.add((IBanner) readerContent);
+                                                if (readerContent instanceof IBanner) {
+                                                    if (checkContentForShownFrequency((IBanner) readerContent))
+                                                        banners.add((IBanner) readerContent);
+                                                }
                                             }
                                         }
                                         loadCallback.success(banners);
@@ -136,6 +143,36 @@ public class BannerPlaceUseCase {
                     }
                 }
         );
+    }
+
+    private boolean checkContentForShownFrequency(IBanner banner) {
+        if (banner.displayFrom() > 0 && System.currentTimeMillis() < banner.displayFrom())
+            return false;
+        if (banner.displayTo() > 0 && System.currentTimeMillis() > banner.displayTo())
+            return false;
+        IASDataSettingsHolder settingsHolder = (IASDataSettingsHolder) core.settingsAPI();
+        String localOpensKey = "banner_opened";
+        if (settingsHolder.userId() != null) {
+            localOpensKey += settingsHolder.userId();
+        }
+        Set<String> opens = core.sharedPreferencesAPI().getStringSet(localOpensKey);
+        Integer openedId = null;
+        Long lastTime = null;
+        if (opens != null) {
+            for (String open : opens) {
+                IShownTime shownTime = new BannerShownTime(open);
+                if (shownTime.id() == banner.id()) {
+                    openedId = shownTime.id();
+                    lastTime = shownTime.latestShownTime();
+                }
+            }
+        }
+        if (openedId == null) return true;
+        long frequencyLimit = banner.frequencyLimit();
+        if (frequencyLimit == -1) return false;
+        if (frequencyLimit > 0)
+            return (System.currentTimeMillis() - lastTime) >= frequencyLimit;
+        return true;
     }
 
     private void loadError(LoadBannerPlaceCallback loadCallback) {

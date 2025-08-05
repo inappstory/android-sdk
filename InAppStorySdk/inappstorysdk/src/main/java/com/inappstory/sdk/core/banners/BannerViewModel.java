@@ -12,7 +12,9 @@ import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.data.IReaderContent;
+import com.inappstory.sdk.core.data.IShownTime;
 import com.inappstory.sdk.core.exceptions.NotImplementedMethodException;
+import com.inappstory.sdk.core.ui.screens.inappmessagereader.IAMShownTime;
 import com.inappstory.sdk.inappmessage.domain.stedata.AutoSlideEndData;
 import com.inappstory.sdk.inappmessage.domain.stedata.CallToActionData;
 import com.inappstory.sdk.inappmessage.domain.stedata.JsSendApiRequestData;
@@ -39,7 +41,10 @@ import com.inappstory.sdk.utils.ScheduledTPEManager;
 import com.inappstory.sdk.utils.StringsUtils;
 
 import java.lang.reflect.Type;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -550,7 +555,36 @@ public class BannerViewModel implements IBannerViewModel {
                     }
                 }
         );
+
         core.statistic().bannersV1().sendOpenEvent(bannerId, 0, 1, iterationId);
+    }
+
+    private void saveBannerOpened(int bannerId) {
+        IASDataSettingsHolder settingsHolder = (IASDataSettingsHolder) core.settingsAPI();
+        String localOpensKey = "banner_opened";
+        if (settingsHolder.userId() != null) {
+            localOpensKey += settingsHolder.userId();
+        }
+        Set<String> opens = core.sharedPreferencesAPI().getStringSet(localOpensKey);
+        IShownTime savedShownTime = null;
+        if (opens != null) {
+            for (Iterator<String> iterator = opens.iterator(); iterator.hasNext(); ) {
+                IShownTime shownTime = new IAMShownTime(iterator.next());
+                if (shownTime.id() == bannerId) {
+                    shownTime.updateLatestShownTime();
+                    savedShownTime = shownTime;
+                    iterator.remove();
+                    break;
+                }
+            }
+        } else {
+            opens = new HashSet<>();
+        }
+        if (savedShownTime == null) {
+            savedShownTime = new IAMShownTime(bannerId);
+        }
+        opens.add(savedShownTime.getSaveKey());
+        core.sharedPreferencesAPI().saveStringSet(localOpensKey, opens);
     }
 
     private boolean bannerIsActive;

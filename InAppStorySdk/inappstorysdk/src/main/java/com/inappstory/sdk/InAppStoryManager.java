@@ -24,6 +24,7 @@ import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.IASDataSettings;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.IASStatisticStoriesV1;
+import com.inappstory.sdk.core.banners.BannerPlaceLoadSettings;
 import com.inappstory.sdk.core.data.models.InAppStoryUserSettings;
 import com.inappstory.sdk.inappmessage.CloseInAppMessageCallback;
 import com.inappstory.sdk.inappmessage.InAppMessageLoadCallback;
@@ -1111,7 +1112,6 @@ public class InAppStoryManager implements IASBackPressHandler {
         useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-
                 core.storiesListVMHolder().removeResultById(cacheId);
             }
         });
@@ -1121,7 +1121,6 @@ public class InAppStoryManager implements IASBackPressHandler {
         useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-
                 core.storiesListVMHolder().removeFavoriteResult();
             }
         });
@@ -1131,7 +1130,6 @@ public class InAppStoryManager implements IASBackPressHandler {
         useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-
                 core.storiesListVMHolder().removeResultByFeed(feed);
             }
         });
@@ -1141,7 +1139,6 @@ public class InAppStoryManager implements IASBackPressHandler {
         useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-
                 core.storiesListVMHolder().removeResultByIdAndFeed(cacheId, feed);
             }
         });
@@ -1151,7 +1148,6 @@ public class InAppStoryManager implements IASBackPressHandler {
         useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-
                 core.screensManager().setOpenStoriesReader(openStoriesReader);
             }
         });
@@ -1161,7 +1157,6 @@ public class InAppStoryManager implements IASBackPressHandler {
         useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-
                 core.screensManager().setOpenInAppMessageReader(openInAppMessageReader);
             }
         });
@@ -1171,7 +1166,6 @@ public class InAppStoryManager implements IASBackPressHandler {
         useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-
                 core.screensManager().setOpenGameReader(openGameReader);
             }
         });
@@ -1237,7 +1231,6 @@ public class InAppStoryManager implements IASBackPressHandler {
         useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-
                 core.onboardingsAPI().show(outerContext, feed, manager, null, 1000);
             }
         });
@@ -1255,7 +1248,6 @@ public class InAppStoryManager implements IASBackPressHandler {
         useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-
                 core.onboardingsAPI().show(outerContext, null, manager, tags, 1000);
             }
         });
@@ -1271,7 +1263,6 @@ public class InAppStoryManager implements IASBackPressHandler {
         useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-
                 core.onboardingsAPI().show(outerContext, null, manager, null, 1000);
             }
         });
@@ -1304,7 +1295,6 @@ public class InAppStoryManager implements IASBackPressHandler {
         useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-
                 core.onboardingsAPI().show(outerContext, feed, manager, null, limit);
             }
         });
@@ -1322,7 +1312,6 @@ public class InAppStoryManager implements IASBackPressHandler {
         useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-
                 core.onboardingsAPI().show(outerContext, null, manager, tags, limit);
             }
         });
@@ -1338,7 +1327,6 @@ public class InAppStoryManager implements IASBackPressHandler {
         useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-
                 core.onboardingsAPI().show(outerContext, null, manager, null, limit);
             }
         });
@@ -1357,7 +1345,6 @@ public class InAppStoryManager implements IASBackPressHandler {
         useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-
                 core.singleStoryAPI().show(context, storyId, manager, callback, 0);
             }
         });
@@ -1367,26 +1354,28 @@ public class InAppStoryManager implements IASBackPressHandler {
         useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-
                 core.singleStoryAPI().show(context, storyId, manager, callback, slide);
             }
         });
     }
 
-    public void loadBannerPlace(final String bannerPlace) {
-        InAppStoryManager.useCoreInSeparateThread(new UseIASCoreCallback() {
+    public void loadBannerPlace(final BannerPlaceLoadSettings settings) {
+        useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-                core.bannersAPI().loadBannerPlace(bannerPlace);
+                core.bannersAPI().loadBannerPlace(settings);
             }
         });
     }
 
-    public void preloadBannerPlace(final String bannerPlace, final BannerPlacePreloadCallback callback) {
-        InAppStoryManager.useCoreInSeparateThread(new UseIASCoreCallback() {
+    public void preloadBannerPlace(
+            final BannerPlaceLoadSettings settings,
+            final BannerPlacePreloadCallback callback
+    ) {
+        useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-                core.bannersAPI().preload(bannerPlace, callback);
+                core.bannersAPI().preload(settings, callback);
             }
         });
     }
@@ -1399,7 +1388,6 @@ public class InAppStoryManager implements IASBackPressHandler {
         useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-
                 core.singleStoryAPI().showOnce(context, storyId, manager, callback);
             }
         });
@@ -1416,7 +1404,6 @@ public class InAppStoryManager implements IASBackPressHandler {
         useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-
                 core.singleStoryAPI().show(context, storyId, manager, null, 0);
             }
         });
@@ -1429,7 +1416,6 @@ public class InAppStoryManager implements IASBackPressHandler {
         useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-
                 core.inAppMessageAPI().preload(inAppMessagePreloadSettings, callback);
             }
         });
@@ -1441,7 +1427,6 @@ public class InAppStoryManager implements IASBackPressHandler {
         useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-
                 core.inAppMessageAPI().preload(null, callback);
             }
         });
