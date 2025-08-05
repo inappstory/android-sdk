@@ -10,12 +10,6 @@ import java.util.List;
 
 public class DummyApiInterface implements ApiInterface {
 
-
-    @Override
-    public Request getBannerPlace(String id, Integer srcList, String fields, String expand, String xUserId, String xSessionId, String lang) {
-        return new DummyRequest();
-    }
-
     @Override
     public Request getBannerPlace(String id, Integer srcList, String fields, String expand, BannerPlaceFilterObject filterObject, String xUserId, String xSessionId, String lang) {
         return new DummyRequest();
