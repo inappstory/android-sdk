@@ -17,7 +17,6 @@ import com.inappstory.sdk.core.banners.IBannerViewModel;
 import com.inappstory.sdk.core.data.IBanner;
 import com.inappstory.sdk.stories.utils.Observer;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -26,6 +25,7 @@ public class BannerPagerAdapter extends PagerAdapter implements Observer<BannerS
     private final List<IBanner> banners;
     private final IASCore core;
     private final String bannerPlace;
+    private final float iwRatio;
     private final float itemWidth;
 
     public boolean isLoop() {
@@ -45,10 +45,12 @@ public class BannerPagerAdapter extends PagerAdapter implements Observer<BannerS
             IBannerPlaceLoadCallback bannerPlaceLoadCallback,
             String iterationId,
             boolean loop,
+            float iwRatio,
             float itemWidth,
             float bannerRadius
     ) {
         this.itemWidth = itemWidth;
+        this.iwRatio = iwRatio;
         this.bannerPlaceholderCreator = bannerPlaceholderCreator;
         this.listLoadCallback = bannerPlaceLoadCallback;
         this.banners = banners;
@@ -70,6 +72,7 @@ public class BannerPagerAdapter extends PagerAdapter implements Observer<BannerS
         Log.e("BannerPagerAdapter", "instantiateItem " + position);
         IBanner banner = banners.get(position % banners.size());
         bannerView.setBannerBackground(banner.bannerAppearance().backgroundDrawable());
+        bannerView.setSize(itemWidth, banner.bannerAppearance().singleBannerAspectRatio());
         final int bannerId = banner.id();
         final IBannerViewModel bannerViewModel = core
                 .widgetViewModels().bannerPlaceViewModels().get(bannerPlace).getBannerViewModel(bannerId);
@@ -118,7 +121,7 @@ public class BannerPagerAdapter extends PagerAdapter implements Observer<BannerS
 
     @Override
     public float getPageWidth(int position) {
-        return itemWidth;
+        return iwRatio;
     }
 
     BannerState currentState;

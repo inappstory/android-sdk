@@ -341,6 +341,7 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
                     "",
                     false,
                     -1,
+                    -1,
                     -1
             );
             ViewGroup.LayoutParams layoutParams = bannerPager.getLayoutParams();
@@ -351,7 +352,14 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
     }
 
     private boolean checkViewModelForSubscribers(String bannerPlace) {
-        IBannerPlaceViewModel bannerPlaceViewModel = core
+        IASCore localCore = core;
+        if (localCore == null)
+            if (InAppStoryManager.getInstance() != null) {
+                localCore = InAppStoryManager.getInstance().iasCore();
+            } else {
+                return true;
+            }
+        IBannerPlaceViewModel bannerPlaceViewModel = localCore
                 .widgetViewModels()
                 .bannerPlaceViewModels()
                 .get(bannerPlace);
@@ -377,7 +385,7 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
         super.onAttachedToWindow();
         if (bannerPlaceViewModel != null && bannerPlace != null && !bannerPlace.isEmpty()) {
             if (checkViewModelForSubscribers(bannerPlace))
-            init();
+                init();
         }
     }
 
@@ -474,6 +482,7 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
                     public void run() {
                         ViewGroup.LayoutParams layoutParams = bannerPager.getLayoutParams();
                         int height = calculateHeight(newValue.getItems());
+                        float itemWidth = calculateItemWidth();
                         layoutParams.height = height;
                         bannerPager.setClipToPadding(false);
                         bannerPager.setPadding(Sizes.dpToPxExt(customBannerPlace.prevBannerOffset() + customBannerPlace.bannersGap(), getContext()),
@@ -507,6 +516,7 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
                                 customBannerPlace.loop() &&
                                         (items.size() >= customBannerPlace.bannersOnScreen() + 1),
                                 (iw / igap) / customBannerPlace.bannersOnScreen(),
+                                itemWidth,
                                 Sizes.dpToPxExt(
                                         customBannerPlace.cornerRadius(),
                                         getContext()

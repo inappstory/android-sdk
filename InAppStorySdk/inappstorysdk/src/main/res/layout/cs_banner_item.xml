@@ -1,24 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/bannerContainer"
-    app:cardElevation="0dp"
-    app:cardCornerRadius="0dp"
-    app:cardUseCompatPadding="false"
-    app:cardBackgroundColor="@android:color/transparent"
+    android:layout_width="match_parent"
     android:layout_height="match_parent">
-    <FrameLayout
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/bannerContainer"
         android:layout_width="match_parent"
-        android:id="@+id/background"
-        android:layout_height="match_parent"/>
-    <com.inappstory.sdk.banners.BannerWebView
-        android:layout_width="match_parent"
-        android:id="@+id/contentWebView"
-        android:layout_height="match_parent"/>
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:elevation="8dp"
-        android:id="@+id/loaderContainer"
-        android:layout_height="match_parent"/>
-</androidx.cardview.widget.CardView>
+        android:layout_gravity="center"
+        android:layout_height="match_parent"
+        app:cardBackgroundColor="@android:color/transparent"
+        app:cardCornerRadius="0dp"
+        app:cardElevation="0dp"
+        app:cardUseCompatPadding="false">
+
+        <FrameLayout
+            android:id="@+id/background"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <com.inappstory.sdk.banners.BannerWebView
+            android:id="@+id/contentWebView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <RelativeLayout
+            android:id="@+id/loaderContainer"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:elevation="8dp" />
+    </androidx.cardview.widget.CardView>
+</FrameLayout>

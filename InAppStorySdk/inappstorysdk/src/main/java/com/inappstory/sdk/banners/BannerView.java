@@ -7,10 +7,13 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.Point;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.util.SizeF;
+import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -47,7 +50,7 @@ import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.utils.Observer;
 import com.inappstory.sdk.stories.utils.Sizes;
 
-public class BannerView extends CardView implements Observer<BannerState> {
+public class BannerView extends FrameLayout implements Observer<BannerState> {
 
     public BannerView(@NonNull Context context) {
         super(context);
@@ -57,16 +60,10 @@ public class BannerView extends CardView implements Observer<BannerState> {
     private IBannerViewModel bannerViewModel;
     private BannerWebView bannerWebView;
     private View backgroundView;
-    private CardView container;
     private RelativeLayout loaderContainer;
     private View loader;
     private View refresh;
-
-    public void setBannerPager(BannerPager bannerPager) {
-        this.bannerPager = bannerPager;
-    }
-
-    private BannerPager bannerPager;
+    private CardView bannerContainer;
 
     public boolean isLoaded() {
         return isLoaded;
@@ -85,16 +82,32 @@ public class BannerView extends CardView implements Observer<BannerState> {
         bannerWebView.checkIfClientIsSet();
     }
 
+    void setSize(float itemWidth, float contentRatio) {
+        if (bannerContainer != null) {
+            FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(
+                    (int) itemWidth,
+                    (int) (itemWidth / contentRatio)
+            );
+            layoutParams.gravity = Gravity.CENTER;
+            bannerContainer.setLayoutParams(
+                    layoutParams
+            );
+            /*bannerContainer.setLayoutParams(
+                    new FrameLayout.LayoutParams(
+                            (int) size.getWidth(), (int) size.getHeight())
+            );*/
+        }
+    }
 
     BannerState currentState;
 
     @SuppressLint("WrongViewCast")
     private void init(Context context) {
         View.inflate(context, R.layout.cs_banner_item, this);
-        //container = findViewById(R.id.bannerContainer);
-        setCardBackgroundColor(Color.TRANSPARENT);
-        setCardElevation(0f);
-        setUseCompatPadding(false);
+        bannerContainer = findViewById(R.id.bannerContainer);
+        bannerContainer.setCardBackgroundColor(Color.TRANSPARENT);
+        bannerContainer.setCardElevation(0f);
+        bannerContainer.setUseCompatPadding(false);
         loaderContainer = findViewById(R.id.loaderContainer);
         bannerWebView = findViewById(R.id.contentWebView);
         backgroundView = findViewById(R.id.background);
@@ -126,7 +139,8 @@ public class BannerView extends CardView implements Observer<BannerState> {
     }
 
     public void setBannerRadius(float radius) {
-        this.setRadius(radius);
+        if (bannerContainer == null) return;
+        bannerContainer.setRadius(radius);
     }
 
     public void setBannerBackground(Drawable background) {
@@ -484,7 +498,7 @@ public class BannerView extends CardView implements Observer<BannerState> {
                                             Log.e("SlideLC", "slideJSStatus " + newValue.bannerId());
                                             bannerViewModel.bannerIsShown();
                                             bannerWebView.startSlide(null);
-                                         //   bannerWebView.resumeSlide();
+                                            //   bannerWebView.resumeSlide();
                                         }
                                     }
                                 }

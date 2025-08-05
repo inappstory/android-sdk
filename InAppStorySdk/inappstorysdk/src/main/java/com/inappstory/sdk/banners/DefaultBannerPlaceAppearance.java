@@ -24,12 +24,12 @@ public class DefaultBannerPlaceAppearance implements ICustomBannerPlaceAppearanc
 
     @Override
     public int bannersGap() {
-        return 0;
+        return 4;
     }
 
     @Override
     public int cornerRadius() {
-        return 0;
+        return 16;
     }
 
     @Override
