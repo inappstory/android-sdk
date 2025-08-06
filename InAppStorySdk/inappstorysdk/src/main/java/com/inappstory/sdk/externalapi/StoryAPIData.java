@@ -18,6 +18,8 @@ public class StoryAPIData {
     public String title;
     public String titleColor;
     public String backgroundColor;
+    public String statTitle;
+    public int slidesCount;
     public boolean opened;
 
     @Override
@@ -43,6 +45,8 @@ public class StoryAPIData {
     ) {
         this.id = story.id();
         this.backgroundColor = story.backgroundColor();
+        this.slidesCount = story.slidesCount();
+        this.statTitle = story.statTitle();
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
