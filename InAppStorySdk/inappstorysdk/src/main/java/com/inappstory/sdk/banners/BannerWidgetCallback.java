@@ -8,7 +8,7 @@ import java.util.Map;
 
 public interface BannerWidgetCallback extends IASCallback {
     void bannerWidget(
-            BannerData inAppMessageData,
+            BannerData bannerData,
             String widgetEventName,
             Map<String, String> widgetData
     );
