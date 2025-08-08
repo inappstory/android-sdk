@@ -21,7 +21,7 @@ import androidx.viewpager.widget.ViewPager;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.R;
-import com.inappstory.sdk.banners.BannerListNavigationCallback;
+import com.inappstory.sdk.banners.BannerPlaceNavigationCallback;
 import com.inappstory.sdk.banners.BannerPlaceLoadCallback;
 import com.inappstory.sdk.banners.ui.banner.BannerView;
 import com.inappstory.sdk.core.banners.IBannerPlaceLoadCallback;
@@ -67,7 +67,7 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
         });
     }*/
 
-    public void setLoadCallback(BannerPlaceLoadCallback bannerPlaceLoadCallback) {
+    public void loadCallback(BannerPlaceLoadCallback bannerPlaceLoadCallback) {
         this.bannerPlaceLoadCallback = bannerPlaceLoadCallback;
     }
 
@@ -117,12 +117,12 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
 
     private BannerPlaceLoadCallback bannerPlaceLoadCallback = null;
 
-    public void bannerListNavigationCallback(BannerListNavigationCallback bannerListNavigationCallback) {
-        this.bannerListNavigationCallback = bannerListNavigationCallback != null ?
-                bannerListNavigationCallback : emptyBannerListNavigationCallback;
+    public void navigationCallback(BannerPlaceNavigationCallback bannerPlaceNavigationCallback) {
+        this.bannerPlaceNavigationCallback = bannerPlaceNavigationCallback != null ?
+                bannerPlaceNavigationCallback : emptyBannerPlaceNavigationCallback;
     }
 
-    private BannerListNavigationCallback emptyBannerListNavigationCallback = new BannerListNavigationCallback() {
+    private BannerPlaceNavigationCallback emptyBannerPlaceNavigationCallback = new BannerPlaceNavigationCallback() {
 
         @Override
         public void onPageScrolled(int position, int total, float positionOffset, int positionOffsetPixels) {
@@ -139,7 +139,7 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
     private boolean scrollManage = false;
     private final Object scrollManageLock = new Object();
 
-    private BannerListNavigationCallback bannerListNavigationCallback = emptyBannerListNavigationCallback;
+    private BannerPlaceNavigationCallback bannerPlaceNavigationCallback = emptyBannerPlaceNavigationCallback;
 
     BannerPager.PageChangeListener pageChangeListener = new BannerPager.PageChangeListener() {
         @Override
@@ -147,10 +147,10 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
             if (bannerPlaceViewModel != null) {
                 BannerPlaceState placeState = bannerPlaceViewModel.getCurrentBannerPagerState();
                 try {
-                    if (bannerListNavigationCallback != null && !placeState.getItems().isEmpty()) {
+                    if (bannerPlaceNavigationCallback != null && !placeState.getItems().isEmpty()) {
                         int size = placeState.getItems().size();
                         int pos = ((position % size) + size) % size;
-                        bannerListNavigationCallback.onPageScrolled(
+                        bannerPlaceNavigationCallback.onPageScrolled(
                                 pos,
                                 size,
                                 positionOffset,
@@ -180,10 +180,10 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
                 bannerPlaceViewModel.updateCurrentIndex(position);
                 BannerPlaceState placeState = bannerPlaceViewModel.getCurrentBannerPagerState();
                 try {
-                    if (bannerListNavigationCallback != null && !placeState.getItems().isEmpty()) {
+                    if (bannerPlaceNavigationCallback != null && !placeState.getItems().isEmpty()) {
                         int size = placeState.getItems().size();
                         int pos = ((position % size) + size) % size;
-                        bannerListNavigationCallback.onPageSelected(
+                        bannerPlaceNavigationCallback.onPageSelected(
                                 pos, size
                         );
                     }
@@ -255,7 +255,7 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
         }
     }
 
-    public void showPrev() {
+    public void showPrevious() {
         int currentItem = bannerPager.getCurrentItem();
         BannerPagerAdapter pagerAdapter = (BannerPagerAdapter) bannerPager.getAdapter();
         if (pagerAdapter != null) {
