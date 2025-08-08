@@ -27,4 +27,8 @@
         <attr name="cs_listIsFavorite" format="boolean" />
         <attr name="cs_feed" format="string" />
     </declare-styleable>
+
+    <declare-styleable name="BannerPlace">
+        <attr name="cs_place_id" format="string" />
+    </declare-styleable>
 </resources>

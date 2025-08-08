@@ -4,6 +4,7 @@ import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.graphics.Color;
 import android.os.Handler;
 import android.os.Looper;
@@ -44,7 +45,7 @@ import java.util.Objects;
 public class BannerPlace extends FrameLayout implements Observer<BannerPlaceState> {
     private BannerPager bannerPager;
     private IBannerPlaceViewModel bannerPlaceViewModel;
-    private String bannerPlace;
+    private String placeId;
     private IASCore core;
     private ICustomBannerPlaceAppearance customBannerPlace = new DefaultBannerPlaceAppearance();
     private String lastLaunchedTag = "";
@@ -80,7 +81,7 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
                     bannerPlaceLoadCallback.bannerPlaceLoaded(0, new ArrayList<BannerData>(), WRAP_CONTENT);
                 } else {
                     for (IBanner banner : banners) {
-                        bannerData.add(new BannerData(banner.id(), bannerPlace));
+                        bannerData.add(new BannerData(banner.id(), placeId));
                     }
                     bannerPlaceLoadCallback.bannerPlaceLoaded(
                             bannerData.size(),
@@ -110,7 +111,7 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
 
         @Override
         public String bannerPlace() {
-            return bannerPlace;
+            return placeId;
         }
     };
 
@@ -310,7 +311,7 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
                 bannerPlaceViewModel = core
                         .widgetViewModels()
                         .bannerPlaceViewModels()
-                        .get(bannerPlace);
+                        .get(placeId);
                 bannerPlaceViewModel.addBannerPlaceLoadCallback((InnerBannerPlaceLoadCallback) internalBannerPlaceLoadCallback);
                 bannerPlaceViewModel.addSubscriberAndCheckLocal(BannerPlace.this);
             }
@@ -371,14 +372,14 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
         return bannerPlaceViewModel.hasSubscribers(this);
     }
 
-    public void setBannerPlace(final String bannerPlace) {
-        if (Objects.equals(this.bannerPlace, bannerPlace)) return;
-        if (checkViewModelForSubscribers(bannerPlace)) {
+    public void setPlaceId(final String placeId) {
+        if (Objects.equals(this.placeId, placeId)) return;
+        if (checkViewModelForSubscribers(placeId)) {
             //TODO Log error
             return;
         }
-        this.bannerPlace = bannerPlace;
-        if (bannerPlace != null && !bannerPlace.isEmpty()) {
+        this.placeId = placeId;
+        if (placeId != null && !placeId.isEmpty()) {
             init();
         } else {
             deInit();
@@ -388,8 +389,8 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
-        if (bannerPlaceViewModel != null && bannerPlace != null && !bannerPlace.isEmpty()) {
-            if (checkViewModelForSubscribers(bannerPlace))
+        if (bannerPlaceViewModel != null && placeId != null && !placeId.isEmpty()) {
+            if (checkViewModelForSubscribers(placeId))
                 init();
         }
     }
@@ -420,11 +421,19 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
     public BannerPlace(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
         init(context);
+        initAttrs(context, attrs);
+
+    }
+
+    private void initAttrs(@NonNull Context context, @Nullable AttributeSet attrs) {
+        TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.BannerPlace);
+        setPlaceId(typedArray.getString(R.styleable.BannerPlace_cs_place_id));
     }
 
     public BannerPlace(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         init(context);
+        initAttrs(context, attrs);
     }
 
     private void init(Context context) {
@@ -505,7 +514,7 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
                         BannerPagerAdapter adapter = new BannerPagerAdapter(
                                 core,
                                 items,
-                                bannerPlace,
+                                placeId,
                                 new ICustomBannerPlaceholder() {
                                     @Override
                                     public View onCreate(Context context) {
