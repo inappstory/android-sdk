@@ -27,7 +27,7 @@ public class StoryAPIData {
                 ", title='" + title + '\'' +
                 ", titleColor='" + titleColor + '\'' +
                 ", backgroundColor='" + backgroundColor + '\'' +
-                ", opened='" + opened + '\'' +
+                ", opened=" + opened +
                 ", hasAudio=" + hasAudio +
                 ", imageFilePath=" + imageFilePath +
                 ", videoFilePath=" + videoFilePath +
