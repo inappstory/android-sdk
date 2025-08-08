@@ -3,13 +3,11 @@ package com.inappstory.sdk.core.network.content.usecase;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.banners.BannerShownTime;
-import com.inappstory.sdk.core.banners.LoadBannerPlaceCallback;
+import com.inappstory.sdk.core.banners.BannerPlaceUseCaseCallback;
 import com.inappstory.sdk.core.data.IBanner;
-import com.inappstory.sdk.core.data.IInAppMessage;
 import com.inappstory.sdk.core.data.IReaderContent;
 import com.inappstory.sdk.core.data.IShownTime;
 import com.inappstory.sdk.core.network.content.models.BannerPlaceModel;
-import com.inappstory.sdk.core.ui.screens.inappmessagereader.IAMShownTime;
 import com.inappstory.sdk.core.utils.ConnectionCheck;
 import com.inappstory.sdk.core.utils.ConnectionCheckCallback;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
@@ -34,12 +32,12 @@ public class BannerPlaceUseCase {
         this.tags = tags;
     }
 
-    public void get(LoadBannerPlaceCallback callback) {
+    public void get(BannerPlaceUseCaseCallback callback) {
         loadWithRetry(callback, true);
     }
 
     private void loadWithRetry(
-            final LoadBannerPlaceCallback loadCallback,
+            final BannerPlaceUseCaseCallback loadCallback,
             final boolean retry
     ) {
         core.statistic().profiling().addTask("banner_place");
@@ -175,7 +173,7 @@ public class BannerPlaceUseCase {
         return true;
     }
 
-    private void loadError(LoadBannerPlaceCallback loadCallback) {
+    private void loadError(BannerPlaceUseCaseCallback loadCallback) {
         if (loadCallback != null) {
             loadCallback.error();
         }

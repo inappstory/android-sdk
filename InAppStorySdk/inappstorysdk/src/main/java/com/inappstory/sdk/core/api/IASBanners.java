@@ -1,7 +1,7 @@
 package com.inappstory.sdk.core.api;
 
 import com.inappstory.sdk.banners.BannerPlacePreloadCallback;
-import com.inappstory.sdk.core.banners.BannerPlaceLoadSettings;
+import com.inappstory.sdk.banners.BannerPlaceLoadSettings;
 
 public interface IASBanners {
 

@@ -1,9 +1,9 @@
-package com.inappstory.sdk.banners;
+package com.inappstory.sdk.core.banners;
 
 public abstract class InnerBannerPlaceLoadCallback implements IBannerPlaceLoadCallback {
 
     public InnerBannerPlaceLoadCallback() {
     }
 
-    abstract String bannerPlace();
+    public abstract String bannerPlace();
 }

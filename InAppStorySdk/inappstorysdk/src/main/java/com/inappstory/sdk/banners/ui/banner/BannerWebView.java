@@ -1,4 +1,4 @@
-package com.inappstory.sdk.banners;
+package com.inappstory.sdk.banners.ui.banner;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -20,15 +20,11 @@ import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.banners.BannerJavascriptInterface;
-import com.inappstory.sdk.core.banners.BannerViewModel;
 import com.inappstory.sdk.core.banners.IBannerViewModel;
 import com.inappstory.sdk.core.ui.screens.IReaderSlideViewModel;
-import com.inappstory.sdk.inappmessage.ui.reader.IAMReaderJavascriptInterface;
-import com.inappstory.sdk.stories.api.models.ContentIdWithIndex;
 import com.inappstory.sdk.stories.ui.views.IASWebView;
 import com.inappstory.sdk.stories.ui.views.IASWebViewClient;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ContentViewInteractor;
-import com.inappstory.sdk.stories.utils.Sizes;
 
 public class BannerWebView extends IASWebView implements ContentViewInteractor {
     private boolean clientIsSet = false;

@@ -1,4 +1,4 @@
-package com.inappstory.sdk.banners;
+package com.inappstory.sdk.banners.ui.banner;
 
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 
@@ -7,12 +7,10 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
-import android.graphics.Point;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.util.AttributeSet;
 import android.util.Log;
-import android.util.SizeF;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -36,7 +34,6 @@ import com.inappstory.sdk.core.banners.BannerState;
 import com.inappstory.sdk.core.banners.IBannerViewModel;
 import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenData;
 import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenStrategy;
-import com.inappstory.sdk.core.utils.ColorUtils;
 import com.inappstory.sdk.inappmessage.domain.stedata.CallToActionData;
 import com.inappstory.sdk.inappmessage.domain.stedata.JsSendApiRequestData;
 import com.inappstory.sdk.inappmessage.domain.stedata.STETypeAndData;
@@ -72,7 +69,7 @@ public class BannerView extends FrameLayout implements Observer<BannerState> {
     private boolean isLoaded;
     private Integer bannerId;
 
-    void viewModel(IBannerViewModel bannerViewModel) {
+    public void viewModel(IBannerViewModel bannerViewModel) {
         this.bannerViewModel = bannerViewModel;
         bannerWebView.slideViewModel(bannerViewModel);
         BannerState state = bannerViewModel.getCurrentBannerState();
@@ -82,7 +79,7 @@ public class BannerView extends FrameLayout implements Observer<BannerState> {
         bannerWebView.checkIfClientIsSet();
     }
 
-    void setSize(float itemWidth, float contentRatio) {
+    public void setSize(float itemWidth, float contentRatio) {
         if (bannerContainer != null) {
             FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(
                     (int) itemWidth,
@@ -118,11 +115,11 @@ public class BannerView extends FrameLayout implements Observer<BannerState> {
         bannerWebView.setBackgroundColor(Color.argb(1, 255, 255, 255));
     }
 
-    void setLoadingPlaceholder(View view) {
+    public void setLoadingPlaceholder(View view) {
         ((ViewGroup) loader).addView(view);
     }
 
-    void stopBanner() {
+    public void stopBanner() {
         if (!isLoaded) return;
         if (bannerWebView == null) return;
         if (bannerViewModel != null) {
@@ -147,7 +144,7 @@ public class BannerView extends FrameLayout implements Observer<BannerState> {
         backgroundView.setBackground(background);
     }
 
-    void resumeBanner() {
+    public void resumeBanner() {
         if (!isLoaded) return;
         if (bannerWebView == null) return;
         synchronized (pauseLock) {
@@ -166,7 +163,7 @@ public class BannerView extends FrameLayout implements Observer<BannerState> {
     private boolean paused = false;
     private final Object pauseLock = new Object();
 
-    void pauseBanner() {
+    public void pauseBanner() {
         if (!isLoaded) return;
         if (bannerWebView == null) return;
         bannerWebView.post(
@@ -182,7 +179,7 @@ public class BannerView extends FrameLayout implements Observer<BannerState> {
         );
     }
 
-    void startBanner() {
+    public void startBanner() {
         if (!isLoaded) return;
         if (bannerWebView == null) return;
         if (bannerViewModel != null) {

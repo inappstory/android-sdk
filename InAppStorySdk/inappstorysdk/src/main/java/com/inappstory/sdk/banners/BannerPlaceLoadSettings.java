@@ -1,4 +1,4 @@
-package com.inappstory.sdk.core.banners;
+package com.inappstory.sdk.banners;
 
 import java.util.ArrayList;
 import java.util.List;

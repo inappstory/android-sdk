@@ -4,12 +4,11 @@ package com.inappstory.sdk.core.banners;
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.InAppStoryManager;
-import com.inappstory.sdk.banners.InnerBannerPlaceLoadCallback;
+import com.inappstory.sdk.banners.BannerPlaceLoadSettings;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.data.IBanner;
 import com.inappstory.sdk.inappmessage.domain.stedata.STETypeAndData;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.BannerData;
 import com.inappstory.sdk.stories.utils.Observable;
 import com.inappstory.sdk.stories.utils.Observer;
 import com.inappstory.sdk.stories.utils.SingleTimeEvent;

@@ -1,5 +1,6 @@
 package com.inappstory.sdk.banners;
 
+import com.inappstory.sdk.core.banners.IBannerPlaceLoadCallback;
 import com.inappstory.sdk.core.data.IBanner;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.BannerData;
 
@@ -12,7 +13,6 @@ public abstract class BannerPlaceLoadCallback implements IBannerPlaceLoadCallbac
     public final void bannerPlaceLoaded(List<IBanner> banners) {
 
     }
-
 
     public abstract void bannerPlaceLoaded(int size, List<BannerData> bannerData, int widgetHeight);
 

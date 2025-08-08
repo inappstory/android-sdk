@@ -1,4 +1,4 @@
-package com.inappstory.sdk.banners;
+package com.inappstory.sdk.banners.ui.place;
 
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
@@ -20,11 +20,16 @@ import androidx.viewpager.widget.ViewPager;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.banners.BannerListNavigationCallback;
+import com.inappstory.sdk.banners.BannerPlaceLoadCallback;
+import com.inappstory.sdk.banners.ui.banner.BannerView;
+import com.inappstory.sdk.core.banners.IBannerPlaceLoadCallback;
+import com.inappstory.sdk.banners.ICustomBannerPlaceholder;
+import com.inappstory.sdk.core.banners.InnerBannerPlaceLoadCallback;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.banners.BannerPlaceLoadStates;
 import com.inappstory.sdk.core.banners.BannerPlaceState;
-import com.inappstory.sdk.core.banners.BannerPlaceViewModel;
 import com.inappstory.sdk.core.banners.IBannerPlaceViewModel;
 import com.inappstory.sdk.core.banners.ICustomBannerPlaceAppearance;
 import com.inappstory.sdk.core.data.IBanner;
@@ -104,7 +109,7 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
         }
 
         @Override
-        String bannerPlace() {
+        public String bannerPlace() {
             return bannerPlace;
         }
     };

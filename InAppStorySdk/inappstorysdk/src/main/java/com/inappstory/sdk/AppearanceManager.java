@@ -14,7 +14,7 @@ import com.inappstory.sdk.core.ui.widgets.customicons.IASDefaultAppearanceIcons;
 import com.inappstory.sdk.core.ui.widgets.customicons.IASDefaultIconCreator;
 import com.inappstory.sdk.core.ui.widgets.customicons.IIASDefaultIconCreator;
 import com.inappstory.sdk.stories.ui.widgets.LoadProgressBar;
-import com.inappstory.sdk.banners.DefaultBannerPlaceAppearance;
+import com.inappstory.sdk.banners.ui.place.DefaultBannerPlaceAppearance;
 import com.inappstory.sdk.core.banners.ICustomBannerPlaceAppearance;
 import com.inappstory.sdk.stories.api.models.CachedSessionData;
 import com.inappstory.sdk.core.network.content.models.Image;

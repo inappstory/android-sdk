@@ -1,4 +1,4 @@
-package com.inappstory.sdk.banners;
+package com.inappstory.sdk.banners.ui.place;
 
 import android.content.Context;
 import android.util.AttributeSet;

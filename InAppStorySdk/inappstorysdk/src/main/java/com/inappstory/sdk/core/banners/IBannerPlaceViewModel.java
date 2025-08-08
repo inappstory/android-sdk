@@ -1,7 +1,5 @@
 package com.inappstory.sdk.core.banners;
 
-import com.inappstory.sdk.banners.BannerPlaceLoadCallback;
-import com.inappstory.sdk.banners.InnerBannerPlaceLoadCallback;
 import com.inappstory.sdk.stories.utils.Observer;
 
 import java.util.List;

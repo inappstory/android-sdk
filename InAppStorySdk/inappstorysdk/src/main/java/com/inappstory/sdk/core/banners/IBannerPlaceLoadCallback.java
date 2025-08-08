@@ -1,4 +1,4 @@
-package com.inappstory.sdk.banners;
+package com.inappstory.sdk.core.banners;
 
 import com.inappstory.sdk.core.api.IASCallback;
 import com.inappstory.sdk.core.data.IBanner;

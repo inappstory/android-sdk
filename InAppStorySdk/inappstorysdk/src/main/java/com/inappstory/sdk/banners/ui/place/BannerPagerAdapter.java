@@ -1,4 +1,4 @@
-package com.inappstory.sdk.banners;
+package com.inappstory.sdk.banners.ui.place;
 
 import android.util.Log;
 import android.view.View;
@@ -8,6 +8,9 @@ import androidx.annotation.NonNull;
 import androidx.viewpager.widget.PagerAdapter;
 
 import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.banners.ui.banner.BannerView;
+import com.inappstory.sdk.core.banners.IBannerPlaceLoadCallback;
+import com.inappstory.sdk.banners.ICustomBannerPlaceholder;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.banners.BannerDownloadManager;

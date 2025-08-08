@@ -1,27 +1,21 @@
 package com.inappstory.sdk.core.api.impl;
 
-import androidx.annotation.NonNull;
-
 import com.inappstory.sdk.banners.BannerPlacePreloadCallback;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASBanners;
-import com.inappstory.sdk.core.banners.BannerPlaceLoadSettings;
+import com.inappstory.sdk.banners.BannerPlaceLoadSettings;
 import com.inappstory.sdk.core.banners.BannerPlaceLoadStates;
 import com.inappstory.sdk.core.banners.BannerPlaceState;
 import com.inappstory.sdk.core.banners.IBannerPlaceViewModel;
 import com.inappstory.sdk.core.banners.IBannerViewModel;
-import com.inappstory.sdk.core.banners.LoadBannerPlaceCallback;
+import com.inappstory.sdk.core.banners.BannerPlaceUseCaseCallback;
 import com.inappstory.sdk.core.data.IBanner;
 import com.inappstory.sdk.core.network.content.usecase.BannerPlaceUseCase;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.BannerData;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.UUID;
 
 public class IASBannersImpl implements IASBanners {
@@ -54,7 +48,7 @@ public class IASBannersImpl implements IASBanners {
                                 BannerPlaceLoadStates.LOADING
                         )
         );
-        bannerPlaceUseCase.get(new LoadBannerPlaceCallback() {
+        bannerPlaceUseCase.get(new BannerPlaceUseCaseCallback() {
             @Override
             public void success(List<IBanner> content) {
                 BannerPlaceState state = bannerPagerViewModel.getCurrentBannerPagerState()
@@ -116,7 +110,7 @@ public class IASBannersImpl implements IASBanners {
                                 BannerPlaceLoadStates.LOADING
                         )
         );
-        bannerPlaceUseCase.get(new LoadBannerPlaceCallback() {
+        bannerPlaceUseCase.get(new BannerPlaceUseCaseCallback() {
             @Override
             public void success(List<IBanner> content) {
                 if (content == null) {
