@@ -34,6 +34,7 @@ public interface IBannerViewModel extends IReaderSlideViewModel {
     void vibrate(int[] vibratePattern);
     void openGame(String gameInstanceId);
     void setAudioManagerMode(String mode);
+    void writeToClipboard(String payload);
     void slideStarted(Double startTime);
     void slideLoaded(String data);
     void statisticEvent(

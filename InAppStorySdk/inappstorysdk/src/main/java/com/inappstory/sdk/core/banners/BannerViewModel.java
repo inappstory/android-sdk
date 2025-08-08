@@ -37,6 +37,7 @@ import com.inappstory.sdk.stories.utils.Observer;
 import com.inappstory.sdk.stories.utils.SingleTimeEvent;
 import com.inappstory.sdk.stories.utils.WebPageConvertCallback;
 import com.inappstory.sdk.stories.utils.WebPageConverter;
+import com.inappstory.sdk.utils.ClipboardUtils;
 import com.inappstory.sdk.utils.ScheduledTPEManager;
 import com.inappstory.sdk.utils.StringsUtils;
 
@@ -332,6 +333,11 @@ public class BannerViewModel implements IBannerViewModel {
     @Override
     public void setAudioManagerMode(String mode) {
 
+    }
+
+    @Override
+    public void writeToClipboard(String payload) {
+        ClipboardUtils.writeToClipboard(payload, core.appContext());
     }
 
     @Override

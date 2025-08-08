@@ -16,8 +16,13 @@ public class BannerJavascriptInterface {
 
 
     @JavascriptInterface
+    public void writeToClipboard(String payload) {
+        slideViewModel.writeToClipboard(payload);
+    }
+
+    @JavascriptInterface
     public void storyLoadingFailed(String data) {
-      //  slideViewModel.slideLoadingFailed(data);
+        slideViewModel.slideLoadingFailed(data);
     }
 
     @JavascriptInterface
