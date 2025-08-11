@@ -24,7 +24,7 @@ public class DefaultBannerPlaceAppearance implements ICustomBannerPlaceAppearanc
 
     @Override
     public int bannersGap() {
-        return 10;
+        return 8;
     }
 
     @Override
