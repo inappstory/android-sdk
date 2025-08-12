@@ -1,8 +1,11 @@
 package com.inappstory.sdk.stories.statistic;
 
+import androidx.annotation.NonNull;
+
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASStatisticIAMV1;
 import com.inappstory.sdk.network.JsonParser;
+import com.inappstory.sdk.network.callbacks.NoTypeNetworkCallback;
 import com.inappstory.sdk.network.models.Response;
 import com.inappstory.sdk.stories.utils.LoopedExecutor;
 
@@ -68,7 +71,39 @@ public class IASStatisticIAMV1Impl implements IASStatisticIAMV1 {
         }
     }
 
-    private void sendTask(final IAMStatisticV1Task task) {
+
+    private void sendTask(@NonNull IAMStatisticV1Task task) {
+        core.network().enqueue(
+                core.network().getApi().sendInAppMessageStat(
+                        Integer.toString(task.iamId),
+                        task.event,
+                        task.eventId,
+                        task.iterationId,
+                        task.slideIndex,
+                        task.slideTotal,
+                        task.durationMs,
+                        task.widgetId,
+                        task.widgetLabel,
+                        task.widgetValue,
+                        task.widgetAnswer,
+                        task.widgetAnswerLabel,
+                        task.widgetAnswerScore
+                ),
+                new NoTypeNetworkCallback() {
+                    @Override
+                    public void onSuccess(Response response) {
+                        loopedExecutor.freeExecutor();
+                    }
+
+                    @Override
+                    public void onFailure(Response response) {
+                        loopedExecutor.freeExecutor();
+                    }
+                }
+        );
+    }
+
+    private void sendTaskOld(final IAMStatisticV1Task task) {
         try {
             final Callable<Boolean> _ff = new Callable<Boolean>() {
                 @Override

@@ -24,7 +24,7 @@ import com.inappstory.sdk.stories.api.models.StoryListType;
 import com.inappstory.sdk.core.network.content.callbacks.LoadFavoritesCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadFeedCallback;
 import com.inappstory.sdk.core.network.content.callbacks.LoadStoriesCallback;
-import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
+import com.inappstory.sdk.stories.api.models.callbacks.GetSessionCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.SimpleListCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.errors.ErrorCallback;
 import com.inappstory.sdk.stories.ui.list.StoryFavoriteImage;
@@ -196,7 +196,7 @@ public class FeedByIdUseCase {
                     @Override
                     public void success() {
                         core.sessionManager().useOrOpenSession(
-                                new OpenSessionCallback() {
+                                new GetSessionCallback() {
                                     @Override
                                     public void onSuccess(final RequestLocalParameters requestLocalParameters) {
                                         final String loadStoriesUID =

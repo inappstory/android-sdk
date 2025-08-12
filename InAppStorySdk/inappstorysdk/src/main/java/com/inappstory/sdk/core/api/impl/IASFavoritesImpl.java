@@ -8,7 +8,7 @@ import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.network.models.RequestLocalParameters;
 import com.inappstory.sdk.network.models.Response;
 import com.inappstory.sdk.stories.api.models.ContentType;
-import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
+import com.inappstory.sdk.stories.api.models.callbacks.GetSessionCallback;
 
 import java.lang.reflect.Type;
 
@@ -21,7 +21,7 @@ public class IASFavoritesImpl implements IASFavorites {
 
     @Override
     public void removeAll() {
-        core.sessionManager().useOrOpenSession(new OpenSessionCallback() {
+        core.sessionManager().useOrOpenSession(new GetSessionCallback() {
             @Override
             public void onSuccess(RequestLocalParameters requestLocalParameters) {
                 favoriteRemoveAll();
@@ -36,7 +36,7 @@ public class IASFavoritesImpl implements IASFavorites {
 
     @Override
     public void removeByStoryId(final int storyId) {
-        core.sessionManager().useOrOpenSession(new OpenSessionCallback() {
+        core.sessionManager().useOrOpenSession(new GetSessionCallback() {
             @Override
             public void onSuccess(RequestLocalParameters requestLocalParameters) {
                 favoriteOrRemoveStory(storyId, false);

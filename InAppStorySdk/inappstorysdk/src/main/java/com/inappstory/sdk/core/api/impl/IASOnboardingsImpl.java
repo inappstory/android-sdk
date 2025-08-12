@@ -26,7 +26,7 @@ import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.core.network.content.models.Feed;
 import com.inappstory.sdk.core.network.content.models.Story;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadFeedCallback;
-import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
+import com.inappstory.sdk.stories.api.models.callbacks.GetSessionCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.onboarding.OnboardingLoadCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
@@ -96,7 +96,7 @@ public class IASOnboardingsImpl implements IASOnboardings {
         } else {
             localTags = TextUtils.join(",", settingsHolder.tags());
         }
-        core.sessionManager().useOrOpenSession(new OpenSessionCallback() {
+        core.sessionManager().useOrOpenSession(new GetSessionCallback() {
             @Override
             public void onSuccess(final RequestLocalParameters requestLocalParameters) {
                 final String onboardUID =

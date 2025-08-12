@@ -122,10 +122,12 @@ public class StoriesActivity extends IASActivity implements BaseStoryScreen, Sho
     ShowGoodsCallback currentGoodsCallback = null;
 
     public void unsubscribeClicks() {
+        if (draggableFrame == null) return;
         draggableFrame.removeListener(fader);
     }
 
     public void subscribeClicks() {
+        if (draggableFrame == null) return;
         draggableFrame.addListener(fader);
     }
 

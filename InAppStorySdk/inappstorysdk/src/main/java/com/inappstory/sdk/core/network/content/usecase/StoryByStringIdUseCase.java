@@ -11,7 +11,7 @@ import com.inappstory.sdk.network.models.RequestLocalParameters;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.core.network.content.models.Story;
 import com.inappstory.sdk.stories.api.models.callbacks.GetStoryByIdCallback;
-import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
+import com.inappstory.sdk.stories.api.models.callbacks.GetSessionCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.outercallbacks.common.single.SingleLoadCallback;
@@ -35,7 +35,7 @@ public class StoryByStringIdUseCase {
             final SourceType readerSource
     ) {
         core.sessionManager().useOrOpenSession(
-                new OpenSessionCallback() {
+                new GetSessionCallback() {
                     @Override
                     public void onSuccess(
                             final RequestLocalParameters requestLocalParameters

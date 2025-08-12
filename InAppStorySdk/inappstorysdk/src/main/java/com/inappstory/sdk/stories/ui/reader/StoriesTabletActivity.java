@@ -465,12 +465,11 @@ public class StoriesTabletActivity extends IASActivity implements BaseStoryScree
                 getSerializableExtra(LaunchStoryScreenData.SERIALIZABLE_KEY);
         appearanceSettings = (LaunchStoryScreenAppearance) getIntent()
                 .getSerializableExtra(LaunchStoryScreenAppearance.SERIALIZABLE_KEY);
-        if (inAppStoryManager == null) {
+        if (inAppStoryManager == null || launchData == null || appearanceSettings == null) {
             forceFinish();
             return;
         }
         IASCore core = inAppStoryManager.iasCore();
-        int navColor = appearanceSettings.csNavBarColor();
         core.screensManager().getStoryScreenHolder().subscribeScreen(StoriesTabletActivity.this);
         View view = getCurrentFocus();
         if (view != null) {

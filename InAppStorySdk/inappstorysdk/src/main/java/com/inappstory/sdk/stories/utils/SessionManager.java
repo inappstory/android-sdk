@@ -10,7 +10,6 @@ import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 
@@ -29,7 +28,7 @@ import com.inappstory.sdk.stories.api.models.CachedSessionData;
 import com.inappstory.sdk.stories.api.models.SessionRequestFields;
 import com.inappstory.sdk.core.network.content.models.SessionResponse;
 import com.inappstory.sdk.stories.api.models.StatisticSendObject;
-import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
+import com.inappstory.sdk.stories.api.models.callbacks.GetSessionCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.errors.ErrorCallback;
 import com.inappstory.sdk.stories.statistic.GetStatisticV1Callback;
 import com.inappstory.sdk.ugc.extinterfaces.IOpenSessionCallback;
@@ -48,8 +47,8 @@ public class SessionManager {
         sessionHolder = new SessionHolder(core);
     }
 
-    public void useOrOpenSession(OpenSessionCallback callback) {
-        checkOpenStatistic(callback);
+    public void useOrOpenSession(GetSessionCallback callback) {
+        getOrOpenSession(callback);
     }
 
     public void addStaticOpenSessionCallback(IOpenSessionCallback callback) {
@@ -65,7 +64,7 @@ public class SessionManager {
         return sessionHolder;
     }
 
-    public void checkOpenStatistic(final OpenSessionCallback callback) {
+    public void getOrOpenSession(final GetSessionCallback callback) {
         final boolean checkOpen;
         synchronized (openProcessLock) {
             checkOpen = openProcess;
@@ -100,29 +99,41 @@ public class SessionManager {
     public boolean openProcess = false;
 
     public final Object openProcessLock = new Object();
-    public ArrayList<OpenSessionCallback> callbacks = new ArrayList<>();
+    public ArrayList<GetSessionCallback> callbacks = new ArrayList<>();
     public ArrayList<IOpenSessionCallback> staticCallbacks = new ArrayList<>();
 
-    private void saveSession(final SessionResponse response) {
-        if (response == null || response.session == null) return;
+    private void setSessionStatisticStatus(@NonNull SessionResponse response) {
         boolean isSendStatistic = InAppStoryManager.getInstance().isSendStatistic();
-        core.statistic().storiesV2().disabled(
-                !(isSendStatistic && response.isAllowStatV2)
-        );
-        core.statistic().profiling().disabled(
-                !(isSendStatistic && response.isAllowProfiling)
-        );
-        core.statistic().exceptions().disabled(
-                !(isSendStatistic && response.isAllowCrash)
-        );
-        core.statistic().iamV1().disabled(!(isSendStatistic && (
-                response.isAllowStatV1 ||
-                        response.isAllowStatV2)
-        ));
-        core.statistic().bannersV1().disabled(!(isSendStatistic && (
-                response.isAllowStatV1 ||
-                        response.isAllowStatV2)
-        ));
+        if (isSendStatistic) {
+            core.statistic().storiesV2().disabled(!response.isAllowStatV2);
+            core.statistic().profiling().disabled(!response.isAllowProfiling);
+            core.statistic().exceptions().disabled(!response.isAllowCrash);
+            core.statistic().iamV1().disabled(!(response.isAllowStatV1 ||
+                    response.isAllowStatV2));
+            core.statistic().bannersV1().disabled(!(response.isAllowStatV1 ||
+                    response.isAllowStatV2));
+        } else {
+            core.statistic().storiesV2().disabled(true);
+            core.statistic().profiling().disabled(true);
+            core.statistic().exceptions().disabled(true);
+            core.statistic().iamV1().disabled(true);
+            core.statistic().bannersV1().disabled(true);
+        }
+        core.statistic().storiesV1(new GetStatisticV1Callback() {
+            @Override
+            public void get(@NonNull IASStatisticStoriesV1 manager) {
+                manager.restartSchedule();
+            }
+        });
+    }
+
+    private void downloadSessionAssets(@NonNull SessionResponse response) {
+        core.assetsHolder().setAssets(response.sessionAssets);
+        core.assetsHolder().downloadAssets();
+    }
+
+    private void setSessionPlaceholders(@NonNull SessionResponse response) {
+        if (response == null) return;
         ((IASSettingsImpl) core.settingsAPI()).sessionPlaceholders(response.placeholders);
         ((IASSettingsImpl) core.settingsAPI()).sessionImagePlaceholders(response.imagePlaceholders);
     }
@@ -134,7 +145,7 @@ public class SessionManager {
                 final IASDataSettingsHolder settingsHolder = ((IASDataSettingsHolder) core.settingsAPI());
                 synchronized (openProcessLock) {
                     openProcess = false;
-                    for (OpenSessionCallback localCallback : callbacks)
+                    for (GetSessionCallback localCallback : callbacks)
                         if (localCallback != null)
                             localCallback.onSuccess(
                                     new RequestLocalParameters(
@@ -148,18 +159,6 @@ public class SessionManager {
 
             }
         });
-        core.statistic().storiesV1(new GetStatisticV1Callback() {
-            @Override
-            public void get(@NonNull IASStatisticStoriesV1 manager) {
-                manager.restartSchedule();
-            }
-        });
-        core.assetsHolder().setAssets(response.sessionAssets);
-        core.assetsHolder().downloadAssets();
-    }
-
-    public void openStatisticSuccess(SessionResponse response) {
-        sessionIsSaved(response);
     }
 
     private final String FEATURES =
@@ -182,15 +181,13 @@ public class SessionManager {
     });
 
 
-    public void openSession(final OpenSessionCallback callback) {
+    public void openSession(final GetSessionCallback callback) {
         synchronized (openProcessLock) {
             if (openProcess) {
                 if (callback != null)
                     callbacks.add(callback);
                 return;
             }
-        }
-        synchronized (openProcessLock) {
             callbacks.clear();
             openProcess = true;
             if (callback != null)
@@ -263,6 +260,7 @@ public class SessionManager {
                                 new NetworkCallback<SessionResponse>() {
                                     @Override
                                     public void onSuccess(SessionResponse response) {
+                                        if (response == null) return;
                                         String serviceUserId = dataSettingsHolder.userId();
                                         String serviceUserSign = dataSettingsHolder.userSign();
                                         String currentSession = getSession().getSessionId();
@@ -312,8 +310,10 @@ public class SessionManager {
                                         core.network().setSessionId(response.session.id);
                                         if (response.preloadGame)
                                             core.contentPreload().restartGamePreloader();
-                                        saveSession(response);
-                                        openStatisticSuccess(response);
+                                        setSessionStatisticStatus(response);
+                                        setSessionPlaceholders(response);
+                                        downloadSessionAssets(response);
+                                        sessionIsSaved(response);
                                         core.inAppStoryService()
                                                 .getListReaderConnector().sessionIsOpened(currentSession);
 
@@ -336,7 +336,7 @@ public class SessionManager {
                                                     }
                                                 }
                                         );
-                                        final List<OpenSessionCallback> localCallbacks = new ArrayList<>();
+                                        final List<GetSessionCallback> localCallbacks = new ArrayList<>();
                                         final List<IOpenSessionCallback> localStaticCallbacks = new ArrayList<>();
                                         synchronized (openProcessLock) {
                                             openProcess = false;
@@ -347,7 +347,7 @@ public class SessionManager {
                                         new Handler(Looper.getMainLooper()).post(new Runnable() {
                                             @Override
                                             public void run() {
-                                                for (OpenSessionCallback localCallback : localCallbacks)
+                                                for (GetSessionCallback localCallback : localCallbacks)
                                                     if (localCallback != null)
                                                         localCallback.onError();
                                                 for (IOpenSessionCallback localCallback : localStaticCallbacks)
@@ -388,56 +388,63 @@ public class SessionManager {
     ) {
         if (oldSessionId == null) return;
         clearCaches();
-        core.statistic().storiesV1(oldSessionId, new GetStatisticV1Callback() {
-            @Override
-            public void get(@NonNull IASStatisticStoriesV1 manager) {
-                List<List<Object>> stat = new ArrayList<>(
-                        sendStatistic ?
-                                manager.extractCurrentStatistic() :
-                                new ArrayList<List<Object>>()
-                );
+        core.statistic().storiesV1(
+                oldSessionId,
+                new GetStatisticV1Callback() {
+                    @Override
+                    public void get(@NonNull IASStatisticStoriesV1 statisticV1) {
+                        List<List<Object>> stat = new ArrayList<>(
+                                sendStatistic ?
+                                        statisticV1.extractCurrentStatistic() :
+                                        new ArrayList<List<Object>>()
+                        );
 
-                final String sessionCloseUID =
-                        core.statistic().profiling().addTask("api_session_close");
-                Log.e("statisticTests", "closeSession");
-                core.network().enqueue(
-                        core.network().getApi().sessionClose(
-                                new StatisticSendObject(
-                                        oldSessionId,
-                                        stat
+                        final String sessionCloseUID =
+                                core.statistic().profiling().addTask("api_session_close");
+                        core.network().enqueue(
+                                core.network().getApi().sessionClose(
+                                        new StatisticSendObject(
+                                                oldSessionId,
+                                                stat
+                                        ),
+                                        oldUserId,
+                                        oldLang
                                 ),
-                                oldUserId,
-                                oldLang
-                        ),
-                        new NetworkCallback<SessionResponse>() {
-                            @Override
-                            public void onSuccess(SessionResponse response) {
-                                core.statistic().profiling().setReady(sessionCloseUID, true);
-                                if (changeUserIdOrLocale) {
-                                    core.widgetViewModels().bannerPlaceViewModels().reloadSession();
-                                    core.inAppStoryService().getListReaderConnector().userIdChanged();
-                                }
-                            }
+                                new NetworkCallback<SessionResponse>() {
+                                    @Override
+                                    public void onSuccess(SessionResponse response) {
+                                        core
+                                                .statistic()
+                                                .profiling()
+                                                .setReady(sessionCloseUID, true);
+                                        sessionIsClosed(changeUserIdOrLocale);
+                                    }
 
-                            @Override
-                            public Type getType() {
-                                return SessionResponse.class;
-                            }
+                                    @Override
+                                    public Type getType() {
+                                        return SessionResponse.class;
+                                    }
 
-                            @Override
-                            public void errorDefault(String message) {
-                                core.statistic().profiling().setReady(sessionCloseUID);
-                                if (changeUserIdOrLocale) {
-                                    core.inAppStoryService().getListReaderConnector().userIdChanged();
-                                    core.widgetViewModels().bannerPlaceViewModels().reloadSession();
+                                    @Override
+                                    public void errorDefault(String message) {
+                                        core
+                                                .statistic()
+                                                .profiling()
+                                                .setReady(sessionCloseUID);
+                                        sessionIsClosed(changeUserIdOrLocale);
+                                    }
                                 }
-                            }
-                        }
-                );
-            }
-        });
+                        );
+                    }
+                });
         core.network().removeSessionId(oldSessionId);
         sessionHolder.clear(oldSessionId);
     }
 
+    private void sessionIsClosed(boolean changeUserIdOrLocale) {
+        if (changeUserIdOrLocale) {
+            core.inAppStoryService().getListReaderConnector().userIdChanged();
+            core.widgetViewModels().bannerPlaceViewModels().reloadSession();
+        }
+    }
 }

@@ -2,15 +2,20 @@ package com.inappstory.sdk.stories.statistic;
 
 import android.text.TextUtils;
 
+import androidx.annotation.NonNull;
+
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.IASStatisticStoriesV2;
 import com.inappstory.sdk.network.JsonParser;
+import com.inappstory.sdk.network.callbacks.NetworkCallback;
+import com.inappstory.sdk.network.callbacks.NoTypeNetworkCallback;
 import com.inappstory.sdk.network.models.Response;
 import com.inappstory.sdk.stories.api.models.CurrentV2StatisticState;
 import com.inappstory.sdk.stories.utils.LoopedExecutor;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -22,23 +27,15 @@ import java.util.concurrent.Future;
 
 
 public class IASStatisticStoriesV2Impl implements IASStatisticStoriesV2 {
-    private static IASStatisticStoriesV2Impl INSTANCE;
     private final IASCore core;
 
-    public void disabled(boolean disabled) {
-        this.disabled = disabled;
-    }
-
     private boolean disabled;
-
-    public IASStatisticStoriesV2Impl(IASCore core) {
-        this.core = core;
-        init();
-    }
 
     private final ExecutorService netExecutor = Executors.newFixedThreadPool(1);
     private final ExecutorService initExecutor = Executors.newFixedThreadPool(1);
     private final ExecutorService runnableExecutor = Executors.newFixedThreadPool(1);
+    private final LoopedExecutor loopedExecutor = new LoopedExecutor(100, 100);
+
 
     public static final String NEXT = "next";
     public static final String APPCLOSE = "app-close";
@@ -55,19 +52,28 @@ public class IASStatisticStoriesV2Impl implements IASStatisticStoriesV2 {
     public static final String SWIPE = "swipe-close";
     public static final String CUSTOM = "custom-close";
 
+    private final String TASKS_KEY = "statisticTasks";
+    private final String FAKE_TASKS_KEY = "fakeStatisticTasks";
+
+    long pauseTimer = -1;
+    boolean isBackgroundPause = false;
+    public ArrayList<Integer> viewed = new ArrayList<>();
+    String prefix = "";
+    Map<Integer, Long> cTimes;
+
     private final Object statisticTasksLock = new Object();
-
-    public ArrayList<StoryStatisticV2Task> getTasks() {
-        return tasks;
-    }
-
-    public ArrayList<StoryStatisticV2Task> getFaketasks() {
-        return faketasks;
-    }
 
     private ArrayList<StoryStatisticV2Task> tasks = new ArrayList<>();
     private ArrayList<StoryStatisticV2Task> faketasks = new ArrayList<>();
 
+    public IASStatisticStoriesV2Impl(IASCore core) {
+        this.core = core;
+        init();
+    }
+
+    public void disabled(boolean disabled) {
+        this.disabled = disabled;
+    }
 
     private void addTask(StoryStatisticV2Task task) {
         addTask(task, false);
@@ -111,9 +117,6 @@ public class IASStatisticStoriesV2Impl implements IASStatisticStoriesV2 {
         }
     }
 
-    private final String TASKS_KEY = "statisticTasks";
-    private final String FAKE_TASKS_KEY = "fakeStatisticTasks";
-
     @Override
     public boolean disabled() {
         return false;
@@ -130,20 +133,13 @@ public class IASStatisticStoriesV2Impl implements IASStatisticStoriesV2 {
 
 
     public void pauseStoryEvent(boolean withBg) {
-        if (INSTANCE != this) return;
         if (withBg) {
             isBackgroundPause = true;
             pauseTimer = System.currentTimeMillis();
         }
     }
 
-    long pauseTimer = -1;
-    boolean isBackgroundPause = false;
-
-    boolean backPaused = false;
-
     public void resumeStoryEvent(boolean withBg) {
-        if (INSTANCE != this) return;
         if (withBg) {
             if (isBackgroundPause) {
                 pauseTime += (System.currentTimeMillis() - pauseTimer);
@@ -152,8 +148,6 @@ public class IASStatisticStoriesV2Impl implements IASStatisticStoriesV2 {
         } else {
         }
     }
-
-    private final LoopedExecutor loopedExecutor = new LoopedExecutor(100, 100);
 
 
     private void init() {
@@ -209,10 +203,6 @@ public class IASStatisticStoriesV2Impl implements IASStatisticStoriesV2 {
         }
     };
 
-
-    public ArrayList<Integer> viewed = new ArrayList<>();
-
-    String prefix = "";
 
     public void sendViewStory(final int storyId, final String whence, final String feedId) {
         if (!viewed.contains(storyId)) {
@@ -277,8 +267,6 @@ public class IASStatisticStoriesV2Impl implements IASStatisticStoriesV2 {
             addTask(task);
         }
     }
-
-    Map<Integer, Long> cTimes;
 
     public void sendOpenStory(final int i, final String w,
                               final String feedId) {
@@ -511,8 +499,46 @@ public class IASStatisticStoriesV2Impl implements IASStatisticStoriesV2 {
         if (currentState != null) currentState.storyPause = newTime;
     }
 
+    private void sendTask(@NonNull StoryStatisticV2Task task) {
+        core.network().enqueue(
+                core.network().getApi().sendStat(
+                        task.event,
+                        task.fullData,
+                        task.sessionId,
+                        task.userId,
+                        task.timestamp,
+                        task.feedId,
+                        task.storyId,
+                        task.whence,
+                        task.cause,
+                        task.slideIndex,
+                        task.slideTotal,
+                        task.durationMs,
+                        task.widgetId,
+                        task.widgetLabel,
+                        task.widgetValue,
+                        task.widgetAnswer,
+                        task.widgetAnswerLabel,
+                        task.widgetAnswerScore,
+                        task.layoutIndex,
+                        task.target,
+                        task.mode
+                ), new NoTypeNetworkCallback() {
+                    @Override
+                    public void onSuccess(Response response) {
+                        loopedExecutor.freeExecutor();
+                    }
 
-    private void sendTask(final StoryStatisticV2Task task) {
+                    @Override
+                    public void onFailure(Response response) {
+                        loopedExecutor.freeExecutor();
+                    }
+
+                }
+        );
+    }
+
+    private void sendTaskOld(final StoryStatisticV2Task task) {
 
         try {
             final Callable<Boolean> _ff = new Callable<Boolean>() {

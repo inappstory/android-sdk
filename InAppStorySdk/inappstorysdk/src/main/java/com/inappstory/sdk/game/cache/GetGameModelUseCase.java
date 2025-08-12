@@ -8,7 +8,7 @@ import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.network.models.RequestLocalParameters;
 import com.inappstory.sdk.stories.api.models.GameCenterData;
 import com.inappstory.sdk.stories.api.models.GameLaunchConfigObject;
-import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
+import com.inappstory.sdk.stories.api.models.callbacks.GetSessionCallback;
 
 import java.lang.reflect.Type;
 
@@ -29,7 +29,7 @@ public class GetGameModelUseCase {
         }
         demoMode = ((IASDataSettingsHolder) core.settingsAPI()).gameDemoMode();
         inAppStoryManager.iasCore().sessionManager().useOrOpenSession(
-                new OpenSessionCallback() {
+                new GetSessionCallback() {
                     @Override
                     public void onSuccess(RequestLocalParameters requestLocalParameters) {
                         networkClient.enqueue(

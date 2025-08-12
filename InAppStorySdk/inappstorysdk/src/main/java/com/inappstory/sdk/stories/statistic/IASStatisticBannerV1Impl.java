@@ -2,10 +2,13 @@ package com.inappstory.sdk.stories.statistic;
 
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASStatisticBannerV1;
 import com.inappstory.sdk.core.api.IASStatisticIAMV1;
 import com.inappstory.sdk.network.JsonParser;
+import com.inappstory.sdk.network.callbacks.NoTypeNetworkCallback;
 import com.inappstory.sdk.network.models.Response;
 import com.inappstory.sdk.stories.utils.LoopedExecutor;
 
@@ -71,7 +74,39 @@ public class IASStatisticBannerV1Impl implements IASStatisticBannerV1 {
         }
     }
 
-    private void sendTask(final BannerStatisticV1Task task) {
+
+    private void sendTask(@NonNull BannerStatisticV1Task task) {
+        core.network().enqueue(
+                core.network().getApi().sendBannerStat(
+                        Integer.toString(task.bannerId),
+                        task.event,
+                        task.eventId,
+                        task.iterationId,
+                        task.slideIndex,
+                        task.slideTotal,
+                        task.durationMs,
+                        task.widgetId,
+                        task.widgetLabel,
+                        task.widgetValue,
+                        task.widgetAnswer,
+                        task.widgetAnswerLabel,
+                        task.widgetAnswerScore
+                ),
+                new NoTypeNetworkCallback() {
+                    @Override
+                    public void onSuccess(Response response) {
+                        loopedExecutor.freeExecutor();
+                    }
+
+                    @Override
+                    public void onFailure(Response response) {
+                        loopedExecutor.freeExecutor();
+                    }
+                }
+        );
+    }
+
+    private void sendTaskOld(final BannerStatisticV1Task task) {
         try {
             final Callable<Boolean> _ff = new Callable<Boolean>() {
                 @Override

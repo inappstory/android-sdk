@@ -15,7 +15,7 @@ import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.core.network.content.models.Feed;
 import com.inappstory.sdk.core.network.content.models.Image;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadFeedCallback;
-import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
+import com.inappstory.sdk.stories.api.models.callbacks.GetSessionCallback;
 import com.inappstory.sdk.stories.stackfeed.IStackFeedActions;
 import com.inappstory.sdk.stories.stackfeed.IStackFeedResult;
 import com.inappstory.sdk.stories.stackfeed.IStackStoryData;
@@ -90,7 +90,7 @@ public class IASStackFeedImpl implements IASStackFeed {
         final AppearanceManager localAppearanceManager =
                 appearanceManager != null ? appearanceManager
                         : AppearanceManager.getCommonInstance();
-        core.sessionManager().useOrOpenSession(new OpenSessionCallback() {
+        core.sessionManager().useOrOpenSession(new GetSessionCallback() {
             @Override
             public void onSuccess(final RequestLocalParameters requestLocalParameters) {
                 core.network().enqueue(

@@ -7,7 +7,7 @@ import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.models.RequestLocalParameters;
-import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
+import com.inappstory.sdk.stories.api.models.callbacks.GetSessionCallback;
 import com.inappstory.sdk.stories.api.models.logs.ExceptionLog;
 
 import java.lang.reflect.Type;
@@ -40,7 +40,7 @@ public class ExceptionManager {
         copiedLog.session = log.session;
         copiedLog.line = log.line;
 
-        core.sessionManager().useOrOpenSession(new OpenSessionCallback() {
+        core.sessionManager().useOrOpenSession(new GetSessionCallback() {
             @Override
             public void onSuccess(RequestLocalParameters requestLocalParameters) {
                 if (core.statistic().exceptions().disabled()) {

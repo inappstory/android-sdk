@@ -5,18 +5,16 @@ import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.banners.BannerShownTime;
 import com.inappstory.sdk.core.banners.LoadBannerPlaceCallback;
 import com.inappstory.sdk.core.data.IBanner;
-import com.inappstory.sdk.core.data.IInAppMessage;
 import com.inappstory.sdk.core.data.IReaderContent;
 import com.inappstory.sdk.core.data.IShownTime;
 import com.inappstory.sdk.core.network.content.models.BannerPlaceModel;
-import com.inappstory.sdk.core.ui.screens.inappmessagereader.IAMShownTime;
 import com.inappstory.sdk.core.utils.ConnectionCheck;
 import com.inappstory.sdk.core.utils.ConnectionCheckCallback;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.network.models.RequestLocalParameters;
 import com.inappstory.sdk.stories.api.models.BannerPlaceFilterObject;
 import com.inappstory.sdk.stories.api.models.ContentType;
-import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
+import com.inappstory.sdk.stories.api.models.callbacks.GetSessionCallback;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -55,7 +53,7 @@ public class BannerPlaceUseCase {
                 new ConnectionCheckCallback(core) {
                     @Override
                     public void success() {
-                        OpenSessionCallback openSessionCallback = new OpenSessionCallback() {
+                        GetSessionCallback getSessionCallback = new GetSessionCallback() {
                             @Override
                             public void onSuccess(final RequestLocalParameters sessionParameters) {
                                 NetworkCallback<BannerPlaceModel> networkCallback = new NetworkCallback<BannerPlaceModel>() {
@@ -138,7 +136,7 @@ public class BannerPlaceUseCase {
                             }
                         };
                         core.sessionManager().useOrOpenSession(
-                                openSessionCallback
+                                getSessionCallback
                         );
                     }
                 }

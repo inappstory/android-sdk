@@ -12,7 +12,7 @@ import com.inappstory.sdk.core.network.content.models.InAppMessageFeed;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.network.models.RequestLocalParameters;
 import com.inappstory.sdk.stories.api.models.ContentType;
-import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
+import com.inappstory.sdk.stories.api.models.callbacks.GetSessionCallback;
 import com.inappstory.sdk.stories.utils.TagsUtils;
 
 import java.lang.reflect.Type;
@@ -51,7 +51,7 @@ public class InAppMessagesUseCase {
                 new ConnectionCheckCallback(core) {
                     @Override
                     public void success() {
-                        OpenSessionCallback openSessionCallback = new OpenSessionCallback() {
+                        GetSessionCallback getSessionCallback = new GetSessionCallback() {
                             @Override
                             public void onSuccess(final RequestLocalParameters sessionParameters) {
                                 NetworkCallback<InAppMessageFeed> networkCallback = new NetworkCallback<InAppMessageFeed>() {
@@ -125,7 +125,7 @@ public class InAppMessagesUseCase {
                             }
                         };
                         core.sessionManager().useOrOpenSession(
-                                openSessionCallback
+                                getSessionCallback
                         );
                     }
                 }

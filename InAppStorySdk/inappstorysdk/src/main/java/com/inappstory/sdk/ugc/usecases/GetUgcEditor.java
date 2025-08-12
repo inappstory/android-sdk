@@ -8,7 +8,7 @@ import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.core.network.content.models.SessionEditor;
 import com.inappstory.sdk.network.models.RequestLocalParameters;
-import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
+import com.inappstory.sdk.stories.api.models.callbacks.GetSessionCallback;
 import com.inappstory.sdk.ugc.dto.SessionEditorDTO;
 import com.inappstory.sdk.ugc.extinterfaces.IGetUgcEditorCallback;
 import com.inappstory.sdk.ugc.extinterfaces.IGetUgcEditor;
@@ -23,7 +23,7 @@ public class GetUgcEditor implements IGetUgcEditor {
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull final IASCore core) {
-                core.sessionManager().useOrOpenSession(new OpenSessionCallback() {
+                core.sessionManager().useOrOpenSession(new GetSessionCallback() {
                     @Override
                     public void onSuccess(final RequestLocalParameters sessionParameters) {
                         core.network().enqueue(

@@ -63,8 +63,9 @@ public class NetworkClient {
 
     ExecutorService netExecutor = Executors.newFixedThreadPool(10);
 
-    public void enqueue(final Request request,
-                        final Callback callback
+    public void enqueue(
+            final Request request,
+            final Callback callback
     ) {
         enqueue(request, callback, null);
     }

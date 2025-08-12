@@ -17,7 +17,9 @@ import com.inappstory.sdk.core.utils.ConnectionCheck;
 import com.inappstory.sdk.core.utils.ConnectionCheckCallback;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
+import com.inappstory.sdk.network.callbacks.NoTypeNetworkCallback;
 import com.inappstory.sdk.network.callbacks.SimpleApiCallback;
+import com.inappstory.sdk.network.models.Request;
 import com.inappstory.sdk.network.models.RequestLocalParameters;
 import com.inappstory.sdk.network.models.Response;
 import com.inappstory.sdk.stories.api.models.ContentIdWithIndex;
@@ -27,7 +29,7 @@ import com.inappstory.sdk.core.network.content.models.Story;
 import com.inappstory.sdk.stories.api.models.StoryListType;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadFeedCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadListCallback;
-import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
+import com.inappstory.sdk.stories.api.models.callbacks.GetSessionCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.errors.ErrorCallback;
 import com.inappstory.sdk.stories.utils.LoopedExecutor;
 import com.inappstory.sdk.utils.StringsUtils;
@@ -264,7 +266,7 @@ class StoryDownloader {
                 if (!isRefreshing) {
                     isRefreshing = true;
                     core.sessionManager().openSession(
-                            new OpenSessionCallback() {
+                            new GetSessionCallback() {
                                 @Override
                                 public void onSuccess(RequestLocalParameters requestLocalParameters) {
                                     isRefreshing = false;
@@ -316,41 +318,44 @@ class StoryDownloader {
     }
 
 
-    void loadStory(ContentIdAndType key) {
-        try {
-            String storyUID;
-            Response response;
-            if (key.contentType == ContentType.UGC) {
-                storyUID = core.statistic().profiling().addTask("api_story_ugc");
-                response = core.network().execute(
-                        core.network().getApi().getUgcStoryById(
-                                Integer.toString(key.contentId),
-                                1,
-                                EXPAND_STRING
-                        )
-                );
-            } else {
-                storyUID = core.statistic().profiling().addTask("api_story");
-                response = core.network().execute(
-                        core.network().getApi().getStoryById(
-                                Integer.toString(key.contentId),
-                                core.projectSettingsAPI().testKey(),
-                                0,
-                                1,
-                                EXPAND_STRING,
-                                null,
-                                null,
-                                null
-                        )
-                );
-            }
-            core.statistic().profiling().setReady(storyUID);
-            loadStoryResult(key, response);
-        } catch (Throwable t) {
-            t.printStackTrace();
-            loadStoryError(key);
-            loopedExecutor.freeExecutor();
+    void loadStory(final ContentIdAndType key) {
+        final String storyUID;
+        Request request;
+        if (key.contentType == ContentType.UGC) {
+            storyUID = core.statistic().profiling().addTask("api_story_ugc");
+            request = core.network().getApi().getUgcStoryById(
+                    Integer.toString(key.contentId),
+                    1,
+                    EXPAND_STRING
+            );
+        } else {
+            storyUID = core.statistic().profiling().addTask("api_story");
+            request = core.network().getApi().getStoryById(
+                    Integer.toString(key.contentId),
+                    core.projectSettingsAPI().testKey(),
+                    0,
+                    1,
+                    EXPAND_STRING,
+                    null,
+                    null,
+                    null
+            );
         }
+        core.network().enqueue(request, new NoTypeNetworkCallback() {
+            @Override
+            public void onSuccess(Response response) {
+                loopedExecutor.freeExecutor();
+                core.statistic().profiling().setReady(storyUID);
+                loadStoryResult(key, response);
+            }
+
+            @Override
+            public void onFailure(Response response) {
+                loopedExecutor.freeExecutor();
+                core.statistic().profiling().setReady(storyUID);
+                loadStoryError(key);
+            }
+        });
     }
 
     void loadStoryFavoriteList(
@@ -390,7 +395,7 @@ class StoryDownloader {
 
     void loadUgcStoryList(final SimpleApiCallback<List<Story>> callback, final String payload) {
 
-        core.sessionManager().useOrOpenSession(new OpenSessionCallback() {
+        core.sessionManager().useOrOpenSession(new GetSessionCallback() {
             @Override
             public void onSuccess(final RequestLocalParameters requestLocalParameters) {
                 final String loadStoriesUID = core.statistic().profiling().addTask("api_ugc_story_list");
@@ -454,7 +459,7 @@ class StoryDownloader {
                 new ConnectionCheckCallback(core) {
                     @Override
                     public void success() {
-                        core.sessionManager().useOrOpenSession(new OpenSessionCallback() {
+                        core.sessionManager().useOrOpenSession(new GetSessionCallback() {
                             @Override
                             public void onSuccess(final RequestLocalParameters requestLocalParameters) {
                                 final String loadStoriesUID =
@@ -539,7 +544,7 @@ class StoryDownloader {
             final boolean retry
     ) {
         core.sessionManager().useOrOpenSession(
-                new OpenSessionCallback() {
+                new GetSessionCallback() {
                     @Override
                     public void onSuccess(final RequestLocalParameters requestLocalParameters) {
                         final String loadStoriesUID = core.statistic().profiling().addTask(

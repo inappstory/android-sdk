@@ -4,8 +4,6 @@ import com.inappstory.sdk.utils.ScheduledTPEManager;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 public class LoopedExecutor {
@@ -24,19 +22,19 @@ public class LoopedExecutor {
             executorThread =
                     Executors.newSingleThreadExecutor();
         }
-        statisticScheduledThread.scheduleAtFixedRate(new Runnable() {
+        scheduledThread.scheduleAtFixedRate(new Runnable() {
             int count = 0;
             @Override
             public void run() {
+                synchronized (taskLaunchLock) {
+                    if (taskLaunched) return;
+                    taskLaunched = true;
+                }
                 count++;
                 if (count == 100) {
                     shutdown();
                     init(runnable);
                 } else {
-                    synchronized (taskLaunchLock) {
-                        if (taskLaunched) return;
-                        taskLaunched = true;
-                    }
                     executorThread.submit(runnable);
                 }
             }
@@ -54,11 +52,11 @@ public class LoopedExecutor {
 
     public void shutdown() {
         executorThread.shutdown();
-        statisticScheduledThread.shutdown();
+        scheduledThread.shutdown();
     }
 
 
-    private ScheduledTPEManager statisticScheduledThread =
+    private ScheduledTPEManager scheduledThread =
             new ScheduledTPEManager();
 
 
