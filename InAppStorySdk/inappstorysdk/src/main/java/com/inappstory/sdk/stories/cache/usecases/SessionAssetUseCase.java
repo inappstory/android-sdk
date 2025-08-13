@@ -1,6 +1,5 @@
 package com.inappstory.sdk.stories.cache.usecases;
 
-import android.util.Log;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.core.IASCore;
@@ -101,9 +100,6 @@ public class SessionAssetUseCase extends GetCacheFileUseCase<Void> {
         } catch (Exception e) {
             useCaseCallback.onError(e.getMessage());
         }
-
-
-
     }
 
     @Override

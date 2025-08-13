@@ -120,6 +120,9 @@ public class BannerView extends FrameLayout implements Observer<BannerState> {
     }
 
     public void stopBanner() {
+        bannerViewModel.singleTimeEvents().unsubscribe(
+                steTypeAndDataObserver
+        );
         if (!isLoaded) return;
         if (bannerWebView == null) return;
         if (bannerViewModel != null) {
@@ -180,6 +183,9 @@ public class BannerView extends FrameLayout implements Observer<BannerState> {
     }
 
     public void startBanner() {
+        bannerViewModel.singleTimeEvents().subscribe(
+                steTypeAndDataObserver
+        );
         if (!isLoaded) return;
         if (bannerWebView == null) return;
         if (bannerViewModel != null) {
@@ -413,9 +419,6 @@ public class BannerView extends FrameLayout implements Observer<BannerState> {
         Log.e("ViewIsAttached", toString());
         if (bannerViewModel != null) {
             bannerViewModel.addSubscriber(this);
-            bannerViewModel.singleTimeEvents().subscribe(
-                    steTypeAndDataObserver
-            );
         }
 
     }
@@ -426,9 +429,6 @@ public class BannerView extends FrameLayout implements Observer<BannerState> {
         if (bannerViewModel != null) {
             bannerViewModel.clearJsStatus();
             bannerViewModel.removeSubscriber(this);
-            bannerViewModel.singleTimeEvents().unsubscribe(
-                    steTypeAndDataObserver
-            );
         }
     }
 

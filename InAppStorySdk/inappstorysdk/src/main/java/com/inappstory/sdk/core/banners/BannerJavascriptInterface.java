@@ -1,5 +1,6 @@
 package com.inappstory.sdk.core.banners;
 
+import android.util.Log;
 import android.webkit.JavascriptInterface;
 
 public class BannerJavascriptInterface {
@@ -27,6 +28,7 @@ public class BannerJavascriptInterface {
 
     @JavascriptInterface
     public void updateTimeline(String data) {
+        Log.e("BannerJS", "updateTimeline " + data);
         slideViewModel.updateTimeline(data);
     }
 
@@ -107,6 +109,7 @@ public class BannerJavascriptInterface {
 
     @JavascriptInterface
     public void storyShowNext() {
+        Log.e("BannerJS", "storyShowNext");
         slideViewModel.showNext();
     }
 

@@ -495,26 +495,32 @@ public class BannerViewModel implements IBannerViewModel {
     private boolean paused;
     private long timerDuration = 0L;
 
-    Runnable timerTask = new Runnable() {
+    class TimerTask implements Runnable {
+        public String uid = UUID.randomUUID().toString();
+
         @Override
         public void run() {
             boolean cancel = false;
             synchronized (timerLock) {
                 if (paused) return;
-                cancel = timerDuration > 0 && System.currentTimeMillis() - lastStartTimer >= timerDuration;
+                cancel = lastStartTimer >= 0 &&
+                        timerDuration > 0 &&
+                        System.currentTimeMillis() - lastStartTimer >= timerDuration;
             }
             if (cancel) {
-                cancelTask();
+                Log.e("cancelTimerTask", uid);
                 synchronized (timerLock) {
                     pauseShift = 0;
                     paused = false;
                     lastStartTimer = -1;
                 }
+                cancelTask();
                 autoSlideEnd();
             }
-
         }
-    };
+    }
+
+    Runnable timerTask = new TimerTask();
 
     private void autoSlideEnd() {
         singleTimeEvents.updateValue(

@@ -9,6 +9,7 @@ import android.graphics.Color;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -473,6 +474,7 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
         if (bannerPlaceViewModel == null) return;
         if (currentLoadState == BannerPlaceLoadStates.LOADED && newValue.currentIndex() != null) {
             if (bannerPager.getCurrentItem() != newValue.currentIndex()) {
+                Log.e("Indexes", bannerPager.getCurrentItem() + " " + newValue.currentIndex());
                 bannerPager.post(new Runnable() {
                     @Override
                     public void run() {
