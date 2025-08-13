@@ -111,11 +111,11 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
             if (inAppMessage != null) {
                 getLocalInAppMessage.get(inAppMessage);
             } else {
-                getLocalInAppMessage.error(null);
+                getLocalInAppMessage.error("Local data not found");
             }
         } else if (inAppMessageOpenSettings.event() != null) {
             if (tagsToCheck != null && !core.contentLoader().getIamWereLoadedStatus(TagsUtils.tagsHash(tagsToCheck))) {
-                getLocalInAppMessage.error(null);
+                getLocalInAppMessage.error("Data was not loaded");
             } else {
                 getContentByEvent(
                         getLocalInAppMessage,
@@ -123,7 +123,7 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
                 );
             }
         } else {
-            getLocalInAppMessage.error(null);
+            getLocalInAppMessage.error("Setting is empty");
         }
     }
 
@@ -291,7 +291,7 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
                                                                 launchScreenError(
                                                                         "Can't load InAppMessage with settings: [id: "
                                                                                 + localSettings.id() +
-                                                                                ", event: " + localSettings.event() + "]"
+                                                                                ", event: " + localSettings.event() + "]; Reason : " + errorMessage
                                                                 );
                                                             }
                                                         },

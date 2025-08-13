@@ -28,6 +28,7 @@ import com.inappstory.sdk.utils.animation.IndependentAnimator;
 import com.inappstory.sdk.utils.animation.IndependentAnimatorListener;
 
 public class PopupContentContainer extends IAMContentContainer<InAppMessagePopupAppearance> {
+    private FrameLayout mainLayout;
     private RoundedCornerLayout roundedCornerLayout;
     private FrameLayout.LayoutParams layoutParams;
     private RelativeLayout.LayoutParams closeButtonLayoutParams;
