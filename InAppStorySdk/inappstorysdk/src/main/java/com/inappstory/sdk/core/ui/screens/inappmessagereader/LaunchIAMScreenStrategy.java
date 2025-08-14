@@ -306,7 +306,7 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
 
                                             @Override
                                             public void error() {
-                                                launchScreenError( "Can't load InAppMessage with settings: [id: "
+                                                launchScreenError("Can't load InAppMessage with settings: [id: "
                                                         + localSettings.id() +
                                                         ", event: " + localSettings.event() + "]");
                                             }
@@ -341,7 +341,8 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
         }
         if (!(openReader instanceof IOpenInAppMessageReader)) return;
         InAppMessageAppearance appearance = inAppMessage.inAppMessageAppearance();
-        inAppMessageScreenActions.readerIsOpened();
+        if (inAppMessageScreenActions != null)
+            inAppMessageScreenActions.readerIsOpened();
         core.screensManager().iamReaderViewModel().initState(
                 new IAMReaderState()
                         .sourceType(sourceType)
@@ -390,7 +391,8 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
     }
 
     private void launchScreenError(String message) {
-        inAppMessageScreenActions.readerOpenError(message);
+        if (inAppMessageScreenActions != null)
+            inAppMessageScreenActions.readerOpenError(message);
     }
 
     private void getContentByEvent(
