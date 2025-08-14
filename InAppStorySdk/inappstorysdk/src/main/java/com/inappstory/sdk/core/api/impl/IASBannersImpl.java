@@ -100,9 +100,9 @@ public class IASBannersImpl implements IASBanners {
                 placeId,
                 settings.tags()
         );
-        final IBannerPlaceViewModel bannerPagerViewModel =
+        final IBannerPlaceViewModel bannerPlaceViewModel =
                 core.widgetViewModels().bannerPlaceViewModels().get(placeId);
-        bannerPagerViewModel.updateState(
+        bannerPlaceViewModel.updateState(
                 new BannerPlaceState()
                         .place(placeId)
                         .tags(settings.tags())
@@ -126,15 +126,15 @@ public class IASBannersImpl implements IASBanners {
                 if (preloadCallback != null) {
                     preloadCallback.bannerPlaceLoaded(content.size(), bannerData);
                 }
-                BannerPlaceState state = bannerPagerViewModel.getCurrentBannerPagerState()
+                BannerPlaceState state = bannerPlaceViewModel.getCurrentBannerPagerState()
                         .copy()
                         .iterationId(UUID.randomUUID().toString())
                         .items(content)
                         .loadState(
                                 content.isEmpty() ? BannerPlaceLoadStates.EMPTY : BannerPlaceLoadStates.LOADED);
-                bannerPagerViewModel.updateState(state);
+                bannerPlaceViewModel.updateState(state);
 
-                List<IBannerViewModel> bannerViewModels = bannerPagerViewModel.getBannerViewModels();
+                List<IBannerViewModel> bannerViewModels = bannerPlaceViewModel.getBannerViewModels();
                 for (int i = 0; i < bannerViewModels.size(); i++) {
                     bannerViewModels.get(i).loadContent(i == 0, preloadCallback);
                 }
@@ -142,22 +142,22 @@ public class IASBannersImpl implements IASBanners {
 
             @Override
             public void isEmpty() {
-                BannerPlaceState state = bannerPagerViewModel.getCurrentBannerPagerState()
+                BannerPlaceState state = bannerPlaceViewModel.getCurrentBannerPagerState()
                         .copy()
                         .items(new ArrayList<IBanner>())
                         .loadState(
                                 BannerPlaceLoadStates.EMPTY);
-                bannerPagerViewModel.updateState(state);
+                bannerPlaceViewModel.updateState(state);
             }
 
             @Override
             public void error() {
-                BannerPlaceState state = bannerPagerViewModel.getCurrentBannerPagerState()
+                BannerPlaceState state = bannerPlaceViewModel.getCurrentBannerPagerState()
                         .copy()
                         .items(new ArrayList<IBanner>())
                         .loadState(
                                 BannerPlaceLoadStates.FAILED);
-                bannerPagerViewModel.updateState(state);
+                bannerPlaceViewModel.updateState(state);
             }
         });
     }
