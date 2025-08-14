@@ -266,7 +266,7 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
                                     launchScreenError(
                                             "Can't load InAppMessage with settings: [id: "
                                                     + localSettings.id() +
-                                                    ", event: " + localSettings.event() + "]"
+                                                    ", event: " + localSettings.event() + "]; Reason (local) : " + errorMessage
                                     );
                                     return;
                                 }
