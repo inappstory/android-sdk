@@ -130,11 +130,14 @@ public class BannerViewModel implements IBannerViewModel {
         return stateObservable.getValue();
     }
 
+    private String payload;
+
     @Override
     public BannerData getCurrentBannerData() {
         return new BannerData(
                 bannerId,
-                bannerPlace
+                bannerPlace,
+                payload
         );
     }
 
@@ -178,6 +181,7 @@ public class BannerViewModel implements IBannerViewModel {
                         ContentType.BANNER
                 );
         if (readerContent == null) return;
+        payload = readerContent.slideEventPayload(0);
         String slideContent = readerContent.slideByIndex(0);
         if (slideContent == null) return;
         WebPageConvertCallback callback = new WebPageConvertCallback() {

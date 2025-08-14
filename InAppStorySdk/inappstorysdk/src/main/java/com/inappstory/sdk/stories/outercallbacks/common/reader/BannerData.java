@@ -7,11 +7,29 @@ public class BannerData extends ContentData {
 
     private String bannerPlace;
 
+    private String payload;
+
+    public String payload() {
+        return payload;
+    }
+
     public BannerData(
             int id,
             String bannerPlace
     ) {
         super(SourceType.BANNERS, ContentType.BANNER);
+        this.id = id;
+        this.bannerPlace = bannerPlace;
+    }
+
+
+    public BannerData(
+            int id,
+            String bannerPlace,
+            String payload
+    ) {
+        super(SourceType.BANNERS, ContentType.BANNER);
+        this.payload = payload;
         this.id = id;
         this.bannerPlace = bannerPlace;
     }
@@ -29,6 +47,7 @@ public class BannerData extends ContentData {
         return "BannerData{" +
                 "id=" + id() +
                 ", title='" + bannerPlace() + '\'' +
+                ", payload='" + payload() + '\'' +
                 '}';
     }
 }

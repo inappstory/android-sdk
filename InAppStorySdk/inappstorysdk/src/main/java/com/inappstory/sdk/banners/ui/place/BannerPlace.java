@@ -82,7 +82,7 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
                     bannerPlaceLoadCallback.bannerPlaceLoaded(0, new ArrayList<BannerData>(), WRAP_CONTENT);
                 } else {
                     for (IBanner banner : banners) {
-                        bannerData.add(new BannerData(banner.id(), placeId));
+                        bannerData.add(new BannerData(banner.id(), placeId, banner.slideEventPayload(0)));
                     }
                     bannerPlaceLoadCallback.bannerPlaceLoaded(
                             bannerData.size(),

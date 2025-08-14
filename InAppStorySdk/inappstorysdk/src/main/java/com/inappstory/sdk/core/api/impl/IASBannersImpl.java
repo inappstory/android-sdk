@@ -121,7 +121,7 @@ public class IASBannersImpl implements IASBanners {
                 }
                 List<BannerData> bannerData = new ArrayList<>();
                 for (IBanner banner : content) {
-                    bannerData.add(new BannerData(banner.id(), placeId));
+                    bannerData.add(new BannerData(banner.id(), placeId, banner.slideEventPayload(0)));
                 }
                 if (preloadCallback != null) {
                     preloadCallback.bannerPlaceLoaded(content.size(), bannerData);
