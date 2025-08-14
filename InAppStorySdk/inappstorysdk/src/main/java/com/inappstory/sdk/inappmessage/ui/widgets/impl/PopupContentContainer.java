@@ -28,9 +28,10 @@ import com.inappstory.sdk.utils.animation.IndependentAnimator;
 import com.inappstory.sdk.utils.animation.IndependentAnimatorListener;
 
 public class PopupContentContainer extends IAMContentContainer<InAppMessagePopupAppearance> {
+    private FrameLayout mainLayout;
     private RoundedCornerLayout roundedCornerLayout;
     private FrameLayout.LayoutParams layoutParams;
-    private RelativeLayout.LayoutParams closeButtonLayoutParams;
+    private FrameLayout.LayoutParams closeButtonLayoutParams;
     private TouchFrameLayout closeButton;
 
     public PopupContentContainer(
@@ -72,10 +73,10 @@ public class PopupContentContainer extends IAMContentContainer<InAppMessagePopup
                 closeButton.setVisibility(GONE);
                 break;
             case 1:
-                closeButtonLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_START);
+                closeButtonLayoutParams.gravity = Gravity.START;
                 break;
             default:
-                closeButtonLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_END);
+                closeButtonLayoutParams.gravity = Gravity.END;
                 break;
         }
         //
@@ -100,7 +101,7 @@ public class PopupContentContainer extends IAMContentContainer<InAppMessagePopup
                 case 1:
                     background.setAlpha(0f);
                     final int height = getHeight();
-                    roundedCornerLayout.setTranslationY(height);
+                    mainLayout.setTranslationY(height);
                     new IndependentAnimator(new IndependentAnimatorListener() {
                         @Override
                         public void onStart() {
@@ -109,10 +110,10 @@ public class PopupContentContainer extends IAMContentContainer<InAppMessagePopup
 
                         @Override
                         public void onUpdate(final float progress) {
-                            roundedCornerLayout.post(new Runnable() {
+                            mainLayout.post(new Runnable() {
                                 @Override
                                 public void run() {
-                                    roundedCornerLayout.setTranslationY((1f - progress) * height);
+                                    mainLayout.setTranslationY((1f - progress) * height);
                                     background.setAlpha(progress);
                                 }
                             });
@@ -130,9 +131,9 @@ public class PopupContentContainer extends IAMContentContainer<InAppMessagePopup
                     break;
                 case 2:
                     background.setAlpha(0f);
-                    roundedCornerLayout.setAlpha(0f);
-                    roundedCornerLayout.setScaleX(0.7f);
-                    roundedCornerLayout.setScaleY(0.7f);
+                    mainLayout.setAlpha(0f);
+                    mainLayout.setScaleX(0.7f);
+                    mainLayout.setScaleY(0.7f);
                     new IndependentAnimator(new IndependentAnimatorListener() {
                         @Override
                         public void onStart() {
@@ -141,12 +142,12 @@ public class PopupContentContainer extends IAMContentContainer<InAppMessagePopup
 
                         @Override
                         public void onUpdate(final float progress) {
-                            roundedCornerLayout.post(new Runnable() {
+                            mainLayout.post(new Runnable() {
                                 @Override
                                 public void run() {
-                                    roundedCornerLayout.setScaleX((0.3f * progress) + 0.7f);
-                                    roundedCornerLayout.setScaleY((0.3f * progress) + 0.7f);
-                                    roundedCornerLayout.setAlpha(progress);
+                                    mainLayout.setScaleX((0.3f * progress) + 0.7f);
+                                    mainLayout.setScaleY((0.3f * progress) + 0.7f);
+                                    mainLayout.setAlpha(progress);
                                     background.setAlpha(progress);
                                 }
                             });
@@ -201,10 +202,10 @@ public class PopupContentContainer extends IAMContentContainer<InAppMessagePopup
 
                         @Override
                         public void onUpdate(final float progress) {
-                            roundedCornerLayout.post(new Runnable() {
+                            mainLayout.post(new Runnable() {
                                 @Override
                                 public void run() {
-                                    roundedCornerLayout.setTranslationY(progress * height);
+                                    mainLayout.setTranslationY(progress * height);
                                     background.setAlpha(1f - progress);
                                 }
                             });
@@ -226,12 +227,12 @@ public class PopupContentContainer extends IAMContentContainer<InAppMessagePopup
 
                         @Override
                         public void onUpdate(final float progress) {
-                            roundedCornerLayout.post(new Runnable() {
+                            mainLayout.post(new Runnable() {
                                 @Override
                                 public void run() {
-                                    roundedCornerLayout.setScaleX(1f - (0.3f * progress));
-                                    roundedCornerLayout.setScaleY(1f - (0.3f * progress));
-                                    roundedCornerLayout.setAlpha(1f - progress);
+                                    mainLayout.setScaleX(1f - (0.3f * progress));
+                                    mainLayout.setScaleY(1f - (0.3f * progress));
+                                    mainLayout.setAlpha(1f - progress);
                                     background.setAlpha(1f - progress);
                                 }
                             });
@@ -288,10 +289,10 @@ public class PopupContentContainer extends IAMContentContainer<InAppMessagePopup
         roundedCornerLayout.setRadius(
                 Sizes.dpToPxExt(appearance.cornerRadius(), getContext())
         );
-        roundedCornerLayout.setLayoutParams(
+        mainLayout.setLayoutParams(
                 layoutParams
         );
-        roundedCornerLayout.requestLayout();
+        mainLayout.requestLayout();
     }
 
     @Override
@@ -302,14 +303,20 @@ public class PopupContentContainer extends IAMContentContainer<InAppMessagePopup
     @Override
     protected void init(Context context) {
         super.init(context);
+        mainLayout = new FrameLayout(context);
         roundedCornerLayout = new RoundedCornerLayout(context);
         roundedCornerLayout.setClickable(true);
+        FrameLayout.LayoutParams frameLayoutParams = new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+        );
         layoutParams = new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT
         );
         layoutParams.gravity = Gravity.CENTER;
-        roundedCornerLayout.setLayoutParams(layoutParams);
+        roundedCornerLayout.setLayoutParams(frameLayoutParams);
+        mainLayout.setLayoutParams(layoutParams);
         RelativeLayout relativeLayout = new RelativeLayout(context);
         relativeLayout.setLayoutParams(
                 new RelativeLayout.LayoutParams(
@@ -327,7 +334,7 @@ public class PopupContentContainer extends IAMContentContainer<InAppMessagePopup
         content.setVisibility(GONE);
         closeButton = new TouchFrameLayout(context);
         int maxSize = Sizes.dpToPxExt(30, context);
-        closeButtonLayoutParams = new RelativeLayout.LayoutParams(
+        closeButtonLayoutParams = new FrameLayout.LayoutParams(
                 maxSize,
                 maxSize
         );
@@ -363,11 +370,11 @@ public class PopupContentContainer extends IAMContentContainer<InAppMessagePopup
         );
         closeButton.setLayoutParams(closeButtonLayoutParams);
         relativeLayout.addView(content);
-        relativeLayout.addView(closeButton);
         content.setId(CONTENT_ID);
+        mainLayout.addView(roundedCornerLayout);
         roundedCornerLayout.addView(relativeLayout);
-
-        addView(roundedCornerLayout);
+        mainLayout.addView(closeButton);
+        addView(mainLayout);
         if (appearance != null) appearance(appearance);
     }
 }
