@@ -55,7 +55,6 @@ public class LaunchStoryScreenStrategy implements LaunchScreenStrategy {
         final StoryScreenHolder currentScreenHolder = screensHolder.getStoryScreenHolder();
         boolean cantBeOpened = false;
         if (!(openReader instanceof IOpenStoriesReader)) return;
-        currentScreenHolder.startLaunchProcess();
         String message = "Story reader can't be opened. Please, close another opened reader first.";
         if (screensHolder.hasActiveScreen(currentScreenHolder)) {
             cantBeOpened = !openedFromReader;
@@ -63,6 +62,7 @@ public class LaunchStoryScreenStrategy implements LaunchScreenStrategy {
         if (currentScreenHolder.isOpened(launchStoryScreenData)) {
             cantBeOpened = true;
         }
+        currentScreenHolder.startLaunchProcess();
         if (launchStoryScreenData != null) {
             if (launchStoryScreenData.getStoriesIds().isEmpty()) {
                 cantBeOpened = true;

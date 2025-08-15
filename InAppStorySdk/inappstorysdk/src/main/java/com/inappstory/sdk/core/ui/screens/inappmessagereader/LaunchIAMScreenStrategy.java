@@ -330,15 +330,13 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
             IScreensHolder screensHolder
     ) {
         boolean cantBeOpened = screensHolder.hasActiveScreen();
-
         final IAMScreenHolder currentScreenHolder = screensHolder.getIAMScreenHolder();
-        currentScreenHolder.startLaunchProcess();
         if (cantBeOpened) {
             String message = "InAppMessage reader can't be opened. Please, close another opened reader first.";
             launchScreenError(message);
-            currentScreenHolder.endLaunchProcess();
             return;
         }
+        currentScreenHolder.startLaunchProcess();
         cantBeOpened = core.sessionManager().getSession().getSessionId().isEmpty();
         if (cantBeOpened) {
             String message = "Session is not opened.";

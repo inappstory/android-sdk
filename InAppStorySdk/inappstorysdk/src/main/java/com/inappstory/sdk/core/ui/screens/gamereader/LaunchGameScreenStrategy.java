@@ -52,7 +52,6 @@ public class LaunchGameScreenStrategy implements LaunchScreenStrategy {
             );
             return;
         }
-        final GameScreenHolder currentScreenHolder = screensHolder.getGameScreenHolder();
         if ((!openedFromReader && screensHolder.hasActiveScreen()) ||
                 screensHolder.hasActiveScreen(screensHolder.getGameScreenHolder())
         ) {
