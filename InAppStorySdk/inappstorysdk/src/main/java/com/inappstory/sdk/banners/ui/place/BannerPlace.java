@@ -495,11 +495,14 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
         currentLoadState = newValue.loadState();
         switch (newValue.loadState()) {
             case EMPTY:
+                internalBannerPlaceLoadCallback.bannerPlaceLoaded(new ArrayList<IBanner>());
             case FAILED:
+                internalBannerPlaceLoadCallback.loadError();
             case NONE:
             case LOADING:
                 break;
             case LOADED:
+                internalBannerPlaceLoadCallback.bannerPlaceLoaded(newValue.getItems());
                 new Handler(Looper.getMainLooper()).post(new Runnable() {
                     @Override
                     public void run() {

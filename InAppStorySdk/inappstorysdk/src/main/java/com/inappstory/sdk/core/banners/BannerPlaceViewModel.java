@@ -54,24 +54,24 @@ public class BannerPlaceViewModel implements IBannerPlaceViewModel {
         }
         switch (placeState.loadState()) {
             case EMPTY:
-                try {
+                /*try {
                     callback.bannerPlaceLoaded(
                             content
                     );
                 } catch (Exception e) {
-                }
+                }*/
                 break;
             case FAILED:
-                try {
+               /* try {
                     callback.loadError();
                 } catch (Exception e) {
-                }
+                }*/
                 break;
             case NONE:
             case LOADING:
                 break;
             case LOADED:
-                if (content != null) {
+                /*if (content != null) {
                     try {
                         callback.bannerPlaceLoaded(
                                 content
@@ -79,7 +79,7 @@ public class BannerPlaceViewModel implements IBannerPlaceViewModel {
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
-                }
+                }*/
                 break;
         }
     }
