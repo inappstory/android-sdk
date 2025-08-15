@@ -69,6 +69,13 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
     }*/
 
     public void loadCallback(BannerPlaceLoadCallback bannerPlaceLoadCallback) {
+        if (bannerPlaceLoadCallback.bannerPlace() == null) {
+            if (placeId != null) {
+                bannerPlaceLoadCallback.bannerPlace(placeId);
+            } else {
+                //TODO Log error
+            }
+        }
         this.bannerPlaceLoadCallback = bannerPlaceLoadCallback;
     }
 
@@ -325,7 +332,7 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
             bannerPlaceViewModel.removeSubscriber(BannerPlace.this);
             bannerPlaceViewModel.removeBannerPlaceLoadCallback((InnerBannerPlaceLoadCallback) internalBannerPlaceLoadCallback);
             bannerPlaceViewModel.clearBanners();
-          //  bannerPlaceViewModel.clear();
+            //  bannerPlaceViewModel.clear();
             bannerPlaceViewModel = null;
         }
         currentLoadState = null;

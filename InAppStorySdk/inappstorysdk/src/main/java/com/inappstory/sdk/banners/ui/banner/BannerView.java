@@ -447,6 +447,7 @@ public class BannerView extends FrameLayout implements Observer<BannerState> {
         }
     }
 
+
     @Override
     public void onUpdate(final BannerState newValue) {
         if (newValue == null) return;
@@ -464,7 +465,7 @@ public class BannerView extends FrameLayout implements Observer<BannerState> {
                     if (listLoadCallback != null) {
                         listLoadCallback.bannerLoadError(newValue.bannerId(), newValue.bannerIsActive());
                     }
-                    showRefresh();
+                  //  showRefresh();
                     break;
                 case LOADED:
                     Log.e("UpdateBannerState", "Loaded Event " + newValue.bannerId());
