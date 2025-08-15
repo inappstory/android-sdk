@@ -65,6 +65,7 @@ public class BannerPagerAdapter extends PagerAdapter implements Observer<BannerS
         subscribeToFirst();
     }
 
+
     @NonNull
     @Override
     public Object instantiateItem(@NonNull ViewGroup container, int position) {
@@ -93,6 +94,7 @@ public class BannerPagerAdapter extends PagerAdapter implements Observer<BannerS
         });
 
         container.addView(bannerView);
+        bannerView.setListLoadCallback(listLoadCallback);
         return bannerView;
     }
 
@@ -131,8 +133,10 @@ public class BannerPagerAdapter extends PagerAdapter implements Observer<BannerS
 
     @Override
     public void destroyItem(@NonNull ViewGroup container, int position, @NonNull Object object) {
-        if (object instanceof BannerView)
+        if (object instanceof BannerView) {
+            ((BannerView) object).removeListLoadCallback();
             container.removeView((BannerView) object);
+        }
     }
 
     @Override
@@ -157,7 +161,7 @@ public class BannerPagerAdapter extends PagerAdapter implements Observer<BannerS
     public void onUpdate(BannerState newValue) {
         if (newValue == null) return;
 
-        Log.e("ObserverUpdate", Thread.currentThread().getName() + " PagerAdapter onUpdate " + newValue);
+       /* Log.e("ObserverUpdate", Thread.currentThread().getName() + " PagerAdapter onUpdate " + newValue);
         if (currentState == null ||
                 (newValue.loadState() != currentState.loadState())
         ) {
@@ -174,7 +178,7 @@ public class BannerPagerAdapter extends PagerAdapter implements Observer<BannerS
                     listLoadCallback.bannerLoaded(newValue.bannerId(), newValue.bannerIsActive());
             }
 
-        }
-        currentState = newValue;
+        }*/
+        //currentState = newValue;
     }
 }

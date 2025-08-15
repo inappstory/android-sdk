@@ -31,6 +31,7 @@ import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.api.impl.IASSingleStoryImpl;
 import com.inappstory.sdk.core.banners.BannerState;
+import com.inappstory.sdk.core.banners.IBannerPlaceLoadCallback;
 import com.inappstory.sdk.core.banners.IBannerViewModel;
 import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenData;
 import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenStrategy;
@@ -46,6 +47,8 @@ import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.utils.Observer;
 import com.inappstory.sdk.stories.utils.Sizes;
+
+import java.util.Objects;
 
 public class BannerView extends FrameLayout implements Observer<BannerState> {
 
@@ -423,6 +426,18 @@ public class BannerView extends FrameLayout implements Observer<BannerState> {
 
     }
 
+
+    public void setListLoadCallback(IBannerPlaceLoadCallback listLoadCallback) {
+        this.listLoadCallback = listLoadCallback;
+    }
+
+
+    public void removeListLoadCallback() {
+        this.listLoadCallback = null;
+    }
+
+    private IBannerPlaceLoadCallback listLoadCallback;
+
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
@@ -435,6 +450,7 @@ public class BannerView extends FrameLayout implements Observer<BannerState> {
     @Override
     public void onUpdate(final BannerState newValue) {
         if (newValue == null) return;
+        if (!Objects.equals(newValue.bannerId(), bannerId)) return;
         if (currentState == null ||
                 (newValue.loadState() != currentState.loadState())
         ) {
@@ -445,6 +461,9 @@ public class BannerView extends FrameLayout implements Observer<BannerState> {
                     showLoader();
                     break;
                 case FAILED:
+                    if (listLoadCallback != null) {
+                        listLoadCallback.bannerLoadError(newValue.bannerId(), newValue.bannerIsActive());
+                    }
                     showRefresh();
                     break;
                 case LOADED:
@@ -486,6 +505,9 @@ public class BannerView extends FrameLayout implements Observer<BannerState> {
                 case 1:
                     if (bannerWebView != null) {
                         isLoaded = true;
+                        if (listLoadCallback != null) {
+                            listLoadCallback.bannerLoaded(newValue.bannerId(), newValue.bannerIsActive());
+                        }
                         bannerWebView.post(
                                 new Runnable() {
                                     @Override
