@@ -52,9 +52,10 @@ public class LaunchStoryScreenStrategy implements LaunchScreenStrategy {
             final IOpenReader openReader,
             final IScreensHolder screensHolder
     ) {
-        StoryScreenHolder currentScreenHolder = screensHolder.getStoryScreenHolder();
+        final StoryScreenHolder currentScreenHolder = screensHolder.getStoryScreenHolder();
         boolean cantBeOpened = false;
         if (!(openReader instanceof IOpenStoriesReader)) return;
+        currentScreenHolder.startLaunchProcess();
         String message = "Story reader can't be opened. Please, close another opened reader first.";
         if (screensHolder.hasActiveScreen(currentScreenHolder)) {
             cantBeOpened = !openedFromReader;
@@ -78,14 +79,13 @@ public class LaunchStoryScreenStrategy implements LaunchScreenStrategy {
             cantBeOpened = true;
             message = "User not authorized";
         }
-        cantBeOpened |= core.sessionManager().getSession().getSessionId().isEmpty();
         if (cantBeOpened) {
             for (ILaunchScreenCallback callback : launchScreenCallbacks) {
                 if (callback != null) callback.onError(getType(), message);
             }
+            currentScreenHolder.endLaunchProcess();
             return;
         }
-
         Runnable openNewScreenInstance = new Runnable() {
             @Override
             public void run() {
@@ -101,6 +101,7 @@ public class LaunchStoryScreenStrategy implements LaunchScreenStrategy {
                         readerAppearanceSettings.getSerializableKey(),
                         readerAppearanceSettings
                 );
+                currentScreenHolder.endLaunchProcess();
                 ((IOpenStoriesReader) openReader).onOpen(
                         context,
                         bundle

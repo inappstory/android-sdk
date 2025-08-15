@@ -12,6 +12,7 @@ import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.ui.screens.holder.IScreensHolder;
 import com.inappstory.sdk.core.ui.screens.launcher.LaunchScreenStrategy;
 import com.inappstory.sdk.core.ui.screens.ScreenType;
+import com.inappstory.sdk.core.ui.screens.storyreader.StoryScreenHolder;
 import com.inappstory.sdk.stories.outercallbacks.common.gamereader.GameReaderCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.GameReaderAppearanceSettings;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenGameReader;
@@ -51,6 +52,7 @@ public class LaunchGameScreenStrategy implements LaunchScreenStrategy {
             );
             return;
         }
+        final GameScreenHolder currentScreenHolder = screensHolder.getGameScreenHolder();
         if ((!openedFromReader && screensHolder.hasActiveScreen()) ||
                 screensHolder.hasActiveScreen(screensHolder.getGameScreenHolder())
         ) {

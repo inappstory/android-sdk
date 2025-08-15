@@ -26,6 +26,7 @@ import com.inappstory.sdk.core.network.content.usecase.InAppMessagesUseCase;
 import com.inappstory.sdk.core.ui.screens.holder.IScreensHolder;
 import com.inappstory.sdk.core.ui.screens.launcher.LaunchScreenStrategy;
 import com.inappstory.sdk.core.ui.screens.ScreenType;
+import com.inappstory.sdk.core.ui.screens.storyreader.StoryScreenHolder;
 import com.inappstory.sdk.inappmessage.InAppMessageScreenActions;
 import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderState;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageAppearance;
@@ -307,7 +308,7 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
 
                                             @Override
                                             public void error() {
-                                                launchScreenError( "Can't load InAppMessage with settings: [id: "
+                                                launchScreenError("Can't load InAppMessage with settings: [id: "
                                                         + localSettings.id() +
                                                         ", event: " + localSettings.event() + "]");
                                             }
@@ -326,23 +327,32 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
             IInAppMessage inAppMessage,
             boolean contentIsPreloaded,
             IOpenReader openReader,
-            IScreensHolder screensHolders
+            IScreensHolder screensHolder
     ) {
-        boolean cantBeOpened = screensHolders.hasActiveScreen();
+        boolean cantBeOpened = screensHolder.hasActiveScreen();
+
+        final IAMScreenHolder currentScreenHolder = screensHolder.getIAMScreenHolder();
+        currentScreenHolder.startLaunchProcess();
         if (cantBeOpened) {
             String message = "InAppMessage reader can't be opened. Please, close another opened reader first.";
             launchScreenError(message);
+            currentScreenHolder.endLaunchProcess();
             return;
         }
         cantBeOpened = core.sessionManager().getSession().getSessionId().isEmpty();
         if (cantBeOpened) {
             String message = "Session is not opened.";
             launchScreenError(message);
+            currentScreenHolder.endLaunchProcess();
             return;
         }
-        if (!(openReader instanceof IOpenInAppMessageReader)) return;
+        if (!(openReader instanceof IOpenInAppMessageReader)) {
+            currentScreenHolder.endLaunchProcess();
+            return;
+        }
         InAppMessageAppearance appearance = inAppMessage.inAppMessageAppearance();
-        inAppMessageScreenActions.readerIsOpened();
+        if (inAppMessageScreenActions != null)
+            inAppMessageScreenActions.readerIsOpened();
         core.screensManager().iamReaderViewModel().initState(
                 new IAMReaderState()
                         .sourceType(sourceType)
@@ -353,6 +363,7 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
                         .appearance(appearance)
         );
         saveIAMOpened(inAppMessage.id());
+        currentScreenHolder.endLaunchProcess();
         ((IOpenInAppMessageReader) openReader).onOpen(
                 inAppMessage,
                 inAppMessageOpenSettings.showOnlyIfLoaded(),
@@ -391,7 +402,8 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
     }
 
     private void launchScreenError(String message) {
-        inAppMessageScreenActions.readerOpenError(message);
+        if (inAppMessageScreenActions != null)
+            inAppMessageScreenActions.readerOpenError(message);
     }
 
     private void getContentByEvent(
