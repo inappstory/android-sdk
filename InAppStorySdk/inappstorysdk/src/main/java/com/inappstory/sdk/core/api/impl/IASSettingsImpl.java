@@ -456,7 +456,6 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
                     );
                 this.userSign = null;
                 this.userId = null;
-                this.sendStatistic = false;
             } else {
                 if (settings.userId() != null) {
                     if (deviceId == null && settings.userId().isEmpty()) {
@@ -562,7 +561,7 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
                 this.userPlaceholders.putAll(settings.placeholders());
             }
             if (settings.lang() != null) {
-                if (!lang.toLanguageTag().equals(settings.lang().toLanguageTag())) {
+                if (!currentLang.toLanguageTag().equals(settings.lang().toLanguageTag())) {
                     lang = settings.lang();
                     changeLayoutDirection = settings.changeLayoutDirection();
                     needToReloadSession = true;
