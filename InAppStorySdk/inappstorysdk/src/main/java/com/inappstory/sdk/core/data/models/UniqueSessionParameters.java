@@ -1,40 +1,41 @@
-package com.inappstory.sdk.network.models;
+package com.inappstory.sdk.core.data.models;
 
 import java.util.Locale;
 import java.util.Objects;
 
-public class RequestLocalParameters {
-    public RequestLocalParameters() {
+public class UniqueSessionParameters {
+
+    public UniqueSessionParameters() {
 
     }
 
-    public RequestLocalParameters sessionId(String sessionId) {
-        this.sessionId = sessionId;
+    public UniqueSessionParameters userSign(String userSign) {
+        this.userSign = userSign;
         return this;
     }
 
-    public RequestLocalParameters sendStatistic(boolean sendStatistic) {
+    public UniqueSessionParameters sendStatistic(boolean sendStatistic) {
         this.sendStatistic = sendStatistic;
         return this;
     }
 
-    public RequestLocalParameters locale(Locale locale) {
+    public UniqueSessionParameters locale(Locale locale) {
         this.locale = locale.toLanguageTag();
         return this;
     }
 
-    public RequestLocalParameters userId(String userId) {
+    public UniqueSessionParameters userId(String userId) {
         this.userId = userId;
         return this;
     }
 
-    public RequestLocalParameters anonymous(boolean anonymous) {
+    public UniqueSessionParameters anonymous(boolean anonymous) {
         this.anonymous = anonymous;
         return this;
     }
 
-    public String sessionId() {
-        return sessionId;
+    public String userSign() {
+        return userSign;
     }
 
     public String locale() {
@@ -57,8 +58,8 @@ public class RequestLocalParameters {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        RequestLocalParameters that = (RequestLocalParameters) o;
-        return Objects.equals(sessionId, that.sessionId)
+        UniqueSessionParameters that = (UniqueSessionParameters) o;
+        return Objects.equals(userSign, that.userSign)
                 && Objects.equals(userId, that.userId)
                 && Objects.equals(anonymous, that.anonymous)
                 && Objects.equals(sendStatistic, that.sendStatistic)
@@ -67,10 +68,10 @@ public class RequestLocalParameters {
 
     @Override
     public int hashCode() {
-        return Objects.hash(sessionId, userId, locale, anonymous, sendStatistic);
+        return Objects.hash(userSign, userId, locale, anonymous, sendStatistic);
     }
 
-    private String sessionId;
+    private String userSign;
     private boolean anonymous;
     private boolean sendStatistic;
     private String userId;
@@ -78,9 +79,9 @@ public class RequestLocalParameters {
 
     @Override
     public String toString() {
-        return "RequestLocalParameters{" +
-                "sessionId='" + sessionId + '\'' +
-                ", userId='" + userId + '\'' +
+        return "UniqueSessionParameters{" +
+                "userId='" + userId + '\'' +
+                ", userSign='" + userSign + '\'' +
                 ", anonymous='" + anonymous + '\'' +
                 ", send stat='" + sendStatistic + '\'' +
                 ", locale='" + locale + '\'' +

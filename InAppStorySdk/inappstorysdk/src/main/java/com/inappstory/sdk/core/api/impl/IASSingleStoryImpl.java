@@ -192,13 +192,16 @@ public class IASSingleStoryImpl implements IASSingleStory {
                 type,
                 null
         );
+        boolean nonAnonymous = !((IASDataSettingsHolder) core.settingsAPI()).anonymous();
         core.screensManager().openScreen(context,
                 new LaunchStoryScreenStrategy(core, openedFromReader)
                         .launchStoryScreenData(launchData)
                         .readerAppearanceSettings(
                                 new LaunchStoryScreenAppearance(
                                         AppearanceManager.checkOrCreateAppearanceManager(manager),
-                                        context)
+                                        context,
+                                        nonAnonymous
+                                )
                         )
                         .addLaunchScreenCallback(
                                 new ILaunchScreenCallback() {

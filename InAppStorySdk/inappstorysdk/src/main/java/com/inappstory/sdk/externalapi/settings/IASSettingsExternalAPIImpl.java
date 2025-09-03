@@ -10,6 +10,7 @@ import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASDataSettings;
 import com.inappstory.sdk.core.data.IAppVersion;
 import com.inappstory.sdk.core.data.IInAppStoryUserSettings;
+import com.inappstory.sdk.core.exceptions.NotImplementedMethodException;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
 
 import java.lang.reflect.Field;
@@ -20,7 +21,7 @@ import java.util.Map;
 public class IASSettingsExternalAPIImpl implements IASDataSettings {
     @Override
     public void agentPrefix(String prefix) {
-
+        throw new NoSuchMethodError();
     }
 
     @Override

@@ -834,6 +834,7 @@ public class InAppStoryManager implements IASBackPressHandler {
                     domain,
                     builder.apiKey() != null ? builder.apiKey() : context.getResources().getString(R.string.csApiKey),
                     builder.testKey() != null ? builder.testKey() : null,
+                    builder.anonymous(),
                     builder.userId(),
                     builder.userSign(),
                     builder.locale(),
@@ -855,15 +856,11 @@ public class InAppStoryManager implements IASBackPressHandler {
                 isInitProcess = false;
             }
         }
-
     }
-
 
     public boolean isSendStatistic() {
-        return sendStatistic;
+        return ((IASDataSettingsHolder) core.settingsAPI()).sendStatistic();
     }
-
-    private boolean sendStatistic = true;
 
     private void sendStatistic(final boolean sendStatistic) {
         useCore(new UseIASCoreCallback() {
@@ -872,7 +869,6 @@ public class InAppStoryManager implements IASBackPressHandler {
                 core.settingsAPI().sendStatistic(sendStatistic);
             }
         });
-        InAppStoryManager.this.sendStatistic = sendStatistic;
     }
 
     private void initManager(
@@ -880,6 +876,7 @@ public class InAppStoryManager implements IASBackPressHandler {
             final String host,
             final String apiKey,
             final String testKey,
+            final boolean anonymous,
             final String userId,
             final String userSign,
             final Locale locale,
@@ -913,6 +910,7 @@ public class InAppStoryManager implements IASBackPressHandler {
                 core.settingsAPI().inAppStorySettings(
                         new InAppStoryUserSettings()
                                 .userId(userId, userSign)
+                                .anonymous(anonymous)
                                 .lang(locale)
                                 .tags(tags)
                                 .placeholders(placeholders)
@@ -1513,6 +1511,10 @@ public class InAppStoryManager implements IASBackPressHandler {
             return userId;
         }
 
+        public boolean anonymous() {
+            return anonymous;
+        }
+
         public String userSign() {
             return userSign;
         }
@@ -1559,6 +1561,7 @@ public class InAppStoryManager implements IASBackPressHandler {
 
         int cacheSize;
         String userId;
+        boolean anonymous;
         String userSign;
         String apiKey;
         String testKey;
@@ -1578,6 +1581,12 @@ public class InAppStoryManager implements IASBackPressHandler {
 
         public Builder lang(Locale locale) {
             Builder.this.locale = locale;
+            return Builder.this;
+        }
+
+
+        public Builder anonymous(boolean anonymous) {
+            Builder.this.anonymous = anonymous;
             return Builder.this;
         }
 

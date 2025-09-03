@@ -17,6 +17,7 @@ import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASCallbackType;
+import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.IASStatisticStoriesV1;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.data.IListItemContent;
@@ -306,13 +307,15 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
                         ContentType.UGC,
                         coordinates
                 );
+                boolean nonAnonymous = !((IASDataSettingsHolder)core.settingsAPI()).anonymous();
                 core.screensManager().openScreen(context,
                         new LaunchStoryScreenStrategy(core, false).
                                 launchStoryScreenData(launchData).
                                 readerAppearanceSettings(
                                         new LaunchStoryScreenAppearance(
                                                 AppearanceManager.checkOrCreateAppearanceManager(manager),
-                                                context
+                                                context,
+                                                nonAnonymous
                                         )
                                 )
                 );

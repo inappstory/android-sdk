@@ -14,6 +14,7 @@ import com.inappstory.sdk.core.api.IASDataSettings;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.data.IAppVersion;
 import com.inappstory.sdk.core.data.IInAppStoryUserSettings;
+import com.inappstory.sdk.core.data.models.UniqueSessionParameters;
 import com.inappstory.sdk.externalapi.ExternalPlatforms;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
@@ -45,6 +46,9 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
     private String userSign;
     private final Object settingsLock = new Object();
     private IAppVersion externalAppVersion;
+    private boolean anonymous = false;
+    private boolean sendStatistic = true;
+    private boolean gameDemoMode = false;
 
     public final static int TAG_LIMIT = 4000;
 
@@ -54,7 +58,21 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
 
     @Override
     public void setUserId(final String newUserId, final String newUserSign) {
-        if (deviceId == null && (newUserId == null || newUserId.isEmpty())) {
+        String localDeviceId;
+        synchronized (settingsLock) {
+            localDeviceId = deviceId;
+            if (anonymous) {
+                InAppStoryManager.showDLog(
+                        InAppStoryManager.IAS_ERROR_TAG,
+                        StringsUtils.getErrorStringFromContext(
+                                core.appContext(),
+                                R.string.ias_only_anonymous_usage_user
+                        )
+                );
+                return;
+            }
+        }
+        if (localDeviceId == null && (newUserId == null || newUserId.isEmpty())) {
             InAppStoryManager.showELog(
                     InAppStoryManager.IAS_ERROR_TAG,
                     StringsUtils.getErrorStringFromContext(
@@ -77,24 +95,26 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
         final String currentUserId;
         final Locale currentLang;
         final boolean sendStatistic;
+        final boolean anonymous;
         synchronized (settingsLock) {
             currentUserId = userId;
             if (currentUserId != null && currentUserId.equals(newUserId)) {
                 if (Objects.equals(userSign, newUserSign)) return;
             }
             userSign = newUserSign;
+            anonymous = this.anonymous;
             currentLang = lang;
             sendStatistic = this.sendStatistic;
             userId = newUserId;
         }
-        refreshSession(currentUserId, currentLang, sendStatistic, true);
+        refreshSession(currentUserId, currentLang, sendStatistic, anonymous);
     }
 
     private void refreshSession(
             final String currentUserId,
             final Locale currentLang,
             final boolean sendStatistic,
-            final boolean refreshContent
+            final boolean anonymous
     ) {
         final String sessionId = core.sessionManager().getSession().getSessionId();
         core.storiesListVMHolder().clear();
@@ -113,8 +133,9 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
                     core.contentLoader().inAppMessageDownloadManager().clearLocalData();
                     core.contentLoader().inAppMessageDownloadManager().clearSlidesDownloader();
                     core.sessionManager().closeSession(
+                            anonymous,
                             sendStatistic,
-                            refreshContent,
+                            true,
                             currentLang.toLanguageTag(),
                             currentUserId,
                             sessionId
@@ -136,16 +157,18 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
         final Locale currentLang;
         final String currentUserId;
         final boolean sendStatistic;
+        final boolean anonymous;
         if (newLang == null) return;
         synchronized (settingsLock) {
             if (lang.toLanguageTag().equals(newLang.toLanguageTag())) return;
             currentLang = lang;
             lang = newLang;
+            anonymous = this.anonymous;
             sendStatistic = this.sendStatistic;
             this.changeLayoutDirection = changeLayoutDirection;
             currentUserId = userId;
         }
-        refreshSession(currentUserId, currentLang, sendStatistic, true);
+        refreshSession(currentUserId, currentLang, sendStatistic, anonymous);
     }
 
     @Override
@@ -361,20 +384,27 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
     public void destroy() {
         final Locale currentLang;
         final String currentUserId;
+        final boolean currentAnonymous;
+        final boolean currentSendStatistic;
         synchronized (settingsLock) {
-            currentLang = lang;
-            currentUserId = userId;
+            currentLang = this.lang;
+            currentUserId = this.userId;
+            currentAnonymous = this.anonymous;
+            currentSendStatistic = this.sendStatistic;
             this.userId = null;
             this.userSign = null;
             this.tags.clear();
             this.userImagePlaceholders.clear();
             this.userPlaceholders.clear();
+            this.sendStatistic = true;
+            this.anonymous = false;
             this.lang = Locale.getDefault();
         }
         final String sessionId = core.sessionManager().getSession().getSessionId();
         if (sessionId != null) {
             core.sessionManager().closeSession(
-                    sendStatistic,
+                    currentAnonymous,
+                    currentSendStatistic,
                     true,
                     currentLang.toLanguageTag(),
                     currentUserId,
@@ -387,42 +417,88 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
     public void inAppStorySettings(IInAppStoryUserSettings settings) {
         final Locale currentLang;
         final String currentUserId;
-        final boolean sendStatistic;
+        final boolean currentSendStatistic;
+        final boolean currentAnonymous;
         boolean needToReloadSession = false;
+        if (settings.anonymous() && settings.userId() != null) {
+            InAppStoryManager.showDLog(
+                    InAppStoryManager.IAS_WARN_TAG,
+                    StringsUtils.getErrorStringFromContext(
+                            core.appContext(),
+                            R.string.ias_only_anonymous_usage_user
+                    )
+            );
+        }
         synchronized (settingsLock) {
-            currentLang = lang;
-            sendStatistic = this.sendStatistic;
-            currentUserId = userId;
-            if (settings.userId() != null) {
-                if (deviceId == null && settings.userId().isEmpty()) {
-                    InAppStoryManager.showELog(
-                            InAppStoryManager.IAS_ERROR_TAG,
+            currentLang = this.lang;
+            currentSendStatistic = this.sendStatistic;
+            currentUserId = this.userId;
+            currentAnonymous = this.anonymous;
+            this.anonymous = settings.anonymous();
+            needToReloadSession = (currentAnonymous != settings.anonymous());
+            if (settings.anonymous()) {
+                if (settings.userId() != null && !settings.userId().isEmpty()) {
+                    InAppStoryManager.showDLog(
+                            InAppStoryManager.IAS_WARN_TAG,
                             StringsUtils.getErrorStringFromContext(
                                     core.appContext(),
-                                    R.string.ias_usage_without_user_and_device
+                                    R.string.ias_only_anonymous_usage_user
                             )
                     );
-                    return;
                 }
-                if (StringsUtils.getBytesLength(settings.userId()) > 255) {
-                    InAppStoryManager.showELog(
-                            InAppStoryManager.IAS_ERROR_TAG,
+                if (currentUserId != null && !currentUserId.isEmpty())
+                    InAppStoryManager.showDLog(
+                            InAppStoryManager.IAS_WARN_TAG,
                             StringsUtils.getErrorStringFromContext(
                                     core.appContext(),
-                                    R.string.ias_setter_user_length_error
+                                    R.string.ias_set_anon_clear_user
                             )
                     );
-                    return;
-                }
-                if (currentUserId != null && currentUserId.equals(settings.userId())) {
-                    if (!Objects.equals(userSign, settings.userSign())) {
+                this.userSign = null;
+                this.userId = null;
+                this.sendStatistic = false;
+            } else {
+                if (settings.userId() != null) {
+                    if (deviceId == null && settings.userId().isEmpty()) {
+                        InAppStoryManager.showELog(
+                                InAppStoryManager.IAS_ERROR_TAG,
+                                StringsUtils.getErrorStringFromContext(
+                                        core.appContext(),
+                                        R.string.ias_usage_without_user_and_device
+                                )
+                        );
+                        return;
+                    }
+                    if (currentAnonymous) {
+                        InAppStoryManager.showELog(
+                                InAppStoryManager.IAS_ERROR_TAG,
+                                StringsUtils.getErrorStringFromContext(
+                                        core.appContext(),
+                                        R.string.ias_user_cant_change_with_anonymous
+                                )
+                        );
+                        return;
+                    }
+                    if (StringsUtils.getBytesLength(settings.userId()) > 255) {
+                        InAppStoryManager.showELog(
+                                InAppStoryManager.IAS_ERROR_TAG,
+                                StringsUtils.getErrorStringFromContext(
+                                        core.appContext(),
+                                        R.string.ias_setter_user_length_error
+                                )
+                        );
+                        return;
+                    }
+                    if (currentUserId != null && currentUserId.equals(settings.userId())) {
+                        if (!Objects.equals(userSign, settings.userSign())) {
+                            userSign = settings.userSign();
+                            userId = settings.userId();
+                            needToReloadSession = true;
+                        }
+                    } else if (currentUserId == null) {
                         userSign = settings.userSign();
                         userId = settings.userId();
-                        needToReloadSession = true;
                     }
-                } else if (currentUserId == null) {
-                    userSign = settings.userSign();
-                    userId = settings.userId();
                 }
             }
             if (settings.tags() != null) {
@@ -494,7 +570,7 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
             }
         }
         if (needToReloadSession) {
-            refreshSession(currentUserId, currentLang, sendStatistic, true);
+            refreshSession(currentUserId, currentLang, currentSendStatistic, currentAnonymous);
         }
     }
 
@@ -509,6 +585,7 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
     public void setUserId(String userId) {
         setUserId(userId, null);
     }
+
 
     @Override
     public IAppVersion externalAppVersion() {
@@ -537,9 +614,24 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
     }
 
     @Override
+    public String userIdOrAnonymous() {
+        synchronized (settingsLock) {
+            if (anonymous) return "IAS_ANONYMOUS";
+            return userId;
+        }
+    }
+
+    @Override
     public String userSign() {
         synchronized (settingsLock) {
             return userSign;
+        }
+    }
+
+    @Override
+    public boolean anonymous() {
+        synchronized (settingsLock) {
+            return anonymous;
         }
     }
 
@@ -561,6 +653,18 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
     public boolean isSoundOn() {
         synchronized (settingsLock) {
             return isSoundOn;
+        }
+    }
+
+    @Override
+    public UniqueSessionParameters sessionParameters() {
+        synchronized (settingsLock) {
+            return new UniqueSessionParameters()
+                    .anonymous(anonymous)
+                    .userId(userId)
+                    .userSign(userSign)
+                    .locale(lang)
+                    .sendStatistic(sendStatistic);
         }
     }
 
@@ -666,26 +770,35 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
         final Locale currentLang;
         final String currentUserId;
         final boolean currentSendStatistic;
+        final boolean anonymous;
         synchronized (settingsLock) {
+            if (sendStatistic && this.anonymous) {
+                InAppStoryManager.showDLog(
+                        InAppStoryManager.IAS_ERROR_TAG,
+                        StringsUtils.getErrorStringFromContext(
+                                core.appContext(),
+                                R.string.ias_only_anonymous_usage_stat
+                        )
+                );
+                return;
+            }
             currentSendStatistic = this.sendStatistic;
             currentLang = lang;
             currentUserId = userId;
+            anonymous = this.anonymous;
             this.sendStatistic = sendStatistic;
         }
-        refreshSession(currentUserId, currentLang, currentSendStatistic, true);
+        refreshSession(currentUserId, currentLang, currentSendStatistic, anonymous);
     }
 
-    private boolean sendStatistic = true;
 
     public void gameDemoMode(boolean gameDemoMode) {
         this.gameDemoMode = gameDemoMode;
     }
 
-    private boolean gameDemoMode = false;
-
     @Override
     public boolean sendStatistic() {
-        return sendStatistic;
+        return sendStatistic && !anonymous;
     }
 
 }

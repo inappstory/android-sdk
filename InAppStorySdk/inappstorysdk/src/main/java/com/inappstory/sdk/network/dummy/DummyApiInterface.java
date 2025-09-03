@@ -157,7 +157,7 @@ public class DummyApiInterface implements ApiInterface {
                                String brand, String screenWidth, String screenHeight,
                                String screenDpi, String osVersion, String osSdkVersion,
                                String appPackageId, String appVersion, String appBuild,
-                               String userId, String userSign) {
+                               boolean anonymous, String userId, String userSign) {
         return new DummyRequest();
     }
 

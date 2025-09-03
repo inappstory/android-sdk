@@ -1,6 +1,10 @@
 package com.inappstory.sdk.core.api.impl;
 
+import static com.inappstory.sdk.InAppStoryManager.IAS_ERROR_TAG;
+
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.IASFavorites;
 import com.inappstory.sdk.core.ui.screens.holder.GetScreenCallback;
 import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryScreen;
@@ -21,6 +25,14 @@ public class IASFavoritesImpl implements IASFavorites {
 
     @Override
     public void removeAll() {
+        final IASDataSettingsHolder settingsHolder = ((IASDataSettingsHolder) core.settingsAPI());
+        if (settingsHolder.anonymous()) {
+            InAppStoryManager.showELog(
+                    IAS_ERROR_TAG,
+                    "Favorites are unavailable for anonymous mode"
+            );
+            return;
+        }
         core.sessionManager().useOrOpenSession(new OpenSessionCallback() {
             @Override
             public void onSuccess(RequestLocalParameters requestLocalParameters) {
@@ -36,6 +48,14 @@ public class IASFavoritesImpl implements IASFavorites {
 
     @Override
     public void removeByStoryId(final int storyId) {
+        final IASDataSettingsHolder settingsHolder = ((IASDataSettingsHolder) core.settingsAPI());
+        if (settingsHolder.anonymous()) {
+            InAppStoryManager.showELog(
+                    IAS_ERROR_TAG,
+                    "Favorites are unavailable for anonymous mode"
+            );
+            return;
+        }
         core.sessionManager().useOrOpenSession(new OpenSessionCallback() {
             @Override
             public void onSuccess(RequestLocalParameters requestLocalParameters) {
@@ -50,6 +70,7 @@ public class IASFavoritesImpl implements IASFavorites {
     }
 
     private void favoriteOrRemoveStory(final int storyId, final boolean favorite) {
+
         final String favUID = core.statistic().profiling().addTask("api_favorite");
         core.network().enqueue(
                 core.network().getApi().storyFavorite(Integer.toString(storyId), favorite ? 1 : 0),

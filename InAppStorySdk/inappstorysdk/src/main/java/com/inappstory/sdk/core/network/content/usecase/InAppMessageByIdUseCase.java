@@ -40,9 +40,9 @@ public class InAppMessageByIdUseCase {
                                                 1,
                                                 null,
                                                 "slides,layout",
-                                                requestLocalParameters.userId,
-                                                requestLocalParameters.sessionId,
-                                                requestLocalParameters.locale
+                                                requestLocalParameters.userId(),
+                                                requestLocalParameters.sessionId(),
+                                                requestLocalParameters.locale()
                                         ),
                                         new NetworkCallback<InAppMessage>() {
                                             @Override

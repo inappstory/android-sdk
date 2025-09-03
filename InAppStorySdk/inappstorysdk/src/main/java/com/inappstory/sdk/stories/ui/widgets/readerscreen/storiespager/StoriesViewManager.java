@@ -627,7 +627,7 @@ public class StoriesViewManager {
 
     public void storySetLocalData(String data, boolean sendToServer) {
         core.keyValueStorage().saveString("story" + storyId + "__" +
-                ((IASDataSettingsHolder) core.settingsAPI()).userId(), data);
+                ((IASDataSettingsHolder) core.settingsAPI()).userIdOrAnonymous(), data);
         if (core.statistic().storiesV1().disabled()) return;
 
         if (sendToServer) {

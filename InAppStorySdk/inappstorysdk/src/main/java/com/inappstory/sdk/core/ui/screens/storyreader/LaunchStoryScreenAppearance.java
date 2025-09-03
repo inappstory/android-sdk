@@ -146,16 +146,17 @@ public class LaunchStoryScreenAppearance implements SerializableWithKey {
 
     public LaunchStoryScreenAppearance(
             AppearanceManager manager,
-            Context context
+            Context context,
+            boolean nonAnonymousFeaturesAvailable
     ) {
         csClosePosition = manager.csClosePosition();//
         csStoryReaderAnimation = manager.csStoryReaderAnimation();//
         csStoryReaderPresentationStyle = manager.csStoryReaderPresentationStyle();//
         csCloseOnOverscroll = manager.csCloseOnOverscroll();//
         csCloseOnSwipe = manager.csCloseOnSwipe();//
-        csHasLike = manager.csHasLike();//
+        csHasLike = nonAnonymousFeaturesAvailable && manager.csHasLike();//
         csIsDraggable = manager.csIsDraggable();//
-        csHasFavorite = manager.csHasFavorite();//
+        csHasFavorite = nonAnonymousFeaturesAvailable && manager.csHasFavorite();//
         csHasShare = manager.csHasShare();//
         //  csCloseIcon = manager.csCloseIcon();//
         ///  csRefreshIcon = manager.csRefreshIcon();//

@@ -48,9 +48,9 @@ public class StoryByStringIdUseCase {
                                         showOnce ? 1 : 0,
                                         1,
                                         EXPAND_STRING,
-                                        requestLocalParameters.userId,
-                                        requestLocalParameters.sessionId,
-                                        requestLocalParameters.locale
+                                        requestLocalParameters.userId(),
+                                        requestLocalParameters.sessionId(),
+                                        requestLocalParameters.locale()
                                 ),
                                 new NetworkCallback<Story>() {
                                     @Override
@@ -78,7 +78,7 @@ public class StoryByStringIdUseCase {
                                         if (storyByIdCallback != null)
                                             storyByIdCallback.getStory(
                                                     response,
-                                                    requestLocalParameters.sessionId
+                                                    requestLocalParameters.sessionId()
                                             );
                                     }
 

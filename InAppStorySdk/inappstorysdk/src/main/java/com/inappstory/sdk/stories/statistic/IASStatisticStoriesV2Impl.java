@@ -239,8 +239,8 @@ public class IASStatisticStoriesV2Impl implements IASStatisticStoriesV2 {
         task.widgetId = widgetId;
         task.feedId = feedId;
         generateBase(task);
-        addTask(task, InAppStoryManager.getInstance() != null &&
-                InAppStoryManager.getInstance().isSendStatistic());
+        IASDataSettingsHolder settingsHolder = ((IASDataSettingsHolder) core.settingsAPI());
+        addTask(task, settingsHolder.sendStatistic() && !settingsHolder.anonymous());
     }
 
     public void sendGoodsClick(final int i, final int si,
@@ -254,8 +254,8 @@ public class IASStatisticStoriesV2Impl implements IASStatisticStoriesV2 {
         task.widgetId = wi;
         task.widgetValue = sku;
         generateBase(task);
-        addTask(task, InAppStoryManager.getInstance() != null &&
-                InAppStoryManager.getInstance().isSendStatistic());
+        IASDataSettingsHolder settingsHolder = ((IASDataSettingsHolder) core.settingsAPI());
+        addTask(task, settingsHolder.sendStatistic() && !settingsHolder.anonymous());
     }
 
     public void sendViewStory(List<Integer> ids, final String w,
@@ -473,8 +473,8 @@ public class IASStatisticStoriesV2Impl implements IASStatisticStoriesV2 {
         task.feedId = feedId;
         task.mode = mode;
         generateBase(task);
-        addTask(task, InAppStoryManager.getInstance() != null &&
-                InAppStoryManager.getInstance().isSendStatistic());
+        IASDataSettingsHolder settingsHolder = ((IASDataSettingsHolder) core.settingsAPI());
+        addTask(task, settingsHolder.sendStatistic() && !settingsHolder.anonymous());
 
     }
 

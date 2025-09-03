@@ -67,11 +67,12 @@ public class FeedByIdUseCase {
                 core.storyListCache().saveStoriesOpened(type);
                 boolean loadFav = hasFavorite;
                 IASDataSettingsHolder dataSettingsHolder = (IASDataSettingsHolder) core.settingsAPI();
-                RequestLocalParameters requestLocalParameters = new RequestLocalParameters(
-                        core.sessionManager().getSession().getSessionId(),
-                        dataSettingsHolder.userId(),
-                        dataSettingsHolder.lang()
-                );
+                RequestLocalParameters requestLocalParameters = new RequestLocalParameters()
+                        .sessionId(core.sessionManager().getSession().getSessionId())
+                        .userId(dataSettingsHolder.userId())
+                        .sendStatistic(dataSettingsHolder.sendStatistic())
+                        .anonymous(dataSettingsHolder.anonymous())
+                        .locale(dataSettingsHolder.lang());
                 if (args != null && args.length > 0) {
                     int shift = 0;
                     if (args[0] instanceof RequestLocalParameters) {
@@ -164,9 +165,9 @@ public class FeedByIdUseCase {
                         null,
                         "id, background_color, image",
                         "slides",
-                        requestLocalParameters.userId,
-                        requestLocalParameters.sessionId,
-                        requestLocalParameters.locale
+                        requestLocalParameters.userId(),
+                        requestLocalParameters.sessionId(),
+                        requestLocalParameters.locale()
                 ),
                 callback,
                 requestLocalParameters
@@ -210,9 +211,9 @@ public class FeedByIdUseCase {
                                                                 ((IASDataSettingsHolder) core.settingsAPI()).tags()),
                                                         null,
                                                         "stories.slides",
-                                                        requestLocalParameters.userId,
-                                                        requestLocalParameters.sessionId,
-                                                        requestLocalParameters.locale
+                                                        requestLocalParameters.userId(),
+                                                        requestLocalParameters.sessionId(),
+                                                        requestLocalParameters.locale()
                                                 ),
                                                 new LoadFeedCallback() {
                                                     @Override
@@ -245,11 +246,12 @@ public class FeedByIdUseCase {
                                                         loadFeedError(null);
                                                         callback.onError(message);
                                                         core.sessionManager().closeSession(
-                                                                true,
+                                                                requestLocalParameters.anonymous(),
+                                                                ((IASDataSettingsHolder) core.settingsAPI()).sendStatistic(),
                                                                 false,
-                                                                requestLocalParameters.locale,
-                                                                requestLocalParameters.userId,
-                                                                requestLocalParameters.sessionId
+                                                                requestLocalParameters.locale(),
+                                                                requestLocalParameters.userId(),
+                                                                requestLocalParameters.sessionId()
                                                         );
 
                                                         if (retry)

@@ -3,6 +3,7 @@ package com.inappstory.sdk.core.api;
 import android.util.Pair;
 
 import com.inappstory.sdk.core.data.IAppVersion;
+import com.inappstory.sdk.core.data.models.UniqueSessionParameters;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
 
 import java.util.List;
@@ -14,10 +15,13 @@ public interface IASDataSettingsHolder {
     String agentPrefix();
     String deviceId();
     String userId();
+    String userIdOrAnonymous();
     String userSign();
+    boolean anonymous();
     Locale lang();
     boolean changeLayoutDirection();
     boolean isSoundOn();
+    UniqueSessionParameters sessionParameters();
     Map<String, String> placeholders();
     Map<String, ImagePlaceholderValue> imagePlaceholders();
     Map<String, Pair<ImagePlaceholderValue, ImagePlaceholderValue>> imagePlaceholdersWithSessionDefaults();

@@ -1,6 +1,8 @@
 package com.inappstory.sdk.stories.ui.list;
 
 
+import static com.inappstory.sdk.InAppStoryManager.IAS_ERROR_TAG;
+
 import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.TypedArray;
@@ -387,6 +389,7 @@ public class StoriesList extends RecyclerView {
                     @Override
                     public void use(@NonNull final IASCore core) {
                         final List<Integer> newIndexes = core.statistic().newStatisticPreviews(indexes);
+                        if (newIndexes.isEmpty()) return;
                         core.sessionManager().useOrOpenSession(
                                 new OpenSessionCallback() {
                                     @Override
@@ -399,7 +402,7 @@ public class StoriesList extends RecyclerView {
                                                 feedId
                                         );
                                         core.statistic().storiesV1(
-                                                requestLocalParameters.sessionId,
+                                                requestLocalParameters.sessionId(),
                                                 new GetStatisticV1Callback() {
                                                     @Override
                                                     public void get(@NonNull IASStatisticStoriesV1 manager) {
@@ -757,6 +760,18 @@ public class StoriesList extends RecyclerView {
     LoadStoriesCallback lcallback;
 
     public void loadStories() {
+        if (InAppStoryManager.getInstance() != null && isFavoriteList) {
+            IASCore core = InAppStoryManager.getInstance().iasCore();
+            IASDataSettingsHolder settingsHolder = (IASDataSettingsHolder) core.settingsAPI();
+            if (settingsHolder.anonymous()) {
+                InAppStoryManager.showELog(
+                        IAS_ERROR_TAG,
+                        "Favorites is unavailable for anonymous mode"
+                );
+                if (callback != null) callback.loadError(feed);
+                return;
+            }
+        }
         loadStoriesLaunched = true;
         InAppStoryManager.debugSDKCalls("StoriesList_loadStories", "");
         try {
@@ -947,7 +962,8 @@ public class StoriesList extends RecyclerView {
         InAppStoryManager.useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull final IASCore core) {
-                if (((IASDataSettingsHolder) core.settingsAPI()).noCorrectUserIdOrDevice()) {
+                IASDataSettingsHolder settingsHolder = (IASDataSettingsHolder) core.settingsAPI();
+                if (!settingsHolder.anonymous() && settingsHolder.noCorrectUserIdOrDevice()) {
                     InAppStoryManager.showELog(
                             InAppStoryManager.IAS_ERROR_TAG,
                             StringsUtils.getErrorStringFromContext(
@@ -966,7 +982,10 @@ public class StoriesList extends RecyclerView {
 
                 InAppStoryManager.debugSDKCalls("StoriesList_loadStoriesInner", "");
                 final String listUid = core.statistic().profiling().addTask("widget_init");
-                final boolean hasFavorite = (!isFavoriteList && getAppearanceManager().csHasFavorite());
+                final boolean hasFavorite = (!isFavoriteList &&
+                        getAppearanceManager().csHasFavorite() &&
+                        !settingsHolder.anonymous()
+                );
 
                 lcallback = new LoadStoriesCallback() {
                     @Override

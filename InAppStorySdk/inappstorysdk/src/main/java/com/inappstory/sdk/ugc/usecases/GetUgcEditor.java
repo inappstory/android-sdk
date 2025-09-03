@@ -34,7 +34,7 @@ public class GetUgcEditor implements IGetUgcEditor {
                                         callback.get(
                                                 new SessionEditorDTO(
                                                         response,
-                                                        sessionParameters.sessionId
+                                                        sessionParameters.sessionId()
                                                 )
                                         );
                                     }

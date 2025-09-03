@@ -13,5 +13,6 @@ public interface IInAppStoryUserSettings {
     Map<String, String> placeholders();
     Map<String, ImagePlaceholderValue> imagePlaceholders();
     Locale lang();
+    boolean anonymous();
     boolean changeLayoutDirection();
 }

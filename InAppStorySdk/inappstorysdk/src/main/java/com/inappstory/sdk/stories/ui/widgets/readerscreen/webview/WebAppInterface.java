@@ -268,7 +268,7 @@ public class WebAppInterface {
     public String storyGetLocalData() {
         synchronized (lock) {
             String res = core.keyValueStorage().getString("story" + manager.storyId
-                    + "__" + ((IASDataSettingsHolder) core.settingsAPI()).userId());
+                    + "__" + ((IASDataSettingsHolder) core.settingsAPI()).userIdOrAnonymous());
             logMethod(res != null ? res : "");
             return res == null ? "" : res;
         }
