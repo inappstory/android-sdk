@@ -371,54 +371,62 @@ public class SessionManager {
     ) {
         if (oldSessionId == null) return;
         clearCaches();
-        core.statistic().storiesV1(oldSessionId, new GetStatisticV1Callback() {
-            @Override
-            public void get(@NonNull IASStatisticStoriesV1 manager) {
-                List<List<Object>> stat = new ArrayList<>(
-                        sendStatistic && !anonymous?
-                                manager.extractCurrentStatistic() :
-                                new ArrayList<List<Object>>()
-                );
+        if (!anonymous) {
+            core.statistic().storiesV1(oldSessionId, new GetStatisticV1Callback() {
+                @Override
+                public void get(@NonNull IASStatisticStoriesV1 manager) {
+                    List<List<Object>> stat = new ArrayList<>(
+                            sendStatistic ?
+                                    manager.extractCurrentStatistic() :
+                                    new ArrayList<List<Object>>()
+                    );
 
-                final String sessionCloseUID =
-                        core.statistic().profiling().addTask("api_session_close");
-                Log.e("statisticTests", "closeSession");
-                core.network().enqueue(
-                        core.network().getApi().sessionClose(
-                                new StatisticSendObject(
-                                        oldSessionId,
-                                        stat
-                                ),
-                                oldUserId,
-                                oldLang
-                        ),
-                        new NetworkCallback<SessionResponse>() {
-                            @Override
-                            public void onSuccess(SessionResponse response) {
-                                core.statistic().profiling().setReady(sessionCloseUID, true);
-                                if (changeSessionSettings) {
-                                    core.inAppStoryService().getListReaderConnector().userIdChanged();
+                    final String sessionCloseUID =
+                            core.statistic().profiling().addTask("api_session_close");
+                    Log.e("statisticTests", "closeSession");
+                    core.network().enqueue(
+                            core.network().getApi().sessionClose(
+                                    new StatisticSendObject(
+                                            oldSessionId,
+                                            stat
+                                    ),
+                                    oldUserId,
+                                    oldLang
+                            ),
+                            new NetworkCallback<SessionResponse>() {
+                                @Override
+                                public void onSuccess(SessionResponse response) {
+                                    core.statistic().profiling().setReady(sessionCloseUID, true);
+                                    if (changeSessionSettings) {
+                                        core.inAppStoryService().getListReaderConnector().userIdChanged();
+                                    }
+                                }
+
+                                @Override
+                                public Type getType() {
+                                    return SessionResponse.class;
+                                }
+
+                                @Override
+                                public void errorDefault(String message) {
+                                    core.statistic().profiling().setReady(sessionCloseUID);
+                                    if (changeSessionSettings) {
+                                        core.inAppStoryService().getListReaderConnector().userIdChanged();
+                                    }
                                 }
                             }
-
-                            @Override
-                            public Type getType() {
-                                return SessionResponse.class;
-                            }
-
-                            @Override
-                            public void errorDefault(String message) {
-                                core.statistic().profiling().setReady(sessionCloseUID);
-                                if (changeSessionSettings) {
-                                    core.inAppStoryService().getListReaderConnector().userIdChanged();
-                                }
-                            }
-                        }
-                );
+                    );
+                }
+            });
+            core.network().removeSessionId(oldSessionId);
+            sessionHolder.clear(oldSessionId);
+        } else {
+            core.network().removeSessionId(oldSessionId);
+            sessionHolder.clear(oldSessionId);
+            if (changeSessionSettings) {
+                core.inAppStoryService().getListReaderConnector().userIdChanged();
             }
-        });
-        core.network().removeSessionId(oldSessionId);
-        sessionHolder.clear(oldSessionId);
+        }
     }
 
 }
