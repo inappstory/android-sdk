@@ -32,6 +32,7 @@ import com.inappstory.sdk.inappmessage.InAppMessageOpenSettings;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenInAppMessageReader;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenReader;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.InAppMessageData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.utils.TagsUtils;
 import com.inappstory.sdk.utils.StringsUtils;
@@ -347,6 +348,14 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
                 new IAMReaderState()
                         .sourceType(sourceType)
                         .iamId(inAppMessage.id())
+                        .inAppMessageData(
+                                new InAppMessageData(
+                                        inAppMessage.id(),
+                                        inAppMessage.statTitle(),
+                                        inAppMessageOpenSettings.event(),
+                                        sourceType
+                                )
+                        )
                         .event(inAppMessageOpenSettings.event())
                         .contentIsPreloaded(contentIsPreloaded)
                         .showOnlyIfLoaded(inAppMessageOpenSettings.showOnlyIfLoaded())
