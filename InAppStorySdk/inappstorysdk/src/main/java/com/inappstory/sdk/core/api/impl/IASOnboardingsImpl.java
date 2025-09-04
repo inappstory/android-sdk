@@ -1,5 +1,6 @@
 package com.inappstory.sdk.core.api.impl;
 
+import static com.inappstory.sdk.InAppStoryManager.IAS_ERROR_TAG;
 import static com.inappstory.sdk.core.api.impl.IASSettingsImpl.TAG_LIMIT;
 
 import android.content.Context;
@@ -58,6 +59,14 @@ public class IASOnboardingsImpl implements IASOnboardings {
         if (feed == null || feed.isEmpty()) feed = ONBOARDING_FEED;
         final String usedFeed = feed;
         final IASDataSettingsHolder settingsHolder = ((IASDataSettingsHolder) core.settingsAPI());
+        if (settingsHolder.anonymous()) {
+            InAppStoryManager.showELog(
+                    IAS_ERROR_TAG,
+                    "Onboarding stories are unavailable for anonymous mode"
+            );
+            loadOnboardingError(usedFeed, "Onboarding stories are unavailable for anonymous mode");
+            return;
+        }
         if (settingsHolder.noCorrectUserIdOrDevice()) {
             loadOnboardingError(usedFeed, "Incorrect user id and device id");
             return;
@@ -108,9 +117,9 @@ public class IASOnboardingsImpl implements IASOnboardings {
                                 limit,
                                 localTags,
                                 "stories.slides",
-                                requestLocalParameters.userId,
-                                requestLocalParameters.sessionId,
-                                requestLocalParameters.locale
+                                requestLocalParameters.userId(),
+                                requestLocalParameters.sessionId(),
+                                requestLocalParameters.locale()
                         ),
                         new LoadFeedCallback() {
                             @Override
@@ -139,7 +148,7 @@ public class IASOnboardingsImpl implements IASOnboardings {
                                         notOpened,
                                         context,
                                         appearanceManager,
-                                        requestLocalParameters.sessionId,
+                                        requestLocalParameters.sessionId(),
                                         usedFeed
                                 );
                             }
@@ -231,7 +240,8 @@ public class IASOnboardingsImpl implements IASOnboardings {
                         readerAppearanceSettings(
                                 new LaunchStoryScreenAppearance(
                                         AppearanceManager.checkOrCreateAppearanceManager(manager),
-                                        outerContext
+                                        outerContext,
+                                        true
                                 )
                         )
                         .addLaunchScreenCallback(

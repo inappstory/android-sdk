@@ -9,6 +9,10 @@
     <string name="ias_setter_tags_length_error">Value \'tags\' cannot be longer than 4000 bytes</string>
     <string name="ias_context_is_null">InAppStoryManager data is not valid. \'context\' cannot be null</string>
     <string name="ias_usage_without_user_and_device">UserId is empty and deviceId usage is prohibited</string>
+    <string name="ias_user_cant_change_with_anonymous">You can\'t change user id with anonymous settings</string>
+    <string name="ias_only_anonymous_usage_user">You can\'t set user id with anonymous settings</string>
+    <string name="ias_only_anonymous_usage_stat">You can\'t send statistic with anonymous settings</string>
+    <string name="ias_set_anon_clear_user">User id was cleared because anonymous settings</string>
     <string name="ias_min_free_space_error">Not enough free space on device</string>
     <string name="ias_npe_manager">\'InAppStoryManager\' cannot be null and has to be initialized</string>
 </resources>

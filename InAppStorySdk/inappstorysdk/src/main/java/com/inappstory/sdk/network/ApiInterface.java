@@ -335,6 +335,7 @@ public interface ApiInterface {
             @Field("app_package_id") String appPackageId,
             @Field("app_version") String appVersion,
             @Field("app_build") String appBuild,
+            @Field("anonymous") boolean anonymous,
             @Field("user_id") String userId,
             @Field("user_sign") String userSign
     );

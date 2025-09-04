@@ -1,9 +1,13 @@
 package com.inappstory.sdk.core.api.impl;
 
+import static com.inappstory.sdk.InAppStoryManager.IAS_ERROR_TAG;
+
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.banners.BannerPlacePreloadCallback;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASBanners;
 import com.inappstory.sdk.banners.BannerPlaceLoadSettings;
+import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.banners.BannerPlaceLoadStates;
 import com.inappstory.sdk.core.banners.BannerPlaceState;
 import com.inappstory.sdk.core.banners.IBannerPlaceViewModel;
@@ -27,8 +31,19 @@ public class IASBannersImpl implements IASBanners {
 
     @Override
     public void loadBannerPlace(final BannerPlaceLoadSettings settings) {
+        final IASDataSettingsHolder settingsHolder = ((IASDataSettingsHolder) core.settingsAPI());
+        if (settingsHolder.anonymous()) {
+            InAppStoryManager.showELog(
+                    IAS_ERROR_TAG,
+                    "Banners are unavailable for anonymous mode"
+            );
+            return;
+        }
         if (settings == null || settings.placeId() == null || settings.placeId().isEmpty()) {
-            //TODO log error
+            InAppStoryManager.showELog(
+                    IAS_ERROR_TAG,
+                    "Incorrect settings for banner place"
+            );
             return;
         }
         final String placeId = settings.placeId();

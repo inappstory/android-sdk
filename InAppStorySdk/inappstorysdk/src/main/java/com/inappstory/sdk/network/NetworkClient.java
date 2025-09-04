@@ -116,11 +116,12 @@ public class NetworkClient {
                 return response;
             }
             IASDataSettingsHolder dataSettingsHolder = (IASDataSettingsHolder) core.settingsAPI();
-            RequestLocalParameters currentParameters = new RequestLocalParameters(
-                    core.sessionManager().getSession().getSessionId(),
-                    dataSettingsHolder.userId(),
-                    dataSettingsHolder.lang()
-            );
+            RequestLocalParameters currentParameters = new RequestLocalParameters()
+                    .sessionId(core.sessionManager().getSession().getSessionId())
+                    .userId(dataSettingsHolder.userId())
+                    .sendStatistic(dataSettingsHolder.sendStatistic())
+                    .anonymous(dataSettingsHolder.anonymous())
+                    .locale(dataSettingsHolder.lang());
             if (requestLocalParameters != null && !requestLocalParameters.equals(currentParameters)) {
                 Log.e("StoriesLoadedCallback", "Parameters: " + requestLocalParameters + " " + currentParameters);
                 response = new Response.Builder().code(-5).errorBody("User id or locale was changed").build();

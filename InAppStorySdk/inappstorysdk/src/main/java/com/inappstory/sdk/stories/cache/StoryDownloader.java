@@ -364,9 +364,9 @@ class StoryDownloader {
                         null,
                         "id, background_color, image",
                         "slides",
-                        requestLocalParameters.userId,
-                        requestLocalParameters.sessionId,
-                        requestLocalParameters.locale
+                        requestLocalParameters.userId(),
+                        requestLocalParameters.sessionId(),
+                        requestLocalParameters.locale()
                 ),
                 callback,
                 requestLocalParameters
@@ -430,7 +430,7 @@ class StoryDownloader {
                                 core.statistic().profiling().setReady(loadStoriesUID);
                                 generateCommonLoadListError(null);
                                 callback.onError(message);
-                                closeSessionIf424(requestLocalParameters.sessionId);
+                                closeSessionIf424(requestLocalParameters.sessionId());
                                 loadUgcStoryList(callback, payload);
                             }
                         });
@@ -471,9 +471,9 @@ class StoryDownloader {
                                                 tags.isEmpty() ? null : tags,
                                                 null,
                                                 "stories.slides",
-                                                requestLocalParameters.userId,
-                                                requestLocalParameters.sessionId,
-                                                requestLocalParameters.locale
+                                                requestLocalParameters.userId(),
+                                                requestLocalParameters.sessionId(),
+                                                requestLocalParameters.locale()
                                         ),
                                         new LoadFeedCallback() {
                                             @Override
@@ -505,7 +505,7 @@ class StoryDownloader {
                                                 core.statistic().profiling().setReady(loadStoriesUID);
                                                 generateCommonLoadListError(null);
                                                 callback.onError(message);
-                                                closeSessionIf424(requestLocalParameters.sessionId);
+                                                closeSessionIf424(requestLocalParameters.sessionId());
                                                 if (retry)
                                                     loadStoryListByFeed(feed, callback, false);
                                             }
@@ -556,9 +556,9 @@ class StoryDownloader {
                                                         ((IASDataSettingsHolder) core.settingsAPI()).tags()),
                                         null,
                                         "slides",
-                                        requestLocalParameters.userId,
-                                        requestLocalParameters.sessionId,
-                                        requestLocalParameters.locale
+                                        requestLocalParameters.userId(),
+                                        requestLocalParameters.sessionId(),
+                                        requestLocalParameters.locale()
                                 ),
                                 new LoadListCallback() {
                                     @Override
@@ -585,7 +585,7 @@ class StoryDownloader {
                                         core.statistic().profiling().setReady(loadStoriesUID);
                                         generateCommonLoadListError(null);
                                         callback.onError(message);
-                                        closeSessionIf424(requestLocalParameters.sessionId);
+                                        closeSessionIf424(requestLocalParameters.sessionId());
                                         if (retry)
                                             loadStoryList(callback, isFavorite, false);
                                     }
@@ -606,7 +606,8 @@ class StoryDownloader {
     private void closeSessionIf424(final String sessionId) {
         IASDataSettingsHolder dataSettingsHolder = (IASDataSettingsHolder) core.settingsAPI();
         core.sessionManager().closeSession(
-                true,
+                dataSettingsHolder.anonymous(),
+                dataSettingsHolder.sendStatistic(),
                 false,
                 dataSettingsHolder.lang().toLanguageTag(),
                 dataSettingsHolder.userId(),

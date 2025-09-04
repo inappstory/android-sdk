@@ -146,30 +146,34 @@ public class LaunchStoryScreenAppearance implements SerializableWithKey {
 
     public LaunchStoryScreenAppearance(
             AppearanceManager manager,
-            Context context
+            Context context,
+            boolean nonAnonymousFeaturesAvailable
     ) {
         csClosePosition = manager.csClosePosition();//
         csStoryReaderAnimation = manager.csStoryReaderAnimation();//
         csStoryReaderPresentationStyle = manager.csStoryReaderPresentationStyle();//
         csCloseOnOverscroll = manager.csCloseOnOverscroll();//
         csCloseOnSwipe = manager.csCloseOnSwipe();//
-        csHasLike = manager.csHasLike();//
+        csHasLike = nonAnonymousFeaturesAvailable && manager.csHasLike();//
         csIsDraggable = manager.csIsDraggable();//
-        csHasFavorite = manager.csHasFavorite();//
+        csHasFavorite = nonAnonymousFeaturesAvailable && manager.csHasFavorite();//
         csHasShare = manager.csHasShare();//
-      //  csCloseIcon = manager.csCloseIcon();//
-      ///  csRefreshIcon = manager.csRefreshIcon();//
-   //     csSoundIcon = manager.csSoundIcon();//
-     //   csFavoriteIcon = manager.csFavoriteIcon();//
-     //   csLikeIcon = manager.csLikeIcon();//
-     //   csDislikeIcon = manager.csDislikeIcon();//
-     //   csShareIcon = manager.csShareIcon();//
+        //  csCloseIcon = manager.csCloseIcon();//
+        ///  csRefreshIcon = manager.csRefreshIcon();//
+        //     csSoundIcon = manager.csSoundIcon();//
+        //   csFavoriteIcon = manager.csFavoriteIcon();//
+        //   csLikeIcon = manager.csLikeIcon();//
+        //   csDislikeIcon = manager.csDislikeIcon();//
+        //   csShareIcon = manager.csShareIcon();//
         csReaderRadius = manager.csReaderRadius(context);
         csTimerGradientEnable = manager.csTimerGradientEnable();//
         csReaderBackgroundColor = manager.csReaderBackgroundColor();
-        int nightModeFlags =
-                context.getResources().getConfiguration().uiMode &
-                        Configuration.UI_MODE_NIGHT_MASK;
+        int nightModeFlags = Configuration.UI_MODE_NIGHT_MASK;
+        try {
+            nightModeFlags = context.getResources().getConfiguration().uiMode &
+                    Configuration.UI_MODE_NIGHT_MASK;
+        } catch (Exception ignored) {
+        }
         csNavBarColor = nightModeFlags == Configuration.UI_MODE_NIGHT_YES ?
                 manager.csNightNavBarColor() : manager.csNavBarColor();
         if (manager.csTimerGradient() != null) {

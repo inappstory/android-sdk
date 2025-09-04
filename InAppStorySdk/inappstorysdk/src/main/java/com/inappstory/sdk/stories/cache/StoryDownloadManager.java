@@ -292,11 +292,13 @@ public class StoryDownloadManager {
                 setLocalsOpened(ContentType.STORY);
                 boolean loadFav = loadFavorite;
                 IASDataSettingsHolder dataSettingsHolder = (IASDataSettingsHolder) core.settingsAPI();
-                RequestLocalParameters requestLocalParameters = new RequestLocalParameters(
-                        core.sessionManager().getSession().getSessionId(),
-                        dataSettingsHolder.userId(),
-                        dataSettingsHolder.lang()
-                );
+                RequestLocalParameters requestLocalParameters = new RequestLocalParameters()
+                        .sessionId(core.sessionManager().getSession().getSessionId())
+                        .userId(dataSettingsHolder.userId())
+                        .sendStatistic(dataSettingsHolder.sendStatistic())
+                        .anonymous(dataSettingsHolder.anonymous())
+                        .locale(dataSettingsHolder.lang());
+
                 if (args != null && args.length > 0) {
                     int shift = 0;
                     if (args[0] instanceof RequestLocalParameters) {

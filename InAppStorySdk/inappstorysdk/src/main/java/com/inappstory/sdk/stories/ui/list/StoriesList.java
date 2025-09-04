@@ -400,7 +400,7 @@ public class StoriesList extends RecyclerView {
                                                 feedId
                                         );
                                         core.statistic().storiesV1(
-                                                requestLocalParameters.sessionId,
+                                                requestLocalParameters.sessionId(),
                                                 new GetStatisticV1Callback() {
                                                     @Override
                                                     public void get(@NonNull IASStatisticStoriesV1 manager) {

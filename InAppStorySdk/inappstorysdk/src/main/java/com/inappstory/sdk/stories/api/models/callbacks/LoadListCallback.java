@@ -45,29 +45,4 @@ public abstract class LoadListCallback extends NetworkCallback<List<Story>> {
         });
     }
 
-    @Override
-    public void error424(String message) {
-        InAppStoryManager.useCore(new UseIASCoreCallback() {
-            @Override
-            public void use(@NonNull IASCore core) {
-                core.callbacksAPI().useCallback(IASCallbackType.ERROR,
-                        new UseIASCallback<ErrorCallback>() {
-                            @Override
-                            public void use(@NonNull ErrorCallback callback) {
-                                callback.loadListError("");
-                            }
-                        });
-                IASDataSettingsHolder settingsHolder = (IASDataSettingsHolder) core.settingsAPI();
-                core.sessionManager().closeSession(
-                        true,
-                        false,
-                        settingsHolder.lang().toLanguageTag(),
-                        settingsHolder.userId(),
-                        core.sessionManager().getSession().getSessionId()
-                );
-            }
-        });
-
-    }
-
 }

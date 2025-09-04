@@ -14,6 +14,12 @@ public class InAppStoryUserSettings implements IInAppStoryUserSettings {
     private Map<String, String> placeholders;
     private Map<String, ImagePlaceholderValue> imagePlaceholders;
     private Locale lang;
+    private boolean anonymous;
+
+    public InAppStoryUserSettings anonymous(boolean anonymous) {
+        this.anonymous = anonymous;
+        return this;
+    }
 
     public InAppStoryUserSettings userId(String userId) {
         this.userId = userId;
@@ -75,6 +81,12 @@ public class InAppStoryUserSettings implements IInAppStoryUserSettings {
     public Locale lang() {
         return lang;
     }
+
+    @Override
+    public boolean anonymous() {
+        return anonymous;
+    }
+
 
     @Override
     public boolean changeLayoutDirection() {

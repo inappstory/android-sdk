@@ -101,9 +101,9 @@ public class IASStackFeedImpl implements IASStackFeed {
                                 localTags,
                                 null,
                                 "stories.slides",
-                                requestLocalParameters.userId,
-                                requestLocalParameters.sessionId,
-                                requestLocalParameters.locale
+                                requestLocalParameters.userId(),
+                                requestLocalParameters.sessionId(),
+                                requestLocalParameters.locale()
                         ),
                         new LoadFeedCallback() {
                             @Override
@@ -120,7 +120,7 @@ public class IASStackFeedImpl implements IASStackFeed {
                                     final StackStoryObserver observer = new StackStoryObserver(
                                             core,
                                             response.stories,
-                                            requestLocalParameters.sessionId,
+                                            requestLocalParameters.sessionId(),
                                             localAppearanceManager,
                                             localUniqueStackId,
                                             localFeed,

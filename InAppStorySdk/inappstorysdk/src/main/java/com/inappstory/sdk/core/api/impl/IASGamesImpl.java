@@ -1,9 +1,12 @@
 package com.inappstory.sdk.core.api.impl;
 
+import static com.inappstory.sdk.InAppStoryManager.IAS_ERROR_TAG;
+
 import android.content.Context;
 
 import androidx.annotation.NonNull;
 
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASCallbackType;
@@ -29,6 +32,22 @@ public class IASGamesImpl implements IASGames {
     @Override
     public void open(@NonNull Context context, final String gameId) {
         IASDataSettingsHolder settingsHolder = (IASDataSettingsHolder) core.settingsAPI();
+        if (settingsHolder.anonymous()) {
+            InAppStoryManager.showELog(
+                    IAS_ERROR_TAG,
+                    "Games are unavailable for anonymous mode"
+            );
+            core.callbacksAPI().useCallback(
+                    IASCallbackType.GAME_READER,
+                    new UseIASCallback<GameReaderCallback>() {
+                        @Override
+                        public void use(@NonNull GameReaderCallback callback) {
+                            callback.gameOpenError(null, gameId);
+                        }
+                    }
+            );
+            return;
+        }
         if (settingsHolder.noCorrectUserIdOrDevice()) {
             core.callbacksAPI().useCallback(
                     IASCallbackType.GAME_READER,

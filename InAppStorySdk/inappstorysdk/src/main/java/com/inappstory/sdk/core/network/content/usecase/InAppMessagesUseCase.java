@@ -91,11 +91,12 @@ public class InAppMessagesUseCase {
                                     public void error424(String message) {
                                         core.statistic().profiling().setReady("inAppMessages");
                                         core.sessionManager().closeSession(
-                                                true,
+                                                sessionParameters.anonymous(),
+                                                sessionParameters.sendStatistic(),
                                                 false,
-                                                sessionParameters.locale,
-                                                sessionParameters.userId,
-                                                sessionParameters.sessionId
+                                                sessionParameters.locale(),
+                                                sessionParameters.userId(),
+                                                sessionParameters.sessionId()
                                         );
                                         if (retry)
                                             loadWithRetry(loadCallback, false);
@@ -110,9 +111,9 @@ public class InAppMessagesUseCase {
                                                 !localTags.isEmpty() ? TextUtils.join(",", localTags) : null,
                                                 null,
                                                 "messages.slides",
-                                                sessionParameters.userId,
-                                                sessionParameters.sessionId,
-                                                sessionParameters.locale
+                                                sessionParameters.userId(),
+                                                sessionParameters.sessionId(),
+                                                sessionParameters.locale()
                                         ),
                                         networkCallback,
                                         sessionParameters

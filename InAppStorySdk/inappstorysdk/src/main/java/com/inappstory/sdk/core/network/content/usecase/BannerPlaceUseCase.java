@@ -102,11 +102,12 @@ public class BannerPlaceUseCase {
                                     public void error424(String message) {
                                         core.statistic().profiling().setReady("banner_place");
                                         core.sessionManager().closeSession(
-                                                true,
+                                                sessionParameters.anonymous(),
+                                                ((IASDataSettingsHolder) core.settingsAPI()).sendStatistic(),
                                                 false,
-                                                sessionParameters.locale,
-                                                sessionParameters.userId,
-                                                sessionParameters.sessionId
+                                                sessionParameters.locale(),
+                                                sessionParameters.userId(),
+                                                sessionParameters.sessionId()
                                         );
                                         if (retry)
                                             loadWithRetry(loadCallback, false);
@@ -121,9 +122,9 @@ public class BannerPlaceUseCase {
                                                 null,
                                                 "banners.slides,banners.layout",
                                                 new BannerPlaceFilterObject(localTags),
-                                                sessionParameters.userId,
-                                                sessionParameters.sessionId,
-                                                sessionParameters.locale
+                                                sessionParameters.userId(),
+                                                sessionParameters.sessionId(),
+                                                sessionParameters.locale()
                                         ),
                                         networkCallback,
                                         sessionParameters
