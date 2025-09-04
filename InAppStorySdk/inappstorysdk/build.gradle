@@ -35,11 +35,11 @@ android {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation 'androidx.appcompat:appcompat:1.5.0'
+    implementation "androidx.appcompat:appcompat:$appcompat_version"
     implementation 'androidx.recyclerview:recyclerview:1.2.1'
-    implementation 'com.google.android.material:material:1.6.0'
+    implementation "com.google.android.material:material:$material_version"
     implementation "androidx.coordinatorlayout:coordinatorlayout:1.2.0"
-    implementation 'androidx.webkit:webkit:1.5.0'
+    implementation "androidx.webkit:webkit:$webkit_version"
     implementation 'androidx.cardview:cardview:1.0.0'
     implementation 'org.brotli:dec:0.1.2'
     testImplementation 'junit:junit:4.13.2'
