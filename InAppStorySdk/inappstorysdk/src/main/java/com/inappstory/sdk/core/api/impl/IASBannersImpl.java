@@ -32,13 +32,7 @@ public class IASBannersImpl implements IASBanners {
     @Override
     public void loadBannerPlace(final BannerPlaceLoadSettings settings) {
         final IASDataSettingsHolder settingsHolder = ((IASDataSettingsHolder) core.settingsAPI());
-        if (settingsHolder.anonymous()) {
-            InAppStoryManager.showELog(
-                    IAS_ERROR_TAG,
-                    "Banners are unavailable for anonymous mode"
-            );
-            return;
-        }
+
         if (settings == null || settings.placeId() == null || settings.placeId().isEmpty()) {
             InAppStoryManager.showELog(
                     IAS_ERROR_TAG,
@@ -47,6 +41,21 @@ public class IASBannersImpl implements IASBanners {
             return;
         }
         final String placeId = settings.placeId();
+        if (settingsHolder.anonymous()) {
+            final IBannerPlaceViewModel bannerPagerViewModel =
+                    core.widgetViewModels().bannerPlaceViewModels().get(placeId);
+            bannerPagerViewModel.updateState(
+                    bannerPagerViewModel.getCurrentBannerPagerState()
+                            .copy()
+                            .loadState(
+                                    BannerPlaceLoadStates.EMPTY)
+            );
+            InAppStoryManager.showELog(
+                    IAS_ERROR_TAG,
+                    "Banners are unavailable for anonymous mode"
+            );
+            return;
+        }
         BannerPlaceUseCase bannerPlaceUseCase = new BannerPlaceUseCase(
                 core,
                 placeId,

@@ -496,6 +496,32 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
         switch (newValue.loadState()) {
             case EMPTY:
                 internalBannerPlaceLoadCallback.bannerPlaceLoaded(new ArrayList<IBanner>());
+                new Handler(Looper.getMainLooper()).post(new Runnable() {
+                    @Override
+                    public void run() {
+                        ViewGroup.LayoutParams layoutParams = bannerPager.getLayoutParams();
+                        layoutParams.height = 0;
+                        BannerPagerAdapter adapter = new BannerPagerAdapter(
+                                core,
+                                new ArrayList<IBanner>(),
+                                placeId,
+                                null,
+                                bannerPlaceLoadCallback,
+                                newValue.iterationId(),
+                                false,
+                                0,
+                                calculateItemWidth(),
+                                Sizes.dpToPxExt(
+                                        customBannerPlace.cornerRadius(),
+                                        getContext()
+                                )
+                        );
+                        bannerPager.setOffscreenPageLimit(1);
+                        bannerPager.setAdapter(
+                                adapter
+                        );
+                    }
+                });
             case FAILED:
                 internalBannerPlaceLoadCallback.loadError();
             case NONE:
