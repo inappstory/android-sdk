@@ -32,22 +32,30 @@ public class IAMReaderViewModel implements IIAMReaderViewModel {
     public InAppMessageData getCurrentInAppMessageData() {
         final IAMReaderState readerState = this.readerStateObservable.getValue();
         if (readerState != null) {
-            final IInAppMessage inAppMessage =
-                    (IInAppMessage) core.contentHolder().readerContent().getByIdAndType(
-                            readerState.iamId,
-                            ContentType.IN_APP_MESSAGE
+            InAppMessageData inAppMessageData = readerState.inAppMessageData;
+            if (inAppMessageData == null) {
+                IInAppMessage inAppMessage = (IInAppMessage) core
+                        .contentHolder()
+                        .readerContent()
+                        .getByIdAndType(
+                                readerState.iamId,
+                                ContentType.IN_APP_MESSAGE
+                        );
+                if (inAppMessage != null) {
+                    return new InAppMessageData(
+                            inAppMessage.id(),
+                            inAppMessage.statTitle(),
+                            readerState.event,
+                            readerState.sourceType
                     );
-            if (inAppMessage != null) {
-                return new InAppMessageData(
-                        inAppMessage.id(),
-                        inAppMessage.statTitle(),
-                        readerState.event,
-                        readerState.sourceType
-                );
+                }
+            } else {
+                return inAppMessageData;
             }
         }
         return null;
     }
+
 
     @Override
     public void addSubscriber(Observer<IAMReaderState> observable) {
