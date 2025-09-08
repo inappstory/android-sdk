@@ -541,7 +541,7 @@ public class StoriesActivity extends IASActivity implements BaseStoryScreen, Sho
             }
         });
 
-        if (android.os.Build.VERSION.SDK_INT >= 36 || Build.VERSION.CODENAME.equals("Baklava")) {
+        if (android.os.Build.VERSION.SDK_INT >= 33) {
             OnBackPressedCallback callback = new OnBackPressedCallback(true) {
                 @Override
                 public void handleOnBackPressed() {
