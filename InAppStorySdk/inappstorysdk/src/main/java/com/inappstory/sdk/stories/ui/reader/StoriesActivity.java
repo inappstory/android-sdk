@@ -757,7 +757,7 @@ public class StoriesActivity extends IASActivity implements BaseStoryScreen, Sho
             service.getListReaderConnector().readerIsClosed();
         }
         ContentIdWithIndex idWithIndex = null;
-        if (storiesContentFragment != null) {
+        if (storiesContentFragment != null && story[0] != null) {
             ReaderManager readerManager = storiesContentFragment.readerManager;
             if (readerManager != null)
                 idWithIndex = readerManager.getByIdAndIndex(story[0].id()).copy();
@@ -772,7 +772,7 @@ public class StoriesActivity extends IASActivity implements BaseStoryScreen, Sho
                 finishWithoutAnimation();
             }
         });
-        if (story[0] != null) {
+        if (story[0] != null && idWithIndex != null) {
             sendCloseStatistic(story[0], CloseStory.CUSTOM, idWithIndex);
         }
     }

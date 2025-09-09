@@ -765,6 +765,7 @@ public class StoriesTabletActivity extends IASActivity implements BaseStoryScree
             final int action,
             final ContentIdWithIndex idWithIndex
     ) {
+        if (idWithIndex == null) return;
         if (launchData != null) {
             InAppStoryManager.useCore(new UseIASCoreCallback() {
                 @Override
