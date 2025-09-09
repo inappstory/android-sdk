@@ -755,7 +755,7 @@ public class StoriesActivity extends IASActivity implements BaseStoryScreen, Sho
             service.getListReaderConnector().readerIsClosed();
         }
         ContentIdWithIndex idWithIndex = null;
-        if (storiesContentFragment != null) {
+        if (storiesContentFragment != null && story[0] != null) {
             ReaderManager readerManager = storiesContentFragment.readerManager;
             if (readerManager != null)
                 idWithIndex = readerManager.getByIdAndIndex(story[0].id()).copy();

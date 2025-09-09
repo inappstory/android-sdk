@@ -12,6 +12,7 @@ public interface IInAppStoryUserSettings {
     List<String> tags();
     Map<String, String> placeholders();
     Map<String, ImagePlaceholderValue> imagePlaceholders();
+    IUserOptions userOptions();
     Locale lang();
     boolean anonymous();
     boolean changeLayoutDirection();

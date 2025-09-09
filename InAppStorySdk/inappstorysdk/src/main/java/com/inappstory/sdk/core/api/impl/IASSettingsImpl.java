@@ -14,7 +14,9 @@ import com.inappstory.sdk.core.api.IASDataSettings;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.data.IAppVersion;
 import com.inappstory.sdk.core.data.IInAppStoryUserSettings;
+import com.inappstory.sdk.core.data.IUserOptions;
 import com.inappstory.sdk.core.data.models.UniqueSessionParameters;
+import com.inappstory.sdk.core.data.models.UserOptions;
 import com.inappstory.sdk.externalapi.ExternalPlatforms;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
@@ -39,6 +41,7 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
     private Locale lang = Locale.getDefault();
     private final Map<String, String> userPlaceholders = new HashMap<>();
     private final Map<String, ImagePlaceholderValue> userImagePlaceholders = new HashMap<>();
+    private IUserOptions userOptions;
     private final List<String> tags = new ArrayList<>();
     private String deviceId = null;
     private String userId;
@@ -564,6 +567,13 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
                     this.tags.addAll(newList);
                     core.storiesListVMHolder().clear();
                 }
+            }
+            IUserOptions settingsUserOptions = settings.userOptions();
+            if (settingsUserOptions != null) {
+                this.userOptions = new UserOptions()
+                        .pos(
+                                settingsUserOptions.pos()
+                        );
             }
             if (settings.imagePlaceholders() != null) {
                 this.userImagePlaceholders.clear();
