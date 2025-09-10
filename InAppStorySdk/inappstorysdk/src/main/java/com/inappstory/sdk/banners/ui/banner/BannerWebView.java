@@ -18,13 +18,17 @@ import androidx.annotation.Nullable;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.banners.BannerJavascriptInterface;
 import com.inappstory.sdk.core.banners.IBannerViewModel;
+import com.inappstory.sdk.core.data.IInAppStoryExtraOptions;
 import com.inappstory.sdk.core.ui.screens.IReaderSlideViewModel;
+import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.ui.views.IASWebView;
 import com.inappstory.sdk.stories.ui.views.IASWebViewClient;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ContentViewInteractor;
+import com.inappstory.sdk.utils.StringsUtils;
 
 public class BannerWebView extends IASWebView implements ContentViewInteractor {
     private boolean clientIsSet = false;
@@ -80,6 +84,25 @@ public class BannerWebView extends IASWebView implements ContentViewInteractor {
 
 
     boolean touchSlider = false;
+
+    @Override
+    public void setClientVariables() {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                IInAppStoryExtraOptions extraOptions = ((IASDataSettingsHolder) core.settingsAPI()).extraOptions();
+                try {
+                    String extraOptionsString = JsonParser.getJson(extraOptions);
+                    loadUrl("javascript:window.set_sdk_client_variables('" +
+                            StringsUtils.getEscapedString(StringsUtils.escapeSingleQuotes(extraOptionsString))
+                            + "')");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
+
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent motionEvent) {

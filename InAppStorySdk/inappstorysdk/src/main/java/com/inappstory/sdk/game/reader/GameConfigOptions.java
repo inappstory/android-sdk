@@ -1,5 +1,7 @@
 package com.inappstory.sdk.game.reader;
 
+import com.inappstory.sdk.network.annotations.models.SerializedName;
+
 import java.util.ArrayList;
 
 public class GameConfigOptions {
@@ -17,6 +19,8 @@ public class GameConfigOptions {
     public String screenOrientation;
     public boolean fullScreen;
     public SafeAreaInsets safeAreaInsets;
+    @SerializedName("variables")
+    public GameConfigUserOptions userExtraOptions;
 
     public String gameInstanceId;
 }

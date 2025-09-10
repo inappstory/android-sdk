@@ -310,7 +310,7 @@ public class IAMContentFragment extends Fragment implements Observer<IAMReaderSl
                                 new Runnable() {
                                     @Override
                                     public void run() {
-
+                                        contentWebView.setClientVariables();
                                         contentWebView.startSlide(null);
                                         contentWebView.resumeSlide();
                                     }

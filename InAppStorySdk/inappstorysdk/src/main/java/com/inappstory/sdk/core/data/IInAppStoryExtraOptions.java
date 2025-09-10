@@ -1,5 +1,5 @@
 package com.inappstory.sdk.core.data;
 
-public interface IUserOptions {
+public interface IInAppStoryExtraOptions {
     String pos();
 }

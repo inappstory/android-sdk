@@ -701,6 +701,7 @@ public class StoriesViewManager {
         if (storyIsLoaded) {
             sendShowStoryEvents();
             sendShowSlideEvents();
+            storiesView.setClientVariables();
             storiesView.startSlide(core);
         }
     }

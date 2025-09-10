@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.core.data.IAppVersion;
+import com.inappstory.sdk.core.data.IInAppStoryExtraOptions;
 import com.inappstory.sdk.core.data.IInAppStoryUserSettings;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
 
@@ -29,6 +30,7 @@ public interface IASDataSettings {
     void setCommonAppearanceManager(AppearanceManager appearanceManager);
     void setTags(List<String> tags);
     void addTags(List<String> tags);
+    void extraOptions(IInAppStoryExtraOptions extraOptions);
     void removeTags(List<String> tags);
     void setPlaceholder(String key, String value);
     void setImagePlaceholder(String key, ImagePlaceholderValue value);

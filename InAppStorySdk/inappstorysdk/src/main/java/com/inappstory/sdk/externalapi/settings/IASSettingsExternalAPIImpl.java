@@ -9,6 +9,7 @@ import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASDataSettings;
 import com.inappstory.sdk.core.data.IAppVersion;
+import com.inappstory.sdk.core.data.IInAppStoryExtraOptions;
 import com.inappstory.sdk.core.data.IInAppStoryUserSettings;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
 
@@ -133,6 +134,16 @@ public class IASSettingsExternalAPIImpl implements IASDataSettings {
             @Override
             public void use(@NonNull IASCore core) {
                 core.settingsAPI().setPlaceholders(newPlaceholders);
+            }
+        });
+    }
+
+    @Override
+    public void extraOptions(final IInAppStoryExtraOptions extraOptions) {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.settingsAPI().extraOptions(extraOptions);
             }
         });
     }

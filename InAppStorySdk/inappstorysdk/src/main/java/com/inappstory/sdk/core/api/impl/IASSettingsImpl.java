@@ -14,9 +14,9 @@ import com.inappstory.sdk.core.api.IASDataSettings;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.data.IAppVersion;
 import com.inappstory.sdk.core.data.IInAppStoryUserSettings;
-import com.inappstory.sdk.core.data.IUserOptions;
+import com.inappstory.sdk.core.data.IInAppStoryExtraOptions;
 import com.inappstory.sdk.core.data.models.UniqueSessionParameters;
-import com.inappstory.sdk.core.data.models.UserOptions;
+import com.inappstory.sdk.core.data.models.InAppStoryExtraOptions;
 import com.inappstory.sdk.externalapi.ExternalPlatforms;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
@@ -41,7 +41,7 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
     private Locale lang = Locale.getDefault();
     private final Map<String, String> userPlaceholders = new HashMap<>();
     private final Map<String, ImagePlaceholderValue> userImagePlaceholders = new HashMap<>();
-    private IUserOptions userOptions;
+    private IInAppStoryExtraOptions extraOptions;
     private final List<String> tags = new ArrayList<>();
     private String deviceId = null;
     private String userId;
@@ -170,7 +170,9 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
 
     @Override
     public void setExternalAppVersion(IAppVersion externalAppVersion) {
-        this.externalAppVersion = externalAppVersion;
+        synchronized (settingsLock) {
+            this.externalAppVersion = externalAppVersion;
+        }
     }
 
     @Override
@@ -204,6 +206,16 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
         }
     }
 
+
+    @Override
+    public void extraOptions(IInAppStoryExtraOptions extraOptions) {
+        synchronized (settingsLock) {
+            this.extraOptions = new InAppStoryExtraOptions()
+                    .pos(
+                            extraOptions.pos()
+                    );
+        }
+    }
 
     @Override
     public void setPlaceholders(@NonNull Map<String, String> newPlaceholders) {
@@ -568,11 +580,11 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
                     core.storiesListVMHolder().clear();
                 }
             }
-            IUserOptions settingsUserOptions = settings.userOptions();
-            if (settingsUserOptions != null) {
-                this.userOptions = new UserOptions()
+            IInAppStoryExtraOptions settingsExtraOptions = settings.extraOptions();
+            if (settingsExtraOptions != null) {
+                this.extraOptions = new InAppStoryExtraOptions()
                         .pos(
-                                settingsUserOptions.pos()
+                                settingsExtraOptions.pos()
                         );
             }
             if (settings.imagePlaceholders() != null) {
@@ -610,7 +622,9 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
 
     @Override
     public IAppVersion externalAppVersion() {
-        return externalAppVersion;
+        synchronized (settingsLock) {
+            return externalAppVersion;
+        }
     }
 
     @Override
@@ -755,7 +769,9 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
 
     @Override
     public boolean gameDemoMode() {
-        return gameDemoMode;
+        synchronized (settingsLock) {
+            return gameDemoMode;
+        }
     }
 
     @Override
@@ -774,12 +790,25 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
     }
 
     public void gameDemoMode(boolean gameDemoMode) {
-        this.gameDemoMode = gameDemoMode;
+
+        synchronized (settingsLock) {
+            this.gameDemoMode = gameDemoMode;
+        }
     }
 
     @Override
     public boolean sendStatistic() {
-        return sendStatistic;
+        synchronized (settingsLock) {
+            return sendStatistic;
+        }
+    }
+
+    @Override
+    @NonNull
+    public IInAppStoryExtraOptions extraOptions() {
+        synchronized (settingsLock) {
+            return extraOptions != null ? extraOptions : new InAppStoryExtraOptions();
+        }
     }
 
 }

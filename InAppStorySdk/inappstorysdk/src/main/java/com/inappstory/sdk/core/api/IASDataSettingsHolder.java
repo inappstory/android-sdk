@@ -2,7 +2,10 @@ package com.inappstory.sdk.core.api;
 
 import android.util.Pair;
 
+import androidx.annotation.NonNull;
+
 import com.inappstory.sdk.core.data.IAppVersion;
+import com.inappstory.sdk.core.data.IInAppStoryExtraOptions;
 import com.inappstory.sdk.core.data.models.UniqueSessionParameters;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
 
@@ -30,4 +33,6 @@ public interface IASDataSettingsHolder {
     boolean noCorrectTags();
     boolean gameDemoMode();
     boolean sendStatistic();
+    @NonNull
+    IInAppStoryExtraOptions extraOptions();
 }

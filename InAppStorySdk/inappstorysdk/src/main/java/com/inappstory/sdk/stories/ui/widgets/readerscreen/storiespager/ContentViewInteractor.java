@@ -33,5 +33,7 @@ public interface ContentViewInteractor {
     void screenshotShare(String id);
     void goodsWidgetComplete(String widgetId);
 
+    void setClientVariables();
+
     void slideViewModel(IReaderSlideViewModel slideViewModel);
 }

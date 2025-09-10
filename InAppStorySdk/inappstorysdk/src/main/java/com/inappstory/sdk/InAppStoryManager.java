@@ -27,9 +27,8 @@ import com.inappstory.sdk.core.api.IASDataSettings;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.IASStatisticStoriesV1;
 import com.inappstory.sdk.banners.BannerPlaceLoadSettings;
-import com.inappstory.sdk.core.data.IUserOptions;
+import com.inappstory.sdk.core.data.IInAppStoryExtraOptions;
 import com.inappstory.sdk.core.data.models.InAppStoryUserSettings;
-import com.inappstory.sdk.core.data.models.UserOptions;
 import com.inappstory.sdk.inappmessage.CloseInAppMessageCallback;
 import com.inappstory.sdk.inappmessage.InAppMessageLoadCallback;
 import com.inappstory.sdk.inappmessage.InAppMessageOpenSettings;
@@ -831,6 +830,7 @@ public class InAppStoryManager implements IASBackPressHandler {
                     builder.userId(),
                     builder.userSign(),
                     builder.anonymous(),
+                    builder.extraOptions(),
                     builder.locale(),
                     builder.gameDemoMode(),
                     builder.isDeviceIdEnabled(),
@@ -870,6 +870,15 @@ public class InAppStoryManager implements IASBackPressHandler {
         InAppStoryManager.this.sendStatistic = sendStatistic;
     }
 
+    public void setExtraOptions(final IInAppStoryExtraOptions extraOptions) {
+        useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.settingsAPI().extraOptions(extraOptions);
+            }
+        });
+    }
+
     private void initManager(
             final Context context,
             final String host,
@@ -878,6 +887,7 @@ public class InAppStoryManager implements IASBackPressHandler {
             final String userId,
             final String userSign,
             final boolean anonymous,
+            final IInAppStoryExtraOptions extraOptions,
             final Locale locale,
             final boolean gameDemoMode,
             final boolean isDeviceIDEnabled,
@@ -911,6 +921,7 @@ public class InAppStoryManager implements IASBackPressHandler {
                                 .userId(userId, userSign)
                                 .lang(locale)
                                 .anonymous(anonymous)
+                                .extraOptions(extraOptions)
                                 .tags(tags)
                                 .placeholders(placeholders)
                                 .imagePlaceholders(imagePlaceholders)
@@ -1536,8 +1547,8 @@ public class InAppStoryManager implements IASBackPressHandler {
         }
 
 
-        public IUserOptions userOptions() {
-            return userOptions;
+        public IInAppStoryExtraOptions extraOptions() {
+            return extraOptions;
         }
 
         public boolean anonymous() {
@@ -1585,7 +1596,7 @@ public class InAppStoryManager implements IASBackPressHandler {
         boolean gameDemoMode;
         boolean deviceIdEnabled = true;
         boolean anonymous = false;
-        IUserOptions userOptions;
+        IInAppStoryExtraOptions extraOptions;
 
         int cacheSize;
         String userId;
@@ -1646,6 +1657,7 @@ public class InAppStoryManager implements IASBackPressHandler {
             Builder.this.apiKey = apiKey;
             return Builder.this;
         }
+
         public Builder anonymous(boolean anonymous) {
             Builder.this.anonymous = anonymous;
             return Builder.this;
@@ -1703,8 +1715,8 @@ public class InAppStoryManager implements IASBackPressHandler {
             return Builder.this;
         }
 
-        public Builder userOptions(IUserOptions userOptions) {
-            Builder.this.userOptions = userOptions;
+        public Builder extraOptions(IInAppStoryExtraOptions extraOptions) {
+            Builder.this.extraOptions = extraOptions;
             return Builder.this;
         }
 

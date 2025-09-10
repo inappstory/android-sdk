@@ -1,11 +1,11 @@
 package com.inappstory.sdk.core.data.models;
 
-import com.inappstory.sdk.core.data.IUserOptions;
+import com.inappstory.sdk.core.data.IInAppStoryExtraOptions;
 
-public class UserOptions implements IUserOptions {
+public class InAppStoryExtraOptions implements IInAppStoryExtraOptions {
     private String pos;
 
-    public UserOptions pos(String posName) {
+    public InAppStoryExtraOptions pos(String posName) {
         this.pos = posName;
         return this;
     }

@@ -111,7 +111,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 public class GameReaderContentFragment extends Fragment implements OverlapFragmentObserver, IASBackPressHandler, IAcceleratorSubscriber {
     private IASWebView webView;
@@ -1223,6 +1222,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
             options.sessionId = core.sessionManager().getSession().getSessionId();
             options.apiKey = core.projectSettingsAPI().apiKey();
             options.placeholders = generatePlaceholders(dataSettingsHolder);
+            options.userExtraOptions = new GameConfigUserOptions(dataSettingsHolder.extraOptions());
         } else {
             if (context == null) {
                 return "{}";

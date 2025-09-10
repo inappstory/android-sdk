@@ -23,8 +23,10 @@ import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
+import com.inappstory.sdk.core.data.IInAppStoryExtraOptions;
 import com.inappstory.sdk.core.ui.screens.IReaderSlideViewModel;
 import com.inappstory.sdk.inappmessage.domain.reader.IIAMReaderSlideViewModel;
+import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.ui.views.IASWebView;
 import com.inappstory.sdk.stories.ui.views.IASWebViewClient;
 import com.inappstory.sdk.stories.ui.widgets.TouchFrameLayout;
@@ -43,6 +45,24 @@ public class StoriesWebView extends IASWebView implements ContentViewInteractor 
     private boolean clientIsSet = false;
 
     GestureDetector gestureDetector;
+
+    @Override
+    public void setClientVariables() {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                IInAppStoryExtraOptions extraOptions = ((IASDataSettingsHolder) core.settingsAPI()).extraOptions();
+                try {
+                    String extraOptionsString = JsonParser.getJson(extraOptions);
+                    loadUrl("javascript:window.set_sdk_client_variables('" +
+                            StringsUtils.getEscapedString(StringsUtils.escapeSingleQuotes(extraOptionsString))
+                            + "')");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
 
 
     public void restartSlide(IASCore core) {
@@ -185,6 +205,7 @@ public class StoriesWebView extends IASWebView implements ContentViewInteractor 
         loadUrl("javascript:window.story_slide_swipe_up()");
         logMethod("story_slide_swipe_up");
     }
+
 
     @Override
     public void loadJsApiResponse(String result, String cb) {
@@ -486,7 +507,7 @@ public class StoriesWebView extends IASWebView implements ContentViewInteractor 
             if (System.currentTimeMillis() - lastTap < 1500) {
                 return false;
             }
-        //    getManager().getPageManager().pauseSlide(false);
+            //    getManager().getPageManager().pauseSlide(false);
             lastTap = System.currentTimeMillis();
         } else if (motionEvent.getAction() == MotionEvent.ACTION_UP || motionEvent.getAction() == MotionEvent.ACTION_CANCEL) {
             touchSlider = false;
