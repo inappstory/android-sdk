@@ -3,6 +3,7 @@ package com.inappstory.sdk.stories.utils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class Observable<T> {
     private T value;
@@ -56,6 +57,7 @@ public class Observable<T> {
     }
 
     public void updateValue(final T value) {
+        if (Objects.equals(this.value, value)) return;
         setValue(value);
         List<Observer<T>> subs = getSubscribers();
         for (Observer<T> listener : subs) {

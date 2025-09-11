@@ -635,6 +635,11 @@ public class ReaderPageManager implements IReaderSlideViewModel {
     }
 
     @Override
+    public void renderReady() {
+
+    }
+
+    @Override
     public boolean loadContent() {
         return true;
     }

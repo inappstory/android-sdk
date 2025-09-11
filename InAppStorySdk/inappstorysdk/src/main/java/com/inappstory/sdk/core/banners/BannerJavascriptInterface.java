@@ -15,6 +15,11 @@ public class BannerJavascriptInterface {
         slideViewModel.slideClick(payload);
     }
 
+    @JavascriptInterface
+    public void storyRenderReady() {
+        slideViewModel.renderReady();
+    }
+
 
     @JavascriptInterface
     public void writeToClipboard(String payload) {

@@ -14,9 +14,7 @@ import com.inappstory.sdk.core.api.IASDataSettings;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.data.IAppVersion;
 import com.inappstory.sdk.core.data.IInAppStoryUserSettings;
-import com.inappstory.sdk.core.data.IInAppStoryExtraOptions;
 import com.inappstory.sdk.core.data.models.UniqueSessionParameters;
-import com.inappstory.sdk.core.data.models.InAppStoryExtraOptions;
 import com.inappstory.sdk.externalapi.ExternalPlatforms;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
@@ -41,7 +39,7 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
     private Locale lang = Locale.getDefault();
     private final Map<String, String> userPlaceholders = new HashMap<>();
     private final Map<String, ImagePlaceholderValue> userImagePlaceholders = new HashMap<>();
-    private IInAppStoryExtraOptions extraOptions;
+    private Map<String, String> options;
     private final List<String> tags = new ArrayList<>();
     private String deviceId = null;
     private String userId;
@@ -207,13 +205,9 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
     }
 
 
-    @Override
-    public void extraOptions(IInAppStoryExtraOptions extraOptions) {
+    public void options(Map<String, String> options) {
         synchronized (settingsLock) {
-            this.extraOptions = new InAppStoryExtraOptions()
-                    .pos(
-                            extraOptions.pos()
-                    );
+            this.options = new HashMap<>(options);
         }
     }
 
@@ -580,12 +574,9 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
                     core.storiesListVMHolder().clear();
                 }
             }
-            IInAppStoryExtraOptions settingsExtraOptions = settings.extraOptions();
+            Map<String, String> settingsExtraOptions = settings.options();
             if (settingsExtraOptions != null) {
-                this.extraOptions = new InAppStoryExtraOptions()
-                        .pos(
-                                settingsExtraOptions.pos()
-                        );
+                this.options = new HashMap<>();
             }
             if (settings.imagePlaceholders() != null) {
                 this.userImagePlaceholders.clear();
@@ -805,9 +796,9 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
 
     @Override
     @NonNull
-    public IInAppStoryExtraOptions extraOptions() {
+    public Map<String, String> options() {
         synchronized (settingsLock) {
-            return extraOptions != null ? extraOptions : new InAppStoryExtraOptions();
+            return options != null ? options : new HashMap<String, String>();
         }
     }
 

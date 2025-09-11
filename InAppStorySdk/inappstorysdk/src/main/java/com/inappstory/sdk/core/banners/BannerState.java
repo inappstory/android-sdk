@@ -11,6 +11,16 @@ public class BannerState {
     int contentStatus = 0;
 
     int slideJSStatus = 0;
+    boolean renderReady;
+
+    public boolean renderReady() {
+        return renderReady;
+    }
+
+    public BannerState renderReady(boolean renderReady) {
+        this.renderReady = renderReady;
+        return this;
+    }
 
     public int contentStatus() {
         return contentStatus;
@@ -100,6 +110,7 @@ public class BannerState {
                 .loadState(this.bannerLoadState)
                 .contentStatus(this.contentStatus)
                 .slideJSStatus(this.slideJSStatus)
+                .renderReady(this.renderReady)
                 .bannerPlace(this.bannerPlace)
                 .bannerIsPaused(this.bannerIsPaused)
                 .bannerIsActive(this.bannerIsActive)
@@ -114,6 +125,7 @@ public class BannerState {
                 ", bannerLoadState=" + bannerLoadState +
                 ", bannerIsPaused=" + bannerIsPaused +
                 ", bannerIsActive=" + bannerIsActive +
+                ", renderReady=" + renderReady +
                 ", contentStatus=" + contentStatus +
                 ", slideJSStatus=" + slideJSStatus +
                 '}';

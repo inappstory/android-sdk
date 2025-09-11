@@ -447,6 +447,16 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
     }
 
     @Override
+    public void renderReady() {
+        slideStateObservable.updateValue(
+                slideStateObservable
+                        .getValue()
+                        .copy()
+                        .renderReady(true)
+        );
+    }
+
+    @Override
     public boolean loadContent() {
         IAMReaderState state = readerViewModel.getCurrentState();
         if (state == null || state.iamId == null) return false;

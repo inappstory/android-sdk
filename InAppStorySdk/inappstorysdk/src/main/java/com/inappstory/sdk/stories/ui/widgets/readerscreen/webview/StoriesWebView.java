@@ -23,18 +23,17 @@ import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
-import com.inappstory.sdk.core.data.IInAppStoryExtraOptions;
 import com.inappstory.sdk.core.ui.screens.IReaderSlideViewModel;
-import com.inappstory.sdk.inappmessage.domain.reader.IIAMReaderSlideViewModel;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.ui.views.IASWebView;
 import com.inappstory.sdk.stories.ui.views.IASWebViewClient;
-import com.inappstory.sdk.stories.ui.widgets.TouchFrameLayout;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ContentViewInteractor;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.StoriesViewManager;
 import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.utils.StringsUtils;
+
+import java.util.Map;
 
 /**
  * Created by Paperrose on 07.06.2018.
@@ -51,12 +50,13 @@ public class StoriesWebView extends IASWebView implements ContentViewInteractor 
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-                IInAppStoryExtraOptions extraOptions = ((IASDataSettingsHolder) core.settingsAPI()).extraOptions();
+                Map<String, String> extraOptions = ((IASDataSettingsHolder) core.settingsAPI()).options();
                 try {
-                    String extraOptionsString = JsonParser.getJson(extraOptions);
+                    String extraOptionsString = JsonParser.stringMapToEscapedJsonString(extraOptions);
                     loadUrl("javascript:window.set_sdk_client_variables('" +
                             StringsUtils.getEscapedString(StringsUtils.escapeSingleQuotes(extraOptionsString))
                             + "')");
+                    logMethod("set_sdk_client_variables");
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

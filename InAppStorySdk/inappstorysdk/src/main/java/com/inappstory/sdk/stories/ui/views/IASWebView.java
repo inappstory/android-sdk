@@ -14,14 +14,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.inappstory.sdk.InAppStoryManager;
-import com.inappstory.sdk.R;
-import com.inappstory.sdk.core.IASCore;
-import com.inappstory.sdk.core.UseIASCoreCallback;
-import com.inappstory.sdk.core.api.IASDataSettingsHolder;
-import com.inappstory.sdk.core.data.IInAppStoryExtraOptions;
-import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.logs.WebConsoleLog;
-import com.inappstory.sdk.utils.StringsUtils;
 
 import java.util.UUID;
 

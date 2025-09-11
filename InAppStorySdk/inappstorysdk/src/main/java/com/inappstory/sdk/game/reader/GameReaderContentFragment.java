@@ -1222,7 +1222,9 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
             options.sessionId = core.sessionManager().getSession().getSessionId();
             options.apiKey = core.projectSettingsAPI().apiKey();
             options.placeholders = generatePlaceholders(dataSettingsHolder);
-            options.userExtraOptions = new GameConfigUserOptions(dataSettingsHolder.extraOptions());
+            options.userExtraOptions = JsonParser.stringMapToEscapedObjMap(
+                    dataSettingsHolder.options()
+            );
         } else {
             if (context == null) {
                 return "{}";

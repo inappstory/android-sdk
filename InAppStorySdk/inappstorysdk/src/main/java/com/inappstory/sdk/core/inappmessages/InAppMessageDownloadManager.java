@@ -109,6 +109,11 @@ public class InAppMessageDownloadManager {
                     }
 
                     @Override
+                    public void renderReady() {
+
+                    }
+
+                    @Override
                     public void contentLoadError() {
                         core.callbacksAPI().useCallback(
                                 IASCallbackType.IN_APP_MESSAGE_LOAD,

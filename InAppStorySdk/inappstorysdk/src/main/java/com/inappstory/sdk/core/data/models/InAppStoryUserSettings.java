@@ -1,7 +1,6 @@
 package com.inappstory.sdk.core.data.models;
 
 import com.inappstory.sdk.core.data.IInAppStoryUserSettings;
-import com.inappstory.sdk.core.data.IInAppStoryExtraOptions;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
 
 import java.util.List;
@@ -14,7 +13,7 @@ public class InAppStoryUserSettings implements IInAppStoryUserSettings {
     private List<String> tags;
     private Map<String, String> placeholders;
     private Map<String, ImagePlaceholderValue> imagePlaceholders;
-    private IInAppStoryExtraOptions extraOptions;
+    private Map<String, String> options;
     private Locale lang;
     private boolean anonymous;
 
@@ -24,8 +23,8 @@ public class InAppStoryUserSettings implements IInAppStoryUserSettings {
     }
 
 
-    public InAppStoryUserSettings extraOptions(IInAppStoryExtraOptions extraOptions) {
-        this.extraOptions = extraOptions;
+    public InAppStoryUserSettings options(Map<String, String> options) {
+        this.options = options;
         return this;
     }
 
@@ -86,8 +85,8 @@ public class InAppStoryUserSettings implements IInAppStoryUserSettings {
     }
 
     @Override
-    public IInAppStoryExtraOptions extraOptions() {
-        return extraOptions;
+    public Map<String, String> options() {
+        return options;
     }
 
     @Override

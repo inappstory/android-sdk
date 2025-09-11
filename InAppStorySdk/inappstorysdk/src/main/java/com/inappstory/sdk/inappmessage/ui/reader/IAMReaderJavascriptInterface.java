@@ -22,6 +22,11 @@ public class IAMReaderJavascriptInterface {
     }
 
     @JavascriptInterface
+    public void storyRenderReady() {
+        slideViewModel.renderReady();
+    }
+
+    @JavascriptInterface
     public void storyLoadingFailed(String data) {
         slideViewModel.storyLoadingFailed(data);
     }

@@ -85,6 +85,11 @@ public class BannerDownloadManager {
                     }
 
                     @Override
+                    public void renderReady() {
+
+                    }
+
+                    @Override
                     public void contentLoadError() {
                         if (callback != null)
                             callback.bannerContentLoadError(readerContent.id(), isFirst);

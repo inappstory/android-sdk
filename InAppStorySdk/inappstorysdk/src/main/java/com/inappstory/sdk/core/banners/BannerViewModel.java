@@ -206,6 +206,15 @@ public class BannerViewModel implements IBannerViewModel {
     }
 
     @Override
+    public void renderReady() {
+        this.stateObservable.updateValue(
+                this.stateObservable.getValue()
+                        .copy()
+                        .renderReady(true)
+        );
+    }
+
+    @Override
     public boolean loadContent() {
         throw new NotImplementedMethodException();
     }

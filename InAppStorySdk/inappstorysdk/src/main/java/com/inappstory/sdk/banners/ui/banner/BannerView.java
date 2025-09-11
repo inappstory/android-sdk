@@ -453,8 +453,11 @@ public class BannerView extends FrameLayout implements Observer<BannerState> {
     public void onUpdate(final BannerState newValue) {
         if (newValue == null) return;
         if (!Objects.equals(newValue.bannerId(), bannerId)) return;
-        if (currentState == null ||
-                (newValue.loadState() != currentState.loadState())
+        if (Objects.equals(currentState, newValue)) return;
+        BannerState localCurrentState = currentState;
+        currentState = newValue;
+        if (localCurrentState == null ||
+                (newValue.loadState() != localCurrentState.loadState())
         ) {
             switch (newValue.loadState()) {
                 case EMPTY:
@@ -474,10 +477,15 @@ public class BannerView extends FrameLayout implements Observer<BannerState> {
                             !newValue.content().isEmpty()) {
                         if (bannerWebView != null) {
                             if (bannerViewModel.bannerIsActive()) {
+                                if (newValue.bannerId() == 33) {
+                                    Log.e("LoadBannerContent", "Check " + newValue);
+                                }
                                 bannerWebView.post(
                                         new Runnable() {
                                             @Override
                                             public void run() {
+                                                Log.e("LoadBannerContent", "Load " + newValue.bannerId());
+
                                                 bannerWebView.loadSlide(newValue.content());
                                             }
                                         }
@@ -487,6 +495,7 @@ public class BannerView extends FrameLayout implements Observer<BannerState> {
                                         new Runnable() {
                                             @Override
                                             public void run() {
+                                                Log.e("LoadBannerContent", "Load " + newValue.bannerId());
                                                 bannerWebView.loadSlide(newValue.content());
                                             }
                                         }, 130
@@ -498,8 +507,21 @@ public class BannerView extends FrameLayout implements Observer<BannerState> {
             }
 
         }
-        if (currentState == null ||
-                (newValue.slideJSStatus() != currentState.slideJSStatus())
+        if ((localCurrentState == null || !localCurrentState.renderReady()) && newValue.renderReady()) {
+            if (bannerWebView != null) {
+                bannerWebView.post(
+                        new Runnable() {
+                            @Override
+                            public void run() {
+                                Log.e("LoadBannerContent", "SetClientVariables " + newValue.bannerId());
+                                bannerWebView.setClientVariables();
+                            }
+                        }
+                );
+            }
+        }
+        if (localCurrentState == null ||
+                (newValue.slideJSStatus() != localCurrentState.slideJSStatus())
         ) {
             switch (newValue.slideJSStatus()) {
                 case 0:
@@ -518,7 +540,6 @@ public class BannerView extends FrameLayout implements Observer<BannerState> {
                                         if (bannerViewModel != null && bannerViewModel.bannerIsActive()) {
                                             Log.e("SlideLC", "slideJSStatus " + newValue.bannerId());
                                             bannerViewModel.bannerIsShown();
-                                            bannerWebView.setClientVariables();
                                             bannerWebView.startSlide(null);
                                             //   bannerWebView.resumeSlide();
                                         }
@@ -532,6 +553,5 @@ public class BannerView extends FrameLayout implements Observer<BannerState> {
             }
 
         }
-        currentState = newValue;
     }
 }

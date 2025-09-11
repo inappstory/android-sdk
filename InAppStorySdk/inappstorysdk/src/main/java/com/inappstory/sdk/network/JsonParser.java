@@ -6,6 +6,7 @@ import android.util.Pair;
 import com.inappstory.sdk.network.annotations.models.Ignore;
 import com.inappstory.sdk.network.annotations.models.Required;
 import com.inappstory.sdk.network.annotations.models.SerializedName;
+import com.inappstory.sdk.utils.StringsUtils;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -130,6 +131,34 @@ public class JsonParser {
 
     public static String mapToJsonString(Map<String, Object> map) {
         return new JSONObject(map).toString();
+    }
+
+    public static Map<String, Object> stringMapToEscapedObjMap(Map<String, String> map) {
+        Map<String, Object> objMap = new HashMap<>();
+        if (map != null) {
+            for (String key : map.keySet()) {
+                String val = map.get(key);
+                if (key != null && val != null) {
+                    objMap.put(
+                            StringsUtils.getEscapedString(
+                                    StringsUtils.escapeSingleQuotes(
+                                            key
+                                    )
+                            ),
+                            StringsUtils.getEscapedString(
+                                    StringsUtils.escapeSingleQuotes(
+                                            val
+                                    )
+                            )
+                    );
+                }
+            }
+        }
+        return objMap;
+    }
+
+    public static String stringMapToEscapedJsonString(Map<String, String> map) {
+        return new JSONObject(stringMapToEscapedObjMap(map)).toString();
     }
 
     private static List<Pair<String, String>> mapToQueryParams(String mainName, Map<String, Object> map) {

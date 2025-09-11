@@ -11,5 +11,6 @@ public interface IReaderSlideViewModel {
     void contentLoadSuccess(IReaderContent content);
     void slideLoadSuccess(int index);
     Integer externalSubscriber();
+    void renderReady();
     boolean loadContent();
 }

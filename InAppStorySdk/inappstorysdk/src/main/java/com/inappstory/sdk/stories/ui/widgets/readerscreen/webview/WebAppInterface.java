@@ -82,6 +82,13 @@ public class WebAppInterface {
 
 
     @JavascriptInterface
+    public void storyRenderReady() {
+        manager.renderReady();
+        logMethod("");
+    }
+
+
+    @JavascriptInterface
     public void storyUnfreezeUI() {
         manager.unfreezeUI();
         logMethod("");

@@ -6,6 +6,18 @@ public class IAMReaderSlideState {
 
     int slideJSStatus = 0; //0 - none, 1 - loaded, 2 - started, 3 - paused?
 
+    boolean renderReady = false;
+
+    public boolean renderReady() {
+        return renderReady;
+    }
+
+    public IAMReaderSlideState renderReady(boolean renderReady) {
+        this.renderReady = renderReady;
+        return this;
+    }
+
+
     public int contentStatus() {
         return contentStatus;
     }
@@ -39,6 +51,7 @@ public class IAMReaderSlideState {
     public IAMReaderSlideState copy() {
         return new IAMReaderSlideState()
                 .content(this.content)
+                .renderReady(this.renderReady)
                 .contentStatus(this.contentStatus)
                 .slideJSStatus(this.slideJSStatus);
     }

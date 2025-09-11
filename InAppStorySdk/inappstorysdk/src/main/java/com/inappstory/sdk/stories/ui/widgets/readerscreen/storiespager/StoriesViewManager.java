@@ -609,6 +609,15 @@ public class StoriesViewManager {
         storiesView.freezeUI();
     }
 
+    public void renderReady() {
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                storiesView.setClientVariables();
+            }
+        });
+    }
+
     public void closeStory(String reason) {
         int closeStoryAction = CloseStory.CLICK;
         switch (reason) {
@@ -701,7 +710,6 @@ public class StoriesViewManager {
         if (storyIsLoaded) {
             sendShowStoryEvents();
             sendShowSlideEvents();
-            storiesView.setClientVariables();
             storiesView.startSlide(core);
         }
     }

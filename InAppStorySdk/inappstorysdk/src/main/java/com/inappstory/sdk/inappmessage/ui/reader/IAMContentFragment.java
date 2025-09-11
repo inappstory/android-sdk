@@ -20,6 +20,7 @@ import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.api.impl.IASSingleStoryImpl;
+import com.inappstory.sdk.core.banners.BannerState;
 import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenData;
 import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenStrategy;
 import com.inappstory.sdk.core.utils.ColorUtils;
@@ -44,6 +45,8 @@ import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ContentViewInteractor;
 import com.inappstory.sdk.stories.utils.Observer;
+
+import java.util.Objects;
 
 public class IAMContentFragment extends Fragment implements Observer<IAMReaderSlideState> {
     ContentViewInteractor contentWebView;
@@ -272,8 +275,11 @@ public class IAMContentFragment extends Fragment implements Observer<IAMReaderSl
     @Override
     public void onUpdate(final IAMReaderSlideState newValue) {
         if (newValue == null) return;
-        if (currentState == null ||
-                (newValue.contentStatus() != currentState.contentStatus())
+        if (Objects.equals(currentState, newValue)) return;
+        IAMReaderSlideState localCurrentState = currentState;
+        currentState = newValue;
+        if (localCurrentState == null ||
+                (newValue.contentStatus() != localCurrentState.contentStatus())
         ) {
             switch (newValue.contentStatus()) {
                 case 0:
@@ -298,8 +304,20 @@ public class IAMContentFragment extends Fragment implements Observer<IAMReaderSl
             }
 
         }
-        if (currentState != null &&
-                (newValue.slideJSStatus() != currentState.slideJSStatus())
+        if ((localCurrentState == null || !localCurrentState.renderReady()) && newValue.renderReady()) {
+            if (contentWebView instanceof View) {
+                ((View) contentWebView).post(
+                        new Runnable() {
+                            @Override
+                            public void run() {
+                                contentWebView.setClientVariables();
+                            }
+                        }
+                );
+            }
+        }
+        if (localCurrentState != null &&
+                (newValue.slideJSStatus() != localCurrentState.slideJSStatus())
         ) {
             switch (newValue.slideJSStatus()) {
                 case 0:
@@ -310,7 +328,6 @@ public class IAMContentFragment extends Fragment implements Observer<IAMReaderSl
                                 new Runnable() {
                                     @Override
                                     public void run() {
-                                        contentWebView.setClientVariables();
                                         contentWebView.startSlide(null);
                                         contentWebView.resumeSlide();
                                     }
@@ -323,6 +340,5 @@ public class IAMContentFragment extends Fragment implements Observer<IAMReaderSl
             }
 
         }
-        currentState = newValue;
     }
 }
