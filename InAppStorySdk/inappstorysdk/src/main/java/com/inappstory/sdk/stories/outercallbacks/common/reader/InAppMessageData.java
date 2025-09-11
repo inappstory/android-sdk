@@ -18,6 +18,7 @@ public class InAppMessageData extends ContentData {
         this.id = id;
         this.title = campaignName;
     }
+
     public InAppMessageData(
             int id,
             String campaignName,

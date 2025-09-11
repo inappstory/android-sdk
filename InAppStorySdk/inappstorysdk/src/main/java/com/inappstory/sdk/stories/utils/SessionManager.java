@@ -167,7 +167,7 @@ public class SessionManager {
     }
 
     private final String FEATURES =
-            "animation,data,deeplink,placeholder,webp,resetTimers,gameReader,swipeUpItems,sendApi,imgPlaceholder,assets,vod,closeStoryApi,slideTimerEndApi";
+            "animation,data,deeplink,placeholder,webp,resetTimers,gameReader,swipeUpItems,sendApi,imgPlaceholder,assets,vod,closeStoryApi,slideTimerEndApi,multislideIam";
 
     private final String SESSION_FIELDS = TextUtils.join(",", new String[]{
             SessionRequestFields.session,
