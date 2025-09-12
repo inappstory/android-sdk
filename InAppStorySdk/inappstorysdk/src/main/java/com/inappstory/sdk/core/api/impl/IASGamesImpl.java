@@ -31,6 +31,29 @@ public class IASGamesImpl implements IASGames {
 
     @Override
     public void open(@NonNull Context context, final String gameId) {
+        if (gameCanBeOpened(gameId))
+            core.screensManager().openScreen(context,
+                    new LaunchGameScreenStrategy(core, false)
+                            .data(new LaunchGameScreenData(
+                                    null,
+                                    null,
+                                    gameId
+                            ))
+            );
+    }
+
+    @Override
+    public void callback(GameReaderCallback gameReaderCallback) {
+        core.callbacksAPI().setCallback(IASCallbackType.GAME_READER, gameReaderCallback);
+    }
+
+    @Override
+    public void preloadGames() {
+
+    }
+
+    @Override
+    public boolean gameCanBeOpened(final String gameId) {
         IASDataSettingsHolder settingsHolder = (IASDataSettingsHolder) core.settingsAPI();
         if (settingsHolder.anonymous()) {
             InAppStoryManager.showELog(
@@ -46,7 +69,7 @@ public class IASGamesImpl implements IASGames {
                         }
                     }
             );
-            return;
+            return false;
         }
         if (settingsHolder.noCorrectUserIdOrDevice()) {
             core.callbacksAPI().useCallback(
@@ -58,25 +81,8 @@ public class IASGamesImpl implements IASGames {
                         }
                     }
             );
-            return;
+            return false;
         }
-        core.screensManager().openScreen(context,
-                new LaunchGameScreenStrategy(core, false)
-                        .data(new LaunchGameScreenData(
-                                null,
-                                null,
-                                gameId
-                        ))
-        );
-    }
-
-    @Override
-    public void callback(GameReaderCallback gameReaderCallback) {
-        core.callbacksAPI().setCallback(IASCallbackType.GAME_READER, gameReaderCallback);
-    }
-
-    @Override
-    public void preloadGames() {
-
+        return true;
     }
 }

@@ -245,23 +245,24 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
                             }
                         }
                 );
-                core.screensManager().openScreen(context,
-                        new LaunchGameScreenStrategy(core, false)
-                                .data(new LaunchGameScreenData(
-                                        null,
-                                        new SlideData(
-                                                new StoryData(
-                                                        current,
-                                                        feed,
-                                                        getListSourceType()
-                                                ),
-                                                0,
-                                                null
-                                        ),
-                                        gameInstanceId
-                                ))
-                );
-
+                if (core.gamesAPI().gameCanBeOpened(gameInstanceId)) {
+                    core.screensManager().openScreen(context,
+                            new LaunchGameScreenStrategy(core, false)
+                                    .data(new LaunchGameScreenData(
+                                            null,
+                                            new SlideData(
+                                                    new StoryData(
+                                                            current,
+                                                            feed,
+                                                            getListSourceType()
+                                                    ),
+                                                    0,
+                                                    null
+                                            ),
+                                            gameInstanceId
+                                    ))
+                    );
+                }
                 current.setOpened(true);
                 core.storyListCache().saveStoryOpened(current.id(), ContentType.STORY);
                 core.inAppStoryService().getListReaderConnector().changeStory(current.id(),
@@ -364,7 +365,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
                 ContentType.STORY,
                 coordinates
         );
-        boolean nonAnonymous = !((IASDataSettingsHolder)core.settingsAPI()).anonymous();
+        boolean nonAnonymous = !((IASDataSettingsHolder) core.settingsAPI()).anonymous();
         core.screensManager().openScreen(
                 context,
                 new LaunchStoryScreenStrategy(core, false).

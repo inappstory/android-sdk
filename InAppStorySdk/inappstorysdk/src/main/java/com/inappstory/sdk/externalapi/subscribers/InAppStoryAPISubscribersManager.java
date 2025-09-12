@@ -215,23 +215,25 @@ public class InAppStoryAPISubscribersManager {
                         }
                     }
             );
-            core.screensManager().openScreen(
-                    context,
-                    new LaunchGameScreenStrategy(core, false)
-                            .data(new LaunchGameScreenData(
-                                    null,
-                                    new SlideData(
-                                            new StoryData(
-                                                    currentStoryCover,
-                                                    requestData.feed,
-                                                    SourceType.LIST
-                                            ),
-                                            0,
-                                            null
-                                    ),
-                                    currentStoryCover.gameInstanceId()
-                            ))
-            );
+            if (core.gamesAPI().gameCanBeOpened(currentStoryCover.gameInstanceId())) {
+                core.screensManager().openScreen(
+                        context,
+                        new LaunchGameScreenStrategy(core, false)
+                                .data(new LaunchGameScreenData(
+                                        null,
+                                        new SlideData(
+                                                new StoryData(
+                                                        currentStoryCover,
+                                                        requestData.feed,
+                                                        SourceType.LIST
+                                                ),
+                                                0,
+                                                null
+                                        ),
+                                        currentStoryCover.gameInstanceId()
+                                ))
+                );
+            }
         } else if (!currentStoryCover.hideInReader()) {
             List<Integer> readerStories = new ArrayList<>();
             int j = 0;

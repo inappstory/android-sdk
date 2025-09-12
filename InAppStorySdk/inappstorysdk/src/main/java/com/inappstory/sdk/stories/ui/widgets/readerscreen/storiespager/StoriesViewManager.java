@@ -2,6 +2,8 @@ package com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager;
 
 import static android.content.Context.CLIPBOARD_SERVICE;
 
+import static com.inappstory.sdk.InAppStoryManager.IAS_ERROR_TAG;
+
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
@@ -29,6 +31,7 @@ import com.inappstory.sdk.core.utils.ConnectionCheckCallback;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.UpdateTimelineData;
 import com.inappstory.sdk.stories.api.models.WriteClipboardData;
+import com.inappstory.sdk.stories.outercallbacks.common.gamereader.GameReaderCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.ui.widgets.LoadProgressBar;
@@ -497,7 +500,7 @@ public class StoriesViewManager {
     Vibrator vibrator;
 
 
-    public void openGameReaderFromGameCenter(String gameId) {
+    public void openGameReaderFromGameCenter(final String gameId) {
         final StoriesContentFragment storiesContentFragment =
                 (StoriesContentFragment) pageManager.host.getParentFragment();
         String uniqueId = null;
@@ -507,16 +510,19 @@ public class StoriesViewManager {
         }
         Context localContext = pageManager.host.getContext();
         if (localContext == null) localContext = context;
+
         if (localContext != null)
-            core.screensManager().openScreen(
-                    localContext,
-                    new LaunchGameScreenStrategy(core, true)
-                            .data(new LaunchGameScreenData(
-                                    uniqueId,
-                                    getGameStoryData(),
-                                    gameId
-                            ))
-            );
+            if (core.gamesAPI().gameCanBeOpened(gameId)) {
+                core.screensManager().openScreen(
+                        localContext,
+                        new LaunchGameScreenStrategy(core, true)
+                                .data(new LaunchGameScreenData(
+                                        uniqueId,
+                                        getGameStoryData(),
+                                        gameId
+                                ))
+                );
+            }
 
     }
 

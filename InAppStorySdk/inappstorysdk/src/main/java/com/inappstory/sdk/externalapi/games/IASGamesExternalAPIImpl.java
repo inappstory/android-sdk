@@ -48,4 +48,9 @@ public class IASGamesExternalAPIImpl implements IASGames {
             }
         });
     }
+
+    @Override
+    public boolean gameCanBeOpened(String gameId) {
+        return false;
+    }
 }
