@@ -16,11 +16,9 @@ import com.inappstory.sdk.network.annotations.api.QueryVars;
 import com.inappstory.sdk.network.annotations.api.ReplaceHeader;
 import com.inappstory.sdk.network.models.Request;
 import com.inappstory.sdk.network.utils.headers.HeadersKeys;
-import com.inappstory.sdk.stories.api.models.BannerPlaceFilterObject;
+import com.inappstory.sdk.stories.api.models.TargetingBodyObject;
 import com.inappstory.sdk.stories.api.models.GameLaunchConfigObject;
 import com.inappstory.sdk.stories.api.models.StatisticSendObject;
-
-import java.util.List;
 
 /**
  * InAppStory API. Contains all request
@@ -35,7 +33,7 @@ public interface ApiInterface {
             @Query("srcList") Integer srcList,
             @Query("fields") String fields,
             @Query("expand") String expand,
-            @Body BannerPlaceFilterObject filterObject,
+            @Body TargetingBodyObject filterObject,
             @ReplaceHeader(HeadersKeys.USER_ID) String xUserId,
             @ReplaceHeader(HeadersKeys.AUTH_SESSION_ID) String xSessionId,
             @ReplaceHeader(HeadersKeys.ACCEPT_LANGUAGE) String lang

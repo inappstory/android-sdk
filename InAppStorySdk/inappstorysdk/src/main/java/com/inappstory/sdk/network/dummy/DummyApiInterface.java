@@ -2,16 +2,14 @@ package com.inappstory.sdk.network.dummy;
 
 import com.inappstory.sdk.network.ApiInterface;
 import com.inappstory.sdk.network.models.Request;
-import com.inappstory.sdk.stories.api.models.BannerPlaceFilterObject;
+import com.inappstory.sdk.stories.api.models.TargetingBodyObject;
 import com.inappstory.sdk.stories.api.models.GameLaunchConfigObject;
 import com.inappstory.sdk.stories.api.models.StatisticSendObject;
-
-import java.util.List;
 
 public class DummyApiInterface implements ApiInterface {
 
     @Override
-    public Request getBannerPlace(String id, Integer srcList, String fields, String expand, BannerPlaceFilterObject filterObject, String xUserId, String xSessionId, String lang) {
+    public Request getBannerPlace(String id, Integer srcList, String fields, String expand, TargetingBodyObject filterObject, String xUserId, String xSessionId, String lang) {
         return new DummyRequest();
     }
 

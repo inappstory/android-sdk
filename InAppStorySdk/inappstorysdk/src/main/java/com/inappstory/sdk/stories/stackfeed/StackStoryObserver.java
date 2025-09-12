@@ -334,23 +334,24 @@ public class StackStoryObserver implements IStackFeedActions {
                         }
                     }
             );
-            core.screensManager().openScreen(context,
-                    new LaunchGameScreenStrategy(core, false)
-                            .data(new LaunchGameScreenData(
-                                    null,
-                                    new SlideData(
-                                            new StoryData(
-                                                    currentStory,
-                                                    feed,
-                                                    SourceType.STACK
-                                            ),
-                                            0,
-                                            null
-                                    ),
-                                    currentStory.gameInstanceId()
-                            ))
-            );
-
+            if (core.gamesAPI().gameCanBeOpened(currentStory.gameInstanceId())) {
+                core.screensManager().openScreen(context,
+                        new LaunchGameScreenStrategy(core, false)
+                                .data(new LaunchGameScreenData(
+                                        null,
+                                        new SlideData(
+                                                new StoryData(
+                                                        currentStory,
+                                                        feed,
+                                                        SourceType.STACK
+                                                ),
+                                                0,
+                                                null
+                                        ),
+                                        currentStory.gameInstanceId()
+                                ))
+                );
+            }
         } else if (!currentStory.hideInReader()) {
             List<Integer> readerStories = new ArrayList<>();
             int j = 0;

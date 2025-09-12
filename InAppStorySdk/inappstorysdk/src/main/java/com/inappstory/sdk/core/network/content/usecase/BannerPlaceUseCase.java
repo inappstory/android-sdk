@@ -12,7 +12,7 @@ import com.inappstory.sdk.core.utils.ConnectionCheck;
 import com.inappstory.sdk.core.utils.ConnectionCheckCallback;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.network.models.RequestLocalParameters;
-import com.inappstory.sdk.stories.api.models.BannerPlaceFilterObject;
+import com.inappstory.sdk.stories.api.models.TargetingBodyObject;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 
@@ -121,7 +121,7 @@ public class BannerPlaceUseCase {
                                                 1,
                                                 null,
                                                 "banners.slides,banners.layout",
-                                                new BannerPlaceFilterObject(localTags),
+                                                new TargetingBodyObject(localTags),
                                                 sessionParameters.userId(),
                                                 sessionParameters.sessionId(),
                                                 sessionParameters.locale()

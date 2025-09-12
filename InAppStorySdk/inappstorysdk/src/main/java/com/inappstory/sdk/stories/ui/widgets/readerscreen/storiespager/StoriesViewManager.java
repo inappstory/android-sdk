@@ -508,15 +508,17 @@ public class StoriesViewManager {
         Context localContext = pageManager.host.getContext();
         if (localContext == null) localContext = context;
         if (localContext != null)
-            core.screensManager().openScreen(
-                    localContext,
-                    new LaunchGameScreenStrategy(core, true)
-                            .data(new LaunchGameScreenData(
-                                    uniqueId,
-                                    getGameStoryData(),
-                                    gameId
-                            ))
-            );
+            if (core.gamesAPI().gameCanBeOpened(gameId)) {
+                core.screensManager().openScreen(
+                        localContext,
+                        new LaunchGameScreenStrategy(core, true)
+                                .data(new LaunchGameScreenData(
+                                        uniqueId,
+                                        getGameStoryData(),
+                                        gameId
+                                ))
+                );
+            }
 
     }
 

@@ -206,25 +206,28 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
                                     }
                                 }
                         );
-                        core.screensManager().openScreen(
-                                context,
-                                new LaunchGameScreenStrategy(
-                                        core,
-                                        false
-                                )
-                                        .data(new LaunchGameScreenData(
-                                                null,
-                                                new SlideData(
-                                                        new UgcStoryData(
-                                                                current,
-                                                                SourceType.LIST
-                                                        ),
-                                                        0,
-                                                        null
-                                                ),
-                                                current.gameInstanceId()
-                                        ))
-                        );
+                        if (core.gamesAPI().gameCanBeOpened(current.gameInstanceId())) {
+
+                            core.screensManager().openScreen(
+                                    context,
+                                    new LaunchGameScreenStrategy(
+                                            core,
+                                            false
+                                    )
+                                            .data(new LaunchGameScreenData(
+                                                    null,
+                                                    new SlideData(
+                                                            new UgcStoryData(
+                                                                    current,
+                                                                    SourceType.LIST
+                                                            ),
+                                                            0,
+                                                            null
+                                                    ),
+                                                    current.gameInstanceId()
+                                            ))
+                            );
+                        }
                         return;
                     } else if (current.deeplink() != null) {
                         core.statistic().storiesV2().sendDeeplinkStory(current.id(),
@@ -307,7 +310,7 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
                         ContentType.UGC,
                         coordinates
                 );
-                boolean nonAnonymous = !((IASDataSettingsHolder)core.settingsAPI()).anonymous();
+                boolean nonAnonymous = !((IASDataSettingsHolder) core.settingsAPI()).anonymous();
                 core.screensManager().openScreen(
                         context,
                         new LaunchStoryScreenStrategy(core, false).
