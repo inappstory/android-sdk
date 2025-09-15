@@ -340,12 +340,9 @@ public class GameCacheManager {
                                 !forceReloadArchive
                         );
 
-
-                Log.e("ArchiveUseCase", "GameCacheManager0");
                 gameUseCasesThread.submit(new Runnable() {
                     @Override
                     public void run() {
-                        Log.e("ArchiveUseCase", "GameCacheManager");
                         getZipFileUseCase.getFile();
                     }
                 });

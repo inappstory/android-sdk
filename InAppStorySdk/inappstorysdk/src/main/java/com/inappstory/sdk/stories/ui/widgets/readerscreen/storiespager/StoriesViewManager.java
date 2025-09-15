@@ -720,7 +720,6 @@ public class StoriesViewManager {
     }
 
     public void changeIndex(int index) {
-        Log.e("changeIndex", index + "");
         pageManager.openSlideByIndex(index);
     }
 
@@ -737,7 +736,6 @@ public class StoriesViewManager {
             slideLoadError(data.slideIndex);
             getPageManager().clearSlideTimerFromJS();
         } else if (data.showLoader) {
-            Log.e("updateTimeline", "showLoader");
             synchronized (latestIndexLock) {
                 showLoader = new ShowLoader(index, false, false);
                 showRefreshHandler.post(showLoader);

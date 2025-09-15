@@ -195,9 +195,6 @@ public class FilesDownloader {
         int bufferLength = 0;
         int cnt = 0;
         try {
-            if (interruption != null) {
-                Log.e("ArchiveUseCase", "FilesDownloader " + url + " " + interruption);
-            }
             while ((bufferLength = inputStream.read(buffer)) > 0) {
                 if (interruption != null && interruption.active) {
                     releaseStreamAndFile(fileOutputStream, lock);

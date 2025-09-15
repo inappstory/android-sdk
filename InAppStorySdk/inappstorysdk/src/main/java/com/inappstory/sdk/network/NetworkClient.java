@@ -124,7 +124,6 @@ public class NetworkClient {
                     .anonymous(dataSettingsHolder.anonymous())
                     .locale(dataSettingsHolder.lang());
             if (requestLocalParameters != null && !requestLocalParameters.equals(currentParameters)) {
-                Log.e("StoriesLoadedCallback", "Parameters: " + requestLocalParameters + " " + currentParameters);
                 response = new Response.Builder().code(-5).errorBody("User id or locale was changed").build();
                 response.logId = requestId;
                 callback.onFailure(response);

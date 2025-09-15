@@ -168,7 +168,6 @@ public class DraggableElasticLayout extends FrameLayout {
 
     @Override
     public void onNestedPreScroll(View target, int dx, int dy, int[] consumed) {
-        Log.e("ViewPagerTouch", "Elastic onNestedPreScroll " + dy);
         if (draggingDown && dy > 0) {
             if (disabled || !verticalGesturesEnabled) {
                 disabledDragScale(dy);
@@ -190,7 +189,6 @@ public class DraggableElasticLayout extends FrameLayout {
     @Override
     public void onNestedScroll(View target, int dxConsumed, int dyConsumed,
                                int dxUnconsumed, int dyUnconsumed) {
-        Log.e("ViewPagerTouch", "Elastic onNestedScroll " + dyUnconsumed + " " + dyConsumed);
         if (totalScrollValue == 0 && dyUnconsumed > 0) {
             disabledDragScale(dyUnconsumed);
         } else if (disabled || (draggingUp && swipeUpDisabled) || !verticalGesturesEnabled) {
@@ -204,7 +202,6 @@ public class DraggableElasticLayout extends FrameLayout {
 
     @Override
     public boolean onTouchEvent(MotionEvent ev) {
-        Log.e("ViewPagerTouch", "Elastic onTouchEvent " + ev);
         return super.onTouchEvent(ev);
     }
 

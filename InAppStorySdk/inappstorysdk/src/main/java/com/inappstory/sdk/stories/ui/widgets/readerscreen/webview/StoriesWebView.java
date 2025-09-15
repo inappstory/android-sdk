@@ -167,7 +167,6 @@ public class StoriesWebView extends IASWebView implements ContentViewInteractor 
                 "story_slide_stop('{\"prepareForRestart\": false}'); ";
         if (manager.loadedIndex < 0) return;
 
-        Log.e("stopSlide", funAfterCheck);
         loadUrl("javascript:(function(){" +
                 "if ('story_slide_stop' in window) " +
                 "{" +
@@ -245,7 +244,6 @@ public class StoriesWebView extends IASWebView implements ContentViewInteractor 
             @Override
             public void onLongPress(MotionEvent e) {
                 getManager().getPageManager().pauseSlide(false);
-                Log.e("pauseSlide", "StoriesWebView onLongPress");
                 super.onLongPress(e);
             }
         });
@@ -459,7 +457,6 @@ public class StoriesWebView extends IASWebView implements ContentViewInteractor 
 
     @Override
     public boolean onTouchEvent(MotionEvent motionEvent) {
-        Log.e("ViewPagerTouch", "WebView onTouchEvent " + motionEvent);
         if (checkIfParentsHasCubeAnimation(getParentForAccessibility())) return false;
         if (gestureDetector.onTouchEvent(motionEvent)) return true;
         boolean c = super.onTouchEvent(motionEvent);
@@ -478,7 +475,6 @@ public class StoriesWebView extends IASWebView implements ContentViewInteractor 
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent motionEvent) {
-        Log.e("ViewPagerTouch", "WebView onInterceptTouchEvent " + motionEvent);
         if (checkIfParentsHasCubeAnimation(getParentForAccessibility())) return false;
         boolean c = super.onInterceptTouchEvent(motionEvent);
         if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {

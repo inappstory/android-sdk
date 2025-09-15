@@ -280,8 +280,6 @@ public class ReaderPageFragment extends Fragment {
                                 maxRatioHeight + "\nTopInsetOffset:" +
                                 topInsetOffset + "\nBottomInsetOffset:" + bottomInsetOffset + "\n");
                 blackTop.requestLayout();
-
-                Log.e("ScreenSizes", "blackBottom:" + blackBottom.getHeight() + "\nblackTop:" + restHeight);
             }
 
         }
@@ -411,13 +409,11 @@ public class ReaderPageFragment extends Fragment {
     }
 
     private void showLoaderContainerAnimated() {
-        Log.e("hideLoader", "showLoaderContainerAnimated");
         loaderContainer.clearAnimation();
         loaderContainer.animate().alpha(1f).setStartDelay(300).setDuration(300).start();
     }
 
     private void hideLoaderContainerAnimated() {
-        Log.e("hideLoader", "hideLoaderContainerAnimated");
         loaderContainer.clearAnimation();
         loaderContainer.animate().alpha(0f).setDuration(300).start();
     }

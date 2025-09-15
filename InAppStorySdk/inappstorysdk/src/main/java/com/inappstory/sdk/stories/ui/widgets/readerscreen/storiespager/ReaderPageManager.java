@@ -577,7 +577,6 @@ public class ReaderPageManager implements IReaderSlideViewModel {
     public void slideLoadSuccess(int index, boolean alreadyLoaded) {
         if (slideIndex == index) {
             if (checkIfManagersIsNull()) return;
-            Log.e("slidesDownloader", "RPM " + storyId +  " " + index + " " + alreadyLoaded);
             webViewManager.storyLoaded(storyId, index, alreadyLoaded);
             //host.storyLoadedSuccess();
         }

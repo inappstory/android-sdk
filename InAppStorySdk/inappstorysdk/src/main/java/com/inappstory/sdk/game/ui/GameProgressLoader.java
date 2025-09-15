@@ -51,7 +51,6 @@ public class GameProgressLoader extends RelativeLayout implements IGameProgressL
     @Override
     public void setVisibility(int visibility) {
         super.setVisibility(visibility);
-        Log.e("ProgressVisibility", visibility + "");
     }
 
     public void clearLoader() {
@@ -94,7 +93,6 @@ public class GameProgressLoader extends RelativeLayout implements IGameProgressL
             @Override
             public void run() {
                 if (progressLoader == null) return;
-                Log.e("SetProgress", 100 + " " + 100);
                 progressLoader.launchFinalAnimation();
             }
         });
@@ -105,7 +103,6 @@ public class GameProgressLoader extends RelativeLayout implements IGameProgressL
         post(new Runnable() {
             @Override
             public void run() {
-                Log.e("SetProgress", progress + " " + max);
                 if (progressLoader == null) return;
                 progressLoader.setProgress(progress, max);
             }

@@ -130,8 +130,6 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
 
     public void slideClick(String payload) {
         if (payload != null && !payload.isEmpty()) {
-
-            Log.e("IASClickPayload", payload);
             SlideLinkObject object = JsonParser.fromJson(payload, SlideLinkObject.class);
             if (object != null) {
                 ClickAction action = ClickAction.BUTTON;
