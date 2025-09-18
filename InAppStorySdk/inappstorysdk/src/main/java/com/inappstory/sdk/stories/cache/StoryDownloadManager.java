@@ -441,7 +441,9 @@ public class StoryDownloadManager {
         if (feed != null && !isFavorite) {
             storyDownloader.loadStoryListByFeed(feed, loadCallback, true);
         } else {
-            storyDownloader.loadStoryList(isFavorite ? loadCallbackWithoutFav : loadCallback, isFavorite, true);
+            storyDownloader.loadStoryList(
+                    isFavorite ? loadCallbackWithoutFav : loadCallback, isFavorite, true
+            );
         }
     }
 

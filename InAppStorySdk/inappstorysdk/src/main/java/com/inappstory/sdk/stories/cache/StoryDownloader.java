@@ -25,6 +25,7 @@ import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.core.network.content.models.Feed;
 import com.inappstory.sdk.core.network.content.models.Story;
 import com.inappstory.sdk.stories.api.models.StoryListType;
+import com.inappstory.sdk.stories.api.models.TargetingBodyObject;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadFeedCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadListCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
@@ -459,16 +460,16 @@ class StoryDownloader {
                             public void onSuccess(final RequestLocalParameters requestLocalParameters) {
                                 final String loadStoriesUID =
                                         core.statistic().profiling().addTask("api_story_list");
-                                String tags = TextUtils.join(
-                                        ",",
-                                        ((IASDataSettingsHolder) core.settingsAPI()).tags()
-                                );
+                                IASDataSettingsHolder settingsHolder = (IASDataSettingsHolder) core.settingsAPI();
                                 core.network().enqueue(
                                         core.network().getApi().getFeed(
                                                 feed,
                                                 core.projectSettingsAPI().testKey(),
                                                 0,
-                                                tags.isEmpty() ? null : tags,
+                                                new TargetingBodyObject(
+                                                        settingsHolder.tags().isEmpty() ? null : settingsHolder.tags(),
+                                                        settingsHolder.options()
+                                                ),
                                                 null,
                                                 "stories.slides",
                                                 requestLocalParameters.userId(),

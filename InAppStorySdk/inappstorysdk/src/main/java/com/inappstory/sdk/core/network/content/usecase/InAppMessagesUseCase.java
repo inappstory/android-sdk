@@ -12,6 +12,7 @@ import com.inappstory.sdk.core.network.content.models.InAppMessageFeed;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.network.models.RequestLocalParameters;
 import com.inappstory.sdk.stories.api.models.ContentType;
+import com.inappstory.sdk.stories.api.models.TargetingBodyObject;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.utils.TagsUtils;
 
@@ -39,11 +40,12 @@ public class InAppMessagesUseCase {
             final boolean retry
     ) {
         core.statistic().profiling().addTask("inAppMessages");
+        final IASDataSettingsHolder settingsHolder = (IASDataSettingsHolder) core.settingsAPI();
         final List<String> localTags = new ArrayList<>();
         if (this.tags != null) {
             localTags.addAll(this.tags);
         } else {
-            localTags.addAll(((IASDataSettingsHolder) core.settingsAPI()).tags());
+            localTags.addAll(settingsHolder.tags());
         }
 
         new ConnectionCheck().check(
@@ -108,7 +110,10 @@ public class InAppMessagesUseCase {
                                         core.network().getApi().getInAppMessages(
                                                 1,
                                                 ids,
-                                                !localTags.isEmpty() ? TextUtils.join(",", localTags) : null,
+                                                new TargetingBodyObject(
+                                                        !localTags.isEmpty() ? localTags : null,
+                                                        settingsHolder.options()
+                                                ),
                                                 null,
                                                 "messages.slides",
                                                 sessionParameters.userId(),

@@ -26,6 +26,7 @@ import com.inappstory.sdk.network.models.RequestLocalParameters;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.core.network.content.models.Feed;
 import com.inappstory.sdk.core.network.content.models.Story;
+import com.inappstory.sdk.stories.api.models.TargetingBodyObject;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadFeedCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.onboarding.OnboardingLoadCallback;
@@ -71,7 +72,7 @@ public class IASOnboardingsImpl implements IASOnboardings {
             loadOnboardingError(usedFeed, "Incorrect user id and device id");
             return;
         }
-        final String localTags;
+        final List<String> localTags;
         if (tags != null) {
             List<String> filteredList = new ArrayList<>();
             List<String> copyTags = new ArrayList<>(tags);
@@ -101,9 +102,9 @@ public class IASOnboardingsImpl implements IASOnboardings {
                 return;
 
             }
-            localTags = TextUtils.join(",", filteredList);
+            localTags = filteredList;
         } else {
-            localTags = TextUtils.join(",", settingsHolder.tags());
+            localTags = settingsHolder.tags();
         }
         core.sessionManager().useOrOpenSession(new OpenSessionCallback() {
             @Override
@@ -115,7 +116,7 @@ public class IASOnboardingsImpl implements IASOnboardings {
                                 usedFeed,
                                 core.projectSettingsAPI().testKey(),
                                 limit,
-                                localTags,
+                                new TargetingBodyObject(!localTags.isEmpty() ? localTags : null, settingsHolder.options()),
                                 "stories.slides",
                                 requestLocalParameters.userId(),
                                 requestLocalParameters.sessionId(),

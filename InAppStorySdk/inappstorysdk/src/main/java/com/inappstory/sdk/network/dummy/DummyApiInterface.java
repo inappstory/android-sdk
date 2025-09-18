@@ -14,7 +14,7 @@ public class DummyApiInterface implements ApiInterface {
     }
 
     @Override
-    public Request getInAppMessages(Integer srcList, String ids, String tags, String fields, String expand, String xUserId, String xSessionId, String lang) {
+    public Request getInAppMessages(Integer srcList, String ids, TargetingBodyObject target, String fields, String expand, String xUserId, String xSessionId, String lang) {
         return new DummyRequest();
     }
 
@@ -115,12 +115,12 @@ public class DummyApiInterface implements ApiInterface {
     }
 
     @Override
-    public Request getFeed(String feed, String test, Integer favorite, String tags, String fields, String expand, String xUserId, String xSessionId, String lang) {
+    public Request getFeed(String feed, String test, Integer favorite, TargetingBodyObject target, String fields, String expand, String xUserId, String xSessionId, String lang) {
         return new DummyRequest();
     }
 
     @Override
-    public Request getOnboardingFeed(String feed, String test, Integer limit, String tags, String expand, String xUserId, String xSessionId, String lang) {
+    public Request getOnboardingFeed(String feed, String test, Integer limit, TargetingBodyObject target, String expand, String xUserId, String xSessionId, String lang) {
         return new DummyRequest();
     }
 

@@ -41,12 +41,14 @@ public class BannerPlaceUseCase {
             final boolean retry
     ) {
         core.statistic().profiling().addTask("banner_place");
+        final IASDataSettingsHolder settingsHolder = ((IASDataSettingsHolder) core.settingsAPI());
         final List<String> localTags = new ArrayList<>();
         if (this.tags != null) {
             localTags.addAll(this.tags);
         } else {
-            localTags.addAll(((IASDataSettingsHolder) core.settingsAPI()).tags());
+            localTags.addAll(settingsHolder.tags());
         }
+
 
         new ConnectionCheck().check(
                 core.appContext(),
@@ -121,7 +123,10 @@ public class BannerPlaceUseCase {
                                                 1,
                                                 null,
                                                 "banners.slides,banners.layout",
-                                                new TargetingBodyObject(localTags),
+                                                new TargetingBodyObject(
+                                                        !localTags.isEmpty() ? localTags : null,
+                                                        settingsHolder.options()
+                                                ),
                                                 sessionParameters.userId(),
                                                 sessionParameters.sessionId(),
                                                 sessionParameters.locale()

@@ -14,6 +14,7 @@ import com.inappstory.sdk.network.models.RequestLocalParameters;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.core.network.content.models.Feed;
 import com.inappstory.sdk.core.network.content.models.Image;
+import com.inappstory.sdk.stories.api.models.TargetingBodyObject;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadFeedCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.stackfeed.IStackFeedActions;
@@ -44,12 +45,12 @@ public class IASStackFeedImpl implements IASStackFeed {
             final List<String> tags,
             final IStackFeedResult stackFeedResult
     ) {
-        IASDataSettingsHolder settingsHolder = (IASDataSettingsHolder) core.settingsAPI();
+        final IASDataSettingsHolder settingsHolder = (IASDataSettingsHolder) core.settingsAPI();
         if (settingsHolder.noCorrectUserIdOrDevice()) {
             stackFeedResult.error();
             return;
         }
-        final String localTags;
+        final List<String> localTags;
         if (tags != null) {
             List<String> filteredList = new ArrayList<>();
             List<String> copyTags = new ArrayList<>(tags);
@@ -79,9 +80,9 @@ public class IASStackFeedImpl implements IASStackFeed {
                 return;
 
             }
-            localTags = TextUtils.join(",", filteredList);
+            localTags = new ArrayList<>(filteredList);
         } else {
-            localTags = TextUtils.join(",", settingsHolder.tags());
+            localTags = new ArrayList<>(settingsHolder.tags());
         }
         final String localFeed;
         if (feed != null && !feed.isEmpty()) localFeed = feed;
@@ -98,7 +99,10 @@ public class IASStackFeedImpl implements IASStackFeed {
                                 localFeed,
                                 core.projectSettingsAPI().testKey(),
                                 0,
-                                localTags,
+                                new TargetingBodyObject(
+                                        !localTags.isEmpty() ? localTags : null,
+                                        settingsHolder.options()
+                                ),
                                 null,
                                 "stories.slides",
                                 requestLocalParameters.userId(),
@@ -111,7 +115,7 @@ public class IASStackFeedImpl implements IASStackFeed {
                                 if (response == null || response.stories == null) {
                                     stackFeedResult.error();
                                 } else {
-                                    for (IListItemContent story: response.stories) {
+                                    for (IListItemContent story : response.stories) {
                                         core.contentHolder().listsContent().setByIdAndType(
                                                 story, story.id(), ContentType.STORY
                                         );

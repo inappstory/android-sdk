@@ -62,11 +62,11 @@ public interface ApiInterface {
             @Query("was") Integer widgetAnswerScore
     );
 
-    @GET("v2/inappmessaging")
+    @POST("v2/inappmessaging")
     Request getInAppMessages(
             @Query("srcList") Integer srcList,
             @Query("id") String ids,
-            @Query("tags") String tags,
+            @Body TargetingBodyObject filterObject,
             @Query("fields") String fields,
             @Query("expand") String expand,
             @ReplaceHeader(HeadersKeys.USER_ID) String xUserId,
@@ -153,12 +153,12 @@ public interface ApiInterface {
             @ReplaceHeader(HeadersKeys.ACCEPT_LANGUAGE) String lang);
 
 
-    @GET("v2/feed/{feed}")
+    @POST("v2/feed/{feed}")
     Request getFeed(
             @Path("feed") String feed,
             @Query("test") String test,
             @Query("favorite") Integer favorite,
-            @Query("tags") String tags,
+            @Body TargetingBodyObject filterObject,
             @Query("fields") String fields,
             @Query("expand") String expand,
             @ReplaceHeader(HeadersKeys.USER_ID) String xUserId,
@@ -172,7 +172,7 @@ public interface ApiInterface {
             @Path("feed") String feed,
             @Query("test") String test,
             @Query("limit") Integer limit,
-            @Query("tags") String tags,
+            @Body TargetingBodyObject filterObject,
             @Query("expand") String expand,
             @ReplaceHeader(HeadersKeys.USER_ID) String xUserId,
             @ReplaceHeader(HeadersKeys.AUTH_SESSION_ID) String xSessionId,
