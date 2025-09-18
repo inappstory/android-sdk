@@ -13,10 +13,13 @@ public class TargetingBodyObject {
     @SerializedName("options")
     public Map<String, String> options;
 
-    public TargetingBodyObject() {}
+    public TargetingBodyObject() {
+    }
 
     public TargetingBodyObject(List<String> tags, Map<String, String> options) {
-        this.tags = new ArrayList<>(tags);
-        this.options = new HashMap<>(options);
+        if (tags != null)
+            this.tags = new ArrayList<>(tags);
+        if (options != null)
+            this.options = new HashMap<>(options);
     }
 }
