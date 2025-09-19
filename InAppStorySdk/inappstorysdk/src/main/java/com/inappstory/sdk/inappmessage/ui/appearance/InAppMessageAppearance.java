@@ -8,4 +8,5 @@ public interface InAppMessageAppearance extends Serializable {
     String backgroundColor();
     IReaderBackground background();
     Drawable backgroundDrawable();
+    boolean disableClose();
 }

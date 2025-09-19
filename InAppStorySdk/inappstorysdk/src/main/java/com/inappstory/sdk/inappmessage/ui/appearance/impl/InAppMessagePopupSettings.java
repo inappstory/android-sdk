@@ -4,6 +4,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 
 import com.inappstory.sdk.core.utils.ColorUtils;
+import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageAppearance;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageBackdrop;
 import com.inappstory.sdk.inappmessage.ui.appearance.IReaderBackground;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessagePopupAppearance;
@@ -32,8 +33,9 @@ public class InAppMessagePopupSettings implements InAppMessagePopupAppearance {
 
     public InAppMessagePopupSettings() {}
 
-    public InAppMessagePopupSettings(Map<String, Object> appearance) {
+    public InAppMessagePopupSettings(Map<String, Object> appearance, boolean disableClose) {
         if (appearance == null) return;
+        this.disableClose = disableClose;
         String contentRatioKey = "content_ratio";
         String cornerRadiusKey = "corner_radius";
         String horizontalPaddingKey = "horizontal_padding";
@@ -79,6 +81,8 @@ public class InAppMessagePopupSettings implements InAppMessagePopupAppearance {
     private String backgroundColor;
     private InAppMessageBackdrop backdrop;
     private IReaderBackground background;
+    private boolean disableClose;
+
 
     @Override
     public float contentRatio() {
@@ -127,6 +131,11 @@ public class InAppMessagePopupSettings implements InAppMessagePopupAppearance {
         ColorDrawable drawable = new ColorDrawable();
         drawable.setColor(ColorUtils.parseColorRGBA(backgroundColor()));
         return drawable;
+    }
+
+    @Override
+    public boolean disableClose() {
+        return disableClose;
     }
 
 }

@@ -138,7 +138,8 @@ public class ScreensManager implements IScreensLauncher,
         IIAMReaderViewModel iamReaderViewModel = iamReaderViewModel();
         IAMReaderState state = iamReaderViewModel.getCurrentState();
         if (!state.uiState.equals(IAMReaderUIStates.CLOSED)) {
-            getIAMScreenHolder().closeScreen();
+            if (state.canBeClosed)
+                getIAMScreenHolder().closeScreen();
             return true;
         }
         return false;

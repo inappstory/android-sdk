@@ -68,17 +68,22 @@ public class PopupContentContainer extends IAMContentContainer<InAppMessagePopup
         content.setBackground(appearance.backgroundDrawable());
         generateLoader(backgroundColor);
         roundedCornerLayout.addView(loaderContainer);
-        switch (appearance.closeButtonPosition()) {
-            case 0:
-                closeButton.setVisibility(GONE);
-                break;
-            case 1:
-                closeButtonLayoutParams.gravity = Gravity.START;
-                break;
-            default:
-                closeButtonLayoutParams.gravity = Gravity.END;
-                break;
+        if (closeEnabled) {
+            switch (appearance.closeButtonPosition()) {
+                case 0:
+                    closeButton.setVisibility(GONE);
+                    break;
+                case 1:
+                    closeButtonLayoutParams.gravity = Gravity.START;
+                    break;
+                default:
+                    closeButtonLayoutParams.gravity = Gravity.END;
+                    break;
+            }
+        } else {
+            closeButton.setVisibility(GONE);
         }
+
         //
         closeButton.setLayoutParams(closeButtonLayoutParams);
         closeButton.requestLayout();

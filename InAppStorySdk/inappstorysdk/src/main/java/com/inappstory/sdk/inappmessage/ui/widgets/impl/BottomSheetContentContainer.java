@@ -92,7 +92,8 @@ public final class BottomSheetContentContainer extends IAMContentContainer<InApp
         bottomSheetLineContainer.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                closeWithAnimation();
+                if (closeEnabled)
+                    closeWithAnimation();
             }
         });
         roundedCornerLayout.addView(bottomSheetLineContainer);
@@ -168,7 +169,7 @@ public final class BottomSheetContentContainer extends IAMContentContainer<InApp
     public void appearance(InAppMessageBottomSheetAppearance appearance) {
         super.appearance(appearance);
         if (content == null) return;
-
+        bottomSheetBehavior.setDraggable(closeEnabled);
         float backdropAlpha = appearance.backdrop().alpha();
         int backdropColor = ColorUtils.modifyAlpha(Color.BLACK, backdropAlpha);
         background.setBackgroundColor(backdropColor);

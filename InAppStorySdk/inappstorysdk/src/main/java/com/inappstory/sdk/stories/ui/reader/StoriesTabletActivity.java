@@ -695,6 +695,8 @@ public class StoriesTabletActivity extends IASActivity implements BaseStoryScree
         if (fragmentById instanceof IASBackPressHandler && ((IASBackPressHandler) fragmentById).onBackPressed()) {
             return;
         }
+
+        if (storiesContentFragment != null && storiesContentFragment.onBackPressed()) return;
         closeWithAction(-1);
     }
 

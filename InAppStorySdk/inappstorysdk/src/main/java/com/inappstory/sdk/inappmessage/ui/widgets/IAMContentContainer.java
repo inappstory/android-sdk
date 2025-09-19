@@ -26,12 +26,14 @@ public abstract class IAMContentContainer<T extends InAppMessageAppearance> exte
     protected FrameLayout loaderContainer;
     protected Rect externalContainerRect = new Rect();
     protected FrameLayout content;
+    protected boolean closeEnabled = true;
 
     public abstract void clearContentBackground();
 
     protected IAMContainerCallback callback;
 
-    public void showContent() {}
+    public void showContent() {
+    }
 
     public void showLoader() {
         loaderContainer.setVisibility(VISIBLE);
@@ -80,7 +82,7 @@ public abstract class IAMContentContainer<T extends InAppMessageAppearance> exte
         View loader = AppearanceManager.getLoader(
                 getContext(),
                 contrast1 > contrast2 ?
-                Color.BLACK : Color.WHITE
+                        Color.BLACK : Color.WHITE
         );
         loaderContainer.addView(loader);
     }
@@ -88,19 +90,23 @@ public abstract class IAMContentContainer<T extends InAppMessageAppearance> exte
     protected void init(Context context) {
         //setVisibility(INVISIBLE);
         background = new View(context);
-        background.setLayoutParams(new FrameLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT
-        ));
+        background.setLayoutParams(
+                new FrameLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT
+                )
+        );
         background.setBackgroundColor(
                 ColorUtils.parseColorRGBA(
-                "#0000005A" //black 0.35
-        ));
+                        "#0000005A" //black 0.35
+                )
+        );
         background.setClickable(true);
         background.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                closeWithAnimation();
+                if (closeEnabled)
+                    closeWithAnimation();
             }
         });
         addView(background);
@@ -115,6 +121,10 @@ public abstract class IAMContentContainer<T extends InAppMessageAppearance> exte
 
     public void appearance(T appearance) {
         this.appearance = appearance;
+        if (appearance != null) {
+            this.closeEnabled = !appearance.disableClose();
+        }
+
         post(new Runnable() {
             @Override
             public void run() {

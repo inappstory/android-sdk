@@ -676,7 +676,14 @@ public class StoriesContentFragment extends Fragment
 
     @Override
     public boolean onBackPressed() {
-        return false;
+        InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
+        if (inAppStoryManager == null) return false;
+        IReaderContent story = inAppStoryManager.iasCore().contentHolder()
+                .readerContent()
+                .getByIdAndType(
+                        readerManager.getCurrentStoryId(), readerManager.contentType
+                );
+        return (story != null && story.disableClose());
     }
 
 

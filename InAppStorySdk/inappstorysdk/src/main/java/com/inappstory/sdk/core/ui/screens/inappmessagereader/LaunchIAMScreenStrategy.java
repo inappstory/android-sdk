@@ -357,6 +357,7 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
                         .sourceType(sourceType)
                         .iamId(inAppMessage.id())
                         .event(inAppMessageOpenSettings.event())
+                        .canBeClosed(!inAppMessage.disableClose())
                         .inAppMessageData(
                                 new InAppMessageData(
                                         inAppMessage.id(),

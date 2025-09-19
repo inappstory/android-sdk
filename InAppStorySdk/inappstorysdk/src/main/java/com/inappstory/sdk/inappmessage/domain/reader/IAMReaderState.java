@@ -8,6 +8,7 @@ import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 public class IAMReaderState {
     public IAMReaderUIStates uiState = IAMReaderUIStates.CLOSED;
     public IAMReaderLoadStates loadState = IAMReaderLoadStates.EMPTY;
+    public boolean canBeClosed = false;
     public InAppMessageAppearance appearance = new InAppMessageBottomSheetSettings();
     public boolean showOnlyIfLoaded = false;
     public boolean contentIsPreloaded = false;
@@ -28,6 +29,11 @@ public class IAMReaderState {
 
     public IAMReaderState event(String event) {
         this.event = event;
+        return this;
+    }
+
+    public IAMReaderState canBeClosed(boolean canBeClosed) {
+        this.canBeClosed = canBeClosed;
         return this;
     }
 
@@ -68,6 +74,7 @@ public class IAMReaderState {
                 .sourceType(this.sourceType)
                 .loadState(this.loadState)
                 .iamId(this.iamId)
+                .canBeClosed(this.canBeClosed)
                 .event(this.event)
                 .inAppMessageData(this.inAppMessageData)
                 .appearance(this.appearance)

@@ -244,11 +244,11 @@ public class InAppMessage implements IInAppMessage {
     public InAppMessageAppearance inAppMessageAppearance() {
         switch (screenType) {
             case 2:
-                return new InAppMessagePopupSettings(appearance);
+                return new InAppMessagePopupSettings(appearance, disableClose);
             case 3:
-                return new InAppMessageFullscreenSettings(appearance);
+                return new InAppMessageFullscreenSettings(appearance, disableClose);
             default:
-                return new InAppMessageBottomSheetSettings(appearance);
+                return new InAppMessageBottomSheetSettings(appearance, disableClose);
         }
     }
 

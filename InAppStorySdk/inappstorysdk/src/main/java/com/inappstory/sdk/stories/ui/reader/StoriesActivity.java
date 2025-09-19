@@ -624,6 +624,7 @@ public class StoriesActivity extends IASActivity implements BaseStoryScreen, Sho
 
     @Override
     public void onBackPressed() {
+
         if (!backPressEnabled && storiesContentFragment != null) {
             ReaderPageManager page = storiesContentFragment.getCurrentPage();
             if (page != null) {
@@ -639,6 +640,7 @@ public class StoriesActivity extends IASActivity implements BaseStoryScreen, Sho
         if (fragmentById instanceof IASBackPressHandler && ((IASBackPressHandler) fragmentById).onBackPressed()) {
             return;
         }
+        if (storiesContentFragment != null && storiesContentFragment.onBackPressed()) return;
         closeWithAction(-1);
     }
 

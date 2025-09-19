@@ -118,7 +118,7 @@ public abstract class StoriesMainFragment extends Fragment implements
 
     @Override
     public void backPressEnabled(boolean enabled) {
-
+        this.backPressEnabled = enabled;
     }
 
     @Override
@@ -829,7 +829,18 @@ public abstract class StoriesMainFragment extends Fragment implements
                 return true;
             }
         }
-        closeWithAction(-1);
+        useContentFragment(new StoriesContentFragmentAction() {
+            @Override
+            public void invoke(StoriesContentFragment fragment) {
+                if (fragment.onBackPressed()) return;
+                closeWithAction(-1);
+            }
+
+            @Override
+            public void error() {
+                closeWithAction(-1);
+            }
+        });
         return true;
     }
 

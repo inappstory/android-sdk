@@ -33,12 +33,14 @@ public class InAppMessageBottomSheetSettings implements InAppMessageBottomSheetA
     private IReaderBackground background;
     private InAppMessageBSLineAppearance lineAppearance;
     private InAppMessageBackdrop backdrop;
+    private boolean disableClose;
 
     public InAppMessageBottomSheetSettings() {
     }
 
-    public InAppMessageBottomSheetSettings(Map<String, Object> appearance) {
+    public InAppMessageBottomSheetSettings(Map<String, Object> appearance, boolean disableClose) {
         if (appearance == null) return;
+        this.disableClose = disableClose;
         String contentRatioKey = "content_ratio";
         String cornerRadiusKey = "corner_radius";
         String lineAppearanceKey = "close_button";
@@ -95,6 +97,11 @@ public class InAppMessageBottomSheetSettings implements InAppMessageBottomSheetA
         ColorDrawable drawable = new ColorDrawable();
         drawable.setColor(ColorUtils.parseColorRGBA(backgroundColor()));
         return drawable;
+    }
+
+    @Override
+    public boolean disableClose() {
+        return disableClose;
     }
 
     @Override

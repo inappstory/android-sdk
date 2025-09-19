@@ -7,6 +7,7 @@ import android.graphics.drawable.Drawable;
 import com.inappstory.sdk.core.utils.ColorUtils;
 import com.inappstory.sdk.inappmessage.ui.appearance.IReaderBackground;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageFullscreenAppearance;
+import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessagePopupAppearance;
 import com.inappstory.sdk.utils.NumberUtils;
 
 import java.util.Map;
@@ -16,12 +17,14 @@ public class InAppMessageFullscreenSettings implements InAppMessageFullscreenApp
     private Integer closeButtonPosition;
     private Integer animationType;
     private IReaderBackground background;
+    private boolean disableClose;
 
     public InAppMessageFullscreenSettings() {
     }
 
-    public InAppMessageFullscreenSettings(Map<String, Object> appearance) {
+    public InAppMessageFullscreenSettings(Map<String, Object> appearance, boolean disableClose) {
         if (appearance == null) return;
+        this.disableClose = disableClose;
         String closeButtonPositionKey = "close_button_position";
         String animationTypeKey = "animation_type";
         String backgroundColorKey = "background_color";
@@ -64,6 +67,8 @@ public class InAppMessageFullscreenSettings implements InAppMessageFullscreenApp
         return animationType != null ? animationType : 1;
     }
 
+
+
     @Override
     public String backgroundColor() {
         return backgroundColor != null ? backgroundColor : "#FFFFFF";
@@ -80,6 +85,11 @@ public class InAppMessageFullscreenSettings implements InAppMessageFullscreenApp
         ColorDrawable drawable = new ColorDrawable();
         drawable.setColor(ColorUtils.parseColorRGBA(backgroundColor()));
         return drawable;
+    }
+
+    @Override
+    public boolean disableClose() {
+        return disableClose;
     }
 
 }
