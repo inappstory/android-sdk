@@ -576,7 +576,7 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
             }
             Map<String, String> settingsExtraOptions = settings.options();
             if (settingsExtraOptions != null) {
-                this.options = new HashMap<>();
+                this.options = new HashMap<>(settingsExtraOptions);
             }
             if (settings.imagePlaceholders() != null) {
                 this.userImagePlaceholders.clear();
@@ -798,7 +798,7 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
     @NonNull
     public Map<String, String> options() {
         synchronized (settingsLock) {
-            return options != null ? options : new HashMap<String, String>();
+            return options != null ? new HashMap<>(options) : new HashMap<String, String>();
         }
     }
 
