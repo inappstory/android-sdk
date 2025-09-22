@@ -8,6 +8,29 @@ public class IAMReaderSlideState {
 
     boolean renderReady = false;
 
+    int slideIndex = 0;
+
+    int slidesTotal = 1;
+
+    public int slidesTotal() {
+        return slidesTotal;
+    }
+
+    public IAMReaderSlideState slidesTotal(int totalSlides) {
+        this.slidesTotal = totalSlides;
+        return this;
+    }
+
+    public int slideIndex() {
+        return slideIndex;
+    }
+
+    public IAMReaderSlideState slideIndex(int slideIndex) {
+        this.slideIndex = slideIndex;
+        return this;
+    }
+
+
     public boolean renderReady() {
         return renderReady;
     }
@@ -47,10 +70,11 @@ public class IAMReaderSlideState {
         return this;
     }
 
-
     public IAMReaderSlideState copy() {
         return new IAMReaderSlideState()
                 .content(this.content)
+                .slideIndex(this.slideIndex)
+                .slidesTotal(this.slidesTotal)
                 .renderReady(this.renderReady)
                 .contentStatus(this.contentStatus)
                 .slideJSStatus(this.slideJSStatus);

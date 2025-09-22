@@ -1,10 +1,6 @@
 package com.inappstory.sdk.inappmessage.domain.reader;
 
 
-import static android.content.Context.CLIPBOARD_SERVICE;
-
-import android.content.ClipData;
-import android.content.ClipboardManager;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -26,7 +22,6 @@ import com.inappstory.sdk.stories.api.models.ContentId;
 import com.inappstory.sdk.stories.api.models.ContentIdWithIndex;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.SlideLinkObject;
-import com.inappstory.sdk.stories.api.models.WriteClipboardData;
 import com.inappstory.sdk.stories.cache.ContentIdAndType;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickAction;
 import com.inappstory.sdk.inappmessage.domain.stedata.CallToActionData;
@@ -40,7 +35,6 @@ import com.inappstory.sdk.utils.StringsUtils;
 
 import java.lang.reflect.Type;
 import java.util.Map;
-import java.util.Objects;
 import java.util.UUID;
 
 public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
@@ -78,6 +72,7 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
 
     @Override
     public void readerIsOpened(boolean fromScratch) {
+        IAMReaderSlideState slideState = slideStateObservable.getValue();
         Integer iamId = readerViewModel.getCurrentState().iamId;
         if (iamId == null) return;
         if (fromScratch)
@@ -86,8 +81,8 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
             slideTimeState.resume();
         core.statistic().iamV1().sendOpenEvent(
                 iamId,
-                0,
-                1,
+                slideState.slideIndex(),
+                slideState.slidesTotal(),
                 slideTimeState.iterationId(),
                 fromScratch
         );
@@ -95,12 +90,13 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
 
     @Override
     public void readerIsClosing() {
+        IAMReaderSlideState slideState = slideStateObservable.getValue();
         Integer iamId = readerViewModel.getCurrentState().iamId;
         if (iamId == null) return;
         core.statistic().iamV1().sendCloseEvent(
                 iamId,
-                0,
-                1,
+                slideState.slideIndex(),
+                slideState.slidesTotal(),
                 slideTimeState.totalTime(),
                 slideTimeState.iterationId()
         );
@@ -273,13 +269,14 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
             final String eventData
     ) {
         Integer iamId = readerViewModel.getCurrentState().iamId;
+        IAMReaderSlideState slideState = slideStateObservable.getValue();
         if (data != null) {
             core.statistic().iamV1().sendWidgetEvent(
                     name,
                     data,
                     iamId,
-                    0,
-                    1,
+                    slideState.slideIndex(),
+                    slideState.slidesTotal(),
                     slideTimeState.totalTime(),
                     slideTimeState.iterationId()
             );
