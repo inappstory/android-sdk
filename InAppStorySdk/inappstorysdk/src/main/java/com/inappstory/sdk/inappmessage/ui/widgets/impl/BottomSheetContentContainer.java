@@ -235,7 +235,7 @@ public final class BottomSheetContentContainer extends IAMContentContainer<InApp
 
     @Override
     public void closeWithoutAnimation() {
-        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
     }
 
 }
