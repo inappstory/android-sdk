@@ -18,6 +18,7 @@ public class InAppMessageFullscreenSettings implements InAppMessageFullscreenApp
     private Integer animationType;
     private IReaderBackground background;
     private boolean disableClose;
+    private Map<String, Object> cardAppearance;
 
     public InAppMessageFullscreenSettings() {
     }
@@ -29,6 +30,7 @@ public class InAppMessageFullscreenSettings implements InAppMessageFullscreenApp
         String animationTypeKey = "animation_type";
         String backgroundColorKey = "background_color";
         String backgroundKey = "background";
+        String cardAppearanceKey = "card_appearance";
         NumberUtils numberUtils = new NumberUtils();
         if (appearance.containsKey(closeButtonPositionKey)) {
             closeButtonPosition = numberUtils.convertNumberToInt(appearance.get(closeButtonPositionKey));
@@ -43,6 +45,9 @@ public class InAppMessageFullscreenSettings implements InAppMessageFullscreenApp
             background = new ReaderBackgroundSettings(
                     (Map<String, Object>) appearance.get(backgroundKey)
             );
+        }
+        if (appearance.containsKey(cardAppearanceKey)) {
+            cardAppearance = (Map<String, Object>) appearance.get(cardAppearanceKey);
         }
     }
 
@@ -90,6 +95,12 @@ public class InAppMessageFullscreenSettings implements InAppMessageFullscreenApp
     @Override
     public boolean disableClose() {
         return disableClose;
+    }
+
+
+    @Override
+    public Map<String, Object> cardAppearance() {
+        return cardAppearance;
     }
 
 }

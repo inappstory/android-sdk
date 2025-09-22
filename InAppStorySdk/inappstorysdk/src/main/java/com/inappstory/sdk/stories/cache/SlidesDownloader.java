@@ -27,10 +27,12 @@ import com.inappstory.sdk.utils.StringsUtils;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 
 public class SlidesDownloader {
@@ -215,6 +217,39 @@ public class SlidesDownloader {
                 if (sc > currentIndex + 1) {
                     firstPriority.add(1, new SlideTaskKey(contentIdAndType, currentIndex + 1));
                 }
+            }
+        }
+    }
+
+    public void changePriorityForSingleWithLoop(
+            ContentIdWithIndex current,
+            ContentType type
+    ) {
+        int currentId = current.id();
+        int currentIndex = current.index();
+        synchronized (slideTasksLock) {
+            ContentIdAndType contentIdAndType = new ContentIdAndType(currentId, type);
+            IReaderContentHolder readerContentHolder = core.contentHolder().readerContent();
+            IReaderContent currentStory = readerContentHolder.getByIdAndType(
+                    currentId, type
+            );
+            int sc = currentStory.actualSlidesCount();
+            for (int i = 0; i < sc; i++) {
+                SlideTaskKey kv = new SlideTaskKey(contentIdAndType, i);
+                firstPriority.remove(kv);
+            }
+            Set<Integer> loopedIndexes = new HashSet<>();
+            loopedIndexes.add(currentIndex);
+            loopedIndexes.add(currentIndex + 1 % sc);
+            loopedIndexes.add((currentIndex - 1 + sc) % sc);
+            for (int i = 0; i < sc; i++) {
+                SlideTaskKey kv = new SlideTaskKey(contentIdAndType, i);
+                if (loopedIndexes.contains(i))
+                    continue;
+                firstPriority.add(kv);
+            }
+            for (Integer ind : loopedIndexes) {
+                firstPriority.add(ind == currentIndex ? 0 : 1, new SlideTaskKey(contentIdAndType, ind));
             }
         }
     }

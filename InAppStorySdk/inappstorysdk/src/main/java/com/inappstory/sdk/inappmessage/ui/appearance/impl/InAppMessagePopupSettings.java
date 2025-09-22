@@ -44,6 +44,7 @@ public class InAppMessagePopupSettings implements InAppMessagePopupAppearance {
         String backgroundColorKey = "background_color";
         String backgroundKey = "background";
         String backdropKey = "backdrop";
+        String cardAppearanceKey = "card_appearance";
         NumberUtils numberUtils = new NumberUtils();
         if (appearance.containsKey(contentRatioKey)) {
             contentRatio = numberUtils.convertNumberToFloat(appearance.get(contentRatioKey));
@@ -71,6 +72,9 @@ public class InAppMessagePopupSettings implements InAppMessagePopupAppearance {
                     (Map<String, Object>) appearance.get(backgroundKey)
             );
         }
+        if (appearance.containsKey(cardAppearanceKey)) {
+            cardAppearance = (Map<String, Object>) appearance.get(cardAppearanceKey);
+        }
     }
 
     private Float contentRatio;
@@ -82,6 +86,7 @@ public class InAppMessagePopupSettings implements InAppMessagePopupAppearance {
     private InAppMessageBackdrop backdrop;
     private IReaderBackground background;
     private boolean disableClose;
+    private Map<String, Object> cardAppearance;
 
 
     @Override
@@ -138,4 +143,8 @@ public class InAppMessagePopupSettings implements InAppMessagePopupAppearance {
         return disableClose;
     }
 
+    @Override
+    public Map<String, Object> cardAppearance() {
+        return cardAppearance;
+    }
 }

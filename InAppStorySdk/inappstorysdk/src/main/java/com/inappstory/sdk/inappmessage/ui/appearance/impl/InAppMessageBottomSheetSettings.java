@@ -34,6 +34,7 @@ public class InAppMessageBottomSheetSettings implements InAppMessageBottomSheetA
     private InAppMessageBSLineAppearance lineAppearance;
     private InAppMessageBackdrop backdrop;
     private boolean disableClose;
+    private Map<String, Object> cardAppearance;
 
     public InAppMessageBottomSheetSettings() {
     }
@@ -47,6 +48,7 @@ public class InAppMessageBottomSheetSettings implements InAppMessageBottomSheetA
         String backgroundColorKey = "background_color";
         String backgroundKey = "background";
         String backdropKey = "backdrop";
+        String cardAppearanceKey = "card_appearance";
         NumberUtils numberUtils = new NumberUtils();
         if (appearance.containsKey(contentRatioKey)) {
             contentRatio = numberUtils.convertNumberToFloat(appearance.get(contentRatioKey));
@@ -67,6 +69,9 @@ public class InAppMessageBottomSheetSettings implements InAppMessageBottomSheetA
             background = new ReaderBackgroundSettings(
                     (Map<String, Object>) appearance.get(backgroundKey)
             );
+        }
+        if (appearance.containsKey(cardAppearanceKey)) {
+            cardAppearance = (Map<String, Object>) appearance.get(cardAppearanceKey);
         }
     }
 
@@ -112,5 +117,10 @@ public class InAppMessageBottomSheetSettings implements InAppMessageBottomSheetA
     @Override
     public InAppMessageBackdrop backdrop() {
         return backdrop != null ? backdrop : new InAppMessageBackdropSettings();
+    }
+
+    @Override
+    public Map<String, Object> cardAppearance() {
+        return cardAppearance;
     }
 }
