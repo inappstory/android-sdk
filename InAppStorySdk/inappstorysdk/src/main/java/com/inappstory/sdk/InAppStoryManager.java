@@ -926,6 +926,7 @@ public class InAppStoryManager implements IASBackPressHandler {
                                 .imagePlaceholders(imagePlaceholders)
 
                 );
+                if (initCallback != null) initCallback.onComplete();
             }
         };
         if (secondaryInit) {
@@ -935,6 +936,11 @@ public class InAppStoryManager implements IASBackPressHandler {
         }
     }
 
+    public void initCallback(InAppStoryManagerInit initCallback) {
+        this.initCallback = initCallback;
+    }
+
+    private InAppStoryManagerInit initCallback = null;
 
     private static final Object lock = new Object();
 
