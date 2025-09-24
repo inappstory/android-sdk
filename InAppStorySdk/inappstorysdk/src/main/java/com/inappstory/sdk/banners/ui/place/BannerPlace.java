@@ -522,8 +522,10 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
                         );
                     }
                 });
+                break;
             case FAILED:
                 internalBannerPlaceLoadCallback.loadError();
+                break;
             case NONE:
             case LOADING:
                 break;
