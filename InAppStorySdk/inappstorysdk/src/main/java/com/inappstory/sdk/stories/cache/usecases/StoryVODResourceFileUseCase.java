@@ -15,6 +15,8 @@ import com.inappstory.sdk.stories.cache.vod.VODCacheItemPart;
 import com.inappstory.sdk.stories.cache.vod.VODCacheJournal;
 import com.inappstory.sdk.stories.cache.vod.VODCacheJournalItem;
 import com.inappstory.sdk.stories.cache.vod.VODDownloader;
+import com.inappstory.sdk.utils.FilePathCacheGenerator;
+import com.inappstory.sdk.utils.FilePathCacheType;
 import com.inappstory.sdk.utils.StringsUtils;
 
 import java.io.File;
@@ -38,16 +40,11 @@ public class StoryVODResourceFileUseCase extends GetCacheFileUseCase<StoryVODRes
         this.uniqueKey = uniqueKey;
         this.rangeStart = rangeStart;
         this.rangeEnd = rangeEnd;
-        this.filePath = getCache().getCacheDir().getAbsolutePath() +
-                File.separator +
-                "v2" +
-                File.separator +
-                "stories" +
-                File.separator +
-                "resources" +
-                File.separator +
-                StringsUtils.md5(url) +
-                FilesDownloader.getFileExtensionFromUrl(url);
+        this.filePath = new FilePathCacheGenerator(
+                url,
+                core,
+                FilePathCacheType.STORY_VOD_RESOURCE
+        ).generate();
     }
 
     @WorkerThread

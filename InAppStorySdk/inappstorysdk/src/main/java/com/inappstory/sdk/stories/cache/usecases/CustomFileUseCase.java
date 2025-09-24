@@ -8,6 +8,8 @@ import com.inappstory.sdk.lrudiskcache.CacheJournalItem;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.stories.cache.DownloadFileState;
 import com.inappstory.sdk.stories.cache.FilesDownloader;
+import com.inappstory.sdk.utils.FilePathCacheGenerator;
+import com.inappstory.sdk.utils.FilePathCacheType;
 import com.inappstory.sdk.utils.StringsUtils;
 
 import java.io.File;
@@ -26,14 +28,11 @@ public class CustomFileUseCase extends GetCacheFileUseCase<Void> {
         this.getFileCallback = getFileCallback;
         this.url = url;
         this.uniqueKey = StringsUtils.md5(url);
-        this.filePath = getCache().getCacheDir().getAbsolutePath() +
-                File.separator +
-                "v2" +
-                File.separator +
-                "custom" +
-                File.separator +
-                uniqueKey +
-                FilesDownloader.getFileExtensionFromUrl(url);
+        this.filePath = new FilePathCacheGenerator(
+                url,
+                core,
+                FilePathCacheType.CUSTOM_FILE
+        ).generate();
     }
 
     @Override

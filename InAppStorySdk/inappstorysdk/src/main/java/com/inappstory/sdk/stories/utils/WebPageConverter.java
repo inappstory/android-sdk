@@ -145,6 +145,34 @@ public class WebPageConverter {
         return new Pair<>(tmpData, tmpLayout);
     }
 
+    public String replaceLayout(
+            final IReaderContent readerContent
+    ) {
+
+        if (InAppStoryManager.getInstance() == null) return null;
+        IASCore core = InAppStoryManager.getInstance().iasCore();
+        String newLayout = readerContent.layout();
+        newLayout = replaceLayoutAssets(core, newLayout);
+        Pair<String, String> replaced = replacePlaceholders(core, "", newLayout);
+        return replaced.second;
+    }
+
+    public String replaceSlide(
+            final String slideData,
+            final IReaderContent readerContent,
+            final int index
+    ) {
+        if (InAppStoryManager.getInstance() == null) return null;
+        IASCore core = InAppStoryManager.getInstance().iasCore();
+        String localData = slideData;
+        localData = replaceStaticResources(core, localData, readerContent, index);
+        core.contentLoader().addVODResources(readerContent, index);
+        localData = replaceImagePlaceholders(core, localData, readerContent, index);
+        Pair<String, String> replaced = replacePlaceholders(core, localData, "");
+        localData = replaced.first;
+        return localData;
+    }
+
     public void replaceDataAndLoad(
             final String innerWebData,
             final IReaderContent readerContent,

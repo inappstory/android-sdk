@@ -665,6 +665,11 @@ public class ReaderManager {
         public void isReady() {
 
         }
+
+        @Override
+        public void error() {
+
+        }
     };
 
     public void subscribeToAssets() {

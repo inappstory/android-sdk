@@ -465,6 +465,11 @@ public class SlidesDownloader {
                     pageViewModel.slideLoadSuccess(slideIndex);
                     Log.e("slidesDownloader", "slideLoadSuccess async " + page);
                 }
+
+                @Override
+                public void error() {
+                    pageViewModel.slideLoadError(slideIndex);
+                }
             });
             assetsHolder.downloadAssets();
         }

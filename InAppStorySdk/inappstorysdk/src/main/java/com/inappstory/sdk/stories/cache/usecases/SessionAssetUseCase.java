@@ -8,6 +8,8 @@ import com.inappstory.sdk.lrudiskcache.CacheJournalItem;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.core.network.content.models.SessionAsset;
 import com.inappstory.sdk.stories.cache.DownloadFileState;
+import com.inappstory.sdk.utils.FilePathCacheGenerator;
+import com.inappstory.sdk.utils.FilePathCacheType;
 import com.inappstory.sdk.utils.StringsUtils;
 
 import java.io.File;
@@ -27,13 +29,11 @@ public class SessionAssetUseCase extends GetCacheFileUseCase<Void> {
         this.cacheObject = cacheObject;
         this.useCaseCallback = useCaseCallback;
         this.uniqueKey = StringsUtils.md5(cacheObject.filename);
-        this.filePath = getCache().getCacheDir().getAbsolutePath() +
-                File.separator +
-                "v2" +
-                File.separator +
-                "bundle" +
-                File.separator +
-                cacheObject.filename;
+        this.filePath = new FilePathCacheGenerator(
+                cacheObject.filename,
+                core,
+                FilePathCacheType.SESSION_ASSET
+        ).generate();
     }
 
     private void deleteCacheKey() {

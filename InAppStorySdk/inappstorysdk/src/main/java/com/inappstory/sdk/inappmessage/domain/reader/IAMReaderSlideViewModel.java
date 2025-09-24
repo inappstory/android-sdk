@@ -1,10 +1,6 @@
 package com.inappstory.sdk.inappmessage.domain.reader;
 
 
-import static android.content.Context.CLIPBOARD_SERVICE;
-
-import android.content.ClipData;
-import android.content.ClipboardManager;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -15,6 +11,7 @@ import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.data.IReaderContent;
 import com.inappstory.sdk.core.inappmessages.InAppMessageDownloadManager;
+import com.inappstory.sdk.game.cache.SessionAssetsIsReadyCallback;
 import com.inappstory.sdk.inappmessage.InAppMessageWidgetCallback;
 import com.inappstory.sdk.inappmessage.domain.stedata.JsSendApiRequestData;
 import com.inappstory.sdk.inappmessage.domain.stedata.STEDataType;
@@ -26,7 +23,6 @@ import com.inappstory.sdk.stories.api.models.ContentId;
 import com.inappstory.sdk.stories.api.models.ContentIdWithIndex;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.SlideLinkObject;
-import com.inappstory.sdk.stories.api.models.WriteClipboardData;
 import com.inappstory.sdk.stories.cache.ContentIdAndType;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickAction;
 import com.inappstory.sdk.inappmessage.domain.stedata.CallToActionData;
@@ -40,7 +36,6 @@ import com.inappstory.sdk.utils.StringsUtils;
 
 import java.lang.reflect.Type;
 import java.util.Map;
-import java.util.Objects;
 import java.util.UUID;
 
 public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
@@ -78,6 +73,7 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
 
     @Override
     public void readerIsOpened(boolean fromScratch) {
+        IAMReaderSlideState slideState = slideStateObservable.getValue();
         Integer iamId = readerViewModel.getCurrentState().iamId;
         if (iamId == null) return;
         if (fromScratch)
@@ -86,8 +82,8 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
             slideTimeState.resume();
         core.statistic().iamV1().sendOpenEvent(
                 iamId,
-                0,
-                1,
+                slideState.slideIndex(),
+                slideState.slidesTotal(),
                 slideTimeState.iterationId(),
                 fromScratch
         );
@@ -95,12 +91,13 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
 
     @Override
     public void readerIsClosing() {
+        IAMReaderSlideState slideState = slideStateObservable.getValue();
         Integer iamId = readerViewModel.getCurrentState().iamId;
         if (iamId == null) return;
         core.statistic().iamV1().sendCloseEvent(
                 iamId,
-                0,
-                1,
+                slideState.slideIndex(),
+                slideState.slidesTotal(),
                 slideTimeState.totalTime(),
                 slideTimeState.iterationId()
         );
@@ -176,7 +173,7 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
     }
 
     public void storyLoadingFailed(String data) {
-        readerViewModel.updateCurrentLoadState(IAMReaderLoadStates.FAILED);
+        readerViewModel.updateCurrentLoadState(IAMReaderLoadStates.CONTENT_FAILED);
     }
 
     public void storyShowSlide(int index) {
@@ -248,7 +245,7 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
     }
 
     public void storyLoaded() {
-        readerViewModel.updateCurrentLoadState(IAMReaderLoadStates.LOADED);
+        readerViewModel.updateCurrentLoadState(IAMReaderLoadStates.CONTENT_LOADED);
         slideStateObservable.updateValue(
                 slideStateObservable
                         .getValue()
@@ -258,7 +255,7 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
     }
 
     public void storyLoaded(String data) {
-        readerViewModel.updateCurrentLoadState(IAMReaderLoadStates.LOADED);
+        readerViewModel.updateCurrentLoadState(IAMReaderLoadStates.CONTENT_LOADED);
         slideStateObservable.updateValue(
                 slideStateObservable
                         .getValue()
@@ -273,13 +270,14 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
             final String eventData
     ) {
         Integer iamId = readerViewModel.getCurrentState().iamId;
+        IAMReaderSlideState slideState = slideStateObservable.getValue();
         if (data != null) {
             core.statistic().iamV1().sendWidgetEvent(
                     name,
                     data,
                     iamId,
-                    0,
-                    1,
+                    slideState.slideIndex(),
+                    slideState.slidesTotal(),
                     slideTimeState.totalTime(),
                     slideTimeState.iterationId()
             );
@@ -401,7 +399,7 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
 
     @Override
     public void slideLoadError(int index) {
-        readerViewModel.updateCurrentLoadState(IAMReaderLoadStates.FAILED);
+        readerViewModel.updateCurrentLoadState(IAMReaderLoadStates.CONTENT_FAILED);
         slideStateObservable.updateValue(
                 slideStateObservable.getValue().copy().contentStatus(-1).content(null)
         );
@@ -456,6 +454,39 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
         );
     }
 
+    private final SessionAssetsIsReadyCallback assetsIsReadyCallback = new SessionAssetsIsReadyCallback() {
+        @Override
+        public void isReady() {
+            IAMReaderState state = readerViewModel.getCurrentState();
+            if (state == null || state.iamId == null) return;
+            readerViewModel.updateCurrentLoadState(IAMReaderLoadStates.ASSETS_LOADED);
+            IReaderContent readerContent =
+                    core.contentHolder().readerContent().getByIdAndType(
+                            state.iamId,
+                            ContentType.IN_APP_MESSAGE
+                    );
+            InAppMessageDownloadManager downloadManager = core.contentLoader().inAppMessageDownloadManager();
+            if (downloadManager.allSlidesLoaded(readerContent)) {
+                if (!state.showOnlyIfLoaded) {
+                    readerViewModel.updateCurrentLoadState(IAMReaderLoadStates.CONTENT_LOADING);
+                }
+                slideLoadSuccess(0);
+            } else {
+                if (state.showOnlyIfLoaded) {
+                    readerViewModel.updateCurrentLoadState(IAMReaderLoadStates.CONTENT_FAILED);
+                } else {
+                    readerViewModel.updateCurrentLoadState(IAMReaderLoadStates.CONTENT_LOADING);
+                    downloadManager.addInAppMessageTask(state.iamId, null);
+                }
+            }
+        }
+
+        @Override
+        public void error() {
+            readerViewModel.updateCurrentLoadState(IAMReaderLoadStates.ASSETS_FAILED);
+        }
+    };
+
     @Override
     public boolean loadContent() {
         IAMReaderState state = readerViewModel.getCurrentState();
@@ -465,24 +496,20 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
                         state.iamId,
                         ContentType.IN_APP_MESSAGE
                 );
-        InAppMessageDownloadManager downloadManager = core.contentLoader().inAppMessageDownloadManager();
-        downloadManager.addSubscriber(this);
-        if (downloadManager.allSlidesLoaded(readerContent)) {
-            if (!state.showOnlyIfLoaded) {
-                readerViewModel.updateCurrentLoadState(IAMReaderLoadStates.LOADING);
-            }
-            if (!downloadManager.checkBundleResources(this, state.showOnlyIfLoaded)) {
-                readerViewModel.updateCurrentLoadState(IAMReaderLoadStates.FAILED);
-            } else if (state.showOnlyIfLoaded) {
-                slideLoadSuccess(0);
+        if (state.showOnlyIfLoaded) {
+            InAppMessageDownloadManager downloadManager = core.contentLoader().inAppMessageDownloadManager();
+            if (downloadManager.allSlidesLoaded(readerContent) && downloadManager.checkBundleResources(
+                    this,
+                    true)
+            ) {
+                readerViewModel.updateCurrentLoadState(IAMReaderLoadStates.CONTENT_LOADED);
+            } else {
+                readerViewModel.updateCurrentLoadState(IAMReaderLoadStates.CONTENT_FAILED);
+                readerViewModel.updateCurrentUiState(IAMReaderUIStates.CLOSED);
             }
         } else {
-            if (state.showOnlyIfLoaded) {
-                readerViewModel.updateCurrentLoadState(IAMReaderLoadStates.FAILED);
-            } else {
-                readerViewModel.updateCurrentLoadState(IAMReaderLoadStates.LOADING);
-                downloadManager.addInAppMessageTask(state.iamId, null);
-            }
+            readerViewModel.updateCurrentLoadState(IAMReaderLoadStates.ASSETS_LOADING);
+            core.assetsHolder().checkOrAddAssetsIsReadyCallback(assetsIsReadyCallback);
         }
         return true;
     }
