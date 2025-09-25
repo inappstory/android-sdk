@@ -46,42 +46,6 @@ public class BannerPlaceViewModel implements IBannerPlaceViewModel {
         synchronized (callbacksLock) {
             callbacks.add(callback);
         }
-        BannerPlaceState placeState = getCurrentBannerPagerState();
-        List<IBanner> content = placeState.getItems();
-        if (placeState.tags() != null) {
-            tags.clear();
-            tags.addAll(placeState.tags());
-        }
-        switch (placeState.loadState()) {
-            case EMPTY:
-                /*try {
-                    callback.bannerPlaceLoaded(
-                            content
-                    );
-                } catch (Exception e) {
-                }*/
-                break;
-            case FAILED:
-               /* try {
-                    callback.loadError();
-                } catch (Exception e) {
-                }*/
-                break;
-            case NONE:
-            case LOADING:
-                break;
-            case LOADED:
-                /*if (content != null) {
-                    try {
-                        callback.bannerPlaceLoaded(
-                                content
-                        );
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }*/
-                break;
-        }
     }
 
     @Override
@@ -127,11 +91,9 @@ public class BannerPlaceViewModel implements IBannerPlaceViewModel {
                     }
                     break;
                 case NONE:
-                    break;
                 case LOADING:
                     break;
                 case LOADED:
-                    break;
                 case EMPTY:
                     for (InnerBannerPlaceLoadCallback callback : callbacks) {
                         try {
