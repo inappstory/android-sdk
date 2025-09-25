@@ -127,9 +127,11 @@ public class BannerPlaceViewModel implements IBannerPlaceViewModel {
                     }
                     break;
                 case NONE:
+                    break;
                 case LOADING:
                     break;
                 case LOADED:
+                    break;
                 case EMPTY:
                     for (InnerBannerPlaceLoadCallback callback : callbacks) {
                         try {
