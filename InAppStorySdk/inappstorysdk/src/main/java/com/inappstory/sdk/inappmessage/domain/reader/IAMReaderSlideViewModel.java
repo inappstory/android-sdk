@@ -109,6 +109,26 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
         core.screensManager().getIAMScreenHolder().closeScreen();
     }
 
+    @Override
+    public void updateLayout() {
+        IAMReaderState readerState = readerViewModel.getCurrentState();
+        IReaderContent readerContent =
+                core.contentHolder().readerContent().getByIdAndType(
+                        readerState.iamId,
+                        ContentType.IN_APP_MESSAGE
+                );
+        if (readerContent == null) return;
+        WebPageConverter converter = new WebPageConverter();
+        String layout = converter.replaceLayout(readerContent);
+        slideStateObservable.updateValue(
+                slideStateObservable
+                        .getValue()
+                        .copy()
+                        .contentStatus(1)
+                        .layout(layout)
+        );
+    }
+
 
     @Override
     public ContentIdWithIndex iamId() {
@@ -412,31 +432,8 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
 
     @Override
     public void slideLoadSuccess(int index) {
-        InAppMessageDownloadManager downloadManager = core.contentLoader().inAppMessageDownloadManager();
-        downloadManager.removeSubscriber(this);
-        IAMReaderState readerState = readerViewModel.getCurrentState();
-        IReaderContent readerContent =
-                core.contentHolder().readerContent().getByIdAndType(
-                        readerState.iamId,
-                        ContentType.IN_APP_MESSAGE
-                );
-        if (readerContent == null) return;
-        String slideContent = readerContent.slideByIndex(0);
-        if (slideContent == null) return;
-        WebPageConvertCallback callback = new WebPageConvertCallback() {
-            @Override
-            public void onConvert(String replaceData, String firstData, int lastIndex) {
-                slideStateObservable.updateValue(
-                        slideStateObservable
-                                .getValue()
-                                .copy()
-                                .contentStatus(1)
-                                .content(firstData)
-                );
-            }
-        };
-        WebPageConverter converter = new WebPageConverter();
-        converter.replaceDataAndLoad(slideContent, readerContent, index, callback);
+
+
     }
 
     @Override
@@ -450,6 +447,7 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
                 slideStateObservable
                         .getValue()
                         .copy()
+                        .contentStatus(2)
                         .renderReady(true)
         );
     }
@@ -466,19 +464,12 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
                             ContentType.IN_APP_MESSAGE
                     );
             InAppMessageDownloadManager downloadManager = core.contentLoader().inAppMessageDownloadManager();
-            if (downloadManager.allSlidesLoaded(readerContent)) {
-                if (!state.showOnlyIfLoaded) {
-                    readerViewModel.updateCurrentLoadState(IAMReaderLoadStates.CONTENT_LOADING);
-                }
-                slideLoadSuccess(0);
-            } else {
-                if (state.showOnlyIfLoaded) {
-                    readerViewModel.updateCurrentLoadState(IAMReaderLoadStates.CONTENT_FAILED);
-                } else {
-                    readerViewModel.updateCurrentLoadState(IAMReaderLoadStates.CONTENT_LOADING);
-                    downloadManager.addInAppMessageTask(state.iamId, null);
-                }
-            }
+            downloadManager.addInAppMessageTask(state.iamId, null);
+        }
+
+        @Override
+        public void assetsIsLoading() {
+            readerViewModel.updateCurrentLoadState(IAMReaderLoadStates.ASSETS_LOADING);
         }
 
         @Override
@@ -496,8 +487,8 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
                         state.iamId,
                         ContentType.IN_APP_MESSAGE
                 );
+        InAppMessageDownloadManager downloadManager = core.contentLoader().inAppMessageDownloadManager();
         if (state.showOnlyIfLoaded) {
-            InAppMessageDownloadManager downloadManager = core.contentLoader().inAppMessageDownloadManager();
             if (downloadManager.allSlidesLoaded(readerContent) && downloadManager.checkBundleResources(
                     this,
                     true)
@@ -505,11 +496,12 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
                 readerViewModel.updateCurrentLoadState(IAMReaderLoadStates.CONTENT_LOADED);
             } else {
                 readerViewModel.updateCurrentLoadState(IAMReaderLoadStates.CONTENT_FAILED);
-                readerViewModel.updateCurrentUiState(IAMReaderUIStates.CLOSED);
+                return false;
             }
         } else {
-            readerViewModel.updateCurrentLoadState(IAMReaderLoadStates.ASSETS_LOADING);
+            downloadManager.addSubscriber(this);
             core.assetsHolder().checkOrAddAssetsIsReadyCallback(assetsIsReadyCallback);
+            core.assetsHolder().downloadAssets();
         }
         return true;
     }

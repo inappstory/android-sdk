@@ -59,6 +59,10 @@ public class IAMWebView extends IASWebView implements ContentViewInteractor {
         });
     }
 
+    public void showSlides() {
+
+    }
+
 
     private IIAMReaderSlideViewModel slideViewModel;
 

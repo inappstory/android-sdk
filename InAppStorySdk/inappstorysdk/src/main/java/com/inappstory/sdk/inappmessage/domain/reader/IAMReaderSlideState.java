@@ -2,7 +2,7 @@ package com.inappstory.sdk.inappmessage.domain.reader;
 
 public class IAMReaderSlideState {
 
-    int contentStatus = 0; //0 - loading, 1 - loaded, -1 - failed
+    int contentStatus = 0; //0 - empty, 1 - layout loaded, 2 - render ready, 3 - show_slides loaded
 
     int slideJSStatus = 0; //0 - none, 1 - loaded, 2 - started, 3 - paused?
 
@@ -47,6 +47,17 @@ public class IAMReaderSlideState {
         return this;
     }
 
+    String layout;
+
+    public String layout() {
+        return layout;
+    }
+
+    public IAMReaderSlideState layout(String content) {
+        this.layout = layout;
+        return this;
+    }
+
     int slideIndex = 0;
 
     int slidesTotal = 1;
@@ -74,6 +85,7 @@ public class IAMReaderSlideState {
     public IAMReaderSlideState copy() {
         return new IAMReaderSlideState()
                 .content(this.content)
+                .layout(this.layout)
                 .slideIndex(this.slideIndex)
                 .slidesTotal(this.slidesTotal)
                 .renderReady(this.renderReady)

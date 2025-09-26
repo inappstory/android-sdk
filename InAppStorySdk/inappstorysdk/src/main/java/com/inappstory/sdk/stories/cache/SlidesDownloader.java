@@ -287,13 +287,16 @@ public class SlidesDownloader {
             try {
                 for (int slideIndex = 0; slideIndex < slidesCountToCache; slideIndex++) {
                     SlideTaskKey slideTaskKey = new SlideTaskKey(contentIdAndType, slideIndex);
-                    if (slideTasks.get(slideTaskKey) == null) {
+                    SlideTask slideTask = slideTasks.get(slideTaskKey);
+                    if (slideTask == null) {
                         slideTasks.put(
                                 slideTaskKey,
                                 (new GenerateSlideTaskUseCase(core, readerContent, slideIndex))
                                         .generate()
                                         .forced(forced)
                         );
+                    } else if (slideTask.loadType == 2 && slideTask.forced) {
+                        slideLoaded(slideTaskKey);
                     }
                 }
             } catch (Exception e) {
@@ -464,6 +467,11 @@ public class SlidesDownloader {
                 public void isReady() {
                     pageViewModel.slideLoadSuccess(slideIndex);
                     Log.e("slidesDownloader", "slideLoadSuccess async " + page);
+                }
+
+                @Override
+                public void assetsIsLoading() {
+
                 }
 
                 @Override

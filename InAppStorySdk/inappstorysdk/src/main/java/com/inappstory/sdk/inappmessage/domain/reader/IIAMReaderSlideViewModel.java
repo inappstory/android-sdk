@@ -14,6 +14,7 @@ public interface IIAMReaderSlideViewModel extends IReaderSlideViewModel {
     void readerIsOpened(boolean fromScratch);
     void readerIsClosing();
     void closeReader();
+    void updateLayout();
 
     SingleTimeEvent<STETypeAndData> singleTimeEvents();
 

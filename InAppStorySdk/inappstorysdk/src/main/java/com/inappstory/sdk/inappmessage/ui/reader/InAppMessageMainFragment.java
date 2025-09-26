@@ -228,15 +228,19 @@ public class InAppMessageMainFragment extends Fragment implements Observer<IAMRe
         }
     }
 
+
     private void loadStateIsChanged(IAMReaderLoadStates newState) {
+        if (Objects.equals(currentLoadState, newState)) return;
         currentLoadState = newState;
         if (newState == null) return;
         switch (newState) {
             case ASSETS_LOADED:
+                contentFragment.readerSlideViewModel.updateLayout();
                 break;
-            case RENDER_READY:
+            case ASSETS_FAILED:
                 break;
-
+            case ASSETS_LOADING:
+                break;
         }
         if (Objects.requireNonNull(newState) == IAMReaderLoadStates.CONTENT_LOADED) {
             if (currentUIState != IAMReaderUIStates.OPENED &&

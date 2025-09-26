@@ -24,6 +24,7 @@ public class IASAssetsHolderImpl implements IASAssetsHolder {
 
     private final ExecutorService downloader = Executors.newFixedThreadPool(5);
     private final List<SessionAsset> sessionAssets = new ArrayList<>();
+
     public IASAssetsHolderImpl(IASCore core) {
         this.core = core;
     }
@@ -101,7 +102,7 @@ public class IASAssetsHolderImpl implements IASAssetsHolder {
             copyCallbacks.addAll(callbacks);
             callbacks.clear();
         }
-        for (SessionAssetsIsReadyCallback callback: copyCallbacks) {
+        for (SessionAssetsIsReadyCallback callback : copyCallbacks) {
             if (assetsStatus[0]) {
                 callback.isReady();
             } else {
@@ -148,6 +149,9 @@ public class IASAssetsHolderImpl implements IASAssetsHolder {
             } else if (assetsDownloadError) {
                 callback.error();
             } else {
+                if (assetsIsLoading) {
+                    callback.assetsIsLoading();
+                }
                 callbacks.add(callback);
             }
         }

@@ -667,6 +667,11 @@ public class ReaderManager {
         }
 
         @Override
+        public void assetsIsLoading() {
+
+        }
+
+        @Override
         public void error() {
 
         }

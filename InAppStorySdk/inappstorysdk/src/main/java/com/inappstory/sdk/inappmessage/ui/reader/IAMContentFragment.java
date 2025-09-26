@@ -54,6 +54,7 @@ public class IAMContentFragment extends Fragment implements Observer<IAMReaderSl
     IIAMReaderSlideViewModel readerSlideViewModel;
     IAMReaderSlideState currentState;
 
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -246,32 +247,13 @@ public class IAMContentFragment extends Fragment implements Observer<IAMReaderSl
                     }
                 }
                 if (readerState != null)
-                    setWebViewBackground(readerState.appearance);
+                    setWebViewBackground();
             }
         });
     }
 
-    private void setWebViewBackground(InAppMessageAppearance appearance) {
-        if (appearance != null) {
-            int backgroundColor = Color.WHITE;
-            if (appearance instanceof InAppMessageFullscreenAppearance) {
-                backgroundColor = ColorUtils.parseColorRGBA(
-                        ((InAppMessageFullscreenAppearance) appearance)
-                                .backgroundColor()
-                );
-            } else if (appearance instanceof InAppMessagePopupAppearance) {
-                backgroundColor = ColorUtils.parseColorRGBA(
-                        ((InAppMessagePopupAppearance) appearance)
-                                .backgroundColor()
-                );
-            } else if (appearance instanceof InAppMessageBottomSheetAppearance) {
-                backgroundColor = ColorUtils.parseColorRGBA(
-                        ((InAppMessageBottomSheetAppearance) appearance)
-                                .backgroundColor()
-                );
-            }
-            contentWebView.setBackgroundColor(Color.argb(1, 255, 255, 255));
-        }
+    private void setWebViewBackground() {
+        contentWebView.setBackgroundColor(Color.argb(1, 255, 255, 255));
     }
 
     @Override
@@ -280,6 +262,8 @@ public class IAMContentFragment extends Fragment implements Observer<IAMReaderSl
         if (Objects.equals(currentState, newValue)) return;
         IAMReaderSlideState localCurrentState = currentState;
         currentState = newValue;
+        if (!(contentWebView instanceof IAMWebView)) return;
+        final IAMWebView localWebView = (IAMWebView) contentWebView;
         if (localCurrentState == null ||
                 (newValue.contentStatus() != localCurrentState.contentStatus())
         ) {
@@ -287,36 +271,33 @@ public class IAMContentFragment extends Fragment implements Observer<IAMReaderSl
                 case 0:
                     break;
                 case 1:
-                    if (newValue.content() != null &&
-                            !newValue.content().isEmpty()) {
-                        if (contentWebView instanceof View) {
-                            ((View) contentWebView).post(
-                                    new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            contentWebView.loadSlide(newValue.content());
-                                        }
+                    if (newValue.layout() != null &&
+                            !newValue.layout().isEmpty()) {
+                        localWebView.post(
+                                new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        localWebView.loadSlide(newValue.layout());
                                     }
-                            );
-                        }
+                                }
+                        );
                     }
                     break;
-                case -1:
+                case 2:
+                    localWebView.post(
+                            new Runnable() {
+                                @Override
+                                public void run() {
+                                    localWebView.setClientVariables();
+                                }
+                            }
+                    );
                     break;
             }
 
         }
         if ((localCurrentState == null || !localCurrentState.renderReady()) && newValue.renderReady()) {
-            if (contentWebView instanceof View) {
-                ((View) contentWebView).post(
-                        new Runnable() {
-                            @Override
-                            public void run() {
-                                contentWebView.setClientVariables();
-                            }
-                        }
-                );
-            }
+
         }
         if (localCurrentState != null &&
                 (newValue.slideJSStatus() != localCurrentState.slideJSStatus())

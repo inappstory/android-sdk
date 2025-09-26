@@ -93,6 +93,7 @@ public class InAppMessageDownloadManager {
     private void addSlides(@NonNull final IReaderContent readerContent, final InAppMessageLoadCallback callback) {
         if (allSlidesLoaded(readerContent)) {
             contentIsLoaded(readerContent, callback);
+            //TODO return?;
         }
         core.contentLoader().inAppMessageDownloadManager().addSubscriber(
                 new IReaderSlideViewModel() {
