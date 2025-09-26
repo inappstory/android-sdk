@@ -68,13 +68,11 @@ public class BannerPlaceUseCase {
                                             return;
                                         }
                                         boolean hasDeviceSupportedMessage = false;
-                                        List<Integer> bannerIds = new ArrayList<>();
                                         for (IBanner banner : bannerPlaceResponse.banners()) {
                                             hasDeviceSupportedMessage = true;
                                             core.contentHolder().readerContent().setByIdAndType(
                                                     banner, banner.id(), ContentType.BANNER
                                             );
-                                            bannerIds.add(banner.id());
                                         }
                                         if (!hasDeviceSupportedMessage) {
                                             loadCallback.isEmpty();
