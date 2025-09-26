@@ -7,15 +7,13 @@ import com.inappstory.sdk.stories.outercallbacks.common.reader.BannerData;
 import com.inappstory.sdk.stories.utils.Observer;
 import com.inappstory.sdk.stories.utils.SingleTimeEvent;
 
-public interface IBannerViewModel extends IReaderSlideViewModel {
-    BannerViewState getCurrentBannerState();
+public interface IBannerContentViewModel extends IReaderSlideViewModel {
+    BannerContentState getCurrentBannerContentState();
     BannerData getCurrentBannerData();
 
 
-    SingleTimeEvent<STETypeAndData> singleTimeEvents();
-
-    void addSubscriber(Observer<BannerViewState> observer);
-    void removeSubscriber(Observer<BannerViewState> observer);
+    void addSubscriber(Observer<BannerContentState> observer);
+    void removeSubscriber(Observer<BannerContentState> observer);
     void updateCurrentLoadState(BannerLoadStates bannerLoadState);
 
     void pauseSlide();
@@ -54,8 +52,6 @@ public interface IBannerViewModel extends IReaderSlideViewModel {
     void bannerIsShown();
     boolean bannerIsActive();
     void bannerIsActive(boolean active);
-
-    boolean loadContent(boolean isFirst, BannerPlacePreloadCallback callback);
 
     void clear();
 

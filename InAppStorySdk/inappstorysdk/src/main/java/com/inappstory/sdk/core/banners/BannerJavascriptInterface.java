@@ -33,7 +33,10 @@ public class BannerJavascriptInterface {
 
     @JavascriptInterface
     public void updateTimeline(String data) {
-        Log.e("BannerJS", "updateTimeline " + data);
+        Log.e("BannerJS",
+                slideViewModel.getCurrentBannerState().bannerId() + " " +
+                slideViewModel.getCurrentBannerState().bannerIsActive() + " updateTimeline " + data
+        );
         slideViewModel.updateTimeline(data);
     }
 

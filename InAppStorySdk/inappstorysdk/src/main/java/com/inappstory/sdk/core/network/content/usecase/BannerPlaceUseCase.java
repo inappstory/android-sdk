@@ -67,30 +67,23 @@ public class BannerPlaceUseCase {
                                             loadError(loadCallback);
                                             return;
                                         }
-                                        /*BannerPlace bannerPlaceResponse =
-                                                new MockBanners().getMockBannerPlace(place.banners(), placeId);*/
                                         boolean hasDeviceSupportedMessage = false;
+                                        List<Integer> bannerIds = new ArrayList<>();
                                         for (IBanner banner : bannerPlaceResponse.banners()) {
                                             hasDeviceSupportedMessage = true;
                                             core.contentHolder().readerContent().setByIdAndType(
                                                     banner, banner.id(), ContentType.BANNER
                                             );
+                                            bannerIds.add(banner.id());
                                         }
                                         if (!hasDeviceSupportedMessage) {
                                             loadCallback.isEmpty();
                                             return;
                                         }
                                         List<IBanner> banners = new ArrayList<>();
-                                        List<IReaderContent> nonCasted = core.contentHolder()
-                                                .readerContent()
-                                                .getByType(ContentType.BANNER);
-                                        if (nonCasted != null) {
-                                            for (IReaderContent readerContent : nonCasted) {
-                                                if (readerContent instanceof IBanner) {
-                                                    if (checkContentForShownFrequency((IBanner) readerContent))
-                                                        banners.add((IBanner) readerContent);
-                                                }
-                                            }
+                                        for (IBanner banner : bannerPlaceResponse.banners()) {
+                                            if (checkContentForShownFrequency(banner))
+                                                banners.add(banner);
                                         }
                                         loadCallback.success(banners);
                                     }

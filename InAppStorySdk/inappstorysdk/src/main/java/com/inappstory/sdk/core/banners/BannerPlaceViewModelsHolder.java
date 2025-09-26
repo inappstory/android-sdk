@@ -1,15 +1,12 @@
 package com.inappstory.sdk.core.banners;
 
-import android.util.Log;
 
 import com.inappstory.sdk.core.IASCore;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 public class BannerPlaceViewModelsHolder {
     private Map<String, IBannerPlaceViewModel> viewModels = new HashMap<>();

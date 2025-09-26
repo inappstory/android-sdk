@@ -1,9 +1,10 @@
 package com.inappstory.sdk.core.banners;
 
-public class BannerState {
+public class BannerViewState {
     private Integer bannerId;
     private String bannerPlace;
     private String content;
+    private int bannerPlaceIndex;
     private BannerLoadStates bannerLoadState = BannerLoadStates.EMPTY;
     private boolean bannerIsPaused = false;
 
@@ -17,7 +18,7 @@ public class BannerState {
         return renderReady;
     }
 
-    public BannerState renderReady(boolean renderReady) {
+    public BannerViewState renderReady(boolean renderReady) {
         this.renderReady = renderReady;
         return this;
     }
@@ -30,6 +31,9 @@ public class BannerState {
         return bannerIsPaused;
     }
 
+    public int bannerPlaceIndex() {
+        return bannerPlaceIndex;
+    }
 
     public boolean bannerIsActive() {
         return bannerIsActive;
@@ -56,56 +60,56 @@ public class BannerState {
     }
 
 
-    public BannerState contentStatus(int contentStatus) {
+    public BannerViewState contentStatus(int contentStatus) {
         this.contentStatus = contentStatus;
         return this;
     }
 
 
 
-    public BannerState bannerIsPaused(boolean bannerIsPaused) {
+    public BannerViewState bannerIsPaused(boolean bannerIsPaused) {
         this.bannerIsPaused = bannerIsPaused;
         return this;
     }
 
 
 
-    public BannerState bannerIsActive(boolean bannerIsActive) {
+    public BannerViewState bannerIsActive(boolean bannerIsActive) {
         this.bannerIsActive = bannerIsActive;
         return this;
     }
 
 
-    public BannerState slideJSStatus(int slideJSStatus) {
+    public BannerViewState slideJSStatus(int slideJSStatus) {
         this.slideJSStatus = slideJSStatus;
         return this;
     }
 
-    public BannerState bannerId(Integer bannerId) {
+    public BannerViewState bannerId(Integer bannerId) {
         this.bannerId = bannerId;
         return this;
     }
 
-    public BannerState bannerPlace(String bannerPlace) {
+    public BannerViewState bannerPlace(String bannerPlace) {
         this.bannerPlace = bannerPlace;
         return this;
     }
 
-    public BannerState loadState(BannerLoadStates loadState) {
+    public BannerViewState loadState(BannerLoadStates loadState) {
         this.bannerLoadState = loadState;
         return this;
     }
 
-    public BannerState content(String content) {
+    public BannerViewState content(String content) {
         this.content = content;
         return this;
     }
 
-    public BannerState() {
+    public BannerViewState() {
     }
 
-    public BannerState copy() {
-        return new BannerState()
+    public BannerViewState copy() {
+        return new BannerViewState()
                 .content(this.content)
                 .loadState(this.bannerLoadState)
                 .contentStatus(this.contentStatus)
@@ -127,6 +131,7 @@ public class BannerState {
                 ", bannerIsActive=" + bannerIsActive +
                 ", renderReady=" + renderReady +
                 ", contentStatus=" + contentStatus +
+                ", bannerPlaceIndex=" + bannerPlaceIndex +
                 ", slideJSStatus=" + slideJSStatus +
                 '}';
     }

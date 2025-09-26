@@ -30,7 +30,7 @@ import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.api.impl.IASSingleStoryImpl;
-import com.inappstory.sdk.core.banners.BannerState;
+import com.inappstory.sdk.core.banners.BannerViewState;
 import com.inappstory.sdk.core.banners.IBannerPlaceLoadCallback;
 import com.inappstory.sdk.core.banners.IBannerViewModel;
 import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenData;
@@ -49,14 +49,17 @@ import com.inappstory.sdk.stories.utils.Observer;
 import com.inappstory.sdk.stories.utils.Sizes;
 
 import java.util.Objects;
+import java.util.UUID;
 
-public class BannerView extends FrameLayout implements Observer<BannerState> {
+public class BannerView extends FrameLayout implements Observer<BannerViewState> {
 
     public BannerView(@NonNull Context context) {
         super(context);
         init(context);
+        uniqueId = UUID.randomUUID().toString();
     }
 
+    public String uniqueId = "";
     private IBannerViewModel bannerViewModel;
     private BannerWebView bannerWebView;
     private View backgroundView;
@@ -75,7 +78,7 @@ public class BannerView extends FrameLayout implements Observer<BannerState> {
     public void viewModel(IBannerViewModel bannerViewModel) {
         this.bannerViewModel = bannerViewModel;
         bannerWebView.slideViewModel(bannerViewModel);
-        BannerState state = bannerViewModel.getCurrentBannerState();
+        BannerViewState state = bannerViewModel.getCurrentBannerState();
         bannerId = state.bannerId();
         Log.e("UpdateBannerState", state.toString());
         onUpdate(state);
@@ -99,7 +102,7 @@ public class BannerView extends FrameLayout implements Observer<BannerState> {
         }
     }
 
-    BannerState currentState;
+    BannerViewState currentState;
 
     @SuppressLint("WrongViewCast")
     private void init(Context context) {
@@ -450,11 +453,11 @@ public class BannerView extends FrameLayout implements Observer<BannerState> {
 
 
     @Override
-    public void onUpdate(final BannerState newValue) {
+    public void onUpdate(final BannerViewState newValue) {
         if (newValue == null) return;
         if (!Objects.equals(newValue.bannerId(), bannerId)) return;
         if (Objects.equals(currentState, newValue)) return;
-        BannerState localCurrentState = currentState;
+        BannerViewState localCurrentState = currentState;
         currentState = newValue;
         if (localCurrentState == null ||
                 (newValue.loadState() != localCurrentState.loadState())
@@ -469,7 +472,7 @@ public class BannerView extends FrameLayout implements Observer<BannerState> {
                     if (listLoadCallback != null) {
                         listLoadCallback.bannerLoadError(newValue.bannerId(), newValue.bannerIsActive());
                     }
-                  //  showRefresh();
+                    //  showRefresh();
                     break;
                 case LOADED:
                     Log.e("UpdateBannerState", "Loaded Event " + newValue.bannerId());
@@ -477,9 +480,6 @@ public class BannerView extends FrameLayout implements Observer<BannerState> {
                             !newValue.content().isEmpty()) {
                         if (bannerWebView != null) {
                             if (bannerViewModel.bannerIsActive()) {
-                                if (newValue.bannerId() == 33) {
-                                    Log.e("LoadBannerContent", "Check " + newValue);
-                                }
                                 bannerWebView.post(
                                         new Runnable() {
                                             @Override

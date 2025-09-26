@@ -31,7 +31,6 @@ import com.inappstory.sdk.stories.api.models.UpdateTimelineData;
 import com.inappstory.sdk.stories.cache.ContentIdAndType;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.BannerData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickAction;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.utils.Observable;
 import com.inappstory.sdk.stories.utils.Observer;
 import com.inappstory.sdk.stories.utils.SingleTimeEvent;
@@ -54,8 +53,8 @@ public class BannerViewModel implements IBannerViewModel {
 
     private final int bannerId;
     private final String bannerPlace;
-    private final Observable<BannerState> stateObservable =
-            new Observable<>(new BannerState());
+    private final Observable<BannerViewState> stateObservable =
+            new Observable<>(new BannerViewState());
 
     private final IASCore core;
 
@@ -116,7 +115,7 @@ public class BannerViewModel implements IBannerViewModel {
         this.bannerPlace = bannerPlace;
         this.core = core;
         stateObservable.setValue(
-                new BannerState()
+                new BannerViewState()
                         .bannerId(bannerId)
                         .bannerPlace(bannerPlace)
                         .loadState(BannerLoadStates.EMPTY)
@@ -126,7 +125,7 @@ public class BannerViewModel implements IBannerViewModel {
 
 
     @Override
-    public BannerState getCurrentBannerState() {
+    public BannerViewState getCurrentBannerState() {
         return stateObservable.getValue();
     }
 
@@ -173,7 +172,7 @@ public class BannerViewModel implements IBannerViewModel {
     public void slideLoadSuccess(int index) {
         BannerDownloadManager downloadManager = core.contentLoader().bannerDownloadManager();
         downloadManager.removeSubscriber(this);
-        final BannerState readerState = getCurrentBannerState();
+        final BannerViewState readerState = getCurrentBannerState();
         if (readerState.contentStatus() == 1) return;
         IReaderContent readerContent =
                 core.contentHolder().readerContent().getByIdAndType(
@@ -220,12 +219,12 @@ public class BannerViewModel implements IBannerViewModel {
     }
 
     @Override
-    public void addSubscriber(Observer<BannerState> observable) {
+    public void addSubscriber(Observer<BannerViewState> observable) {
         this.stateObservable.subscribeAndGetValue(observable);
     }
 
     @Override
-    public void removeSubscriber(Observer<BannerState> observable) {
+    public void removeSubscriber(Observer<BannerViewState> observable) {
         this.stateObservable.unsubscribe(observable);
     }
 
@@ -438,12 +437,12 @@ public class BannerViewModel implements IBannerViewModel {
 
     @Override
     public void sendData(String data) {
-        BannerState bannerState = getCurrentBannerState();
-        if (bannerState == null) return;
+        BannerViewState bannerViewState = getCurrentBannerState();
+        if (bannerViewState == null) return;
         if (core.statistic().iamV1().disabled()) return;
         core.network().enqueue(
                 core.network().getApi().sendBannerUserData(
-                        Integer.toString(bannerState.bannerId()),
+                        Integer.toString(bannerViewState.bannerId()),
                         data
                 ),
                 new NetworkCallback<Response>() {
@@ -467,18 +466,18 @@ public class BannerViewModel implements IBannerViewModel {
 
     @Override
     public void setLocalUserData(String data, boolean sendToServer) {
-        BannerState bannerState = getCurrentBannerState();
-        if (bannerState == null) return;
+        BannerViewState bannerViewState = getCurrentBannerState();
+        if (bannerViewState == null) return;
         synchronized (localDataLock) {
             core.keyValueStorage().saveString("banner" +
-                    bannerState.bannerId() + "__" +
+                    bannerViewState.bannerId() + "__" +
                     ((IASDataSettingsHolder) core.settingsAPI()).userId(), data);
         }
         if (core.statistic().iamV1().disabled()) return;
         if (sendToServer) {
             core.network().enqueue(
                     core.network().getApi().sendBannerUserData(
-                            Integer.toString(bannerState.bannerId()),
+                            Integer.toString(bannerViewState.bannerId()),
                             data
                     ),
                     new NetworkCallback<Response>() {
@@ -627,7 +626,7 @@ public class BannerViewModel implements IBannerViewModel {
 
     @Override
     public boolean loadContent(boolean isFirst, BannerPlacePreloadCallback callback) {
-        final BannerState state = getCurrentBannerState();
+        final BannerViewState state = getCurrentBannerState();
         IReaderContent readerContent =
                 core.contentHolder().readerContent().getByIdAndType(
                         bannerId,
@@ -651,7 +650,7 @@ public class BannerViewModel implements IBannerViewModel {
     public void clear() {
         stopTimer();
         stateObservable.setValue(
-                new BannerState()
+                new BannerViewState()
                         .bannerId(bannerId)
                         .bannerPlace(bannerPlace)
                         .loadState(BannerLoadStates.EMPTY)

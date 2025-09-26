@@ -14,17 +14,15 @@ import com.inappstory.sdk.banners.ICustomBannerPlaceholder;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.banners.BannerDownloadManager;
-import com.inappstory.sdk.core.banners.BannerLoadStates;
-import com.inappstory.sdk.core.banners.BannerState;
+import com.inappstory.sdk.core.banners.BannerViewState;
 import com.inappstory.sdk.core.banners.IBannerViewModel;
 import com.inappstory.sdk.core.data.IBanner;
 import com.inappstory.sdk.stories.utils.Observer;
 
 import java.util.List;
-import java.util.Objects;
 
 
-public class BannerPagerAdapter extends PagerAdapter implements Observer<BannerState> {
+public class BannerPagerAdapter extends PagerAdapter implements Observer<BannerViewState> {
     private final List<IBanner> banners;
     private final IASCore core;
     private final String bannerPlace;
@@ -70,6 +68,7 @@ public class BannerPagerAdapter extends PagerAdapter implements Observer<BannerS
     @Override
     public Object instantiateItem(@NonNull ViewGroup container, int position) {
         BannerView bannerView = new BannerView(container.getContext());
+        Log.e("BannerViewUID", "create " + bannerView.uniqueId);
         bannerView.setLoadingPlaceholder(bannerPlaceholderCreator.onCreate(container.getContext()));
         bannerView.setBannerRadius(bannerRadius);
         bannerView.setTag("banner_" + position);
@@ -129,11 +128,12 @@ public class BannerPagerAdapter extends PagerAdapter implements Observer<BannerS
         return iwRatio;
     }
 
-    BannerState currentState;
+    BannerViewState currentState;
 
     @Override
     public void destroyItem(@NonNull ViewGroup container, int position, @NonNull Object object) {
         if (object instanceof BannerView) {
+            Log.e("BannerViewUID", "destroy " + ((BannerView) object).uniqueId);
             ((BannerView) object).removeListLoadCallback();
             container.removeView((BannerView) object);
         }
@@ -158,7 +158,7 @@ public class BannerPagerAdapter extends PagerAdapter implements Observer<BannerS
     }
 
     @Override
-    public void onUpdate(BannerState newValue) {
+    public void onUpdate(BannerViewState newValue) {
         if (newValue == null) return;
 
        /* Log.e("ObserverUpdate", Thread.currentThread().getName() + " PagerAdapter onUpdate " + newValue);
