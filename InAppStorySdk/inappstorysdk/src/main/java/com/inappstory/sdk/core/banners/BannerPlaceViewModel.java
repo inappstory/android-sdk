@@ -31,7 +31,7 @@ public class BannerPlaceViewModel implements IBannerPlaceViewModel {
 
     public BannerPlaceViewModel(IASCore core, String bannerPlace) {
         this.bannerPlace = bannerPlace;
-        bannerViewModelsHolder = new BannerViewModelsHolder(core, this);
+
         this.core = core;
         addSubscriber(localObserver);
         updateState(new BannerPlaceState().place(bannerPlace));
@@ -130,24 +130,15 @@ public class BannerPlaceViewModel implements IBannerPlaceViewModel {
     }
 
     @Override
-    public IBannerViewModel getBannerViewModel(int id) {
-        return bannerViewModelsHolder
-                .get(
-                        id,
-                        bannerPlace
-                );
-    }
-
-    @Override
-    public List<IBannerViewModel> getBannerViewModels() {
+    public List<Integer> getBannersIds() {
         BannerPlaceState placeState = bannerPlaceStateObservable.getValue();
         List<IBanner> items = placeState.items;
-        List<IBannerViewModel> bannerViewModels = new ArrayList<>();
-        if (items == null) return bannerViewModels;
+        List<Integer> ids = new ArrayList<>();
+        if (items == null) return ids;
         for (IBanner banner : items) {
-            bannerViewModels.add(bannerViewModelsHolder.get(banner.id(), bannerPlace));
+            ids.add(banner.id());
         }
-        return bannerViewModels;
+        return ids;
     }
 
     @Override

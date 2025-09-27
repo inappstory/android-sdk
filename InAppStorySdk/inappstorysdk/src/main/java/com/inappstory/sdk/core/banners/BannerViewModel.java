@@ -49,7 +49,7 @@ import java.util.UUID;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-public class BannerViewModel implements IBannerViewModel {
+public class BannerViewModel implements IBannerViewModel, Observer<BannerContentState> {
 
     private final int bannerId;
     private final String bannerPlace;
@@ -103,26 +103,38 @@ public class BannerViewModel implements IBannerViewModel {
     private final SingleTimeEvent<STETypeAndData> singleTimeEvents =
             new SingleTimeEvent<>();
 
-    private final IBannerPlaceViewModel bannerPlaceViewModel;
+    private IBannerPlaceViewModel bannerPlaceViewModel;
+    private IBannerContentViewModel bannerContentViewModel;
 
     public BannerViewModel(
             int bannerId,
             String bannerPlace,
+            String uid,
             IASCore core,
-            IBannerPlaceViewModel bannerPlaceViewModel
+            IBannerPlaceViewModel bannerPlaceViewModel,
+            IBannerContentViewModel bannerContentViewModel
     ) {
         this.bannerId = bannerId;
         this.bannerPlace = bannerPlace;
         this.core = core;
+
         stateObservable.setValue(
                 new BannerViewState()
                         .bannerId(bannerId)
                         .bannerPlace(bannerPlace)
                         .loadState(BannerLoadStates.EMPTY)
         );
+        this.bannerContentViewModel = bannerContentViewModel;
+        this.bannerContentViewModel.addSubscriber(this);
         this.bannerPlaceViewModel = bannerPlaceViewModel;
     }
 
+    public void destroy() {
+        stateObservable.unsubscribeAll();
+        bannerContentViewModel.removeSubscriber(this);
+        this.bannerContentViewModel = null;
+        this.bannerPlaceViewModel = null;
+    }
 
     @Override
     public BannerViewState getCurrentBannerState() {
@@ -506,6 +518,11 @@ public class BannerViewModel implements IBannerViewModel {
     private long pauseShiftStart = 0;
     private boolean paused;
     private long timerDuration = 0L;
+
+    @Override
+    public void onUpdate(BannerContentState newValue) {
+
+    }
 
     class TimerTask implements Runnable {
         public String uid = UUID.randomUUID().toString();

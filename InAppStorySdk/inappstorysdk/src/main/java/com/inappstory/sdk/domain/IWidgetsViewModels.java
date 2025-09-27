@@ -1,8 +1,11 @@
 package com.inappstory.sdk.domain;
 
+import com.inappstory.sdk.core.banners.BannerContentViewModelsHolder;
 import com.inappstory.sdk.core.banners.BannerPlaceViewModelsHolder;
 import com.inappstory.sdk.core.banners.BannerViewModelsHolder;
 
 public interface IWidgetsViewModels {
     BannerPlaceViewModelsHolder bannerPlaceViewModels();
+    BannerContentViewModelsHolder bannerContentViewModels();
+    BannerViewModelsHolder bannerViewModels();
 }

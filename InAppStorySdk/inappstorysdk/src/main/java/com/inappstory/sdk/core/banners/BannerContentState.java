@@ -5,6 +5,17 @@ public class BannerContentState {
     private String bannerPlace;
     private String content;
     private BannerLoadStates bannerLoadState = BannerLoadStates.EMPTY;
+    private int contentStatus = 0;
+
+
+    public BannerContentState contentStatus(int contentStatus) {
+        this.contentStatus = contentStatus;
+        return this;
+    }
+
+    public int contentStatus() {
+        return contentStatus;
+    }
 
 
     public Integer bannerId() {
@@ -51,6 +62,7 @@ public class BannerContentState {
         return new BannerContentState()
                 .content(this.content)
                 .loadState(this.bannerLoadState)
+                .contentStatus(this.contentStatus)
                 .bannerPlace(this.bannerPlace)
                 .bannerId(this.bannerId);
     }

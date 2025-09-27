@@ -7,21 +7,21 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class BannerViewModelsHolder {
-    private final Map<String, IBannerViewModel> viewModels = new HashMap<>();
+public class BannerContentViewModelsHolder {
+    private final Map<Integer, IBannerContentViewModel> viewModels = new HashMap<>();
     private final Object lock = new Object();
     private final IASCore core;
 
-    public BannerViewModelsHolder(IASCore core) {
+    public BannerContentViewModelsHolder(IASCore core) {
         this.core = core;
     }
 
     public void clearViewModels() {
-        List<IBannerViewModel> bannerViewModels;
+        List<IBannerContentViewModel> bannerViewModels;
         synchronized (lock) {
             bannerViewModels = new ArrayList<>(viewModels.values());
         }
-        for (IBannerViewModel bannerViewModel : bannerViewModels) {
+        for (IBannerContentViewModel bannerViewModel : bannerViewModels) {
             if (bannerViewModel != null) bannerViewModel.clear();
         }
     }
@@ -32,12 +32,15 @@ public class BannerViewModelsHolder {
         }
     }
 
-    public IBannerViewModel get(String uid, IBannerViewModelCreator creator) {
+    public IBannerContentViewModel get(
+            int bannerId,
+            IBannerContentViewModelCreator creator
+    ) {
         synchronized (lock) {
-            if (!viewModels.containsKey(uid) && creator != null) {
-                viewModels.put(uid, creator.create(core));
+            if (!viewModels.containsKey(bannerId) && creator != null) {
+                viewModels.put(bannerId, creator.create(core));
             }
-            return viewModels.get(uid);
+            return viewModels.get(bannerId);
         }
     }
 }

@@ -56,7 +56,6 @@ public class BannerView extends FrameLayout implements Observer<BannerViewState>
     public BannerView(@NonNull Context context) {
         super(context);
         init(context);
-        uniqueId = UUID.randomUUID().toString();
     }
 
     public String uniqueId = "";
@@ -107,6 +106,8 @@ public class BannerView extends FrameLayout implements Observer<BannerViewState>
     @SuppressLint("WrongViewCast")
     private void init(Context context) {
         View.inflate(context, R.layout.cs_banner_item, this);
+        uniqueId = UUID.randomUUID().toString();
+        setTag(uniqueId);
         bannerContainer = findViewById(R.id.bannerContainer);
         bannerContainer.setCardBackgroundColor(Color.TRANSPARENT);
         bannerContainer.setCardElevation(0f);

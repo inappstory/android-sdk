@@ -42,6 +42,12 @@ public class Observable<T> {
         }
     }
 
+    public void unsubscribeAll() {
+        synchronized (listenerLock) {
+            listeners.clear();
+        }
+    }
+
     public T getValue() {
         return value;
     }

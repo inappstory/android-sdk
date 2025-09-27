@@ -7,9 +7,7 @@ import java.util.List;
 public interface IBannerPlaceViewModel {
     BannerPlaceState getCurrentBannerPagerState();
 
-    IBannerViewModel getBannerViewModel(int id);
-
-    List<IBannerViewModel> getBannerViewModels();
+    List<Integer> getBannersIds();
 
     void updateState(BannerPlaceState bannerPlaceState);
 
