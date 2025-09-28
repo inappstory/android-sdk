@@ -1,5 +1,7 @@
 package com.inappstory.sdk.core.banners;
 
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.banners.BannerPlacePreloadCallback;
@@ -121,9 +123,9 @@ public class BannerDownloadManager {
                 }
         );
 
-
         slidesDownloader.addSlides(
-                new ContentIdAndType(readerContent.id(),
+                new ContentIdAndType(
+                        readerContent.id(),
                         ContentType.BANNER
                 ),
                 readerContent,

@@ -1,6 +1,8 @@
 package com.inappstory.sdk.core.banners;
 
 
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.InAppStoryManager;
@@ -130,12 +132,18 @@ public class BannerPlaceViewModel implements IBannerPlaceViewModel {
     }
 
     @Override
-    public IBannerViewModel getBannerViewModel(int id) {
+    public IBannerViewModel getBannerViewModel(int id, int index) {
         return bannerViewModelsHolder
                 .get(
                         id,
+                        index,
                         bannerPlace
                 );
+    }
+
+    @Override
+    public void removeBannerViewModel(IBannerViewModel bannerViewModel) {
+        bannerViewModelsHolder.removeViewModel(bannerViewModel);
     }
 
     @Override
@@ -145,7 +153,7 @@ public class BannerPlaceViewModel implements IBannerPlaceViewModel {
         List<IBannerViewModel> bannerViewModels = new ArrayList<>();
         if (items == null) return bannerViewModels;
         for (IBanner banner : items) {
-            bannerViewModels.add(bannerViewModelsHolder.get(banner.id(), bannerPlace));
+            bannerViewModels.addAll(bannerViewModelsHolder.get(banner.id(), bannerPlace));
         }
         return bannerViewModels;
     }
@@ -164,25 +172,16 @@ public class BannerPlaceViewModel implements IBannerPlaceViewModel {
         bannerDownloadManager.setMaxPriority(items.get(prevInd).id(), true);
         bannerDownloadManager.setMaxPriority(items.get(nextInd).id(), true);
         bannerDownloadManager.setMaxPriority(items.get(realIndex).id(), true);
-        for (int i = 0; i < items.size(); i++) {
-            IBannerViewModel bannerViewModel = bannerViewModelsHolder
-                    .get(
-                            items.get(i).id(),
-                            bannerPlace
-                    );
-            if (bannerViewModel != null) {
-                if (i == realIndex) {
-                    bannerViewModel.bannerIsActive(true);
-                } else {
-                    bannerViewModel.bannerIsActive(false);
-                    bannerViewModel.stopSlide();
-                }
+        bannerViewModelsHolder.get(items.get(realIndex).id(), index, bannerPlace);
+        List<IBannerViewModel> bannerViewModels = getBannerViewModels();
+        for (IBannerViewModel bannerViewModel : bannerViewModels) {
+            if (bannerViewModel.index() == index) {
+                bannerViewModel.bannerIsActive(true);
+            } else {
+                bannerViewModel.bannerIsActive(false);
+                bannerViewModel.stopSlide();
             }
-
         }
-       /* bannerPlaceStateObservable.updateValue(
-
-        );*/
     }
 
     @Override

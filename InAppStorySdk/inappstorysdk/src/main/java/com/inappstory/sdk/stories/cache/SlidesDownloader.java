@@ -8,6 +8,7 @@ import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASAssetsHolder;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.UseIASCallback;
+import com.inappstory.sdk.core.banners.BannerViewModel;
 import com.inappstory.sdk.core.data.IListItemContent;
 import com.inappstory.sdk.core.dataholders.IListsContentHolder;
 import com.inappstory.sdk.core.dataholders.IReaderContentHolder;
@@ -270,8 +271,8 @@ public class SlidesDownloader {
     public void addSubscriber(IReaderSlideViewModel pageViewModel) {
         synchronized (pageViewModelsLock) {
             for (IReaderSlideViewModel readerSlideViewModel : pageViewModels) {
-                if (readerSlideViewModel.externalSubscriber() != null &&
-                        readerSlideViewModel.externalSubscriber() == pageViewModel.contentIdAndType().contentId) {
+                if (pageViewModel.externalSubscriber() != null &&
+                        pageViewModel.externalSubscriber() == readerSlideViewModel.contentIdAndType().contentId) {
                     return;
                 }
             }
@@ -417,18 +418,14 @@ public class SlidesDownloader {
             final IReaderSlideViewModel pageViewModel,
             final int slideIndex
     ) {
-        final String page = pageViewModel.contentIdAndType() + " " + slideIndex;
         if (core.assetsHolder().assetsIsDownloaded()) {
-            Log.e("slidesDownloader", "slideLoadSuccess sync " + page);
             pageViewModel.slideLoadSuccess(slideIndex);
         } else {
             IASAssetsHolder assetsHolder = core.assetsHolder();
-            Log.e("slidesDownloader", "checkBundleResources add async callback " + page);
             assetsHolder.addAssetsIsReadyCallback(new SessionAssetsIsReadyCallback() {
                 @Override
                 public void isReady() {
                     pageViewModel.slideLoadSuccess(slideIndex);
-                    Log.e("slidesDownloader", "slideLoadSuccess async " + page);
                 }
             });
             assetsHolder.downloadAssets();

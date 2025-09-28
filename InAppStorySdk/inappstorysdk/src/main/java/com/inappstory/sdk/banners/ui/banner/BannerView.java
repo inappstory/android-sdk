@@ -198,7 +198,6 @@ public class BannerView extends FrameLayout implements Observer<BannerState> {
                 new Runnable() {
                     @Override
                     public void run() {
-                        Log.e("SlideLC", "startBanner " + bannerId);
                         bannerWebView.setClientVariables();
                         bannerWebView.startSlide(null);
                     }
@@ -437,6 +436,14 @@ public class BannerView extends FrameLayout implements Observer<BannerState> {
         this.listLoadCallback = null;
     }
 
+
+    public void destroyViewModel() {
+        if (this.bannerViewModel != null) {
+            bannerViewModel.destroy();
+        }
+        this.bannerViewModel = null;
+    }
+
     private IBannerPlaceLoadCallback listLoadCallback;
 
     @Override
@@ -538,7 +545,6 @@ public class BannerView extends FrameLayout implements Observer<BannerState> {
                                     public void run() {
                                         hideLoaderContainer();
                                         if (bannerViewModel != null && bannerViewModel.bannerIsActive()) {
-                                            Log.e("SlideLC", "slideJSStatus " + newValue.bannerId());
                                             bannerViewModel.bannerIsShown();
                                             bannerWebView.startSlide(null);
                                             //   bannerWebView.resumeSlide();

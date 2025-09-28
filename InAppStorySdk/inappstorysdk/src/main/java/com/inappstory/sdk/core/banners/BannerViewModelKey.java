@@ -4,10 +4,16 @@ import java.util.Objects;
 
 public class BannerViewModelKey {
     private final int bannerId;
+    private final int bannerIndex;
     private final String bannerPlace;
 
-    public BannerViewModelKey(int bannerId, String bannerPlace) {
+    public boolean correct(int bannerId, String bannerPlace) {
+        return this.bannerPlace.equals(bannerPlace) && this.bannerId == bannerId;
+    }
+
+    public BannerViewModelKey(int bannerId, int bannerIndex, String bannerPlace) {
         this.bannerId = bannerId;
+        this.bannerIndex = bannerIndex;
         this.bannerPlace = bannerPlace;
     }
 
@@ -21,6 +27,6 @@ public class BannerViewModelKey {
 
     @Override
     public int hashCode() {
-        return Objects.hash(bannerId, bannerPlace);
+        return Objects.hash(bannerId, bannerPlace, bannerIndex);
     }
 }

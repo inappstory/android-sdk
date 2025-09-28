@@ -159,8 +159,11 @@ public class IASBannersImpl implements IASBanners {
                 bannerPlaceViewModel.updateState(state);
 
                 List<IBannerViewModel> bannerViewModels = bannerPlaceViewModel.getBannerViewModels();
-                for (int i = 0; i < bannerViewModels.size(); i++) {
-                    bannerViewModels.get(i).loadContent(i == 0, preloadCallback);
+                for (IBannerViewModel bannerViewModel: bannerViewModels) {
+                    bannerViewModel.loadContent(
+                            bannerViewModel.isFirst(),
+                            preloadCallback
+                    );
                 }
             }
 

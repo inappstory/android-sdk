@@ -10,7 +10,10 @@ import com.inappstory.sdk.stories.utils.SingleTimeEvent;
 public interface IBannerViewModel extends IReaderSlideViewModel {
     BannerState getCurrentBannerState();
     BannerData getCurrentBannerData();
-
+    boolean isFirst();
+    int index();
+    int bannerId();
+    void destroy();
 
     SingleTimeEvent<STETypeAndData> singleTimeEvents();
 

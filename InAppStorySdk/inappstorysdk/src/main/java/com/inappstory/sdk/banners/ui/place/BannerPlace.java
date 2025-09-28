@@ -178,6 +178,7 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
                 BannerView currentBannerView = bannerPager.findViewWithTag(lastLaunchedTag);
                 if (currentBannerView != null) currentBannerView.stopBanner();
             }
+            Log.e("SlideLC", "onPageSelected " + position);
             BannerView currentBannerView = bannerPager.findViewWithTag(newLaunchedTag);
             if (currentBannerView != null) {
                 currentBannerView.startBanner();

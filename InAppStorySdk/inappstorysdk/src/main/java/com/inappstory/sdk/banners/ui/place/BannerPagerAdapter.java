@@ -72,14 +72,17 @@ public class BannerPagerAdapter extends PagerAdapter implements Observer<BannerS
         BannerView bannerView = new BannerView(container.getContext());
         bannerView.setLoadingPlaceholder(bannerPlaceholderCreator.onCreate(container.getContext()));
         bannerView.setBannerRadius(bannerRadius);
-        bannerView.setTag("banner_" + position);
-        Log.e("BannerPagerAdapter", "instantiateItem " + position);
+        String tag = "banner_" + position;
+        bannerView.setTag(tag);
         IBanner banner = banners.get(position % banners.size());
         bannerView.setBannerBackground(banner.bannerAppearance().backgroundDrawable());
         bannerView.setSize(itemWidth, banner.bannerAppearance().singleBannerAspectRatio());
         final int bannerId = banner.id();
         final IBannerViewModel bannerViewModel = core
-                .widgetViewModels().bannerPlaceViewModels().get(bannerPlace).getBannerViewModel(bannerId);
+                .widgetViewModels().bannerPlaceViewModels().get(bannerPlace).getBannerViewModel(
+                        bannerId,
+                        position
+                );
         bannerViewModel.iterationId(iterationId);
         bannerView.viewModel(
                 bannerViewModel
@@ -106,7 +109,7 @@ public class BannerPagerAdapter extends PagerAdapter implements Observer<BannerS
         int bannerId = banner.id();
 
         IBannerViewModel bannerViewModel = core
-                .widgetViewModels().bannerPlaceViewModels().get(bannerPlace).getBannerViewModel(bannerId);
+                .widgetViewModels().bannerPlaceViewModels().get(bannerPlace).getBannerViewModel(bannerId, 0);
         bannerViewModel.addSubscriber(this);
     }
 
@@ -120,7 +123,7 @@ public class BannerPagerAdapter extends PagerAdapter implements Observer<BannerS
         int bannerId = banner.id();
 
         IBannerViewModel bannerViewModel = core
-                .widgetViewModels().bannerPlaceViewModels().get(bannerPlace).getBannerViewModel(bannerId);
+                .widgetViewModels().bannerPlaceViewModels().get(bannerPlace).getBannerViewModel(bannerId, 0);
         bannerViewModel.removeSubscriber(this);
     }
 
@@ -135,6 +138,7 @@ public class BannerPagerAdapter extends PagerAdapter implements Observer<BannerS
     public void destroyItem(@NonNull ViewGroup container, int position, @NonNull Object object) {
         if (object instanceof BannerView) {
             ((BannerView) object).removeListLoadCallback();
+            ((BannerView) object).destroyViewModel();
             container.removeView((BannerView) object);
         }
     }

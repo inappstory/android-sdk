@@ -53,11 +53,13 @@ import java.util.concurrent.TimeUnit;
 public class BannerViewModel implements IBannerViewModel {
 
     private final int bannerId;
+    private final int bannerIndex;
     private final String bannerPlace;
     private final Observable<BannerState> stateObservable =
             new Observable<>(new BannerState());
 
     private final IASCore core;
+
 
     private ScheduledFuture scheduledFuture;
     private final ScheduledTPEManager executorService = new ScheduledTPEManager();
@@ -109,11 +111,13 @@ public class BannerViewModel implements IBannerViewModel {
     public BannerViewModel(
             int bannerId,
             String bannerPlace,
+            int bannerIndex,
             IASCore core,
             IBannerPlaceViewModel bannerPlaceViewModel
     ) {
         this.bannerId = bannerId;
         this.bannerPlace = bannerPlace;
+        this.bannerIndex = bannerIndex;
         this.core = core;
         stateObservable.setValue(
                 new BannerState()
@@ -139,6 +143,26 @@ public class BannerViewModel implements IBannerViewModel {
                 bannerPlace,
                 payload
         );
+    }
+
+    @Override
+    public boolean isFirst() {
+        return bannerIndex == 0;
+    }
+
+    @Override
+    public int index() {
+        return bannerIndex;
+    }
+
+    @Override
+    public int bannerId() {
+        return bannerId;
+    }
+
+    @Override
+    public void destroy() {
+        bannerPlaceViewModel.removeBannerViewModel(this);
     }
 
     @Override
@@ -362,7 +386,6 @@ public class BannerViewModel implements IBannerViewModel {
     public void slideLoaded(String data) {
         //updateCurrentLoadState(BannerLoadStates.LOADED);
 
-        Log.e("SlideLC", "slideLoaded " + bannerId);
         stateObservable.updateValue(
                 stateObservable
                         .getValue()
