@@ -289,6 +289,7 @@ public class IAMContentFragment extends Fragment implements Observer<IAMReaderSl
                                 @Override
                                 public void run() {
                                     localWebView.setClientVariables();
+                                    localWebView.showSlides();
                                 }
                             }
                     );

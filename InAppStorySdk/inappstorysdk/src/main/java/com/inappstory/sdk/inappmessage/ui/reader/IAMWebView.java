@@ -119,11 +119,6 @@ public class IAMWebView extends IASWebView implements ContentViewInteractor {
         );
     }
 
-    @Deprecated
-    private String temporaryUpdateToWhiteBackground(String html) {
-        return updateHead(html, "<style> html { background: white !important; } </style>");
-    }
-
     @Override
     public void replaceSlide(String newContent) {
         evaluateJavascript("(function(){show_slide(\"" + newContent + "\");})()", null);
