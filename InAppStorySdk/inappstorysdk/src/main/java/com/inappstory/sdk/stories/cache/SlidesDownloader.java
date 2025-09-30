@@ -308,8 +308,8 @@ public class SlidesDownloader {
     public void addSubscriber(IReaderSlideViewModel pageViewModel) {
         synchronized (pageViewModelsLock) {
             for (IReaderSlideViewModel readerSlideViewModel : pageViewModels) {
-                if (readerSlideViewModel.externalSubscriber() != null &&
-                        readerSlideViewModel.externalSubscriber() == pageViewModel.contentIdAndType().contentId) {
+                if (pageViewModel.externalSubscriber() != null &&
+                        pageViewModel.externalSubscriber() == readerSlideViewModel.contentIdAndType().contentId) {
                     return;
                 }
             }

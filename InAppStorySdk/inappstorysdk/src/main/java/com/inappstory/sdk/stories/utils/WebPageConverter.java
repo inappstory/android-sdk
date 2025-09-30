@@ -20,6 +20,8 @@ import com.inappstory.sdk.stories.api.models.ImagePlaceholderType;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
 import com.inappstory.sdk.core.network.content.models.SessionAsset;
 import com.inappstory.sdk.stories.cache.usecases.SessionAssetLocalUseCase;
+import com.inappstory.sdk.utils.FilePathCacheGenerator;
+import com.inappstory.sdk.utils.FilePathCacheType;
 import com.inappstory.sdk.utils.StringsUtils;
 
 import java.io.File;
@@ -40,7 +42,8 @@ public class WebPageConverter {
             IASCore core,
             String innerWebData,
             IReaderContent story,
-            final int index
+            final int index,
+            boolean forced
     ) {
         List<IResource> resources = new ArrayList<>();
         resources.addAll(story.staticResources(index));
@@ -51,6 +54,8 @@ public class WebPageConverter {
             File file = core.contentLoader().getCommonCache().getFullFile(key);
             if (file != null && file.exists() && file.length() > 0) {
                 resource = "file://" + file.getAbsolutePath();
+            } else if (forced) {
+                resource = "file://" + new FilePathCacheGenerator(object.getUrl(), core, FilePathCacheType.STORY_RESOURCE);
             }
             innerWebData = innerWebData.replace(resourceKey, resource);
         }
@@ -86,7 +91,8 @@ public class WebPageConverter {
     private String replaceImagePlaceholders(IASCore core,
                                             String innerWebData,
                                             final IReaderContent readerContent,
-                                            final int index
+                                            final int index,
+                                            boolean forced
     ) {
         final String[] newData = {innerWebData};
         Map<String, Pair<ImagePlaceholderValue, ImagePlaceholderValue>> imgPlaceholders =
@@ -105,6 +111,12 @@ public class WebPageConverter {
                         File file = core.contentLoader().getCommonCache().getFullFile(uniqueKey);
                         if (file != null && file.exists() && file.length() > 0) {
                             path = "file://" + file.getAbsolutePath();
+                        } else if (forced) {
+                            path = "file://" + new FilePathCacheGenerator(
+                                    placeholderValue.first.getUrl(),
+                                    core,
+                                    FilePathCacheType.STORY_RESOURCE
+                            );
                         }
                     }
                     if (path.isEmpty()) {
@@ -113,6 +125,12 @@ public class WebPageConverter {
                             File file = core.contentLoader().getCommonCache().getFullFile(uniqueKey);
                             if (file != null && file.exists() && file.length() > 0) {
                                 path = "file://" + file.getAbsolutePath();
+                            } else if (forced) {
+                                path = "file://" + new FilePathCacheGenerator(
+                                        placeholderValue.second.getUrl(),
+                                        core,
+                                        FilePathCacheType.STORY_RESOURCE
+                                );
                             }
                         }
                     }
@@ -165,9 +183,9 @@ public class WebPageConverter {
         if (InAppStoryManager.getInstance() == null) return null;
         IASCore core = InAppStoryManager.getInstance().iasCore();
         String localData = slideData;
-        localData = replaceStaticResources(core, localData, readerContent, index);
+        localData = replaceStaticResources(core, localData, readerContent, index, true);
         core.contentLoader().addVODResources(readerContent, index);
-        localData = replaceImagePlaceholders(core, localData, readerContent, index);
+        localData = replaceImagePlaceholders(core, localData, readerContent, index, true);
         Pair<String, String> replaced = replacePlaceholders(core, localData, "");
         localData = replaced.first;
         return localData;
@@ -184,9 +202,9 @@ public class WebPageConverter {
             public void use(@NonNull IASCore core) {
                 String localData = innerWebData;
                 String newLayout = readerContent.layout();
-                localData = replaceStaticResources(core, localData, readerContent, index);
+                localData = replaceStaticResources(core, localData, readerContent, index, false);
                 core.contentLoader().addVODResources(readerContent, index);
-                localData = replaceImagePlaceholders(core, localData, readerContent, index);
+                localData = replaceImagePlaceholders(core, localData, readerContent, index, false);
                 newLayout = replaceLayoutAssets(core, newLayout);
                 Pair<String, String> replaced = replacePlaceholders(core, localData, newLayout);
                 newLayout = replaced.second;

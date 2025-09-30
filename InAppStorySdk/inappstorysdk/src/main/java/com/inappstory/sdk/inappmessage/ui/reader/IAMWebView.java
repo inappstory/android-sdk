@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.webkit.ConsoleMessage;
@@ -28,6 +29,7 @@ import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ContentVi
 import com.inappstory.sdk.utils.OnSwipeTouchListener;
 import com.inappstory.sdk.utils.StringsUtils;
 
+import java.util.List;
 import java.util.Map;
 
 public class IAMWebView extends IASWebView implements ContentViewInteractor {
@@ -59,8 +61,24 @@ public class IAMWebView extends IASWebView implements ContentViewInteractor {
         });
     }
 
-    public void showSlides() {
+    public void slideInCache(String slideStatus) {
+        loadUrl("javascript:window.slide_in_cache(" + slideStatus + ")");
+    }
 
+    private String oldEscape(String raw) {
+        String escaped = raw
+                .replaceAll("\"", "\\\\\"")
+                .replaceAll("\n", " ")
+                .replaceAll("\r", " ");
+        return escaped;
+    }
+
+    public void showSlides(List<String> slides, String cardAppearance) {
+        String slideArray = "[" + TextUtils.join(",", slides) + "]";
+        String url = "javascript:window.show_slides(" + slideArray + "," +
+                StringsUtils.getEscapedString(StringsUtils.escapeSingleQuotes(cardAppearance))
+                + ")";
+        loadUrl(url);
     }
 
 

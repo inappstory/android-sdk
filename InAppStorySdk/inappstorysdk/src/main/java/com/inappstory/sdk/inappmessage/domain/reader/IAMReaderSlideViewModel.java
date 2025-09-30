@@ -9,6 +9,7 @@ import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.UseIASCallback;
+import com.inappstory.sdk.core.data.IInAppMessage;
 import com.inappstory.sdk.core.data.IReaderContent;
 import com.inappstory.sdk.core.inappmessages.InAppMessageDownloadManager;
 import com.inappstory.sdk.game.cache.SessionAssetsIsReadyCallback;
@@ -16,6 +17,7 @@ import com.inappstory.sdk.inappmessage.InAppMessageWidgetCallback;
 import com.inappstory.sdk.inappmessage.domain.stedata.JsSendApiRequestData;
 import com.inappstory.sdk.inappmessage.domain.stedata.STEDataType;
 import com.inappstory.sdk.inappmessage.domain.stedata.STETypeAndData;
+import com.inappstory.sdk.inappmessage.domain.stedata.SlideInCacheData;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.network.models.Response;
@@ -35,6 +37,8 @@ import com.inappstory.sdk.utils.ClipboardUtils;
 import com.inappstory.sdk.utils.StringsUtils;
 
 import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -419,9 +423,12 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
 
     @Override
     public void slideLoadError(int index) {
-        readerViewModel.updateCurrentLoadState(IAMReaderLoadStates.CONTENT_FAILED);
-        slideStateObservable.updateValue(
-                slideStateObservable.getValue().copy().contentStatus(-1).content(null)
+        singleTimeEvents.updateValue(
+                new STETypeAndData(
+                        STEDataType.SLIDE_IN_CACHE,
+                        new SlideInCacheData()
+                                .index(index).status(0)
+                )
         );
     }
 
@@ -432,8 +439,13 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
 
     @Override
     public void slideLoadSuccess(int index) {
-
-
+        singleTimeEvents.updateValue(
+                new STETypeAndData(
+                        STEDataType.SLIDE_IN_CACHE,
+                        new SlideInCacheData()
+                                .index(index).status(1)
+                )
+        );
     }
 
     @Override
@@ -443,13 +455,40 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
 
     @Override
     public void renderReady() {
+        IAMReaderState readerState = readerViewModel.getCurrentState();
+        IInAppMessage readerContent =
+                (IInAppMessage) core.contentHolder().readerContent().getByIdAndType(
+                        readerState.iamId,
+                        ContentType.IN_APP_MESSAGE
+                );
+        WebPageConverter converter = new WebPageConverter();
+        InAppMessageDownloadManager downloadManager = core.contentLoader().inAppMessageDownloadManager();
+        List<String> slides = new ArrayList<>();
+        List<Integer> loadedSlides = new ArrayList<>();
+        List<Integer> errorSlides = new ArrayList<>();
+        for (int i = 0; i < readerContent.actualSlidesCount(); i++) {
+            slides.add(converter.replaceSlide(readerContent.slideByIndex(i), readerContent, i));
+            int loadStatus = downloadManager.isSlideLoaded(readerContent.id(), i, ContentType.BANNER);
+            if (loadStatus == 1) {
+                loadedSlides.add(i);
+            } else if (loadStatus == -1) {
+                errorSlides.add(i);
+            }
+        }
         slideStateObservable.updateValue(
                 slideStateObservable
                         .getValue()
                         .copy()
+                        .slides(slides)
+                        .cardAppearance(readerContent.inAppMessageAppearance().cardAppearance())
                         .contentStatus(2)
-                        .renderReady(true)
         );
+        for (Integer slide: loadedSlides) {
+            slideLoadSuccess(slide);
+        }
+        for (Integer slide: errorSlides) {
+            slideLoadError(slide);
+        }
     }
 
     private final SessionAssetsIsReadyCallback assetsIsReadyCallback = new SessionAssetsIsReadyCallback() {

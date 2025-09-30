@@ -31,10 +31,12 @@ import com.inappstory.sdk.inappmessage.domain.reader.IIAMReaderSlideViewModel;
 import com.inappstory.sdk.inappmessage.domain.reader.IIAMReaderViewModel;
 import com.inappstory.sdk.inappmessage.domain.stedata.JsSendApiRequestData;
 import com.inappstory.sdk.inappmessage.domain.stedata.STETypeAndData;
+import com.inappstory.sdk.inappmessage.domain.stedata.SlideInCacheData;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageAppearance;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageBottomSheetAppearance;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageFullscreenAppearance;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessagePopupAppearance;
+import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.jsapiclient.JsApiClient;
 import com.inappstory.sdk.network.jsapiclient.JsApiResponseCallback;
 import com.inappstory.sdk.stories.api.models.ContentId;
@@ -104,6 +106,11 @@ public class IAMContentFragment extends Fragment implements Observer<IAMReaderSl
                                     (CallToActionData) newValue.data()
                             );
                             break;
+                        case SLIDE_IN_CACHE:
+                            slideInCache(
+                                    (SlideInCacheData) newValue.data()
+                            );
+                            break;
                         case JS_SEND_API_REQUEST:
                             jsSendApiRequestHandle(
                                     core,
@@ -165,6 +172,20 @@ public class IAMContentFragment extends Fragment implements Observer<IAMReaderSl
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private void slideInCache(final SlideInCacheData slideInCacheData) {
+        final IAMWebView webView = (IAMWebView) contentWebView;
+        webView.post(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    webView.slideInCache(JsonParser.getJson(slideInCacheData));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
     }
 
     private void jsSendApiRequestHandle(
@@ -289,15 +310,15 @@ public class IAMContentFragment extends Fragment implements Observer<IAMReaderSl
                                 @Override
                                 public void run() {
                                     localWebView.setClientVariables();
-                                    localWebView.showSlides();
+                                    localWebView.showSlides(
+                                            newValue.slides(),
+                                            JsonParser.mapToJsonString(newValue.cardAppearance())
+                                    );
                                 }
                             }
                     );
                     break;
             }
-
-        }
-        if ((localCurrentState == null || !localCurrentState.renderReady()) && newValue.renderReady()) {
 
         }
         if (localCurrentState != null &&
