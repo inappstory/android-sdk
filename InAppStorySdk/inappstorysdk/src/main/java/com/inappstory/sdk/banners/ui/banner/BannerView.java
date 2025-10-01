@@ -422,7 +422,7 @@ public class BannerView extends FrameLayout implements Observer<BannerState> {
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
-        Log.e("ViewIsAttached", uniqueId);
+        Log.e("AttachDetach", "ViewIsAttached " + uniqueId);
         if (bannerViewModel != null) {
             bannerViewModel.addSubscriber(this);
         }
@@ -452,7 +452,7 @@ public class BannerView extends FrameLayout implements Observer<BannerState> {
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
-        Log.e("ViewIsDetached", uniqueId);
+        Log.e("AttachDetach", "ViewIsDetached " + uniqueId);
         if (bannerViewModel != null) {
          //   bannerViewModel.clearJsStatus();
             bannerViewModel.removeSubscriber(this);
