@@ -185,6 +185,16 @@ public class BannerPlaceViewModel implements IBannerPlaceViewModel {
     }
 
     @Override
+    public void sendOpenStat(int bannerId, String iterationId) {
+        ShownBannerKey key = new ShownBannerKey(iterationId, bannerId);
+        if (shownBanners.contains(key)) return;
+        shownBanners.add(key);
+        core.statistic().bannersV1().sendOpenEvent(bannerId, 0, 1, iterationId);
+    }
+
+    Set<ShownBannerKey> shownBanners = new HashSet<>();
+
+    @Override
     public void showNext() {
         BannerPlaceState placeState = getCurrentBannerPagerState();
         int newIndex = 1;

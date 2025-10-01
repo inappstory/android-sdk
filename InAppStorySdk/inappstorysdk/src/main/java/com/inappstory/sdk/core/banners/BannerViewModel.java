@@ -612,8 +612,8 @@ public class BannerViewModel implements IBannerViewModel {
                     }
                 }
         );
-
-        core.statistic().bannersV1().sendOpenEvent(bannerId, 0, 1, iterationId);
+        saveBannerOpened(bannerId);
+        bannerPlaceViewModel.sendOpenStat(bannerId, iterationId);
     }
 
     private void saveBannerOpened(int bannerId) {
@@ -626,7 +626,7 @@ public class BannerViewModel implements IBannerViewModel {
         IShownTime savedShownTime = null;
         if (opens != null) {
             for (Iterator<String> iterator = opens.iterator(); iterator.hasNext(); ) {
-                IShownTime shownTime = new IAMShownTime(iterator.next());
+                IShownTime shownTime = new BannerShownTime(iterator.next());
                 if (shownTime.id() == bannerId) {
                     shownTime.updateLatestShownTime();
                     savedShownTime = shownTime;
@@ -638,7 +638,7 @@ public class BannerViewModel implements IBannerViewModel {
             opens = new HashSet<>();
         }
         if (savedShownTime == null) {
-            savedShownTime = new IAMShownTime(bannerId);
+            savedShownTime = new BannerShownTime(bannerId);
         }
         opens.add(savedShownTime.getSaveKey());
         core.sharedPreferencesAPI().saveStringSet(localOpensKey, opens);

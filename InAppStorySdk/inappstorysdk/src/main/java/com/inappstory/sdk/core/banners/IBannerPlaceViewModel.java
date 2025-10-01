@@ -9,6 +9,8 @@ public interface IBannerPlaceViewModel {
 
     IBannerViewModel getBannerViewModel(int id, int index);
 
+    void sendOpenStat(int bannerId, String iterationId);
+
     void removeBannerViewModel(IBannerViewModel bannerViewModel);
 
     List<IBannerViewModel> getBannerViewModels();

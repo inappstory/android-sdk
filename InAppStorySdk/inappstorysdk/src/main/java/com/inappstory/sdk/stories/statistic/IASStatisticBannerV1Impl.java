@@ -130,7 +130,7 @@ public class IASStatisticBannerV1Impl implements IASStatisticBannerV1 {
             long duration,
             String iterationId
     ) {
-        Log.e("BannerStat", "Widget event " + bannerId + " " + widgetName + " " + widgetData);
+        Log.e("BannerStatistic", "Widget event " + bannerId + " " + widgetName + " " + widgetData);
         if (disabled) return;
         String eventId = UUID.randomUUID().toString();
         BannerStatisticV1Task task = JsonParser.fromJson(
@@ -154,7 +154,7 @@ public class IASStatisticBannerV1Impl implements IASStatisticBannerV1 {
             int slidesTotal,
             String iterationId
     ) {
-        Log.e("BannerStat", "Open event " + bannerId);
+        Log.e("BannerStatistic", "Open event " + bannerId);
         if (disabled) return;
         String eventId = UUID.randomUUID().toString();
         BannerStatisticV1Task task = new BannerStatisticV1Task();
