@@ -425,6 +425,7 @@ public class BannerView extends FrameLayout implements Observer<BannerState> {
         Log.e("AttachDetach", "ViewIsAttached " + uniqueId);
         if (bannerViewModel != null) {
             bannerViewModel.addSubscriber(this);
+            bannerViewModel.resumeSlide();
         }
 
     }
@@ -454,6 +455,7 @@ public class BannerView extends FrameLayout implements Observer<BannerState> {
         super.onDetachedFromWindow();
         Log.e("AttachDetach", "ViewIsDetached " + uniqueId);
         if (bannerViewModel != null) {
+            bannerViewModel.pauseSlide();
          //   bannerViewModel.clearJsStatus();
             bannerViewModel.removeSubscriber(this);
         }
