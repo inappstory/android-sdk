@@ -387,6 +387,7 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
             //TODO Log error
             return;
         }
+        Log.e("BannerProfiling", "setPlaceId " + placeId);
         this.placeId = placeId;
         if (placeId != null && !placeId.isEmpty()) {
             init();
@@ -399,6 +400,7 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
         if (bannerPlaceViewModel != null && placeId != null && !placeId.isEmpty()) {
+            Log.e("BannerProfiling", "onAttachedToWindow " + placeId);
             if (checkViewModelForSubscribers(placeId))
                 init();
         }
@@ -518,6 +520,7 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
                                 )
                         );
                         bannerPager.setOffscreenPageLimit(1);
+                        Log.e("BannerProfiling", "setAdapter " + placeId);
                         bannerPager.setAdapter(
                                 adapter
                         );
