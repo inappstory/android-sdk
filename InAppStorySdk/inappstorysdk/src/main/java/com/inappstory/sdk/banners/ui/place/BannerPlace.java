@@ -400,6 +400,7 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
+        Log.e("BannerProfiling", "onAttachedToWindow " + placeId);
         if (bannerPlaceViewModel != null && placeId != null && !placeId.isEmpty()) {
             Log.e("BannerProfiling", "onAttachedToWindow " + placeId);
             if (checkViewModelForSubscribers(placeId))
@@ -421,7 +422,7 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
 
     @Override
     protected void onDetachedFromWindow() {
-        deInit();
+       // deInit();
         super.onDetachedFromWindow();
     }
 
