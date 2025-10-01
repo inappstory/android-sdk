@@ -361,6 +361,7 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
             );
             ViewGroup.LayoutParams layoutParams = bannerPager.getLayoutParams();
             layoutParams.height = WRAP_CONTENT;
+            Log.e("BannerProfiling", "setAdapter deInit" + placeId);
             bannerPager.setAdapter(adapter);
             pagerAdapter.clear();
         }
@@ -520,7 +521,7 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
                                 )
                         );
                         bannerPager.setOffscreenPageLimit(1);
-                        Log.e("BannerProfiling", "setAdapter " + placeId);
+                        Log.e("BannerProfiling", "setAdapter empty" + placeId);
                         bannerPager.setAdapter(
                                 adapter
                         );
@@ -581,6 +582,7 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
                                 )
                         );
                         bannerPager.setOffscreenPageLimit(1);
+                        Log.e("BannerProfiling", "setAdapter values" + placeId);
                         bannerPager.setAdapter(
                                 adapter
                         );
