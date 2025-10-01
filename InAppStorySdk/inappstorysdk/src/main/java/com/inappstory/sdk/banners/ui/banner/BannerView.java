@@ -49,6 +49,7 @@ import com.inappstory.sdk.stories.utils.Observer;
 import com.inappstory.sdk.stories.utils.Sizes;
 
 import java.util.Objects;
+import java.util.UUID;
 
 public class BannerView extends FrameLayout implements Observer<BannerState> {
 
@@ -416,10 +417,12 @@ public class BannerView extends FrameLayout implements Observer<BannerState> {
         init(context);
     }
 
+    private final String uniqueId = UUID.randomUUID().toString();
+
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
-        Log.e("ViewIsAttached", toString());
+        Log.e("ViewIsAttached", uniqueId);
         if (bannerViewModel != null) {
             bannerViewModel.addSubscriber(this);
         }
@@ -449,6 +452,7 @@ public class BannerView extends FrameLayout implements Observer<BannerState> {
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
+        Log.e("ViewIsDetached", uniqueId);
         if (bannerViewModel != null) {
          //   bannerViewModel.clearJsStatus();
             bannerViewModel.removeSubscriber(this);
