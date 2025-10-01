@@ -450,7 +450,7 @@ public class BannerView extends FrameLayout implements Observer<BannerState> {
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
         if (bannerViewModel != null) {
-            bannerViewModel.clearJsStatus();
+         //   bannerViewModel.clearJsStatus();
             bannerViewModel.removeSubscriber(this);
         }
     }
