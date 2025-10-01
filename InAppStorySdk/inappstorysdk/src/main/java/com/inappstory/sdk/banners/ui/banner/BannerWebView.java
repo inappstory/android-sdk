@@ -161,6 +161,7 @@ public class BannerWebView extends IASWebView implements ContentViewInteractor {
                 " window.story_slide_timer_end(); " +
                 "}" +
                 "})()");
+        logMethod("story_slide_timer_end");
     }
 
     @Override
