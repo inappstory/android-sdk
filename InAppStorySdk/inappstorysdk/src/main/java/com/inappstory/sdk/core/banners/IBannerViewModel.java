@@ -20,6 +20,7 @@ public interface IBannerViewModel extends IReaderSlideViewModel {
     void addSubscriber(Observer<BannerState> observer);
     void removeSubscriber(Observer<BannerState> observer);
     void updateCurrentLoadState(BannerLoadStates bannerLoadState);
+    void updateCurrentLoaderState(BannerRefreshLoaderState bannerLoadState);
 
     void pauseSlide();
     void resumeSlide();

@@ -74,13 +74,13 @@ public class BannerViewModel implements IBannerViewModel {
             UpdateTimelineData data = JsonParser.fromJson(strData, UpdateTimelineData.class);
             if (data.showError) {
                 slideLoadError(0);
-                updateCurrentLoadState(BannerLoadStates.FAILED);
+                updateCurrentLoaderState(BannerRefreshLoaderState.FAILED);
                 cancelTask();
             } else if (data.showLoader) {
-                updateCurrentLoadState(BannerLoadStates.LOADING);
+                updateCurrentLoaderState(BannerRefreshLoaderState.LOADING);
                 cancelTask();
             } else {
-                updateCurrentLoadState(BannerLoadStates.LOADED);
+                updateCurrentLoaderState(BannerRefreshLoaderState.EMPTY);
             }
             if (data.action == null) return;
             switch (data.action) {
@@ -251,6 +251,15 @@ public class BannerViewModel implements IBannerViewModel {
     @Override
     public void removeSubscriber(Observer<BannerState> observable) {
         this.stateObservable.unsubscribe(observable);
+    }
+
+    @Override
+    public void updateCurrentLoaderState(BannerRefreshLoaderState bannerLoaderState) {
+        this.stateObservable.updateValue(
+                this.stateObservable.getValue()
+                        .copy()
+                        .loaderState(bannerLoaderState)
+        );
     }
 
     @Override

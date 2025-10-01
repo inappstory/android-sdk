@@ -5,6 +5,7 @@ public class BannerState {
     private String bannerPlace;
     private String content;
     private BannerLoadStates bannerLoadState = BannerLoadStates.EMPTY;
+    private BannerRefreshLoaderState loaderState = BannerRefreshLoaderState.EMPTY;
     private boolean bannerIsPaused = false;
 
     private boolean bannerIsActive = false;
@@ -56,6 +57,11 @@ public class BannerState {
     }
 
 
+    public BannerRefreshLoaderState loaderState() {
+        return loaderState;
+    }
+
+
     public BannerState contentStatus(int contentStatus) {
         this.contentStatus = contentStatus;
         return this;
@@ -96,6 +102,11 @@ public class BannerState {
         return this;
     }
 
+    public BannerState loaderState(BannerRefreshLoaderState loaderState) {
+        this.loaderState = loaderState;
+        return this;
+    }
+
     public BannerState content(String content) {
         this.content = content;
         return this;
@@ -108,6 +119,7 @@ public class BannerState {
         return new BannerState()
                 .content(this.content)
                 .loadState(this.bannerLoadState)
+                .loaderState(this.loaderState)
                 .contentStatus(this.contentStatus)
                 .slideJSStatus(this.slideJSStatus)
                 .renderReady(this.renderReady)

@@ -467,6 +467,19 @@ public class BannerView extends FrameLayout implements Observer<BannerState> {
         if (Objects.equals(currentState, newValue)) return;
         BannerState localCurrentState = currentState;
         currentState = newValue;
+        if (localCurrentState == null || newValue.loaderState() != localCurrentState.loaderState()) {
+            switch (newValue.loadState()) {
+                case EMPTY:
+                    hideLoaderContainer();
+                    break;
+                case LOADING:
+                    showLoader();
+                    break;
+                case FAILED:
+                    showRefresh();
+                    break;
+            }
+        }
         if (localCurrentState == null ||
                 (newValue.loadState() != localCurrentState.loadState())
         ) {
