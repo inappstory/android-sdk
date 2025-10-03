@@ -497,11 +497,6 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
             IAMReaderState state = readerViewModel.getCurrentState();
             if (state == null || state.iamId == null) return;
             readerViewModel.updateCurrentLoadState(IAMReaderLoadStates.ASSETS_LOADED);
-            IReaderContent readerContent =
-                    core.contentHolder().readerContent().getByIdAndType(
-                            state.iamId,
-                            ContentType.IN_APP_MESSAGE
-                    );
             InAppMessageDownloadManager downloadManager = core.contentLoader().inAppMessageDownloadManager();
             downloadManager.addInAppMessageTask(state.iamId, null);
         }

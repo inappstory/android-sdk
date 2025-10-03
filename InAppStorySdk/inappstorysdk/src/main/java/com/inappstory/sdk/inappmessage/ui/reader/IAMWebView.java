@@ -29,6 +29,7 @@ import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ContentVi
 import com.inappstory.sdk.utils.OnSwipeTouchListener;
 import com.inappstory.sdk.utils.StringsUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -74,11 +75,17 @@ public class IAMWebView extends IASWebView implements ContentViewInteractor {
     }
 
     public void showSlides(List<String> slides, String cardAppearance) {
-        String slideArray = "[" + TextUtils.join(",", slides) + "]";
-        String url = "javascript:window.show_slides(" + slideArray + "," +
+        List<String> escapedSlides = new ArrayList<>();
+        for (String slide: slides) {
+            escapedSlides.add(oldEscape(slide));
+        }
+        String slideArray = "[\"" + TextUtils.join("\",\"", escapedSlides) + "\"]";
+        String url = "javascript:window.show_slides(" + slideArray + ",\"" +
                 StringsUtils.getEscapedString(StringsUtils.escapeSingleQuotes(cardAppearance))
-                + ")";
+                + "\")";
         loadUrl(url);
+        Context context;
+
     }
 
 
