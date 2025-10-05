@@ -1,6 +1,5 @@
 package com.inappstory.sdk.banners.ui.place;
 
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -14,20 +13,19 @@ import com.inappstory.sdk.banners.ICustomBannerPlaceholder;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.banners.BannerDownloadManager;
-import com.inappstory.sdk.core.banners.BannerLoadStates;
 import com.inappstory.sdk.core.banners.BannerState;
 import com.inappstory.sdk.core.banners.IBannerViewModel;
 import com.inappstory.sdk.core.data.IBanner;
 import com.inappstory.sdk.stories.utils.Observer;
 
 import java.util.List;
-import java.util.Objects;
 
 
 public class BannerPagerAdapter extends PagerAdapter implements Observer<BannerState> {
     private final List<IBanner> banners;
     private final IASCore core;
     private final String bannerPlace;
+    private final String uniqueId;
     private final float iwRatio;
     private final float itemWidth;
 
@@ -44,6 +42,7 @@ public class BannerPagerAdapter extends PagerAdapter implements Observer<BannerS
             IASCore core,
             @NonNull List<IBanner> banners,
             String bannerPlace,
+            String uniqueId,
             ICustomBannerPlaceholder bannerPlaceholderCreator,
             IBannerPlaceLoadCallback bannerPlaceLoadCallback,
             String iterationId,
@@ -54,6 +53,7 @@ public class BannerPagerAdapter extends PagerAdapter implements Observer<BannerS
     ) {
         this.itemWidth = itemWidth;
         this.iwRatio = iwRatio;
+        this.uniqueId = uniqueId;
         this.bannerPlaceholderCreator = bannerPlaceholderCreator;
         this.listLoadCallback = bannerPlaceLoadCallback;
         this.banners = banners;
@@ -79,7 +79,13 @@ public class BannerPagerAdapter extends PagerAdapter implements Observer<BannerS
         bannerView.setSize(itemWidth, banner.bannerAppearance().singleBannerAspectRatio());
         final int bannerId = banner.id();
         final IBannerViewModel bannerViewModel = core
-                .widgetViewModels().bannerPlaceViewModels().get(bannerPlace).getBannerViewModel(
+                .widgetViewModels()
+                .bannerPlaceViewModels()
+                .getOrCreateWithCopy(
+                        uniqueId,
+                        bannerPlace
+                )
+                .getBannerViewModel(
                         bannerId,
                         position
                 );
@@ -109,7 +115,10 @@ public class BannerPagerAdapter extends PagerAdapter implements Observer<BannerS
         int bannerId = banner.id();
 
         IBannerViewModel bannerViewModel = core
-                .widgetViewModels().bannerPlaceViewModels().get(bannerPlace).getBannerViewModel(bannerId, 0);
+                .widgetViewModels()
+                .bannerPlaceViewModels()
+                .getOrCreateWithCopy(uniqueId, bannerPlace)
+                .getBannerViewModel(bannerId, 0);
         bannerViewModel.addSubscriber(this);
     }
 
@@ -123,7 +132,11 @@ public class BannerPagerAdapter extends PagerAdapter implements Observer<BannerS
         int bannerId = banner.id();
 
         IBannerViewModel bannerViewModel = core
-                .widgetViewModels().bannerPlaceViewModels().get(bannerPlace).getBannerViewModel(bannerId, 0);
+                .widgetViewModels().bannerPlaceViewModels()
+                .getOrCreateWithCopy(
+                        uniqueId,
+                        bannerPlace
+                ).getBannerViewModel(bannerId, 0);
         bannerViewModel.removeSubscriber(this);
     }
 

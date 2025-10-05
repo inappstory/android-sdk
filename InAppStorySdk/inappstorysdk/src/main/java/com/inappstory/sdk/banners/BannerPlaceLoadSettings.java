@@ -6,10 +6,16 @@ import java.util.List;
 public class BannerPlaceLoadSettings {
     private String placeId;
 
+    private String uniqueId;
+
     private List<String> tags;
 
     public String placeId() {
         return placeId;
+    }
+
+    public String uniqueId() {
+        return uniqueId;
     }
 
     public List<String> tags() {
@@ -19,6 +25,11 @@ public class BannerPlaceLoadSettings {
 
     public BannerPlaceLoadSettings placeId(String placeId) {
         this.placeId = placeId;
+        return this;
+    }
+
+    public BannerPlaceLoadSettings uniqueId(String uniqueId) {
+        this.uniqueId = uniqueId;
         return this;
     }
 

@@ -42,6 +42,7 @@ import com.inappstory.sdk.stories.utils.Sizes;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 public class BannerPlace extends FrameLayout implements Observer<BannerPlaceState> {
     private BannerPager bannerPager;
@@ -50,6 +51,27 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
     private IASCore core;
     private ICustomBannerPlaceAppearance customBannerPlace = new DefaultBannerPlaceAppearance();
     private String lastLaunchedTag = "";
+
+    private String defaultUniquePlaceId = UUID.randomUUID().toString();
+
+    public String uniquePlaceId() {
+        return customUniquePlaceId != null ? customUniquePlaceId : defaultUniquePlaceId;
+    }
+
+    public void uniquePlaceId(String customUniquePlaceId) {
+        if (customUniquePlaceId == null || customUniquePlaceId.isEmpty()) {
+            //TODO Log error
+            return;
+        }
+        if (Objects.equals(this.customUniquePlaceId, customUniquePlaceId)) return;
+        if (checkViewModelForSubscribers(customUniquePlaceId)) {
+            //TODO Log error
+            return;
+        }
+        this.customUniquePlaceId = customUniquePlaceId;
+    }
+
+    private String customUniquePlaceId = null;
 
    /* private void loadBanners() {
         final String localBannerPlace = bannerPlace;
@@ -153,7 +175,7 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
         @Override
         public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
             if (bannerPlaceViewModel != null) {
-                BannerPlaceState placeState = bannerPlaceViewModel.getCurrentBannerPagerState();
+                BannerPlaceState placeState = bannerPlaceViewModel.getCurrentBannerPlaceState();
                 try {
                     if (bannerPlaceNavigationCallback != null && !placeState.getItems().isEmpty()) {
                         int size = placeState.getItems().size();
@@ -187,7 +209,7 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
             lastLaunchedTag = newLaunchedTag;
             if (bannerPlaceViewModel != null) {
                 bannerPlaceViewModel.updateCurrentIndex(position);
-                BannerPlaceState placeState = bannerPlaceViewModel.getCurrentBannerPagerState();
+                BannerPlaceState placeState = bannerPlaceViewModel.getCurrentBannerPlaceState();
                 try {
                     if (bannerPlaceNavigationCallback != null && !placeState.getItems().isEmpty()) {
                         int size = placeState.getItems().size();
@@ -312,7 +334,6 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
 
     private void init() {
         if (initialized) return;
-        initialized = true;
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
@@ -320,9 +341,10 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
                 bannerPlaceViewModel = core
                         .widgetViewModels()
                         .bannerPlaceViewModels()
-                        .get(placeId);
-               // bannerPlaceViewModel.addBannerPlaceLoadCallback((InnerBannerPlaceLoadCallback) internalBannerPlaceLoadCallback);
+                        .getOrCreateWithCopy(uniquePlaceId(), placeId);
+                // bannerPlaceViewModel.addBannerPlaceLoadCallback((InnerBannerPlaceLoadCallback) internalBannerPlaceLoadCallback);
                 bannerPlaceViewModel.addSubscriberAndCheckLocal(BannerPlace.this);
+                initialized = true;
             }
         });
     }
@@ -331,7 +353,7 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
         initialized = false;
         if (bannerPlaceViewModel != null) {
             bannerPlaceViewModel.removeSubscriber(BannerPlace.this);
-           // bannerPlaceViewModel.removeBannerPlaceLoadCallback((InnerBannerPlaceLoadCallback) internalBannerPlaceLoadCallback);
+            // bannerPlaceViewModel.removeBannerPlaceLoadCallback((InnerBannerPlaceLoadCallback) internalBannerPlaceLoadCallback);
             bannerPlaceViewModel.clearBanners();
             //  bannerPlaceViewModel.clear();
             bannerPlaceViewModel = null;
@@ -353,6 +375,7 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
                     null,
                     null,
                     null,
+                    null,
                     "",
                     false,
                     -1,
@@ -367,7 +390,7 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
         }
     }
 
-    private boolean checkViewModelForSubscribers(String bannerPlace) {
+    private boolean checkViewModelForSubscribers(String uniquePlaceId) {
         IASCore localCore = core;
         if (localCore == null)
             if (InAppStoryManager.getInstance() != null) {
@@ -378,17 +401,12 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
         IBannerPlaceViewModel bannerPlaceViewModel = localCore
                 .widgetViewModels()
                 .bannerPlaceViewModels()
-                .get(bannerPlace);
+                .getOrCreateWithCopy(uniquePlaceId, placeId);
         return bannerPlaceViewModel.hasSubscribers(this);
     }
 
     public void setPlaceId(final String placeId) {
         if (Objects.equals(this.placeId, placeId)) return;
-        if (checkViewModelForSubscribers(placeId)) {
-            //TODO Log error
-            return;
-        }
-        Log.e("BannerProfiling", "setPlaceId " + placeId);
         this.placeId = placeId;
         if (placeId != null && !placeId.isEmpty()) {
             init();
@@ -400,9 +418,8 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
-        if (bannerPlaceViewModel != null && placeId != null && !placeId.isEmpty()) {
-            if (checkViewModelForSubscribers(placeId))
-                init();
+        if (placeId != null && !placeId.isEmpty()) {
+            init();
         }
     }
 
@@ -420,7 +437,7 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
 
     @Override
     protected void onDetachedFromWindow() {
-       // deInit();
+        // deInit();
         super.onDetachedFromWindow();
     }
 
@@ -508,6 +525,7 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
                                 core,
                                 new ArrayList<IBanner>(),
                                 placeId,
+                                uniquePlaceId(),
                                 null,
                                 bannerPlaceLoadCallback,
                                 newValue.iterationId(),
@@ -559,6 +577,7 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
                                 core,
                                 items,
                                 placeId,
+                                uniquePlaceId(),
                                 new ICustomBannerPlaceholder() {
                                     @Override
                                     public View onCreate(Context context) {

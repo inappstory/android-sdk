@@ -5,7 +5,7 @@ import com.inappstory.sdk.stories.utils.Observer;
 import java.util.List;
 
 public interface IBannerPlaceViewModel {
-    BannerPlaceState getCurrentBannerPagerState();
+    BannerPlaceState getCurrentBannerPlaceState();
 
     IBannerViewModel getBannerViewModel(int id, int index);
 

@@ -1,8 +1,6 @@
 package com.inappstory.sdk.core.banners;
 
 
-import android.util.Log;
-
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.InAppStoryManager;
@@ -29,10 +27,12 @@ public class BannerPlaceViewModel implements IBannerPlaceViewModel {
     private final String bannerPlace;
     private final String uid = UUID.randomUUID().toString();
     private final List<String> tags = new ArrayList<>();
+    private final String uniqueId;
     BannerViewModelsHolder bannerViewModelsHolder;
 
-    public BannerPlaceViewModel(IASCore core, String bannerPlace) {
+    public BannerPlaceViewModel(IASCore core, String bannerPlace, String uniqueId) {
         this.bannerPlace = bannerPlace;
+        this.uniqueId = uniqueId;
         bannerViewModelsHolder = new BannerViewModelsHolder(core, this);
         this.core = core;
         addSubscriber(localObserver);
@@ -66,7 +66,7 @@ public class BannerPlaceViewModel implements IBannerPlaceViewModel {
             new SingleTimeEvent<>();
 
     @Override
-    public BannerPlaceState getCurrentBannerPagerState() {
+    public BannerPlaceState getCurrentBannerPlaceState() {
         return bannerPlaceStateObservable.getValue();
     }
 
@@ -196,7 +196,7 @@ public class BannerPlaceViewModel implements IBannerPlaceViewModel {
 
     @Override
     public void showNext() {
-        BannerPlaceState placeState = getCurrentBannerPagerState();
+        BannerPlaceState placeState = getCurrentBannerPlaceState();
         int newIndex = 1;
         Integer currentIndex = placeState.currentIndex;
         if (currentIndex != null) newIndex = currentIndex + 1;
