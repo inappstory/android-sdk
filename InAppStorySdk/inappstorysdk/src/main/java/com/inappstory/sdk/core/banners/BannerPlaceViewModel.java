@@ -237,6 +237,7 @@ public class BannerPlaceViewModel implements IBannerPlaceViewModel {
                     core.bannersAPI().loadBannerPlace(
                             new BannerPlaceLoadSettings()
                                     .placeId(bannerPlace)
+                                    .uniqueId(uniqueId)
                                     .tags(
                                             tags.isEmpty() ? null :
                                                     new ArrayList<>(tags)
@@ -245,6 +246,24 @@ public class BannerPlaceViewModel implements IBannerPlaceViewModel {
                 }
             });
         }
+    }
+
+    @Override
+    public void loadBanners() {
+        InAppStoryManager.useCoreInSeparateThread(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.bannersAPI().loadBannerPlace(
+                        new BannerPlaceLoadSettings()
+                                .placeId(bannerPlace)
+                                .uniqueId(uniqueId)
+                                .tags(
+                                        tags.isEmpty() ? null :
+                                                new ArrayList<>(tags)
+                                )
+                );
+            }
+        });
     }
 
     @Override

@@ -22,6 +22,7 @@ import androidx.viewpager.widget.ViewPager;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.banners.BannerPlaceLoadSettings;
 import com.inappstory.sdk.banners.BannerPlaceNavigationCallback;
 import com.inappstory.sdk.banners.BannerPlaceLoadCallback;
 import com.inappstory.sdk.banners.ui.banner.BannerView;
@@ -73,22 +74,12 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
 
     private String customUniquePlaceId = null;
 
-   /* private void loadBanners() {
-        final String localBannerPlace = bannerPlace;
-        if (localBannerPlace == null) {
-            //TODO Log error
-            return;
-        }
+    public void loadBanners() {
         if (bannerPlaceViewModel != null) {
             bannerPlaceViewModel.clear();
+            bannerPlaceViewModel.loadBanners();
         }
-        InAppStoryManager.useCoreInSeparateThread(new UseIASCoreCallback() {
-            @Override
-            public void use(@NonNull IASCore core) {
-                core.bannersAPI().loadBannerPlace(localBannerPlace);
-            }
-        });
-    }*/
+    }
 
     public void loadCallback(BannerPlaceLoadCallback bannerPlaceLoadCallback) {
         if (bannerPlaceLoadCallback.bannerPlace() == null) {
