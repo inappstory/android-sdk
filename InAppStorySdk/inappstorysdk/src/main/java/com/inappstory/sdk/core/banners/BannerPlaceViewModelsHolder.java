@@ -104,6 +104,32 @@ public class BannerPlaceViewModelsHolder {
         return newVM;
     }
 
+    public void copyFromCache(String uniqueId, String bannerPlace) {
+        BannerPlaceViewModelKey emptyKey;
+        BannerPlaceState placeState = null;
+        IBannerPlaceViewModel uniqueVM = get(uniqueId, bannerPlace);
+        if (uniqueVM == null) return;
+        emptyKey = new BannerPlaceViewModelKey("", bannerPlace);
+        IBannerPlaceViewModel placeVM = null;
+        if (!uniqueId.isEmpty()) {
+            synchronized (lock) {
+                placeVM = viewModels.get(emptyKey);
+            }
+        }
+        if (placeVM != null)
+            placeState = placeVM.getCurrentBannerPlaceState();
+        if (!uniqueId.isEmpty() && placeState != null) {
+            uniqueVM.updateState(
+                    placeState
+                            .copy()
+                            .currentIndex(0)
+                            .iterationId(
+                                    UUID.randomUUID().toString()
+                            )
+            );
+        }
+    }
+
     public void reloadSession() {
         List<IBannerPlaceViewModel> placeViewModels;
         synchronized (lock) {

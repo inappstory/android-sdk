@@ -325,14 +325,16 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
             //TODO Log error
             return;
         }
-        initVM(skipCache);
         if (bannerPlaceViewModel != null) {
             bannerPlaceViewModel.clear();
+            if (!skipCache) {
+                core.widgetViewModels().bannerPlaceViewModels().copyFromCache(uniquePlaceId(), placeId);
+            }
             bannerPlaceViewModel.loadBanners();
         }
     }
 
-    private void initVM(final boolean skipCache) {
+    private void initVM() {
         if (initialized) return;
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
@@ -341,11 +343,7 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
                 BannerPlaceViewModelsHolder holder = core
                         .widgetViewModels()
                         .bannerPlaceViewModels();
-                if (skipCache) {
-                    bannerPlaceViewModel = holder.getOrCreateWithoutCopy(uniquePlaceId(), placeId);
-                } else {
-                    bannerPlaceViewModel = holder.getOrCreateWithCopy(uniquePlaceId(), placeId);
-                }
+                bannerPlaceViewModel = holder.getOrCreateWithoutCopy(uniquePlaceId(), placeId);
                 bannerPlaceViewModel.addSubscriberAndCheckLocal(BannerPlace.this);
                 initialized = true;
             }
@@ -411,6 +409,8 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
         this.placeId = placeId;
         if (placeId == null || placeId.isEmpty()) {
             deInitVM();
+        } else {
+            initVM();
         }
     }
 
@@ -418,7 +418,7 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
         if (placeId != null && !placeId.isEmpty()) {
-            initVM(false);
+            initVM();
         }
     }
 
