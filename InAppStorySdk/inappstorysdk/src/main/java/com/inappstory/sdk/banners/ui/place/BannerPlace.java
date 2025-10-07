@@ -74,7 +74,7 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
 
     private String customUniquePlaceId = null;
 
-    public void refreshBanners() {
+    public void reloadBanners() {
         loadBanners(true);
     }
 
