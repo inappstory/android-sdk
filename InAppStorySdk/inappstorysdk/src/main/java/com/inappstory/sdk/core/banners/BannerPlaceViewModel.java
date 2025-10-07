@@ -24,19 +24,19 @@ public class BannerPlaceViewModel implements IBannerPlaceViewModel {
             new Observable<>(new BannerPlaceState());
 
     private final IASCore core;
-    private final String bannerPlace;
+    private final String placeId;
     private final String uid = UUID.randomUUID().toString();
     private final List<String> tags = new ArrayList<>();
     private final String uniqueId;
     BannerViewModelsHolder bannerViewModelsHolder;
 
-    public BannerPlaceViewModel(IASCore core, String bannerPlace, String uniqueId) {
-        this.bannerPlace = bannerPlace;
+    public BannerPlaceViewModel(IASCore core, String placeId, String uniqueId) {
+        this.placeId = placeId;
         this.uniqueId = uniqueId;
         bannerViewModelsHolder = new BannerViewModelsHolder(core, this);
         this.core = core;
         addSubscriber(localObserver);
-        updateState(new BannerPlaceState().place(bannerPlace));
+        updateState(new BannerPlaceState().place(placeId));
     }
 
     private final Set<InnerBannerPlaceLoadCallback> callbacks = new HashSet<>();
@@ -137,7 +137,7 @@ public class BannerPlaceViewModel implements IBannerPlaceViewModel {
                 .get(
                         id,
                         index,
-                        bannerPlace
+                        placeId
                 );
     }
 
@@ -153,7 +153,7 @@ public class BannerPlaceViewModel implements IBannerPlaceViewModel {
         List<IBannerViewModel> bannerViewModels = new ArrayList<>();
         if (items == null) return bannerViewModels;
         for (IBanner banner : items) {
-            bannerViewModels.addAll(bannerViewModelsHolder.get(banner.id(), bannerPlace));
+            bannerViewModels.addAll(bannerViewModelsHolder.get(banner.id(), placeId));
         }
         return bannerViewModels;
     }
@@ -172,7 +172,7 @@ public class BannerPlaceViewModel implements IBannerPlaceViewModel {
         bannerDownloadManager.setMaxPriority(items.get(prevInd).id(), true);
         bannerDownloadManager.setMaxPriority(items.get(nextInd).id(), true);
         bannerDownloadManager.setMaxPriority(items.get(realIndex).id(), true);
-        bannerViewModelsHolder.get(items.get(realIndex).id(), index, bannerPlace);
+        bannerViewModelsHolder.get(items.get(realIndex).id(), index, placeId);
         List<IBannerViewModel> bannerViewModels = getBannerViewModels();
         for (IBannerViewModel bannerViewModel : bannerViewModels) {
             if (bannerViewModel.index() == index) {
@@ -210,7 +210,7 @@ public class BannerPlaceViewModel implements IBannerPlaceViewModel {
         if (bannerPlaceState != null) tags = bannerPlaceState.tags();
         bannerPlaceStateObservable.setValue(
                 new BannerPlaceState()
-                        .place(bannerPlace)
+                        .place(placeId)
                         .tags(tags)
         );
         bannerViewModelsHolder.clearViewModels();
@@ -236,7 +236,7 @@ public class BannerPlaceViewModel implements IBannerPlaceViewModel {
                 public void use(@NonNull IASCore core) {
                     core.bannersAPI().loadBannerPlace(
                             new BannerPlaceLoadSettings()
-                                    .placeId(bannerPlace)
+                                    .placeId(placeId)
                                     .uniqueId(uniqueId)
                                     .tags(
                                             tags.isEmpty() ? null :
@@ -249,13 +249,16 @@ public class BannerPlaceViewModel implements IBannerPlaceViewModel {
     }
 
     @Override
-    public void loadBanners() {
+    public void loadBanners(boolean skipCache) {
+        if (!skipCache) {
+            if (core.widgetViewModels().bannerPlaceViewModels().copyFromCache(uniqueId, placeId)) return;
+        }
         InAppStoryManager.useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
                 core.bannersAPI().loadBannerPlace(
                         new BannerPlaceLoadSettings()
-                                .placeId(bannerPlace)
+                                .placeId(placeId)
                                 .uniqueId(uniqueId)
                                 .tags(
                                         tags.isEmpty() ? null :

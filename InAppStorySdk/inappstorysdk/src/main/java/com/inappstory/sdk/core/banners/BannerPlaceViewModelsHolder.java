@@ -104,11 +104,11 @@ public class BannerPlaceViewModelsHolder {
         return newVM;
     }
 
-    public void copyFromCache(String uniqueId, String bannerPlace) {
+    public boolean copyFromCache(String uniqueId, String bannerPlace) {
         BannerPlaceViewModelKey emptyKey;
         BannerPlaceState placeState = null;
         IBannerPlaceViewModel uniqueVM = get(uniqueId, bannerPlace);
-        if (uniqueVM == null) return;
+        if (uniqueVM == null) return false;
         emptyKey = new BannerPlaceViewModelKey("", bannerPlace);
         IBannerPlaceViewModel placeVM = null;
         if (!uniqueId.isEmpty()) {
@@ -127,7 +127,9 @@ public class BannerPlaceViewModelsHolder {
                                     UUID.randomUUID().toString()
                             )
             );
+            return true;
         }
+        return false;
     }
 
     public void reloadSession() {

@@ -74,6 +74,10 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
 
     private String customUniquePlaceId = null;
 
+    public void refreshBanners() {
+        loadBanners(true);
+    }
+
     public void loadBanners() {
         loadBanners(false);
     }
@@ -327,10 +331,7 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
         }
         if (bannerPlaceViewModel != null) {
             bannerPlaceViewModel.clear();
-            if (!skipCache) {
-                core.widgetViewModels().bannerPlaceViewModels().copyFromCache(uniquePlaceId(), placeId);
-            }
-            bannerPlaceViewModel.loadBanners();
+            bannerPlaceViewModel.loadBanners(skipCache);
         }
     }
 
