@@ -22,10 +22,10 @@ import androidx.viewpager.widget.ViewPager;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.R;
-import com.inappstory.sdk.banners.BannerPlaceLoadSettings;
 import com.inappstory.sdk.banners.BannerPlaceNavigationCallback;
 import com.inappstory.sdk.banners.BannerPlaceLoadCallback;
 import com.inappstory.sdk.banners.ui.banner.BannerView;
+import com.inappstory.sdk.core.banners.BannerPlaceViewModelsHolder;
 import com.inappstory.sdk.core.banners.IBannerPlaceLoadCallback;
 import com.inappstory.sdk.banners.ICustomBannerPlaceholder;
 import com.inappstory.sdk.core.banners.InnerBannerPlaceLoadCallback;
@@ -75,10 +75,7 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
     private String customUniquePlaceId = null;
 
     public void loadBanners() {
-        if (bannerPlaceViewModel != null) {
-            bannerPlaceViewModel.clear();
-            bannerPlaceViewModel.loadBanners();
-        }
+        loadBanners(false);
     }
 
     public void loadCallback(BannerPlaceLoadCallback bannerPlaceLoadCallback) {
@@ -323,30 +320,43 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
 
     private boolean initialized = false;
 
-    private void init() {
+    public void loadBanners(boolean skipCache) {
+        if (placeId == null || placeId.isEmpty())  {
+            //TODO Log error
+            return;
+        }
+        initVM(skipCache);
+        if (bannerPlaceViewModel != null) {
+            bannerPlaceViewModel.clear();
+            bannerPlaceViewModel.loadBanners();
+        }
+    }
+
+    private void initVM(final boolean skipCache) {
         if (initialized) return;
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
                 BannerPlace.this.core = core;
-                bannerPlaceViewModel = core
+                BannerPlaceViewModelsHolder holder = core
                         .widgetViewModels()
-                        .bannerPlaceViewModels()
-                        .getOrCreateWithCopy(uniquePlaceId(), placeId);
-                // bannerPlaceViewModel.addBannerPlaceLoadCallback((InnerBannerPlaceLoadCallback) internalBannerPlaceLoadCallback);
+                        .bannerPlaceViewModels();
+                if (skipCache) {
+                    bannerPlaceViewModel = holder.getOrCreateWithoutCopy(uniquePlaceId(), placeId);
+                } else {
+                    bannerPlaceViewModel = holder.getOrCreateWithCopy(uniquePlaceId(), placeId);
+                }
                 bannerPlaceViewModel.addSubscriberAndCheckLocal(BannerPlace.this);
                 initialized = true;
             }
         });
     }
 
-    private void deInit() {
+    private void deInitVM() {
         initialized = false;
         if (bannerPlaceViewModel != null) {
             bannerPlaceViewModel.removeSubscriber(BannerPlace.this);
-            // bannerPlaceViewModel.removeBannerPlaceLoadCallback((InnerBannerPlaceLoadCallback) internalBannerPlaceLoadCallback);
             bannerPlaceViewModel.clearBanners();
-            //  bannerPlaceViewModel.clear();
             bannerPlaceViewModel = null;
         }
         currentLoadState = null;
@@ -392,17 +402,15 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
         IBannerPlaceViewModel bannerPlaceViewModel = localCore
                 .widgetViewModels()
                 .bannerPlaceViewModels()
-                .getOrCreateWithCopy(uniquePlaceId, placeId);
-        return bannerPlaceViewModel.hasSubscribers(this);
+                .get(uniquePlaceId, placeId);
+        return bannerPlaceViewModel != null && bannerPlaceViewModel.hasSubscribers(this);
     }
 
     public void setPlaceId(final String placeId) {
         if (Objects.equals(this.placeId, placeId)) return;
         this.placeId = placeId;
-        if (placeId != null && !placeId.isEmpty()) {
-            init();
-        } else {
-            deInit();
+        if (placeId == null || placeId.isEmpty()) {
+            deInitVM();
         }
     }
 
@@ -410,7 +418,7 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
         if (placeId != null && !placeId.isEmpty()) {
-            init();
+            initVM(false);
         }
     }
 

@@ -52,6 +52,27 @@ public class BannerPlaceViewModelsHolder {
         return bannerPlaceViewModels;
     }
 
+    public IBannerPlaceViewModel getOrCreateWithoutCopy(String uniqueId, String bannerPlace) {
+        IBannerPlaceViewModel newVM;
+        synchronized (lock) {
+            BannerPlaceViewModelKey key = new BannerPlaceViewModelKey(uniqueId, bannerPlace);
+            if (!viewModels.containsKey(key)) {
+                newVM = new BannerPlaceViewModel(core, bannerPlace, uniqueId);
+                viewModels.put(key, newVM);
+            } else {
+                newVM = viewModels.get(key);
+            }
+        }
+        return newVM;
+    }
+
+    public IBannerPlaceViewModel get(String uniqueId, String bannerPlace) {
+        synchronized (lock) {
+            BannerPlaceViewModelKey key = new BannerPlaceViewModelKey(uniqueId, bannerPlace);
+            return viewModels.get(key);
+        }
+    }
+
     public IBannerPlaceViewModel getOrCreateWithCopy(String uniqueId, String bannerPlace) {
         BannerPlaceViewModelKey emptyKey;
         BannerPlaceState placeState = null;
