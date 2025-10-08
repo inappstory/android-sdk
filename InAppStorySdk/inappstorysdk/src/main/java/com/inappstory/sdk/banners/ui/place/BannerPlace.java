@@ -53,26 +53,28 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
     private ICustomBannerPlaceAppearance customBannerPlace = new DefaultBannerPlaceAppearance();
     private String lastLaunchedTag = "";
 
-    private String defaultUniquePlaceId = UUID.randomUUID().toString();
+    private final String defaultUniqueId = UUID.randomUUID().toString();
 
-    public String uniquePlaceId() {
-        return customUniquePlaceId != null ? customUniquePlaceId : defaultUniquePlaceId;
+    public String uniqueId() {
+        return customUniqueId != null ? customUniqueId : defaultUniqueId;
     }
 
-    public void uniquePlaceId(String customUniquePlaceId) {
-        if (customUniquePlaceId == null || customUniquePlaceId.isEmpty()) {
+    public void uniqueId(String customUniqueId) {
+        if (customUniqueId == null || customUniqueId.isEmpty()) {
             //TODO Log error
             return;
         }
-        if (Objects.equals(this.customUniquePlaceId, customUniquePlaceId)) return;
-        if (checkViewModelForSubscribers(customUniquePlaceId)) {
+        if (Objects.equals(this.customUniqueId, customUniqueId)) return;
+        if (checkViewModelForSubscribers(customUniqueId)) {
             //TODO Log error
             return;
         }
-        this.customUniquePlaceId = customUniquePlaceId;
+        this.customUniqueId = customUniqueId;
+        if (bannerPlaceViewModel != null)
+            bannerPlaceViewModel.uniqueId(customUniqueId);
     }
 
-    private String customUniquePlaceId = null;
+    private String customUniqueId = null;
 
     public void reloadBanners() {
         loadBanners(true);
@@ -325,7 +327,7 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
     private boolean initialized = false;
 
     public void loadBanners(boolean skipCache) {
-        if (placeId == null || placeId.isEmpty())  {
+        if (placeId == null || placeId.isEmpty()) {
             //TODO Log error
             return;
         }
@@ -337,18 +339,10 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
 
     private void initVM() {
         if (initialized) return;
-        InAppStoryManager.useCore(new UseIASCoreCallback() {
-            @Override
-            public void use(@NonNull IASCore core) {
-                BannerPlace.this.core = core;
-                BannerPlaceViewModelsHolder holder = core
-                        .widgetViewModels()
-                        .bannerPlaceViewModels();
-                bannerPlaceViewModel = holder.getOrCreateWithoutCopy(uniquePlaceId(), placeId);
-                bannerPlaceViewModel.addSubscriberAndCheckLocal(BannerPlace.this);
-                initialized = true;
-            }
-        });
+        if (bannerPlaceViewModel != null) {
+            bannerPlaceViewModel.addSubscriberAndCheckLocal(BannerPlace.this);
+            initialized = true;
+        }
     }
 
     private void deInitVM() {
@@ -356,7 +350,6 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
         if (bannerPlaceViewModel != null) {
             bannerPlaceViewModel.removeSubscriber(BannerPlace.this);
             bannerPlaceViewModel.clearBanners();
-            bannerPlaceViewModel = null;
         }
         currentLoadState = null;
         bannerPager.setSaveFromParentEnabled(false);
@@ -401,7 +394,7 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
         IBannerPlaceViewModel bannerPlaceViewModel = localCore
                 .widgetViewModels()
                 .bannerPlaceViewModels()
-                .get(uniquePlaceId, placeId);
+                .get(uniquePlaceId);
         return bannerPlaceViewModel != null && bannerPlaceViewModel.hasSubscribers(this);
     }
 
@@ -418,9 +411,7 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
-        if (placeId != null && !placeId.isEmpty()) {
-            initVM();
-        }
+        resumeAutoscroll();
     }
 
     @Override
@@ -439,6 +430,7 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
     protected void onDetachedFromWindow() {
         // deInit();
         super.onDetachedFromWindow();
+        pauseAutoscroll();
     }
 
     public BannerPlace(@NonNull Context context) {
@@ -468,6 +460,16 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
         View.inflate(context, R.layout.cs_banner_widget, this);
         bannerPager = findViewById(R.id.banner_pager);
         bannerPager.addOnPageChangeListener(pageChangeListener);
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                BannerPlace.this.core = core;
+                BannerPlaceViewModelsHolder holder = core
+                        .widgetViewModels()
+                        .bannerPlaceViewModels();
+                bannerPlaceViewModel = holder.getOrCreate(uniqueId());
+            }
+        });
     }
 
     public void setAppearanceManager(AppearanceManager appearanceManager) {
@@ -525,7 +527,7 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
                                 core,
                                 new ArrayList<IBanner>(),
                                 placeId,
-                                uniquePlaceId(),
+                                uniqueId(),
                                 null,
                                 bannerPlaceLoadCallback,
                                 newValue.iterationId(),
@@ -577,7 +579,7 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
                                 core,
                                 items,
                                 placeId,
-                                uniquePlaceId(),
+                                uniqueId(),
                                 new ICustomBannerPlaceholder() {
                                     @Override
                                     public View onCreate(Context context) {

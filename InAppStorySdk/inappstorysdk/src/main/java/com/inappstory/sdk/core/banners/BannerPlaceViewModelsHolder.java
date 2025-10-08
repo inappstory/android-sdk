@@ -12,7 +12,7 @@ import java.util.Set;
 import java.util.UUID;
 
 public class BannerPlaceViewModelsHolder {
-    private Map<BannerPlaceViewModelKey, IBannerPlaceViewModel> viewModels = new HashMap<>();
+    private Map<String, IBannerPlaceViewModel> viewModels = new HashMap<>();
     private final Object lock = new Object();
     private final IASCore core;
 
@@ -21,104 +21,54 @@ public class BannerPlaceViewModelsHolder {
         this.core = core;
     }
 
-    public IBannerPlaceViewModel getById(String uniqueId) {
-        synchronized (lock) {
-            Set<BannerPlaceViewModelKey> keys = viewModels.keySet();
-            BannerPlaceViewModelKey searchKey = null;
-            for (BannerPlaceViewModelKey key : keys) {
-                if (Objects.equals(key.uniqueId, uniqueId)) {
-                    searchKey = key;
-                    break;
-                }
-            }
-            if (searchKey == null) return null;
-            return viewModels.get(searchKey);
+
+    public IBannerPlaceViewModel getContentPlaceViewModel(String bannerPlace) {
+        return get("ias_banner_place_" + bannerPlace);
+    }
+
+    public IBannerPlaceViewModel getOrCreateContentPlaceViewModel(String bannerPlace) {
+        return getOrCreate("ias_banner_place_" + bannerPlace);
+    }
+
+    public void changeKey(String oldKey, String newKey) {
+        if (viewModels.containsKey(oldKey)) {
+            viewModels.put(newKey, viewModels.remove(oldKey));
         }
     }
 
-    public IBannerPlaceViewModel getByBannerPlace(String bannerPlace) {
-        return getOrCreateWithCopy("", bannerPlace);
-    }
-
-
-    public Set<IBannerPlaceViewModel> getNonEmptyByBannerPlace(String bannerPlace) {
-        Set<BannerPlaceViewModelKey> keys = viewModels.keySet();
+    public Set<IBannerPlaceViewModel> getNonEmptyByPlaceId(String placeId) {
         Set<IBannerPlaceViewModel> bannerPlaceViewModels = new HashSet<>();
-        for (BannerPlaceViewModelKey key : keys) {
-            if (Objects.equals(key.bannerPlace, bannerPlace)) {
-                bannerPlaceViewModels.add(viewModels.get(key));
+        for (IBannerPlaceViewModel viewModel : viewModels.values()) {
+            if (Objects.equals(viewModel.placeId(), placeId)) {
+                bannerPlaceViewModels.add(viewModel);
             }
         }
         return bannerPlaceViewModels;
     }
 
-    public IBannerPlaceViewModel getOrCreateWithoutCopy(String uniqueId, String bannerPlace) {
-        IBannerPlaceViewModel newVM;
+    public IBannerPlaceViewModel get(String uniqueId) {
         synchronized (lock) {
-            BannerPlaceViewModelKey key = new BannerPlaceViewModelKey(uniqueId, bannerPlace);
-            if (!viewModels.containsKey(key)) {
-                newVM = new BannerPlaceViewModel(core, bannerPlace, uniqueId);
-                viewModels.put(key, newVM);
-            } else {
-                newVM = viewModels.get(key);
-            }
-        }
-        return newVM;
-    }
-
-    public IBannerPlaceViewModel get(String uniqueId, String bannerPlace) {
-        synchronized (lock) {
-            BannerPlaceViewModelKey key = new BannerPlaceViewModelKey(uniqueId, bannerPlace);
-            return viewModels.get(key);
+            return viewModels.get(uniqueId);
         }
     }
 
-    public IBannerPlaceViewModel getOrCreateWithCopy(String uniqueId, String bannerPlace) {
-        BannerPlaceViewModelKey emptyKey;
-        BannerPlaceState placeState = null;
-        IBannerPlaceViewModel newVM;
+    public IBannerPlaceViewModel getOrCreate(String uniqueId) {
         synchronized (lock) {
-            BannerPlaceViewModelKey key = new BannerPlaceViewModelKey(uniqueId, bannerPlace);
-            emptyKey = new BannerPlaceViewModelKey("", bannerPlace);
-            if (!viewModels.containsKey(key)) {
-                newVM = new BannerPlaceViewModel(core, bannerPlace, uniqueId);
-                viewModels.put(key, newVM);
-                if (!uniqueId.isEmpty()) {
-                    IBannerPlaceViewModel placeVM = viewModels.get(emptyKey);
-                    if (placeVM != null) placeState = placeVM.getCurrentBannerPlaceState();
-                }
-            } else {
-                newVM = viewModels.get(key);
+            if (!viewModels.containsKey(uniqueId)) {
+                viewModels.put(uniqueId, new BannerPlaceViewModel(core, uniqueId));
             }
+            return viewModels.get(uniqueId);
         }
-        if (!uniqueId.isEmpty() && placeState != null) {
-            newVM.updateState(
-                    placeState
-                            .copy()
-                            .currentIndex(0)
-                            .iterationId(
-                                    UUID.randomUUID().toString()
-                            )
-            );
-        }
-        return newVM;
     }
 
     public boolean copyFromCache(String uniqueId, String bannerPlace) {
-        BannerPlaceViewModelKey emptyKey;
         BannerPlaceState placeState = null;
-        IBannerPlaceViewModel uniqueVM = get(uniqueId, bannerPlace);
+        IBannerPlaceViewModel uniqueVM = get(uniqueId);
         if (uniqueVM == null) return false;
-        emptyKey = new BannerPlaceViewModelKey("", bannerPlace);
-        IBannerPlaceViewModel placeVM = null;
-        if (!uniqueId.isEmpty()) {
-            synchronized (lock) {
-                placeVM = viewModels.get(emptyKey);
-            }
-        }
+        IBannerPlaceViewModel placeVM = getContentPlaceViewModel(bannerPlace);
         if (placeVM != null)
             placeState = placeVM.getCurrentBannerPlaceState();
-        if (!uniqueId.isEmpty() && placeState != null) {
+        if (placeState != null) {
             uniqueVM.updateState(
                     placeState
                             .copy()

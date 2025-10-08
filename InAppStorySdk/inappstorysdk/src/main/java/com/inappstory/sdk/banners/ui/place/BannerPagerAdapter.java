@@ -82,8 +82,7 @@ public class BannerPagerAdapter extends PagerAdapter implements Observer<BannerS
                 .widgetViewModels()
                 .bannerPlaceViewModels()
                 .get(
-                        uniqueId,
-                        bannerPlace
+                        uniqueId
                 )
                 .getBannerViewModel(
                         bannerId,
@@ -117,7 +116,7 @@ public class BannerPagerAdapter extends PagerAdapter implements Observer<BannerS
         IBannerViewModel bannerViewModel = core
                 .widgetViewModels()
                 .bannerPlaceViewModels()
-                .get(uniqueId, bannerPlace)
+                .get(uniqueId)
                 .getBannerViewModel(bannerId, 0);
         bannerViewModel.addSubscriber(this);
     }
@@ -132,11 +131,10 @@ public class BannerPagerAdapter extends PagerAdapter implements Observer<BannerS
         int bannerId = banner.id();
 
         IBannerViewModel bannerViewModel = core
-                .widgetViewModels().bannerPlaceViewModels()
-                .get(
-                        uniqueId,
-                        bannerPlace
-                ).getBannerViewModel(bannerId, 0);
+                .widgetViewModels()
+                .bannerPlaceViewModels()
+                .get(uniqueId)
+                .getBannerViewModel(bannerId, 0);
         bannerViewModel.removeSubscriber(this);
     }
 

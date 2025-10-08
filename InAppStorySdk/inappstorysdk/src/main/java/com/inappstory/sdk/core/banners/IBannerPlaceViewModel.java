@@ -7,6 +7,10 @@ import java.util.List;
 public interface IBannerPlaceViewModel {
     BannerPlaceState getCurrentBannerPlaceState();
 
+    String placeId();
+
+    void uniqueId(String uniqueId);
+
     void loadBanners(boolean skipCache);
 
     IBannerViewModel getBannerViewModel(int id, int index);

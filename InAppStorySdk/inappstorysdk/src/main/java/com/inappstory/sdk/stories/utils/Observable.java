@@ -36,6 +36,19 @@ public class Observable<T> {
         return true;
     }
 
+
+    public boolean subscribeAndGetValueForced(final Observer<T> listener) {
+        synchronized (listenerLock) {
+            if (listeners.contains(listener)) {
+                listener.onUpdate(value);
+                return false;
+            }
+            listeners.add(listener);
+        }
+        listener.onUpdate(value);
+        return true;
+    }
+
     public void unsubscribe(Observer<T> listener) {
         synchronized (listenerLock) {
             listeners.remove(listener);

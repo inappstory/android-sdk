@@ -16,6 +16,7 @@ import com.inappstory.sdk.stories.utils.SingleTimeEvent;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
@@ -24,19 +25,43 @@ public class BannerPlaceViewModel implements IBannerPlaceViewModel {
             new Observable<>(new BannerPlaceState());
 
     private final IASCore core;
-    private final String placeId;
+    private String placeId;
     private final String uid = UUID.randomUUID().toString();
+
+    public void tags(List<String> tags) {
+        this.tags.clear();
+        this.tags.addAll(tags);
+        updateState(new BannerPlaceState().tags(tags));
+    }
+
     private final List<String> tags = new ArrayList<>();
-    private final String uniqueId;
+    private String uniqueId;
     BannerViewModelsHolder bannerViewModelsHolder;
 
-    public BannerPlaceViewModel(IASCore core, String placeId, String uniqueId) {
-        this.placeId = placeId;
+    public BannerPlaceViewModel(IASCore core, String uniqueId) {
         this.uniqueId = uniqueId;
         bannerViewModelsHolder = new BannerViewModelsHolder(core, this);
         this.core = core;
         addSubscriber(localObserver);
-        updateState(new BannerPlaceState().place(placeId));
+    }
+
+    public void placeId(String placeId) {
+        this.placeId = placeId;
+        updateState(new BannerPlaceState().placeId(placeId));
+    }
+
+    public String placeId() {
+        return this.placeId;
+    }
+
+
+    public void uniqueId(String uniqueId) {
+        if (uniqueId == null || uniqueId.isEmpty()) return;
+        if (Objects.equals(this.uniqueId, uniqueId)) return;
+        if (this.uniqueId != null) {
+            core.widgetViewModels().bannerPlaceViewModels().changeKey(this.uniqueId, uniqueId);
+        }
+        this.uniqueId = uniqueId;
     }
 
     private final Set<InnerBannerPlaceLoadCallback> callbacks = new HashSet<>();
@@ -123,7 +148,7 @@ public class BannerPlaceViewModel implements IBannerPlaceViewModel {
 
     @Override
     public void addSubscriberAndCheckLocal(Observer<BannerPlaceState> observer) {
-        this.bannerPlaceStateObservable.subscribeAndGetValue(observer);
+        this.bannerPlaceStateObservable.subscribeAndGetValueForced(observer);
     }
 
     @Override
@@ -207,10 +232,14 @@ public class BannerPlaceViewModel implements IBannerPlaceViewModel {
     public void clear() {
         BannerPlaceState bannerPlaceState = bannerPlaceStateObservable.getValue();
         List<String> tags = null;
-        if (bannerPlaceState != null) tags = bannerPlaceState.tags();
+        String placeId = "";
+        if (bannerPlaceState != null) {
+            tags = bannerPlaceState.tags();
+            placeId = bannerPlaceState.placeId();
+        }
         bannerPlaceStateObservable.setValue(
                 new BannerPlaceState()
-                        .place(placeId)
+                        .placeId(placeId)
                         .tags(tags)
         );
         bannerViewModelsHolder.clearViewModels();
@@ -251,7 +280,8 @@ public class BannerPlaceViewModel implements IBannerPlaceViewModel {
     @Override
     public void loadBanners(boolean skipCache) {
         if (!skipCache) {
-            if (core.widgetViewModels().bannerPlaceViewModels().copyFromCache(uniqueId, placeId)) return;
+            if (core.widgetViewModels().bannerPlaceViewModels().copyFromCache(uniqueId, placeId))
+                return;
         }
         InAppStoryManager.useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
