@@ -133,6 +133,33 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
         );
     }
 
+    @Override
+    public void onCardLoadingStateChange(int state, String reason) {
+
+    }
+
+    @Override
+    public void onEvent(String name, String event) {
+        if (name == null || name.isEmpty()) return;
+        switch (name) {
+            case "showSlide":
+                if (event == null || event.isEmpty()) return;
+                ShowSlideJSPayload showSlideJSPayload = JsonParser.fromJson(
+                        event,
+                        ShowSlideJSPayload.class
+                );
+                if (showSlideJSPayload != null) {
+                    slideStateObservable.updateValue(
+                            slideStateObservable
+                                    .getValue()
+                                    .copy()
+                                    .slideIndex(showSlideJSPayload.index)
+                    );
+                }
+                break;
+        }
+    }
+
 
     @Override
     public ContentIdWithIndex iamId() {
@@ -483,10 +510,10 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
                         .cardAppearance(readerContent.inAppMessageAppearance().cardAppearance())
                         .contentStatus(2)
         );
-        for (Integer slide: loadedSlides) {
+        for (Integer slide : loadedSlides) {
             slideLoadSuccess(slide);
         }
-        for (Integer slide: errorSlides) {
+        for (Integer slide : errorSlides) {
             slideLoadError(slide);
         }
     }

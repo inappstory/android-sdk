@@ -46,6 +46,15 @@ public class IAMReaderJavascriptInterface {
         slideViewModel.sendApiRequest(data);
     }
 
+    @JavascriptInterface
+    public void onCardLoadingStateChange(int state, String reason) {
+        slideViewModel.onCardLoadingStateChange(state, reason);
+    }
+
+    @JavascriptInterface
+    public void onEvent(String name, String event) {
+        slideViewModel.onEvent(name, event);
+    }
 
     @JavascriptInterface
     public void vibrate(int[] vibratePattern) {

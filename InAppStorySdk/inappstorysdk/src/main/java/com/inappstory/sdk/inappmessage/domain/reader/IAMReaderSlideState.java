@@ -10,6 +10,7 @@ public class IAMReaderSlideState {
 
     int slideJSStatus = 0; //0 - none, 1 - loaded, 2 - started, 3 - paused?
 
+
     boolean renderReady = false;
 
     List<String> slides = new ArrayList<>();

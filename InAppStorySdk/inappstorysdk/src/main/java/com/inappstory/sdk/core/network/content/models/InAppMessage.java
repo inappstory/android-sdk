@@ -45,6 +45,9 @@ public class InAppMessage implements IInAppMessage {
     @SerializedName("slides")
     public List<InAppMessageSlide> slides;
 
+    @SerializedName("slides_html")
+    public List<String> slidesHtml;
+
     @SerializedName("campaign_name")
     public String campaignName;
 
