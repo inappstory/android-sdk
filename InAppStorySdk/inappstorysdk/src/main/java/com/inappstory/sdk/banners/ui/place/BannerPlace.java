@@ -340,6 +340,7 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
     private void initVM() {
         if (initialized) return;
         if (bannerPlaceViewModel != null) {
+            bannerPlaceViewModel.placeId(placeId);
             bannerPlaceViewModel.addSubscriberAndCheckLocal(BannerPlace.this);
             initialized = true;
         }
@@ -348,6 +349,7 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
     private void deInitVM() {
         initialized = false;
         if (bannerPlaceViewModel != null) {
+            bannerPlaceViewModel.placeId(null);
             bannerPlaceViewModel.removeSubscriber(BannerPlace.this);
             bannerPlaceViewModel.clearBanners();
         }

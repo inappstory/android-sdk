@@ -11,6 +11,8 @@ public interface IBannerPlaceViewModel {
 
     void uniqueId(String uniqueId);
 
+    void placeId(String placeId);
+
     void loadBanners(boolean skipCache);
 
     IBannerViewModel getBannerViewModel(int id, int index);
