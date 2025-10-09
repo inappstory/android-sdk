@@ -18,6 +18,7 @@ import com.inappstory.sdk.core.network.content.usecase.BannerPlaceUseCase;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.BannerData;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -43,28 +44,26 @@ public class IASBannersImpl implements IASBanners {
         }
         final String placeId = settings.placeId();
         final String uniqueId = settings.uniqueId() != null ? settings.uniqueId() : "";
-        final IBannerPlaceViewModel bannerPagerViewModel =
-                core
-                        .widgetViewModels()
-                        .bannerPlaceViewModels()
-                        .getOrCreateContentPlaceViewModel(placeId);
+        final IBannerPlaceViewModel bannerPlaceViewModel = core
+                .widgetViewModels()
+                .bannerPlaceViewModels()
+                .getOrCreateContentPlaceViewModel(placeId);
         if (settingsHolder.anonymous()) {
 
-            bannerPagerViewModel.updateState(
-                    bannerPagerViewModel.getCurrentBannerPlaceState()
+            bannerPlaceViewModel.updateState(
+                    bannerPlaceViewModel.getCurrentBannerPlaceState()
                             .copy()
                             .items(new ArrayList<IBanner>())
                             .loadState(
                                     BannerPlaceLoadStates.EMPTY)
             );
-            if (uniqueId.isEmpty()) {
-                updateStateForAllRelatives(
-                        placeId,
-                        new ArrayList<IBanner>(),
-                        null,
-                        BannerPlaceLoadStates.EMPTY
-                );
-            }
+            updateStateForAllRelatives(
+                    placeId,
+                    uniqueId,
+                    new ArrayList<IBanner>(),
+                    null,
+                    BannerPlaceLoadStates.EMPTY
+            );
             InAppStoryManager.showELog(
                     IAS_ERROR_TAG,
                     "Banners are unavailable for anonymous mode"
@@ -76,7 +75,7 @@ public class IASBannersImpl implements IASBanners {
                 placeId,
                 settings.tags()
         );
-        bannerPagerViewModel.updateState(
+        bannerPlaceViewModel.updateState(
                 new BannerPlaceState()
                         .placeId(placeId)
                         .tags(settings.tags())
@@ -84,68 +83,65 @@ public class IASBannersImpl implements IASBanners {
                                 BannerPlaceLoadStates.LOADING
                         )
         );
-        if (uniqueId.isEmpty()) {
-            updateStateForAllRelatives(
-                    placeId,
-                    null,
-                    settings.tags(),
-                    BannerPlaceLoadStates.LOADING
-            );
-        }
+        updateStateForAllRelatives(
+                placeId,
+                uniqueId,
+                null,
+                settings.tags(),
+                BannerPlaceLoadStates.LOADING
+        );
         bannerPlaceUseCase.get(new BannerPlaceUseCaseCallback() {
             @Override
             public void success(List<IBanner> content) {
-                BannerPlaceState state = bannerPagerViewModel.getCurrentBannerPlaceState()
+                BannerPlaceState state = bannerPlaceViewModel.getCurrentBannerPlaceState()
                         .copy()
                         .iterationId(UUID.randomUUID().toString())
                         .items(content)
                         .loadState(
                                 content.isEmpty() ? BannerPlaceLoadStates.EMPTY : BannerPlaceLoadStates.LOADED);
-                bannerPagerViewModel.updateState(state);
-                if (uniqueId.isEmpty()) {
-                    updateStateForAllRelatives(
-                            placeId,
-                            content,
-                            null,
-                            content.isEmpty() ? BannerPlaceLoadStates.EMPTY : BannerPlaceLoadStates.LOADED
-                    );
-                }
+                bannerPlaceViewModel.updateState(state);
+
+                updateStateForAllRelatives(
+                        placeId,
+                        uniqueId,
+                        content,
+                        null,
+                        content.isEmpty() ? BannerPlaceLoadStates.EMPTY : BannerPlaceLoadStates.LOADED
+                );
             }
 
             @Override
             public void isEmpty() {
-                BannerPlaceState state = bannerPagerViewModel.getCurrentBannerPlaceState()
+                BannerPlaceState state = bannerPlaceViewModel.getCurrentBannerPlaceState()
                         .copy()
                         .items(new ArrayList<IBanner>())
                         .loadState(
                                 BannerPlaceLoadStates.EMPTY);
-                bannerPagerViewModel.updateState(state);
-                if (uniqueId.isEmpty()) {
-                    updateStateForAllRelatives(
-                            placeId,
-                            new ArrayList<IBanner>(),
-                            null,
-                            BannerPlaceLoadStates.EMPTY
-                    );
-                }
+                bannerPlaceViewModel.updateState(state);
+                updateStateForAllRelatives(
+                        placeId,
+                        uniqueId,
+                        new ArrayList<IBanner>(),
+                        null,
+                        BannerPlaceLoadStates.EMPTY
+                );
             }
 
             @Override
             public void error() {
-                BannerPlaceState state = bannerPagerViewModel.getCurrentBannerPlaceState()
+                BannerPlaceState state = bannerPlaceViewModel.getCurrentBannerPlaceState()
                         .copy()
                         .items(new ArrayList<IBanner>())
                         .loadState(
                                 BannerPlaceLoadStates.FAILED);
-                bannerPagerViewModel.updateState(state);
-                if (uniqueId.isEmpty()) {
-                    updateStateForAllRelatives(
-                            placeId,
-                            new ArrayList<IBanner>(),
-                            null,
-                            BannerPlaceLoadStates.FAILED
-                    );
-                }
+                bannerPlaceViewModel.updateState(state);
+                updateStateForAllRelatives(
+                        placeId,
+                        uniqueId,
+                        new ArrayList<IBanner>(),
+                        null,
+                        BannerPlaceLoadStates.FAILED
+                );
             }
         });
     }
@@ -169,16 +165,10 @@ public class IASBannersImpl implements IASBanners {
                 placeId,
                 settings.tags()
         );
-        final IBannerPlaceViewModel bannerPlaceViewModel =
-                uniqueId.isEmpty() ?
-                        core
-                                .widgetViewModels()
-                                .bannerPlaceViewModels()
-                                .getOrCreateContentPlaceViewModel(placeId) :
-                        core
-                                .widgetViewModels()
-                                .bannerPlaceViewModels()
-                                .getOrCreate(placeId);
+        final IBannerPlaceViewModel bannerPlaceViewModel = core
+                .widgetViewModels()
+                .bannerPlaceViewModels()
+                .getOrCreateContentPlaceViewModel(placeId);
         bannerPlaceViewModel.updateState(
                 new BannerPlaceState()
                         .placeId(placeId)
@@ -187,14 +177,13 @@ public class IASBannersImpl implements IASBanners {
                                 BannerPlaceLoadStates.LOADING
                         )
         );
-        if (uniqueId.isEmpty()) {
-            updateStateForAllRelatives(
-                    placeId,
-                    null,
-                    settings.tags(),
-                    BannerPlaceLoadStates.LOADING
-            );
-        }
+        updateStateForAllRelatives(
+                placeId,
+                uniqueId,
+                null,
+                settings.tags(),
+                BannerPlaceLoadStates.LOADING
+        );
         bannerPlaceUseCase.get(new BannerPlaceUseCaseCallback() {
             @Override
             public void success(List<IBanner> content) {
@@ -218,15 +207,13 @@ public class IASBannersImpl implements IASBanners {
                         .loadState(
                                 content.isEmpty() ? BannerPlaceLoadStates.EMPTY : BannerPlaceLoadStates.LOADED);
                 bannerPlaceViewModel.updateState(state);
-
-                if (uniqueId.isEmpty()) {
-                    updateStateForAllRelatives(
-                            placeId,
-                            content,
-                            null,
-                            content.isEmpty() ? BannerPlaceLoadStates.EMPTY : BannerPlaceLoadStates.LOADED
-                    );
-                }
+                updateStateForAllRelatives(
+                        placeId,
+                        uniqueId,
+                        content,
+                        null,
+                        content.isEmpty() ? BannerPlaceLoadStates.EMPTY : BannerPlaceLoadStates.LOADED
+                );
                 List<IBannerViewModel> bannerViewModels = bannerPlaceViewModel.getBannerViewModels();
                 for (IBannerViewModel bannerViewModel : bannerViewModels) {
                     bannerViewModel.loadContent(
@@ -244,14 +231,13 @@ public class IASBannersImpl implements IASBanners {
                         .loadState(
                                 BannerPlaceLoadStates.EMPTY);
                 bannerPlaceViewModel.updateState(state);
-                if (uniqueId.isEmpty()) {
-                    updateStateForAllRelatives(
-                            placeId,
-                            new ArrayList<IBanner>(),
-                            null,
-                            BannerPlaceLoadStates.EMPTY
-                    );
-                }
+                updateStateForAllRelatives(
+                        placeId,
+                        uniqueId,
+                        new ArrayList<IBanner>(),
+                        null,
+                        BannerPlaceLoadStates.EMPTY
+                );
             }
 
             @Override
@@ -262,28 +248,39 @@ public class IASBannersImpl implements IASBanners {
                         .loadState(
                                 BannerPlaceLoadStates.FAILED);
                 bannerPlaceViewModel.updateState(state);
-                if (uniqueId.isEmpty()) {
-                    updateStateForAllRelatives(
-                            placeId,
-                            new ArrayList<IBanner>(),
-                            null,
-                            BannerPlaceLoadStates.FAILED
-                    );
-                }
+                updateStateForAllRelatives(
+                        placeId,
+                        uniqueId,
+                        new ArrayList<IBanner>(),
+                        null,
+                        BannerPlaceLoadStates.FAILED
+                );
             }
         });
     }
 
     private void updateStateForAllRelatives(
             String placeId,
+            String uniqueId,
             List<IBanner> items,
             List<String> tags,
             BannerPlaceLoadStates loadState
     ) {
-        Set<IBannerPlaceViewModel> bannerPlaceViewModels = core.
-                widgetViewModels().
-                bannerPlaceViewModels().
-                getNonEmptyByPlaceId(placeId);
+        Set<IBannerPlaceViewModel> bannerPlaceViewModels = new HashSet<>();
+        if (uniqueId == null || uniqueId.isEmpty()) {
+            bannerPlaceViewModels.addAll(
+                    core.
+                            widgetViewModels().
+                            bannerPlaceViewModels().
+                            getNonEmptyByPlaceId(placeId)
+            );
+        } else {
+            IBannerPlaceViewModel placeViewModel = core.widgetViewModels().bannerPlaceViewModels().get(uniqueId);
+            if (placeViewModel != null && placeViewModel.placeId().equals(placeId))
+                bannerPlaceViewModels.add(
+                        placeViewModel
+                );
+        }
         for (IBannerPlaceViewModel bannerPlaceViewModel : bannerPlaceViewModels) {
             BannerPlaceState state = bannerPlaceViewModel.getCurrentBannerPlaceState().copy();
             if (tags != null) {
