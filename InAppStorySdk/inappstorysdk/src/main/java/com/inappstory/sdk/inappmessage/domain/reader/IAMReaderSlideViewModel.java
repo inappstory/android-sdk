@@ -525,6 +525,7 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
                 errorSlides.add(i);
             }
         }
+        readerViewModel.updateCurrentLoadState(IAMReaderLoadStates.RENDER_READY);
         slideStateObservable.updateValue(
                 slideStateObservable
                         .getValue()

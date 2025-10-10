@@ -267,15 +267,15 @@ public class InAppMessageMainFragment extends Fragment implements Observer<IAMRe
             case ASSETS_LOADING:
                 break;
         }
-        if (Objects.requireNonNull(newState) == IAMReaderLoadStates.CONTENT_LOADED) {
+        if (Objects.requireNonNull(newState) == IAMReaderLoadStates.RENDER_READY) {
             if (currentUIState != IAMReaderUIStates.OPENED &&
                     currentUIState != IAMReaderUIStates.OPENING) {
                 readerViewModel.updateCurrentUiState(IAMReaderUIStates.OPENING);
             }
             //contentContainer.clearContentBackground();
-            if (!contentIsPreloaded && contentContainer != null) {
+           /* if (!contentIsPreloaded && contentContainer != null) {
                 contentContainer.hideLoader();
-            }
+            }*/
         } else if (Objects.requireNonNull(newState) == IAMReaderLoadStates.CONTENT_FAILED) {
             readerViewModel.updateCurrentUiState(IAMReaderUIStates.CLOSING);
         }
