@@ -19,9 +19,14 @@ import java.util.concurrent.TimeUnit;
 
 public class IASStatisticStoriesV1Impl implements IASStatisticStoriesV1 {
 
-    public IASStatisticStoriesV1Impl(IASCore core, boolean disabled) {
+    private String userId;
+    private String locale;
+
+    public IASStatisticStoriesV1Impl(IASCore core, String userId, String locale, boolean disabled) {
         this.core = core;
         this.disabled = disabled;
+        this.userId = userId;
+        this.locale = locale;
     }
 
     private final IASCore core;
@@ -166,7 +171,11 @@ public class IASStatisticStoriesV1Impl implements IASStatisticStoriesV1 {
                                 "api_session_update"
                         );
                         core.network().enqueue(
-                                core.network().getApi().sessionUpdate(statisticSendObject),
+                                core.network().getApi().sessionUpdate(
+                                        statisticSendObject,
+                                        userId,
+                                        locale
+                                ),
                                 new NetworkCallback<SessionResponse>() {
                                     @Override
                                     public void onSuccess(SessionResponse response) {

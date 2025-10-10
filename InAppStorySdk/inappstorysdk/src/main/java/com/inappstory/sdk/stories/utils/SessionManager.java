@@ -14,7 +14,6 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
-import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
@@ -280,6 +279,7 @@ public class SessionManager {
                                         core.statistic().profiling().setReady(sessionOpenUID);
                                         CachedSessionData cachedSessionData = new CachedSessionData();
                                         cachedSessionData.userId = currentSessionParameters.userId();
+                                        cachedSessionData.locale = currentSessionParameters.locale();
                                         cachedSessionData.placeholders = response.placeholders;
                                         cachedSessionData.previewAspectRatio = response.getPreviewAspectRatio();
                                         cachedSessionData.isAllowUGC = response.isAllowUgc;

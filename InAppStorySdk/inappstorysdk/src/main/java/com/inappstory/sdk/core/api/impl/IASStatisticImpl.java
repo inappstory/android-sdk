@@ -7,6 +7,7 @@ import com.inappstory.sdk.core.api.IASStatisticIAMV1;
 import com.inappstory.sdk.core.api.IASStatisticProfiling;
 import com.inappstory.sdk.core.api.IASStatisticStoriesV1;
 import com.inappstory.sdk.core.api.IASStatisticStoriesV2;
+import com.inappstory.sdk.stories.api.models.CachedSessionData;
 import com.inappstory.sdk.stories.statistic.GetStatisticV1Callback;
 import com.inappstory.sdk.stories.statistic.IASStatisticIAMV1Impl;
 import com.inappstory.sdk.stories.statistic.IASStatisticProfilingImpl;
@@ -37,9 +38,17 @@ public class IASStatisticImpl implements IASStatistic {
 
 
     @Override
-    public void createV1(String sessionId, boolean disabled) {
+    public void createV1(CachedSessionData sessionData, boolean disabled) {
         synchronized (v1Lock) {
-            iasStatisticStoriesV1Map.put(sessionId, new IASStatisticStoriesV1Impl(core, disabled));
+            iasStatisticStoriesV1Map.put(
+                    sessionData.sessionId,
+                    new IASStatisticStoriesV1Impl(
+                            core,
+                            sessionData.userId,
+                            sessionData.locale,
+                            disabled
+                    )
+            );
         }
     }
 

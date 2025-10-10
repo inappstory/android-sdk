@@ -305,7 +305,10 @@ public interface ApiInterface {
 
     @POST("v2/session/update")
     Request sessionUpdate(
-            @Body StatisticSendObject request);
+            @Body StatisticSendObject request,
+            @ReplaceHeader(HeadersKeys.USER_ID) String xUserId,
+            @ReplaceHeader(HeadersKeys.ACCEPT_LANGUAGE) String lang
+    );
 
     @POST("v2/session/close")
     Request sessionClose(

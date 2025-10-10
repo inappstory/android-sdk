@@ -58,7 +58,7 @@ public class SessionHolder implements ISessionHolder {
         synchronized (sessionLock) {
             this.sessionData = sessionData;
             if (sessionData != null && sessionData.sessionId != null) {
-                core.statistic().createV1(sessionData.sessionId, v1Disabled);
+                core.statistic().createV1(sessionData, v1Disabled);
             }
             core.statistic().clearViewedIds();
         }
