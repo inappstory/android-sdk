@@ -65,7 +65,9 @@ public class FullscreenContentContainer extends IAMContentContainer<InAppMessage
         );
         content.setBackground(appearance.backgroundDrawable());
         generateLoader(backgroundColor);
+        generateRefresh();
         container.addView(loaderContainer);
+        container.addView(refreshContainer);
         if (closeEnabled) {
             switch (appearance.closeButtonPosition()) {
                 case 0:

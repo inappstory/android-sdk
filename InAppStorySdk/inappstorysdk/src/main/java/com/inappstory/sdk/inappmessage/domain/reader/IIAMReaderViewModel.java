@@ -11,6 +11,7 @@ public interface IIAMReaderViewModel {
     IIAMReaderSlideViewModel slideViewModel();
     IAMReaderState getCurrentState();
     void updateCurrentUiState(IAMReaderUIStates newState);
+    void updateCurrentLoaderState(IAMReaderLoaderStates newState);
     void updateCurrentLoadState(IAMReaderLoadStates newState);
 
     void clear();

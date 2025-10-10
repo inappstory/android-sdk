@@ -122,6 +122,15 @@ public class IAMReaderViewModel implements IIAMReaderViewModel {
     }
 
     @Override
+    public void updateCurrentLoaderState(IAMReaderLoaderStates newState) {
+        this.readerStateObservable.updateValue(
+                this.readerStateObservable.getValue()
+                        .copy()
+                        .loaderState(newState)
+        );
+    }
+
+    @Override
     public void updateCurrentLoadState(IAMReaderLoadStates newState) {
         this.readerStateObservable.updateValue(
                 this.readerStateObservable.getValue()

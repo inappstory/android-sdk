@@ -22,6 +22,7 @@ import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.ui.screens.inappmessagereader.BaseIAMScreen;
 import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderLoadStates;
+import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderLoaderStates;
 import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderState;
 import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderUIStates;
 import com.inappstory.sdk.inappmessage.domain.reader.IIAMReaderViewModel;
@@ -38,6 +39,7 @@ import java.util.Objects;
 
 public class InAppMessageMainFragment extends Fragment implements Observer<IAMReaderState>, BaseIAMScreen {
     private IAMReaderLoadStates currentLoadState = IAMReaderLoadStates.EMPTY;
+    private IAMReaderLoaderStates currentLoaderState = IAMReaderLoaderStates.EMPTY;
     private IAMReaderUIStates currentUIState = IAMReaderUIStates.CLOSED;
     private IIAMReaderViewModel readerViewModel;
     private boolean showOnlyIfLoaded;
@@ -146,6 +148,7 @@ public class InAppMessageMainFragment extends Fragment implements Observer<IAMRe
         contentContainer.showWithAnimation();
     }
 
+
     public void hideContainerWithAnimation() {
         contentContainer.closeWithAnimation();
     }
@@ -176,6 +179,7 @@ public class InAppMessageMainFragment extends Fragment implements Observer<IAMRe
         if (readerViewModel == null) return;
         if (!contentIsPreloaded) {
             readerViewModel.updateCurrentUiState(IAMReaderUIStates.OPENING);
+            readerViewModel.updateCurrentLoaderState(IAMReaderLoaderStates.LOADING);
         }
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
@@ -206,9 +210,30 @@ public class InAppMessageMainFragment extends Fragment implements Observer<IAMRe
                 if (newValue.loadState != currentLoadState) {
                     loadStateIsChanged(newValue.loadState);
                 }
+                if (newValue.loaderState != currentLoaderState) {
+                    loaderStateChanged(newValue.loaderState);
+                }
             }
         });
 
+    }
+
+    private void loaderStateChanged(IAMReaderLoaderStates state) {
+        currentLoaderState = state;
+        switch (state) {
+            case EMPTY:
+                break;
+            case FAILED:
+                contentContainer.showRefresh();
+                break;
+            case LOADED:
+                contentContainer.hideLoader();
+                contentContainer.hideRefresh();
+                break;
+            case LOADING:
+                contentContainer.showLoader();
+                break;
+        }
     }
 
     private void uiStateIsChanged(IAMReaderUIStates uiState) {

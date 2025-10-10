@@ -135,7 +135,19 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
 
     @Override
     public void onCardLoadingStateChange(int state, String reason) {
-
+        switch (state) {
+            case 0:
+                readerViewModel.updateCurrentLoaderState(IAMReaderLoaderStates.LOADING);
+                break;
+            case 1:
+                readerViewModel.updateCurrentLoaderState(IAMReaderLoaderStates.LOADED);
+                break;
+            case 2:
+                readerViewModel.updateCurrentLoaderState(IAMReaderLoaderStates.FAILED);
+                break;
+            default:
+                break;
+        }
     }
 
     @Override
@@ -448,15 +460,23 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
 
     }
 
+    private final Object steLock = new Object();
+
+    private final List<STETypeAndData> queuedSTEs = new ArrayList<>();
+
+
     @Override
     public void slideLoadError(int index) {
-        singleTimeEvents.updateValue(
-                new STETypeAndData(
-                        STEDataType.SLIDE_IN_CACHE,
-                        new SlideInCacheData()
-                                .index(index).status(0)
-                )
+        STETypeAndData steTypeAndData = new STETypeAndData(
+                STEDataType.SLIDE_IN_CACHE,
+                new SlideInCacheData()
+                        .index(index).status(0)
         );
+        if (slideStateObservable.getValue().renderReady()) {
+            singleTimeEvents.updateValue(
+                    steTypeAndData
+            );
+        }
     }
 
     @Override
@@ -466,13 +486,16 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
 
     @Override
     public void slideLoadSuccess(int index) {
-        singleTimeEvents.updateValue(
-                new STETypeAndData(
-                        STEDataType.SLIDE_IN_CACHE,
-                        new SlideInCacheData()
-                                .index(index).status(1)
-                )
+        STETypeAndData steTypeAndData = new STETypeAndData(
+                STEDataType.SLIDE_IN_CACHE,
+                new SlideInCacheData()
+                        .index(index).status(1)
         );
+        if (slideStateObservable.getValue().renderReady()) {
+            singleTimeEvents.updateValue(
+                    steTypeAndData
+            );
+        }
     }
 
     @Override
@@ -495,7 +518,7 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
         List<Integer> errorSlides = new ArrayList<>();
         for (int i = 0; i < readerContent.actualSlidesCount(); i++) {
             slides.add(converter.replaceSlide(readerContent.slideByIndex(i), readerContent, i));
-            int loadStatus = downloadManager.isSlideLoaded(readerContent.id(), i, ContentType.BANNER);
+            int loadStatus = downloadManager.isSlideLoaded(readerContent.id(), i, ContentType.IN_APP_MESSAGE);
             if (loadStatus == 1) {
                 loadedSlides.add(i);
             } else if (loadStatus == -1) {
@@ -507,6 +530,7 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
                         .getValue()
                         .copy()
                         .slides(slides)
+                        .renderReady(true)
                         .cardAppearance(readerContent.inAppMessageAppearance().cardAppearance())
                         .contentStatus(2)
         );
@@ -525,6 +549,7 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
             if (state == null || state.iamId == null) return;
             readerViewModel.updateCurrentLoadState(IAMReaderLoadStates.ASSETS_LOADED);
             InAppMessageDownloadManager downloadManager = core.contentLoader().inAppMessageDownloadManager();
+            downloadManager.addInAppMessageTask(state.iamId, null);
             downloadManager.addInAppMessageTask(state.iamId, null);
         }
 

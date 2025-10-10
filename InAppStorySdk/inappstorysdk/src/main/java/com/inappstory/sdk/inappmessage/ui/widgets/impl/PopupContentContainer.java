@@ -67,7 +67,9 @@ public class PopupContentContainer extends IAMContentContainer<InAppMessagePopup
         );
         content.setBackground(appearance.backgroundDrawable());
         generateLoader(backgroundColor);
+        generateRefresh();
         roundedCornerLayout.addView(loaderContainer);
+        roundedCornerLayout.addView(refreshContainer);
         if (closeEnabled) {
             switch (appearance.closeButtonPosition()) {
                 case 0:
