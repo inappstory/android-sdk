@@ -55,7 +55,7 @@ public class WebPageConverter {
             if (file != null && file.exists() && file.length() > 0) {
                 resource = "file://" + file.getAbsolutePath();
             } else if (forced) {
-                resource = "file://" + new FilePathCacheGenerator(object.getUrl(), core, FilePathCacheType.STORY_RESOURCE);
+                resource = "file://" + new FilePathCacheGenerator(object.getUrl(), core, FilePathCacheType.STORY_RESOURCE).generate();
             }
             innerWebData = innerWebData.replace(resourceKey, resource);
         }
@@ -116,7 +116,7 @@ public class WebPageConverter {
                                     placeholderValue.first.getUrl(),
                                     core,
                                     FilePathCacheType.STORY_RESOURCE
-                            );
+                            ).generate();
                         }
                     }
                     if (path.isEmpty()) {
@@ -130,7 +130,7 @@ public class WebPageConverter {
                                         placeholderValue.second.getUrl(),
                                         core,
                                         FilePathCacheType.STORY_RESOURCE
-                                );
+                                ).generate();
                             }
                         }
                     }
