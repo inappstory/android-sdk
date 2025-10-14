@@ -162,7 +162,7 @@ public class DummyApiInterface implements ApiInterface {
     }
 
     @Override
-    public Request sessionUpdate(StatisticSendObject request) {
+    public Request sessionUpdate(StatisticSendObject request, String xUserId, String lang) {
         return new DummyRequest();
     }
 
