@@ -1,7 +1,11 @@
 package com.inappstory.sdk.network.dummy;
 
 import com.inappstory.sdk.network.ApiInterface;
+import com.inappstory.sdk.network.annotations.api.Body;
+import com.inappstory.sdk.network.annotations.api.POST;
+import com.inappstory.sdk.network.annotations.api.ReplaceHeader;
 import com.inappstory.sdk.network.models.Request;
+import com.inappstory.sdk.network.utils.headers.HeadersKeys;
 import com.inappstory.sdk.stories.api.models.TargetingBodyObject;
 import com.inappstory.sdk.stories.api.models.GameLaunchConfigObject;
 import com.inappstory.sdk.stories.api.models.StatisticSendObject;
@@ -175,7 +179,7 @@ public class DummyApiInterface implements ApiInterface {
     }
 
     @Override
-    public Request sessionUpdate(StatisticSendObject request) {
+    public Request sessionUpdate(StatisticSendObject request, String xUserId, String lang) {
         return new DummyRequest();
     }
 

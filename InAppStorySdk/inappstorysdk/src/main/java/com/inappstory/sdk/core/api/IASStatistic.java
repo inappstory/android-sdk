@@ -1,11 +1,12 @@
 package com.inappstory.sdk.core.api;
 
+import com.inappstory.sdk.stories.api.models.CachedSessionData;
 import com.inappstory.sdk.stories.statistic.GetStatisticV1Callback;
 
 import java.util.List;
 
 public interface IASStatistic {
-    void createV1(String sessionId, boolean disabled);
+    void createV1(CachedSessionData sessionData, boolean disabled);
     void removeV1(String sessionId);
     IASStatisticStoriesV1 storiesV1();
     IASStatisticStoriesV2 storiesV2();

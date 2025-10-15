@@ -283,7 +283,8 @@ public class SessionManager {
                                         }
                                         core.statistic().profiling().setReady(sessionOpenUID);
                                         CachedSessionData cachedSessionData = new CachedSessionData();
-                                        cachedSessionData.userId = currentSessionParameters.userId();;
+                                        cachedSessionData.userId = currentSessionParameters.userId();
+                                        cachedSessionData.locale = currentSessionParameters.locale();
                                         cachedSessionData.placeholders = response.placeholders;
                                         cachedSessionData.previewAspectRatio = response.getPreviewAspectRatio();
                                         cachedSessionData.isAllowUGC = response.isAllowUgc;

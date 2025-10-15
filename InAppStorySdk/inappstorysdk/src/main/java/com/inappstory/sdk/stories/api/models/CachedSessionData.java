@@ -7,6 +7,7 @@ import java.util.List;
 
 public class CachedSessionData {
     public String userId;
+    public String locale;
     public float previewAspectRatio;
     public String tags;
     public List<StoryPlaceholder> placeholders;
