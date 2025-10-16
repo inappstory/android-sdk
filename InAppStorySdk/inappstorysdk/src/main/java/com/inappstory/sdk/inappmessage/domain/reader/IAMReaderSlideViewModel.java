@@ -1,6 +1,8 @@
 package com.inappstory.sdk.inappmessage.domain.reader;
 
 
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -14,6 +16,8 @@ import com.inappstory.sdk.core.data.IReaderContent;
 import com.inappstory.sdk.core.inappmessages.InAppMessageDownloadManager;
 import com.inappstory.sdk.game.cache.SessionAssetsIsReadyCallback;
 import com.inappstory.sdk.inappmessage.InAppMessageWidgetCallback;
+import com.inappstory.sdk.inappmessage.ShowInAppMessageCallback;
+import com.inappstory.sdk.inappmessage.ShowInAppMessageSlideCallback;
 import com.inappstory.sdk.inappmessage.domain.stedata.JsSendApiRequestData;
 import com.inappstory.sdk.inappmessage.domain.stedata.STEDataType;
 import com.inappstory.sdk.inappmessage.domain.stedata.STETypeAndData;
@@ -167,6 +171,18 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
                                     .copy()
                                     .slideIndex(showSlideJSPayload.index)
                     );
+                    new Handler(Looper.getMainLooper()).post(() -> core.callbacksAPI().useCallback(
+                            IASCallbackType.SHOW_IN_APP_MESSAGE_SLIDE,
+                            new UseIASCallback<ShowInAppMessageSlideCallback>() {
+                                @Override
+                                public void use(@NonNull ShowInAppMessageSlideCallback callback) {
+                                    callback.showSlide(
+                                            readerViewModel.getCurrentInAppMessageData(),
+                                            showSlideJSPayload.index
+                                    );
+                                }
+                            }
+                    ));
                 }
                 break;
         }

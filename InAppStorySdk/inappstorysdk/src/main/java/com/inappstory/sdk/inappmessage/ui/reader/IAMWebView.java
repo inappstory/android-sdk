@@ -76,7 +76,7 @@ public class IAMWebView extends IASWebView implements ContentViewInteractor {
         return escaped;
     }
 
-    public void showSlides(List<String> slides, String cardAppearance) {
+    public void showSlides(List<String> slides, String cardAppearance, int index) {
         List<String> escapedSlides = new ArrayList<>();
         for (String slide : slides) {
             escapedSlides.add(oldEscape(slide));
@@ -84,7 +84,7 @@ public class IAMWebView extends IASWebView implements ContentViewInteractor {
         String slideArray = "[\"" + TextUtils.join("\",\"", escapedSlides) + "\"]";
         String url = "javascript:window.show_slides(" + slideArray + ",\"" +
                 StringsUtils.getEscapedString(StringsUtils.escapeSingleQuotes(cardAppearance))
-                + "\")";
+                + "\", " + index + ")";
         loadUrl(url);
         logMethod("showSlides " + slides.size());
     }

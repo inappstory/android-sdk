@@ -35,6 +35,7 @@ import com.inappstory.sdk.inappmessage.InAppMessagePreloadSettings;
 import com.inappstory.sdk.inappmessage.InAppMessageScreenActions;
 import com.inappstory.sdk.inappmessage.InAppMessageWidgetCallback;
 import com.inappstory.sdk.inappmessage.ShowInAppMessageCallback;
+import com.inappstory.sdk.inappmessage.ShowInAppMessageSlideCallback;
 import com.inappstory.sdk.lrudiskcache.CacheSize;
 import com.inappstory.sdk.network.utils.HostFromSecretKey;
 import com.inappstory.sdk.stories.api.models.ContentType;
@@ -504,6 +505,7 @@ public class InAppStoryManager implements IASBackPressHandler {
             }
         });
     }
+
 
     /**
      * use to set callback on story shown in reader
@@ -1463,6 +1465,15 @@ public class InAppStoryManager implements IASBackPressHandler {
             @Override
             public void use(@NonNull IASCore core) {
                 core.callbacksAPI().setCallback(IASCallbackType.SHOW_IN_APP_MESSAGE, callback);
+            }
+        });
+    }
+
+    public void setShowInAppMessageSlideCallback(final ShowInAppMessageSlideCallback callback) {
+        useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.callbacksAPI().setCallback(IASCallbackType.SHOW_IN_APP_MESSAGE_SLIDE, callback);
             }
         });
     }

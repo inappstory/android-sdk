@@ -13,6 +13,7 @@ import com.inappstory.sdk.inappmessage.CloseInAppMessageCallback;
 import com.inappstory.sdk.inappmessage.InAppMessageLoadCallback;
 import com.inappstory.sdk.inappmessage.InAppMessageWidgetCallback;
 import com.inappstory.sdk.inappmessage.ShowInAppMessageCallback;
+import com.inappstory.sdk.inappmessage.ShowInAppMessageSlideCallback;
 import com.inappstory.sdk.stories.callbacks.ExceptionCallback;
 import com.inappstory.sdk.stories.callbacks.ShareCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.errors.ErrorCallback;
@@ -142,6 +143,12 @@ public class IASCallbacksImpl implements IASCallbacks {
                     return;
                 }
                 break;
+            case SHOW_IN_APP_MESSAGE_SLIDE:
+                if (showInAppMessageSlideCallback != null) {
+                    useIASCallback.use(showInAppMessageSlideCallback);
+                    return;
+                }
+                break;
             case CLOSE_IN_APP_MESSAGE:
                 if (closeInAppMessageCallback != null) {
                     useIASCallback.use(closeInAppMessageCallback);
@@ -223,6 +230,9 @@ public class IASCallbacksImpl implements IASCallbacks {
             case SHOW_IN_APP_MESSAGE:
                 showInAppMessageCallback = (ShowInAppMessageCallback) callback;
                 return;
+            case SHOW_IN_APP_MESSAGE_SLIDE:
+                showInAppMessageSlideCallback = (ShowInAppMessageSlideCallback) callback;
+                return;
             case CLOSE_IN_APP_MESSAGE:
                 closeInAppMessageCallback = (CloseInAppMessageCallback) callback;
                 return;
@@ -253,6 +263,7 @@ public class IASCallbacksImpl implements IASCallbacks {
     private LikeDislikeStoryCallback likeDislikeStoryCallback;
     private InAppMessageLoadCallback inAppMessageLoadCallback;
     private ShowInAppMessageCallback showInAppMessageCallback;
+    private ShowInAppMessageSlideCallback showInAppMessageSlideCallback;
     private InAppMessageWidgetCallback inAppMessageWidgetCallback;
     private CloseInAppMessageCallback closeInAppMessageCallback;
     private ShowBannerCallback showBannerCallback;

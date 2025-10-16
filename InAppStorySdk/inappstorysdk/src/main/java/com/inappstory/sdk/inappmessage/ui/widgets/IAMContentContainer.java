@@ -45,17 +45,14 @@ public abstract class IAMContentContainer<T extends InAppMessageAppearance> exte
     }
 
     public void setRefreshClick(final OnClickListener clickListener) {
-        refresh.setClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                clickListener.onClick(v);
-                try {
-                    final CustomIconWithoutStates refreshIconInterface =
-                            AppearanceManager.getCommonInstance().csCustomIcons().refreshIcon();
-                    refreshIconInterface.clickEvent(refresh.getChildAt(0));
-                } catch (Exception e) {
+        refresh.setClickListener(v -> {
+            clickListener.onClick(v);
+            try {
+                final CustomIconWithoutStates refreshIconInterface =
+                        AppearanceManager.getCommonInstance().csCustomIcons().refreshIcon();
+                refreshIconInterface.clickEvent(refresh.getChildAt(0));
+            } catch (Exception e) {
 
-                }
             }
         });
     }

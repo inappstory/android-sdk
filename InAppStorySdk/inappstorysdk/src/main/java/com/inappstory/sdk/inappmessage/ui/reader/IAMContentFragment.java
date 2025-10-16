@@ -92,6 +92,18 @@ public class IAMContentFragment extends Fragment implements Observer<IAMReaderSl
         contentWebView.resumeSlide();
     }
 
+    public void refreshClick() {
+        if (!(contentWebView instanceof IAMWebView)) return;
+        final IAMWebView localWebView = (IAMWebView) contentWebView;
+        IAMReaderSlideState current = currentState;
+        if (current == null) return;
+        localWebView.showSlides(
+                current.slides(),
+                JsonParser.mapToJsonString(current.cardAppearance()),
+                current.slideIndex()
+        );
+    }
+
     Observer<STETypeAndData> callToActionDataObserver = new Observer<STETypeAndData>() {
         @Override
         public void onUpdate(final STETypeAndData newValue) {
@@ -312,7 +324,8 @@ public class IAMContentFragment extends Fragment implements Observer<IAMReaderSl
                                     localWebView.setClientVariables();
                                     localWebView.showSlides(
                                             newValue.slides(),
-                                            JsonParser.mapToJsonString(newValue.cardAppearance())
+                                            JsonParser.mapToJsonString(newValue.cardAppearance()),
+                                            0
                                     );
                                 }
                             }
