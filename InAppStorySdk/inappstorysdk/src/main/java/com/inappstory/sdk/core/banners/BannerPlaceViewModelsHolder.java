@@ -72,7 +72,7 @@ public class BannerPlaceViewModelsHolder {
             uniqueVM.updateState(
                     placeState
                             .copy()
-                            .currentIndex(0)
+                           // .currentIndex(0)
                             .iterationId(
                                     UUID.randomUUID().toString()
                             )
