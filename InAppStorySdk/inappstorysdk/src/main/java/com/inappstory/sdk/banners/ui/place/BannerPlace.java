@@ -332,9 +332,12 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
             return;
         }
         if (bannerPlaceViewModel != null) {
-            bannerPlaceViewModel.clear();
             bannerPlaceViewModel.loadBanners(skipCache);
         }
+    }
+
+    public void clear() {
+        bannerPlaceViewModel.clear();
     }
 
     private void initVM() {
