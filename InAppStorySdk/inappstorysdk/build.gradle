@@ -1,14 +1,16 @@
 apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
 
 android {
-    compileSdkVersion inappstory_target_sdk
-    buildToolsVersion "29.0.3"
+    compileSdk inappstory_target_sdk
 
     defaultConfig {
-        minSdkVersion inappstory_min_sdk
-        targetSdkVersion inappstory_target_sdk
+        minSdk inappstory_min_sdk
+        targetSdk inappstory_target_sdk
         versionCode inappstory_output_build
         versionName inappstory_output_version
+        buildConfigField 'int', 'VERSION_CODE', "$inappstory_output_build"
+        buildConfigField 'String', 'VERSION_NAME', "\"$inappstory_output_version\""
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles 'consumer-rules.pro'
@@ -16,6 +18,10 @@ android {
 
     testOptions {
         unitTests.returnDefaultValues = true
+    }
+
+    buildFeatures {
+        buildConfig = true
     }
 
     buildTypes {
@@ -29,6 +35,15 @@ android {
          //   buildConfigField("int", "VERSION_CODE", "${defaultConfig.versionCode}")
          //   buildConfigField("String","VERSION_NAME","\"${defaultConfig.versionName}\"")
         }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    kotlinOptions {
+        jvmTarget = '1.8'
+        freeCompilerArgs = ['-Xjvm-default=compatibility']
     }
 
 }
