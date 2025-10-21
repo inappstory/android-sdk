@@ -512,7 +512,7 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
                 bannerPager.post(new Runnable() {
                     @Override
                     public void run() {
-                        bannerPager.setCurrentItem(newValue.currentIndex());
+                        bannerPager.setCurrentItem(newValue.currentIndex(), true);
                         bannerPlaceViewModel.updateCurrentIndex(newValue.currentIndex());
                     }
                 });
@@ -617,7 +617,7 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
                         if (bannerPager.getCurrentItem() == index) {
                             pageChangeListener.onPageSelected(index);
                         } else {
-                            bannerPager.setCurrentItem(index);
+                            bannerPager.setCurrentItem(index, true);
                         }
 
                     }
