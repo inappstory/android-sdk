@@ -1,5 +1,6 @@
 package com.inappstory.sdk.inappmessage.ui.reader;
 
+import android.util.Log;
 import android.webkit.JavascriptInterface;
 
 import com.inappstory.sdk.inappmessage.domain.reader.IIAMReaderSlideViewModel;
@@ -24,6 +25,7 @@ public class IAMReaderJavascriptInterface {
     @JavascriptInterface
     public void storyRenderReady() {
         slideViewModel.renderReady();
+        Log.e("JS_method_test", "storyRenderReady");
     }
 
     @JavascriptInterface
@@ -46,6 +48,18 @@ public class IAMReaderJavascriptInterface {
         slideViewModel.sendApiRequest(data);
     }
 
+    @JavascriptInterface
+    public void onCardLoadingStateChange(int state, String reason) {
+        slideViewModel.onCardLoadingStateChange(state, reason);
+        Log.e("JS_method_test", "onCardLoadingStateChange " + state + " " + reason);
+    }
+
+    @JavascriptInterface
+    public void onEvent(String name, String event) {
+        slideViewModel.onEvent(name, event);
+
+        Log.e("JS_method_test", "onEvent " + name + " " + event);
+    }
 
     @JavascriptInterface
     public void vibrate(int[] vibratePattern) {

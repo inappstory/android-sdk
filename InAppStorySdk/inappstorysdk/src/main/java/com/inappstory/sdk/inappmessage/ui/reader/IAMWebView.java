@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.webkit.ConsoleMessage;
@@ -28,6 +29,8 @@ import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ContentVi
 import com.inappstory.sdk.utils.OnSwipeTouchListener;
 import com.inappstory.sdk.utils.StringsUtils;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 public class IAMWebView extends IASWebView implements ContentViewInteractor {
@@ -57,6 +60,33 @@ public class IAMWebView extends IASWebView implements ContentViewInteractor {
                 }
             }
         });
+    }
+
+    public void slideInCache(String slideStatus) {
+        String url = "javascript:window.slide_in_cache('" + slideStatus + "')";
+        loadUrl(url);
+        logMethod("slideInCache " + slideStatus);
+    }
+
+    private String oldEscape(String raw) {
+        String escaped = raw
+                .replaceAll("\"", "\\\\\"")
+                .replaceAll("\n", " ")
+                .replaceAll("\r", " ");
+        return escaped;
+    }
+
+    public void showSlides(List<String> slides, String cardAppearance, int index) {
+        List<String> escapedSlides = new ArrayList<>();
+        for (String slide : slides) {
+            escapedSlides.add(oldEscape(slide));
+        }
+        String slideArray = "[\"" + TextUtils.join("\",\"", escapedSlides) + "\"]";
+        String url = "javascript:window.show_slides(" + slideArray + ",\"" +
+                StringsUtils.getEscapedString(StringsUtils.escapeSingleQuotes(cardAppearance))
+                + "\", " + index + ")";
+        loadUrl(url);
+        logMethod("showSlides " + slides.size());
     }
 
 
@@ -113,11 +143,6 @@ public class IAMWebView extends IASWebView implements ContentViewInteractor {
                 "UTF-8",
                 null
         );
-    }
-
-    @Deprecated
-    private String temporaryUpdateToWhiteBackground(String html) {
-        return updateHead(html, "<style> html { background: white !important; } </style>");
     }
 
     @Override

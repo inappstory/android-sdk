@@ -11,6 +11,7 @@ public interface IASAssetsHolder {
     void setAssets(List<SessionAsset> assets);
     boolean assetsIsDownloaded();
     void addAssetsIsReadyCallback(SessionAssetsIsReadyCallback callback);
+    void checkOrAddAssetsIsReadyCallback(SessionAssetsIsReadyCallback callback);
     void removeAssetsIsReadyCallback(SessionAssetsIsReadyCallback callback);
     void clear();
 }

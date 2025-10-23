@@ -665,6 +665,16 @@ public class ReaderManager {
         public void isReady() {
 
         }
+
+        @Override
+        public void assetsIsLoading() {
+
+        }
+
+        @Override
+        public void error() {
+
+        }
     };
 
     public void subscribeToAssets() {

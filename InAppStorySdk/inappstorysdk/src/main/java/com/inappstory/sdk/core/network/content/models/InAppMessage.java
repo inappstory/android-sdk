@@ -45,6 +45,9 @@ public class InAppMessage implements IInAppMessage {
     @SerializedName("slides")
     public List<InAppMessageSlide> slides;
 
+    @SerializedName("slides_html")
+    public List<String> slidesHtml;
+
     @SerializedName("campaign_name")
     public String campaignName;
 
@@ -72,10 +75,8 @@ public class InAppMessage implements IInAppMessage {
     private IReaderContentSlide slide(int index) {
         if (slides == null || index < 0 || slides.size() < index)
             throw new RuntimeException("Slide index out of bounds: " + index + " from " + slides.size());
-        for (IReaderContentSlide slide : slides) {
-            if (slide.index() == index) return slide;
-        }
-        throw new RuntimeException("Slide " + index + " not in slides array of inAppMessage " + id());
+        return slides.get(index);
+        //throw new RuntimeException("Slide " + index + " not in slides array of inAppMessage " + id());
     }
 
     @Override

@@ -31,10 +31,12 @@ import com.inappstory.sdk.inappmessage.domain.reader.IIAMReaderSlideViewModel;
 import com.inappstory.sdk.inappmessage.domain.reader.IIAMReaderViewModel;
 import com.inappstory.sdk.inappmessage.domain.stedata.JsSendApiRequestData;
 import com.inappstory.sdk.inappmessage.domain.stedata.STETypeAndData;
+import com.inappstory.sdk.inappmessage.domain.stedata.SlideInCacheData;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageAppearance;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageBottomSheetAppearance;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageFullscreenAppearance;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessagePopupAppearance;
+import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.jsapiclient.JsApiClient;
 import com.inappstory.sdk.network.jsapiclient.JsApiResponseCallback;
 import com.inappstory.sdk.stories.api.models.ContentId;
@@ -53,6 +55,7 @@ public class IAMContentFragment extends Fragment implements Observer<IAMReaderSl
 
     IIAMReaderSlideViewModel readerSlideViewModel;
     IAMReaderSlideState currentState;
+
 
     @Nullable
     @Override
@@ -89,6 +92,18 @@ public class IAMContentFragment extends Fragment implements Observer<IAMReaderSl
         contentWebView.resumeSlide();
     }
 
+    public void refreshClick() {
+        if (!(contentWebView instanceof IAMWebView)) return;
+        final IAMWebView localWebView = (IAMWebView) contentWebView;
+        IAMReaderSlideState current = currentState;
+        if (current == null) return;
+        localWebView.showSlides(
+                current.slides(),
+                JsonParser.mapToJsonString(current.cardAppearance()),
+                current.slideIndex()
+        );
+    }
+
     Observer<STETypeAndData> callToActionDataObserver = new Observer<STETypeAndData>() {
         @Override
         public void onUpdate(final STETypeAndData newValue) {
@@ -101,6 +116,11 @@ public class IAMContentFragment extends Fragment implements Observer<IAMReaderSl
                             callToActionHandle(
                                     core,
                                     (CallToActionData) newValue.data()
+                            );
+                            break;
+                        case SLIDE_IN_CACHE:
+                            slideInCache(
+                                    (SlideInCacheData) newValue.data()
                             );
                             break;
                         case JS_SEND_API_REQUEST:
@@ -164,6 +184,20 @@ public class IAMContentFragment extends Fragment implements Observer<IAMReaderSl
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private void slideInCache(final SlideInCacheData slideInCacheData) {
+        final IAMWebView webView = (IAMWebView) contentWebView;
+        webView.post(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    webView.slideInCache(JsonParser.getJson(slideInCacheData));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
     }
 
     private void jsSendApiRequestHandle(
@@ -246,32 +280,13 @@ public class IAMContentFragment extends Fragment implements Observer<IAMReaderSl
                     }
                 }
                 if (readerState != null)
-                    setWebViewBackground(readerState.appearance);
+                    setWebViewBackground();
             }
         });
     }
 
-    private void setWebViewBackground(InAppMessageAppearance appearance) {
-        if (appearance != null) {
-            int backgroundColor = Color.WHITE;
-            if (appearance instanceof InAppMessageFullscreenAppearance) {
-                backgroundColor = ColorUtils.parseColorRGBA(
-                        ((InAppMessageFullscreenAppearance) appearance)
-                                .backgroundColor()
-                );
-            } else if (appearance instanceof InAppMessagePopupAppearance) {
-                backgroundColor = ColorUtils.parseColorRGBA(
-                        ((InAppMessagePopupAppearance) appearance)
-                                .backgroundColor()
-                );
-            } else if (appearance instanceof InAppMessageBottomSheetAppearance) {
-                backgroundColor = ColorUtils.parseColorRGBA(
-                        ((InAppMessageBottomSheetAppearance) appearance)
-                                .backgroundColor()
-                );
-            }
-            contentWebView.setBackgroundColor(Color.argb(1, 255, 255, 255));
-        }
+    private void setWebViewBackground() {
+        contentWebView.setBackgroundColor(Color.argb(1, 255, 255, 255));
     }
 
     @Override
@@ -280,6 +295,8 @@ public class IAMContentFragment extends Fragment implements Observer<IAMReaderSl
         if (Objects.equals(currentState, newValue)) return;
         IAMReaderSlideState localCurrentState = currentState;
         currentState = newValue;
+        if (!(contentWebView instanceof IAMWebView)) return;
+        final IAMWebView localWebView = (IAMWebView) contentWebView;
         if (localCurrentState == null ||
                 (newValue.contentStatus() != localCurrentState.contentStatus())
         ) {
@@ -287,36 +304,35 @@ public class IAMContentFragment extends Fragment implements Observer<IAMReaderSl
                 case 0:
                     break;
                 case 1:
-                    if (newValue.content() != null &&
-                            !newValue.content().isEmpty()) {
-                        if (contentWebView instanceof View) {
-                            ((View) contentWebView).post(
-                                    new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            contentWebView.loadSlide(newValue.content());
-                                        }
+                    if (newValue.layout() != null &&
+                            !newValue.layout().isEmpty()) {
+                        localWebView.post(
+                                new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        localWebView.loadSlide(newValue.layout());
                                     }
-                            );
-                        }
+                                }
+                        );
                     }
                     break;
-                case -1:
+                case 2:
+                    localWebView.post(
+                            new Runnable() {
+                                @Override
+                                public void run() {
+                                    localWebView.setClientVariables();
+                                    localWebView.showSlides(
+                                            newValue.slides(),
+                                            JsonParser.mapToJsonString(newValue.cardAppearance()),
+                                            0
+                                    );
+                                }
+                            }
+                    );
                     break;
             }
 
-        }
-        if ((localCurrentState == null || !localCurrentState.renderReady()) && newValue.renderReady()) {
-            if (contentWebView instanceof View) {
-                ((View) contentWebView).post(
-                        new Runnable() {
-                            @Override
-                            public void run() {
-                                contentWebView.setClientVariables();
-                            }
-                        }
-                );
-            }
         }
         if (localCurrentState != null &&
                 (newValue.slideJSStatus() != localCurrentState.slideJSStatus())

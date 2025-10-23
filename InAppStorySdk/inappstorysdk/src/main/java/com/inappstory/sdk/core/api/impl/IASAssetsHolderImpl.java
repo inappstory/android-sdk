@@ -24,6 +24,7 @@ public class IASAssetsHolderImpl implements IASAssetsHolder {
 
     private final ExecutorService downloader = Executors.newFixedThreadPool(5);
     private final List<SessionAsset> sessionAssets = new ArrayList<>();
+
     public IASAssetsHolderImpl(IASCore core) {
         this.core = core;
     }
@@ -46,6 +47,7 @@ public class IASAssetsHolderImpl implements IASAssetsHolder {
         if (assets.isEmpty()) return;
         synchronized (assetsLock) {
             if (assetsIsDownloaded) return;
+            if (assetsDownloadError) return;
             if (assetsIsLoading) return;
             assetsIsLoading = true;
         }
@@ -86,7 +88,6 @@ public class IASAssetsHolderImpl implements IASAssetsHolder {
             downloader.invokeAll(assetTasks);
         } catch (InterruptedException e) {
             synchronized (assetsLock) {
-                assetsIsLoading = false;
                 assetsStatus[0] = false;
             }
         }
@@ -95,14 +96,18 @@ public class IASAssetsHolderImpl implements IASAssetsHolder {
             assetsIsLoading = false;
             if (assetsStatus[0]) {
                 assetsIsDownloaded = true;
+            } else {
+                assetsDownloadError = true;
             }
-            if (assetsIsDownloaded) {
-                copyCallbacks.addAll(callbacks);
-                callbacks.clear();
-            }
+            copyCallbacks.addAll(callbacks);
+            callbacks.clear();
         }
-        for (SessionAssetsIsReadyCallback callback: copyCallbacks) {
-            callback.isReady();
+        for (SessionAssetsIsReadyCallback callback : copyCallbacks) {
+            if (assetsStatus[0]) {
+                callback.isReady();
+            } else {
+                callback.error();
+            }
         }
 
     }
@@ -117,6 +122,7 @@ public class IASAssetsHolderImpl implements IASAssetsHolder {
 
     private final Object assetsLock = new Object();
     private boolean assetsIsDownloaded = false;
+    private boolean assetsDownloadError = false;
     private boolean assetsIsLoading = false;
 
     @Override
@@ -136,6 +142,22 @@ public class IASAssetsHolderImpl implements IASAssetsHolder {
     }
 
     @Override
+    public void checkOrAddAssetsIsReadyCallback(SessionAssetsIsReadyCallback callback) {
+        synchronized (assetsLock) {
+            if (assetsIsDownloaded) {
+                callback.isReady();
+            } else if (assetsDownloadError) {
+                callback.error();
+            } else {
+                if (assetsIsLoading) {
+                    callback.assetsIsLoading();
+                }
+                callbacks.add(callback);
+            }
+        }
+    }
+
+    @Override
     public void removeAssetsIsReadyCallback(SessionAssetsIsReadyCallback callback) {
         synchronized (assetsLock) {
             callbacks.remove(callback);
@@ -148,6 +170,7 @@ public class IASAssetsHolderImpl implements IASAssetsHolder {
             callbacks.clear();
             assetsIsDownloaded = false;
             assetsIsLoading = false;
+            assetsDownloadError = false;
         }
     }
 }

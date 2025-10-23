@@ -9,11 +9,20 @@ import com.inappstory.sdk.stories.utils.SingleTimeEvent;
 
 public interface IIAMReaderSlideViewModel extends IReaderSlideViewModel {
     void addSubscriber(Observer<IAMReaderSlideState> observer);
+
     void removeSubscriber(Observer<IAMReaderSlideState> observer);
 
     void readerIsOpened(boolean fromScratch);
+
     void readerIsClosing();
+
     void closeReader();
+
+    void updateLayout();
+
+    void onCardLoadingStateChange(int state, String reason);
+
+    void onEvent(String name, String event);
 
     SingleTimeEvent<STETypeAndData> singleTimeEvents();
 

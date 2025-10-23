@@ -178,7 +178,9 @@ public final class BottomSheetContentContainer extends IAMContentContainer<InApp
         );
         content.setBackground(appearance.backgroundDrawable());
         generateLoader(backgroundColor);
+        generateRefresh();
         roundedCornerLayout.addView(loaderContainer);
+        roundedCornerLayout.addView(refreshContainer);
         if (appearance.lineAppearance().height() == 0) {
             bottomSheetLineContainer.setVisibility(GONE);
             return;

@@ -123,6 +123,16 @@ public class IASContentPreloadImpl implements IASContentPreload {
                                 public void isReady() {
                                     downloadInAppMessagesContent(content, callback);
                                 }
+
+                                @Override
+                                public void assetsIsLoading() {
+
+                                }
+
+                                @Override
+                                public void error() {
+
+                                }
                             });
                         }
                     }

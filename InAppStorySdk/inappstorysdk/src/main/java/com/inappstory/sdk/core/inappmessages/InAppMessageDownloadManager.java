@@ -9,6 +9,7 @@ import com.inappstory.sdk.core.data.IReaderContent;
 import com.inappstory.sdk.core.network.content.usecase.InAppMessageByIdUseCase;
 import com.inappstory.sdk.core.ui.screens.IReaderSlideViewModel;
 import com.inappstory.sdk.inappmessage.InAppMessageLoadCallback;
+import com.inappstory.sdk.stories.api.models.ContentIdWithIndex;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.cache.ContentIdAndType;
 import com.inappstory.sdk.stories.cache.SlideTaskKey;
@@ -92,6 +93,7 @@ public class InAppMessageDownloadManager {
     private void addSlides(@NonNull final IReaderContent readerContent, final InAppMessageLoadCallback callback) {
         if (allSlidesLoaded(readerContent)) {
             contentIsLoaded(readerContent, callback);
+            //TODO return?;
         }
         core.contentLoader().inAppMessageDownloadManager().addSubscriber(
                 new IReaderSlideViewModel() {
@@ -237,6 +239,13 @@ public class InAppMessageDownloadManager {
             return 0;
         }
     }
+
+    public void changePriorityForSingleWithLoop(ContentIdWithIndex storyId,
+                                                ContentType type) {
+        if (slidesDownloader != null)
+            slidesDownloader.changePriorityForSingleWithLoop(storyId, type);
+    }
+
 
     public void clearLocalData() {
         core.contentHolder().readerContent().clearByType(ContentType.IN_APP_MESSAGE);
