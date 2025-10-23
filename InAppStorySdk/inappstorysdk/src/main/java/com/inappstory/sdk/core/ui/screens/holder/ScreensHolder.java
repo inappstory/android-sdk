@@ -2,6 +2,7 @@ package com.inappstory.sdk.core.ui.screens.holder;
 
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.exceptions.NotImplementedMethodException;
@@ -40,6 +41,13 @@ public class ScreensHolder implements IScreensHolder {
     }
 
     public boolean hasActiveScreen() {
+        Log.e("IAMCloseTest",
+                storyScreenHolder.isOpened() + " "
+                        + storyScreenHolder.isLaunchProcessStarted() + " "
+                        + storyScreenHolder.isOpened() + " "
+                        + gameScreenHolder.isLaunchProcessStarted() + " "
+                        + storyScreenHolder.isOpened() + " "
+                        + IAMScreenHolder.isLaunchProcessStarted() + " ");
         return storyScreenHolder.isOpened() || storyScreenHolder.isLaunchProcessStarted() ||
                 gameScreenHolder.isOpened() || gameScreenHolder.isLaunchProcessStarted() ||
                 IAMScreenHolder.isOpened() || IAMScreenHolder.isLaunchProcessStarted();

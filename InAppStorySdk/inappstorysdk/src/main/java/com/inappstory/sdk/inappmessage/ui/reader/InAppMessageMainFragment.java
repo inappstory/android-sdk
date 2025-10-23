@@ -6,6 +6,7 @@ import static com.inappstory.sdk.inappmessage.ui.widgets.IAMContentContainer.CON
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -53,6 +54,7 @@ public class InAppMessageMainFragment extends Fragment implements Observer<IAMRe
 
     @Override
     public void onDestroyView() {
+        Log.e("IAMCloseTest", "InAppMessageLC onDestroyView");
         if (readerViewModel != null) {
             readerViewModel.removeSubscriber(InAppMessageMainFragment.this);
             readerViewModel.clear();
