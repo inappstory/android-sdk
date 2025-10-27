@@ -7,7 +7,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.viewpager.widget.ViewPager;
 
-public class BannerPager extends ViewPager {
+import com.inappstory.sdk.stories.ui.reader.BothSideViewPager;
+
+public class BannerPager extends BothSideViewPager {
     public BannerPager(@NonNull Context context) {
         super(context);
         init();

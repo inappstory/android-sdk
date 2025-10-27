@@ -113,7 +113,8 @@ public interface ApiInterface {
     @PUT("v2/inappmessaging/message/{id}/data")
     Request sendIAMUserData(
             @Path("id") String id,
-            @Field("data") String data);
+            @Field("data") String data
+    );
 
     @GET("v2/ugc/feed")
     Request getUgcStories(
