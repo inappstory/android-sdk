@@ -106,7 +106,8 @@ public interface ApiInterface {
             @Query("wv") String widgetValue,
             @Query("wa") Integer widgetAnswer,
             @Query("wal") String widgetAnswerLabel,
-            @Query("was") Integer widgetAnswerScore
+            @Query("was") Integer widgetAnswerScore,
+            @Query("sa") String slideAnalytics
     );
 
     @FormUrlEncoded

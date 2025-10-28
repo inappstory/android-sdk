@@ -87,7 +87,8 @@ public class IASStatisticIAMV1Impl implements IASStatisticIAMV1 {
                                     task.widgetValue,
                                     task.widgetAnswer,
                                     task.widgetAnswerLabel,
-                                    task.widgetAnswerScore
+                                    task.widgetAnswerScore,
+                                    task.slideAnalytics
                             )
                     );
                     if (response.code > 199 && response.code < 210) {
@@ -169,6 +170,7 @@ public class IASStatisticIAMV1Impl implements IASStatisticIAMV1 {
             int slideIndex,
             int slidesTotal,
             long duration,
+            String slideAnalytics,
             String iterationId
     ) {
         if (disabled) return;
@@ -180,6 +182,7 @@ public class IASStatisticIAMV1Impl implements IASStatisticIAMV1 {
         task.slideIndex = slideIndex;
         task.durationMs = duration;
         task.slideTotal = slidesTotal;
+        task.slideAnalytics = slideAnalytics;
         task.event = CLOSE_EVENT_NAME;
         addTask(task);
     }

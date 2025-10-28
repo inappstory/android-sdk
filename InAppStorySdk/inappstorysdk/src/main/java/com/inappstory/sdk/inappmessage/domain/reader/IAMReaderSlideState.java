@@ -109,7 +109,6 @@ public class IAMReaderSlideState {
     }
 
 
-
     public IAMReaderSlideState copy() {
         return new IAMReaderSlideState()
                 .content(this.content)

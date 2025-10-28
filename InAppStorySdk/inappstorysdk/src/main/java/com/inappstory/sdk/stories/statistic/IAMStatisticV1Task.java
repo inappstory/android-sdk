@@ -26,6 +26,8 @@ public class IAMStatisticV1Task {
     public Integer widgetAnswer;
     @SerializedName("wal")
     public String widgetAnswerLabel;
+    @SerializedName("sa")
+    public String slideAnalytics;
     @SerializedName("was")
     public Integer widgetAnswerScore;
 

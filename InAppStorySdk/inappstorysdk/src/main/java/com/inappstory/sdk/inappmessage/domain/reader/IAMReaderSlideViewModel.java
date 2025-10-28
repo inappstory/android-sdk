@@ -39,9 +39,11 @@ import com.inappstory.sdk.stories.utils.WebPageConvertCallback;
 import com.inappstory.sdk.stories.utils.WebPageConverter;
 import com.inappstory.sdk.utils.ClipboardUtils;
 import com.inappstory.sdk.utils.StringsUtils;
+import com.inappstory.sdk.utils.UrlEncoder;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -85,7 +87,9 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
         Integer iamId = readerViewModel.getCurrentState().iamId;
         if (iamId == null) return;
         if (fromScratch)
-            slideTimeState.create(UUID.randomUUID().toString());
+            slideTimeState.create(
+                    UUID.randomUUID().toString()
+            );
         else
             slideTimeState.resume();
         core.statistic().iamV1().sendOpenEvent(
@@ -102,11 +106,32 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
         IAMReaderSlideState slideState = slideStateObservable.getValue();
         Integer iamId = readerViewModel.getCurrentState().iamId;
         if (iamId == null) return;
+        int[] slideTimes = slideTimeState.totalSlideTimes();
+        List<IAMReaderSlideStatObject> slideStatObjects = new ArrayList<>();
+        String slideAnalytics = null;
+        if (slideTimes != null) {
+            for (int i = 0; i < slideTimes.length; i++) {
+                if (slideTimes[i] > 0) {
+                    slideStatObjects.add(new IAMReaderSlideStatObject(i, slideTimes[i]));
+                }
+            }
+            if (!slideStatObjects.isEmpty()) {
+                try {
+                    slideAnalytics = JsonParser.getJson(slideStatObjects);
+                    Log.e("SlideTimes", slideAnalytics);
+                    slideAnalytics = new UrlEncoder().encode(slideAnalytics);
+                    Log.e("SlideTimes", slideAnalytics);
+                } catch (Exception ignored) {
+
+                }
+            }
+        }
         core.statistic().iamV1().sendCloseEvent(
                 iamId,
                 slideState.slideIndex(),
                 slideState.slidesTotal(),
                 slideTimeState.totalTime(),
+                slideAnalytics,
                 slideTimeState.iterationId()
         );
     }
@@ -128,10 +153,12 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
         if (readerContent == null) return;
         WebPageConverter converter = new WebPageConverter();
         String layout = converter.replaceLayout(readerContent);
+        slideTimeState.updateSlidesCount(readerContent.actualSlidesCount());
         slideStateObservable.updateValue(
                 slideStateObservable
                         .getValue()
                         .copy()
+                        .slidesTotal(readerContent.actualSlidesCount())
                         .contentStatus(1)
                         .layout(layout)
         );
@@ -171,6 +198,7 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
                                     .copy()
                                     .slideIndex(showSlideJSPayload.index)
                     );
+                    slideTimeState.updateSlideIndex(showSlideJSPayload.index);
                     new Handler(Looper.getMainLooper()).post(() -> core.callbacksAPI().useCallback(
                             IASCallbackType.SHOW_IN_APP_MESSAGE_SLIDE,
                             new UseIASCallback<ShowInAppMessageSlideCallback>() {
@@ -542,11 +570,13 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
             }
         }
         readerViewModel.updateCurrentLoadState(IAMReaderLoadStates.RENDER_READY);
+        slideTimeState.updateSlidesCount(slides.size());
         slideStateObservable.updateValue(
                 slideStateObservable
                         .getValue()
                         .copy()
                         .slides(slides)
+                        .slidesTotal(slides.size())
                         .renderReady(true)
                         .cardAppearance(readerContent.inAppMessageAppearance().cardAppearance())
                         .contentStatus(2)

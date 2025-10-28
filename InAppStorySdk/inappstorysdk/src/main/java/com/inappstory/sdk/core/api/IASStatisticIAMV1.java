@@ -25,6 +25,7 @@ public interface IASStatisticIAMV1 extends StatDisabled {
             int slideIndex,
             int slidesTotal,
             long duration,
+            String slideAnalytics,
             String iterationId
     );
 }

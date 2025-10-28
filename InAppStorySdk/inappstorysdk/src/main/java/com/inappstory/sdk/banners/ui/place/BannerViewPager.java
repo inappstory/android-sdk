@@ -5,19 +5,25 @@ import android.util.AttributeSet;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.viewpager.widget.ViewPager;
+import androidx.viewpager.widget.PagerAdapter;
 
 import com.inappstory.sdk.stories.ui.reader.BothSideViewPager;
 
-public class BannerPager extends BothSideViewPager {
-    public BannerPager(@NonNull Context context) {
+public class BannerViewPager extends BothSideViewPager {
+    public BannerViewPager(@NonNull Context context) {
         super(context);
         init();
     }
 
-    public BannerPager(@NonNull Context context, @Nullable AttributeSet attrs) {
+    public BannerViewPager(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
         init();
+    }
+
+    @Override
+    public void setAdapter(PagerAdapter adapter) {
+
+        super.setAdapter(adapter);
     }
 
     public static abstract class PageChangeListener implements OnPageChangeListener {

@@ -4,6 +4,7 @@ import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 
 import android.content.Context;
+import android.content.res.Configuration;
 import android.content.res.TypedArray;
 import android.graphics.Color;
 import android.os.Handler;
@@ -24,7 +25,9 @@ import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.banners.BannerPlaceNavigationCallback;
 import com.inappstory.sdk.banners.BannerPlaceLoadCallback;
+import com.inappstory.sdk.banners.ui.IBannersWidget;
 import com.inappstory.sdk.banners.ui.banner.BannerView;
+import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.banners.BannerPlaceViewModelsHolder;
 import com.inappstory.sdk.core.banners.IBannerPlaceLoadCallback;
 import com.inappstory.sdk.banners.ICustomBannerPlaceholder;
@@ -45,8 +48,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
-public class BannerPlace extends FrameLayout implements Observer<BannerPlaceState> {
-    private BannerPager bannerPager;
+public class BannerPlace extends FrameLayout implements Observer<BannerPlaceState>, IBannersWidget {
+    private BannerViewPager bannerViewPager;
     private IBannerPlaceViewModel bannerPlaceViewModel;
     private String placeId;
     private IASCore core;
@@ -165,7 +168,7 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
 
     private BannerPlaceNavigationCallback bannerPlaceNavigationCallback = emptyBannerPlaceNavigationCallback;
 
-    BannerPager.PageChangeListener pageChangeListener = new BannerPager.PageChangeListener() {
+    BannerViewPager.PageChangeListener pageChangeListener = new BannerViewPager.PageChangeListener() {
         @Override
         public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
             if (bannerPlaceViewModel != null) {
@@ -191,11 +194,11 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
         public void onPageSelected(int position) {
             String newLaunchedTag = "banner_" + position;
             if (!lastLaunchedTag.isEmpty() && !(lastLaunchedTag.equals(newLaunchedTag))) {
-                BannerView currentBannerView = bannerPager.findViewWithTag(lastLaunchedTag);
+                BannerView currentBannerView = bannerViewPager.findViewWithTag(lastLaunchedTag);
                 if (currentBannerView != null) currentBannerView.stopBanner();
             }
             Log.e("SlideLC", "onPageSelected " + position);
-            BannerView currentBannerView = bannerPager.findViewWithTag(newLaunchedTag);
+            BannerView currentBannerView = bannerViewPager.findViewWithTag(newLaunchedTag);
             if (currentBannerView != null) {
                 currentBannerView.startBanner();
                 currentBannerView.resumeBanner();
@@ -220,13 +223,13 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
 
         @Override
         public void onPageScrollStateChanged(int state) {
-            String newLaunchedTag = "banner_" + bannerPager.getCurrentItem();
+            String newLaunchedTag = "banner_" + bannerViewPager.getCurrentItem();
             if (state == ViewPager.SCROLL_STATE_IDLE) {
                 synchronized (scrollManageLock) {
                     scrollManage = false;
                 }
                 if (newLaunchedTag.equals(lastLaunchedTag)) {
-                    BannerView currentBannerView = bannerPager.findViewWithTag(lastLaunchedTag);
+                    BannerView currentBannerView = bannerViewPager.findViewWithTag(lastLaunchedTag);
                     if (currentBannerView != null) currentBannerView.resumeBanner();
                 }
             } else {
@@ -236,7 +239,7 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
                 if (state == ViewPager.SCROLL_STATE_DRAGGING) {
 
                     if (newLaunchedTag.equals(lastLaunchedTag)) {
-                        BannerView currentBannerView = bannerPager.findViewWithTag(lastLaunchedTag);
+                        BannerView currentBannerView = bannerViewPager.findViewWithTag(lastLaunchedTag);
                         if (currentBannerView != null) currentBannerView.pauseBanner();
                     }
                 }
@@ -245,17 +248,17 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
     };
 
     public void showNext() {
-        int currentItem = bannerPager.getCurrentItem();
-        BannerPagerAdapter pagerAdapter = (BannerPagerAdapter) bannerPager.getAdapter();
+        int currentItem = bannerViewPager.getCurrentItem();
+        BannerPagerAdapter pagerAdapter = (BannerPagerAdapter) bannerViewPager.getAdapter();
         if (pagerAdapter != null) {
             if (currentItem + 1 >= pagerAdapter.getCount()) {
                 if (pagerAdapter.isLoop()) {
-                    bannerPager.setCurrentItem((currentItem + 1) % pagerAdapter.getDataCount(), true);
+                    bannerViewPager.setCurrentItem((currentItem + 1) % pagerAdapter.getDataCount(), true);
                 } else {
                     //TODO log error
                 }
             } else {
-                bannerPager.setCurrentItem(currentItem + 1, true);
+                bannerViewPager.setCurrentItem(currentItem + 1, true);
             }
         }
     }
@@ -264,7 +267,7 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
         synchronized (scrollManageLock) {
             if (scrollManage) return;
         }
-        BannerView currentBannerView = bannerPager.findViewWithTag(lastLaunchedTag);
+        BannerView currentBannerView = bannerViewPager.findViewWithTag(lastLaunchedTag);
         if (currentBannerView != null) {
             currentBannerView.resumeBanner();
         }
@@ -274,41 +277,41 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
         synchronized (scrollManageLock) {
             if (scrollManage) return;
         }
-        BannerView currentBannerView = bannerPager.findViewWithTag(lastLaunchedTag);
+        BannerView currentBannerView = bannerViewPager.findViewWithTag(lastLaunchedTag);
         if (currentBannerView != null) {
             currentBannerView.pauseBanner();
         }
     }
 
     public void showPrevious() {
-        int currentItem = bannerPager.getCurrentItem();
-        BannerPagerAdapter pagerAdapter = (BannerPagerAdapter) bannerPager.getAdapter();
+        int currentItem = bannerViewPager.getCurrentItem();
+        BannerPagerAdapter pagerAdapter = (BannerPagerAdapter) bannerViewPager.getAdapter();
         if (pagerAdapter != null) {
             if (currentItem - 1 < 0) {
                 if (pagerAdapter.isLoop()) {
-                    bannerPager.setCurrentItem((currentItem - 1) % pagerAdapter.getDataCount(), true);
+                    bannerViewPager.setCurrentItem((currentItem - 1) % pagerAdapter.getDataCount(), true);
                 } else {
                     //TODO log error
                 }
             } else {
-                bannerPager.setCurrentItem(currentItem - 1, true);
+                bannerViewPager.setCurrentItem(currentItem - 1, true);
             }
         }
     }
 
     public void showByIndex(int index) {
-        BannerPagerAdapter pagerAdapter = (BannerPagerAdapter) bannerPager.getAdapter();
+        BannerPagerAdapter pagerAdapter = (BannerPagerAdapter) bannerViewPager.getAdapter();
         if (pagerAdapter != null) {
             if (index < 0 || index >= pagerAdapter.getDataCount()) {
                 //TODO log error
                 return;
             }
-            int currentItem = bannerPager.getCurrentItem();
+            int currentItem = bannerViewPager.getCurrentItem();
             int dataCount = pagerAdapter.getDataCount();
             int zeroItem = currentItem - (currentItem % pagerAdapter.getDataCount());
             int indexItem = zeroItem + ((index % dataCount + dataCount) % dataCount);
             if (indexItem == currentItem) return;
-            bannerPager.setCurrentItem(indexItem, false);
+            bannerViewPager.setCurrentItem(indexItem, false);
         }
     }
 
@@ -316,7 +319,7 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
     @Override
     public boolean onInterceptTouchEvent(MotionEvent event) {
         if (event.getAction() == MotionEvent.ACTION_CANCEL && !lastLaunchedTag.isEmpty()) {
-            BannerView currentBannerView = bannerPager.findViewWithTag(lastLaunchedTag);
+            BannerView currentBannerView = bannerViewPager.findViewWithTag(lastLaunchedTag);
             if (currentBannerView != null) {
                 currentBannerView.resumeBanner();
             }
@@ -357,9 +360,9 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
             bannerPlaceViewModel.clearBanners();
         }
         currentLoadState = null;
-        bannerPager.setSaveFromParentEnabled(false);
-        if (bannerPager.getAdapter() != null) {
-            BannerPagerAdapter pagerAdapter = (BannerPagerAdapter) bannerPager.getAdapter();
+        bannerViewPager.setSaveFromParentEnabled(false);
+        if (bannerViewPager.getAdapter() != null) {
+            BannerPagerAdapter pagerAdapter = (BannerPagerAdapter) bannerViewPager.getAdapter();
             pagerAdapter.unsubscribeFromFirst();
             float iw = Sizes.getScreenSize(getContext()).x -
                     Sizes.dpToPxExt(customBannerPlace.prevBannerOffset(), getContext())
@@ -380,10 +383,10 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
                     -1,
                     -1
             );
-            ViewGroup.LayoutParams layoutParams = bannerPager.getLayoutParams();
+            ViewGroup.LayoutParams layoutParams = bannerViewPager.getLayoutParams();
             layoutParams.height = WRAP_CONTENT;
             Log.e("BannerProfiling", "setAdapter deInit" + placeId);
-            bannerPager.setAdapter(adapter);
+            bannerViewPager.setAdapter(adapter);
             pagerAdapter.clear();
         }
     }
@@ -422,7 +425,7 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
     @Override
     public void onWindowFocusChanged(boolean hasWindowFocus) {
         super.onWindowFocusChanged(hasWindowFocus);
-        BannerView currentBannerView = bannerPager.findViewWithTag(lastLaunchedTag);
+        BannerView currentBannerView = bannerViewPager.findViewWithTag(lastLaunchedTag);
         if (currentBannerView != null) {
             if (hasWindowFocus)
                 currentBannerView.resumeBanner();
@@ -463,8 +466,8 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
 
     private void init(Context context) {
         View.inflate(context, R.layout.cs_banner_widget, this);
-        bannerPager = findViewById(R.id.banner_pager);
-        bannerPager.addOnPageChangeListener(pageChangeListener);
+        bannerViewPager = findViewById(R.id.banner_pager);
+        bannerViewPager.addOnPageChangeListener(pageChangeListener);
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
@@ -507,12 +510,12 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
         if (newValue == null || newValue.loadState() == null) return;
         if (bannerPlaceViewModel == null) return;
         if (currentLoadState == BannerPlaceLoadStates.LOADED && newValue.currentIndex() != null) {
-            if (bannerPager.getCurrentItem() != newValue.currentIndex()) {
-                Log.e("Indexes", bannerPager.getCurrentItem() + " " + newValue.currentIndex());
-                bannerPager.post(new Runnable() {
+            if (bannerViewPager.getCurrentItem() != newValue.currentIndex()) {
+                Log.e("Indexes", bannerViewPager.getCurrentItem() + " " + newValue.currentIndex());
+                bannerViewPager.post(new Runnable() {
                     @Override
                     public void run() {
-                        bannerPager.setCurrentItem(newValue.currentIndex(), true);
+                        bannerViewPager.setCurrentItem(newValue.currentIndex(), true);
                         bannerPlaceViewModel.updateCurrentIndex(newValue.currentIndex());
                     }
                 });
@@ -526,7 +529,7 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
                 new Handler(Looper.getMainLooper()).post(new Runnable() {
                     @Override
                     public void run() {
-                        ViewGroup.LayoutParams layoutParams = bannerPager.getLayoutParams();
+                        ViewGroup.LayoutParams layoutParams = bannerViewPager.getLayoutParams();
                         layoutParams.height = 0;
                         BannerPagerAdapter adapter = new BannerPagerAdapter(
                                 core,
@@ -544,9 +547,15 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
                                         getContext()
                                 )
                         );
-                        bannerPager.setOffscreenPageLimit(1);
+                        bannerViewPager.setOffscreenPageLimit(1);
                         Log.e("BannerProfiling", "setAdapter empty" + placeId);
-                        bannerPager.setAdapter(
+                        IASDataSettingsHolder dataSettingsHolder = ((IASDataSettingsHolder) core.settingsAPI());
+                        if (dataSettingsHolder.changeLayoutDirection()) {
+                            Configuration configuration = new Configuration();
+                            configuration.setLocale(dataSettingsHolder.lang());
+                            setLayoutDirection(configuration.getLayoutDirection());
+                        }
+                        bannerViewPager.setAdapter(
                                 adapter
                         );
                     }
@@ -563,17 +572,17 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
                 new Handler(Looper.getMainLooper()).post(new Runnable() {
                     @Override
                     public void run() {
-                        ViewGroup.LayoutParams layoutParams = bannerPager.getLayoutParams();
+                        ViewGroup.LayoutParams layoutParams = bannerViewPager.getLayoutParams();
                         int height = calculateHeight(newValue.getItems());
                         float itemWidth = calculateItemWidth();
                         layoutParams.height = height;
-                        bannerPager.setClipToPadding(false);
-                        bannerPager.setPadding(Sizes.dpToPxExt(customBannerPlace.prevBannerOffset() + customBannerPlace.bannersGap(), getContext()),
+                        bannerViewPager.setClipToPadding(false);
+                        bannerViewPager.setPadding(Sizes.dpToPxExt(customBannerPlace.prevBannerOffset() + customBannerPlace.bannersGap(), getContext()),
                                 0,
                                 Sizes.dpToPxExt(customBannerPlace.nextBannerOffset() + customBannerPlace.bannersGap(), getContext()),
                                 0
                         );
-                        bannerPager.setPageMargin(Sizes.dpToPxExt(customBannerPlace.bannersGap(), getContext()));
+                        bannerViewPager.setPageMargin(Sizes.dpToPxExt(customBannerPlace.bannersGap(), getContext()));
                         float iw = Sizes.getScreenSize(getContext()).x - Sizes.dpToPxExt(customBannerPlace.prevBannerOffset(), getContext()) - Sizes.dpToPxExt(customBannerPlace.nextBannerOffset(), getContext());
                         for (int i = 0; i < customBannerPlace.bannersOnScreen() - 1; i++) {
                             iw -= Sizes.dpToPxExt(customBannerPlace.bannersGap(), getContext());
@@ -606,18 +615,24 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
                                         getContext()
                                 )
                         );
-                        bannerPager.setOffscreenPageLimit(1);
+                        bannerViewPager.setOffscreenPageLimit(1);
                         Log.e("BannerProfiling", "setAdapter values" + placeId);
-                        bannerPager.setAdapter(
+                        IASDataSettingsHolder dataSettingsHolder = ((IASDataSettingsHolder) core.settingsAPI());
+                        if (dataSettingsHolder.changeLayoutDirection()) {
+                            Configuration configuration = new Configuration();
+                            configuration.setLocale(dataSettingsHolder.lang());
+                            setLayoutDirection(configuration.getLayoutDirection());
+                        }
+                        bannerViewPager.setAdapter(
                                 adapter
                         );
                         int index = (newValue.currentIndex() == null) ?
                                 adapter.getStartedIndex() :
                                 newValue.currentIndex();
-                        if (bannerPager.getCurrentItem() == index) {
+                        if (bannerViewPager.getCurrentItem() == index) {
                             pageChangeListener.onPageSelected(index);
                         } else {
-                            bannerPager.setCurrentItem(index, true);
+                            bannerViewPager.setCurrentItem(index, true);
                         }
 
                     }
