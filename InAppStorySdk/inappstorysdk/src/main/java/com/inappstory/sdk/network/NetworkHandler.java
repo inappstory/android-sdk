@@ -172,6 +172,7 @@ public final class NetworkHandler implements InvocationHandler {
     ) {
         IASDataSettingsHolder dataSettingsHolder = (IASDataSettingsHolder) core.settingsAPI();
         String deviceId = dataSettingsHolder.deviceId();
+        boolean anonymous = dataSettingsHolder.anonymous();
         List<String> excludeList = Arrays.asList(exclude);
         List<Header> resHeaders = new ArrayList<>();
         if (!excludeList.contains(HeadersKeys.ACCEPT))
@@ -206,7 +207,7 @@ public final class NetworkHandler implements InvocationHandler {
         }
         if (!excludeList.contains(HeadersKeys.CONTENT_TYPE))
             resHeaders.add(new ContentTypeHeader(isFormEncoded, hasBody));
-        if (!excludeList.contains(HeadersKeys.DEVICE_ID) && deviceId != null)
+        if (!anonymous && !excludeList.contains(HeadersKeys.DEVICE_ID) && deviceId != null)
             resHeaders.add(new XDeviceIdHeader(deviceId));
         if (!excludeList.contains(HeadersKeys.REQUEST_ID))
             resHeaders.add(new XRequestIdHeader());
