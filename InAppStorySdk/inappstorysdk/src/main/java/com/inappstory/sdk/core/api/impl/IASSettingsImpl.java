@@ -107,7 +107,12 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
             sendStatistic = this.sendStatistic;
             userId = newUserId;
         }
-        refreshSession(currentUserId, currentLang, sendStatistic, anonymous);
+        refreshSession(
+                currentUserId,
+                currentLang,
+                sendStatistic,
+                anonymous
+        );
     }
 
     private void refreshSession(
@@ -138,6 +143,7 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
                             true,
                             currentLang.toLanguageTag(),
                             currentUserId,
+                            anonymous ? null : deviceId,
                             sessionId
                     );
                 } else {
@@ -158,6 +164,7 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
         final String currentUserId;
         final boolean sendStatistic;
         final boolean anonymous;
+        final String deviceId;
         if (newLang == null) return;
         synchronized (settingsLock) {
             if (lang.toLanguageTag().equals(newLang.toLanguageTag())) return;
@@ -408,6 +415,7 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
                     true,
                     currentLang.toLanguageTag(),
                     currentUserId,
+                    currentAnonymous ? null : deviceId,
                     sessionId
             );
         }

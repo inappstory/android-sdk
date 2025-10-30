@@ -611,6 +611,7 @@ class StoryDownloader {
                 false,
                 dataSettingsHolder.lang().toLanguageTag(),
                 dataSettingsHolder.userId(),
+                dataSettingsHolder.anonymous() ? null : dataSettingsHolder.deviceId(),
                 sessionId
         );
     }

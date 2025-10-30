@@ -243,7 +243,7 @@ public class SessionManager {
                                         SESSION_EXPAND,
                                         FEATURES,
                                         platform,
-                                        deviceId,
+                                        initialSessionParameters.anonymous() ? null : deviceId,
                                         model,
                                         manufacturer,
                                         brand,
@@ -271,6 +271,7 @@ public class SessionManager {
                                                     true,
                                                     initialSessionParameters.locale(),
                                                     initialSessionParameters.userId(),
+                                                    initialSessionParameters.anonymous() ? null : deviceId,
                                                     currentSession
                                             );
                                             openSessionInner();
@@ -367,6 +368,7 @@ public class SessionManager {
             final boolean changeSessionSettings,
             final String oldLang,
             final String oldUserId,
+            final String oldDeviceId,
             final String oldSessionId
     ) {
         if (oldSessionId == null) return;
@@ -391,6 +393,7 @@ public class SessionManager {
                                             stat
                                     ),
                                     oldUserId,
+                                    oldDeviceId,
                                     oldLang
                             ),
                             new NetworkCallback<SessionResponse>() {
