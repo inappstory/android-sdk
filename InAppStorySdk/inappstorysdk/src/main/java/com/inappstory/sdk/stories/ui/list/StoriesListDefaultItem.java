@@ -38,10 +38,18 @@ public final class StoriesListDefaultItem implements IStoriesListItem {
     Context context;
     int layoutDirection;
 
-    public StoriesListDefaultItem(AppearanceManager appearanceManager, Context context, int layoutDirection) {
+    int parentWidth;
+
+    public StoriesListDefaultItem(
+            AppearanceManager appearanceManager,
+            Context context,
+            int layoutDirection,
+            int parentWidth
+    ) {
         this.context = context;
         this.appearanceManager = appearanceManager;
         this.layoutDirection = layoutDirection;
+        this.parentWidth = parentWidth;
     }
 
     @Override
@@ -73,11 +81,13 @@ public final class StoriesListDefaultItem implements IStoriesListItem {
 
     private void setContainerSize() {
         if (container == null) return;
-        if (appearanceManager.getRealHeight(context) != null) {
-            container.getLayoutParams().height = appearanceManager.getRealHeight(context);
+        Integer rh = appearanceManager.getRealHeight(context, parentWidth);
+        Integer rw = appearanceManager.getRealWidth(context, parentWidth);
+        if (rh != null) {
+            container.getLayoutParams().height = rh;
         }
-        if (appearanceManager.getRealWidth(context) != null) {
-            container.getLayoutParams().width = appearanceManager.getRealWidth(context);
+        if (rw != null) {
+            container.getLayoutParams().width = rw;
         }
         container.requestLayout();
     }
