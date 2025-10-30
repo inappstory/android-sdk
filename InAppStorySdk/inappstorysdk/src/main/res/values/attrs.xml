@@ -31,4 +31,8 @@
     <declare-styleable name="BannerPlace">
         <attr name="cs_place_id" format="string" />
     </declare-styleable>
+
+    <declare-styleable name="BannerList">
+        <attr name="cs_banner_place_id" format="string" />
+    </declare-styleable>
 </resources>

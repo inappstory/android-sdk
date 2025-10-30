@@ -4,8 +4,8 @@ import com.inappstory.sdk.stories.utils.Observer;
 
 import java.util.List;
 
-public interface IBannerPlaceViewModel {
-    BannerPlaceState getCurrentBannerPlaceState();
+public interface IBannersWidgetViewModel<T extends IBannerWidgetState> {
+    T getCurrentBannerPlaceState();
 
     String placeId();
 
@@ -23,13 +23,13 @@ public interface IBannerPlaceViewModel {
 
     List<IBannerViewModel> getBannerViewModels();
 
-    void updateState(BannerPlaceState bannerPlaceState);
+    void updateState(T bannerPlaceState);
 
-    void addSubscriber(Observer<BannerPlaceState> observer);
+    void addSubscriber(Observer<T> observer);
 
-    void addSubscriberAndCheckLocal(Observer<BannerPlaceState> observer);
+    void addSubscriberAndCheckLocal(Observer<T> observer);
 
-    void removeSubscriber(Observer<BannerPlaceState> observer);
+    void removeSubscriber(Observer<T> observer);
 
     void addBannerPlaceLoadCallback(InnerBannerPlaceLoadCallback callback);
 
@@ -47,6 +47,6 @@ public interface IBannerPlaceViewModel {
 
     void dataIsCleared();
 
-    boolean hasSubscribers(Observer<BannerPlaceState> observer);
+    boolean hasSubscribers(Observer<T> observer);
 
 }

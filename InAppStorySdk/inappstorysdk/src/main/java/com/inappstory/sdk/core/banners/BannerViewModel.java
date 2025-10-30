@@ -14,7 +14,6 @@ import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.data.IReaderContent;
 import com.inappstory.sdk.core.data.IShownTime;
 import com.inappstory.sdk.core.exceptions.NotImplementedMethodException;
-import com.inappstory.sdk.core.ui.screens.inappmessagereader.IAMShownTime;
 import com.inappstory.sdk.inappmessage.domain.stedata.AutoSlideEndData;
 import com.inappstory.sdk.inappmessage.domain.stedata.CallToActionData;
 import com.inappstory.sdk.inappmessage.domain.stedata.JsSendApiRequestData;
@@ -31,7 +30,6 @@ import com.inappstory.sdk.stories.api.models.UpdateTimelineData;
 import com.inappstory.sdk.stories.cache.ContentIdAndType;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.BannerData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickAction;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.utils.Observable;
 import com.inappstory.sdk.stories.utils.Observer;
 import com.inappstory.sdk.stories.utils.SingleTimeEvent;
@@ -106,14 +104,14 @@ public class BannerViewModel implements IBannerViewModel {
     private final SingleTimeEvent<STETypeAndData> singleTimeEvents =
             new SingleTimeEvent<>();
 
-    private final IBannerPlaceViewModel bannerPlaceViewModel;
+    private final IBannersWidgetViewModel bannerPlaceViewModel;
 
     public BannerViewModel(
             int bannerId,
             String bannerPlace,
             int bannerIndex,
             IASCore core,
-            IBannerPlaceViewModel bannerPlaceViewModel
+            IBannersWidgetViewModel bannerPlaceViewModel
     ) {
         this.bannerId = bannerId;
         this.bannerPlace = bannerPlace;

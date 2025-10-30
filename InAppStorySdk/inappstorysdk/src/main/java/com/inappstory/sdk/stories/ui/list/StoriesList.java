@@ -931,14 +931,17 @@ public class StoriesList extends RecyclerView {
             public void getItemOffsets(@NonNull Rect outRect, @NonNull View view, @NonNull RecyclerView parent, @NonNull State state) {
                 super.getItemOffsets(outRect, view, parent, state);
                 int margin = appearanceManager.csListItemMargin(getContext());
+
                 outRect.bottom = margin;
                 outRect.top = margin;
                 int position = parent.getChildAdapterPosition(view);
                 int itemCount = state.getItemCount();
-                if (position == 0)
-                    outRect.left = margin;
-                if (position == itemCount - 1) {
-                    outRect.right = margin;
+                if (appearanceManager.csColumnCount() == null) {
+                    if (position == 0)
+                        outRect.left = margin;
+                    if (position == itemCount - 1) {
+                        outRect.right = margin;
+                    }
                 }
             }
         });

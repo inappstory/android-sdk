@@ -260,15 +260,23 @@ public class AppearanceManager {
         return 1f;
     }
 
-    private int getScaledWidth(Context context) {
-        return (int) ((Sizes.getScreenSize(context).x -
+    private int getScaledWidth(Context context, Integer containerWidth) {
+        return (int) (((containerWidth != null ? containerWidth : Sizes.getScreenSize(context).x) -
                 (float) (csColumnCount + 1) * csListItemMargin) / csColumnCount);
     }
 
 
     public Integer getRealWidth(Context context) {
+        return getRealWidth(context, null);
+    }
+
+    public Integer getRealHeight(Context context) {
+        return getRealHeight(context, null);
+    }
+
+    public Integer getRealWidth(Context context, Integer containerWidth) {
         if (csColumnCount != null && csColumnCount > 0) {
-            return getScaledWidth(context);
+            return getScaledWidth(context, containerWidth);
         } else {
             if (csListItemWidth != null && csListItemWidth > 0)
                 return csListItemWidth;
@@ -281,10 +289,10 @@ public class AppearanceManager {
         }
     }
 
-    public Integer getRealHeight(Context context) {
+    public Integer getRealHeight(Context context, Integer containerWidth) {
         float ratio = getCurrentRatio();
         if (csColumnCount != null && csColumnCount > 0) {
-            return (int) (getScaledWidth(context) / ratio);
+            return (int) (getScaledWidth(context, containerWidth) / ratio);
         } else {
             if (csListItemHeight != null && csListItemHeight > 0)
                 return csListItemHeight;

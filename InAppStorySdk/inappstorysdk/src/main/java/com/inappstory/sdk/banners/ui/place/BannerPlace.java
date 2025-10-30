@@ -34,9 +34,9 @@ import com.inappstory.sdk.banners.ICustomBannerPlaceholder;
 import com.inappstory.sdk.core.banners.InnerBannerPlaceLoadCallback;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
-import com.inappstory.sdk.core.banners.BannerPlaceLoadStates;
+import com.inappstory.sdk.core.banners.BannersWidgetLoadStates;
 import com.inappstory.sdk.core.banners.BannerPlaceState;
-import com.inappstory.sdk.core.banners.IBannerPlaceViewModel;
+import com.inappstory.sdk.core.banners.IBannersWidgetViewModel;
 import com.inappstory.sdk.core.banners.ICustomBannerPlaceAppearance;
 import com.inappstory.sdk.core.data.IBanner;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.BannerData;
@@ -50,13 +50,18 @@ import java.util.UUID;
 
 public class BannerPlace extends FrameLayout implements Observer<BannerPlaceState>, IBannersWidget {
     private BannerViewPager bannerViewPager;
-    private IBannerPlaceViewModel bannerPlaceViewModel;
+    private IBannersWidgetViewModel<BannerPlaceState> bannerPlaceViewModel;
     private String placeId;
     private IASCore core;
     private ICustomBannerPlaceAppearance customBannerPlace = new DefaultBannerPlaceAppearance();
     private String lastLaunchedTag = "";
-
     private final String defaultUniqueId = UUID.randomUUID().toString();
+    private String customUniqueId = null;
+    private boolean scrollManage = false;
+    private boolean initialized = false;
+    private final Object scrollManageLock = new Object();
+    private BannersWidgetLoadStates currentLoadState = BannersWidgetLoadStates.EMPTY;
+
 
     public String uniqueId() {
         return customUniqueId != null ? customUniqueId : defaultUniqueId;
@@ -76,8 +81,6 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
         if (bannerPlaceViewModel != null)
             bannerPlaceViewModel.uniqueId(customUniqueId);
     }
-
-    private String customUniqueId = null;
 
     public void reloadBanners() {
         loadBanners(true);
@@ -162,9 +165,6 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
         }
     };
 
-
-    private boolean scrollManage = false;
-    private final Object scrollManageLock = new Object();
 
     private BannerPlaceNavigationCallback bannerPlaceNavigationCallback = emptyBannerPlaceNavigationCallback;
 
@@ -327,7 +327,6 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
         return super.onInterceptTouchEvent(event);
     }
 
-    private boolean initialized = false;
 
     public void loadBanners(boolean skipCache) {
         if (placeId == null || placeId.isEmpty()) {
@@ -399,7 +398,7 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
             } else {
                 return true;
             }
-        IBannerPlaceViewModel bannerPlaceViewModel = localCore
+        IBannersWidgetViewModel bannerPlaceViewModel = localCore
                 .widgetViewModels()
                 .bannerPlaceViewModels()
                 .get(uniquePlaceId);
@@ -503,13 +502,12 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
                 ), getContext())) / (1f * customBannerPlace.bannersOnScreen());
     }
 
-    private BannerPlaceLoadStates currentLoadState = BannerPlaceLoadStates.EMPTY;
 
     @Override
     public void onUpdate(final BannerPlaceState newValue) {
         if (newValue == null || newValue.loadState() == null) return;
         if (bannerPlaceViewModel == null) return;
-        if (currentLoadState == BannerPlaceLoadStates.LOADED && newValue.currentIndex() != null) {
+        if (currentLoadState == BannersWidgetLoadStates.LOADED && newValue.currentIndex() != null) {
             if (bannerViewPager.getCurrentItem() != newValue.currentIndex()) {
                 Log.e("Indexes", bannerViewPager.getCurrentItem() + " " + newValue.currentIndex());
                 bannerViewPager.post(new Runnable() {

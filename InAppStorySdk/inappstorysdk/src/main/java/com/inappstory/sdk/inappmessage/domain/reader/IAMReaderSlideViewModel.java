@@ -184,22 +184,45 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
     @Override
     public void onEvent(String name, String event) {
         if (name == null || name.isEmpty()) return;
+        Log.e("OnEvent", name + " " + event);
         switch (name) {
             case "showSlide":
-                if (event == null || event.isEmpty()) return;
-                ShowSlideJSPayload showSlideJSPayload = JsonParser.fromJson(
-                        event,
-                        ShowSlideJSPayload.class
-                );
-                if (showSlideJSPayload != null) {
-                    slideStateObservable.updateValue(
-                            slideStateObservable
-                                    .getValue()
-                                    .copy()
-                                    .slideIndex(showSlideJSPayload.index)
-                    );
-                    slideTimeState.updateSlideIndex(showSlideJSPayload.index);
-                    new Handler(Looper.getMainLooper()).post(() -> core.callbacksAPI().useCallback(
+                showSlideEvent(event);
+                break;
+            case "slideLeft":
+                slideLeftEvent(event);
+                break;
+        }
+    }
+    private void slideLeftEvent(String event) {
+        if (event == null || event.isEmpty()) return;
+        final SlideLeftJSPayload slideLeftJSPayload = JsonParser.fromJson(
+                event,
+                SlideLeftJSPayload.class
+        );
+        if (slideLeftJSPayload != null) {
+            slideTimeState.leftSlide(slideLeftJSPayload.index);
+        }
+    }
+
+    private void showSlideEvent(String event) {
+        if (event == null || event.isEmpty()) return;
+        final ShowSlideJSPayload showSlideJSPayload = JsonParser.fromJson(
+                event,
+                ShowSlideJSPayload.class
+        );
+        if (showSlideJSPayload != null) {
+            slideStateObservable.updateValue(
+                    slideStateObservable
+                            .getValue()
+                            .copy()
+                            .slideIndex(showSlideJSPayload.index)
+            );
+            slideTimeState.updateSlideIndex(showSlideJSPayload.index);
+            new Handler(Looper.getMainLooper()).post(new Runnable() {
+                @Override
+                public void run() {
+                    core.callbacksAPI().useCallback(
                             IASCallbackType.SHOW_IN_APP_MESSAGE_SLIDE,
                             new UseIASCallback<ShowInAppMessageSlideCallback>() {
                                 @Override
@@ -210,12 +233,11 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
                                     );
                                 }
                             }
-                    ));
+                    );
                 }
-                break;
+            });
         }
     }
-
 
     @Override
     public ContentIdWithIndex iamId() {

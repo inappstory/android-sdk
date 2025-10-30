@@ -9,11 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public class BannerPlaceState implements IBannerPlaceState {
-
-    public Integer currentIndex() {
-        return currentIndex;
-    }
+public class BannerListState implements IBannerWidgetState {
 
     public List<String> tags() {
         return tags;
@@ -35,57 +31,49 @@ public class BannerPlaceState implements IBannerPlaceState {
         return placeId;
     }
 
-    public BannerPlaceState() {
+    public BannerListState() {
         Log.e("BannerPlaceState", "Create");
     }
 
-    private BannerPlaceState(List<IBanner> items) {
+    private BannerListState(List<IBanner> items) {
         Log.e("BannerPlaceState", "Copy");
         this.items = new ArrayList<>(items);
     }
 
-    public BannerPlaceState currentIndex(Integer currentIndex) {
-        Log.e("BannerPlaceState", "currentIndex " + currentIndex);
-        this.currentIndex = currentIndex;
-        return this;
-    }
 
-    public BannerPlaceState iterationId(String iterationId) {
+    public BannerListState iterationId(String iterationId) {
         this.iterationId = iterationId;
         return this;
     }
 
-    public BannerPlaceState loadState(BannersWidgetLoadStates loadState) {
+    public BannerListState loadState(BannersWidgetLoadStates loadState) {
         this.loadState = loadState;
         return this;
     }
 
-    public BannerPlaceState items(List<IBanner> items) {
+    public BannerListState items(List<IBanner> items) {
         this.items = items;
         return this;
     }
 
-    public BannerPlaceState tags(List<String> tags) {
+    public BannerListState tags(List<String> tags) {
         this.tags = tags;
         return this;
     }
 
-    public BannerPlaceState placeId(String placeId) {
+    public BannerListState placeId(String placeId) {
         this.placeId = placeId;
         return this;
     }
 
-    BannerPlaceAppearance appearance;
-    Integer currentIndex;
     String placeId = "";
     String iterationId = UUID.randomUUID().toString();
     BannersWidgetLoadStates loadState = BannersWidgetLoadStates.NONE;
     List<IBanner> items = new ArrayList<>();
     List<String> tags = new ArrayList<>();
 
-    public BannerPlaceState copy() {
-        return new BannerPlaceState(this.items)
-                .currentIndex(this.currentIndex)
+    public BannerListState copy() {
+        return new BannerListState(this.items)
                 .iterationId(this.iterationId)
                 .tags(this.tags)
                 .placeId(this.placeId)

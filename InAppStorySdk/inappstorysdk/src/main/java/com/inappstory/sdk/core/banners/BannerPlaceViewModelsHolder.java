@@ -12,7 +12,7 @@ import java.util.Set;
 import java.util.UUID;
 
 public class BannerPlaceViewModelsHolder {
-    private Map<String, IBannerPlaceViewModel> viewModels = new HashMap<>();
+    private Map<String, IBannersWidgetViewModel> viewModels = new HashMap<>();
     private final Object lock = new Object();
     private final IASCore core;
 
@@ -22,11 +22,11 @@ public class BannerPlaceViewModelsHolder {
     }
 
 
-    public IBannerPlaceViewModel getContentPlaceViewModel(String bannerPlace) {
+    public IBannersWidgetViewModel getContentPlaceViewModel(String bannerPlace) {
         return get("ias_banner_place_" + bannerPlace);
     }
 
-    public IBannerPlaceViewModel getOrCreateContentPlaceViewModel(String bannerPlace) {
+    public IBannersWidgetViewModel getOrCreateContentPlaceViewModel(String bannerPlace) {
         return getOrCreate("ias_banner_place_" + bannerPlace);
     }
 
@@ -36,9 +36,9 @@ public class BannerPlaceViewModelsHolder {
         }
     }
 
-    public Set<IBannerPlaceViewModel> getNonEmptyByPlaceId(String placeId) {
-        Set<IBannerPlaceViewModel> bannerPlaceViewModels = new HashSet<>();
-        for (IBannerPlaceViewModel viewModel : viewModels.values()) {
+    public Set<IBannersWidgetViewModel> getNonEmptyByPlaceId(String placeId) {
+        Set<IBannersWidgetViewModel> bannerPlaceViewModels = new HashSet<>();
+        for (IBannersWidgetViewModel viewModel : viewModels.values()) {
             if (Objects.equals(viewModel.placeId(), placeId)) {
                 bannerPlaceViewModels.add(viewModel);
             }
@@ -46,13 +46,13 @@ public class BannerPlaceViewModelsHolder {
         return bannerPlaceViewModels;
     }
 
-    public IBannerPlaceViewModel get(String uniqueId) {
+    public IBannersWidgetViewModel get(String uniqueId) {
         synchronized (lock) {
             return viewModels.get(uniqueId);
         }
     }
 
-    public IBannerPlaceViewModel getOrCreate(String uniqueId) {
+    public IBannersWidgetViewModel getOrCreate(String uniqueId) {
         synchronized (lock) {
             if (!viewModels.containsKey(uniqueId)) {
                 viewModels.put(uniqueId, new BannerPlaceViewModel(core, uniqueId));
@@ -63,11 +63,11 @@ public class BannerPlaceViewModelsHolder {
 
     public boolean copyFromCache(String uniqueId, String bannerPlace) {
         BannerPlaceState placeState = null;
-        IBannerPlaceViewModel uniqueVM = get(uniqueId);
+        IBannersWidgetViewModel uniqueVM = get(uniqueId);
         if (uniqueVM == null) return false;
-        IBannerPlaceViewModel placeVM = getContentPlaceViewModel(bannerPlace);
+        IBannersWidgetViewModel placeVM = getContentPlaceViewModel(bannerPlace);
         if (placeVM != null)
-            placeState = placeVM.getCurrentBannerPlaceState();
+            placeState = (BannerPlaceState) placeVM.getCurrentBannerPlaceState();
         if (placeState != null) {
             uniqueVM.updateState(
                     placeState
@@ -83,23 +83,23 @@ public class BannerPlaceViewModelsHolder {
     }
 
     public void reloadSession() {
-        List<IBannerPlaceViewModel> placeViewModels;
+        List<IBannersWidgetViewModel> placeViewModels;
         synchronized (lock) {
             placeViewModels = new ArrayList<>(viewModels.values());
             // viewModels.clear();
         }
-        for (IBannerPlaceViewModel placeViewModel : placeViewModels) {
+        for (IBannersWidgetViewModel placeViewModel : placeViewModels) {
             placeViewModel.reloadSubscriber();
         }
     }
 
     public void clear() {
-        List<IBannerPlaceViewModel> placeViewModels;
+        List<IBannersWidgetViewModel> placeViewModels;
         synchronized (lock) {
             placeViewModels = new ArrayList<>(viewModels.values());
             viewModels.clear();
         }
-        for (IBannerPlaceViewModel placeViewModel : placeViewModels) {
+        for (IBannersWidgetViewModel placeViewModel : placeViewModels) {
             placeViewModel.clear();
             placeViewModel.dataIsCleared();
         }

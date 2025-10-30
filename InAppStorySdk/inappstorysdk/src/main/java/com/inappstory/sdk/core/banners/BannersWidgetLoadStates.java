@@ -1,5 +1,5 @@
 package com.inappstory.sdk.core.banners;
 
-public enum BannerPlaceLoadStates {
+public enum BannersWidgetLoadStates {
     NONE, EMPTY, LOADING, LOADED, FAILED
 }

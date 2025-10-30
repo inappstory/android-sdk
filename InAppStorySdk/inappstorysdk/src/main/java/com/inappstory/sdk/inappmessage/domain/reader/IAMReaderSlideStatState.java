@@ -25,14 +25,29 @@ public class IAMReaderSlideStatState {
         }
     }
 
+    private int lastLeftIndex = -1;
+
+    public void leftSlide(int index) {
+        synchronized (lock) {
+            if (slideTimes == null) return;
+            if (currentIndex != index) return;
+            if (currentIndex >= 0) {
+                slideTimes[currentIndex] += (System.currentTimeMillis() - this.resumedSlideTime);
+                lastLeftIndex = index;
+            }
+        }
+    }
+
     public void updateSlideIndex(int newIndex) {
         synchronized (lock) {
             if (slideTimes == null) return;
             if (newIndex == currentIndex) return;
             if (newIndex < 0 || newIndex >= slideTimes.length) return;
-            if (currentIndex >= 0)
-                slideTimes[currentIndex] += (System.currentTimeMillis() - this.resumedSlideTime);
             this.resumedSlideTime = System.currentTimeMillis();
+            if (lastLeftIndex != currentIndex) {
+                slideTimes[currentIndex] += (System.currentTimeMillis() - this.resumedSlideTime);
+            }
+            lastLeftIndex = -1;
             currentIndex = newIndex;
         }
     }
