@@ -109,6 +109,7 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
         }
         refreshSession(
                 currentUserId,
+                localDeviceId,
                 currentLang,
                 sendStatistic,
                 anonymous
@@ -117,6 +118,7 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
 
     private void refreshSession(
             final String currentUserId,
+            final String currentDeviceId,
             final Locale currentLang,
             final boolean sendStatistic,
             final boolean anonymous
@@ -143,7 +145,7 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
                             true,
                             currentLang.toLanguageTag(),
                             currentUserId,
-                            anonymous ? null : deviceId,
+                            currentDeviceId,
                             sessionId
                     );
                 } else {
@@ -162,20 +164,24 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
     public void setLang(final Locale newLang, final boolean changeLayoutDirection) {
         final Locale currentLang;
         final String currentUserId;
+        final String currentDeviceId;
         final boolean sendStatistic;
         final boolean anonymous;
-        final String deviceId;
         if (newLang == null) return;
         synchronized (settingsLock) {
             if (lang.toLanguageTag().equals(newLang.toLanguageTag())) return;
             currentLang = lang;
             lang = newLang;
             anonymous = this.anonymous;
+            if (anonymous)
+                currentDeviceId = null;
+            else
+                currentDeviceId = deviceId;
             sendStatistic = this.sendStatistic;
             this.changeLayoutDirection = changeLayoutDirection;
             currentUserId = userId;
         }
-        refreshSession(currentUserId, currentLang, sendStatistic, anonymous);
+        refreshSession(currentUserId, currentDeviceId, currentLang, sendStatistic, anonymous);
     }
 
     @Override
@@ -427,6 +433,7 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
         final String currentUserId;
         final boolean currentSendStatistic;
         final boolean currentAnonymous;
+        final String currentDeviceId;
         boolean needToReloadSession = false;
         if (settings.anonymous() && settings.userId() != null) {
             InAppStoryManager.showDLog(
@@ -442,6 +449,11 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
             currentSendStatistic = this.sendStatistic;
             currentUserId = this.userId;
             currentAnonymous = this.anonymous;
+            if (!currentAnonymous) {
+                currentDeviceId = deviceId;
+            } else {
+                currentDeviceId = null;
+            }
             this.anonymous = settings.anonymous();
             needToReloadSession = (currentAnonymous != settings.anonymous());
             if (settings.anonymous()) {
@@ -472,16 +484,6 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
                                 StringsUtils.getErrorStringFromContext(
                                         core.appContext(),
                                         R.string.ias_usage_without_user_and_device
-                                )
-                        );
-                        return;
-                    }
-                    if (currentAnonymous) {
-                        InAppStoryManager.showELog(
-                                InAppStoryManager.IAS_ERROR_TAG,
-                                StringsUtils.getErrorStringFromContext(
-                                        core.appContext(),
-                                        R.string.ias_user_cant_change_with_anonymous
                                 )
                         );
                         return;
@@ -577,7 +579,12 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
             }
         }
         if (needToReloadSession) {
-            refreshSession(currentUserId, currentLang, currentSendStatistic, currentAnonymous);
+            refreshSession(currentUserId,
+                    currentDeviceId,
+                    currentLang,
+                    currentSendStatistic,
+                    currentAnonymous
+            );
         }
     }
 
@@ -776,6 +783,7 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
         if (this.sendStatistic == sendStatistic) return;
         final Locale currentLang;
         final String currentUserId;
+        final String currentDeviceId;
         final boolean currentSendStatistic;
         final boolean anonymous;
         synchronized (settingsLock) {
@@ -793,9 +801,20 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
             currentLang = lang;
             currentUserId = userId;
             anonymous = this.anonymous;
+            if (anonymous) {
+                currentDeviceId = null;
+            } else {
+                currentDeviceId = deviceId;
+            }
             this.sendStatistic = sendStatistic;
         }
-        refreshSession(currentUserId, currentLang, currentSendStatistic, anonymous);
+        refreshSession(
+                currentUserId,
+                currentDeviceId,
+                currentLang,
+                currentSendStatistic,
+                anonymous
+        );
     }
 
 

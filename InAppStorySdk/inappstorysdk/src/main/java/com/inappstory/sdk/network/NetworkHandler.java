@@ -207,14 +207,28 @@ public final class NetworkHandler implements InvocationHandler {
         }
         if (!excludeList.contains(HeadersKeys.CONTENT_TYPE))
             resHeaders.add(new ContentTypeHeader(isFormEncoded, hasBody));
-        if (!anonymous && !excludeList.contains(HeadersKeys.DEVICE_ID) && deviceId != null)
-            resHeaders.add(new XDeviceIdHeader(deviceId));
+        if (!excludeList.contains(HeadersKeys.DEVICE_ID) && deviceId != null) {
+            boolean hasDeviceIdHeader = false;
+            for (Pair<String, String> replaceHeader : replaceHeaders) {
+                if (replaceHeader.first.equals(HeadersKeys.DEVICE_ID)) {
+                    hasDeviceIdHeader = true;
+                    if (replaceHeader.second != null) {
+                        resHeaders.add(new XDeviceIdHeader(deviceId));
+                    }
+                    break;
+                }
+            }
+            if (!hasDeviceIdHeader && !anonymous) {
+                resHeaders.add(new XDeviceIdHeader(deviceId));
+            }
+        }
         if (!excludeList.contains(HeadersKeys.REQUEST_ID))
             resHeaders.add(new XRequestIdHeader());
         if (!excludeList.contains(HeadersKeys.USER_AGENT))
             resHeaders.add(new UserAgentHeader(core));
         if (!excludeList.contains(HeadersKeys.USER_ID))
             resHeaders.add(new XUserIdHeader());
+
         for (Header header : resHeaders) {
             if (header instanceof MutableHeader) {
                 for (Pair<String, String> replaceHeader : replaceHeaders) {
