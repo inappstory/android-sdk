@@ -31,16 +31,20 @@ public class BannerPlaceViewModelsHolder {
     }
 
     public void changeKey(String oldKey, String newKey) {
-        if (viewModels.containsKey(oldKey)) {
-            viewModels.put(newKey, viewModels.remove(oldKey));
+        synchronized (lock) {
+            if (viewModels.containsKey(oldKey)) {
+                viewModels.put(newKey, viewModels.remove(oldKey));
+            }
         }
     }
 
     public Set<IBannersWidgetViewModel> getNonEmptyByPlaceId(String placeId) {
         Set<IBannersWidgetViewModel> bannerPlaceViewModels = new HashSet<>();
-        for (IBannersWidgetViewModel viewModel : viewModels.values()) {
-            if (Objects.equals(viewModel.placeId(), placeId)) {
-                bannerPlaceViewModels.add(viewModel);
+        synchronized (lock) {
+            for (IBannersWidgetViewModel viewModel : viewModels.values()) {
+                if (Objects.equals(viewModel.placeId(), placeId)) {
+                    bannerPlaceViewModels.add(viewModel);
+                }
             }
         }
         return bannerPlaceViewModels;

@@ -28,15 +28,15 @@ public class BannerPagerAdapter extends PagerAdapter implements Observer<BannerS
     private final String uniqueId;
     private final float iwRatio;
     private final float itemWidth;
+    private final boolean loop;
+    private final float bannerRadius;
+    private final String iterationId;
+    private final ICustomBannerPlaceholder bannerPlaceholderCreator;
 
     public boolean isLoop() {
         return loop;
     }
 
-    private final boolean loop;
-    private final float bannerRadius;
-    private final String iterationId;
-    private final ICustomBannerPlaceholder bannerPlaceholderCreator;
 
     public BannerPagerAdapter(
             IASCore core,

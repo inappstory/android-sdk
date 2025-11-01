@@ -49,7 +49,7 @@ public class BannerPlaceUseCase {
             localTags.addAll(settingsHolder.tags());
         }
 
-
+        final String deviceId = ((IASDataSettingsHolder) core.settingsAPI()).deviceId();
         new ConnectionCheck().check(
                 core.appContext(),
                 new ConnectionCheckCallback(core) {
@@ -100,6 +100,7 @@ public class BannerPlaceUseCase {
                                                 false,
                                                 sessionParameters.locale(),
                                                 sessionParameters.userId(),
+                                                sessionParameters.anonymous() ? null : deviceId,
                                                 sessionParameters.sessionId()
                                         );
                                         if (retry)

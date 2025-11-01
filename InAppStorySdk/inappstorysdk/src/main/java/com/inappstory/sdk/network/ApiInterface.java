@@ -351,6 +351,7 @@ public interface ApiInterface {
     Request sessionClose(
             @Body StatisticSendObject request,
             @ReplaceHeader(HeadersKeys.USER_ID) String xUserId,
+            @ReplaceHeader(HeadersKeys.DEVICE_ID) String xDeviceId,
             @ReplaceHeader(HeadersKeys.ACCEPT_LANGUAGE) String lang
     );
 

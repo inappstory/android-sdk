@@ -76,11 +76,16 @@ public class InAppMessageMainFragment extends Fragment implements Observer<IAMRe
         }
     }
 
+    public void setOnOpenAction(InAppMessageOpenAction onOpenAction) {
+        this.onOpenAction = onOpenAction;
+    }
+
     public void setOnCloseAction(InAppMessageCloseAction onCloseAction) {
         this.onCloseAction = onCloseAction;
     }
 
     private InAppMessageCloseAction onCloseAction;
+    private InAppMessageOpenAction onOpenAction;
 
 
     @Nullable
@@ -256,6 +261,8 @@ public class InAppMessageMainFragment extends Fragment implements Observer<IAMRe
                 hideContainer();
                 break;
             case OPENED:
+                if (onOpenAction != null)
+                    onOpenAction.onOpen();
                 break;
         }
     }
