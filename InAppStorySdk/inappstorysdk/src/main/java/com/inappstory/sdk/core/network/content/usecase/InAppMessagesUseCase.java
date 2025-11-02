@@ -47,7 +47,7 @@ public class InAppMessagesUseCase {
         } else {
             localTags.addAll(settingsHolder.tags());
         }
-
+        final String deviceId = ((IASDataSettingsHolder) core.settingsAPI()).deviceId();
         new ConnectionCheck().check(
                 core.appContext(),
                 new ConnectionCheckCallback(core) {
@@ -98,6 +98,7 @@ public class InAppMessagesUseCase {
                                                 false,
                                                 sessionParameters.locale(),
                                                 sessionParameters.userId(),
+                                                sessionParameters.anonymous() ? null : deviceId,
                                                 sessionParameters.sessionId()
                                         );
                                         if (retry)

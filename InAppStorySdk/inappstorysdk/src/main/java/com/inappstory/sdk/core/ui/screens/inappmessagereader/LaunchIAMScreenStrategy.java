@@ -350,8 +350,6 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
             return;
         }
         InAppMessageAppearance appearance = inAppMessage.inAppMessageAppearance();
-        if (inAppMessageScreenActions != null)
-            inAppMessageScreenActions.readerIsOpened();
         core.screensManager().iamReaderViewModel().initState(
                 new IAMReaderState()
                         .sourceType(sourceType)

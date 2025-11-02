@@ -4,6 +4,7 @@ import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 
 import android.content.Context;
+import android.content.res.Configuration;
 import android.content.res.TypedArray;
 import android.graphics.Color;
 import android.os.Handler;
@@ -25,6 +26,7 @@ import com.inappstory.sdk.R;
 import com.inappstory.sdk.banners.BannerPlaceNavigationCallback;
 import com.inappstory.sdk.banners.BannerPlaceLoadCallback;
 import com.inappstory.sdk.banners.ui.banner.BannerView;
+import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.banners.BannerPlaceViewModelsHolder;
 import com.inappstory.sdk.core.banners.IBannerPlaceLoadCallback;
 import com.inappstory.sdk.banners.ICustomBannerPlaceholder;
@@ -383,6 +385,12 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
             ViewGroup.LayoutParams layoutParams = bannerPager.getLayoutParams();
             layoutParams.height = WRAP_CONTENT;
             Log.e("BannerProfiling", "setAdapter deInit" + placeId);
+            IASDataSettingsHolder dataSettingsHolder = ((IASDataSettingsHolder) core.settingsAPI());
+            if (dataSettingsHolder.changeLayoutDirection()) {
+                Configuration configuration = new Configuration();
+                configuration.setLocale(dataSettingsHolder.lang());
+                setLayoutDirection(configuration.getLayoutDirection());
+            }
             bannerPager.setAdapter(adapter);
             pagerAdapter.clear();
         }
@@ -546,6 +554,12 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
                         );
                         bannerPager.setOffscreenPageLimit(1);
                         Log.e("BannerProfiling", "setAdapter empty" + placeId);
+                        IASDataSettingsHolder dataSettingsHolder = ((IASDataSettingsHolder) core.settingsAPI());
+                        if (dataSettingsHolder.changeLayoutDirection()) {
+                            Configuration configuration = new Configuration();
+                            configuration.setLocale(dataSettingsHolder.lang());
+                            setLayoutDirection(configuration.getLayoutDirection());
+                        }
                         bannerPager.setAdapter(
                                 adapter
                         );
@@ -608,6 +622,12 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
                         );
                         bannerPager.setOffscreenPageLimit(1);
                         Log.e("BannerProfiling", "setAdapter values" + placeId);
+                        IASDataSettingsHolder dataSettingsHolder = ((IASDataSettingsHolder) core.settingsAPI());
+                        if (dataSettingsHolder.changeLayoutDirection()) {
+                            Configuration configuration = new Configuration();
+                            configuration.setLocale(dataSettingsHolder.lang());
+                            setLayoutDirection(configuration.getLayoutDirection());
+                        }
                         bannerPager.setAdapter(
                                 adapter
                         );

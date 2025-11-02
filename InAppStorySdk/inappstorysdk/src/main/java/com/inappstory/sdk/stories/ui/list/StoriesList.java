@@ -935,10 +935,12 @@ public class StoriesList extends RecyclerView {
                 outRect.top = margin;
                 int position = parent.getChildAdapterPosition(view);
                 int itemCount = state.getItemCount();
-                if (position == 0)
-                    outRect.left = margin;
-                if (position == itemCount - 1) {
-                    outRect.right = margin;
+                if (appearanceManager.csColumnCount() == null) {
+                    if (position == 0)
+                        outRect.left = margin;
+                    if (position == itemCount - 1) {
+                        outRect.right = margin;
+                    }
                 }
             }
         });

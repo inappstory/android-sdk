@@ -10,6 +10,7 @@ import com.inappstory.sdk.core.data.IInAppMessage;
 import com.inappstory.sdk.inappmessage.InAppMessageScreenActions;
 import com.inappstory.sdk.inappmessage.ui.reader.InAppMessageCloseAction;
 import com.inappstory.sdk.inappmessage.ui.reader.InAppMessageMainFragment;
+import com.inappstory.sdk.inappmessage.ui.reader.InAppMessageOpenAction;
 
 
 public class DefaultOpenInAppMessageReader implements IOpenInAppMessageReader {
@@ -34,12 +35,20 @@ public class DefaultOpenInAppMessageReader implements IOpenInAppMessageReader {
                     );
             //   t.addToBackStack(IN_APP_MESSAGE_FRAGMENT);
             t.commit();
-            inAppMessageFragment.setOnCloseAction(new InAppMessageCloseAction() {
-                @Override
-                public void onClose() {
-                    screenActions.readerIsClosed();
-                }
-            });
+            if (screenActions != null) {
+                inAppMessageFragment.setOnOpenAction(new InAppMessageOpenAction() {
+                    @Override
+                    public void onOpen() {
+                        screenActions.readerIsOpened();
+                    }
+                });
+                inAppMessageFragment.setOnCloseAction(new InAppMessageCloseAction() {
+                    @Override
+                    public void onClose() {
+                        screenActions.readerIsClosed();
+                    }
+                });
+            }
             Log.e("ShowIAMLog", System.currentTimeMillis() + "_finish");
         } catch (Exception e) {
 
