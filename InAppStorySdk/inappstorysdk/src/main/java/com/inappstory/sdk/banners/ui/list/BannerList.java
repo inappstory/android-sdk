@@ -3,9 +3,14 @@ package com.inappstory.sdk.banners.ui.list;
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 
 import android.content.Context;
+import android.content.res.Configuration;
 import android.content.res.TypedArray;
+import android.graphics.Color;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
@@ -13,15 +18,23 @@ import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.banners.ICustomBannerPlaceholder;
 import com.inappstory.sdk.banners.ui.IBannersWidget;
+import com.inappstory.sdk.banners.ui.place.BannerPagerAdapter;
 import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.banners.BannerListState;
 import com.inappstory.sdk.core.banners.BannersWidgetLoadStates;
 import com.inappstory.sdk.core.banners.IBannersWidgetViewModel;
+import com.inappstory.sdk.core.data.IBanner;
 import com.inappstory.sdk.stories.utils.Observer;
+import com.inappstory.sdk.stories.utils.Sizes;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -170,6 +183,63 @@ public class BannerList extends RecyclerView implements Observer<BannerListState
 
     @Override
     public void onUpdate(BannerListState newValue) {
-
+        if (newValue == null || newValue.loadState() == null) return;
+        if (bannerListViewModel == null) return;
+        currentLoadState = newValue.loadState();
+        switch (newValue.loadState()) {
+            case EMPTY:
+                new Handler(Looper.getMainLooper()).post(new Runnable() {
+                    @Override
+                    public void run() {
+                        ViewGroup.LayoutParams layoutParams = getLayoutParams();
+                        layoutParams.height = 0;
+                        setLayoutManager(customLayoutManager);
+                        BannerListAdapter adapter = new BannerListAdapter(core,
+                                new ArrayList<IBanner>(),
+                                placeId,
+                                uniqueId(),
+                                null,
+                                newValue.iterationId(),
+                                getWidth(),
+                                Sizes.dpToPxExt(
+                                        16,
+                                        getContext()
+                                )
+                        );
+                        setAdapter(null);
+                    }
+                });
+                break;
+            case FAILED:
+                break;
+            case NONE:
+            case LOADING:
+                break;
+            case LOADED:
+                new Handler(Looper.getMainLooper()).post(new Runnable() {
+                    @Override
+                    public void run() {
+                        ViewGroup.LayoutParams layoutParams = getLayoutParams();
+                        layoutParams.height = 0;
+                        setLayoutManager(customLayoutManager);
+                        List<IBanner> items = newValue.getItems();
+                        BannerListAdapter adapter = new BannerListAdapter(
+                                core,
+                                items,
+                                placeId,
+                                uniqueId(),
+                                null,
+                                newValue.iterationId(),
+                                getWidth(),
+                                Sizes.dpToPxExt(
+                                        16,
+                                        getContext()
+                                )
+                        );
+                        setAdapter(adapter);
+                    }
+                });
+                break;
+        }
     }
 }

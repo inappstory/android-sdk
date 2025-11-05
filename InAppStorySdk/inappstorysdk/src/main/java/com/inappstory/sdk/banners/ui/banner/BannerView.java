@@ -83,13 +83,14 @@ public class BannerView extends FrameLayout implements Observer<BannerState> {
         bannerWebView.checkIfClientIsSet();
     }
 
-    public void setSize(float itemWidth, float contentRatio) {
+    public void setSize(float itemWidth, float contentRatio, boolean fullWidth) {
         if (bannerContainer != null) {
             FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(
                     (int) itemWidth,
                     (int) (itemWidth / contentRatio)
             );
-            layoutParams.gravity = Gravity.CENTER;
+            if (!fullWidth)
+                layoutParams.gravity = Gravity.CENTER;
             bannerContainer.setLayoutParams(
                     layoutParams
             );
@@ -454,7 +455,7 @@ public class BannerView extends FrameLayout implements Observer<BannerState> {
         super.onDetachedFromWindow();
         Log.e("AttachDetach", "ViewIsDetached " + uniqueId);
         if (bannerViewModel != null) {
-         //   bannerViewModel.clearJsStatus();
+            //   bannerViewModel.clearJsStatus();
             bannerViewModel.removeSubscriber(this);
         }
     }
@@ -493,7 +494,7 @@ public class BannerView extends FrameLayout implements Observer<BannerState> {
                     if (listLoadCallback != null) {
                         listLoadCallback.bannerLoadError(newValue.bannerId(), newValue.bannerIsActive());
                     }
-                  //  showRefresh();
+                    //  showRefresh();
                     break;
                 case LOADED:
                     Log.e("UpdateBannerState", "Loaded Event " + newValue.bannerId());

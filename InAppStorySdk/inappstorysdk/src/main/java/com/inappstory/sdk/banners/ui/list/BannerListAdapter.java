@@ -28,7 +28,6 @@ public class BannerListAdapter extends RecyclerView.Adapter<BannerViewHolder> {
     private final IASCore core;
     private final String bannerPlace;
     private final String uniqueId;
-    private final float iwRatio;
     private final float itemWidth;
     private final float bannerRadius;
     private final String iterationId;
@@ -41,14 +40,12 @@ public class BannerListAdapter extends RecyclerView.Adapter<BannerViewHolder> {
             String uniqueId,
             ICustomBannerPlaceholder bannerPlaceholderCreator,
             String iterationId,
-            float iwRatio,
             float itemWidth,
             float bannerRadius
     ) {
         this.banners = new ArrayList<>(banners);
 
         this.itemWidth = itemWidth;
-        this.iwRatio = iwRatio;
         this.uniqueId = uniqueId;
         this.bannerPlaceholderCreator = bannerPlaceholderCreator;
         this.iterationId = iterationId;
@@ -89,7 +86,7 @@ public class BannerListAdapter extends RecyclerView.Adapter<BannerViewHolder> {
         bannerView.setTag(tag);
         IBanner banner = banners.get(position % banners.size());
         bannerView.setBannerBackground(banner.bannerAppearance().backgroundDrawable());
-        bannerView.setSize(itemWidth, banner.bannerAppearance().singleBannerAspectRatio());
+        bannerView.setSize(itemWidth, banner.bannerAppearance().singleBannerAspectRatio(), true);
         final int bannerId = banner.id();
         final IBannerViewModel bannerViewModel = core
                 .widgetViewModels()

@@ -76,7 +76,7 @@ public class BannerPagerAdapter extends PagerAdapter implements Observer<BannerS
         bannerView.setTag(tag);
         IBanner banner = banners.get(position % banners.size());
         bannerView.setBannerBackground(banner.bannerAppearance().backgroundDrawable());
-        bannerView.setSize(itemWidth, banner.bannerAppearance().singleBannerAspectRatio());
+        bannerView.setSize(itemWidth, banner.bannerAppearance().singleBannerAspectRatio(), false);
         final int bannerId = banner.id();
         final IBannerViewModel bannerViewModel = core
                 .widgetViewModels()
