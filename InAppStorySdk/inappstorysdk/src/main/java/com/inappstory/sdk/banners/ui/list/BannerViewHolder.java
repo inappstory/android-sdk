@@ -10,6 +10,7 @@ import com.inappstory.sdk.banners.ui.banner.BannerView;
 
 public class BannerViewHolder extends RecyclerView.ViewHolder {
     public BannerView bannerView;
+    public int index;
 
     public BannerViewHolder(@NonNull View itemView) {
         super(itemView);

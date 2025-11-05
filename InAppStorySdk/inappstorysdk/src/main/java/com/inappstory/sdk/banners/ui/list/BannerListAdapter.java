@@ -75,7 +75,43 @@ public class BannerListAdapter extends RecyclerView.Adapter<BannerViewHolder> {
         return 100L * uuid.hashCode() + position;
     }
 
+    @Override
+    public void onViewDetachedFromWindow(@NonNull BannerViewHolder holder) {
+        super.onViewDetachedFromWindow(holder);
+        int position = holder.getAbsoluteAdapterPosition();
+        IBanner banner = banners.get(position % banners.size());
+        final int bannerId = banner.id();
+        final IBannerViewModel bannerViewModel = core
+                .widgetViewModels()
+                .bannerPlaceViewModels()
+                .get(
+                        uniqueId
+                )
+                .getBannerViewModel(
+                        bannerId,
+                        position
+                );
+        bannerViewModel.bannerIsActive(false);
+    }
 
+    @Override
+    public void onViewAttachedToWindow(@NonNull BannerViewHolder holder) {
+        super.onViewAttachedToWindow(holder);
+        int position = holder.getAbsoluteAdapterPosition();
+        IBanner banner = banners.get(position % banners.size());
+        final int bannerId = banner.id();
+        final IBannerViewModel bannerViewModel = core
+                .widgetViewModels()
+                .bannerPlaceViewModels()
+                .get(
+                        uniqueId
+                )
+                .getBannerViewModel(
+                        bannerId,
+                        position
+                );
+        bannerViewModel.bannerIsActive(true);
+    }
 
     @Override
     public void onBindViewHolder(@NonNull BannerViewHolder holder, int position) {

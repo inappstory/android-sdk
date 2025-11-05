@@ -24,9 +24,14 @@ import com.inappstory.sdk.R;
 import com.inappstory.sdk.banners.ICustomBannerPlaceholder;
 import com.inappstory.sdk.banners.ui.IBannersWidget;
 import com.inappstory.sdk.banners.ui.place.BannerPagerAdapter;
+import com.inappstory.sdk.banners.ui.place.BannerPlace;
 import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.banners.BannerListState;
+import com.inappstory.sdk.core.banners.BannerListViewModel;
+import com.inappstory.sdk.core.banners.BannerPlaceViewModelsHolder;
+import com.inappstory.sdk.core.banners.BannerWidgetViewModelType;
 import com.inappstory.sdk.core.banners.BannersWidgetLoadStates;
 import com.inappstory.sdk.core.banners.IBannersWidgetViewModel;
 import com.inappstory.sdk.core.data.IBanner;
@@ -45,7 +50,7 @@ public class BannerList extends RecyclerView implements Observer<BannerListState
     private final String defaultUniqueId = UUID.randomUUID().toString();
     private String customUniqueId = null;
     private boolean initialized = false;
-    private IBannersWidgetViewModel<BannerListState> bannerListViewModel;
+    private BannerListViewModel bannerListViewModel;
     private BannersWidgetLoadStates currentLoadState = BannersWidgetLoadStates.EMPTY;
 
     private LayoutManager defaultLayoutManager;
@@ -102,6 +107,17 @@ public class BannerList extends RecyclerView implements Observer<BannerListState
     private void init() {
         defaultLayoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false);
         customLayoutManager = defaultLayoutManager;
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                BannerList.this.core = core;
+                BannerPlaceViewModelsHolder holder = core
+                        .widgetViewModels()
+                        .bannerPlaceViewModels();
+                bannerListViewModel = (BannerListViewModel)
+                        holder.getOrCreate(uniqueId(), BannerWidgetViewModelType.LAZY_LIST);
+            }
+        });
     }
 
     public BannerList(
@@ -198,7 +214,14 @@ public class BannerList extends RecyclerView implements Observer<BannerListState
                                 new ArrayList<IBanner>(),
                                 placeId,
                                 uniqueId(),
-                                null,
+
+                                new ICustomBannerPlaceholder() {
+                                    @Override
+                                    public View onCreate(Context context) {
+                                        View v = AppearanceManager.getLoader(context, Color.WHITE);
+                                        return v;
+                                    }
+                                },
                                 newValue.iterationId(),
                                 getWidth(),
                                 Sizes.dpToPxExt(
@@ -228,7 +251,13 @@ public class BannerList extends RecyclerView implements Observer<BannerListState
                                 items,
                                 placeId,
                                 uniqueId(),
-                                null,
+                                new ICustomBannerPlaceholder() {
+                                    @Override
+                                    public View onCreate(Context context) {
+                                        View v = AppearanceManager.getLoader(context, Color.WHITE);
+                                        return v;
+                                    }
+                                },
                                 newValue.iterationId(),
                                 getWidth(),
                                 Sizes.dpToPxExt(

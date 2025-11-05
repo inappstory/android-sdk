@@ -28,7 +28,9 @@ import com.inappstory.sdk.banners.BannerPlaceLoadCallback;
 import com.inappstory.sdk.banners.ui.IBannersWidget;
 import com.inappstory.sdk.banners.ui.banner.BannerView;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
+import com.inappstory.sdk.core.banners.BannerPlaceViewModel;
 import com.inappstory.sdk.core.banners.BannerPlaceViewModelsHolder;
+import com.inappstory.sdk.core.banners.BannerWidgetViewModelType;
 import com.inappstory.sdk.core.banners.IBannerPlaceLoadCallback;
 import com.inappstory.sdk.banners.ICustomBannerPlaceholder;
 import com.inappstory.sdk.core.banners.InnerBannerPlaceLoadCallback;
@@ -50,7 +52,7 @@ import java.util.UUID;
 
 public class BannerPlace extends FrameLayout implements Observer<BannerPlaceState>, IBannersWidget {
     private BannerViewPager bannerViewPager;
-    private IBannersWidgetViewModel<BannerPlaceState> bannerPlaceViewModel;
+    private BannerPlaceViewModel bannerPlaceViewModel;
     private String placeId;
     private IASCore core;
     private ICustomBannerPlaceAppearance customBannerPlace = new DefaultBannerPlaceAppearance();
@@ -474,7 +476,11 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
                 BannerPlaceViewModelsHolder holder = core
                         .widgetViewModels()
                         .bannerPlaceViewModels();
-                bannerPlaceViewModel = holder.getOrCreate(uniqueId());
+                bannerPlaceViewModel =
+                        (BannerPlaceViewModel) holder.getOrCreate(
+                                uniqueId(),
+                                BannerWidgetViewModelType.PAGER
+                        );
             }
         });
     }

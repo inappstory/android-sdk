@@ -27,7 +27,7 @@ public class BannerPlaceViewModelsHolder {
     }
 
     public IBannersWidgetViewModel getOrCreateContentPlaceViewModel(String bannerPlace) {
-        return getOrCreate("ias_banner_place_" + bannerPlace);
+        return getOrCreate("ias_banner_place_" + bannerPlace, BannerWidgetViewModelType.DATA);
     }
 
     public void changeKey(String oldKey, String newKey) {
@@ -56,10 +56,18 @@ public class BannerPlaceViewModelsHolder {
         }
     }
 
-    public IBannersWidgetViewModel getOrCreate(String uniqueId) {
+    public IBannersWidgetViewModel getOrCreate(String uniqueId, BannerWidgetViewModelType type) {
         synchronized (lock) {
             if (!viewModels.containsKey(uniqueId)) {
-                viewModels.put(uniqueId, new BannerPlaceViewModel(core, uniqueId));
+                switch (type) {
+                    case LAZY_LIST:
+                        viewModels.put(uniqueId, new BannerListViewModel(core, uniqueId));
+                        break;
+                    case PAGER:
+                    case DATA:
+                        viewModels.put(uniqueId, new BannerPlaceViewModel(core, uniqueId));
+                        break;
+                }
             }
             return viewModels.get(uniqueId);
         }
