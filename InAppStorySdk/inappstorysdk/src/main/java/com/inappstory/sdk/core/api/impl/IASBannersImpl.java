@@ -267,6 +267,7 @@ public class IASBannersImpl implements IASBanners {
             BannerPlaceLoadStates loadState
     ) {
         Set<IBannerPlaceViewModel> bannerPlaceViewModels = new HashSet<>();
+        if (placeId == null || placeId.isEmpty()) return;
         if (uniqueId == null || uniqueId.isEmpty()) {
             bannerPlaceViewModels.addAll(
                     core.
@@ -276,7 +277,7 @@ public class IASBannersImpl implements IASBanners {
             );
         } else {
             IBannerPlaceViewModel placeViewModel = core.widgetViewModels().bannerPlaceViewModels().get(uniqueId);
-            if (placeViewModel != null && placeViewModel.placeId().equals(placeId))
+            if (placeViewModel != null && Objects.equals(placeViewModel.placeId(), placeId))
                 bannerPlaceViewModels.add(
                         placeViewModel
                 );

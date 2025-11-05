@@ -393,6 +393,7 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
             }
             bannerPager.setAdapter(adapter);
             pagerAdapter.clear();
+            pagerAdapter.notifyDataSetChanged();
         }
     }
 

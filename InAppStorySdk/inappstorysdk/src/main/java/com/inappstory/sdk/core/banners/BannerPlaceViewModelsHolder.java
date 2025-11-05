@@ -93,6 +93,7 @@ public class BannerPlaceViewModelsHolder {
             // viewModels.clear();
         }
         for (IBannerPlaceViewModel placeViewModel : placeViewModels) {
+            if (placeViewModel == null) continue;
             placeViewModel.reloadSubscriber();
         }
     }
