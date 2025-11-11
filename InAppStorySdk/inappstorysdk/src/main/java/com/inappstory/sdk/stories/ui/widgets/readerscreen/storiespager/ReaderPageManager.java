@@ -52,7 +52,7 @@ public class ReaderPageManager implements IReaderSlideViewModel {
     public boolean backPressEnabled = true;
 
     public void handleBackPress() {
-        ((StoriesWebView)host.storiesView).handleBackPress();
+        ((StoriesWebView) host.storiesView).handleBackPress();
     }
 
     public boolean isCorrectSubscriber(ContentIdAndType contentIdAndType) {
@@ -118,6 +118,11 @@ public class ReaderPageManager implements IReaderSlideViewModel {
     public void gameComplete(String data) {
         if (checkIfManagersIsNull()) return;
         webViewManager.gameComplete(data);
+    }
+
+    public void startCommonTimer() {
+        if (webViewManager != null)
+            webViewManager.startCommonShowRefresh(slideIndex);
     }
 
     public void setStoryId(int storyId) {
@@ -484,6 +489,7 @@ public class ReaderPageManager implements IReaderSlideViewModel {
         isPaused = false;
         pauseTimers();
         core.statistic().storiesV2().sendCurrentState();
+        startCommonTimer();
         core.contentLoader().storyDownloadManager().changePriorityForSingle(
                 parentManager.getByIdAndIndex(storyId),
                 parentManager.contentType
@@ -577,7 +583,7 @@ public class ReaderPageManager implements IReaderSlideViewModel {
     public void slideLoadSuccess(int index, boolean alreadyLoaded) {
         if (slideIndex == index) {
             if (checkIfManagersIsNull()) return;
-            Log.e("slidesDownloader", "RPM " + storyId +  " " + index + " " + alreadyLoaded);
+            Log.e("slidesDownloader", "RPM " + storyId + " " + index + " " + alreadyLoaded);
             webViewManager.storyLoaded(storyId, index, alreadyLoaded);
             //host.storyLoadedSuccess();
         }

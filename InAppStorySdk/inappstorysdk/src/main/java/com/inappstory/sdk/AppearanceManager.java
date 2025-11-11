@@ -10,6 +10,8 @@ import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
 
+import com.inappstory.sdk.banners.ui.list.DefaultBannerListAppearance;
+import com.inappstory.sdk.core.banners.ICustomBannerListAppearance;
 import com.inappstory.sdk.core.ui.widgets.customicons.IASDefaultAppearanceIcons;
 import com.inappstory.sdk.core.ui.widgets.customicons.IASDefaultIconCreator;
 import com.inappstory.sdk.core.ui.widgets.customicons.IIASDefaultIconCreator;
@@ -187,6 +189,7 @@ public class AppearanceManager {
     private IStoriesListUGCItem csListUGCItemInterface;
 
     private ICustomBannerPlaceAppearance csBannerPlaceInterface = new DefaultBannerPlaceAppearance();
+    private ICustomBannerListAppearance csBannerListInterface = new DefaultBannerListAppearance();
 
     private IStoryReaderLoaderView csStoryLoaderView;
 
@@ -1142,6 +1145,11 @@ public class AppearanceManager {
 
     public ICustomBannerPlaceAppearance csBannerPlaceInterface() {
         return csBannerPlaceInterface != null ? csBannerPlaceInterface : new DefaultBannerPlaceAppearance();
+    }
+
+
+    public ICustomBannerListAppearance csBannerListInterface() {
+        return csBannerListInterface != null ? csBannerListInterface : new DefaultBannerListAppearance();
     }
 
     public AppearanceManager csBannerPlaceInterface(ICustomBannerPlaceAppearance csBannerPlaceInterface) {

@@ -1,6 +1,7 @@
 package com.inappstory.sdk.inappmessage.domain.reader;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -18,7 +19,7 @@ public class IAMReaderSlideState {
     Map<String, Object> cardAppearance;
 
     public Map<String, Object> cardAppearance() {
-        return cardAppearance;
+        return cardAppearance != null ? cardAppearance : new HashMap<>();
     }
 
     public IAMReaderSlideState cardAppearance(Map<String, Object> cardAppearance) {

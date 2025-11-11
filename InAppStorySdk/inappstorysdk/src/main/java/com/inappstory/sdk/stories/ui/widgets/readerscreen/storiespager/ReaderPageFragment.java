@@ -333,10 +333,12 @@ public class ReaderPageFragment extends Fragment {
 
                     }
                     view.setVisibility(View.GONE);
-                    if (loader == null) return;
-                    loader.setAlpha(1f);
-                    loader.setVisibility(View.VISIBLE);
+                    if (loader != null) {
+                        loader.setAlpha(1f);
+                        loader.setVisibility(View.VISIBLE);
+                    }
                     manager.reloadStory();
+                    manager.startCommonTimer();
                 }
             });
     }
@@ -745,6 +747,7 @@ public class ReaderPageFragment extends Fragment {
                 bindViews(view);
                 setActions();
                 if (setManagers(core)) {
+                    manager.startCommonTimer();
                     core.contentLoader().storyDownloadManager().addSubscriber(manager);
                     Story story = (Story) core.contentHolder().readerContent().getByIdAndType(
                             storyId,

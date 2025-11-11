@@ -55,7 +55,7 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
     private BannerPlaceViewModel bannerPlaceViewModel;
     private String placeId;
     private IASCore core;
-    private ICustomBannerPlaceAppearance customBannerPlace = new DefaultBannerPlaceAppearance();
+    private ICustomBannerPlaceAppearance customBannerPlaceAppearance = new DefaultBannerPlaceAppearance();
     private String lastLaunchedTag = "";
     private final String defaultUniqueId = UUID.randomUUID().toString();
     private String customUniqueId = null;
@@ -366,10 +366,10 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
             BannerPagerAdapter pagerAdapter = (BannerPagerAdapter) bannerViewPager.getAdapter();
             pagerAdapter.unsubscribeFromFirst();
             float iw = Sizes.getScreenSize(getContext()).x -
-                    Sizes.dpToPxExt(customBannerPlace.prevBannerOffset(), getContext())
-                    - Sizes.dpToPxExt(customBannerPlace.nextBannerOffset(), getContext());
-            for (int i = 0; i < customBannerPlace.bannersOnScreen() - 1; i++) {
-                iw -= Sizes.dpToPxExt(customBannerPlace.bannersGap(), getContext());
+                    Sizes.dpToPxExt(customBannerPlaceAppearance.prevBannerOffset(), getContext())
+                    - Sizes.dpToPxExt(customBannerPlaceAppearance.nextBannerOffset(), getContext());
+            for (int i = 0; i < customBannerPlaceAppearance.bannersOnScreen() - 1; i++) {
+                iw -= Sizes.dpToPxExt(customBannerPlaceAppearance.bannersGap(), getContext());
             }
             BannerPagerAdapter adapter = new BannerPagerAdapter(
                     core,
@@ -486,7 +486,7 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
     }
 
     public void setAppearanceManager(AppearanceManager appearanceManager) {
-        this.customBannerPlace = appearanceManager.csBannerPlaceInterface();
+        this.customBannerPlaceAppearance = appearanceManager.csBannerPlaceInterface();
     }
 
     private int calculateHeight(List<IBanner> banners) {
@@ -503,9 +503,9 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
 
     private float calculateItemWidth() {
         return (Sizes.getScreenSize(getContext()).x -
-                Sizes.dpToPxExt((int) ((1 + customBannerPlace.bannersOnScreen()) * customBannerPlace.bannersGap() +
-                        customBannerPlace.prevBannerOffset() + customBannerPlace.nextBannerOffset()
-                ), getContext())) / (1f * customBannerPlace.bannersOnScreen());
+                Sizes.dpToPxExt((int) ((1 + customBannerPlaceAppearance.bannersOnScreen()) * customBannerPlaceAppearance.bannersGap() +
+                        customBannerPlaceAppearance.prevBannerOffset() + customBannerPlaceAppearance.nextBannerOffset()
+                ), getContext())) / (1f * customBannerPlaceAppearance.bannersOnScreen());
     }
 
 
@@ -547,7 +547,7 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
                                 0,
                                 calculateItemWidth(),
                                 Sizes.dpToPxExt(
-                                        customBannerPlace.cornerRadius(),
+                                        customBannerPlaceAppearance.cornerRadius(),
                                         getContext()
                                 )
                         );
@@ -581,17 +581,17 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
                         float itemWidth = calculateItemWidth();
                         layoutParams.height = height;
                         bannerViewPager.setClipToPadding(false);
-                        bannerViewPager.setPadding(Sizes.dpToPxExt(customBannerPlace.prevBannerOffset() + customBannerPlace.bannersGap(), getContext()),
+                        bannerViewPager.setPadding(Sizes.dpToPxExt(customBannerPlaceAppearance.prevBannerOffset() + customBannerPlaceAppearance.bannersGap(), getContext()),
                                 0,
-                                Sizes.dpToPxExt(customBannerPlace.nextBannerOffset() + customBannerPlace.bannersGap(), getContext()),
+                                Sizes.dpToPxExt(customBannerPlaceAppearance.nextBannerOffset() + customBannerPlaceAppearance.bannersGap(), getContext()),
                                 0
                         );
-                        bannerViewPager.setPageMargin(Sizes.dpToPxExt(customBannerPlace.bannersGap(), getContext()));
-                        float iw = Sizes.getScreenSize(getContext()).x - Sizes.dpToPxExt(customBannerPlace.prevBannerOffset(), getContext()) - Sizes.dpToPxExt(customBannerPlace.nextBannerOffset(), getContext());
-                        for (int i = 0; i < customBannerPlace.bannersOnScreen() - 1; i++) {
-                            iw -= Sizes.dpToPxExt(customBannerPlace.bannersGap(), getContext());
+                        bannerViewPager.setPageMargin(Sizes.dpToPxExt(customBannerPlaceAppearance.bannersGap(), getContext()));
+                        float iw = Sizes.getScreenSize(getContext()).x - Sizes.dpToPxExt(customBannerPlaceAppearance.prevBannerOffset(), getContext()) - Sizes.dpToPxExt(customBannerPlaceAppearance.nextBannerOffset(), getContext());
+                        for (int i = 0; i < customBannerPlaceAppearance.bannersOnScreen() - 1; i++) {
+                            iw -= Sizes.dpToPxExt(customBannerPlaceAppearance.bannersGap(), getContext());
                         }
-                        float igap = Sizes.getScreenSize(getContext()).x - Sizes.dpToPxExt(customBannerPlace.prevBannerOffset(), getContext()) - Sizes.dpToPxExt(customBannerPlace.nextBannerOffset(), getContext());
+                        float igap = Sizes.getScreenSize(getContext()).x - Sizes.dpToPxExt(customBannerPlaceAppearance.prevBannerOffset(), getContext()) - Sizes.dpToPxExt(customBannerPlaceAppearance.nextBannerOffset(), getContext());
                         List<IBanner> items = newValue.getItems();
                         BannerPagerAdapter adapter = new BannerPagerAdapter(
                                 core,
@@ -601,7 +601,7 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
                                 new ICustomBannerPlaceholder() {
                                     @Override
                                     public View onCreate(Context context) {
-                                        View v = customBannerPlace.loadingPlaceholder(context);
+                                        View v = customBannerPlaceAppearance.loadingPlaceholder(context);
                                         if (v == null) {
                                             v = AppearanceManager.getLoader(context, Color.WHITE);
                                         }
@@ -610,12 +610,12 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
                                 },
                                 bannerPlaceLoadCallback,
                                 newValue.iterationId(),
-                                customBannerPlace.loop() &&
-                                        (items.size() >= customBannerPlace.bannersOnScreen() + 1),
-                                (iw / igap) / customBannerPlace.bannersOnScreen(),
+                                customBannerPlaceAppearance.loop() &&
+                                        (items.size() >= customBannerPlaceAppearance.bannersOnScreen() + 1),
+                                (iw / igap) / customBannerPlaceAppearance.bannersOnScreen(),
                                 itemWidth,
                                 Sizes.dpToPxExt(
-                                        customBannerPlace.cornerRadius(),
+                                        customBannerPlaceAppearance.cornerRadius(),
                                         getContext()
                                 )
                         );

@@ -1,20 +1,19 @@
 package com.inappstory.sdk.banners.ui.list;
 
-import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 
 import android.content.Context;
-import android.content.res.Configuration;
 import android.content.res.TypedArray;
 import android.graphics.Color;
+import android.graphics.Rect;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -23,17 +22,15 @@ import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.banners.ICustomBannerPlaceholder;
 import com.inappstory.sdk.banners.ui.IBannersWidget;
-import com.inappstory.sdk.banners.ui.place.BannerPagerAdapter;
-import com.inappstory.sdk.banners.ui.place.BannerPlace;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
-import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.banners.BannerListState;
 import com.inappstory.sdk.core.banners.BannerListViewModel;
 import com.inappstory.sdk.core.banners.BannerPlaceViewModelsHolder;
 import com.inappstory.sdk.core.banners.BannerWidgetViewModelType;
 import com.inappstory.sdk.core.banners.BannersWidgetLoadStates;
 import com.inappstory.sdk.core.banners.IBannersWidgetViewModel;
+import com.inappstory.sdk.core.banners.ICustomBannerListAppearance;
 import com.inappstory.sdk.core.data.IBanner;
 import com.inappstory.sdk.stories.utils.Observer;
 import com.inappstory.sdk.stories.utils.Sizes;
@@ -52,6 +49,14 @@ public class BannerList extends RecyclerView implements Observer<BannerListState
     private boolean initialized = false;
     private BannerListViewModel bannerListViewModel;
     private BannersWidgetLoadStates currentLoadState = BannersWidgetLoadStates.EMPTY;
+
+    public void setAppearanceManager(AppearanceManager appearanceManager) {
+        this.customBannerListAppearance = appearanceManager.csBannerListInterface();
+        updateAppearance();
+    }
+
+    private ICustomBannerListAppearance customBannerListAppearance =
+            new DefaultBannerListAppearance();
 
     private LayoutManager defaultLayoutManager;
 
@@ -100,13 +105,113 @@ public class BannerList extends RecyclerView implements Observer<BannerListState
 
     @Override
     public void setAdapter(@Nullable Adapter adapter) {
-        if (customLayoutManager != null) setLayoutManager(customLayoutManager);
+        setLayoutManager(customLayoutManager != null ? customLayoutManager : defaultLayoutManager);
+        updateAppearance();
         super.setAdapter(adapter);
     }
 
+
+    private void updateAppearance() {
+        final int cc = customBannerListAppearance.columnCount();
+        final int orientation = customBannerListAppearance.orientation();
+        if (cc > 1) {
+            defaultLayoutManager = new GridLayoutManager(
+                    getContext(),
+                    cc,
+                    orientation == HORIZONTAL ? HORIZONTAL : VERTICAL,
+                    false
+            );
+        } else {
+            defaultLayoutManager = new LinearLayoutManager(
+                    getContext(),
+                    orientation == HORIZONTAL ? HORIZONTAL : VERTICAL,
+                    false
+            );
+        }
+
+        setLayoutManager(customLayoutManager != null ? customLayoutManager : defaultLayoutManager);
+        if (appearanceItemDecoration != null) {
+            removeItemDecoration(appearanceItemDecoration);
+        }
+        appearanceItemDecoration = new ItemDecoration() {
+            @Override
+            public void getItemOffsets(@NonNull Rect outRect, @NonNull View view, @NonNull RecyclerView parent, @NonNull State state) {
+                super.getItemOffsets(outRect, view, parent, state);
+                int position = parent.getChildAdapterPosition(view);
+                int itemCount = state.getItemCount();
+                int edgeBannersPadding = Sizes.dpToPxExt(
+                        customBannerListAppearance.edgeBannersPadding(),
+                        getContext()
+                );
+                int bannersGap = Sizes.dpToPxExt(
+                        customBannerListAppearance.bannersGap(),
+                        getContext()
+                );
+                if (cc > 1) {
+
+                    if (orientation == HORIZONTAL) {
+                        outRect.top = 0;
+                        outRect.bottom = 0;
+                        outRect.left = 0;
+                        outRect.right = bannersGap;
+                        if (position == 0) {
+                            outRect.left = edgeBannersPadding;
+                        } else if (position == itemCount - 1) {
+                            outRect.right = edgeBannersPadding;
+                        }
+                    } else {
+                        outRect.right = bannersGap;
+                        outRect.left = 0;
+                        outRect.top = 0;
+                        outRect.bottom = bannersGap;
+                        if (position % cc == cc - 1) {
+                            outRect.right = 0;
+                        }
+                        if (position / cc == 0) {
+                            outRect.top = edgeBannersPadding;
+                        }
+                        if (position == 0) {
+                            outRect.top = edgeBannersPadding;
+                        } else if (position == itemCount - 1) {
+                            outRect.bottom = edgeBannersPadding;
+                        }
+                    }
+                } else {
+                    if (orientation == HORIZONTAL) {
+                        outRect.top = 0;
+                        outRect.bottom = 0;
+                        outRect.left = 0;
+                        outRect.right = bannersGap;
+                        if (position == 0) {
+                            outRect.left = edgeBannersPadding;
+                        } else if (position == itemCount - 1) {
+                            outRect.right = edgeBannersPadding;
+                        }
+                    } else {
+                        outRect.right = 0;
+                        outRect.left = 0;
+                        outRect.top = 0;
+                        outRect.bottom = bannersGap;
+                        if (position == 0) {
+                            outRect.top = edgeBannersPadding;
+                        } else if (position == itemCount - 1) {
+                            outRect.bottom = edgeBannersPadding;
+                        }
+                    }
+                }
+            }
+        };
+        addItemDecoration(appearanceItemDecoration);
+    }
+
+    private ItemDecoration appearanceItemDecoration;
+
     private void init() {
-        defaultLayoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false);
-        customLayoutManager = defaultLayoutManager;
+        defaultLayoutManager = new LinearLayoutManager(
+                getContext(),
+                VERTICAL,
+                false
+        );
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
@@ -209,16 +314,20 @@ public class BannerList extends RecyclerView implements Observer<BannerListState
                     public void run() {
                         ViewGroup.LayoutParams layoutParams = getLayoutParams();
                         layoutParams.height = 0;
-                        setLayoutManager(customLayoutManager);
+                        setLayoutManager(customLayoutManager != null ?
+                                customLayoutManager : defaultLayoutManager
+                        );
                         BannerListAdapter adapter = new BannerListAdapter(core,
                                 new ArrayList<IBanner>(),
                                 placeId,
                                 uniqueId(),
-
                                 new ICustomBannerPlaceholder() {
                                     @Override
                                     public View onCreate(Context context) {
-                                        View v = AppearanceManager.getLoader(context, Color.WHITE);
+                                        View v = customBannerListAppearance.loadingPlaceholder(context);
+                                        if (v == null) {
+                                            v = AppearanceManager.getLoader(context, Color.WHITE);
+                                        }
                                         return v;
                                     }
                                 },
@@ -243,8 +352,11 @@ public class BannerList extends RecyclerView implements Observer<BannerListState
                     @Override
                     public void run() {
                         ViewGroup.LayoutParams layoutParams = getLayoutParams();
-                        layoutParams.height = 0;
-                        setLayoutManager(customLayoutManager);
+                        //layoutParams.height = 0;
+                        setLayoutManager(
+                                customLayoutManager != null ?
+                                        customLayoutManager : defaultLayoutManager
+                        );
                         List<IBanner> items = newValue.getItems();
                         BannerListAdapter adapter = new BannerListAdapter(
                                 core,
@@ -254,7 +366,10 @@ public class BannerList extends RecyclerView implements Observer<BannerListState
                                 new ICustomBannerPlaceholder() {
                                     @Override
                                     public View onCreate(Context context) {
-                                        View v = AppearanceManager.getLoader(context, Color.WHITE);
+                                        View v = customBannerListAppearance.loadingPlaceholder(context);
+                                        if (v == null) {
+                                            v = AppearanceManager.getLoader(context, Color.WHITE);
+                                        }
                                         return v;
                                     }
                                 },

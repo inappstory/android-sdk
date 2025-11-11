@@ -222,6 +222,18 @@ public class StoriesViewManager {
         }
     }
 
+    private void clearShowRefreshCommon() {
+        synchronized (latestIndexLock) {
+            if (showRefreshCommon != null) {
+                try {
+                    showRefreshHandler.removeCallbacks(showRefreshCommon);
+                } catch (Exception e) {
+                }
+            }
+            showRefreshCommon = null;
+        }
+    }
+
     private void clearShowLoader() {
         synchronized (latestIndexLock) {
             if (showLoader != null) {
@@ -238,15 +250,23 @@ public class StoriesViewManager {
 
     public class ShowRefresh implements Runnable {
         int slideIndex = -1;
+        boolean common;
 
-        public ShowRefresh(int slideIndex) {
+        public ShowRefresh(int slideIndex, boolean common) {
             this.slideIndex = slideIndex;
+            this.common = common;
         }
 
         @Override
         public void run() {
             clearShowLoader();
             clearShowRefresh();
+            clearShowRefreshCommon();
+            if (common) {
+                synchronized (latestIndexLock) {
+                    commonWaitError = true;
+                }
+            }
             if (this.slideIndex == index)
                 pageManager.slideLoadError(index);
             if (storiesView != null) storiesView.clearSlide(getLatestVisibleIndex());
@@ -255,6 +275,7 @@ public class StoriesViewManager {
     }
 
     ShowRefresh showRefresh;
+    ShowRefresh showRefreshCommon;
     ShowLoader showLoader;
 
     Handler showRefreshHandler = new Handler(Looper.getMainLooper());
@@ -264,13 +285,29 @@ public class StoriesViewManager {
         if (!(storiesView instanceof StoriesWebView)) return;
         clearShowLoader();
         clearShowRefresh();
+        clearShowRefreshCommon();
         synchronized (latestIndexLock) {
-            showRefresh = new ShowRefresh(index);
+            if (commonWaitError) return;
+            Log.e("showRefreshCommon", "start load");
+            showRefresh = new ShowRefresh(index, false);
             showLoader = new ShowLoader(index);
             showRefreshHandler.postDelayed(showLoader, 500);
             showRefreshHandler.postDelayed(showRefresh, 15000);
         }
         ((StoriesWebView) storiesView).loadWebData(firstData, replaceData);
+    }
+
+    boolean commonWaitError = false;
+    boolean startLoad = false;
+
+    public void startCommonShowRefresh(int index) {
+        clearShowRefreshCommon();
+        synchronized (latestIndexLock) {
+            commonWaitError = false;
+            Log.e("showRefreshCommon", "start");
+            showRefreshCommon = new ShowRefresh(index, true);
+            showRefreshHandler.postDelayed(showRefreshCommon, 30000);
+        }
     }
 
     public void loadStory(IReaderContent story, int index) {
@@ -538,6 +575,7 @@ public class StoriesViewManager {
     public void storyLoaded(int slideIndex) {
         clearShowLoader();
         clearShowRefresh();
+        clearShowRefreshCommon();
         storyIsLoaded = true;
         int lastIndex = pageManager.parentManager.getByIdAndIndex(storyId).index();
         if ((slideIndex >= 0 && lastIndex != slideIndex)) {
@@ -732,6 +770,7 @@ public class StoriesViewManager {
     public void slideLoadError(int index) {
         clearShowRefresh();
         clearShowLoader();
+        clearShowRefreshCommon();
         setLatestVisibleIndex(-1);
         pageManager.slideLoadError(index);
     }
