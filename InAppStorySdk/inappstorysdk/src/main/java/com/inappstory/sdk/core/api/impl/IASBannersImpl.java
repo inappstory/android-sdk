@@ -9,7 +9,7 @@ import com.inappstory.sdk.core.api.IASBanners;
 import com.inappstory.sdk.banners.BannerPlaceLoadSettings;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.banners.BannersWidgetLoadStates;
-import com.inappstory.sdk.core.banners.BannerPlaceState;
+import com.inappstory.sdk.core.banners.BannerCarouselState;
 import com.inappstory.sdk.core.banners.IBannerWidgetState;
 import com.inappstory.sdk.core.banners.IBannersWidgetViewModel;
 import com.inappstory.sdk.core.banners.IBannerViewModel;
@@ -77,7 +77,7 @@ public class IASBannersImpl implements IASBanners {
                 settings.tags()
         );
         bannerPlaceViewModel.updateState(
-                new BannerPlaceState()
+                new BannerCarouselState()
                         .placeId(placeId)
                         .tags(settings.tags())
                         .loadState(
@@ -171,7 +171,7 @@ public class IASBannersImpl implements IASBanners {
                 .bannerPlaceViewModels()
                 .getOrCreateContentPlaceViewModel(placeId);
         bannerPlaceViewModel.updateState(
-                new BannerPlaceState()
+                new BannerCarouselState()
                         .placeId(placeId)
                         .tags(settings.tags())
                         .loadState(

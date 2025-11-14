@@ -37,7 +37,7 @@ import com.inappstory.sdk.core.banners.InnerBannerPlaceLoadCallback;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.banners.BannersWidgetLoadStates;
-import com.inappstory.sdk.core.banners.BannerPlaceState;
+import com.inappstory.sdk.core.banners.BannerCarouselState;
 import com.inappstory.sdk.core.banners.IBannersWidgetViewModel;
 import com.inappstory.sdk.core.banners.ICustomBannerCarouselAppearance;
 import com.inappstory.sdk.core.data.IBanner;
@@ -50,7 +50,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
-public class BannerCarousel extends FrameLayout implements Observer<BannerPlaceState>, IBannersWidget {
+public class BannerCarousel extends FrameLayout implements Observer<BannerCarouselState>, IBannersWidget {
     private BannerViewPager bannerViewPager;
     private BannerCarouselViewModel bannerCarouselViewModel;
     private String placeId;
@@ -174,7 +174,7 @@ public class BannerCarousel extends FrameLayout implements Observer<BannerPlaceS
         @Override
         public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
             if (bannerCarouselViewModel != null) {
-                BannerPlaceState placeState = bannerCarouselViewModel.getCurrentBannerPlaceState();
+                BannerCarouselState placeState = bannerCarouselViewModel.getCurrentBannerPlaceState();
                 try {
                     if (bannerPlaceNavigationCallback != null && !placeState.getItems().isEmpty()) {
                         int size = placeState.getItems().size();
@@ -208,7 +208,7 @@ public class BannerCarousel extends FrameLayout implements Observer<BannerPlaceS
             lastLaunchedTag = newLaunchedTag;
             if (bannerCarouselViewModel != null) {
                 bannerCarouselViewModel.updateCurrentIndex(position);
-                BannerPlaceState placeState = bannerCarouselViewModel.getCurrentBannerPlaceState();
+                BannerCarouselState placeState = bannerCarouselViewModel.getCurrentBannerPlaceState();
                 try {
                     if (bannerPlaceNavigationCallback != null && !placeState.getItems().isEmpty()) {
                         int size = placeState.getItems().size();
@@ -510,7 +510,7 @@ public class BannerCarousel extends FrameLayout implements Observer<BannerPlaceS
 
 
     @Override
-    public void onUpdate(final BannerPlaceState newValue) {
+    public void onUpdate(final BannerCarouselState newValue) {
         if (newValue == null || newValue.loadState() == null) return;
         if (bannerCarouselViewModel == null) return;
         if (currentLoadState == BannersWidgetLoadStates.LOADED && newValue.currentIndex() != null) {

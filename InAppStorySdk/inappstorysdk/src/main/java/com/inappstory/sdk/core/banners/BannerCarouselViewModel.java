@@ -20,9 +20,9 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
-public class BannerCarouselViewModel implements IBannersWidgetViewModel<BannerPlaceState> {
-    private final Observable<BannerPlaceState> bannerPlaceStateObservable =
-            new Observable<>(new BannerPlaceState());
+public class BannerCarouselViewModel implements IBannersWidgetViewModel<BannerCarouselState> {
+    private final Observable<BannerCarouselState> bannerPlaceStateObservable =
+            new Observable<>(new BannerCarouselState());
 
     private final IASCore core;
     private String placeId;
@@ -31,7 +31,7 @@ public class BannerCarouselViewModel implements IBannersWidgetViewModel<BannerPl
     public void tags(List<String> tags) {
         this.tags.clear();
         this.tags.addAll(tags);
-        updateState(new BannerPlaceState().tags(tags));
+        updateState(new BannerCarouselState().tags(tags));
     }
 
     private final List<String> tags = new ArrayList<>();
@@ -47,7 +47,7 @@ public class BannerCarouselViewModel implements IBannersWidgetViewModel<BannerPl
 
     public void placeId(String placeId) {
         this.placeId = placeId;
-        updateState(new BannerPlaceState().placeId(placeId));
+        updateState(new BannerCarouselState().placeId(placeId));
     }
 
     public String placeId() {
@@ -91,15 +91,15 @@ public class BannerCarouselViewModel implements IBannersWidgetViewModel<BannerPl
             new SingleTimeEvent<>();
 
     @Override
-    public BannerPlaceState getCurrentBannerPlaceState() {
+    public BannerCarouselState getCurrentBannerPlaceState() {
         return bannerPlaceStateObservable.getValue();
     }
 
-    Observer<BannerPlaceState> localObserver = new Observer<BannerPlaceState>() {
+    Observer<BannerCarouselState> localObserver = new Observer<BannerCarouselState>() {
         BannersWidgetLoadStates bannerPlaceLoadState = BannersWidgetLoadStates.NONE;
 
         @Override
-        public void onUpdate(BannerPlaceState newValue) {
+        public void onUpdate(BannerCarouselState newValue) {
             if (newValue.loadState() == null || bannerPlaceLoadState.equals(newValue.loadState()))
                 return;
             Set<InnerBannerPlaceLoadCallback> callbacks = new HashSet<>();
@@ -137,22 +137,22 @@ public class BannerCarouselViewModel implements IBannersWidgetViewModel<BannerPl
     };
 
     @Override
-    public void updateState(BannerPlaceState bannerPlaceState) {
-        bannerPlaceStateObservable.updateValue(bannerPlaceState);
+    public void updateState(BannerCarouselState bannerCarouselState) {
+        bannerPlaceStateObservable.updateValue(bannerCarouselState);
     }
 
     @Override
-    public void addSubscriber(Observer<BannerPlaceState> observer) {
+    public void addSubscriber(Observer<BannerCarouselState> observer) {
         this.bannerPlaceStateObservable.subscribeAndGetValue(observer);
     }
 
     @Override
-    public void addSubscriberAndCheckLocal(Observer<BannerPlaceState> observer) {
+    public void addSubscriberAndCheckLocal(Observer<BannerCarouselState> observer) {
         this.bannerPlaceStateObservable.subscribeAndGetValueForced(observer);
     }
 
     @Override
-    public void removeSubscriber(Observer<BannerPlaceState> observer) {
+    public void removeSubscriber(Observer<BannerCarouselState> observer) {
         this.bannerPlaceStateObservable.unsubscribe(observer);
     }
 
@@ -173,7 +173,7 @@ public class BannerCarouselViewModel implements IBannersWidgetViewModel<BannerPl
 
     @Override
     public List<IBannerViewModel> getBannerViewModels() {
-        BannerPlaceState placeState = bannerPlaceStateObservable.getValue();
+        BannerCarouselState placeState = bannerPlaceStateObservable.getValue();
         List<IBanner> items = placeState.items;
         List<IBannerViewModel> bannerViewModels = new ArrayList<>();
         if (items == null) return bannerViewModels;
@@ -185,7 +185,7 @@ public class BannerCarouselViewModel implements IBannersWidgetViewModel<BannerPl
 
     @Override
     public void updateCurrentIndex(int index) {
-        BannerPlaceState placeState = bannerPlaceStateObservable.getValue();
+        BannerCarouselState placeState = bannerPlaceStateObservable.getValue();
         bannerPlaceStateObservable.setValue(placeState.copy().currentIndex(index));
         List<IBanner> items = placeState.items;
         int total = items.size();
@@ -221,7 +221,7 @@ public class BannerCarouselViewModel implements IBannersWidgetViewModel<BannerPl
 
     @Override
     public void showNext() {
-        BannerPlaceState placeState = getCurrentBannerPlaceState();
+        BannerCarouselState placeState = getCurrentBannerPlaceState();
         int newIndex = 1;
         Integer currentIndex = placeState.currentIndex;
         if (currentIndex != null) newIndex = currentIndex + 1;
@@ -230,15 +230,15 @@ public class BannerCarouselViewModel implements IBannersWidgetViewModel<BannerPl
 
     @Override
     public void clear() {
-        BannerPlaceState bannerPlaceState = bannerPlaceStateObservable.getValue();
+        BannerCarouselState bannerCarouselState = bannerPlaceStateObservable.getValue();
         List<String> tags = null;
         String placeId = "";
-        if (bannerPlaceState != null) {
-            tags = bannerPlaceState.tags();
-            placeId = bannerPlaceState.placeId();
+        if (bannerCarouselState != null) {
+            tags = bannerCarouselState.tags();
+            placeId = bannerCarouselState.placeId();
         }
         bannerPlaceStateObservable.setValue(
-                new BannerPlaceState()
+                new BannerCarouselState()
                         .placeId(placeId)
                         .tags(tags)
         );
@@ -252,9 +252,9 @@ public class BannerCarouselViewModel implements IBannersWidgetViewModel<BannerPl
 
     @Override
     public void reloadSubscriber() {
-        List<Observer<BannerPlaceState>> subscribers = bannerPlaceStateObservable.getSubscribers();
+        List<Observer<BannerCarouselState>> subscribers = bannerPlaceStateObservable.getSubscribers();
         boolean hasUISubs = false;
-        for (Observer<BannerPlaceState> subscriber : subscribers) {
+        for (Observer<BannerCarouselState> subscriber : subscribers) {
             if (subscriber == localObserver) continue;
             hasUISubs = true;
         }
@@ -305,10 +305,10 @@ public class BannerCarouselViewModel implements IBannersWidgetViewModel<BannerPl
     }
 
     @Override
-    public boolean hasSubscribers(Observer<BannerPlaceState> observer) {
-        List<Observer<BannerPlaceState>> subscribers = bannerPlaceStateObservable.getSubscribers();
+    public boolean hasSubscribers(Observer<BannerCarouselState> observer) {
+        List<Observer<BannerCarouselState>> subscribers = bannerPlaceStateObservable.getSubscribers();
         boolean hasUISubs = false;
-        for (Observer<BannerPlaceState> subscriber : subscribers) {
+        for (Observer<BannerCarouselState> subscriber : subscribers) {
             if (subscriber == localObserver) continue;
             if (subscriber == observer) continue;
             hasUISubs = true;
