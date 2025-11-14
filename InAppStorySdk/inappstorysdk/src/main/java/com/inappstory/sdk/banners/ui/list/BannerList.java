@@ -148,32 +148,40 @@ public class BannerList extends RecyclerView implements Observer<BannerListState
                         getContext()
                 );
                 if (cc > 1) {
-
                     if (orientation == HORIZONTAL) {
+                        outRect.right = 0;
+                        outRect.left = bannersGap;
                         outRect.top = 0;
-                        outRect.bottom = 0;
-                        outRect.left = 0;
-                        outRect.right = bannersGap;
-                        if (position == 0) {
+                        outRect.bottom = bannersGap;
+                        if (position % cc == cc - 1) {
+                            outRect.bottom = 0;
+                        }
+                        if (position / cc == 0) {
                             outRect.left = edgeBannersPadding;
-                        } else if (position == itemCount - 1) {
+                        }
+                        int lastRow = (int) Math.ceil(1.0 * state.getItemCount() / cc);
+                        if ((int) Math.ceil(1.0 * position / cc) == lastRow) {
                             outRect.right = edgeBannersPadding;
                         }
                     } else {
                         outRect.right = bannersGap;
                         outRect.left = 0;
-                        outRect.top = 0;
-                        outRect.bottom = bannersGap;
-                        if (position % cc == cc - 1) {
+                        outRect.top = bannersGap;
+                        outRect.bottom = 0;
+                        if (position % cc == 1) {
                             outRect.right = 0;
                         }
-                        if (position / cc == 0) {
-                            outRect.top = edgeBannersPadding;
-                        }
-                        if (position == 0) {
-                            outRect.top = edgeBannersPadding;
-                        } else if (position == itemCount - 1) {
-                            outRect.bottom = edgeBannersPadding;
+                        if (1 == 2) {
+                            if (position % cc == 1) {
+                                outRect.right = 0;
+                            }
+                            if (position / cc == 0) {
+                                outRect.top = edgeBannersPadding;
+                            }
+                            int lastRow = (int) Math.ceil(1.0 * state.getItemCount() / cc);
+                            if ((int) Math.ceil(1.0 * position / cc) == lastRow) {
+                                outRect.bottom = edgeBannersPadding;
+                            }
                         }
                     }
                 } else {
@@ -263,7 +271,9 @@ public class BannerList extends RecyclerView implements Observer<BannerListState
             //TODO Log error
             return;
         }
-
+        if (bannerListViewModel != null) {
+            bannerListViewModel.loadBanners(skipCache);
+        }
     }
 
 
@@ -302,6 +312,13 @@ public class BannerList extends RecyclerView implements Observer<BannerListState
         //TODO clear list
     }
 
+    private int getItemWidth() {
+        int cc = customBannerListAppearance.columnCount();
+        return (getWidth() -
+                (cc - 1) * Sizes.dpToPxExt(customBannerListAppearance.bannersGap(),
+                        getContext())) / cc;
+    }
+
     @Override
     public void onUpdate(BannerListState newValue) {
         if (newValue == null || newValue.loadState() == null) return;
@@ -332,7 +349,7 @@ public class BannerList extends RecyclerView implements Observer<BannerListState
                                     }
                                 },
                                 newValue.iterationId(),
-                                getWidth(),
+                                getItemWidth(),
                                 Sizes.dpToPxExt(
                                         16,
                                         getContext()
@@ -374,7 +391,7 @@ public class BannerList extends RecyclerView implements Observer<BannerListState
                                     }
                                 },
                                 newValue.iterationId(),
-                                getWidth(),
+                                getItemWidth(),
                                 Sizes.dpToPxExt(
                                         16,
                                         getContext()

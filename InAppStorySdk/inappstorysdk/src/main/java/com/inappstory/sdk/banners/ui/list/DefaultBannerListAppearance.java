@@ -28,7 +28,7 @@ public class DefaultBannerListAppearance implements ICustomBannerListAppearance 
 
     @Override
     public int columnCount() {
-        return 1;
+        return 2;
     }
 
     @Override

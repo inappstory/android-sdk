@@ -66,7 +66,7 @@ public class BannerListAdapter extends RecyclerView.Adapter<BannerViewHolder> {
     public BannerViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.cs_banner_list_item, parent, false);
-        return new BannerViewHolder(view);
+        return new BannerViewHolder(view, banners.get(viewType).bannerAppearance().singleBannerAspectRatio());
     }
 
 
@@ -122,7 +122,7 @@ public class BannerListAdapter extends RecyclerView.Adapter<BannerViewHolder> {
         bannerView.setTag(tag);
         IBanner banner = banners.get(position % banners.size());
         bannerView.setBannerBackground(banner.bannerAppearance().backgroundDrawable());
-        bannerView.setSize(itemWidth, banner.bannerAppearance().singleBannerAspectRatio(), true);
+       // bannerView.setSize(itemWidth, banner.bannerAppearance().singleBannerAspectRatio(), true);
         final int bannerId = banner.id();
         final IBannerViewModel bannerViewModel = core
                 .widgetViewModels()

@@ -104,14 +104,14 @@ public class BannerViewModel implements IBannerViewModel {
     private final SingleTimeEvent<STETypeAndData> singleTimeEvents =
             new SingleTimeEvent<>();
 
-    private final IBannersWidgetViewModel bannerPlaceViewModel;
+    private final IBannersWidgetViewModel bannerWidgetViewModel;
 
     public BannerViewModel(
             int bannerId,
             String bannerPlace,
             int bannerIndex,
             IASCore core,
-            IBannersWidgetViewModel bannerPlaceViewModel
+            IBannersWidgetViewModel bannerWidgetViewModel
     ) {
         this.bannerId = bannerId;
         this.bannerPlace = bannerPlace;
@@ -123,7 +123,7 @@ public class BannerViewModel implements IBannerViewModel {
                         .bannerPlace(bannerPlace)
                         .loadState(BannerLoadStates.EMPTY)
         );
-        this.bannerPlaceViewModel = bannerPlaceViewModel;
+        this.bannerWidgetViewModel = bannerWidgetViewModel;
     }
 
 
@@ -160,7 +160,7 @@ public class BannerViewModel implements IBannerViewModel {
 
     @Override
     public void destroy() {
-        bannerPlaceViewModel.removeBannerViewModel(this);
+        bannerWidgetViewModel.removeBannerViewModel(this);
     }
 
     @Override
@@ -492,7 +492,7 @@ public class BannerViewModel implements IBannerViewModel {
 
     @Override
     public void showNext() {
-        if (bannerPlaceViewModel != null) bannerPlaceViewModel.showNext();
+        if (bannerWidgetViewModel != null) bannerWidgetViewModel.showNext();
     }
 
     @Override
@@ -611,7 +611,7 @@ public class BannerViewModel implements IBannerViewModel {
                 }
         );
         saveBannerOpened(bannerId);
-        bannerPlaceViewModel.sendOpenStat(bannerId, iterationId);
+        bannerWidgetViewModel.sendOpenStat(bannerId, iterationId);
     }
 
     private void saveBannerOpened(int bannerId) {
