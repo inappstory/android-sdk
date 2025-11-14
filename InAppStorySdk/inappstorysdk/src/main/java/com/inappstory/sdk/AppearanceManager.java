@@ -1157,6 +1157,11 @@ public class AppearanceManager {
         return AppearanceManager.this;
     }
 
+    public AppearanceManager csBannerListInterface(ICustomBannerListAppearance csBannerListInterface) {
+        this.csBannerListInterface = csBannerListInterface;
+        return AppearanceManager.this;
+    }
+
     public IStoriesListUGCItem csListUGCItemInterface() {
         return csListUGCItemInterface;
     }
