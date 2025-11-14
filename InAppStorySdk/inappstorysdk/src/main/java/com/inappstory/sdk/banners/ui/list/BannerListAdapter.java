@@ -32,19 +32,21 @@ public class BannerListAdapter extends RecyclerView.Adapter<BannerViewHolder> {
     private final float bannerRadius;
     private final String iterationId;
     private final ICustomBannerPlaceholder bannerPlaceholderCreator;
+    private IBannerPlaceLoadCallback listLoadCallback;
 
     public BannerListAdapter(
             IASCore core,
             @NonNull List<IBanner> banners,
             String bannerPlace,
             String uniqueId,
+            IBannerPlaceLoadCallback listLoadCallback,
             ICustomBannerPlaceholder bannerPlaceholderCreator,
             String iterationId,
             float itemWidth,
             float bannerRadius
     ) {
         this.banners = new ArrayList<>(banners);
-
+        this.listLoadCallback = listLoadCallback;
         this.itemWidth = itemWidth;
         this.uniqueId = uniqueId;
         this.bannerPlaceholderCreator = bannerPlaceholderCreator;
@@ -116,6 +118,7 @@ public class BannerListAdapter extends RecyclerView.Adapter<BannerViewHolder> {
     @Override
     public void onBindViewHolder(@NonNull BannerViewHolder holder, int position) {
         BannerView bannerView = holder.bannerView;
+        bannerView.setListLoadCallback(listLoadCallback);
         bannerView.setLoadingPlaceholder(bannerPlaceholderCreator.onCreate(bannerView.getContext()));
         bannerView.setBannerRadius(bannerRadius);
         String tag = "banner_" + position;

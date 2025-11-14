@@ -16,8 +16,8 @@ import com.inappstory.sdk.core.ui.widgets.customicons.IASDefaultAppearanceIcons;
 import com.inappstory.sdk.core.ui.widgets.customicons.IASDefaultIconCreator;
 import com.inappstory.sdk.core.ui.widgets.customicons.IIASDefaultIconCreator;
 import com.inappstory.sdk.stories.ui.widgets.LoadProgressBar;
-import com.inappstory.sdk.banners.ui.place.DefaultBannerPlaceAppearance;
-import com.inappstory.sdk.core.banners.ICustomBannerPlaceAppearance;
+import com.inappstory.sdk.banners.ui.place.DefaultBannerCarouselAppearance;
+import com.inappstory.sdk.core.banners.ICustomBannerCarouselAppearance;
 import com.inappstory.sdk.stories.api.models.CachedSessionData;
 import com.inappstory.sdk.core.network.content.models.Image;
 import com.inappstory.sdk.stories.ui.list.StoriesList;
@@ -118,7 +118,7 @@ public class AppearanceManager {
         this.csListItemHeight = other.csListItemHeight;
         this.csListItemBorderVisibility = other.csListItemBorderVisibility;
         this.csListItemBorderColor = other.csListItemBorderColor;
-        this.csBannerPlaceInterface = other.csBannerPlaceInterface;
+        this.csBannerCarouselInterface = other.csBannerCarouselInterface;
         this.csFavoriteListItemInterface = other.csFavoriteListItemInterface;
         this.csListItemInterface = other.csListItemInterface;
         this.csListUGCItemInterface = other.csListUGCItemInterface;
@@ -188,7 +188,7 @@ public class AppearanceManager {
     private IStoriesListItem csListItemInterface;
     private IStoriesListUGCItem csListUGCItemInterface;
 
-    private ICustomBannerPlaceAppearance csBannerPlaceInterface = new DefaultBannerPlaceAppearance();
+    private ICustomBannerCarouselAppearance csBannerCarouselInterface = new DefaultBannerCarouselAppearance();
     private ICustomBannerListAppearance csBannerListInterface = new DefaultBannerListAppearance();
 
     private IStoryReaderLoaderView csStoryLoaderView;
@@ -1143,8 +1143,8 @@ public class AppearanceManager {
         return AppearanceManager.this;
     }
 
-    public ICustomBannerPlaceAppearance csBannerPlaceInterface() {
-        return csBannerPlaceInterface != null ? csBannerPlaceInterface : new DefaultBannerPlaceAppearance();
+    public ICustomBannerCarouselAppearance csBannerPlaceInterface() {
+        return csBannerCarouselInterface != null ? csBannerCarouselInterface : new DefaultBannerCarouselAppearance();
     }
 
 
@@ -1152,8 +1152,8 @@ public class AppearanceManager {
         return csBannerListInterface != null ? csBannerListInterface : new DefaultBannerListAppearance();
     }
 
-    public AppearanceManager csBannerPlaceInterface(ICustomBannerPlaceAppearance csBannerPlaceInterface) {
-        this.csBannerPlaceInterface = csBannerPlaceInterface;
+    public AppearanceManager csBannerPlaceInterface(ICustomBannerCarouselAppearance csBannerCarouselInterface) {
+        this.csBannerCarouselInterface = csBannerCarouselInterface;
         return AppearanceManager.this;
     }
 

@@ -75,7 +75,7 @@ public class BannerPlaceState implements IBannerPlaceState {
         return this;
     }
 
-    BannerPlaceAppearance appearance;
+    BannerCarouselAppearance appearance;
     Integer currentIndex;
     String placeId = "";
     String iterationId = UUID.randomUUID().toString();

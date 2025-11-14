@@ -65,7 +65,7 @@ public class BannerPlaceViewModelsHolder {
                         break;
                     case PAGER:
                     case DATA:
-                        viewModels.put(uniqueId, new BannerPlaceViewModel(core, uniqueId));
+                        viewModels.put(uniqueId, new BannerCarouselViewModel(core, uniqueId));
                         break;
                 }
             }

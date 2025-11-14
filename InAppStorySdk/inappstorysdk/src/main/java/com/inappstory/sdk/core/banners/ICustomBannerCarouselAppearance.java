@@ -3,7 +3,7 @@ package com.inappstory.sdk.core.banners;
 import android.content.Context;
 import android.view.View;
 
-public interface ICustomBannerPlaceAppearance {
+public interface ICustomBannerCarouselAppearance {
     int bannersOnScreen(); // default = 1
 
     int nextBannerOffset(); // in dp, default = 0dp

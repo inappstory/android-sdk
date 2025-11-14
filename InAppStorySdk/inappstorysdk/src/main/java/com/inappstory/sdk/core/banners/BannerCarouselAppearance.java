@@ -9,15 +9,14 @@ import com.inappstory.sdk.inappmessage.ui.appearance.impl.ReaderBackgroundSettin
 import com.inappstory.sdk.utils.NumberUtils;
 
 import java.util.Map;
-import java.util.Objects;
 
-public class BannerPlaceAppearance implements IBannerPlaceAppearance {
+public class BannerCarouselAppearance implements IBannerCarouselAppearance {
     private Float singleBannerAspectRatio = 2f;
     private Float cornerRadius;
     private String backgroundColor;
     private IReaderBackground background;
 
-    public BannerPlaceAppearance(Map<String, Object> appearanceMap) {
+    public BannerCarouselAppearance(Map<String, Object> appearanceMap) {
         if (appearanceMap == null) return;
         NumberUtils numberUtils = new NumberUtils();
         singleBannerAspectRatio = numberUtils.convertNumberToFloat(appearanceMap.get("content_ratio"));

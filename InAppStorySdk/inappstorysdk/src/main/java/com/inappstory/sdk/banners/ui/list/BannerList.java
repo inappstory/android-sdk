@@ -1,6 +1,8 @@
 package com.inappstory.sdk.banners.ui.list;
 
 
+import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
+
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Color;
@@ -20,6 +22,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.banners.BannerPlaceLoadCallback;
 import com.inappstory.sdk.banners.ICustomBannerPlaceholder;
 import com.inappstory.sdk.banners.ui.IBannersWidget;
 import com.inappstory.sdk.core.IASCore;
@@ -29,9 +32,12 @@ import com.inappstory.sdk.core.banners.BannerListViewModel;
 import com.inappstory.sdk.core.banners.BannerPlaceViewModelsHolder;
 import com.inappstory.sdk.core.banners.BannerWidgetViewModelType;
 import com.inappstory.sdk.core.banners.BannersWidgetLoadStates;
+import com.inappstory.sdk.core.banners.IBannerPlaceLoadCallback;
 import com.inappstory.sdk.core.banners.IBannersWidgetViewModel;
 import com.inappstory.sdk.core.banners.ICustomBannerListAppearance;
+import com.inappstory.sdk.core.banners.InnerBannerPlaceLoadCallback;
 import com.inappstory.sdk.core.data.IBanner;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.BannerData;
 import com.inappstory.sdk.stories.utils.Observer;
 import com.inappstory.sdk.stories.utils.Sizes;
 
@@ -257,6 +263,61 @@ public class BannerList extends RecyclerView implements Observer<BannerListState
         init();
     }
 
+    final IBannerPlaceLoadCallback internalBannerPlaceLoadCallback = new InnerBannerPlaceLoadCallback() {
+        @Override
+        public void bannerPlaceLoaded(List<IBanner> banners) {
+            List<BannerData> bannerData = new ArrayList<>();
+            if (bannerPlaceLoadCallback != null) {
+                if (banners == null || banners.isEmpty()) {
+                    bannerPlaceLoadCallback.bannerPlaceLoaded(0, new ArrayList<BannerData>(), WRAP_CONTENT);
+                } else {
+                    for (IBanner banner : banners) {
+                        bannerData.add(new BannerData(banner.id(), placeId, banner.slideEventPayload(0)));
+                    }
+                    bannerPlaceLoadCallback.bannerPlaceLoaded(
+                            bannerData.size(),
+                            bannerData,
+                            -1
+                    );
+                }
+            }
+        }
+
+        @Override
+        public void loadError() {
+            if (bannerPlaceLoadCallback != null) bannerPlaceLoadCallback.loadError();
+
+        }
+
+        @Override
+        public void bannerLoaded(int bannerId, boolean isCurrent) {
+            if (bannerPlaceLoadCallback != null) bannerLoaded(bannerId, isCurrent);
+
+        }
+
+        @Override
+        public void bannerLoadError(int bannerId, boolean isCurrent) {
+            if (bannerPlaceLoadCallback != null) bannerLoadError(bannerId, isCurrent);
+        }
+
+        @Override
+        public String bannerPlace() {
+            return placeId;
+        }
+    };
+
+    private BannerPlaceLoadCallback bannerPlaceLoadCallback = null;
+
+    public void loadCallback(BannerPlaceLoadCallback bannerPlaceLoadCallback) {
+        if (bannerPlaceLoadCallback.bannerPlace() == null) {
+            if (placeId != null) {
+                bannerPlaceLoadCallback.bannerPlace(placeId);
+            } else {
+                //TODO Log error
+            }
+        }
+        this.bannerPlaceLoadCallback = bannerPlaceLoadCallback;
+    }
 
     public void reloadBanners() {
         loadBanners(true);
@@ -326,6 +387,7 @@ public class BannerList extends RecyclerView implements Observer<BannerListState
         currentLoadState = newValue.loadState();
         switch (newValue.loadState()) {
             case EMPTY:
+                internalBannerPlaceLoadCallback.bannerPlaceLoaded(new ArrayList<IBanner>());
                 new Handler(Looper.getMainLooper()).post(new Runnable() {
                     @Override
                     public void run() {
@@ -338,6 +400,7 @@ public class BannerList extends RecyclerView implements Observer<BannerListState
                                 new ArrayList<IBanner>(),
                                 placeId,
                                 uniqueId(),
+                                bannerPlaceLoadCallback,
                                 new ICustomBannerPlaceholder() {
                                     @Override
                                     public View onCreate(Context context) {
@@ -360,11 +423,13 @@ public class BannerList extends RecyclerView implements Observer<BannerListState
                 });
                 break;
             case FAILED:
+                internalBannerPlaceLoadCallback.loadError();
                 break;
             case NONE:
             case LOADING:
                 break;
             case LOADED:
+                internalBannerPlaceLoadCallback.bannerPlaceLoaded(newValue.getItems());
                 new Handler(Looper.getMainLooper()).post(new Runnable() {
                     @Override
                     public void run() {
@@ -380,6 +445,7 @@ public class BannerList extends RecyclerView implements Observer<BannerListState
                                 items,
                                 placeId,
                                 uniqueId(),
+                                bannerPlaceLoadCallback,
                                 new ICustomBannerPlaceholder() {
                                     @Override
                                     public View onCreate(Context context) {

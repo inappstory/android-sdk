@@ -20,7 +20,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
-public class BannerPlaceViewModel implements IBannersWidgetViewModel<BannerPlaceState> {
+public class BannerCarouselViewModel implements IBannersWidgetViewModel<BannerPlaceState> {
     private final Observable<BannerPlaceState> bannerPlaceStateObservable =
             new Observable<>(new BannerPlaceState());
 
@@ -38,7 +38,7 @@ public class BannerPlaceViewModel implements IBannersWidgetViewModel<BannerPlace
     private String uniqueId;
     BannerViewModelsHolder bannerViewModelsHolder;
 
-    public BannerPlaceViewModel(IASCore core, String uniqueId) {
+    public BannerCarouselViewModel(IASCore core, String uniqueId) {
         this.uniqueId = uniqueId;
         bannerViewModelsHolder = new BannerViewModelsHolder(core, this);
         this.core = core;
@@ -105,7 +105,7 @@ public class BannerPlaceViewModel implements IBannersWidgetViewModel<BannerPlace
             Set<InnerBannerPlaceLoadCallback> callbacks = new HashSet<>();
             List<IBanner> content = newValue.getItems();
             synchronized (callbacksLock) {
-                callbacks.addAll(BannerPlaceViewModel.this.callbacks);
+                callbacks.addAll(BannerCarouselViewModel.this.callbacks);
             }
             bannerPlaceLoadState = newValue.loadState();
             switch (newValue.loadState()) {

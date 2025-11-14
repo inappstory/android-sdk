@@ -28,7 +28,7 @@ import com.inappstory.sdk.banners.BannerPlaceLoadCallback;
 import com.inappstory.sdk.banners.ui.IBannersWidget;
 import com.inappstory.sdk.banners.ui.banner.BannerView;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
-import com.inappstory.sdk.core.banners.BannerPlaceViewModel;
+import com.inappstory.sdk.core.banners.BannerCarouselViewModel;
 import com.inappstory.sdk.core.banners.BannerPlaceViewModelsHolder;
 import com.inappstory.sdk.core.banners.BannerWidgetViewModelType;
 import com.inappstory.sdk.core.banners.IBannerPlaceLoadCallback;
@@ -39,7 +39,7 @@ import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.banners.BannersWidgetLoadStates;
 import com.inappstory.sdk.core.banners.BannerPlaceState;
 import com.inappstory.sdk.core.banners.IBannersWidgetViewModel;
-import com.inappstory.sdk.core.banners.ICustomBannerPlaceAppearance;
+import com.inappstory.sdk.core.banners.ICustomBannerCarouselAppearance;
 import com.inappstory.sdk.core.data.IBanner;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.BannerData;
 import com.inappstory.sdk.stories.utils.Observer;
@@ -50,12 +50,12 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
-public class BannerPlace extends FrameLayout implements Observer<BannerPlaceState>, IBannersWidget {
+public class BannerCarousel extends FrameLayout implements Observer<BannerPlaceState>, IBannersWidget {
     private BannerViewPager bannerViewPager;
-    private BannerPlaceViewModel bannerPlaceViewModel;
+    private BannerCarouselViewModel bannerCarouselViewModel;
     private String placeId;
     private IASCore core;
-    private ICustomBannerPlaceAppearance customBannerPlaceAppearance = new DefaultBannerPlaceAppearance();
+    private ICustomBannerCarouselAppearance customBannerPlaceAppearance = new DefaultBannerCarouselAppearance();
     private String lastLaunchedTag = "";
     private final String defaultUniqueId = UUID.randomUUID().toString();
     private String customUniqueId = null;
@@ -80,8 +80,8 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
             return;
         }
         this.customUniqueId = customUniqueId;
-        if (bannerPlaceViewModel != null)
-            bannerPlaceViewModel.uniqueId(customUniqueId);
+        if (bannerCarouselViewModel != null)
+            bannerCarouselViewModel.uniqueId(customUniqueId);
     }
 
     public void reloadBanners() {
@@ -173,8 +173,8 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
     BannerViewPager.PageChangeListener pageChangeListener = new BannerViewPager.PageChangeListener() {
         @Override
         public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-            if (bannerPlaceViewModel != null) {
-                BannerPlaceState placeState = bannerPlaceViewModel.getCurrentBannerPlaceState();
+            if (bannerCarouselViewModel != null) {
+                BannerPlaceState placeState = bannerCarouselViewModel.getCurrentBannerPlaceState();
                 try {
                     if (bannerPlaceNavigationCallback != null && !placeState.getItems().isEmpty()) {
                         int size = placeState.getItems().size();
@@ -206,9 +206,9 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
                 currentBannerView.resumeBanner();
             }
             lastLaunchedTag = newLaunchedTag;
-            if (bannerPlaceViewModel != null) {
-                bannerPlaceViewModel.updateCurrentIndex(position);
-                BannerPlaceState placeState = bannerPlaceViewModel.getCurrentBannerPlaceState();
+            if (bannerCarouselViewModel != null) {
+                bannerCarouselViewModel.updateCurrentIndex(position);
+                BannerPlaceState placeState = bannerCarouselViewModel.getCurrentBannerPlaceState();
                 try {
                     if (bannerPlaceNavigationCallback != null && !placeState.getItems().isEmpty()) {
                         int size = placeState.getItems().size();
@@ -335,30 +335,30 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
             //TODO Log error
             return;
         }
-        if (bannerPlaceViewModel != null) {
-            bannerPlaceViewModel.loadBanners(skipCache);
+        if (bannerCarouselViewModel != null) {
+            bannerCarouselViewModel.loadBanners(skipCache);
         }
     }
 
     public void clear() {
-        bannerPlaceViewModel.clear();
+        bannerCarouselViewModel.clear();
     }
 
     private void initVM() {
         if (initialized) return;
-        if (bannerPlaceViewModel != null) {
-            bannerPlaceViewModel.placeId(placeId);
-            bannerPlaceViewModel.addSubscriberAndCheckLocal(BannerPlace.this);
+        if (bannerCarouselViewModel != null) {
+            bannerCarouselViewModel.placeId(placeId);
+            bannerCarouselViewModel.addSubscriberAndCheckLocal(BannerCarousel.this);
             initialized = true;
         }
     }
 
     private void deInitVM() {
         initialized = false;
-        if (bannerPlaceViewModel != null) {
-            bannerPlaceViewModel.placeId(null);
-            bannerPlaceViewModel.removeSubscriber(BannerPlace.this);
-            bannerPlaceViewModel.clearBanners();
+        if (bannerCarouselViewModel != null) {
+            bannerCarouselViewModel.placeId(null);
+            bannerCarouselViewModel.removeSubscriber(BannerCarousel.this);
+            bannerCarouselViewModel.clearBanners();
         }
         currentLoadState = null;
         bannerViewPager.setSaveFromParentEnabled(false);
@@ -442,12 +442,12 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
         pauseAutoscroll();
     }
 
-    public BannerPlace(@NonNull Context context) {
+    public BannerCarousel(@NonNull Context context) {
         super(context);
         init(context);
     }
 
-    public BannerPlace(@NonNull Context context, @Nullable AttributeSet attrs) {
+    public BannerCarousel(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
         init(context);
         initAttrs(context, attrs);
@@ -459,7 +459,7 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
         setPlaceId(typedArray.getString(R.styleable.BannerPlace_cs_place_id));
     }
 
-    public BannerPlace(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+    public BannerCarousel(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         init(context);
         initAttrs(context, attrs);
@@ -472,12 +472,12 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-                BannerPlace.this.core = core;
+                BannerCarousel.this.core = core;
                 BannerPlaceViewModelsHolder holder = core
                         .widgetViewModels()
                         .bannerPlaceViewModels();
-                bannerPlaceViewModel =
-                        (BannerPlaceViewModel) holder.getOrCreate(
+                bannerCarouselViewModel =
+                        (BannerCarouselViewModel) holder.getOrCreate(
                                 uniqueId(),
                                 BannerWidgetViewModelType.PAGER
                         );
@@ -512,7 +512,7 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
     @Override
     public void onUpdate(final BannerPlaceState newValue) {
         if (newValue == null || newValue.loadState() == null) return;
-        if (bannerPlaceViewModel == null) return;
+        if (bannerCarouselViewModel == null) return;
         if (currentLoadState == BannersWidgetLoadStates.LOADED && newValue.currentIndex() != null) {
             if (bannerViewPager.getCurrentItem() != newValue.currentIndex()) {
                 Log.e("Indexes", bannerViewPager.getCurrentItem() + " " + newValue.currentIndex());
@@ -520,7 +520,7 @@ public class BannerPlace extends FrameLayout implements Observer<BannerPlaceStat
                     @Override
                     public void run() {
                         bannerViewPager.setCurrentItem(newValue.currentIndex(), true);
-                        bannerPlaceViewModel.updateCurrentIndex(newValue.currentIndex());
+                        bannerCarouselViewModel.updateCurrentIndex(newValue.currentIndex());
                     }
                 });
             }

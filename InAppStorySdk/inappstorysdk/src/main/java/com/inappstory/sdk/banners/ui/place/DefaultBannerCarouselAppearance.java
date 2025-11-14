@@ -4,9 +4,9 @@ package com.inappstory.sdk.banners.ui.place;
 import android.content.Context;
 import android.view.View;
 
-import com.inappstory.sdk.core.banners.ICustomBannerPlaceAppearance;
+import com.inappstory.sdk.core.banners.ICustomBannerCarouselAppearance;
 
-public class DefaultBannerPlaceAppearance implements ICustomBannerPlaceAppearance {
+public class DefaultBannerCarouselAppearance implements ICustomBannerCarouselAppearance {
     @Override
     public int bannersOnScreen() {
         return 1;

@@ -439,7 +439,6 @@ public class BannerView extends FrameLayout implements Observer<BannerState> {
 
     }
 
-
     public void setListLoadCallback(IBannerPlaceLoadCallback listLoadCallback) {
         this.listLoadCallback = listLoadCallback;
     }
