@@ -1,9 +1,5 @@
 package com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager;
 
-import static android.content.Context.CLIPBOARD_SERVICE;
-
-import android.content.ClipData;
-import android.content.ClipboardManager;
 import android.content.Context;
 import android.media.AudioManager;
 import android.os.Handler;
@@ -26,10 +22,9 @@ import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenData;
 import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenStrategy;
 import com.inappstory.sdk.core.utils.ConnectionCheck;
 import com.inappstory.sdk.core.utils.ConnectionCheckCallback;
-import com.inappstory.sdk.goods.outercallbacks.GoodsAddToCartProcessCallback;
+import com.inappstory.sdk.goods.outercallbacks.GoodsCartUpdatedProcessCallback;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.UpdateTimelineData;
-import com.inappstory.sdk.stories.api.models.WriteClipboardData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.ui.widgets.LoadProgressBar;
@@ -56,7 +51,6 @@ import com.inappstory.sdk.utils.ClipboardUtils;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
-import java.util.Objects;
 import java.util.regex.Pattern;
 
 public class StoriesViewManager {
@@ -100,25 +94,25 @@ public class StoriesViewManager {
             storiesView.goodsWidgetComplete(widgetId);
     }
 
-    void addGoodsToCartSuccess() {
+    void cartUpdatedResultSuccess() {
         if (storiesView instanceof StoriesWebView) {
-            ((StoriesWebView) storiesView).addGoodsToCartSuccess();
+            ((StoriesWebView) storiesView).cartUpdatedResultSuccess();
         }
     }
 
-    void addGoodsToCartError() {
+    void cartUpdatedResultError() {
         if (storiesView instanceof StoriesWebView) {
-            ((StoriesWebView) storiesView).addGoodsToCartError();
+            ((StoriesWebView) storiesView).cartUpdatedResultError();
         }
     }
 
-    GoodsAddToCartProcessCallback addToCartProcessCallback = new GoodsAddToCartProcessCallback() {
+    GoodsCartUpdatedProcessCallback cartUpdatedProcessCallback = new GoodsCartUpdatedProcessCallback() {
         @Override
         public void onSuccess() {
             new Handler(Looper.getMainLooper()).post(new Runnable() {
                 @Override
                 public void run() {
-                    addGoodsToCartSuccess();
+                    cartUpdatedResultSuccess();
                 }
             });
         }
@@ -128,18 +122,18 @@ public class StoriesViewManager {
             new Handler(Looper.getMainLooper()).post(new Runnable() {
                 @Override
                 public void run() {
-                    addGoodsToCartError();
+                    cartUpdatedResultError();
                 }
             });
         }
     };
 
-    public void addGoodsToCart(String goodsCartData) {
-        pageManager.addGoodsToCart(goodsCartData, addToCartProcessCallback);
+    public void updateCart(String goodsCartData) {
+        pageManager.updateCart(goodsCartData, cartUpdatedProcessCallback);
     }
 
-    public void navigateToCart() {
-        pageManager.navigateToCart();
+    public void cartClicked() {
+        pageManager.cartClicked();
     }
 
 

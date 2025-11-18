@@ -14,7 +14,7 @@ import com.inappstory.sdk.core.api.IASStatisticStoriesV1;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.data.IReaderContent;
 import com.inappstory.sdk.core.ui.screens.IReaderSlideViewModel;
-import com.inappstory.sdk.goods.outercallbacks.GoodsAddToCartProcessCallback;
+import com.inappstory.sdk.goods.outercallbacks.GoodsCartUpdatedProcessCallback;
 import com.inappstory.sdk.goods.outercallbacks.GoodsCartData;
 import com.inappstory.sdk.goods.outercallbacks.GoodsCartInteractionCallback;
 import com.inappstory.sdk.inner.share.InnerShareData;
@@ -35,7 +35,6 @@ import com.inappstory.sdk.stories.statistic.GetStatisticV1Callback;
 import com.inappstory.sdk.stories.ui.reader.ReaderManager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.buttonspanel.ButtonsPanelManager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.progresstimeline.StoryTimelineManager;
-import com.inappstory.sdk.stories.ui.widgets.readerscreen.webview.StoriesWebView;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.utils.StringsUtils;
@@ -55,29 +54,29 @@ public class ReaderPageManager implements IReaderSlideViewModel {
     public boolean backPressEnabled = true;
 
 
-    public void addGoodsToCart(
+    public void updateCart(
             final String goodsCartData,
-            final GoodsAddToCartProcessCallback goodsAddToCartProcessCallback
+            final GoodsCartUpdatedProcessCallback goodsCartUpdatedProcessCallback
     ) {
         core.callbacksAPI().useCallback(IASCallbackType.GOODS_CART_INTERACTION,
                 new UseIASCallback<GoodsCartInteractionCallback>() {
                     @Override
                     public void use(@NonNull GoodsCartInteractionCallback callback) {
-                        callback.addToCart(
+                        callback.cartUpdated(
                                 new GoodsCartData(),
-                                goodsAddToCartProcessCallback
+                                goodsCartUpdatedProcessCallback
                         );
                     }
                 }
         );
     }
 
-    public void navigateToCart() {
+    public void cartClicked() {
         core.callbacksAPI().useCallback(IASCallbackType.GOODS_CART_INTERACTION,
                 new UseIASCallback<GoodsCartInteractionCallback>() {
                     @Override
                     public void use(@NonNull GoodsCartInteractionCallback callback) {
-                        callback.navigateToCart();
+                        callback.cartClicked();
                     }
                 }
         );

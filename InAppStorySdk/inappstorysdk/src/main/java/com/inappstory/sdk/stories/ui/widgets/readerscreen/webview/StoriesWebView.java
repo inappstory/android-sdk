@@ -97,11 +97,11 @@ public class StoriesWebView extends IASWebView implements ContentViewInteractor 
         logMethod("game_complete " + data);
     }
 
-    public void addGoodsToCartSuccess() {
+    public void cartUpdatedResultSuccess() {
 
     }
 
-    public void addGoodsToCartError() {
+    public void cartUpdatedResultError() {
 
     }
 

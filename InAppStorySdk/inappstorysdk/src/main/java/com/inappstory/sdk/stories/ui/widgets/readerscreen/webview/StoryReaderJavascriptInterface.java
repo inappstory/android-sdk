@@ -294,12 +294,12 @@ public class StoryReaderJavascriptInterface {
     }
 
     @JavascriptInterface
-    public void addGoodsToCart(String goodsCartData) {
-        manager.addGoodsToCart(goodsCartData);
+    public void updateCart(String goodsCartData) {
+        manager.updateCart(goodsCartData);
     }
 
     @JavascriptInterface
-    public void navigateToCart() {
-        manager.navigateToCart();
+    public void cartClicked() {
+        manager.cartClicked();
     }
 }
