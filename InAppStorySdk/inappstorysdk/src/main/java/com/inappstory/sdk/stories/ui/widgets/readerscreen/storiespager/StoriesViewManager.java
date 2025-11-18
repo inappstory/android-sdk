@@ -26,6 +26,7 @@ import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenData;
 import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenStrategy;
 import com.inappstory.sdk.core.utils.ConnectionCheck;
 import com.inappstory.sdk.core.utils.ConnectionCheckCallback;
+import com.inappstory.sdk.goods.outercallbacks.GoodsAddToCartProcessCallback;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.UpdateTimelineData;
 import com.inappstory.sdk.stories.api.models.WriteClipboardData;
@@ -95,9 +96,50 @@ public class StoriesViewManager {
     }
 
     void goodsWidgetComplete(String widgetId) {
-
         if (storiesView != null)
             storiesView.goodsWidgetComplete(widgetId);
+    }
+
+    void addGoodsToCartSuccess() {
+        if (storiesView instanceof StoriesWebView) {
+            ((StoriesWebView) storiesView).addGoodsToCartSuccess();
+        }
+    }
+
+    void addGoodsToCartError() {
+        if (storiesView instanceof StoriesWebView) {
+            ((StoriesWebView) storiesView).addGoodsToCartError();
+        }
+    }
+
+    GoodsAddToCartProcessCallback addToCartProcessCallback = new GoodsAddToCartProcessCallback() {
+        @Override
+        public void onSuccess() {
+            new Handler(Looper.getMainLooper()).post(new Runnable() {
+                @Override
+                public void run() {
+                    addGoodsToCartSuccess();
+                }
+            });
+        }
+
+        @Override
+        public void onError(String reason) {
+            new Handler(Looper.getMainLooper()).post(new Runnable() {
+                @Override
+                public void run() {
+                    addGoodsToCartError();
+                }
+            });
+        }
+    };
+
+    public void addGoodsToCart(String goodsCartData) {
+        pageManager.addGoodsToCart(goodsCartData, addToCartProcessCallback);
+    }
+
+    public void navigateToCart() {
+        pageManager.navigateToCart();
     }
 
 

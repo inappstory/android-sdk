@@ -2,7 +2,6 @@ package com.inappstory.sdk.banners;
 
 import com.inappstory.sdk.core.banners.IBannerPlaceLoadCallback;
 import com.inappstory.sdk.core.data.IBanner;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.BannerData;
 
 import java.util.List;
 

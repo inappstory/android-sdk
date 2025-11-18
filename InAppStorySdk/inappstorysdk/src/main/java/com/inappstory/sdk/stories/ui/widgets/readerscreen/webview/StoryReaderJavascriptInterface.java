@@ -12,7 +12,7 @@ import com.inappstory.sdk.stories.api.models.StoryLoadedData;
 import com.inappstory.sdk.stories.api.models.UpdateTimelineData;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.StoriesViewManager;
 
-public class WebAppInterface {
+public class StoryReaderJavascriptInterface {
     private final StoriesViewManager manager;
     private final IASCore core;
 
@@ -21,7 +21,7 @@ public class WebAppInterface {
     /**
      * Instantiate the interface and set the context
      */
-    WebAppInterface(
+    StoryReaderJavascriptInterface(
             StoriesViewManager manager,
             IASCore core
     ) {
@@ -291,5 +291,15 @@ public class WebAppInterface {
     @JavascriptInterface
     public void defaultTap(String val) {
         logMethod(val);
+    }
+
+    @JavascriptInterface
+    public void addGoodsToCart(String goodsCartData) {
+        manager.addGoodsToCart(goodsCartData);
+    }
+
+    @JavascriptInterface
+    public void navigateToCart() {
+        manager.navigateToCart();
     }
 }

@@ -1,6 +1,6 @@
 package com.inappstory.sdk.inappmessage.domain.reader;
 
-import com.inappstory.sdk.stories.outercallbacks.common.reader.InAppMessageData;
+import com.inappstory.sdk.inappmessage.InAppMessageData;
 import com.inappstory.sdk.stories.utils.Observer;
 
 public interface IIAMReaderViewModel {

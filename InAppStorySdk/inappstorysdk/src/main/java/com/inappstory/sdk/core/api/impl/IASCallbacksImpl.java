@@ -9,6 +9,7 @@ import com.inappstory.sdk.core.api.IASCallback;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.IASCallbacks;
 import com.inappstory.sdk.core.api.UseIASCallback;
+import com.inappstory.sdk.goods.outercallbacks.GoodsCartInteractionCallback;
 import com.inappstory.sdk.inappmessage.CloseInAppMessageCallback;
 import com.inappstory.sdk.inappmessage.InAppMessageLoadCallback;
 import com.inappstory.sdk.inappmessage.InAppMessageWidgetCallback;
@@ -173,6 +174,12 @@ public class IASCallbacksImpl implements IASCallbacks {
                     return;
                 }
                 break;
+            case GOODS_CART_INTERACTION:
+                if (goodsCartInteractionCallback != null) {
+                    useIASCallback.use(goodsCartInteractionCallback);
+                    return;
+                }
+                break;
             default:
                 break;
         }
@@ -245,6 +252,9 @@ public class IASCallbacksImpl implements IASCallbacks {
             case BANNER_WIDGET:
                 bannerWidgetCallback = (BannerWidgetCallback) callback;
                 return;
+            case GOODS_CART_INTERACTION:
+                goodsCartInteractionCallback = (GoodsCartInteractionCallback) callback;
+                return;
             default:
                 break;
         }
@@ -270,6 +280,7 @@ public class IASCallbacksImpl implements IASCallbacks {
     private BannerWidgetCallback bannerWidgetCallback;
     private ShowSlideCallback showSlideCallback;
     private ShowStoryCallback showStoryCallback;
+    private GoodsCartInteractionCallback goodsCartInteractionCallback;
     private SingleLoadCallback singleLoadCallback;
     private ShareCallback shareCallback;
 

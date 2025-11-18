@@ -9,8 +9,7 @@ import com.inappstory.sdk.core.data.IInAppMessage;
 import com.inappstory.sdk.inappmessage.CloseInAppMessageCallback;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.inappmessage.ShowInAppMessageCallback;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.InAppMessageData;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
+import com.inappstory.sdk.inappmessage.InAppMessageData;
 import com.inappstory.sdk.stories.utils.Observable;
 import com.inappstory.sdk.stories.utils.Observer;
 

@@ -97,6 +97,14 @@ public class StoriesWebView extends IASWebView implements ContentViewInteractor 
         logMethod("game_complete " + data);
     }
 
+    public void addGoodsToCartSuccess() {
+
+    }
+
+    public void addGoodsToCartError() {
+
+    }
+
     String currentPage = "";
 
 
@@ -386,7 +394,7 @@ public class StoriesWebView extends IASWebView implements ContentViewInteractor 
 
         if (!clientIsSet) {
             addJavascriptInterface(
-                    new WebAppInterface(
+                    new StoryReaderJavascriptInterface(
                             getManager(),
                             getManager().core()
                     ), "Android");

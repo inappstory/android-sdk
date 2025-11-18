@@ -9,6 +9,7 @@ import com.inappstory.sdk.core.api.IASCallback;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.IASCallbacks;
 import com.inappstory.sdk.core.api.UseIASCallback;
+import com.inappstory.sdk.goods.outercallbacks.GoodsCartInteractionCallback;
 import com.inappstory.sdk.inappmessage.CloseInAppMessageCallback;
 import com.inappstory.sdk.inappmessage.InAppMessageWidgetCallback;
 import com.inappstory.sdk.inappmessage.ShowInAppMessageCallback;
@@ -106,6 +107,20 @@ public class IASCallbacksExternalAPIImpl implements IASCallbacksExternalAPI {
             @Override
             public void use(@NonNull IASCore core) {
                 core.callbacksAPI().setCallback(IASCallbackType.SHOW_STORY, showStoryCallback);
+            }
+        });
+    }
+
+    public void goodsCartInteraction(
+            final GoodsCartInteractionCallback goodsCartInteractionCallback
+    ) {
+        useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.callbacksAPI().setCallback(
+                        IASCallbackType.GOODS_CART_INTERACTION,
+                        goodsCartInteractionCallback
+                );
             }
         });
     }

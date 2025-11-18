@@ -2,7 +2,7 @@ package com.inappstory.sdk.inappmessage.domain.reader;
 
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageAppearance;
 import com.inappstory.sdk.inappmessage.ui.appearance.impl.InAppMessageBottomSheetSettings;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.InAppMessageData;
+import com.inappstory.sdk.inappmessage.InAppMessageData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 
 public class IAMReaderState {

@@ -14,6 +14,9 @@ import com.inappstory.sdk.core.api.IASStatisticStoriesV1;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.data.IReaderContent;
 import com.inappstory.sdk.core.ui.screens.IReaderSlideViewModel;
+import com.inappstory.sdk.goods.outercallbacks.GoodsAddToCartProcessCallback;
+import com.inappstory.sdk.goods.outercallbacks.GoodsCartData;
+import com.inappstory.sdk.goods.outercallbacks.GoodsCartInteractionCallback;
 import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.ContentType;
@@ -51,8 +54,37 @@ public class ReaderPageManager implements IReaderSlideViewModel {
     public boolean swipeGestureEnabled = true;
     public boolean backPressEnabled = true;
 
+
+    public void addGoodsToCart(
+            final String goodsCartData,
+            final GoodsAddToCartProcessCallback goodsAddToCartProcessCallback
+    ) {
+        core.callbacksAPI().useCallback(IASCallbackType.GOODS_CART_INTERACTION,
+                new UseIASCallback<GoodsCartInteractionCallback>() {
+                    @Override
+                    public void use(@NonNull GoodsCartInteractionCallback callback) {
+                        callback.addToCart(
+                                new GoodsCartData(),
+                                goodsAddToCartProcessCallback
+                        );
+                    }
+                }
+        );
+    }
+
+    public void navigateToCart() {
+        core.callbacksAPI().useCallback(IASCallbackType.GOODS_CART_INTERACTION,
+                new UseIASCallback<GoodsCartInteractionCallback>() {
+                    @Override
+                    public void use(@NonNull GoodsCartInteractionCallback callback) {
+                        callback.navigateToCart();
+                    }
+                }
+        );
+    }
+
     public void handleBackPress() {
-        ((StoriesWebView) host.storiesView).handleBackPress();
+        host.storiesView.handleBackPress();
     }
 
     public boolean isCorrectSubscriber(ContentIdAndType contentIdAndType) {

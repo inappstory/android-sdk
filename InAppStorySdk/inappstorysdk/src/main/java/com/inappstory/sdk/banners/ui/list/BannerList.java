@@ -37,7 +37,7 @@ import com.inappstory.sdk.core.banners.IBannersWidgetViewModel;
 import com.inappstory.sdk.core.banners.ICustomBannerListAppearance;
 import com.inappstory.sdk.core.banners.InnerBannerPlaceLoadCallback;
 import com.inappstory.sdk.core.data.IBanner;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.BannerData;
+import com.inappstory.sdk.banners.BannerData;
 import com.inappstory.sdk.stories.utils.Observer;
 import com.inappstory.sdk.stories.utils.Sizes;
 

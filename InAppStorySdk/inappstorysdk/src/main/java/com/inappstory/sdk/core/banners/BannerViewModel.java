@@ -28,7 +28,7 @@ import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.SlideLinkObject;
 import com.inappstory.sdk.stories.api.models.UpdateTimelineData;
 import com.inappstory.sdk.stories.cache.ContentIdAndType;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.BannerData;
+import com.inappstory.sdk.banners.BannerData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickAction;
 import com.inappstory.sdk.stories.utils.Observable;
 import com.inappstory.sdk.stories.utils.Observer;

@@ -75,7 +75,7 @@ import com.inappstory.sdk.inner.share.ShareFilesPrepareCallback;
 import com.inappstory.sdk.memcache.IGetBitmapFromMemoryCache;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ContentData;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.InAppMessageData;
+import com.inappstory.sdk.inappmessage.InAppMessageData;
 import com.inappstory.sdk.stories.ui.widgets.TouchFrameLayout;
 import com.inappstory.sdk.utils.IAcceleratorSubscriber;
 import com.inappstory.sdk.utils.UrlEncoder;

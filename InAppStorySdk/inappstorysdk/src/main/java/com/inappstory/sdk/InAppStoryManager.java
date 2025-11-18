@@ -28,6 +28,7 @@ import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.IASStatisticStoriesV1;
 import com.inappstory.sdk.banners.BannerPlaceLoadSettings;
 import com.inappstory.sdk.core.data.models.InAppStoryUserSettings;
+import com.inappstory.sdk.goods.outercallbacks.GoodsCartInteractionCallback;
 import com.inappstory.sdk.inappmessage.CloseInAppMessageCallback;
 import com.inappstory.sdk.inappmessage.InAppMessageLoadCallback;
 import com.inappstory.sdk.inappmessage.InAppMessageOpenSettings;
@@ -515,6 +516,23 @@ public class InAppStoryManager implements IASBackPressHandler {
             @Override
             public void use(@NonNull IASCore core) {
                 core.callbacksAPI().setCallback(IASCallbackType.SHOW_STORY, showStoryCallback);
+            }
+        });
+    }
+
+    /**
+     * use to set callback on story shown in reader
+     */
+    public void setGoodsCartInteractionCallback(
+            final GoodsCartInteractionCallback goodsCartInteractionCallback
+    ) {
+        useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.callbacksAPI().setCallback(
+                        IASCallbackType.GOODS_CART_INTERACTION,
+                        goodsCartInteractionCallback
+                );
             }
         });
     }

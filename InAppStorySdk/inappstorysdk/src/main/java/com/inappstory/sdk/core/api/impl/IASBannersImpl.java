@@ -16,7 +16,7 @@ import com.inappstory.sdk.core.banners.IBannerViewModel;
 import com.inappstory.sdk.core.banners.BannerPlaceUseCaseCallback;
 import com.inappstory.sdk.core.data.IBanner;
 import com.inappstory.sdk.core.network.content.usecase.BannerPlaceUseCase;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.BannerData;
+import com.inappstory.sdk.banners.BannerData;
 
 import java.util.ArrayList;
 import java.util.HashSet;
