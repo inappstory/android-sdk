@@ -98,21 +98,21 @@ public class StoriesWebView extends IASWebView implements ContentViewInteractor 
     }
 
     public void cartUpdatedResultSuccess(String successCB, String requestId, String cardStr) {
-        loadUrl("javascript:window." + successCB + "('" + requestId + "', `" +
+        loadUrl("javascript:window." + successCB + "('" + requestId + "', '" +
                 StringsUtils.escapeSingleQuotes(
                         cardStr
                                 .replaceAll("\\\\n", "\\\\\n")
                                 .replaceAll("\\\\r", "\\\\\r")
                                 .replaceAll("\\\\t", "\\\\\t")
-                ) + "`)");
+                ) + "')");
     }
 
     public void cartUpdatedResultError(String errorCB, String requestId, String reason) {
-        loadUrl("javascript:window." + errorCB + "('" + requestId + "', `" +
+        loadUrl("javascript:window." + errorCB + "('" + requestId + "', '" +
                 StringsUtils.escapeSingleQuotes(reason
                         .replaceAll("\\\\n", "\\\\\n")
                         .replaceAll("\\\\r", "\\\\\r")
-                        .replaceAll("\\\\t", "\\\\\t")) + "`)");
+                        .replaceAll("\\\\t", "\\\\\t")) + "')");
     }
 
     String currentPage = "";
