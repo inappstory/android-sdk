@@ -22,7 +22,11 @@ import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenData;
 import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenStrategy;
 import com.inappstory.sdk.core.utils.ConnectionCheck;
 import com.inappstory.sdk.core.utils.ConnectionCheckCallback;
-import com.inappstory.sdk.goods.outercallbacks.GoodsCartUpdatedProcessCallback;
+import com.inappstory.sdk.goods.models.ProductCartUpdateCallbacks;
+import com.inappstory.sdk.goods.models.ProductCartUpdateJSData;
+import com.inappstory.sdk.goods.outercallbacks.ProductCart;
+import com.inappstory.sdk.goods.outercallbacks.ProductCartOffer;
+import com.inappstory.sdk.goods.outercallbacks.ProductCartUpdatedProcessCallback;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.UpdateTimelineData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
@@ -94,46 +98,93 @@ public class StoriesViewManager {
             storiesView.goodsWidgetComplete(widgetId);
     }
 
-    void cartUpdatedResultSuccess() {
+    void cartUpdatedResultSuccess(String successCB, String requestId, ProductCart productCart) {
+        String cardStr = "{}";
+        try {
+            cardStr = JsonParser.getJson(productCart);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
         if (storiesView instanceof StoriesWebView) {
-            ((StoriesWebView) storiesView).cartUpdatedResultSuccess();
+            ((StoriesWebView) storiesView).cartUpdatedResultSuccess(successCB, requestId, cardStr);
         }
     }
 
-    void cartUpdatedResultError() {
+    void cartUpdatedResultError(String errorCB, String requestId, String reason) {
         if (storiesView instanceof StoriesWebView) {
-            ((StoriesWebView) storiesView).cartUpdatedResultError();
+            ((StoriesWebView) storiesView).cartUpdatedResultError(errorCB, requestId, reason);
         }
     }
 
-    GoodsCartUpdatedProcessCallback cartUpdatedProcessCallback = new GoodsCartUpdatedProcessCallback() {
-        @Override
-        public void onSuccess() {
-            new Handler(Looper.getMainLooper()).post(new Runnable() {
-                @Override
-                public void run() {
-                    cartUpdatedResultSuccess();
-                }
-            });
-        }
 
-        @Override
-        public void onError(String reason) {
-            new Handler(Looper.getMainLooper()).post(new Runnable() {
-                @Override
-                public void run() {
-                    cartUpdatedResultError();
-                }
-            });
-        }
-    };
+    public void productCartUpdate(String productCartData, String callbacks) {
+        ProductCartUpdateCallbacks cartUpdateCallbacks =
+                JsonParser.fromJson(callbacks, ProductCartUpdateCallbacks.class);
+        final String requestId = cartUpdateCallbacks.requestId;
+        final String successCB = cartUpdateCallbacks.successCb;
+        final String errorCB = cartUpdateCallbacks.errorCb;
+        final ProductCartUpdateJSData cartUpdateJSData =
+                JsonParser.fromJson(productCartData, ProductCartUpdateJSData.class);
+        pageManager.updateCart(
+                cartUpdateJSData.offer,
+                new ProductCartUpdatedProcessCallback() {
+                    @Override
+                    public void onSuccess(ProductCart productCart) {
+                        new Handler(Looper.getMainLooper()).post(new Runnable() {
+                            @Override
+                            public void run() {
+                                cartUpdatedResultSuccess(successCB, requestId, productCart);
+                            }
+                        });
+                    }
 
-    public void updateCart(String goodsCartData) {
-        pageManager.updateCart(goodsCartData, cartUpdatedProcessCallback);
+                    @Override
+                    public void onError(final String reason) {
+                        new Handler(Looper.getMainLooper()).post(new Runnable() {
+                            @Override
+                            public void run() {
+                                cartUpdatedResultError(errorCB, requestId, reason);
+                            }
+                        });
+                    }
+                }
+        );
     }
 
-    public void cartClicked() {
+    public void productCartClicked() {
         pageManager.cartClicked();
+    }
+
+    public void productCartGetState(String callbacks) {
+        ProductCartUpdateCallbacks cartUpdateCallbacks =
+                JsonParser.fromJson(callbacks, ProductCartUpdateCallbacks.class);
+        final String requestId = cartUpdateCallbacks.requestId;
+        final String successCB = cartUpdateCallbacks.successCb;
+        final String errorCB = cartUpdateCallbacks.errorCb;
+        pageManager.cartGetState(
+                new ProductCartUpdatedProcessCallback() {
+                    @Override
+                    public void onSuccess(ProductCart productCart) {
+                        new Handler(Looper.getMainLooper()).post(new Runnable() {
+                            @Override
+                            public void run() {
+
+                                cartUpdatedResultSuccess(successCB, requestId, productCart);
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onError(final String reason) {
+                        new Handler(Looper.getMainLooper()).post(new Runnable() {
+                            @Override
+                            public void run() {
+                                cartUpdatedResultError(errorCB, requestId, reason);
+                            }
+                        });
+                    }
+                }
+        );
     }
 
 

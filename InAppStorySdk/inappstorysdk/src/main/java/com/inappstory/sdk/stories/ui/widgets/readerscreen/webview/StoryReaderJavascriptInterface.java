@@ -294,12 +294,17 @@ public class StoryReaderJavascriptInterface {
     }
 
     @JavascriptInterface
-    public void updateCart(String goodsCartData) {
-        manager.updateCart(goodsCartData);
+    public void productCartUpdate(String productCartData, String callbacks) {
+        manager.productCartUpdate(productCartData, callbacks);
     }
 
     @JavascriptInterface
-    public void cartClicked() {
-        manager.cartClicked();
+    public void productCartClicked() {
+        manager.productCartClicked();
+    }
+
+    @JavascriptInterface
+    public void productCartGetState(String callbacks) {
+        manager.productCartGetState(callbacks);
     }
 }

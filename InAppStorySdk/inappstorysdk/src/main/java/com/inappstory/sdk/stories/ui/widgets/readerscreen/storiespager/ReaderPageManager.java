@@ -14,9 +14,9 @@ import com.inappstory.sdk.core.api.IASStatisticStoriesV1;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.data.IReaderContent;
 import com.inappstory.sdk.core.ui.screens.IReaderSlideViewModel;
-import com.inappstory.sdk.goods.outercallbacks.GoodsCartUpdatedProcessCallback;
-import com.inappstory.sdk.goods.outercallbacks.GoodsCartData;
-import com.inappstory.sdk.goods.outercallbacks.GoodsCartInteractionCallback;
+import com.inappstory.sdk.goods.outercallbacks.ProductCartUpdatedProcessCallback;
+import com.inappstory.sdk.goods.outercallbacks.ProductCartOffer;
+import com.inappstory.sdk.goods.outercallbacks.ProductCartInteractionCallback;
 import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.ContentType;
@@ -55,16 +55,16 @@ public class ReaderPageManager implements IReaderSlideViewModel {
 
 
     public void updateCart(
-            final String goodsCartData,
-            final GoodsCartUpdatedProcessCallback goodsCartUpdatedProcessCallback
+            final ProductCartOffer cartOffer,
+            final ProductCartUpdatedProcessCallback productCartUpdatedProcessCallback
     ) {
-        core.callbacksAPI().useCallback(IASCallbackType.GOODS_CART_INTERACTION,
-                new UseIASCallback<GoodsCartInteractionCallback>() {
+        core.callbacksAPI().useCallback(IASCallbackType.PRODUCT_CART_INTERACTION,
+                new UseIASCallback<ProductCartInteractionCallback>() {
                     @Override
-                    public void use(@NonNull GoodsCartInteractionCallback callback) {
-                        callback.cartUpdated(
-                                new GoodsCartData(),
-                                goodsCartUpdatedProcessCallback
+                    public void use(@NonNull ProductCartInteractionCallback callback) {
+                        callback.cartUpdate(
+                                cartOffer,
+                                productCartUpdatedProcessCallback
                         );
                     }
                 }
@@ -72,11 +72,24 @@ public class ReaderPageManager implements IReaderSlideViewModel {
     }
 
     public void cartClicked() {
-        core.callbacksAPI().useCallback(IASCallbackType.GOODS_CART_INTERACTION,
-                new UseIASCallback<GoodsCartInteractionCallback>() {
+        core.callbacksAPI().useCallback(IASCallbackType.PRODUCT_CART_INTERACTION,
+                new UseIASCallback<ProductCartInteractionCallback>() {
                     @Override
-                    public void use(@NonNull GoodsCartInteractionCallback callback) {
+                    public void use(@NonNull ProductCartInteractionCallback callback) {
                         callback.cartClicked();
+                    }
+                }
+        );
+    }
+
+    public void cartGetState(
+            final ProductCartUpdatedProcessCallback productCartUpdatedProcessCallback
+    ) {
+        core.callbacksAPI().useCallback(IASCallbackType.PRODUCT_CART_INTERACTION,
+                new UseIASCallback<ProductCartInteractionCallback>() {
+                    @Override
+                    public void use(@NonNull ProductCartInteractionCallback callback) {
+                        callback.cartGetState(productCartUpdatedProcessCallback);
                     }
                 }
         );

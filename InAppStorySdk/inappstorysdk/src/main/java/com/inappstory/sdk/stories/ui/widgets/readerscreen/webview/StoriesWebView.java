@@ -97,12 +97,14 @@ public class StoriesWebView extends IASWebView implements ContentViewInteractor 
         logMethod("game_complete " + data);
     }
 
-    public void cartUpdatedResultSuccess() {
-
+    public void cartUpdatedResultSuccess(String successCB, String requestId, String cardStr) {
+        loadUrl("javascript:window." + successCB + "('" + requestId + "', '" +
+                StringsUtils.escapeSingleQuotes(cardStr) + "')");
     }
 
-    public void cartUpdatedResultError() {
-
+    public void cartUpdatedResultError(String errorCB, String requestId, String reason) {
+        loadUrl("javascript:window." + errorCB + "('" + requestId + "', '" +
+                StringsUtils.escapeSingleQuotes(reason) + "')");
     }
 
     String currentPage = "";

@@ -50,7 +50,10 @@ android {
         jvmTarget = '1.8'
         freeCompilerArgs = ['-Xjvm-default=compatibility']
     }
+
     namespace 'com.inappstory.sdk'
+
+
 }
 
 dependencies {
@@ -71,4 +74,5 @@ dependencies {
     androidTestImplementation 'androidx.test:rules:1.4.0'
     implementation 'androidx.palette:palette:1.0.0'
     implementation "com.github.inappstory:android-sdk-utilsconnector:$utils_connector_version"
+    // implementation "com.github.paperrose:iasutilsconnector:1.0.2"
 }
