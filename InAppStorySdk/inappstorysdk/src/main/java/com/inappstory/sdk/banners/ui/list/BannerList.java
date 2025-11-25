@@ -391,32 +391,8 @@ public class BannerList extends RecyclerView implements Observer<BannerListState
                 new Handler(Looper.getMainLooper()).post(new Runnable() {
                     @Override
                     public void run() {
-                        ViewGroup.LayoutParams layoutParams = getLayoutParams();
-                        layoutParams.height = 0;
                         setLayoutManager(customLayoutManager != null ?
                                 customLayoutManager : defaultLayoutManager
-                        );
-                        BannerListAdapter adapter = new BannerListAdapter(core,
-                                new ArrayList<IBanner>(),
-                                placeId,
-                                uniqueId(),
-                                bannerPlaceLoadCallback,
-                                new ICustomBannerPlaceholder() {
-                                    @Override
-                                    public View onCreate(Context context) {
-                                        View v = customBannerListAppearance.loadingPlaceholder(context);
-                                        if (v == null) {
-                                            v = AppearanceManager.getLoader(context, Color.WHITE);
-                                        }
-                                        return v;
-                                    }
-                                },
-                                newValue.iterationId(),
-                                getItemWidth(),
-                                Sizes.dpToPxExt(
-                                        16,
-                                        getContext()
-                                )
                         );
                         setAdapter(null);
                     }
@@ -433,8 +409,6 @@ public class BannerList extends RecyclerView implements Observer<BannerListState
                 new Handler(Looper.getMainLooper()).post(new Runnable() {
                     @Override
                     public void run() {
-                        ViewGroup.LayoutParams layoutParams = getLayoutParams();
-                        //layoutParams.height = 0;
                         setLayoutManager(
                                 customLayoutManager != null ?
                                         customLayoutManager : defaultLayoutManager
