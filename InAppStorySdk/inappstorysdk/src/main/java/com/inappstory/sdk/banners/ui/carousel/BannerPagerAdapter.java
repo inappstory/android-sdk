@@ -1,4 +1,4 @@
-package com.inappstory.sdk.banners.ui.place;
+package com.inappstory.sdk.banners.ui.carousel;
 
 import android.view.View;
 import android.view.ViewGroup;

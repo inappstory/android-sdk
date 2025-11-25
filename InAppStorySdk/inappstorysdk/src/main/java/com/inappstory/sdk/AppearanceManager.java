@@ -16,7 +16,7 @@ import com.inappstory.sdk.core.ui.widgets.customicons.IASDefaultAppearanceIcons;
 import com.inappstory.sdk.core.ui.widgets.customicons.IASDefaultIconCreator;
 import com.inappstory.sdk.core.ui.widgets.customicons.IIASDefaultIconCreator;
 import com.inappstory.sdk.stories.ui.widgets.LoadProgressBar;
-import com.inappstory.sdk.banners.ui.place.DefaultBannerCarouselAppearance;
+import com.inappstory.sdk.banners.ui.carousel.DefaultBannerCarouselAppearance;
 import com.inappstory.sdk.core.banners.ICustomBannerCarouselAppearance;
 import com.inappstory.sdk.stories.api.models.CachedSessionData;
 import com.inappstory.sdk.core.network.content.models.Image;
@@ -1152,7 +1152,7 @@ public class AppearanceManager {
         return csBannerListInterface != null ? csBannerListInterface : new DefaultBannerListAppearance();
     }
 
-    public AppearanceManager csBannerPlaceInterface(ICustomBannerCarouselAppearance csBannerCarouselInterface) {
+    public AppearanceManager csBannerCarouselInterface(ICustomBannerCarouselAppearance csBannerCarouselInterface) {
         this.csBannerCarouselInterface = csBannerCarouselInterface;
         return AppearanceManager.this;
     }

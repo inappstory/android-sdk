@@ -1,4 +1,4 @@
-package com.inappstory.sdk.banners.ui.place;
+package com.inappstory.sdk.banners.ui.carousel;
 
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
@@ -23,7 +23,7 @@ import androidx.viewpager.widget.ViewPager;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.R;
-import com.inappstory.sdk.banners.BannerPlaceNavigationCallback;
+import com.inappstory.sdk.banners.BannerCarouselNavigationCallback;
 import com.inappstory.sdk.banners.BannerPlaceLoadCallback;
 import com.inappstory.sdk.banners.ui.IBannersWidget;
 import com.inappstory.sdk.banners.ui.banner.BannerView;
@@ -149,12 +149,12 @@ public class BannerCarousel extends FrameLayout implements Observer<BannerCarous
 
     private BannerPlaceLoadCallback bannerPlaceLoadCallback = null;
 
-    public void navigationCallback(BannerPlaceNavigationCallback bannerPlaceNavigationCallback) {
-        this.bannerPlaceNavigationCallback = bannerPlaceNavigationCallback != null ?
-                bannerPlaceNavigationCallback : emptyBannerPlaceNavigationCallback;
+    public void navigationCallback(BannerCarouselNavigationCallback bannerCarouselNavigationCallback) {
+        this.bannerCarouselNavigationCallback = bannerCarouselNavigationCallback != null ?
+                bannerCarouselNavigationCallback : emptyBannerCarouselNavigationCallback;
     }
 
-    private BannerPlaceNavigationCallback emptyBannerPlaceNavigationCallback = new BannerPlaceNavigationCallback() {
+    private BannerCarouselNavigationCallback emptyBannerCarouselNavigationCallback = new BannerCarouselNavigationCallback() {
 
         @Override
         public void onPageScrolled(int position, int total, float positionOffset, int positionOffsetPixels) {
@@ -168,7 +168,7 @@ public class BannerCarousel extends FrameLayout implements Observer<BannerCarous
     };
 
 
-    private BannerPlaceNavigationCallback bannerPlaceNavigationCallback = emptyBannerPlaceNavigationCallback;
+    private BannerCarouselNavigationCallback bannerCarouselNavigationCallback = emptyBannerCarouselNavigationCallback;
 
     BannerViewPager.PageChangeListener pageChangeListener = new BannerViewPager.PageChangeListener() {
         @Override
@@ -176,10 +176,10 @@ public class BannerCarousel extends FrameLayout implements Observer<BannerCarous
             if (bannerCarouselViewModel != null) {
                 BannerCarouselState placeState = bannerCarouselViewModel.getCurrentBannerPlaceState();
                 try {
-                    if (bannerPlaceNavigationCallback != null && !placeState.getItems().isEmpty()) {
+                    if (bannerCarouselNavigationCallback != null && !placeState.getItems().isEmpty()) {
                         int size = placeState.getItems().size();
                         int pos = ((position % size) + size) % size;
-                        bannerPlaceNavigationCallback.onPageScrolled(
+                        bannerCarouselNavigationCallback.onPageScrolled(
                                 pos,
                                 size,
                                 positionOffset,
@@ -210,10 +210,10 @@ public class BannerCarousel extends FrameLayout implements Observer<BannerCarous
                 bannerCarouselViewModel.updateCurrentIndex(position);
                 BannerCarouselState placeState = bannerCarouselViewModel.getCurrentBannerPlaceState();
                 try {
-                    if (bannerPlaceNavigationCallback != null && !placeState.getItems().isEmpty()) {
+                    if (bannerCarouselNavigationCallback != null && !placeState.getItems().isEmpty()) {
                         int size = placeState.getItems().size();
                         int pos = ((position % size) + size) % size;
-                        bannerPlaceNavigationCallback.onPageSelected(
+                        bannerCarouselNavigationCallback.onPageSelected(
                                 pos, size
                         );
                     }
