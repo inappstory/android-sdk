@@ -2,8 +2,8 @@
 
 buildscript {
     ext {
-        inappstory_output_version = "1.20.15"
-        inappstory_output_build = 965
+        inappstory_output_version = "1.20.16"
+        inappstory_output_build = 966
         inappstory_target_sdk = 31
         inappstory_min_sdk = 21
 
@@ -22,7 +22,6 @@ buildscript {
     }
     repositories {
         google()
-        jcenter()
         maven { url "https://jitpack.io" }
         maven { url 'https://plugins.gradle.org/m2' }
         
@@ -39,8 +38,8 @@ buildscript {
 allprojects {
     repositories {
         google()
-        jcenter()
         maven { url "https://jitpack.io" }
+        maven { url 'https://plugins.gradle.org/m2' }
         
     }
 }

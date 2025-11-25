@@ -944,8 +944,6 @@ public class InAppStoryManager {
         initSDK(context, false);
     }
 
-    InAppStoryService service;
-
     Thread serviceThread;
 
     private InAppStoryManager(Context context) {
@@ -978,6 +976,8 @@ public class InAppStoryManager {
         });
         serviceThread.start();
     }
+
+    private InAppStoryService service;
 
     void setExceptionCache(ExceptionCache exceptionCache) {
         this.exceptionCache = exceptionCache;
@@ -1163,7 +1163,7 @@ public class InAppStoryManager {
         final InAppStoryService inAppStoryService = InAppStoryService.getInstance();
         if (inAppStoryService != null) {
             inAppStoryService.setUserId(builder.userId, builder.userSign);
-            service.useServiceIfInitialized(new InitializedCallback() {
+            inAppStoryService.useServiceIfInitialized(new InitializedCallback() {
                 @Override
                 public void onCreated() {
                     inAppStoryService.setCacheSizes(context);
@@ -1250,7 +1250,7 @@ public class InAppStoryManager {
                 inAppStoryService.getStoryDownloadManager().cleanTasks(false);
                 inAppStoryService.setUserId(userId, userSign);
                 if (sessionId == null || sessionId.isEmpty()) {
-                    service.getListReaderConnector().userIdChanged();
+                    inAppStoryService.getListReaderConnector().userIdChanged();
                 }
             }
         });
