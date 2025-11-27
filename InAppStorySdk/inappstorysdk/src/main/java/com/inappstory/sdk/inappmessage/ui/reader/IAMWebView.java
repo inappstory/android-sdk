@@ -38,14 +38,14 @@ public class IAMWebView extends IASWebView implements ContentViewInteractor {
     public IAMWebView(
             @NonNull Context context
     ) {
-        super(context);
+        super(context.getApplicationContext());
     }
 
     public IAMWebView(
             @NonNull Context context,
             @Nullable AttributeSet attrs
     ) {
-        super(context, attrs);
+        super(context.getApplicationContext(), attrs);
     }
 
     public IAMWebView(
@@ -53,7 +53,7 @@ public class IAMWebView extends IASWebView implements ContentViewInteractor {
             @Nullable AttributeSet attrs,
             int defStyleAttr
     ) {
-        super(context, attrs, defStyleAttr);
+        super(context.getApplicationContext(), attrs, defStyleAttr);
     }
 
     @Override

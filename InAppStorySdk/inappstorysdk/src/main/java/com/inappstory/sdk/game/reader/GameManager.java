@@ -64,6 +64,16 @@ public class GameManager {
     AbstractGameLogger logger;
     private final ContentData dataModel;
 
+    GameReaderContentFragment host;
+
+    public void clearHost() {
+        this.host = null;
+    }
+
+
+    public void setHost(GameReaderContentFragment host) {
+        this.host = host;
+    }
 
     public void setLogger(int loggerLevel) {
         switch (loggerLevel) {
@@ -128,7 +138,7 @@ public class GameManager {
 
     void openUrl(String data) {
         UrlObject urlObject = JsonParser.fromJson(data, UrlObject.class);
-        if (urlObject != null && urlObject.url != null && !urlObject.url.isEmpty())
+        if (host != null && urlObject != null && urlObject.url != null && !urlObject.url.isEmpty())
             tapOnLink(urlObject.url, host.getContext());
     }
 
@@ -175,15 +185,16 @@ public class GameManager {
             core.acceleratorUtils().unsubscribe(host);
     }
 
-    GameReaderContentFragment host;
 
     void showGoods(String skusString, String widgetId) {
-        host.showGoods(skusString, widgetId);
+        if (host != null)
+            host.showGoods(skusString, widgetId);
     }
 
 
     void setAudioManagerMode(String mode) {
-        host.setAudioManagerMode(mode);
+        if (host != null)
+            host.setAudioManagerMode(mode);
     }
 
     void sendGameStat(String name, String data) {
@@ -243,6 +254,7 @@ public class GameManager {
 
     private void gameCompletedWithObject(String gameState, final GameFinishOptions options, String eventData) {
         closeOrFinishGameCallback(dataModel, gameCenterId, eventData);
+        if (host == null) return;
         if (options.openGameInstance != null && options.openGameInstance.id != null) {
             loadAnotherGame(options.openGameInstance.id);
         } else {
@@ -297,10 +309,12 @@ public class GameManager {
 
     private void gameCompletedWithUrl(String gameState, String link, String eventData) {
         closeOrFinishGameCallback(dataModel, gameCenterId, eventData);
+        if (host == null) return;
         host.gameCompleted(gameState, link);
     }
 
     void sendApiRequest(String data) {
+        if (host == null) return;
         new JsApiClient(
                 core,
                 host.getContext(),
@@ -334,6 +348,7 @@ public class GameManager {
 
                     @Override
                     public void onDefault() {
+                        if (host == null) return;
                         host.tapOnLinkDefault(StringsUtils.getNonNull(link));
                     }
                 }
@@ -341,6 +356,7 @@ public class GameManager {
     }
 
     int pausePlaybackOtherApp() {
+        if (host == null) return 0;
         AudioManager am = (AudioManager) host.getContext().getSystemService(Context.AUDIO_SERVICE);
         return am.requestAudioFocus(host.audioFocusChangeListener,
                 AudioManager.STREAM_MUSIC,
@@ -358,11 +374,13 @@ public class GameManager {
             logger.startQueue(true);
         }
         statusHolder.setGameLoaded();
+        if (host == null) return;
         host.gameShouldForeground();
     }
 
     void gameShouldForegroundCallback(String data) {
         GameLoadedConfig config = JsonParser.fromJson(data, GameLoadedConfig.class);
+        if (host == null) return;
         host.gameReaderGestureBack = config.backGesture;
         host.showClose = config.showClose;
         host.updateUI();
@@ -383,6 +401,7 @@ public class GameManager {
             clearTries();
             if (logger != null)
                 logger.startQueue(false);
+            if (host == null) return;
             host.gameLoadedErrorCallback.onError(null, reason);
         }
     }
@@ -431,6 +450,7 @@ public class GameManager {
             logger.stopQueue();
             logger.gameLoaded(false);
         }
+        if (host == null) return;
         host.restartGame();
     }
 
@@ -449,6 +469,7 @@ public class GameManager {
     }
 
     void openFilePicker(String data) {
+        if (host == null) return;
         host.openFilePicker(data);
     }
 
@@ -471,6 +492,7 @@ public class GameManager {
                     }
                 }
         );
+        if (host == null) return;
         host.share(shareObj);
 
     }

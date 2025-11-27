@@ -33,6 +33,11 @@ import com.inappstory.sdk.utils.SystemUiUtils;
 
 public class GameActivity extends IASActivity implements BaseGameScreen {
 
+    private IASCore getCore() {
+        if (InAppStoryManager.getInstance() == null) return null;
+        return InAppStoryManager.getInstance().iasCore();
+    }
+
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
@@ -41,29 +46,24 @@ public class GameActivity extends IASActivity implements BaseGameScreen {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.cs_game_reader_layout);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        InAppStoryManager.useCore(new UseIASCoreCallback() {
-            @Override
-            public void use(@NonNull IASCore core) {
-                GameReaderAppearanceSettings appearanceSettings = (GameReaderAppearanceSettings) getIntent()
-                        .getSerializableExtra(GameReaderAppearanceSettings.SERIALIZABLE_KEY);
-                if (appearanceSettings != null) {
-                    setNavBarColor(appearanceSettings.navBarColor);
-                    setStatusBarColor(appearanceSettings.statusBarColor);
-                }
-                core.screensManager().getGameScreenHolder().subscribeScreen(GameActivity.this);
-                createGameContentFragment(
-                        savedInstanceState,
-                        (GameReaderLaunchData) getIntent()
-                                .getSerializableExtra(GameReaderLaunchData.SERIALIZABLE_KEY)
-
-                );
+        final IASCore core = getCore();
+        if (core != null) {
+            GameReaderAppearanceSettings appearanceSettings = (GameReaderAppearanceSettings) getIntent()
+                    .getSerializableExtra(GameReaderAppearanceSettings.SERIALIZABLE_KEY);
+            if (appearanceSettings != null) {
+                setNavBarColor(appearanceSettings.navBarColor);
+                setStatusBarColor(appearanceSettings.statusBarColor);
             }
+            core.screensManager().getGameScreenHolder().subscribeScreen(GameActivity.this);
+            createGameContentFragment(
+                    savedInstanceState,
+                    (GameReaderLaunchData) getIntent()
+                            .getSerializableExtra(GameReaderLaunchData.SERIALIZABLE_KEY)
 
-            @Override
-            public void error() {
-                forceFinish();
-            }
-        });
+            );
+        } else {
+            forceFinish();
+        }
         if (android.os.Build.VERSION.SDK_INT >= 33) {
             OnBackPressedCallback callback = new OnBackPressedCallback(true) {
                 @Override
@@ -127,6 +127,7 @@ public class GameActivity extends IASActivity implements BaseGameScreen {
 
     private final String fragmentTag = "GAME_READER_CONTENT";
 
+
     private boolean useContentFragment(FragmentAction<GameReaderContentFragment> action) {
         if (action != null) {
             try {
@@ -170,13 +171,9 @@ public class GameActivity extends IASActivity implements BaseGameScreen {
 
     @Override
     protected void onDestroy() {
-        InAppStoryManager.useCore(new UseIASCoreCallback() {
-            @Override
-            public void use(@NonNull IASCore core) {
-                core.screensManager().getGameScreenHolder().unsubscribeScreen(GameActivity.this);
-            }
-        });
-
+        if (InAppStoryManager.getInstance() == null) return;
+        IASCore core = InAppStoryManager.getInstance().iasCore();
+        core.screensManager().getGameScreenHolder().unsubscribeScreen(GameActivity.this);
         super.onDestroy();
     }
 

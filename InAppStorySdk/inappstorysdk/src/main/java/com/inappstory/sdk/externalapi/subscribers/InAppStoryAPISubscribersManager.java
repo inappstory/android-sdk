@@ -260,7 +260,7 @@ public class InAppStoryAPISubscribersManager {
                     ContentType.STORY,
                     null
             );
-            boolean nonAnonymous = !((IASDataSettingsHolder)core.settingsAPI()).anonymous();
+            boolean nonAnonymous = !((IASDataSettingsHolder) core.settingsAPI()).anonymous();
             core.screensManager().openScreen(context,
                     new LaunchStoryScreenStrategy(core, false).
                             launchStoryScreenData(launchData).
@@ -512,9 +512,11 @@ public class InAppStoryAPISubscribersManager {
             ((IStoryAPIDataHolder) subscriber).setStoryAPIData(storyAPIData);
             subscriber.updateStoriesData(
                     storyAPIData,
-                    new IASStoryListSessionData().previewAspectRatio(
-                            core.sessionManager().getSession().sessionData().previewAspectRatio
-                    )
+                    new IASStoryListSessionData()
+                            .previewAspectRatio(
+                                    core.sessionManager().getSession().sessionData().previewAspectRatio
+                            )
+                            .feed(feed)
             );
         }
     }
@@ -574,9 +576,11 @@ public class InAppStoryAPISubscribersManager {
                     Log.e("IAS_SDK_API", "update data: " + data);
                     subscriber.updateStoryData(
                             data,
-                            new IASStoryListSessionData().previewAspectRatio(
-                                    core.sessionManager().getSession().sessionData().previewAspectRatio
-                            )
+                            new IASStoryListSessionData()
+                                    .previewAspectRatio(
+                                            core.sessionManager().getSession().sessionData().previewAspectRatio
+                                    )
+                                    .feed(null)
                     );
                 }
             }
@@ -642,9 +646,11 @@ public class InAppStoryAPISubscribersManager {
                 ((InAppStoryAPIFavoriteListSubscriber) subscriber).setStoryAPIData(newData);
                 subscriber.updateStoriesData(
                         newData,
-                        new IASStoryListSessionData().previewAspectRatio(
-                                core.sessionManager().getSession().sessionData().previewAspectRatio
-                        )
+                        new IASStoryListSessionData()
+                                .previewAspectRatio(
+                                        core.sessionManager().getSession().sessionData().previewAspectRatio
+                                )
+                                .feed(null)
                 );
             }
         }
