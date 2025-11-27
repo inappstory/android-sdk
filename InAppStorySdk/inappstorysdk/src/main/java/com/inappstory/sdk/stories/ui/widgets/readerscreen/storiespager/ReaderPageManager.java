@@ -67,6 +67,11 @@ public class ReaderPageManager implements IReaderSlideViewModel {
                                 productCartUpdatedProcessCallback
                         );
                     }
+
+                    @Override
+                    public void onDefault() {
+                        productCartUpdatedProcessCallback.onError("No ProductCartInteractionCallback");
+                    }
                 }
         );
     }
@@ -90,6 +95,11 @@ public class ReaderPageManager implements IReaderSlideViewModel {
                     @Override
                     public void use(@NonNull ProductCartInteractionCallback callback) {
                         callback.cartGetState(productCartUpdatedProcessCallback);
+                    }
+
+                    @Override
+                    public void onDefault() {
+                        productCartUpdatedProcessCallback.onError("No ProductCartInteractionCallback");
                     }
                 }
         );
