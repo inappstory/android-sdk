@@ -114,10 +114,7 @@ public class GameLogSender implements IGameLogSender {
 
                     @Override
                     public void onError(int code, String message) {
-                        saveLogs(logs);
-                        synchronized (lock) {
-                            inProcess = false;
-                        }
+                        sendLogs(nextLogs);
                     }
 
                     @Override

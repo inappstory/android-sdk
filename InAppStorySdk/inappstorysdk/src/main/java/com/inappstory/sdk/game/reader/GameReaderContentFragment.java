@@ -426,6 +426,8 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                 }
             });
         }
+        if (manager != null && manager.logger != null)
+            manager.logger.stopQueue();
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
