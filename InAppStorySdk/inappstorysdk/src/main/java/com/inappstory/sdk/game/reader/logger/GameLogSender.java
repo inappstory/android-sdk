@@ -104,7 +104,7 @@ public class GameLogSender implements IGameLogSender {
                         log.message(),
                         log.stacktrace(),
                         log.logSession(),
-                        isGameLaunched
+                        log.gameLoaded()
                 ),
                 new NetworkCallback<Response>() {
                     @Override
