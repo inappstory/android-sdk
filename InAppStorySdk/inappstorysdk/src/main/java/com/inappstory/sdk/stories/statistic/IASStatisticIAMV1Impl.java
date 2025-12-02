@@ -34,6 +34,10 @@ public class IASStatisticIAMV1Impl implements IASStatisticIAMV1 {
         return disabled;
     }
 
+    @Override
+    public boolean softDisabled() {
+        return disabled || softDisabled;
+    }
 
     private final Object statisticTasksLock = new Object();
 
@@ -117,6 +121,7 @@ public class IASStatisticIAMV1Impl implements IASStatisticIAMV1 {
     }
 
     private boolean disabled;
+    private boolean softDisabled;
 
     @Override
     public void sendWidgetEvent(
@@ -188,7 +193,8 @@ public class IASStatisticIAMV1Impl implements IASStatisticIAMV1 {
     }
 
     @Override
-    public void disabled(boolean disabled) {
+    public void disabled(boolean softDisabled, boolean disabled) {
+        this.softDisabled = softDisabled;
         this.disabled = disabled;
     }
 }

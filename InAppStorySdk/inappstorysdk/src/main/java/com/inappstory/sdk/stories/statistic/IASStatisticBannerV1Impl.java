@@ -37,6 +37,11 @@ public class IASStatisticBannerV1Impl implements IASStatisticBannerV1 {
         return disabled;
     }
 
+    @Override
+    public boolean softDisabled() {
+        return disabled || softDisabled;
+    }
+
 
     private final Object statisticTasksLock = new Object();
 
@@ -119,6 +124,7 @@ public class IASStatisticBannerV1Impl implements IASStatisticBannerV1 {
     }
 
     private boolean disabled;
+    private boolean softDisabled;
 
     @Override
     public void sendWidgetEvent(
@@ -193,7 +199,8 @@ public class IASStatisticBannerV1Impl implements IASStatisticBannerV1 {
     }
 
     @Override
-    public void disabled(boolean disabled) {
+    public void disabled(boolean softDisabled, boolean disabled) {
+        this.softDisabled = softDisabled;
         this.disabled = disabled;
     }
 }

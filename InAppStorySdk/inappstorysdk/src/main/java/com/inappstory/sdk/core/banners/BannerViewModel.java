@@ -470,7 +470,7 @@ public class BannerViewModel implements IBannerViewModel {
     public void sendData(String data) {
         BannerState bannerState = getCurrentBannerState();
         if (bannerState == null) return;
-        if (core.statistic().iamV1().disabled()) return;
+        if (core.statistic().iamV1().softDisabled()) return;
         core.network().enqueue(
                 core.network().getApi().sendBannerUserData(
                         Integer.toString(bannerState.bannerId()),
@@ -504,7 +504,7 @@ public class BannerViewModel implements IBannerViewModel {
                     bannerState.bannerId() + "__" +
                     ((IASDataSettingsHolder) core.settingsAPI()).userId(), data);
         }
-        if (core.statistic().iamV1().disabled()) return;
+        if (core.statistic().iamV1().softDisabled()) return;
         if (sendToServer) {
             core.network().enqueue(
                     core.network().getApi().sendBannerUserData(

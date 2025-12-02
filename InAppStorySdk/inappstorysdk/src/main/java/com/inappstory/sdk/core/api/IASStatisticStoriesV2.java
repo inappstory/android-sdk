@@ -3,7 +3,6 @@ package com.inappstory.sdk.core.api;
 import java.util.List;
 
 public interface IASStatisticStoriesV2 extends StatDisabled {
-    boolean disabled();
 
     void cleanTasks();
 

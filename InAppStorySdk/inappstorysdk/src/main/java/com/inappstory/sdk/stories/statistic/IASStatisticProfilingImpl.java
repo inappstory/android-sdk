@@ -194,14 +194,21 @@ public class IASStatisticProfilingImpl implements IASStatisticProfiling {
     }
 
     private boolean disabled;
+    private boolean softDisabled;
 
     @Override
-    public void disabled(boolean disabled) {
+    public void disabled(boolean softDisabled, boolean disabled) {
+        this.softDisabled = softDisabled;
         this.disabled = disabled;
     }
 
     @Override
     public boolean disabled() {
         return disabled;
+    }
+
+    @Override
+    public boolean softDisabled() {
+        return softDisabled || disabled;
     }
 }

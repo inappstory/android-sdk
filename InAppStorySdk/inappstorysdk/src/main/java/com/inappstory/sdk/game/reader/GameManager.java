@@ -1,9 +1,5 @@
 package com.inappstory.sdk.game.reader;
 
-import static android.content.Context.CLIPBOARD_SERVICE;
-
-import android.content.ClipData;
-import android.content.ClipboardManager;
 import android.content.Context;
 import android.media.AudioManager;
 import android.webkit.JavascriptInterface;
@@ -33,7 +29,6 @@ import com.inappstory.sdk.network.models.Response;
 import com.inappstory.sdk.share.IShareCompleteListener;
 import com.inappstory.sdk.stories.api.models.UrlObject;
 import com.inappstory.sdk.stories.api.models.WebResource;
-import com.inappstory.sdk.stories.api.models.WriteClipboardData;
 import com.inappstory.sdk.stories.outercallbacks.common.gamereader.GameReaderCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.CallToActionCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickAction;
@@ -48,7 +43,6 @@ import com.inappstory.sdk.utils.StringsUtils;
 
 import java.lang.reflect.Type;
 import java.util.List;
-import java.util.Objects;
 
 public class GameManager {
     public IASCore core() {
@@ -108,7 +102,7 @@ public class GameManager {
         core.keyValueStorage().saveString("gameInstance_" + gameInstanceId
                 + "__" + settingsHolder.userId(), data);
 
-        if (core.statistic().storiesV1().disabled()) return;
+        if (core.statistic().storiesV1().softDisabled()) return;
         if (sendToServer) {
             core.network().enqueue(core.network().getApi().sendGameData(gameInstanceId, data),
                     new NetworkCallback<Response>() {

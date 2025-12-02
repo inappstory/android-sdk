@@ -28,6 +28,7 @@ public class GetGameModelUseCase {
             return;
         }
         demoMode = ((IASDataSettingsHolder) core.settingsAPI()).gameDemoMode();
+        callback.onCreateLog(1);
         inAppStoryManager.iasCore().sessionManager().useOrOpenSession(
                 new OpenSessionCallback() {
                     @Override

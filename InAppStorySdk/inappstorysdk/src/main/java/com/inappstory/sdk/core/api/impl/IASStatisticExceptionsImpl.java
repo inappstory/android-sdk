@@ -16,7 +16,12 @@ public class IASStatisticExceptionsImpl implements IASStatisticExceptions {
     }
 
     @Override
-    public void disabled(boolean disabled) {
+    public boolean softDisabled() {
+        return true;
+    }
+
+    @Override
+    public void disabled(boolean softDisabled, boolean disabled) {
 
     }
 }

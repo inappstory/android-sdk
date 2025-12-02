@@ -16,7 +16,6 @@ import com.inappstory.sdk.core.data.IReaderContent;
 import com.inappstory.sdk.core.inappmessages.InAppMessageDownloadManager;
 import com.inappstory.sdk.game.cache.SessionAssetsIsReadyCallback;
 import com.inappstory.sdk.inappmessage.InAppMessageWidgetCallback;
-import com.inappstory.sdk.inappmessage.ShowInAppMessageCallback;
 import com.inappstory.sdk.inappmessage.ShowInAppMessageSlideCallback;
 import com.inappstory.sdk.inappmessage.domain.stedata.JsSendApiRequestData;
 import com.inappstory.sdk.inappmessage.domain.stedata.STEDataType;
@@ -35,7 +34,6 @@ import com.inappstory.sdk.inappmessage.domain.stedata.CallToActionData;
 import com.inappstory.sdk.stories.utils.Observable;
 import com.inappstory.sdk.stories.utils.Observer;
 import com.inappstory.sdk.stories.utils.SingleTimeEvent;
-import com.inappstory.sdk.stories.utils.WebPageConvertCallback;
 import com.inappstory.sdk.stories.utils.WebPageConverter;
 import com.inappstory.sdk.utils.ClipboardUtils;
 import com.inappstory.sdk.utils.StringsUtils;
@@ -43,7 +41,6 @@ import com.inappstory.sdk.utils.UrlEncoder;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -445,7 +442,7 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
     public void storySendData(String data) {
         IAMReaderState readerState = readerViewModel.getCurrentState();
         if (readerState == null) return;
-        if (core.statistic().iamV1().disabled()) return;
+        if (core.statistic().iamV1().softDisabled()) return;
         core.network().enqueue(
                 core.network().getApi().sendIAMUserData(
                         Integer.toString(readerState.iamId),
@@ -473,7 +470,7 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
                     readerState.iamId + "__" +
                     ((IASDataSettingsHolder) core.settingsAPI()).userId(), data);
         }
-        if (core.statistic().iamV1().disabled()) return;
+        if (core.statistic().iamV1().softDisabled()) return;
         if (sendToServer) {
             core.network().enqueue(
                     core.network().getApi().sendIAMUserData(
