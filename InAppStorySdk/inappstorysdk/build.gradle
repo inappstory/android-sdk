@@ -66,11 +66,11 @@ android {
         jvmTarget = '1.8'
         freeCompilerArgs = ['-Xjvm-default=compatibility']
     }
-    publishing {
+   /* publishing {
         singleVariant("maven") {
             withSourcesJar()
         }
-    }
+    }*/
     namespace 'com.inappstory.sdk'
 }
 
@@ -95,7 +95,9 @@ dependencies {
     // implementation "com.github.paperrose:iasutilsconnector:1.0.2"
 }
 
+/*
 mavenPublishing {
+
     publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
     signAllPublications()
     coordinates(getGroupId(), getArtifactId(), getVersionName())
@@ -125,3 +127,4 @@ mavenPublishing {
         }
     }
 }
+ */
