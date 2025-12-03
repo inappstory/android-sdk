@@ -173,6 +173,19 @@ public class IASCallbacksExternalAPIImpl implements IASCallbacksExternalAPI {
     }
 
     @Override
+    public void productCartInteractionCallback(ProductCartInteractionCallback productCartInteractionCallback) {
+        useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.callbacksAPI().setCallback(
+                        IASCallbackType.PRODUCT_CART_INTERACTION,
+                        productCartInteractionCallback
+                );
+            }
+        });
+    }
+
+    @Override
     public void useCallback(final IASCallbackType type, @NonNull final UseIASCallback useIASCallback) {
         useCore(new UseIASCoreCallback() {
             @Override
