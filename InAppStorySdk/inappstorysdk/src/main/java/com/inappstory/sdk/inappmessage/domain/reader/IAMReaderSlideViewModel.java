@@ -115,9 +115,9 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
             if (!slideStatObjects.isEmpty()) {
                 try {
                     slideAnalytics = JsonParser.getJson(slideStatObjects);
-                    Log.e("SlideTimes", slideAnalytics);
-                    slideAnalytics = new UrlEncoder().encode(slideAnalytics);
-                    Log.e("SlideTimes", slideAnalytics);
+                 //   Log.e("SlideTimes", slideAnalytics);
+                    //  slideAnalytics = new UrlEncoder().encode(slideAnalytics);
+                  //  Log.e("SlideTimes", slideAnalytics);
                 } catch (Exception ignored) {
 
                 }
