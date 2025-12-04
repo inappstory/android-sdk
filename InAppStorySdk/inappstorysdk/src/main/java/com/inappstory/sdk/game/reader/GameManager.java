@@ -118,7 +118,7 @@ public class GameManager {
         core.keyValueStorage().saveString("gameInstance_" + gameInstanceId
                 + "__" + settingsHolder.userId(), data);
 
-        if (core.statistic().storiesV1().disabled()) return;
+        if (core.statistic().storiesV1().softDisabled()) return;
         if (sendToServer) {
             core.network().enqueue(core.network().getApi().sendGameData(gameInstanceId, data),
                     new NetworkCallback<Response>() {

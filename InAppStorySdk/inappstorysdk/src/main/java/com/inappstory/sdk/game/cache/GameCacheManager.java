@@ -351,7 +351,7 @@ public class GameCacheManager {
             @Override
             public void onError(String message) {
                 Log.e("Game_Loading", message);
-                gameLoadCallback.onError("Can't retrieve game from game center");
+                gameLoadCallback.onError("Can't retrieve game from game center: " + message);
             }
 
             @Override

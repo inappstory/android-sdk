@@ -151,7 +151,7 @@ public class IASStatisticStoriesV1Impl implements IASStatisticStoriesV1 {
                 return;
             }
         }
-        if (disabled) {
+        if (disabled || softDisabled) {
             statistic.clear();
             return;
         }
@@ -210,10 +210,17 @@ public class IASStatisticStoriesV1Impl implements IASStatisticStoriesV1 {
         return disabled;
     }
 
+    @Override
+    public boolean softDisabled() {
+        return softDisabled || disabled;
+    }
+
     private boolean disabled;
+    private boolean softDisabled;
 
     @Override
-    public void disabled(boolean disabled) {
+    public void disabled(boolean softDisabled, boolean disabled) {
+        this.softDisabled = softDisabled;
         this.disabled = disabled;
     }
 

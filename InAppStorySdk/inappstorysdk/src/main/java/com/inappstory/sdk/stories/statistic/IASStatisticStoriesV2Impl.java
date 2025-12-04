@@ -25,11 +25,14 @@ public class IASStatisticStoriesV2Impl implements IASStatisticStoriesV2 {
     private static IASStatisticStoriesV2Impl INSTANCE;
     private final IASCore core;
 
-    public void disabled(boolean disabled) {
+    public void disabled(boolean softDisabled, boolean disabled) {
         this.disabled = disabled;
+        this.softDisabled = softDisabled;
     }
 
     private boolean disabled;
+    private boolean softDisabled;
+
 
     public IASStatisticStoriesV2Impl(IASCore core) {
         this.core = core;
@@ -75,7 +78,8 @@ public class IASStatisticStoriesV2Impl implements IASStatisticStoriesV2 {
 
 
     private void addTask(StoryStatisticV2Task task, boolean force) {
-        if (!force && disabled) return;
+        if (disabled) return;
+        if (!force && softDisabled) return;
         synchronized (statisticTasksLock) {
             tasks.add(task);
             saveTasksSP();
@@ -84,7 +88,7 @@ public class IASStatisticStoriesV2Impl implements IASStatisticStoriesV2 {
 
 
     private void addFakeTask(StoryStatisticV2Task task) {
-        if (disabled) return;
+        if (disabled || softDisabled) return;
         synchronized (statisticTasksLock) {
             faketasks.add(task);
             saveFakeTasksSP();
@@ -116,8 +120,14 @@ public class IASStatisticStoriesV2Impl implements IASStatisticStoriesV2 {
 
     @Override
     public boolean disabled() {
-        return false;
+        return disabled;
     }
+
+    @Override
+    public boolean softDisabled() {
+        return softDisabled;
+    }
+
 
     public void cleanTasks() {
         synchronized (statisticTasksLock) {

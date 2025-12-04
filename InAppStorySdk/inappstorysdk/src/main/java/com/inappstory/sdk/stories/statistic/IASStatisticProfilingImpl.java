@@ -45,7 +45,7 @@ public class IASStatisticProfilingImpl implements IASStatisticProfiling {
         task.uniqueHash = hash;
         task.name = name;
         task.startTime = System.currentTimeMillis();
-        task.isAllowToForceSend = !disabled;
+        task.isAllowToForceSend = !(disabled || softDisabled);
         synchronized (tasksLock) {
             for (ProfilingTask hasTask : tasks) {
                 if (hasTask.uniqueHash.equals(hash)) {
@@ -64,7 +64,7 @@ public class IASStatisticProfilingImpl implements IASStatisticProfiling {
         String hash = randomUUID().toString();
         ProfilingTask task = new ProfilingTask();
         task.sessionId = core.sessionManager().getSession().getSessionId();
-        task.isAllowToForceSend = !disabled;
+        task.isAllowToForceSend = !(disabled || softDisabled);
         task.userId = settingsHolder.userId();
         task.uniqueHash = hash;
         task.name = name;
@@ -127,7 +127,7 @@ public class IASStatisticProfilingImpl implements IASStatisticProfiling {
             synchronized (tasksLock) {
                 readyIsEmpty = readyTasks.size() == 0;
             }
-            if (readyIsEmpty || disabled) {
+            if (readyIsEmpty || disabled || softDisabled) {
                 loopedExecutor.freeExecutor();
                 return;
             }
@@ -193,10 +193,17 @@ public class IASStatisticProfilingImpl implements IASStatisticProfiling {
 
     }
 
+    private boolean softDisabled;
     private boolean disabled;
 
     @Override
-    public void disabled(boolean disabled) {
+    public boolean softDisabled() {
+        return softDisabled || disabled;
+    }
+
+    @Override
+    public void disabled(boolean softDisabled, boolean disabled) {
+        this.softDisabled = softDisabled;
         this.disabled = disabled;
     }
 

@@ -634,7 +634,7 @@ public class StoriesViewManager {
     public void storySetLocalData(String data, boolean sendToServer) {
         core.keyValueStorage().saveString("story" + storyId + "__" +
                 ((IASDataSettingsHolder) core.settingsAPI()).userIdOrAnonymous(), data);
-        if (core.statistic().storiesV1().disabled()) return;
+        if (core.statistic().storiesV1().softDisabled()) return;
 
         if (sendToServer) {
             core.network().enqueue(
@@ -670,7 +670,7 @@ public class StoriesViewManager {
     }
 
     public void storySendData(String data) {
-        if (core.statistic().storiesV1().disabled()) return;
+        if (core.statistic().storiesV1().softDisabled()) return;
         core.network().enqueue(
                 core.network().getApi().sendStoryData(
                         Integer.toString(storyId),

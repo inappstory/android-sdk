@@ -43,7 +43,7 @@ public class ExceptionManager {
         core.sessionManager().useOrOpenSession(new OpenSessionCallback() {
             @Override
             public void onSuccess(RequestLocalParameters requestLocalParameters) {
-                if (core.statistic().exceptions().disabled()) {
+                if (core.statistic().exceptions().softDisabled()) {
                     core.sharedPreferencesAPI().removeString(SAVED_EX);
                     return;
                 }

@@ -394,6 +394,8 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
             }
             core.acceleratorUtils().unsubscribe(GameReaderContentFragment.this);
         }
+        if (manager != null && manager.logger != null)
+            manager.logger.stopQueue();
         clearAnonymousClasses();
         super.onDestroyView();
     }

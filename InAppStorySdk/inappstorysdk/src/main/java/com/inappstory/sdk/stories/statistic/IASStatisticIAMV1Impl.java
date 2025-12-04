@@ -34,6 +34,10 @@ public class IASStatisticIAMV1Impl implements IASStatisticIAMV1 {
         return disabled;
     }
 
+    @Override
+    public boolean softDisabled() {
+        return disabled || softDisabled;
+    }
 
     private final Object statisticTasksLock = new Object();
 
@@ -116,6 +120,7 @@ public class IASStatisticIAMV1Impl implements IASStatisticIAMV1 {
     }
 
     private boolean disabled;
+    private boolean softDisabled;
 
     @Override
     public void sendWidgetEvent(
@@ -127,7 +132,7 @@ public class IASStatisticIAMV1Impl implements IASStatisticIAMV1 {
             long duration,
             String iterationId
     ) {
-        if (disabled) return;
+        if (disabled || softDisabled) return;
         String eventId = UUID.randomUUID().toString();
         IAMStatisticV1Task task = JsonParser.fromJson(widgetData, IAMStatisticV1Task.class);
         task.iamId = iamId;
@@ -148,7 +153,7 @@ public class IASStatisticIAMV1Impl implements IASStatisticIAMV1 {
             String iterationId,
             boolean useIterationId
     ) {
-        if (disabled) return;
+        if (disabled || softDisabled) return;
         String eventId = useIterationId ? iterationId : UUID.randomUUID().toString();
         IAMStatisticV1Task task = new IAMStatisticV1Task();
         task.iamId = iamId;
@@ -171,7 +176,7 @@ public class IASStatisticIAMV1Impl implements IASStatisticIAMV1 {
             long duration,
             String iterationId
     ) {
-        if (disabled) return;
+        if (disabled || softDisabled) return;
         String eventId = UUID.randomUUID().toString();
         IAMStatisticV1Task task = new IAMStatisticV1Task();
         task.iamId = iamId;
@@ -185,7 +190,8 @@ public class IASStatisticIAMV1Impl implements IASStatisticIAMV1 {
     }
 
     @Override
-    public void disabled(boolean disabled) {
+    public void disabled(boolean softDisabled, boolean disabled) {
+        this.softDisabled = softDisabled;
         this.disabled = disabled;
     }
 }

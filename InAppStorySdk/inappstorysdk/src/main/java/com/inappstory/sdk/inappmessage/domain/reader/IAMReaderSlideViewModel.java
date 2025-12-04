@@ -316,7 +316,7 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
     public void storySendData(String data) {
         IAMReaderState readerState = readerViewModel.getCurrentState();
         if (readerState == null) return;
-        if (core.statistic().iamV1().disabled()) return;
+        if (core.statistic().iamV1().softDisabled()) return;
         core.network().enqueue(
                 core.network().getApi().sendIAMUserData(
                         Integer.toString(readerState.iamId),
@@ -344,7 +344,7 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
                     readerState.iamId + "__" +
                     ((IASDataSettingsHolder) core.settingsAPI()).userId(), data);
         }
-        if (core.statistic().iamV1().disabled()) return;
+        if (core.statistic().iamV1().softDisabled()) return;
         if (sendToServer) {
             core.network().enqueue(
                     core.network().getApi().sendIAMUserData(

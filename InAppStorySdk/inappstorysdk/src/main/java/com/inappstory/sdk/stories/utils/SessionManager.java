@@ -109,18 +109,20 @@ public class SessionManager {
         IASDataSettingsHolder settingsHolder = ((IASDataSettingsHolder) core.settingsAPI());
         boolean isSendStatistic = settingsHolder.sendStatistic() && !settingsHolder.anonymous();
         core.statistic().storiesV2().disabled(
-                !(isSendStatistic && response.isAllowStatV2)
+                !response.isAllowStatV2, !isSendStatistic
         );
         core.statistic().profiling().disabled(
-                !(isSendStatistic && response.isAllowProfiling)
+                !response.isAllowProfiling, !isSendStatistic
         );
         core.statistic().exceptions().disabled(
-                !(isSendStatistic && response.isAllowCrash)
+                !response.isAllowCrash, !isSendStatistic
         );
-        core.statistic().iamV1().disabled(!(isSendStatistic && (
-                response.isAllowStatV1 ||
-                        response.isAllowStatV2)
-        ));
+        core.statistic().iamV1().disabled(
+                !(response.isAllowStatV1 ||
+                        response.isAllowStatV2
+                ),
+                !isSendStatistic
+        );
         ((IASSettingsImpl) core.settingsAPI()).sessionPlaceholders(response.placeholders);
         ((IASSettingsImpl) core.settingsAPI()).sessionImagePlaceholders(response.imagePlaceholders);
     }
