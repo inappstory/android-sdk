@@ -80,9 +80,18 @@ public class Sizes {
         } else {
             localContext = context;
         }
-        if (localContext != null)
-            return localContext.getResources().getBoolean(R.bool.isTablet);
-        return false;
+        boolean isTablet = false;
+        if (localContext != null) {
+            isTablet = localContext.getResources().getBoolean(R.bool.isTablet);
+            if (!isTablet) {
+                Point size = Sizes.getScreenSize(localContext);
+                float prop = 1f * size.y / size.x;
+                if (prop < 16 / 9f) {
+                    isTablet = true;
+                }
+            }
+        }
+        return isTablet;
     }
 
     public static int dpToPxExt(int dp, Context context) {

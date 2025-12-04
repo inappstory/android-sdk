@@ -449,7 +449,15 @@ public class StoriesTabletActivity extends IASActivity implements BaseStoryScree
         super.onCreate(savedInstanceState1);
         setContentView(R.layout.cs_mainscreen_stories_draggable_tablet);
         Point size = Sizes.getScreenSize(this);
-        int cleanSize = Math.min(size.x, size.y) - Sizes.dpToPxExt(80, this);
+        float coeff = 680 / 400f;
+        int xWithOffset = size.x - Sizes.dpToPxExt(80, this);
+        int yWithOffset = size.y - Sizes.dpToPxExt(80, this);
+        int cleanSize;
+        if (coeff * xWithOffset > yWithOffset) {
+            cleanSize = yWithOffset;
+        } else {
+            cleanSize = xWithOffset;
+        }
         maxHeight = Math.min(
                 cleanSize,
                 Sizes.dpToPxExt(680, this)
