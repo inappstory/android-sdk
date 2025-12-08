@@ -1201,6 +1201,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         final IASCore core = inAppStoryManager != null ? inAppStoryManager.iasCore() : null;
 
         GameConfigOptions options = new GameConfigOptions();
+        if (!isAdded()) return "{}";
         options.fullScreen = isFullscreen;
         if (core != null) {
             if (context == null)
@@ -1239,7 +1240,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
             );
             options.sessionId = "";
         }
-        int orientation = getResources().getConfiguration().orientation;
+        int orientation = context.getResources().getConfiguration().orientation;
         options.screenOrientation =
                 (orientation == Configuration.ORIENTATION_LANDSCAPE) ? "landscape" : "portrait";
         String appPackageName = "";
