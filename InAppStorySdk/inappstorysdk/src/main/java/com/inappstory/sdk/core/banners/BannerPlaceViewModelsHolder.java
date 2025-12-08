@@ -74,21 +74,31 @@ public class BannerPlaceViewModelsHolder {
     }
 
     public boolean copyFromCache(String uniqueId, String bannerPlace) {
-        IBannerWidgetState placeState = null;
+        BannerCarouselState placeState = null;
         IBannersWidgetViewModel uniqueVM = get(uniqueId);
         if (uniqueVM == null) return false;
         IBannersWidgetViewModel placeVM = getContentPlaceViewModel(bannerPlace);
         if (placeVM != null)
-            placeState = placeVM.getCurrentBannerPlaceState();
+            placeState = (BannerCarouselState) placeVM.getCurrentBannerPlaceState();
         if (placeState != null) {
-            uniqueVM.updateState(
-                    placeState
-                            .copy()
-                           // .currentIndex(0)
-                            .iterationId(
-                                    UUID.randomUUID().toString()
-                            )
-            );
+            if (uniqueVM instanceof BannerListViewModel) {
+                uniqueVM.updateState(
+                        new BannerListState()
+                                .loadState(placeState.loadState())
+                                .items(placeState.getItems())
+                                .iterationId(UUID.randomUUID().toString())
+                                .tags(placeState.tags())
+                );
+            } else {
+                uniqueVM.updateState(
+                        placeState
+                                .copy()
+                                // .currentIndex(0)
+                                .iterationId(
+                                        UUID.randomUUID().toString()
+                                )
+                );
+            }
             return true;
         }
         return false;
