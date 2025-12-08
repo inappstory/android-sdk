@@ -74,12 +74,12 @@ public class BannerPlaceViewModelsHolder {
     }
 
     public boolean copyFromCache(String uniqueId, String bannerPlace) {
-        BannerCarouselState placeState = null;
+        IBannerWidgetState placeState = null;
         IBannersWidgetViewModel uniqueVM = get(uniqueId);
         if (uniqueVM == null) return false;
         IBannersWidgetViewModel placeVM = getContentPlaceViewModel(bannerPlace);
         if (placeVM != null)
-            placeState = (BannerCarouselState) placeVM.getCurrentBannerPlaceState();
+            placeState = placeVM.getCurrentBannerPlaceState();
         if (placeState != null) {
             uniqueVM.updateState(
                     placeState
