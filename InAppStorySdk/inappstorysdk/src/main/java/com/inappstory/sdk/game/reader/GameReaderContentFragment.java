@@ -74,6 +74,7 @@ import com.inappstory.sdk.inner.share.InnerShareFilesPrepare;
 import com.inappstory.sdk.inner.share.ShareFilesPrepareCallback;
 import com.inappstory.sdk.memcache.IGetBitmapFromMemoryCache;
 import com.inappstory.sdk.network.JsonParser;
+import com.inappstory.sdk.stories.api.models.CachedSessionData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ContentData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.InAppMessageData;
 import com.inappstory.sdk.stories.ui.widgets.TouchFrameLayout;
@@ -1135,11 +1136,12 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         if (core != null) {
             if (context == null) context = core.appContext();
             IASDataSettingsHolder dataSettingsHolder = ((IASDataSettingsHolder) core.settingsAPI());
+            CachedSessionData sessionData = core.sessionManager().getSession().sessionData();
             options.apiBaseUrl = core.network().getBaseUrl();
             options.deviceId = dataSettingsHolder.deviceId();
-            if (dataSettingsHolder.userId() != null)
+            if (sessionData != null && sessionData.userId != null)
                 options.userId = StringsUtils.getEscapedString(
-                        new UrlEncoder().encode(dataSettingsHolder.userId())
+                        new UrlEncoder().encode(sessionData.userId)
                 );
             else
                 options.userId = "";
@@ -1147,7 +1149,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
             options.userAgent = StringsUtils.getEscapedString(
                     core.network().userAgent()
             );
-            options.sessionId = core.sessionManager().getSession().getSessionId();
+            options.sessionId = sessionData != null ? sessionData.sessionId() : "";
             options.apiKey = core.projectSettingsAPI().apiKey();
             options.placeholders = generatePlaceholders(dataSettingsHolder);
         } else {

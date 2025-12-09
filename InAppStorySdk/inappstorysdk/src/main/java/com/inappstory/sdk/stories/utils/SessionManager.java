@@ -38,6 +38,7 @@ import com.inappstory.sdk.utils.ISessionHolder;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 
 public class SessionManager {
@@ -49,7 +50,11 @@ public class SessionManager {
     }
 
     public void useOrOpenSession(OpenSessionCallback callback) {
-        checkOpenStatistic(callback);
+        checkOpenStatistic(callback, false);
+    }
+
+    public void useOrOpenSession(OpenSessionCallback callback, boolean errorIfCachedDataIsDifferent) {
+        checkOpenStatistic(callback, errorIfCachedDataIsDifferent);
     }
 
     public void addStaticOpenSessionCallback(IOpenSessionCallback callback) {
@@ -65,7 +70,10 @@ public class SessionManager {
         return sessionHolder;
     }
 
-    public void checkOpenStatistic(final OpenSessionCallback callback) {
+    public void checkOpenStatistic(
+            final OpenSessionCallback callback,
+            final boolean errorIfCachedDataIsDifferent
+    ) {
         final boolean checkOpen;
         synchronized (openProcessLock) {
             checkOpen = openProcess;
@@ -78,6 +86,27 @@ public class SessionManager {
                 if (session.isEmpty() || checkOpen) {
                     openSession(callback);
                 } else {
+                    CachedSessionData sessionData = sessionHolder.sessionData();
+                    if (sessionData != null) {
+                        if (
+                                !Objects.equals(sessionData.userId(), settingsHolder.userId())
+                                        ||
+                                        !Objects.equals(sessionData.locale, settingsHolder.lang().toLanguageTag())
+                        ) {
+                            if (errorIfCachedDataIsDifferent) callback.onError();
+                            final IASDataSettingsHolder dataSettingsHolder = (IASDataSettingsHolder) core.settingsAPI();
+                            final String deviceId = dataSettingsHolder.deviceId();
+                            UniqueSessionParameters currentSessionParameters = dataSettingsHolder.sessionParameters();
+                            core.settingsAPI().refreshSession(
+                                    sessionData.userId(),
+                                    deviceId,
+                                    sessionData.locale != null ? Locale.forLanguageTag(sessionData.locale) : Locale.getDefault(),
+                                    currentSessionParameters.sendStatistic(),
+                                    currentSessionParameters.anonymous()
+                            );
+                            return;
+                        }
+                    }
                     callback.onSuccess(
                             new RequestLocalParameters()
                                     .sessionId(session)
@@ -128,25 +157,23 @@ public class SessionManager {
     }
 
     private void sessionIsSaved(final SessionResponse response) {
+        final IASDataSettingsHolder settingsHolder = ((IASDataSettingsHolder) core.settingsAPI());
+        final RequestLocalParameters rlp = new RequestLocalParameters()
+                .sessionId(response.session.id)
+                .userId(settingsHolder.userId())
+                .sendStatistic(settingsHolder.sendStatistic())
+                .anonymous(settingsHolder.anonymous())
+                .locale(settingsHolder.lang());
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
-                final IASDataSettingsHolder settingsHolder = ((IASDataSettingsHolder) core.settingsAPI());
                 synchronized (openProcessLock) {
                     openProcess = false;
                     for (OpenSessionCallback localCallback : callbacks)
                         if (localCallback != null)
-                            localCallback.onSuccess(
-                                    new RequestLocalParameters()
-                                            .sessionId(response.session.id)
-                                            .userId(settingsHolder.userId())
-                                            .sendStatistic(settingsHolder.sendStatistic())
-                                            .anonymous(settingsHolder.anonymous())
-                                            .locale(settingsHolder.lang())
-                            );
+                            localCallback.onSuccess(rlp);
                     callbacks.clear();
                 }
-
             }
         });
         core.statistic().storiesV1(new GetStatisticV1Callback() {
@@ -266,17 +293,7 @@ public class SessionManager {
                                     public void onSuccess(SessionResponse response) {
                                         UniqueSessionParameters currentSessionParameters = dataSettingsHolder.sessionParameters();
                                         String currentSession = getSession().getSessionId();
-                                        if (!Objects.equals(currentSessionParameters, initialSessionParameters)) {
-                                            closeSession(
-                                                    initialSessionParameters.anonymous(),
-                                                    initialSessionParameters.sendStatistic(),
-                                                    true,
-                                                    initialSessionParameters.locale(),
-                                                    initialSessionParameters.userId(),
-                                                    initialSessionParameters.anonymous() ? null : deviceId,
-                                                    currentSession
-                                            );
-                                            openSessionInner();
+                                        if (reOpenSessionIfSettingsWereChanged(initialSessionParameters)) {
                                             return;
                                         }
                                         core.statistic().profiling().setReady(sessionOpenUID);
@@ -356,6 +373,27 @@ public class SessionManager {
                 }
         );
 
+    }
+
+    private boolean reOpenSessionIfSettingsWereChanged(UniqueSessionParameters initialSessionParameters) {
+        final IASDataSettingsHolder dataSettingsHolder = (IASDataSettingsHolder) core.settingsAPI();
+        final String deviceId = dataSettingsHolder.deviceId();
+        UniqueSessionParameters currentSessionParameters = dataSettingsHolder.sessionParameters();
+        String currentSession = getSession().getSessionId();
+        if (!Objects.equals(currentSessionParameters, initialSessionParameters)) {
+            closeSession(
+                    initialSessionParameters.anonymous(),
+                    initialSessionParameters.sendStatistic(),
+                    true,
+                    initialSessionParameters.locale(),
+                    initialSessionParameters.userId(),
+                    initialSessionParameters.anonymous() ? null : deviceId,
+                    currentSession
+            );
+            openSessionInner();
+            return true;
+        }
+        return false;
     }
 
     private void clearCaches() {

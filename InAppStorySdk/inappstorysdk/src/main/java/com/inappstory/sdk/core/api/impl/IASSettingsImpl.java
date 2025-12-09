@@ -116,7 +116,7 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
         );
     }
 
-    private void refreshSession(
+    public void refreshSession(
             final String currentUserId,
             final String currentDeviceId,
             final Locale currentLang,

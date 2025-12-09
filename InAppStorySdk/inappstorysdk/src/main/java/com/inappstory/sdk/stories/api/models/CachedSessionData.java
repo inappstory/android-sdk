@@ -15,4 +15,12 @@ public class CachedSessionData {
     public String testKey;
     public String token;
     public boolean isAllowUGC;
+
+    public String userId() {
+        return userId != null ? userId : "";
+    }
+
+    public String sessionId() {
+        return sessionId != null ? sessionId : "";
+    }
 }

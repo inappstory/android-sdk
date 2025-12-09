@@ -32,4 +32,12 @@ public interface IASDataSettings {
     void removeTags(List<String> tags);
     void setPlaceholder(String key, String value);
     void setImagePlaceholder(String key, ImagePlaceholderValue value);
+
+    void refreshSession(
+            final String currentUserId,
+            final String currentDeviceId,
+            final Locale currentLang,
+            final boolean sendStatistic,
+            final boolean anonymous
+    );
 }
