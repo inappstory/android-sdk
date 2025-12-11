@@ -9,6 +9,7 @@ import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 
@@ -93,7 +94,7 @@ public abstract class AbstractGameLogger {
     protected final GameLog createBaseLog() {
         return new GameLog(
                 gameInstanceId,
-                core.sessionManager().getSession().getSessionId(),
+                ((IASDataSettingsHolder)core.settingsAPI()).sessionIdOrEmpty(),
                 System.currentTimeMillis() / 1000,
                 launchTryNumber,
                 gameLoaded

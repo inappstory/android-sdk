@@ -260,7 +260,7 @@ class StoryDownloader {
                     setStoryLoadType(key, 2);
                 }
             }
-            if (core.sessionManager().getSession().getSessionId().isEmpty()) {
+            if (((IASDataSettingsHolder)core.settingsAPI()).sessionIdOrEmpty().isEmpty()) {
                 if (!isRefreshing) {
                     isRefreshing = true;
                     core.sessionManager().openSession(

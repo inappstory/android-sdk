@@ -334,7 +334,7 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
             launchScreenError(message);
             return;
         }
-        cantBeOpened = core.sessionManager().getSession().getSessionId().isEmpty();
+        cantBeOpened = ((IASDataSettingsHolder)core.settingsAPI()).sessionIdOrEmpty().isEmpty();
         if (cantBeOpened) {
             String message = "Session is not opened.";
             launchScreenError(message);

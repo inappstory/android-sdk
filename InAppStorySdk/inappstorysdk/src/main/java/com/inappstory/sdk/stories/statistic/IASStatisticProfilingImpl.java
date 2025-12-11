@@ -63,7 +63,7 @@ public class IASStatisticProfilingImpl implements IASStatisticProfiling {
                 (IASDataSettingsHolder) core.settingsAPI();
         String hash = randomUUID().toString();
         ProfilingTask task = new ProfilingTask();
-        task.sessionId = core.sessionManager().getSession().getSessionId();
+        task.sessionId = settingsHolder.sessionIdOrEmpty();
         task.isAllowToForceSend = !(disabled || softDisabled);
         task.userId = settingsHolder.userId();
         task.uniqueHash = hash;
@@ -167,7 +167,7 @@ public class IASStatisticProfilingImpl implements IASStatisticProfiling {
     private void sendTiming(ProfilingTask task) throws Exception {
         Map<String, String> qParams = new HashMap<>();
         qParams.put("s", (task.sessionId != null && !task.sessionId.isEmpty()) ? task.sessionId :
-                core.sessionManager().getSession().getSessionId());
+                ((IASDataSettingsHolder)core.settingsAPI()).sessionIdOrEmpty());
         qParams.put("u", task.userId != null ? task.userId : "");
         String cc = getCC();
         qParams.put("ts", "" + System.currentTimeMillis() / 1000);

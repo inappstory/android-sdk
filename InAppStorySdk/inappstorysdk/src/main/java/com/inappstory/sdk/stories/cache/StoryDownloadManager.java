@@ -295,7 +295,7 @@ public class StoryDownloadManager {
                 boolean loadFav = loadFavorite;
                 IASDataSettingsHolder dataSettingsHolder = (IASDataSettingsHolder) core.settingsAPI();
                 RequestLocalParameters requestLocalParameters = new RequestLocalParameters()
-                        .sessionId(core.sessionManager().getSession().getSessionId())
+                        .sessionId(dataSettingsHolder.sessionIdOrEmpty())
                         .userId(dataSettingsHolder.userId())
                         .sendStatistic(dataSettingsHolder.sendStatistic())
                         .anonymous(dataSettingsHolder.anonymous())

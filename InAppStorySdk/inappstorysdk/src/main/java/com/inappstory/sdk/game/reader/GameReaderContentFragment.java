@@ -50,6 +50,7 @@ import com.inappstory.iasutilsconnector.filepicker.IFilePicker;
 import com.inappstory.iasutilsconnector.filepicker.OnFilesChooseCallback;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.BuildConfig;
+import com.inappstory.sdk.core.api.impl.IASSettingsImpl;
 import com.inappstory.sdk.core.ui.widgets.customicons.CustomIconWithoutStates;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.R;
@@ -74,7 +75,9 @@ import com.inappstory.sdk.inner.share.InnerShareFilesPrepare;
 import com.inappstory.sdk.inner.share.ShareFilesPrepareCallback;
 import com.inappstory.sdk.memcache.IGetBitmapFromMemoryCache;
 import com.inappstory.sdk.network.JsonParser;
+import com.inappstory.sdk.network.models.RequestLocalParameters;
 import com.inappstory.sdk.stories.api.models.CachedSessionData;
+import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ContentData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.InAppMessageData;
 import com.inappstory.sdk.stories.ui.widgets.TouchFrameLayout;
@@ -112,6 +115,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.UUID;
 import java.util.regex.Pattern;
 
 public class GameReaderContentFragment extends Fragment implements OverlapFragmentObserver, IASBackPressHandler, IAcceleratorSubscriber {
@@ -1031,9 +1035,18 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                                     setOrientationFromOptions(options);
                                     setFullScreenFromOptions(options);
                                 } catch (Exception ignored) {
-
                                 }
-                                replaceConfigs((IASDataSettingsHolder) core.settingsAPI());
+                                core.sessionManager().useOrOpenSession(new OpenSessionCallback() {
+                                    @Override
+                                    public void onSuccess(RequestLocalParameters sessionId) {
+                                        replaceConfigs((IASDataSettingsHolder) core.settingsAPI());
+                                    }
+
+                                    @Override
+                                    public void onError() {
+
+                                    }
+                                });
                             }
                         });
                     }
@@ -1136,7 +1149,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         if (core != null) {
             if (context == null) context = core.appContext();
             IASDataSettingsHolder dataSettingsHolder = ((IASDataSettingsHolder) core.settingsAPI());
-            CachedSessionData sessionData = core.sessionManager().getSession().sessionData();
+            CachedSessionData sessionData = dataSettingsHolder.sessionData();
             options.apiBaseUrl = core.network().getBaseUrl();
             options.deviceId = dataSettingsHolder.deviceId();
             if (sessionData != null && sessionData.userId != null)
@@ -1149,7 +1162,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
             options.userAgent = StringsUtils.getEscapedString(
                     core.network().userAgent()
             );
-            options.sessionId = sessionData != null ? sessionData.sessionId() : "";
+            options.sessionId = sessionData != null && sessionData.sessionId != null ? sessionData.sessionId : "";
             options.apiKey = core.projectSettingsAPI().apiKey();
             options.placeholders = generatePlaceholders(dataSettingsHolder);
         } else {

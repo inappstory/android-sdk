@@ -82,14 +82,14 @@ public class SessionManager {
         new ConnectionCheck().check(core.appContext(), new ConnectionCheckCallback(core) {
             @Override
             public void success() {
-                String session = getSession().getSessionId();
+                String session = settingsHolder.sessionIdOrEmpty();
                 if (session.isEmpty() || checkOpen) {
                     openSession(callback);
                 } else {
-                    CachedSessionData sessionData = sessionHolder.sessionData();
+                    CachedSessionData sessionData = settingsHolder.sessionData();
                     if (sessionData != null) {
                         if (
-                                !Objects.equals(sessionData.userId(), settingsHolder.userId())
+                                !Objects.equals(sessionData.userId, settingsHolder.userId())
                                         ||
                                         !Objects.equals(sessionData.locale, settingsHolder.lang().toLanguageTag())
                         ) {
@@ -98,7 +98,7 @@ public class SessionManager {
                             final String deviceId = dataSettingsHolder.deviceId();
                             UniqueSessionParameters currentSessionParameters = dataSettingsHolder.sessionParameters();
                             core.settingsAPI().refreshSession(
-                                    sessionData.userId(),
+                                    sessionData.userId,
                                     deviceId,
                                     sessionData.locale != null ? Locale.forLanguageTag(sessionData.locale) : Locale.getDefault(),
                                     currentSessionParameters.sendStatistic(),
@@ -292,7 +292,7 @@ public class SessionManager {
                                     @Override
                                     public void onSuccess(SessionResponse response) {
                                         UniqueSessionParameters currentSessionParameters = dataSettingsHolder.sessionParameters();
-                                        String currentSession = getSession().getSessionId();
+                                        String currentSession = dataSettingsHolder.sessionIdOrEmpty();
                                         if (reOpenSessionIfSettingsWereChanged(initialSessionParameters)) {
                                             return;
                                         }
@@ -310,7 +310,8 @@ public class SessionManager {
                                                 TextUtils.join(",", dataSettingsHolder.tags());
                                         IASDataSettingsHolder settingsHolder = ((IASDataSettingsHolder) core.settingsAPI());
                                         boolean isSendStatistic = settingsHolder.sendStatistic() && !settingsHolder.anonymous();
-                                        sessionHolder.setSession(cachedSessionData, !(isSendStatistic && response.isAllowStatV1));
+                                        ((IASSettingsImpl) dataSettingsHolder).sessionData(cachedSessionData);
+                                        core.statistic().changeSession(cachedSessionData, !(isSendStatistic && response.isAllowStatV1));
                                         core.network().setSessionId(response.session.id);
                                         if (response.preloadGame)
                                             core.contentPreload().restartGamePreloader();
@@ -434,7 +435,8 @@ public class SessionManager {
                                     ),
                                     oldUserId,
                                     oldDeviceId,
-                                    oldLang
+                                    oldLang,
+                                    oldSessionId
                             ),
                             new NetworkCallback<SessionResponse>() {
                                 @Override
@@ -462,10 +464,10 @@ public class SessionManager {
                 }
             });
             core.network().removeSessionId(oldSessionId);
-            sessionHolder.clear(oldSessionId);
+            core.statistic().clearSession(oldSessionId);
         } else {
             core.network().removeSessionId(oldSessionId);
-            sessionHolder.clear(oldSessionId);
+            core.statistic().clearSession(oldSessionId);
             if (changeSessionSettings) {
                 core.inAppStoryService().getListReaderConnector().userIdChanged();
             }

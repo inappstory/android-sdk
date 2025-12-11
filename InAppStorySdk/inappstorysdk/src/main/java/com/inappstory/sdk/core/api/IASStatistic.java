@@ -6,8 +6,6 @@ import com.inappstory.sdk.stories.statistic.GetStatisticV1Callback;
 import java.util.List;
 
 public interface IASStatistic {
-    void createV1(CachedSessionData sessionData, boolean disabled);
-    void removeV1(String sessionId);
     IASStatisticStoriesV1 storiesV1();
     IASStatisticStoriesV2 storiesV2();
     IASStatisticIAMV1 iamV1();
@@ -15,6 +13,9 @@ public interface IASStatistic {
     void storiesV1(GetStatisticV1Callback callback);
     IASStatisticProfiling profiling();
     IASStatisticExceptions exceptions();
+
+    void changeSession(CachedSessionData sessionData, boolean disabled);
+    void clearSession(String sessionId);
 
     void addViewedId(int id);
     boolean hasViewedId(int id);

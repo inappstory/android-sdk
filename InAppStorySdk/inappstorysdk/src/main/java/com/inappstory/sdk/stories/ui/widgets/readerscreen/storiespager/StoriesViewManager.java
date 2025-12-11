@@ -632,8 +632,9 @@ public class StoriesViewManager {
     }
 
     public void storySetLocalData(String data, boolean sendToServer) {
+        IASDataSettingsHolder settingsHolder = (IASDataSettingsHolder)core.settingsAPI();
         core.keyValueStorage().saveString("story" + storyId + "__" +
-                ((IASDataSettingsHolder) core.settingsAPI()).userIdOrAnonymous(), data);
+                settingsHolder.userIdOrAnonymous(), data);
         if (core.statistic().storiesV1().softDisabled()) return;
 
         if (sendToServer) {
@@ -641,7 +642,7 @@ public class StoriesViewManager {
                     core.network().getApi().sendStoryData(
                             Integer.toString(storyId),
                             data,
-                            core.sessionManager().getSession().getSessionId()
+                            settingsHolder.sessionIdOrEmpty()
                     ),
                     new NetworkCallback<Response>() {
                         @Override
@@ -675,7 +676,7 @@ public class StoriesViewManager {
                 core.network().getApi().sendStoryData(
                         Integer.toString(storyId),
                         data,
-                        core.sessionManager().getSession().getSessionId()
+                        ((IASDataSettingsHolder)core.settingsAPI()).sessionIdOrEmpty()
                 ),
                 new NetworkCallback<Response>() {
                     @Override

@@ -17,10 +17,7 @@ public class CachedSessionData {
     public boolean isAllowUGC;
 
     public String userId() {
-        return userId != null ? userId : "";
+        return userId;
     }
 
-    public String sessionId() {
-        return sessionId != null ? sessionId : "";
-    }
 }

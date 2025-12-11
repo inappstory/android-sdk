@@ -5,6 +5,7 @@ import android.util.Log;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.stories.api.models.logs.ExceptionLog;
 import com.inappstory.sdk.utils.CollectionUtils;
 
@@ -143,7 +144,7 @@ public class CacheJournal {
         log.timestamp = System.currentTimeMillis();
         log.id = UUID.randomUUID().toString();
         log.message = "CacheOverflow";
-        log.session = core.sessionManager().getSession().getSessionId();
+        log.session = ((IASDataSettingsHolder)core.settingsAPI()).sessionIdOrEmpty();
         log.stacktrace = "Current size: "
                 + currentSize
                 + "\nNew file size: "

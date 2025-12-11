@@ -22,7 +22,7 @@ public class StoriesListManager implements ListManager {
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-                currentSessionId = core.sessionManager().getSession().getSessionId();
+                currentSessionId = ((IASDataSettingsHolder)core.settingsAPI()).sessionIdOrEmpty();
             }
         });
     }

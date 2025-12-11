@@ -5,6 +5,7 @@ import android.os.Looper;
 import android.view.View;
 
 import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.data.IListItemContent;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.ui.list.ListManager;
@@ -26,7 +27,7 @@ class UgcStoriesListManager implements ListManager {
     }
 
     void checkCurrentSession() {
-        currentSessionId = core.sessionManager().getSession().getSessionId();
+        currentSessionId = ((IASDataSettingsHolder)core.settingsAPI()).sessionIdOrEmpty();
     }
 
     private void checkHandler() {

@@ -140,7 +140,7 @@ public class InAppStoryAPISubscribersManager {
         }
         currentStoryCover.setOpened(true);
         core.storyListCache().saveStoryOpened(coverId, ContentType.STORY);
-        String sessionId = core.sessionManager().getSession().getSessionId();
+        String sessionId = ((IASDataSettingsHolder)core.settingsAPI()).sessionIdOrEmpty();
         if (currentStoryCover.deeplink() != null && !currentStoryCover.deeplink().isEmpty()) {
             service.getListReaderConnector().changeStory(coverId, uniqueKey, false);
 
@@ -514,7 +514,7 @@ public class InAppStoryAPISubscribersManager {
                     storyAPIData,
                     new IASStoryListSessionData()
                             .previewAspectRatio(
-                                    core.sessionManager().getSession().sessionData().previewAspectRatio
+                                    ((IASDataSettingsHolder)core.settingsAPI()).sessionData().previewAspectRatio
                             )
                             .feed(feed)
             );
@@ -578,7 +578,8 @@ public class InAppStoryAPISubscribersManager {
                             data,
                             new IASStoryListSessionData()
                                     .previewAspectRatio(
-                                            core.sessionManager().getSession().sessionData().previewAspectRatio
+                                            ((IASDataSettingsHolder)core.settingsAPI())
+                                                    .sessionData().previewAspectRatio
                                     )
                                     .feed(null)
                     );
@@ -648,7 +649,7 @@ public class InAppStoryAPISubscribersManager {
                         newData,
                         new IASStoryListSessionData()
                                 .previewAspectRatio(
-                                        core.sessionManager().getSession().sessionData().previewAspectRatio
+                                        ((IASDataSettingsHolder)core.settingsAPI()).sessionData().previewAspectRatio
                                 )
                                 .feed(null)
                 );

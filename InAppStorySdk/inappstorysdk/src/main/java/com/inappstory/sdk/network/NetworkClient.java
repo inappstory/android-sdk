@@ -118,7 +118,7 @@ public class NetworkClient {
             IASDataSettingsHolder dataSettingsHolder = (IASDataSettingsHolder) core.settingsAPI();
 
             RequestLocalParameters currentParameters = new RequestLocalParameters()
-                    .sessionId(core.sessionManager().getSession().getSessionId())
+                    .sessionId(dataSettingsHolder.sessionIdOrEmpty())
                     .userId(dataSettingsHolder.userId())
                     .sendStatistic(dataSettingsHolder.sendStatistic())
                     .anonymous(dataSettingsHolder.anonymous())

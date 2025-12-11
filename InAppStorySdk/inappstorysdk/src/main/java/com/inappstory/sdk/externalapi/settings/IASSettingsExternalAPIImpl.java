@@ -113,7 +113,7 @@ public class IASSettingsExternalAPIImpl implements IASDataSettings {
             public void use(@NonNull InAppStoryManager manager) throws Exception {
                 manager.iasCore().settingsAPI().sendStatistic(sendStatistic);
                 try {
-                    Field f1  = manager.getClass().getDeclaredField("sendStatistic");
+                    Field f1 = manager.getClass().getDeclaredField("sendStatistic");
                     f1.setAccessible(true);
                     f1.set(manager, sendStatistic);
                 } catch (Exception e) {
@@ -199,5 +199,16 @@ public class IASSettingsExternalAPIImpl implements IASDataSettings {
                 core.settingsAPI().setImagePlaceholder(key, value);
             }
         });
+    }
+
+    @Override
+    public void refreshSession(
+            String currentUserId,
+            String currentDeviceId,
+            Locale currentLang,
+            boolean sendStatistic,
+            boolean anonymous
+    ) {
+
     }
 }

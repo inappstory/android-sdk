@@ -1,6 +1,7 @@
 package com.inappstory.sdk.core.api.impl;
 
 import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.IASStatistic;
 import com.inappstory.sdk.core.api.IASStatisticExceptions;
 import com.inappstory.sdk.core.api.IASStatisticIAMV1;
@@ -36,32 +37,9 @@ public class IASStatisticImpl implements IASStatistic {
         iasStatisticIAMV1 = new IASStatisticIAMV1Impl(core);
     }
 
-
-    @Override
-    public void createV1(CachedSessionData sessionData, boolean disabled) {
-        synchronized (v1Lock) {
-            iasStatisticStoriesV1Map.put(
-                    sessionData.sessionId,
-                    new IASStatisticStoriesV1Impl(
-                            core,
-                            sessionData.userId,
-                            sessionData.locale,
-                            disabled
-                    )
-            );
-        }
-    }
-
-    @Override
-    public void removeV1(String sessionId) {
-        synchronized (v1Lock) {
-            iasStatisticStoriesV1Map.remove(sessionId);
-        }
-    }
-
     @Override
     public IASStatisticStoriesV1 storiesV1() {
-        String sessionId = core.sessionManager().getSession().getSessionId();
+        String sessionId = ((IASDataSettingsHolder)core.settingsAPI()).sessionId();
         if (sessionId == null) return null;
         synchronized (v1Lock) {
             return iasStatisticStoriesV1Map.get(sessionId);
@@ -151,5 +129,31 @@ public class IASStatisticImpl implements IASStatistic {
     @Override
     public IASStatisticExceptions exceptions() {
         return iasStatisticExceptions;
+    }
+
+    @Override
+    public void changeSession(CachedSessionData sessionData, boolean disabled) {
+        if (sessionData != null && sessionData.sessionId != null) {
+            synchronized (v1Lock) {
+                iasStatisticStoriesV1Map.put(
+                        sessionData.sessionId,
+                        new IASStatisticStoriesV1Impl(
+                                core,
+                                sessionData.userId,
+                                sessionData.locale,
+                                disabled
+                        )
+                );
+            }
+        }
+        clearViewedIds();
+    }
+
+    @Override
+    public void clearSession(String sessionId) {
+        synchronized (v1Lock) {
+            iasStatisticStoriesV1Map.remove(sessionId);
+        }
+        clearViewedIds();
     }
 }

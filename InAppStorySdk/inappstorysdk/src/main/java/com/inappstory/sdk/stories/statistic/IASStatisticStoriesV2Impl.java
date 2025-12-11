@@ -305,9 +305,9 @@ public class IASStatisticStoriesV2Impl implements IASStatisticStoriesV2 {
     }
 
     private void generateBase(StoryStatisticV2Task task) {
-
-        task.userId = ((IASDataSettingsHolder) core.settingsAPI()).userId();
-        task.sessionId = core.sessionManager().getSession().getSessionId();
+        IASDataSettingsHolder settingsHolder = (IASDataSettingsHolder) core.settingsAPI();
+        task.userId = settingsHolder.userId();
+        task.sessionId = settingsHolder.sessionIdOrEmpty();
         task.timestamp = System.currentTimeMillis() / 1000;
     }
 
