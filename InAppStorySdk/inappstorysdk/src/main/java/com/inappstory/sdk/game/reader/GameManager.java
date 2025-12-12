@@ -31,6 +31,7 @@ import com.inappstory.sdk.network.jsapiclient.JsApiClient;
 import com.inappstory.sdk.network.jsapiclient.JsApiResponseCallback;
 import com.inappstory.sdk.network.models.Response;
 import com.inappstory.sdk.share.IShareCompleteListener;
+import com.inappstory.sdk.stories.api.models.CachedSessionData;
 import com.inappstory.sdk.stories.api.models.UrlObject;
 import com.inappstory.sdk.stories.api.models.WebResource;
 import com.inappstory.sdk.stories.api.models.WriteClipboardData;
@@ -115,8 +116,10 @@ public class GameManager {
         String id = gameInstanceId;
         if (id == null) id = gameCenterId;
         if (id == null) return;
+        CachedSessionData sessionData = settingsHolder.sessionData();
+        if (sessionData == null) return;
         core.keyValueStorage().saveString("gameInstance_" + gameInstanceId
-                + "__" + settingsHolder.userId(), data);
+                + "__" + sessionData.userId, data);
 
         if (core.statistic().storiesV1().softDisabled()) return;
         if (sendToServer) {

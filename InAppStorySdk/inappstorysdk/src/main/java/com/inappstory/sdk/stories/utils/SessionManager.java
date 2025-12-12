@@ -298,21 +298,22 @@ public class SessionManager {
                                         }
                                         core.statistic().profiling().setReady(sessionOpenUID);
                                         CachedSessionData cachedSessionData = new CachedSessionData();
-                                        cachedSessionData.userId = currentSessionParameters.userId();
-                                        cachedSessionData.locale = currentSessionParameters.locale();
+                                        cachedSessionData.userId = initialSessionParameters.userId();
+                                        cachedSessionData.locale = initialSessionParameters.locale();
                                         cachedSessionData.placeholders = response.placeholders;
                                         cachedSessionData.previewAspectRatio = response.getPreviewAspectRatio();
                                         cachedSessionData.isAllowUGC = response.isAllowUgc;
+                                        cachedSessionData.preloadGames = response.preloadGame;
                                         cachedSessionData.sessionId = response.session.id;
                                         cachedSessionData.testKey = core.projectSettingsAPI().testKey();
                                         cachedSessionData.token = core.projectSettingsAPI().apiKey();
+                                        cachedSessionData.anonymous = initialSessionParameters.anonymous();
                                         cachedSessionData.tags =
                                                 TextUtils.join(",", dataSettingsHolder.tags());
                                         IASDataSettingsHolder settingsHolder = ((IASDataSettingsHolder) core.settingsAPI());
                                         boolean isSendStatistic = settingsHolder.sendStatistic() && !settingsHolder.anonymous();
                                         ((IASSettingsImpl) dataSettingsHolder).sessionData(cachedSessionData);
                                         core.statistic().changeSession(cachedSessionData, !(isSendStatistic && response.isAllowStatV1));
-                                        core.network().setSessionId(response.session.id);
                                         if (response.preloadGame)
                                             core.contentPreload().restartGamePreloader();
                                         saveSession(response);
@@ -463,10 +464,8 @@ public class SessionManager {
                     );
                 }
             });
-            core.network().removeSessionId(oldSessionId);
             core.statistic().clearSession(oldSessionId);
         } else {
-            core.network().removeSessionId(oldSessionId);
             core.statistic().clearSession(oldSessionId);
             if (changeSessionSettings) {
                 core.inAppStoryService().getListReaderConnector().userIdChanged();

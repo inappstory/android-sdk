@@ -1067,7 +1067,13 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
 
                     @Override
                     public void onSuccess(final FilePathAndContent result) {
-                        core.contentPreload().resumeGamePreloader();
+                        CachedSessionData sessionData = ((IASDataSettingsHolder) core.settingsAPI()).sessionData();
+                        if (sessionData == null) {
+                            gameLoadedErrorCallback.onError(null, "No session found");
+                            return;
+                        }
+                        if (sessionData.preloadGames)
+                            core.contentPreload().resumeGamePreloader();
                         webView.post(new Runnable() {
                             @Override
                             public void run() {
@@ -1082,7 +1088,8 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                                                 getContext()
                                         ),
                                         "text/html; charset=utf-8", "UTF-8",
-                                        null);
+                                        null
+                                );
                                 progressLoader.setIndeterminate(true);
                             }
                         });

@@ -150,6 +150,7 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
             final boolean anonymous
     ) {
         final String sessionId = sessionId();
+        sessionData(null);
         core.storiesListVMHolder().clear();
         core.storyListCache().clearLocalOpensKey();
         core.screensManager().forceCloseAllReaders(new ForceCloseReaderCallback() {

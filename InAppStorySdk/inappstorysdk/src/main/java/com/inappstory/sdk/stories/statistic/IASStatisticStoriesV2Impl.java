@@ -8,6 +8,7 @@ import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.IASStatisticStoriesV2;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.models.Response;
+import com.inappstory.sdk.stories.api.models.CachedSessionData;
 import com.inappstory.sdk.stories.api.models.CurrentV2StatisticState;
 import com.inappstory.sdk.stories.utils.LoopedExecutor;
 
@@ -306,7 +307,8 @@ public class IASStatisticStoriesV2Impl implements IASStatisticStoriesV2 {
 
     private void generateBase(StoryStatisticV2Task task) {
         IASDataSettingsHolder settingsHolder = (IASDataSettingsHolder) core.settingsAPI();
-        task.userId = settingsHolder.userId();
+        CachedSessionData sessionData = settingsHolder.sessionData();
+        task.userId = sessionData != null ? sessionData.userId : "";
         task.sessionId = settingsHolder.sessionIdOrEmpty();
         task.timestamp = System.currentTimeMillis() / 1000;
     }

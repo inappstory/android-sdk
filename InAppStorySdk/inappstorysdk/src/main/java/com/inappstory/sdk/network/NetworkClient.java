@@ -177,13 +177,6 @@ public class NetworkClient {
         return response;
     }
 
-    public void setSessionId(String sessionId) {
-        networkHandler.setSessionId(sessionId);
-    }
-
-    public void removeSessionId(String sessionId) {
-        networkHandler.removeSessionId(sessionId);
-    }
 
     public List<Header> generateHeaders(
             String[] exclude,

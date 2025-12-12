@@ -15,6 +15,7 @@ import com.inappstory.sdk.core.api.IASStatisticProfiling;
 import com.inappstory.sdk.network.models.Request;
 import com.inappstory.sdk.network.utils.GetUrl;
 import com.inappstory.sdk.network.utils.UserAgent;
+import com.inappstory.sdk.stories.api.models.CachedSessionData;
 import com.inappstory.sdk.stories.utils.LoopedExecutor;
 
 import java.net.HttpURLConnection;
@@ -63,9 +64,10 @@ public class IASStatisticProfilingImpl implements IASStatisticProfiling {
                 (IASDataSettingsHolder) core.settingsAPI();
         String hash = randomUUID().toString();
         ProfilingTask task = new ProfilingTask();
-        task.sessionId = settingsHolder.sessionIdOrEmpty();
+        CachedSessionData sessionData = settingsHolder.sessionData();
+        task.sessionId = ((IASDataSettingsHolder) core.settingsAPI()).sessionIdOrEmpty();
         task.isAllowToForceSend = !(disabled || softDisabled);
-        task.userId = settingsHolder.userId();
+        task.userId = sessionData != null ? sessionData.userId : "";
         task.uniqueHash = hash;
         task.name = name;
         task.startTime = System.currentTimeMillis();

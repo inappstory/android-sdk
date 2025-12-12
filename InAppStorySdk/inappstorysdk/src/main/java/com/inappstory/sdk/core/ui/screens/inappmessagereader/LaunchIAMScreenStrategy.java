@@ -29,6 +29,7 @@ import com.inappstory.sdk.inappmessage.InAppMessageScreenActions;
 import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderState;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageAppearance;
 import com.inappstory.sdk.inappmessage.InAppMessageOpenSettings;
+import com.inappstory.sdk.stories.api.models.CachedSessionData;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenInAppMessageReader;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenReader;
@@ -135,8 +136,9 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
             return false;
         IASDataSettingsHolder settingsHolder = (IASDataSettingsHolder) core.settingsAPI();
         String localOpensKey = "iam_opened";
-        if (settingsHolder.userId() != null) {
-            localOpensKey += settingsHolder.userId();
+        CachedSessionData sessionData = settingsHolder.sessionData();
+        if (sessionData != null && sessionData.userId != null) {
+            localOpensKey += sessionData.userId;
         }
         Set<String> opens = core.sharedPreferencesAPI().getStringSet(localOpensKey);
         Integer openedId = null;
@@ -374,8 +376,9 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
     private void saveIAMOpened(int iamId) {
         IASDataSettingsHolder settingsHolder = (IASDataSettingsHolder) core.settingsAPI();
         String localOpensKey = "iam_opened";
-        if (settingsHolder.userId() != null) {
-            localOpensKey += settingsHolder.userId();
+        CachedSessionData sessionData = settingsHolder.sessionData();
+        if (sessionData != null && sessionData.userId != null) {
+            localOpensKey += sessionData.userId;
         }
         Set<String> opens = core.sharedPreferencesAPI().getStringSet(localOpensKey);
         IAMShownTime savedShownTime = null;

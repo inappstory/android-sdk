@@ -1,6 +1,5 @@
 package com.inappstory.sdk.game.preload;
 
-import android.util.Log;
 
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.game.cache.SuccessUseCaseCallback;
