@@ -63,24 +63,15 @@ public class SessionAssetUseCase extends GetCacheFileUseCase<Void> {
                     cacheJournalItem.setDownloadedSize(fileState.totalSize);
                     try {
                         getCache().put(cacheJournalItem);
-                        if (cacheObject.url.contains("widgets/poll.css")) {
-                            InAppStoryManager.showDLog("downloadPollCss", "putToCacheSuccess " + cacheJournalItem.getUniqueKey());
-                        }
+
                     } catch (IOException e) {
-                        if (cacheObject.url.contains("widgets/poll.css")) {
-                            InAppStoryManager.showDLog("downloadPollCss", "putToCacheError " + e.getMessage());
-                        }
+
                     }
-                    if (cacheObject.url.contains("widgets/poll.css")) {
-                        InAppStoryManager.showDLog("downloadPollCss", "success");
-                    }
+
                     useCaseCallback.onSuccess(fileState.file);
                 }
             };
 
-            if (cacheObject.url.contains("widgets/poll.css")) {
-                InAppStoryManager.showDLog("downloadPollCss", "downloadFile");
-            }
             core
                     .contentLoader()
                     .downloader()
