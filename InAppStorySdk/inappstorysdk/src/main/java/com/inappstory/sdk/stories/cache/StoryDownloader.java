@@ -20,6 +20,7 @@ import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.network.callbacks.SimpleApiCallback;
 import com.inappstory.sdk.network.models.RequestLocalParameters;
 import com.inappstory.sdk.network.models.Response;
+import com.inappstory.sdk.stories.api.models.CachedSessionData;
 import com.inappstory.sdk.stories.api.models.ContentIdWithIndex;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.core.network.content.models.Feed;
@@ -261,7 +262,7 @@ class StoryDownloader {
                     setStoryLoadType(key, 2);
                 }
             }
-            if (core.sessionManager().getSession().getSessionId().isEmpty()) {
+            if (((IASDataSettingsHolder)core.settingsAPI()).sessionIdOrEmpty().isEmpty()) {
                 if (!isRefreshing) {
                     isRefreshing = true;
                     core.sessionManager().openSession(
@@ -431,7 +432,7 @@ class StoryDownloader {
                                 core.statistic().profiling().setReady(loadStoriesUID);
                                 generateCommonLoadListError(null);
                                 callback.onError(message);
-                                closeSessionIf424(requestLocalParameters.sessionId());
+                                closeSessionIf424();
                                 loadUgcStoryList(callback, payload);
                             }
                         });
@@ -506,7 +507,7 @@ class StoryDownloader {
                                                 core.statistic().profiling().setReady(loadStoriesUID);
                                                 generateCommonLoadListError(null);
                                                 callback.onError(message);
-                                                closeSessionIf424(requestLocalParameters.sessionId());
+                                                closeSessionIf424();
                                                 if (retry)
                                                     loadStoryListByFeed(feed, callback, false);
                                             }
@@ -586,7 +587,7 @@ class StoryDownloader {
                                         core.statistic().profiling().setReady(loadStoriesUID);
                                         generateCommonLoadListError(null);
                                         callback.onError(message);
-                                        closeSessionIf424(requestLocalParameters.sessionId());
+                                        closeSessionIf424();
                                         if (retry)
                                             loadStoryList(callback, isFavorite, false);
                                     }
@@ -604,16 +605,18 @@ class StoryDownloader {
         );
     }
 
-    private void closeSessionIf424(final String sessionId) {
+    private void closeSessionIf424() {
         IASDataSettingsHolder dataSettingsHolder = (IASDataSettingsHolder) core.settingsAPI();
-        core.sessionManager().closeSession(
-                dataSettingsHolder.anonymous(),
-                dataSettingsHolder.sendStatistic(),
-                false,
-                dataSettingsHolder.lang().toLanguageTag(),
-                dataSettingsHolder.userId(),
-                dataSettingsHolder.anonymous() ? null : dataSettingsHolder.deviceId(),
-                sessionId
-        );
+        CachedSessionData cachedSessionData = dataSettingsHolder.sessionData();
+        if (cachedSessionData != null)
+            core.sessionManager().closeSession(
+                    cachedSessionData.anonymous,
+                    dataSettingsHolder.sendStatistic(),
+                    false,
+                    cachedSessionData.locale,
+                    cachedSessionData.userId,
+                    cachedSessionData.anonymous ? null : dataSettingsHolder.deviceId(),
+                    cachedSessionData.sessionId
+            );
     }
 }

@@ -2,6 +2,7 @@ package com.inappstory.sdk.stories.statistic;
 
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.IASStatistic;
 import com.inappstory.sdk.core.api.IASStatisticStoriesV1;
 import com.inappstory.sdk.core.utils.ConnectionCheck;
@@ -144,7 +145,7 @@ public class IASStatisticStoriesV1Impl implements IASStatisticStoriesV1 {
     @Override
     public void sendStatistic() {
 
-        final String sessionId = core.sessionManager().getSession().getSessionId();
+        final String sessionId = ((IASDataSettingsHolder)core.settingsAPI()).sessionIdOrEmpty();
         if (sessionId.isEmpty()) return;
         synchronized (openProcessLock) {
             if (statistic.isEmpty()) {

@@ -3,6 +3,7 @@ package com.inappstory.sdk.network.utils.headers;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
+import com.inappstory.sdk.stories.api.models.CachedSessionData;
 
 public class XUserIdHeader implements MutableHeader {
     @Override
@@ -19,7 +20,8 @@ public class XUserIdHeader implements MutableHeader {
         if (inAppStoryManager == null) return null;
         IASDataSettingsHolder settingsHolder =
                 (IASDataSettingsHolder) inAppStoryManager.iasCore().settingsAPI();
-        return settingsHolder.userId();
+        CachedSessionData sessionData = settingsHolder.sessionData();
+        return sessionData != null ? sessionData.userId : null;
     }
 
     @Override

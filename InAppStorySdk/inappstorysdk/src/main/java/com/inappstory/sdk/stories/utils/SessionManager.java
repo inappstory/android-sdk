@@ -38,6 +38,7 @@ import com.inappstory.sdk.utils.ISessionHolder;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 
 public class SessionManager {
@@ -49,8 +50,13 @@ public class SessionManager {
     }
 
     public void useOrOpenSession(OpenSessionCallback callback) {
-        checkOpenStatistic(callback);
+        checkOpenStatistic(callback, false);
     }
+
+    public void useOrOpenSession(OpenSessionCallback callback, boolean errorIfCachedDataIsDifferent) {
+        checkOpenStatistic(callback, errorIfCachedDataIsDifferent);
+    }
+
 
     public void addStaticOpenSessionCallback(IOpenSessionCallback callback) {
         synchronized (openProcessLock) {
@@ -65,7 +71,10 @@ public class SessionManager {
         return sessionHolder;
     }
 
-    public void checkOpenStatistic(final OpenSessionCallback callback) {
+    public void checkOpenStatistic(
+            final OpenSessionCallback callback,
+            final boolean errorIfCachedDataIsDifferent
+    ) {
         final boolean checkOpen;
         synchronized (openProcessLock) {
             checkOpen = openProcess;
@@ -74,10 +83,31 @@ public class SessionManager {
         new ConnectionCheck().check(core.appContext(), new ConnectionCheckCallback(core) {
             @Override
             public void success() {
-                String session = getSession().getSessionId();
+                String session = settingsHolder.sessionIdOrEmpty();
                 if (session.isEmpty() || checkOpen) {
                     openSession(callback);
                 } else {
+                    CachedSessionData sessionData = settingsHolder.sessionData();
+                    if (sessionData != null) {
+                        if (
+                                !Objects.equals(sessionData.userId, settingsHolder.userId())
+                                        ||
+                                        !Objects.equals(sessionData.locale, settingsHolder.lang().toLanguageTag())
+                        ) {
+                            if (errorIfCachedDataIsDifferent) callback.onError();
+                            final IASDataSettingsHolder dataSettingsHolder = (IASDataSettingsHolder) core.settingsAPI();
+                            final String deviceId = dataSettingsHolder.deviceId();
+                            UniqueSessionParameters currentSessionParameters = dataSettingsHolder.sessionParameters();
+                            core.settingsAPI().refreshSession(
+                                    sessionData.userId,
+                                    deviceId,
+                                    sessionData.locale != null ? Locale.forLanguageTag(sessionData.locale) : Locale.getDefault(),
+                                    currentSessionParameters.sendStatistic(),
+                                    currentSessionParameters.anonymous()
+                            );
+                            return;
+                        }
+                    }
                     callback.onSuccess(
                             new RequestLocalParameters()
                                     .sessionId(session)
@@ -133,6 +163,13 @@ public class SessionManager {
     }
 
     private void sessionIsSaved(final SessionResponse response) {
+        final IASDataSettingsHolder settingsHolder = ((IASDataSettingsHolder) core.settingsAPI());
+        final RequestLocalParameters rlp = new RequestLocalParameters()
+                .sessionId(response.session.id)
+                .userId(settingsHolder.userId())
+                .sendStatistic(settingsHolder.sendStatistic())
+                .anonymous(settingsHolder.anonymous())
+                .locale(settingsHolder.lang());
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
@@ -141,14 +178,7 @@ public class SessionManager {
                     openProcess = false;
                     for (OpenSessionCallback localCallback : callbacks)
                         if (localCallback != null)
-                            localCallback.onSuccess(
-                                    new RequestLocalParameters()
-                                            .sessionId(response.session.id)
-                                            .userId(settingsHolder.userId())
-                                            .sendStatistic(settingsHolder.sendStatistic())
-                                            .anonymous(settingsHolder.anonymous())
-                                            .locale(settingsHolder.lang())
-                            );
+                            localCallback.onSuccess(rlp);
                     callbacks.clear();
                 }
 
@@ -270,35 +300,27 @@ public class SessionManager {
                                     @Override
                                     public void onSuccess(SessionResponse response) {
                                         UniqueSessionParameters currentSessionParameters = dataSettingsHolder.sessionParameters();
-                                        String currentSession = getSession().getSessionId();
-                                        if (!Objects.equals(currentSessionParameters, initialSessionParameters)) {
-                                            closeSession(
-                                                    initialSessionParameters.anonymous(),
-                                                    initialSessionParameters.sendStatistic(),
-                                                    true,
-                                                    initialSessionParameters.locale(),
-                                                    initialSessionParameters.userId(),
-                                                    initialSessionParameters.anonymous() ? null : deviceId,
-                                                    currentSession
-                                            );
-                                            openSessionInner();
+                                        String currentSession = dataSettingsHolder.sessionIdOrEmpty();
+                                        if (reOpenSessionIfSettingsWereChanged(initialSessionParameters)) {
                                             return;
                                         }
                                         core.statistic().profiling().setReady(sessionOpenUID);
                                         CachedSessionData cachedSessionData = new CachedSessionData();
-                                        cachedSessionData.userId = currentSessionParameters.userId();
-                                        cachedSessionData.locale = currentSessionParameters.locale();
+                                        cachedSessionData.userId = initialSessionParameters.userId();
+                                        cachedSessionData.locale = initialSessionParameters.locale();
+                                        cachedSessionData.preloadGames = response.preloadGame;
                                         cachedSessionData.placeholders = response.placeholders;
                                         cachedSessionData.previewAspectRatio = response.getPreviewAspectRatio();
                                         cachedSessionData.isAllowUGC = response.isAllowUgc;
                                         cachedSessionData.sessionId = response.session.id;
+                                        cachedSessionData.anonymous = initialSessionParameters.anonymous();
                                         cachedSessionData.testKey = core.projectSettingsAPI().testKey();
                                         cachedSessionData.token = core.projectSettingsAPI().apiKey();
                                         cachedSessionData.tags =
                                                 TextUtils.join(",", dataSettingsHolder.tags());
                                         boolean isSendStatistic = dataSettingsHolder.sendStatistic() && !dataSettingsHolder.anonymous();
-                                        sessionHolder.setSession(cachedSessionData, !(isSendStatistic && response.isAllowStatV1));
-                                        core.network().setSessionId(response.session.id);
+                                        ((IASSettingsImpl) dataSettingsHolder).sessionData(cachedSessionData);
+                                        core.statistic().changeSession(cachedSessionData, !(isSendStatistic && response.isAllowStatV1));
                                         if (response.preloadGame)
                                             core.contentPreload().restartGamePreloader();
                                         saveSession(response);
@@ -362,6 +384,27 @@ public class SessionManager {
 
     }
 
+    private boolean reOpenSessionIfSettingsWereChanged(UniqueSessionParameters initialSessionParameters) {
+        final IASDataSettingsHolder dataSettingsHolder = (IASDataSettingsHolder) core.settingsAPI();
+        final String deviceId = dataSettingsHolder.deviceId();
+        UniqueSessionParameters currentSessionParameters = dataSettingsHolder.sessionParameters();
+        String currentSession = dataSettingsHolder.sessionIdOrEmpty();
+        if (!Objects.equals(currentSessionParameters, initialSessionParameters)) {
+            closeSession(
+                    initialSessionParameters.anonymous(),
+                    initialSessionParameters.sendStatistic(),
+                    true,
+                    initialSessionParameters.locale(),
+                    initialSessionParameters.userId(),
+                    initialSessionParameters.anonymous() ? null : deviceId,
+                    currentSession
+            );
+            openSessionInner();
+            return true;
+        }
+        return false;
+    }
+
     private void clearCaches() {
         core.storiesListVMHolder().clear();
         core.contentLoader().clearGames();
@@ -379,57 +422,59 @@ public class SessionManager {
     ) {
         if (oldSessionId == null) return;
         clearCaches();
-        core.statistic().storiesV1(oldSessionId, new GetStatisticV1Callback() {
-            @Override
-            public void get(@NonNull IASStatisticStoriesV1 manager) {
-                List<List<Object>> stat = new ArrayList<>(
-                        sendStatistic && !anonymous ?
-                                manager.extractCurrentStatistic() :
-                                new ArrayList<List<Object>>()
-                );
+        if (sendStatistic && !anonymous) {
+            core.statistic().storiesV1(oldSessionId, new GetStatisticV1Callback() {
+                @Override
+                public void get(@NonNull IASStatisticStoriesV1 manager) {
+                    List<List<Object>> stat = new ArrayList<>(manager.extractCurrentStatistic());
+                    final String sessionCloseUID =
+                            core.statistic().profiling().addTask("api_session_close");
+                    Log.e("statisticTests", "closeSession");
+                    core.network().enqueue(
+                            core.network().getApi().sessionClose(
+                                    new StatisticSendObject(
+                                            oldSessionId,
+                                            stat
+                                    ),
+                                    oldUserId,
+                                    oldDeviceId,
+                                    oldLang,
+                                    oldSessionId
+                            ),
+                            new NetworkCallback<SessionResponse>() {
+                                @Override
+                                public void onSuccess(SessionResponse response) {
+                                    core.statistic().profiling().setReady(sessionCloseUID, true);
+                                    if (changeSessionSettings) {
+                                        core.widgetViewModels().bannerPlaceViewModels().reloadSession();
+                                        core.inAppStoryService().getListReaderConnector().userIdChanged();
+                                    }
+                                }
 
-                final String sessionCloseUID =
-                        core.statistic().profiling().addTask("api_session_close");
-                Log.e("statisticTests", "closeSession");
-                core.network().enqueue(
-                        core.network().getApi().sessionClose(
-                                new StatisticSendObject(
-                                        oldSessionId,
-                                        stat
-                                ),
-                                oldUserId,
-                                oldDeviceId,
-                                oldLang
-                        ),
-                        new NetworkCallback<SessionResponse>() {
-                            @Override
-                            public void onSuccess(SessionResponse response) {
-                                core.statistic().profiling().setReady(sessionCloseUID, true);
-                                if (changeSessionSettings) {
-                                    core.widgetViewModels().bannerPlaceViewModels().reloadSession();
-                                    core.inAppStoryService().getListReaderConnector().userIdChanged();
+                                @Override
+                                public Type getType() {
+                                    return SessionResponse.class;
+                                }
+
+                                @Override
+                                public void errorDefault(String message) {
+                                    core.statistic().profiling().setReady(sessionCloseUID);
+                                    if (changeSessionSettings) {
+                                        core.inAppStoryService().getListReaderConnector().userIdChanged();
+                                        core.widgetViewModels().bannerPlaceViewModels().reloadSession();
+                                    }
                                 }
                             }
-
-                            @Override
-                            public Type getType() {
-                                return SessionResponse.class;
-                            }
-
-                            @Override
-                            public void errorDefault(String message) {
-                                core.statistic().profiling().setReady(sessionCloseUID);
-                                if (changeSessionSettings) {
-                                    core.inAppStoryService().getListReaderConnector().userIdChanged();
-                                    core.widgetViewModels().bannerPlaceViewModels().reloadSession();
-                                }
-                            }
-                        }
-                );
+                    );
+                }
+            });
+            core.statistic().clearSession(oldSessionId);
+        } else {
+            core.statistic().clearSession(oldSessionId);
+            if (changeSessionSettings) {
+                core.inAppStoryService().getListReaderConnector().userIdChanged();
             }
-        });
-        core.network().removeSessionId(oldSessionId);
-        sessionHolder.clear(oldSessionId);
+        }
     }
 
 }

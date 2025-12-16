@@ -24,6 +24,7 @@ import com.inappstory.sdk.inappmessage.domain.stedata.SlideInCacheData;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.network.models.Response;
+import com.inappstory.sdk.stories.api.models.CachedSessionData;
 import com.inappstory.sdk.stories.api.models.ContentId;
 import com.inappstory.sdk.stories.api.models.ContentIdWithIndex;
 import com.inappstory.sdk.stories.api.models.ContentType;
@@ -465,10 +466,13 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
     public void setLocalUserData(String data, boolean sendToServer) {
         IAMReaderState readerState = readerViewModel.getCurrentState();
         if (readerState == null) return;
+        IASDataSettingsHolder settingsHolder = ((IASDataSettingsHolder) core.settingsAPI());
+        CachedSessionData sessionData = settingsHolder.sessionData();
+        if (sessionData == null) return;
         synchronized (localDataLock) {
             core.keyValueStorage().saveString("iam" +
                     readerState.iamId + "__" +
-                    ((IASDataSettingsHolder) core.settingsAPI()).userId(), data);
+                    sessionData.userId, data);
         }
         if (core.statistic().iamV1().softDisabled()) return;
         if (sendToServer) {
@@ -495,10 +499,13 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
     private final Object localDataLock = new Object();
 
     public String getLocalUserData() {
+        IASDataSettingsHolder settingsHolder = ((IASDataSettingsHolder) core.settingsAPI());
+        CachedSessionData sessionData = settingsHolder.sessionData();
+        if (sessionData == null) return "";
         synchronized (localDataLock) {
             String res = core.keyValueStorage().getString("iam" +
                     readerViewModel.getCurrentState().iamId
-                    + "__" + ((IASDataSettingsHolder) core.settingsAPI()).userId());
+                    + "__" + sessionData.userId);
             return res == null ? "" : res;
         }
     }

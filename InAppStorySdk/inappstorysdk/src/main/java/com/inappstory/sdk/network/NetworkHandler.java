@@ -1,6 +1,5 @@
 package com.inappstory.sdk.network;
 
-import android.content.Context;
 import android.util.Pair;
 
 
@@ -50,29 +49,9 @@ import java.util.Objects;
 
 public final class NetworkHandler implements InvocationHandler {
 
-    Context appContext;
+
     String baseUrl;
-    String sessionId;
     private final IASCore core;
-    private final Object sessionLock = new Object();
-
-    public void setSessionId(String sessionId) {
-        synchronized (sessionLock) {
-            this.sessionId = sessionId;
-        }
-    }
-
-    public void removeSessionId(String sessionId) {
-        synchronized (sessionLock) {
-            if (sessionId == null) return;
-            if (Objects.equals(sessionId, this.sessionId))
-                this.sessionId = null;
-        }
-    }
-
-    public String getBaseUrl() {
-        return baseUrl;
-    }
 
     public NetworkHandler(String baseUrl, IASCore core) {
         this.baseUrl = baseUrl;
@@ -195,13 +174,12 @@ public final class NetworkHandler implements InvocationHandler {
                 }
             }
             if (!hasSessionReplace) {
-                synchronized (sessionLock) {
-                    if (sessionId != null && !sessionId.isEmpty()) {
-                        resHeaders.add(new AuthSessionIdHeader(sessionId));
-                    } else {
-                        InAppStoryManager.showDLog("AdditionalLog", "Session not set");
-                        throw new RuntimeException("Wrong session");
-                    }
+                String session = dataSettingsHolder.sessionIdOrEmpty();
+                if (session.isEmpty()) {
+                    InAppStoryManager.showDLog("AdditionalLog", "Session not set");
+                    throw new RuntimeException("Wrong session");
+                } else {
+                    resHeaders.add(new AuthSessionIdHeader(session));
                 }
             }
         }
@@ -237,7 +215,7 @@ public final class NetworkHandler implements InvocationHandler {
                 }
                 if (header.getKey().equals(HeadersKeys.USER_ID)) {
                     if (header.getValue() != null)
-                        ((MutableHeader) header).setValue(new UrlEncoder().encode(header.getValue()));
+                        ((MutableHeader) header).setValue(header.getValue());
                 }
             }
         }

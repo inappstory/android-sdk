@@ -74,6 +74,9 @@ import com.inappstory.sdk.inner.share.InnerShareFilesPrepare;
 import com.inappstory.sdk.inner.share.ShareFilesPrepareCallback;
 import com.inappstory.sdk.memcache.IGetBitmapFromMemoryCache;
 import com.inappstory.sdk.network.JsonParser;
+import com.inappstory.sdk.network.models.RequestLocalParameters;
+import com.inappstory.sdk.stories.api.models.CachedSessionData;
+import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ContentData;
 import com.inappstory.sdk.inappmessage.InAppMessageData;
 import com.inappstory.sdk.stories.ui.widgets.TouchFrameLayout;
@@ -1097,7 +1100,17 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                                         } catch (Exception ignored) {
 
                                         }
-                                        replaceConfigs((IASDataSettingsHolder) core.settingsAPI());
+                                        core.sessionManager().useOrOpenSession(new OpenSessionCallback() {
+                                            @Override
+                                            public void onSuccess(RequestLocalParameters sessionId) {
+                                                replaceConfigs((IASDataSettingsHolder) core.settingsAPI());
+                                            }
+
+                                            @Override
+                                            public void onError() {
+
+                                            }
+                                        });
                                     }
                                 });
                             }
@@ -1118,7 +1131,13 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
 
                             @Override
                             public void onSuccess(final FilePathAndContent result) {
-                                core.contentPreload().resumeGamePreloader();
+                                CachedSessionData sessionData = ((IASDataSettingsHolder) core.settingsAPI()).sessionData();
+                                if (sessionData == null) {
+                                    gameLoadedErrorCallback.onError(null, "No session found");
+                                    return;
+                                }
+                                if (sessionData.preloadGames)
+                                    core.contentPreload().resumeGamePreloader();
                                 webView.post(new Runnable() {
                                     @Override
                                     public void run() {
@@ -1210,11 +1229,12 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                 return "{}";
             }
             IASDataSettingsHolder dataSettingsHolder = ((IASDataSettingsHolder) core.settingsAPI());
+            CachedSessionData sessionData = dataSettingsHolder.sessionData();
             options.apiBaseUrl = core.network().getBaseUrl();
             options.deviceId = dataSettingsHolder.deviceId();
-            if (dataSettingsHolder.userId() != null)
+            if (sessionData != null && sessionData.userId != null)
                 options.userId = StringsUtils.getEscapedString(
-                        new UrlEncoder().encode(dataSettingsHolder.userId())
+                        new UrlEncoder().encode(sessionData.userId)
                 );
             else
                 options.userId = "";
@@ -1222,7 +1242,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
             options.userAgent = StringsUtils.getEscapedString(
                     core.network().userAgent()
             );
-            options.sessionId = core.sessionManager().getSession().getSessionId();
+            options.sessionId = sessionData != null && sessionData.sessionId != null ? sessionData.sessionId : "";
             options.apiKey = core.projectSettingsAPI().apiKey();
             options.placeholders = generatePlaceholders(dataSettingsHolder);
             options.userExtraOptions = JsonParser.stringMapToEscapedObjMap(

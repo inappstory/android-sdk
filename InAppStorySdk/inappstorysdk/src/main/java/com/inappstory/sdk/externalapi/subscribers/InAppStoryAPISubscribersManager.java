@@ -140,7 +140,7 @@ public class InAppStoryAPISubscribersManager {
         }
         currentStoryCover.setOpened(true);
         core.storyListCache().saveStoryOpened(coverId, ContentType.STORY);
-        String sessionId = core.sessionManager().getSession().getSessionId();
+        String sessionId = ((IASDataSettingsHolder)core.settingsAPI()).sessionIdOrEmpty();
         if (currentStoryCover.deeplink() != null && !currentStoryCover.deeplink().isEmpty()) {
             service.getListReaderConnector().changeStory(coverId, uniqueKey, false);
 
@@ -513,7 +513,7 @@ public class InAppStoryAPISubscribersManager {
             subscriber.updateStoriesData(
                     storyAPIData,
                     new IASStoryListSessionData().previewAspectRatio(
-                            core.sessionManager().getSession().sessionData().previewAspectRatio
+                            ((IASDataSettingsHolder)core.settingsAPI()).sessionData().previewAspectRatio
                     )
             );
         }
@@ -575,7 +575,7 @@ public class InAppStoryAPISubscribersManager {
                     subscriber.updateStoryData(
                             data,
                             new IASStoryListSessionData().previewAspectRatio(
-                                    core.sessionManager().getSession().sessionData().previewAspectRatio
+                                    ((IASDataSettingsHolder)core.settingsAPI()).sessionData().previewAspectRatio
                             )
                     );
                 }
@@ -643,7 +643,7 @@ public class InAppStoryAPISubscribersManager {
                 subscriber.updateStoriesData(
                         newData,
                         new IASStoryListSessionData().previewAspectRatio(
-                                core.sessionManager().getSession().sessionData().previewAspectRatio
+                                ((IASDataSettingsHolder)core.settingsAPI()).sessionData().previewAspectRatio
                         )
                 );
             }

@@ -7,6 +7,7 @@ import android.webkit.JavascriptInterface;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
+import com.inappstory.sdk.stories.api.models.CachedSessionData;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
 
 
@@ -54,8 +55,10 @@ public class GameJSInterface {
         String id = gameInstanceId;
         if (id == null) id = manager.gameCenterId;
         if (id == null) return "";
+        CachedSessionData sessionData = settingsHolder.sessionData();
+        if (sessionData == null) return "";
         String res = core.keyValueStorage().getString("gameInstance_" + id
-                + "__" + settingsHolder.userId());
+                + "__" + sessionData.userId);
         return res == null ? "" : res;
     }
 

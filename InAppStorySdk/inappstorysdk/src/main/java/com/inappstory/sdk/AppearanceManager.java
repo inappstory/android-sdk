@@ -11,6 +11,7 @@ import android.widget.FrameLayout;
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.banners.ui.list.DefaultBannerListAppearance;
+import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.banners.ICustomBannerListAppearance;
 import com.inappstory.sdk.core.ui.widgets.customicons.IASDefaultAppearanceIcons;
 import com.inappstory.sdk.core.ui.widgets.customicons.IASDefaultIconCreator;
@@ -257,8 +258,8 @@ public class AppearanceManager {
             return 1f * csListItemHeight / csListItemWidth;
         if (csListItemRatio != null && csListItemRatio > 0) return csListItemRatio;
         InAppStoryManager manager = InAppStoryManager.getInstance();
-        CachedSessionData sessionData = manager.iasCore().sessionManager()
-                .getSession().sessionData();
+        CachedSessionData sessionData = ((IASDataSettingsHolder) manager.iasCore().settingsAPI())
+                .sessionData();
         if (sessionData != null) return sessionData.previewAspectRatio;
         return 1f;
     }

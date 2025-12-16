@@ -209,4 +209,15 @@ public class IASSettingsExternalAPIImpl implements IASDataSettings {
             }
         });
     }
+
+    @Override
+    public void refreshSession(
+            String currentUserId,
+            String currentDeviceId,
+            Locale currentLang,
+            boolean sendStatistic,
+            boolean anonymous
+    ) {
+
+    }
 }

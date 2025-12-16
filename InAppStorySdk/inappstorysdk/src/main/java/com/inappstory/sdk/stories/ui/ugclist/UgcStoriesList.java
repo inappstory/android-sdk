@@ -385,7 +385,7 @@ public class UgcStoriesList extends RecyclerView {
                     core.statistic().storiesV1(
                             manager != null ?
                                     manager.currentSessionId :
-                                    core.sessionManager().getSession().getSessionId(),
+                                    ((IASDataSettingsHolder)core.settingsAPI()).sessionIdOrEmpty(),
                             new GetStatisticV1Callback() {
                                 @Override
                                 public void get(@NonNull IASStatisticStoriesV1 statisticV1) {

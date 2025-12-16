@@ -698,7 +698,7 @@ public class StoriesList extends RecyclerView {
                     core.statistic().storiesV1(
                             manager != null ?
                                     manager.currentSessionId :
-                                    core.sessionManager().getSession().getSessionId(),
+                                    ((IASDataSettingsHolder)core.settingsAPI()).sessionIdOrEmpty(),
                             new GetStatisticV1Callback() {
                                 @Override
                                 public void get(@NonNull IASStatisticStoriesV1 manager) {
@@ -862,8 +862,10 @@ public class StoriesList extends RecyclerView {
                     setLayoutDirection(configuration.getLayoutDirection());
                 }
                 if (manager != null) {
-                    if (!Objects.equals(manager.currentSessionId, core.sessionManager().getSession().getSessionId()))
-                        manager.currentSessionId = core.sessionManager().getSession().getSessionId();
+                    String settingsSession = dataSettingsHolder.sessionIdOrEmpty();
+                    if (!Objects.equals(manager.currentSessionId, settingsSession)) {
+                        manager.currentSessionId = settingsSession;
+                    }
                 }
                 final AppearanceManager appearanceManager = getAppearanceManager();
                 setOverScrollMode(appearanceManager.csListOverscroll() ?

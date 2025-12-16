@@ -352,7 +352,8 @@ public interface ApiInterface {
             @Body StatisticSendObject request,
             @ReplaceHeader(HeadersKeys.USER_ID) String xUserId,
             @ReplaceHeader(HeadersKeys.DEVICE_ID) String xDeviceId,
-            @ReplaceHeader(HeadersKeys.ACCEPT_LANGUAGE) String lang
+            @ReplaceHeader(HeadersKeys.ACCEPT_LANGUAGE) String lang,
+            @ReplaceHeader(HeadersKeys.AUTH_SESSION_ID) String xSessionId
     );
 
 }

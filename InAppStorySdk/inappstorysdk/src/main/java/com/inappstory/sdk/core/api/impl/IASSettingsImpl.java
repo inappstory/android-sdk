@@ -16,6 +16,7 @@ import com.inappstory.sdk.core.data.IAppVersion;
 import com.inappstory.sdk.core.data.IInAppStoryUserSettings;
 import com.inappstory.sdk.core.data.models.UniqueSessionParameters;
 import com.inappstory.sdk.externalapi.ExternalPlatforms;
+import com.inappstory.sdk.stories.api.models.CachedSessionData;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
 import com.inappstory.sdk.core.network.content.models.StoryPlaceholder;
@@ -54,11 +55,36 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
 
     private final Map<String, String> sessionPlaceholders = new HashMap<>();
     private final Map<String, ImagePlaceholderValue> sessionImagePlaceholders = new HashMap<>();
+    private CachedSessionData cachedSessionData = null;
 
     public final static int TAG_LIMIT = 4000;
 
     public IASSettingsImpl(IASCore core) {
         this.core = core;
+    }
+
+    public void sessionData(CachedSessionData sessionData) {
+        synchronized (settingsLock) {
+            cachedSessionData = sessionData;
+        }
+    }
+
+    @Override
+    public String sessionId() {
+        synchronized (settingsLock) {
+            if (cachedSessionData != null) {
+                return cachedSessionData.sessionId;
+            } else {
+                return null;
+            }
+        }
+    }
+
+    @Override
+    public String sessionIdOrEmpty() {
+        String sessionId = sessionId();
+        if (sessionId == null) return "";
+        return sessionId;
     }
 
     @Override
@@ -122,6 +148,14 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
     }
 
     @Override
+    public CachedSessionData sessionData() {
+        synchronized (settingsLock) {
+            return cachedSessionData;
+        }
+    }
+
+
+    @Override
     public String userIdOrAnonymous() {
         synchronized (settingsLock) {
             if (anonymous) return "IAS_ANONYMOUS";
@@ -148,14 +182,15 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
         }
     }
 
-    private void refreshSession(
+    public void refreshSession(
             final String currentUserId,
             final String currentDeviceId,
             final Locale currentLang,
             final boolean sendStatistic,
             final boolean anonymous
     ) {
-        final String sessionId = core.sessionManager().getSession().getSessionId();
+        final String sessionId = sessionId();
+        sessionData(null);
         core.storiesListVMHolder().clear();
         core.storyListCache().clearLocalOpensKey();
         core.screensManager().forceCloseAllReaders(new ForceCloseReaderCallback() {
@@ -453,7 +488,7 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
             this.anonymous = false;
             this.lang = Locale.getDefault();
         }
-        final String sessionId = core.sessionManager().getSession().getSessionId();
+        final String sessionId = sessionId();
         if (sessionId != null) {
             core.sessionManager().closeSession(
                     currentAnonymous,

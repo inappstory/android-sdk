@@ -15,6 +15,7 @@ import com.inappstory.sdk.core.api.IASStatisticProfiling;
 import com.inappstory.sdk.network.models.Request;
 import com.inappstory.sdk.network.utils.GetUrl;
 import com.inappstory.sdk.network.utils.UserAgent;
+import com.inappstory.sdk.stories.api.models.CachedSessionData;
 import com.inappstory.sdk.stories.utils.LoopedExecutor;
 
 import java.net.HttpURLConnection;
@@ -63,9 +64,10 @@ public class IASStatisticProfilingImpl implements IASStatisticProfiling {
                 (IASDataSettingsHolder) core.settingsAPI();
         String hash = randomUUID().toString();
         ProfilingTask task = new ProfilingTask();
-        task.sessionId = core.sessionManager().getSession().getSessionId();
-        task.isAllowToForceSend = !disabled;
-        task.userId = settingsHolder.userId();
+        CachedSessionData sessionData = settingsHolder.sessionData();
+        task.sessionId = ((IASDataSettingsHolder) core.settingsAPI()).sessionIdOrEmpty();
+        task.isAllowToForceSend = !(disabled || softDisabled);
+        task.userId = sessionData != null ? sessionData.userId : "";
         task.uniqueHash = hash;
         task.name = name;
         task.startTime = System.currentTimeMillis();
@@ -167,7 +169,7 @@ public class IASStatisticProfilingImpl implements IASStatisticProfiling {
     private void sendTiming(ProfilingTask task) throws Exception {
         Map<String, String> qParams = new HashMap<>();
         qParams.put("s", (task.sessionId != null && !task.sessionId.isEmpty()) ? task.sessionId :
-                core.sessionManager().getSession().getSessionId());
+                ((IASDataSettingsHolder)core.settingsAPI()).sessionIdOrEmpty());
         qParams.put("u", task.userId != null ? task.userId : "");
         String cc = getCC();
         qParams.put("ts", "" + System.currentTimeMillis() / 1000);

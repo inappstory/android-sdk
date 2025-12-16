@@ -14,5 +14,8 @@ public class CachedSessionData {
     public String sessionId;
     public String testKey;
     public String token;
+    public boolean anonymous;
     public boolean isAllowUGC;
+    public boolean preloadGames;
+
 }

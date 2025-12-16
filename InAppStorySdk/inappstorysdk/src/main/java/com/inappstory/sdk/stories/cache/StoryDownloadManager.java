@@ -11,6 +11,7 @@ import com.inappstory.sdk.core.data.IReaderContent;
 import com.inappstory.sdk.core.ui.screens.IReaderSlideViewModel;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.network.models.RequestLocalParameters;
+import com.inappstory.sdk.stories.api.models.CachedSessionData;
 import com.inappstory.sdk.stories.api.models.ContentIdWithIndex;
 import com.inappstory.sdk.core.network.content.models.Image;
 import com.inappstory.sdk.stories.api.models.ContentType;
@@ -26,6 +27,7 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 
 public class StoryDownloadManager {
     private final IASCore core;
@@ -277,6 +279,9 @@ public class StoryDownloadManager {
         SimpleListCallback loadCallback = new SimpleListCallback() {
             @Override
             public void onSuccess(final List<Story> stories, Object... args) {
+                IASDataSettingsHolder dataSettingsHolder = (IASDataSettingsHolder) core.settingsAPI();
+                CachedSessionData cachedSessionData = dataSettingsHolder.sessionData();
+                if (cachedSessionData == null) return;
 
                 String feedId = null;
                 final ContentType type = ContentType.STORY;
@@ -291,13 +296,13 @@ public class StoryDownloadManager {
                 }
                 setLocalsOpened(ContentType.STORY);
                 boolean loadFav = loadFavorite;
-                IASDataSettingsHolder dataSettingsHolder = (IASDataSettingsHolder) core.settingsAPI();
+
                 RequestLocalParameters requestLocalParameters = new RequestLocalParameters()
-                        .sessionId(core.sessionManager().getSession().getSessionId())
-                        .userId(dataSettingsHolder.userId())
+                        .sessionId(cachedSessionData.sessionId)
+                        .userId(cachedSessionData.userId)
                         .sendStatistic(dataSettingsHolder.sendStatistic())
-                        .anonymous(dataSettingsHolder.anonymous())
-                        .locale(dataSettingsHolder.lang());
+                        .anonymous(cachedSessionData.anonymous)
+                        .locale(Locale.forLanguageTag(cachedSessionData.locale));
 
                 if (args != null && args.length > 0) {
                     int shift = 0;

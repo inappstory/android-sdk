@@ -128,7 +128,7 @@ public class StoriesViewManager {
                 cartUpdateJSData.offer,
                 new ProductCartUpdatedProcessCallback() {
                     @Override
-                    public void onSuccess(ProductCart productCart) {
+                    public void onSuccess(final ProductCart productCart) {
                         new Handler(Looper.getMainLooper()).post(new Runnable() {
                             @Override
                             public void run() {
@@ -163,7 +163,7 @@ public class StoriesViewManager {
         pageManager.cartGetState(
                 new ProductCartUpdatedProcessCallback() {
                     @Override
-                    public void onSuccess(ProductCart productCart) {
+                    public void onSuccess(final ProductCart productCart) {
                         new Handler(Looper.getMainLooper()).post(new Runnable() {
                             @Override
                             public void run() {
@@ -770,7 +770,7 @@ public class StoriesViewManager {
                     core.network().getApi().sendStoryData(
                             Integer.toString(storyId),
                             data,
-                            core.sessionManager().getSession().getSessionId()
+                            ((IASDataSettingsHolder)core.settingsAPI()).sessionIdOrEmpty()
                     ),
                     new NetworkCallback<Response>() {
                         @Override
@@ -804,7 +804,7 @@ public class StoriesViewManager {
                 core.network().getApi().sendStoryData(
                         Integer.toString(storyId),
                         data,
-                        core.sessionManager().getSession().getSessionId()
+                        ((IASDataSettingsHolder)core.settingsAPI()).sessionIdOrEmpty()
                 ),
                 new NetworkCallback<Response>() {
                     @Override

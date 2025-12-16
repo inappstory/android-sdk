@@ -6,6 +6,7 @@ import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.core.data.IAppVersion;
 import com.inappstory.sdk.core.data.models.UniqueSessionParameters;
+import com.inappstory.sdk.stories.api.models.CachedSessionData;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
 
 import java.util.List;
@@ -20,6 +21,9 @@ public interface IASDataSettingsHolder {
     String userIdOrAnonymous();
     String userSign();
     boolean anonymous();
+    CachedSessionData sessionData();
+    String sessionId();
+    String sessionIdOrEmpty();
     Locale lang();
     boolean changeLayoutDirection();
     boolean isSoundOn();

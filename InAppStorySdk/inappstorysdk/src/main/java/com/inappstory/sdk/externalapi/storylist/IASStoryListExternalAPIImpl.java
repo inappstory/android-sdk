@@ -10,6 +10,7 @@ import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
+import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.IASStoryList;
 
 import java.util.List;
@@ -78,7 +79,7 @@ public class IASStoryListExternalAPIImpl implements IASStoryList {
                     @Override
                     public void use(@NonNull InAppStoryService service) throws Exception {
                         service.getApiSubscribersManager().updateVisiblePreviews(
-                                core.sessionManager().getSession().getSessionId(),
+                                ((IASDataSettingsHolder)core.settingsAPI()).sessionIdOrEmpty(),
                                 storyIds,
                                 uniqueId
                         );

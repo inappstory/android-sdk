@@ -7,6 +7,7 @@ import android.os.Looper;
 
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.ui.screens.holder.IScreensHolder;
 import com.inappstory.sdk.core.ui.screens.launcher.ILaunchScreenCallback;
 import com.inappstory.sdk.core.ui.screens.launcher.LaunchScreenStrategy;
@@ -75,7 +76,7 @@ public class LaunchStoryScreenStrategy implements LaunchScreenStrategy {
             cantBeOpened = true;
             message = "No reader settings.";
         }
-        if (core.sessionManager().getSession().getSessionId().isEmpty()) {
+        if (((IASDataSettingsHolder)core.settingsAPI()).sessionIdOrEmpty().isEmpty()) {
             cantBeOpened = true;
             message = "User not authorized";
         }
