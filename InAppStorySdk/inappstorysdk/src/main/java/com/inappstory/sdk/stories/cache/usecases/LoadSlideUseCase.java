@@ -1,6 +1,7 @@
 package com.inappstory.sdk.stories.cache.usecases;
 
 
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.data.IResource;
 import com.inappstory.sdk.stories.cache.DownloadFileState;
@@ -41,6 +42,7 @@ public class LoadSlideUseCase {
                             url
                     );
             DownloadFileState state = useCase.getFile();
+            InAppStoryManager.showDLog("InAppStory_Network", "downloadStaticFile " + url);
             return (state != null && state.getFullFile() != null);
         } catch (Exception e) {
             return false;

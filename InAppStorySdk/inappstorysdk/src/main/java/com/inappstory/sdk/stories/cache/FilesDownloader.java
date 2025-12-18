@@ -90,14 +90,10 @@ public class FilesDownloader {
     ) throws Exception {
         DownloadFileState state = null;
         FilesDownloadManager manager = core.contentLoader().filesDownloadManager();
-        if (url.contains("widgets/poll.css")) {
-            InAppStoryManager.showDLog("downloadPollCss", "check " + url);
-        }
+
         if (manager != null && !manager.addFinishCallback(url, finishCallback))
             return null;
-        if (url.contains("widgets/poll.css")) {
-            InAppStoryManager.showDLog("downloadPollCss", "load " + url);
-        }
+
         outputFile.getParentFile().mkdirs();
         if (!outputFile.exists())
             outputFile.createNewFile();

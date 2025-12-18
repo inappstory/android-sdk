@@ -1,14 +1,9 @@
 package com.inappstory.sdk.inappmessage.domain.reader;
 
 
-import static android.content.Context.CLIPBOARD_SERVICE;
-
-import android.content.ClipData;
-import android.content.ClipboardManager;
-import android.util.Log;
-
 import androidx.annotation.NonNull;
 
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
@@ -247,6 +242,7 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
     }
 
     public void storyLoaded() {
+        InAppStoryManager.showDLog("InAppStory_Network", "Show In-App Message (Rendered)");
         readerViewModel.updateCurrentLoadState(IAMReaderLoadStates.LOADED);
         slideStateObservable.updateValue(
                 slideStateObservable
@@ -257,6 +253,7 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
     }
 
     public void storyLoaded(String data) {
+        InAppStoryManager.showDLog("InAppStory_Network", "Show In-App Message (Rendered)");
         readerViewModel.updateCurrentLoadState(IAMReaderLoadStates.LOADED);
         slideStateObservable.updateValue(
                 slideStateObservable

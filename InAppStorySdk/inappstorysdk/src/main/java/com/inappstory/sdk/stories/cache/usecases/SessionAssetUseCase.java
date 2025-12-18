@@ -71,7 +71,7 @@ public class SessionAssetUseCase extends GetCacheFileUseCase<Void> {
                     useCaseCallback.onSuccess(fileState.file);
                 }
             };
-
+            InAppStoryManager.showDLog("InAppStory_Network", "Download bundle asset: " + cacheObject.url);
             core
                     .contentLoader()
                     .downloader()

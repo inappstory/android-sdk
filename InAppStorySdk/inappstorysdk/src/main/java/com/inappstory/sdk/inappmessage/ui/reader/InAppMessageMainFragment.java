@@ -146,6 +146,7 @@ public class InAppMessageMainFragment extends Fragment implements Observer<IAMRe
         if (!contentIsPreloaded)
             contentContainer.showLoader();
         contentContainer.showWithAnimation();
+        InAppStoryManager.showDLog("InAppStory_Network", "Show In-App Message (Container)");
     }
 
     public void hideContainerWithAnimation() {
