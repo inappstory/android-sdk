@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Point;
 import android.os.Build;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.Display;
 import android.view.WindowManager;
 
@@ -84,13 +85,13 @@ public class Sizes {
         if (localContext != null) {
             isTablet = localContext.getResources().getBoolean(R.bool.isTablet);
             if (!isTablet) {
-                Point size = Sizes.getScreenSize(localContext);
-                float prop = 1f * size.y / size.x;
-                if (prop < 16 / 9f) {
+                float prop = 1f * getFullPhoneHeight(localContext) / getFullPhoneWidth(localContext);
+                if (prop < 1.5) {
                     isTablet = true;
                 }
             }
         }
+
         return isTablet;
     }
 
