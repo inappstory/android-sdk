@@ -84,8 +84,9 @@ public class Sizes {
         if (localContext != null) {
             isTablet = localContext.getResources().getBoolean(R.bool.isTablet);
             if (!isTablet) {
-                Point size = Sizes.getScreenSize(localContext);
-                if (1f * size.y / size.x < 16/9f) {
+                float prop = 1f * getFullPhoneHeight(localContext) /
+                        getFullPhoneWidth(localContext);
+                if (prop < 1.5) {
                     isTablet = true;
                 }
             }

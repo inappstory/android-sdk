@@ -762,8 +762,11 @@ public class StoriesActivity extends IASActivity implements BaseStoryScreen, Sho
         ContentIdWithIndex idWithIndex = null;
         if (storiesContentFragment != null && story[0] != null) {
             ReaderManager readerManager = storiesContentFragment.readerManager;
-            if (readerManager != null)
-                idWithIndex = readerManager.getByIdAndIndex(story[0].id()).copy();
+            if (readerManager != null) {
+                ContentIdWithIndex localIndex = readerManager.getByIdAndIndex(story[0].id());
+                if (localIndex != null)
+                    idWithIndex = localIndex.copy();
+            }
         }
         cleanReader();
         new Handler(Looper.getMainLooper()).post(new Runnable() {

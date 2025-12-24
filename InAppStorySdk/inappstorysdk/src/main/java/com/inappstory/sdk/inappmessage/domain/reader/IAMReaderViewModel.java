@@ -34,20 +34,22 @@ public class IAMReaderViewModel implements IIAMReaderViewModel {
         if (readerState != null) {
             InAppMessageData inAppMessageData = readerState.inAppMessageData;
             if (inAppMessageData == null) {
-                IInAppMessage inAppMessage = (IInAppMessage) core
-                        .contentHolder()
-                        .readerContent()
-                        .getByIdAndType(
-                                readerState.iamId,
-                                ContentType.IN_APP_MESSAGE
+                if (readerState.iamId != null) {
+                    IInAppMessage inAppMessage = (IInAppMessage) core
+                            .contentHolder()
+                            .readerContent()
+                            .getByIdAndType(
+                                    readerState.iamId,
+                                    ContentType.IN_APP_MESSAGE
+                            );
+                    if (inAppMessage != null) {
+                        return new InAppMessageData(
+                                inAppMessage.id(),
+                                inAppMessage.statTitle(),
+                                readerState.event,
+                                readerState.sourceType
                         );
-                if (inAppMessage != null) {
-                    return new InAppMessageData(
-                            inAppMessage.id(),
-                            inAppMessage.statTitle(),
-                            readerState.event,
-                            readerState.sourceType
-                    );
+                    }
                 }
             } else {
                 return inAppMessageData;
