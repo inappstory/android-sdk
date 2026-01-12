@@ -8,8 +8,12 @@ import com.inappstory.sdk.stories.outercallbacks.common.gamereader.GameReaderCal
 
 public interface IASGames {
     void close();
+
     void open(@NonNull Context context, String gameId);
+
     void callback(GameReaderCallback gameReaderCallback);
+
     void preloadGames();
+
     boolean gameCanBeOpened(String gameId);
 }

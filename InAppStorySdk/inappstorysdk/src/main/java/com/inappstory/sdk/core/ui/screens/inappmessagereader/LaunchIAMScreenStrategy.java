@@ -10,6 +10,7 @@ import androidx.fragment.app.FragmentManager;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.core.CancellationTokenWithStatus;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.data.IInAppMessage;
@@ -60,6 +61,7 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
     private InAppMessageScreenActions inAppMessageScreenActions;
     private FragmentManager parentContainerFM;
     private int containerId;
+    private CancellationTokenWithStatus cancellationToken;
 
     public LaunchIAMScreenStrategy(IASCore core) {
         this.core = core;
@@ -67,6 +69,11 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
 
     public LaunchIAMScreenStrategy inAppMessageOpenSettings(InAppMessageOpenSettings inAppMessageOpenSettings) {
         this.inAppMessageOpenSettings = inAppMessageOpenSettings;
+        return this;
+    }
+
+    public LaunchIAMScreenStrategy cancellationToken(CancellationTokenWithStatus cancellationToken) {
+        this.cancellationToken = cancellationToken;
         return this;
     }
 
@@ -333,13 +340,16 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
     ) {
         boolean cantBeOpened = screensHolder.hasActiveScreen();
         final IAMScreenHolder currentScreenHolder = screensHolder.getIAMScreenHolder();
+        if (cancellationToken != null && cancellationToken.cancelled()) {
+            return;
+        }
         if (cantBeOpened) {
             String message = "InAppMessage reader can't be opened. Please, close another opened reader first.";
             launchScreenError(message);
             return;
         }
         currentScreenHolder.startLaunchProcess();
-        cantBeOpened = ((IASDataSettingsHolder)core.settingsAPI()).sessionIdOrEmpty().isEmpty();
+        cantBeOpened = ((IASDataSettingsHolder) core.settingsAPI()).sessionIdOrEmpty().isEmpty();
         if (cantBeOpened) {
             String message = "Session is not opened.";
             launchScreenError(message);

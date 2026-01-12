@@ -7,6 +7,7 @@ import android.content.Context;
 import androidx.fragment.app.FragmentManager;
 
 import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.core.CancellationTokenWithStatus;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
@@ -44,6 +45,7 @@ public class IASInAppMessageImpl implements IASInAppMessage {
 
     @Override
     public void show(
+            CancellationTokenWithStatus cancellationToken,
             InAppMessageOpenSettings openData,
             FragmentManager fragmentManager,
             int containerId,
@@ -62,6 +64,7 @@ public class IASInAppMessageImpl implements IASInAppMessage {
         core.screensManager().openScreen(
                 null,
                 new LaunchIAMScreenStrategy(core)
+                        .cancellationToken(cancellationToken)
                         .parentContainer(fragmentManager, containerId)
                         .inAppMessageOpenSettings(openData)
                         .inAppMessageScreenActions(screenActions)

@@ -3,6 +3,7 @@ package com.inappstory.sdk.core.api.impl;
 import android.content.Context;
 
 import com.inappstory.sdk.AppearanceManager;
+import com.inappstory.sdk.core.CancellationTokenWithStatus;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
@@ -34,6 +35,7 @@ public class IASSingleStoryImpl implements IASSingleStory {
 
     @Override
     public void showOnce(
+            final CancellationTokenWithStatus cancellationToken,
             final Context context,
             final String storyId,
             final AppearanceManager appearanceManager,
@@ -47,6 +49,7 @@ public class IASSingleStoryImpl implements IASSingleStory {
                 )
         );
         if (opens != null && opens.contains(storyId) && callback != null) {
+            if (cancellationToken != null && cancellationToken.cancelled()) return;
             callback.alreadyShown();
             return;
         }
@@ -58,7 +61,9 @@ public class IASSingleStoryImpl implements IASSingleStory {
                         if (story != null) {
                             core.contentHolder().readerContent().setByIdAndType(story, story.id(), ContentType.STORY);
                             core.contentLoader().storyDownloadManager().addCompletedStoryTask(story, ContentType.STORY);
-                            openStoryInReader(story,
+                            openStoryInReader(
+                                    cancellationToken,
+                                    story,
                                     sessionId,
                                     context,
                                     appearanceManager,
@@ -76,6 +81,7 @@ public class IASSingleStoryImpl implements IASSingleStory {
 
                     @Override
                     public void loadError(int type) {
+                        if (cancellationToken != null && cancellationToken.cancelled()) return;
                         if (type == -2) {
                             if (callback != null) callback.alreadyShown();
                         } else {
@@ -90,6 +96,7 @@ public class IASSingleStoryImpl implements IASSingleStory {
     }
 
     public void show(
+            final CancellationTokenWithStatus cancellationToken,
             final Context context,
             final String storyId,
             final AppearanceManager appearanceManager,
@@ -116,6 +123,7 @@ public class IASSingleStoryImpl implements IASSingleStory {
                                     ContentType.STORY
                             );
                             openStoryInReader(
+                                    cancellationToken,
                                     story,
                                     sessionId,
                                     context,
@@ -128,12 +136,14 @@ public class IASSingleStoryImpl implements IASSingleStory {
                                     fromReader
                             );
                         } else {
+                            if (cancellationToken != null && cancellationToken.cancelled()) return;
                             if (callback != null) callback.onError();
                         }
                     }
 
                     @Override
                     public void loadError(int type) {
+                        if (cancellationToken != null && cancellationToken.cancelled()) return;
                         if (callback != null) callback.onError();
                     }
 
@@ -146,6 +156,7 @@ public class IASSingleStoryImpl implements IASSingleStory {
 
     @Override
     public void show(
+            CancellationTokenWithStatus cancellationToken,
             Context context,
             String storyId,
             AppearanceManager appearanceManager,
@@ -153,6 +164,7 @@ public class IASSingleStoryImpl implements IASSingleStory {
             Integer slide
     ) {
         show(
+                cancellationToken,
                 context,
                 storyId,
                 appearanceManager,
@@ -165,6 +177,7 @@ public class IASSingleStoryImpl implements IASSingleStory {
     }
 
     private void openStoryInReader(
+            final CancellationTokenWithStatus cancellationToken,
             final Story story,
             final String sessionId,
             final Context context,
@@ -197,6 +210,7 @@ public class IASSingleStoryImpl implements IASSingleStory {
         core.screensManager().openScreen(context,
                 new LaunchStoryScreenStrategy(core, openedFromReader)
                         .launchStoryScreenData(launchData)
+                        .cancellationToken(cancellationToken)
                         .readerAppearanceSettings(
                                 new LaunchStoryScreenAppearance(
                                         AppearanceManager.checkOrCreateAppearanceManager(manager),

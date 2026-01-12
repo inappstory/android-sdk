@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.FragmentManager;
 
 import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.core.CancellationTokenWithStatus;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASInAppMessage;
@@ -32,6 +33,7 @@ public class IASInAppMessageAPIImpl implements IASInAppMessage {
 
     @Override
     public void show(
+            final CancellationTokenWithStatus cancellationToken,
             final InAppMessageOpenSettings inAppMessageOpenSettings,
             final FragmentManager fragmentManager,
             final int containerId,
@@ -41,6 +43,7 @@ public class IASInAppMessageAPIImpl implements IASInAppMessage {
             @Override
             public void use(@NonNull IASCore core) {
                 core.inAppMessageAPI().show(
+                        cancellationToken,
                         inAppMessageOpenSettings,
                         fragmentManager,
                         containerId,

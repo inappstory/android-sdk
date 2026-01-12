@@ -6,6 +6,7 @@ import android.os.Handler;
 import android.os.Looper;
 
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.core.CancellationTokenWithStatus;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.ui.screens.holder.IScreensHolder;
@@ -26,6 +27,7 @@ public class LaunchStoryScreenStrategy implements LaunchScreenStrategy {
     private LaunchStoryScreenAppearance readerAppearanceSettings;
     private List<ILaunchScreenCallback> launchScreenCallbacks = new ArrayList<>();
     private final boolean openedFromReader;
+    private CancellationTokenWithStatus cancellationToken;
 
     public LaunchStoryScreenStrategy(IASCore core, boolean openedFromReader) {
         this.openedFromReader = openedFromReader;
@@ -34,6 +36,11 @@ public class LaunchStoryScreenStrategy implements LaunchScreenStrategy {
 
     public LaunchStoryScreenStrategy readerAppearanceSettings(LaunchStoryScreenAppearance readerAppearanceSettings) {
         this.readerAppearanceSettings = readerAppearanceSettings;
+        return this;
+    }
+
+    public LaunchStoryScreenStrategy cancellationToken(CancellationTokenWithStatus cancellationToken) {
+        this.cancellationToken = cancellationToken;
         return this;
     }
 
@@ -56,6 +63,9 @@ public class LaunchStoryScreenStrategy implements LaunchScreenStrategy {
         final StoryScreenHolder currentScreenHolder = screensHolder.getStoryScreenHolder();
         boolean cantBeOpened = false;
         if (!(openReader instanceof IOpenStoriesReader)) return;
+        if (cancellationToken != null && cancellationToken.cancelled()) {
+            return;
+        }
         String message = "Story reader can't be opened. Please, close another opened reader first.";
         if (screensHolder.hasActiveScreen(currentScreenHolder)) {
             cantBeOpened = !openedFromReader;
@@ -87,6 +97,7 @@ public class LaunchStoryScreenStrategy implements LaunchScreenStrategy {
             currentScreenHolder.endLaunchProcess();
             return;
         }
+
         Runnable openNewScreenInstance = new Runnable() {
             @Override
             public void run() {

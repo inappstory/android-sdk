@@ -2,6 +2,7 @@ package com.inappstory.sdk.core.api;
 
 import androidx.fragment.app.FragmentManager;
 
+import com.inappstory.sdk.core.CancellationTokenWithStatus;
 import com.inappstory.sdk.inappmessage.InAppMessageLoadCallback;
 import com.inappstory.sdk.inappmessage.InAppMessageOpenSettings;
 import com.inappstory.sdk.inappmessage.InAppMessagePreloadSettings;
@@ -16,6 +17,7 @@ public interface IASInAppMessage {
     );
 
     void show(
+            CancellationTokenWithStatus cancellationToken,
             InAppMessageOpenSettings inAppMessageOpenSettings,
             FragmentManager fragmentManager,
             int containerId,

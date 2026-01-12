@@ -11,6 +11,7 @@ import androidx.annotation.NonNull;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.core.CancellationTokenWithStatus;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
@@ -51,6 +52,7 @@ public class IASOnboardingsImpl implements IASOnboardings {
 
     @Override
     public void show(
+            final CancellationTokenWithStatus cancellationToken,
             final Context context,
             String feed,
             final AppearanceManager appearanceManager,
@@ -60,6 +62,7 @@ public class IASOnboardingsImpl implements IASOnboardings {
         if (feed == null || feed.isEmpty()) feed = ONBOARDING_FEED;
         final String usedFeed = feed;
         final IASDataSettingsHolder settingsHolder = ((IASDataSettingsHolder) core.settingsAPI());
+        if (cancellationToken != null && cancellationToken.cancelled()) return;
         if (settingsHolder.anonymous()) {
             InAppStoryManager.showELog(
                     IAS_ERROR_TAG,
@@ -146,6 +149,7 @@ public class IASOnboardingsImpl implements IASOnboardings {
                                     }
                                 }
                                 showLoadedOnboardings(
+                                        cancellationToken,
                                         notOpened,
                                         context,
                                         appearanceManager,
@@ -157,12 +161,14 @@ public class IASOnboardingsImpl implements IASOnboardings {
                             @Override
                             public void onError(int code, String message) {
                                 core.statistic().profiling().setReady(onboardUID);
+                                if (cancellationToken != null && cancellationToken.cancelled()) return;
                                 loadOnboardingError(usedFeed, "Can't load onboardings: request code " + code);
                             }
 
                             @Override
                             public void timeoutError() {
                                 core.statistic().profiling().setReady(onboardUID);
+                                if (cancellationToken != null && cancellationToken.cancelled()) return;
                                 loadOnboardingError(usedFeed, "Can't load onboardings: timeout");
                             }
                         },
@@ -172,6 +178,7 @@ public class IASOnboardingsImpl implements IASOnboardings {
 
             @Override
             public void onError() {
+                if (cancellationToken != null && cancellationToken.cancelled()) return;
                 loadOnboardingError(usedFeed, "Can't open session");
             }
 
@@ -193,6 +200,7 @@ public class IASOnboardingsImpl implements IASOnboardings {
     }
 
     private void showLoadedOnboardings(
+            final CancellationTokenWithStatus cancellationToken,
             final List<Story> response,
             final Context outerContext,
             final AppearanceManager manager,
@@ -201,6 +209,7 @@ public class IASOnboardingsImpl implements IASOnboardings {
     ) {
         ContentType contentType = ContentType.STORY;
         if (response == null || response.size() == 0) {
+            if (cancellationToken != null && cancellationToken.cancelled()) return;
             core.callbacksAPI().useCallback(IASCallbackType.ONBOARDING,
                     new UseIASCallback<OnboardingLoadCallback>() {
                         @Override
@@ -237,6 +246,7 @@ public class IASOnboardingsImpl implements IASOnboardings {
         core.screensManager().openScreen(
                 outerContext,
                 new LaunchStoryScreenStrategy(core, false).
+                        cancellationToken(cancellationToken).
                         launchStoryScreenData(launchData).
                         readerAppearanceSettings(
                                 new LaunchStoryScreenAppearance(

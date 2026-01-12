@@ -19,6 +19,8 @@ import androidx.fragment.app.FragmentManager;
 import com.inappstory.sdk.banners.BannerPlacePreloadCallback;
 import com.inappstory.sdk.banners.BannerWidgetCallback;
 import com.inappstory.sdk.banners.ShowBannerCallback;
+import com.inappstory.sdk.core.CancellationTokenImpl;
+import com.inappstory.sdk.core.CancellationTokenWithStatus;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.IASCoreImpl;
 import com.inappstory.sdk.core.UseIASCoreCallback;
@@ -322,7 +324,6 @@ public class InAppStoryManager implements IASBackPressHandler {
         useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-
                 core.gamesAPI().open(context, gameId);
             }
         });
@@ -1253,13 +1254,15 @@ public class InAppStoryManager implements IASBackPressHandler {
      * @param outerContext (outerContext) any type of context (preferably - activity)
      * @param manager      (manager) {@link AppearanceManager} for reader. May be null
      */
-    public void showOnboardingStories(final String feed, final List<String> tags, final Context outerContext, final AppearanceManager manager) {
+    public CancellationToken showOnboardingStories(final String feed, final List<String> tags, final Context outerContext, final AppearanceManager manager) {
+        final CancellationTokenWithStatus token = new CancellationTokenImpl();
         useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-                core.onboardingsAPI().show(outerContext, feed, manager, tags, 1000);
+                core.onboardingsAPI().show(token, outerContext, feed, manager, tags, 1000);
             }
         });
+        return token;
     }
 
 
@@ -1269,13 +1272,15 @@ public class InAppStoryManager implements IASBackPressHandler {
      * @param outerContext (outerContext) any type of context (preferably - activity)
      * @param manager      (manager) {@link AppearanceManager} for reader. May be null
      */
-    public void showOnboardingStories(final String feed, final Context outerContext, final AppearanceManager manager) {
+    public CancellationToken showOnboardingStories(final String feed, final Context outerContext, final AppearanceManager manager) {
+        final CancellationTokenWithStatus token = new CancellationTokenImpl();
         useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-                core.onboardingsAPI().show(outerContext, feed, manager, null, 1000);
+                core.onboardingsAPI().show(token, outerContext, feed, manager, null, 1000);
             }
         });
+        return token;
     }
 
 
@@ -1286,13 +1291,15 @@ public class InAppStoryManager implements IASBackPressHandler {
      * @param outerContext (outerContext) any type of context (preferably - activity)
      * @param manager      (manager) {@link AppearanceManager} for reader. May be null
      */
-    public void showOnboardingStories(final List<String> tags, final Context outerContext, final AppearanceManager manager) {
+    public CancellationToken showOnboardingStories(final List<String> tags, final Context outerContext, final AppearanceManager manager) {
+        final CancellationTokenWithStatus token = new CancellationTokenImpl();
         useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-                core.onboardingsAPI().show(outerContext, null, manager, tags, 1000);
+                core.onboardingsAPI().show(token, outerContext, null, manager, tags, 1000);
             }
         });
+        return token;
     }
 
     /**
@@ -1301,13 +1308,15 @@ public class InAppStoryManager implements IASBackPressHandler {
      * @param outerContext (outerContext) any type of context (preferably - activity)
      * @param manager      (manager) {@link AppearanceManager} for reader. May be null
      */
-    public void showOnboardingStories(final Context outerContext, final AppearanceManager manager) {
+    public CancellationToken showOnboardingStories(final Context outerContext, final AppearanceManager manager) {
+        final CancellationTokenWithStatus token = new CancellationTokenImpl();
         useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-                core.onboardingsAPI().show(outerContext, null, manager, null, 1000);
+                core.onboardingsAPI().show(token, outerContext, null, manager, null, 1000);
             }
         });
+        return token;
     }
 
     /**
@@ -1317,13 +1326,15 @@ public class InAppStoryManager implements IASBackPressHandler {
      * @param outerContext (outerContext) any type of context (preferably - activity)
      * @param manager      (manager) {@link AppearanceManager} for reader. May be null
      */
-    public void showOnboardingStories(final int limit, final String feed, final List<String> tags, final Context outerContext, final AppearanceManager manager) {
+    public CancellationToken showOnboardingStories(final int limit, final String feed, final List<String> tags, final Context outerContext, final AppearanceManager manager) {
+        final CancellationTokenWithStatus token = new CancellationTokenImpl();
         useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-                core.onboardingsAPI().show(outerContext, feed, manager, tags, limit);
+                core.onboardingsAPI().show(token, outerContext, feed, manager, tags, limit);
             }
         });
+        return token;
     }
 
 
@@ -1333,13 +1344,15 @@ public class InAppStoryManager implements IASBackPressHandler {
      * @param outerContext (outerContext) any type of context (preferably - activity)
      * @param manager      (manager) {@link AppearanceManager} for reader. May be null
      */
-    public void showOnboardingStories(final int limit, final String feed, final Context outerContext, final AppearanceManager manager) {
+    public CancellationToken showOnboardingStories(final int limit, final String feed, final Context outerContext, final AppearanceManager manager) {
+        final CancellationTokenWithStatus token = new CancellationTokenImpl();
         useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-                core.onboardingsAPI().show(outerContext, feed, manager, null, limit);
+                core.onboardingsAPI().show(token, outerContext, feed, manager, null, limit);
             }
         });
+        return token;
     }
 
 
@@ -1350,13 +1363,15 @@ public class InAppStoryManager implements IASBackPressHandler {
      * @param outerContext (outerContext) any type of context (preferably - activity)
      * @param manager      (manager) {@link AppearanceManager} for reader. May be null
      */
-    public void showOnboardingStories(final int limit, final List<String> tags, final Context outerContext, final AppearanceManager manager) {
+    public CancellationToken showOnboardingStories(final int limit, final List<String> tags, final Context outerContext, final AppearanceManager manager) {
+        final CancellationTokenWithStatus token = new CancellationTokenImpl();
         useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-                core.onboardingsAPI().show(outerContext, null, manager, tags, limit);
+                core.onboardingsAPI().show(token, outerContext, null, manager, tags, limit);
             }
         });
+        return token;
     }
 
     /**
@@ -1365,13 +1380,15 @@ public class InAppStoryManager implements IASBackPressHandler {
      * @param outerContext (outerContext) any type of context (preferably - activity)
      * @param manager      (manager) {@link AppearanceManager} for reader. May be null
      */
-    public void showOnboardingStories(final int limit, final Context outerContext, final AppearanceManager manager) {
+    public CancellationToken showOnboardingStories(final int limit, final Context outerContext, final AppearanceManager manager) {
+        final CancellationTokenWithStatus token = new CancellationTokenImpl();
         useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-                core.onboardingsAPI().show(outerContext, null, manager, null, limit);
+                core.onboardingsAPI().show(token, outerContext, null, manager, null, limit);
             }
         });
+        return token;
     }
 
 
@@ -1383,22 +1400,26 @@ public class InAppStoryManager implements IASBackPressHandler {
      * @param manager  (manager) {@link AppearanceManager} for reader. May be null
      * @param callback (callback) custom action when story is loaded
      */
-    public void showStory(final String storyId, final Context context, final AppearanceManager manager, final IShowStoryCallback callback) {
+    public CancellationToken showStory(final String storyId, final Context context, final AppearanceManager manager, final IShowStoryCallback callback) {
+        final CancellationTokenWithStatus token = new CancellationTokenImpl();
         useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-                core.singleStoryAPI().show(context, storyId, manager, callback, 0);
+                core.singleStoryAPI().show(token, context, storyId, manager, callback, 0);
             }
         });
+        return token;
     }
 
-    public void showStory(final String storyId, final Context context, final AppearanceManager manager, final IShowStoryCallback callback, final Integer slide) {
+    public CancellationToken showStory(final String storyId, final Context context, final AppearanceManager manager, final IShowStoryCallback callback, final Integer slide) {
+        final CancellationTokenWithStatus token = new CancellationTokenImpl();
         useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-                core.singleStoryAPI().show(context, storyId, manager, callback, slide);
+                core.singleStoryAPI().show(token, context, storyId, manager, callback, slide);
             }
         });
+        return token;
     }
 
     public void loadBannerPlace(final BannerPlaceLoadSettings settings) {
@@ -1422,17 +1443,20 @@ public class InAppStoryManager implements IASBackPressHandler {
         });
     }
 
-    public void showStoryOnce(final String storyId,
-                              final Context context,
-                              final AppearanceManager manager,
-                              final IShowStoryOnceCallback callback
+    public CancellationToken showStoryOnce(
+            final String storyId,
+            final Context context,
+            final AppearanceManager manager,
+            final IShowStoryOnceCallback callback
     ) {
+        final CancellationTokenWithStatus token = new CancellationTokenImpl();
         useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-                core.singleStoryAPI().showOnce(context, storyId, manager, callback);
+                core.singleStoryAPI().showOnce(token, context, storyId, manager, callback);
             }
         });
+        return token;
     }
 
     /**
@@ -1442,13 +1466,15 @@ public class InAppStoryManager implements IASBackPressHandler {
      * @param context (context) any type of context (preferably - same as for {@link InAppStoryManager}
      * @param manager (manager) {@link AppearanceManager} for reader. May be null
      */
-    public void showStory(final String storyId, final Context context, final AppearanceManager manager) {
+    public CancellationToken showStory(final String storyId, final Context context, final AppearanceManager manager) {
+        final CancellationTokenWithStatus token = new CancellationTokenImpl();
         useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-                core.singleStoryAPI().show(context, storyId, manager, null, 0);
+                core.singleStoryAPI().show(token, context, storyId, manager, null, 0);
             }
         });
+        return token;
     }
 
     public void preloadInAppMessages(
@@ -1481,7 +1507,6 @@ public class InAppStoryManager implements IASBackPressHandler {
                 core.inAppMessageAPI().callback(callback);
             }
         });
-
     }
 
     public void setShowInAppMessageCallback(final ShowInAppMessageCallback callback) {
@@ -1541,16 +1566,18 @@ public class InAppStoryManager implements IASBackPressHandler {
         });
     }
 
-    public void showInAppMessage(
+    public CancellationToken showInAppMessage(
             final InAppMessageOpenSettings openData,
             final FragmentManager fragmentManager,
             final int containerId,
             final InAppMessageScreenActions screenActions
     ) {
+        final CancellationTokenWithStatus token = new CancellationTokenImpl();
         useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
                 core.inAppMessageAPI().show(
+                        token,
                         openData,
                         fragmentManager,
                         containerId,
@@ -1558,7 +1585,7 @@ public class InAppStoryManager implements IASBackPressHandler {
                 );
             }
         });
-
+        return token;
     }
 
 

@@ -6,6 +6,7 @@ import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.core.CancellationTokenWithStatus;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASOnboardings;
@@ -15,6 +16,7 @@ import java.util.List;
 
 public class IASOnboardingsExternalAPIImpl implements IASOnboardings {
     public void show(
+            final CancellationTokenWithStatus cancellationToken,
             final Context context,
             final String feed,
             final AppearanceManager appearanceManager,
@@ -25,6 +27,7 @@ public class IASOnboardingsExternalAPIImpl implements IASOnboardings {
             @Override
             public void use(@NonNull IASCore core) {
                 core.onboardingsAPI().show(
+                        cancellationToken,
                         context,
                         feed,
                         appearanceManager,

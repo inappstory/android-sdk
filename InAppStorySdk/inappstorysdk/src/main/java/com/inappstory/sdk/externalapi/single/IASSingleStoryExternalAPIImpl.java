@@ -7,6 +7,7 @@ import androidx.annotation.NonNull;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.UseManagerInstanceCallback;
+import com.inappstory.sdk.core.CancellationTokenWithStatus;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASSingleStory;
@@ -16,6 +17,7 @@ import com.inappstory.sdk.stories.outercallbacks.common.single.SingleLoadCallbac
 
 public class IASSingleStoryExternalAPIImpl implements IASSingleStory {
     public void showOnce(
+            final CancellationTokenWithStatus cancellationToken,
             final Context context,
             final String storyId,
             final AppearanceManager appearanceManager,
@@ -24,13 +26,14 @@ public class IASSingleStoryExternalAPIImpl implements IASSingleStory {
         InAppStoryManager.useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-                core.singleStoryAPI().showOnce(context, storyId, appearanceManager, callback);
+                core.singleStoryAPI().showOnce(cancellationToken, context, storyId, appearanceManager, callback);
             }
         });
     }
 
     @Override
     public void show(
+            final CancellationTokenWithStatus cancellationToken,
             final Context context,
             final String storyId,
             final AppearanceManager appearanceManager,
@@ -40,7 +43,7 @@ public class IASSingleStoryExternalAPIImpl implements IASSingleStory {
         InAppStoryManager.useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-                core.singleStoryAPI().show(context, storyId, appearanceManager, callback, slide);
+                core.singleStoryAPI().show(cancellationToken, context, storyId, appearanceManager, callback, slide);
             }
         });
     }
