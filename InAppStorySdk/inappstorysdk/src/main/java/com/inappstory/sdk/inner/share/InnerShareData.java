@@ -8,6 +8,9 @@ public class InnerShareData {
     public String getText() {
         return text;
     }
+    public String getUrl() {
+        return url;
+    }
 
     public String getTitle() {
         return title;
@@ -23,6 +26,8 @@ public class InnerShareData {
     public String title;
     @SerializedName("payload")
     public String payload;
+    @SerializedName("url")
+    public String url;
 
     public ArrayList<InnerShareFile> getFiles() {
         return files != null ? files : new ArrayList<InnerShareFile>();

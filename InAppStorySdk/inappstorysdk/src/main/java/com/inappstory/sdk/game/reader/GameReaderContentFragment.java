@@ -337,7 +337,9 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
 
     void share(InnerShareData shareObject) {
         final IASShareData shareData = new IASShareData(
-                shareObject.getText(), shareObject.getPayload()
+                shareObject.getText(),
+                shareObject.getUrl(),
+                shareObject.getPayload()
         );
         if (!shareObject.getFiles().isEmpty()) {
             new InnerShareFilesPrepare().prepareFiles(

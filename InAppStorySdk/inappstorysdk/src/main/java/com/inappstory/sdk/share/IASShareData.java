@@ -25,7 +25,8 @@ public class IASShareData implements Serializable {
         return files;
     }
 
-    public IASShareData() {}
+    public IASShareData() {
+    }
 
     public IASShareData(List<String> files) {
         this.files = files;
@@ -45,8 +46,25 @@ public class IASShareData implements Serializable {
         this.payload = payload;
     }
 
+    public IASShareData(String text, String url, String payload) {
+        if (text == null || text.isEmpty())
+            this.url = url;
+        else
+            this.url = text;
+        this.payload = payload;
+    }
+
     public IASShareData(String url, List<String> files, String payload) {
         this.url = url;
+        this.files = files;
+        this.payload = payload;
+    }
+
+    public IASShareData(String text, String url, List<String> files, String payload) {
+        if (text == null || text.isEmpty())
+            this.url = url;
+        else
+            this.url = text;
         this.files = files;
         this.payload = payload;
     }
