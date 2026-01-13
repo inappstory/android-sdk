@@ -32,6 +32,8 @@ public class GameResourceUseCase extends GetCacheFileUseCase<Void> {
         return "";
     }
 
+    private String removeLink = null;
+
     public GameResourceUseCase(
             IASCore core,
             String zipUrl,
@@ -47,7 +49,7 @@ public class GameResourceUseCase extends GetCacheFileUseCase<Void> {
         this.progressCallback = progressCallback;
         this.uniqueKey = StringsUtils.md5(gameInstanceId + "_" + resource.url);
         this.resource = resource;
-        this.filePath = getCache().getCacheDir().getAbsolutePath() +
+        String prePath = getCache().getCacheDir().getAbsolutePath() +
                 File.separator +
                 "v2" +
                 File.separator +
@@ -56,11 +58,20 @@ public class GameResourceUseCase extends GetCacheFileUseCase<Void> {
                 getArchiveName(zipUrl) +
                 File.separator +
                 StringsUtils.md5(zipUrl) +
-                File.separator +
+                File.separator;
+        removeLink = prePath +
                 "resources_" +
                 gameInstanceId +
-                File.separator +
-                resource.key;
+                File.separator + resource.key;
+        this.filePath = prePath + this.uniqueKey;
+    }
+
+    private void removeOldFormatFile() {
+        if (removeLink != null) {
+            File file = new File(removeLink);
+            if (file.exists())
+                file.delete();
+        }
     }
 
     private boolean getLocalResource() {
@@ -107,6 +118,7 @@ public class GameResourceUseCase extends GetCacheFileUseCase<Void> {
 
     @Override
     public Void getFile() {
+        removeOldFormatFile();
         if (getLocalResource()) return null;
         downloadResource();
         return null;

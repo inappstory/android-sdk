@@ -17,12 +17,18 @@ public class InnerShareData {
         return payload;
     }
 
+    public String getUrl() {
+        return url;
+    }
+
     @SerializedName("text")
     public String text;
     @SerializedName("title")
     public String title;
     @SerializedName("payload")
     public String payload;
+    @SerializedName("url")
+    public String url;
 
     public ArrayList<InnerShareFile> getFiles() {
         return files != null ? files : new ArrayList<InnerShareFile>();

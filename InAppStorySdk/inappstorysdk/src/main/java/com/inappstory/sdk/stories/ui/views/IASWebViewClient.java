@@ -1,5 +1,6 @@
 package com.inappstory.sdk.stories.ui.views;
 
+import android.content.Context;
 import android.net.Uri;
 import android.util.Log;
 import android.webkit.MimeTypeMap;
@@ -43,7 +44,7 @@ public class IASWebViewClient extends WebViewClient {
         }
     }
 
-    private File getFileByUrl(String url) {
+    private File getFileByUrl(String url, Context context) {
         String filePath = null;
         File file = null;
         if (url.startsWith("http://file-assets")) {
@@ -53,16 +54,20 @@ public class IASWebViewClient extends WebViewClient {
         } else if (url.startsWith("file://")) {
             filePath = Uri.parse(url).getPath();
         }
-        if (filePath != null) {
-            file = new File(filePath);
+        if (filePath != null && context != null) {
+            if (filePath.startsWith(context.getFilesDir().getAbsolutePath() + "/ias/") ||
+                    filePath.startsWith(context.getCacheDir().getAbsolutePath() + "/ias/")) {
+                file = new File(filePath);
+            } else
+                return null;
         } else if (!url.startsWith("data:") && URLUtil.isValidUrl(url)) {
             file = getCachedFile(FilesDownloader.deleteQueryArgumentsFromUrlOld(url, true));
         }
         return file;
     }
 
-    protected WebResourceResponse getChangedResponse(String url) throws FileNotFoundException {
-        File file = getFileByUrl(url);
+    protected WebResourceResponse getChangedResponse(String url, Context context) throws FileNotFoundException {
+        File file = getFileByUrl(url, context);
         WebResourceResponse response = null;
         if (file != null && file.exists()) {
             try {

@@ -139,6 +139,7 @@ public class StoriesContentFragment extends Fragment
                     shareData.getPayload(),
                     new IASShareData(
                             shareData.getText(),
+                            shareData.getUrl(),
                             shareData.getPayload()
                     ),
                     storyId,
