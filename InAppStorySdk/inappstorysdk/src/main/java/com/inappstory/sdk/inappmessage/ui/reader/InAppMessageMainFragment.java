@@ -140,18 +140,7 @@ public class InAppMessageMainFragment extends Fragment implements Observer<IAMRe
         @Override
         public void onShown() {
             readerViewModel.updateCurrentUiState(IAMReaderUIStates.OPENED);
-            InAppStoryManager.useCore(new UseIASCoreCallback() {
-                @Override
-                public void use(@NonNull IASCore core) {
-                    String tokenId = readerViewModel.getCurrentState().cancellationTokenUID;
-                    if (tokenId != null) {
-                        CancellationTokenWithStatus token = core.cancellationTokenPool().getTokenByUID(tokenId);
-                        if (token != null && token.cancelled()) {
-                            forceFinish();
-                        }
-                    }
-                }
-            });
+
         }
 
         @Override
@@ -222,6 +211,21 @@ public class InAppMessageMainFragment extends Fragment implements Observer<IAMRe
                 }
             });
         }
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                String tokenId = readerViewModel.getCurrentState().cancellationTokenUID;
+                if (tokenId != null) {
+                    CancellationTokenWithStatus token = core.cancellationTokenPool().getTokenByUID(tokenId);
+                    if (token != null) {
+                        if (token.cancelled())
+                            forceFinish();
+                        else
+                            token.disable();
+                    }
+                }
+            }
+        });
     }
 
     @Override

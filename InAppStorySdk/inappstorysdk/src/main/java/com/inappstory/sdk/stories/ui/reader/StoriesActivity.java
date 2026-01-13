@@ -450,9 +450,13 @@ public class StoriesActivity extends IASActivity implements BaseStoryScreen, Sho
         String cancellationTokenUID = launchData.cancellationTokenUID();
         if (cancellationTokenUID != null) {
             CancellationTokenWithStatus token = core.cancellationTokenPool().getTokenByUID(cancellationTokenUID);
-            if (token != null && token.cancelled()) {
-                forceFinish();
-                return;
+            if (token != null) {
+                if (token.cancelled()) {
+                    forceFinish();
+                    return;
+                } else {
+                    token.disable();
+                }
             }
         }
         core.screensManager().getStoryScreenHolder().subscribeScreen(StoriesActivity.this);
@@ -577,20 +581,7 @@ public class StoriesActivity extends IASActivity implements BaseStoryScreen, Sho
 
 
     private void setStoriesFragment() {
-        InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
-        if (inAppStoryManager == null || launchData == null) {
-            forceFinish();
-            return;
-        }
-        IASCore core = InAppStoryManager.getInstance().iasCore();
-        String cancellationTokenUID = launchData.cancellationTokenUID();
-        if (cancellationTokenUID != null) {
-            CancellationTokenWithStatus token = core.cancellationTokenPool().getTokenByUID(cancellationTokenUID);
-            if (token != null && token.cancelled()) {
-                forceFinish();
-                return;
-            }
-        }
+
 
         if (storiesContentFragment != null) {
             try {

@@ -12,6 +12,11 @@ public class InAppMessageOpenSettings {
 
     private List<String> tags;
 
+    @Override
+    public String toString() {
+        return "IAM_DATA {" + "id=" + id + ", event='" + event + '\'' + '}';
+    }
+
     public InAppMessageOpenSettings(
     ) {
     }

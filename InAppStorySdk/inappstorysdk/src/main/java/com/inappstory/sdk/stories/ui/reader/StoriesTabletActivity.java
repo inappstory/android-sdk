@@ -481,9 +481,13 @@ public class StoriesTabletActivity extends IASActivity implements BaseStoryScree
         String cancellationTokenUID = launchData.cancellationTokenUID();
         if (cancellationTokenUID != null) {
             CancellationTokenWithStatus token = core.cancellationTokenPool().getTokenByUID(cancellationTokenUID);
-            if (token != null && token.cancelled()) {
-                forceFinish();
-                return;
+            if (token != null) {
+                if (token.cancelled()) {
+                    forceFinish();
+                    return;
+                } else {
+                    token.disable();
+                }
             }
         }
         core.screensManager().getStoryScreenHolder().subscribeScreen(StoriesTabletActivity.this);

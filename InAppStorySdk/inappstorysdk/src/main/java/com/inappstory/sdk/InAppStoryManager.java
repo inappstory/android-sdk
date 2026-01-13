@@ -1255,7 +1255,7 @@ public class InAppStoryManager implements IASBackPressHandler {
      * @param manager      (manager) {@link AppearanceManager} for reader. May be null
      */
     public CancellationToken showOnboardingStories(final String feed, final List<String> tags, final Context outerContext, final AppearanceManager manager) {
-        final CancellationTokenWithStatus token = new CancellationTokenImpl();
+        final CancellationTokenWithStatus token = new CancellationTokenImpl("Onboardings feed: " + feed);
         useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
@@ -1274,7 +1274,7 @@ public class InAppStoryManager implements IASBackPressHandler {
      * @param manager      (manager) {@link AppearanceManager} for reader. May be null
      */
     public CancellationToken showOnboardingStories(final String feed, final Context outerContext, final AppearanceManager manager) {
-        final CancellationTokenWithStatus token = new CancellationTokenImpl();
+        final CancellationTokenWithStatus token = new CancellationTokenImpl("Onboardings feed: " + feed);
         useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
@@ -1294,7 +1294,7 @@ public class InAppStoryManager implements IASBackPressHandler {
      * @param manager      (manager) {@link AppearanceManager} for reader. May be null
      */
     public CancellationToken showOnboardingStories(final List<String> tags, final Context outerContext, final AppearanceManager manager) {
-        final CancellationTokenWithStatus token = new CancellationTokenImpl();
+        final CancellationTokenWithStatus token = new CancellationTokenImpl("Onboardings feed: onboarding");
         useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
@@ -1312,7 +1312,7 @@ public class InAppStoryManager implements IASBackPressHandler {
      * @param manager      (manager) {@link AppearanceManager} for reader. May be null
      */
     public CancellationToken showOnboardingStories(final Context outerContext, final AppearanceManager manager) {
-        final CancellationTokenWithStatus token = new CancellationTokenImpl();
+        final CancellationTokenWithStatus token = new CancellationTokenImpl("Onboardings feed: onboarding");
         useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
@@ -1331,7 +1331,7 @@ public class InAppStoryManager implements IASBackPressHandler {
      * @param manager      (manager) {@link AppearanceManager} for reader. May be null
      */
     public CancellationToken showOnboardingStories(final int limit, final String feed, final List<String> tags, final Context outerContext, final AppearanceManager manager) {
-        final CancellationTokenWithStatus token = new CancellationTokenImpl();
+        final CancellationTokenWithStatus token = new CancellationTokenImpl("Onboardings feed: " + feed);
         useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
@@ -1350,7 +1350,7 @@ public class InAppStoryManager implements IASBackPressHandler {
      * @param manager      (manager) {@link AppearanceManager} for reader. May be null
      */
     public CancellationToken showOnboardingStories(final int limit, final String feed, final Context outerContext, final AppearanceManager manager) {
-        final CancellationTokenWithStatus token = new CancellationTokenImpl();
+        final CancellationTokenWithStatus token = new CancellationTokenImpl("Onboardings feed: " + feed);
         useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
@@ -1370,7 +1370,7 @@ public class InAppStoryManager implements IASBackPressHandler {
      * @param manager      (manager) {@link AppearanceManager} for reader. May be null
      */
     public CancellationToken showOnboardingStories(final int limit, final List<String> tags, final Context outerContext, final AppearanceManager manager) {
-        final CancellationTokenWithStatus token = new CancellationTokenImpl();
+        final CancellationTokenWithStatus token = new CancellationTokenImpl("Onboardings feed: onboarding");
         useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
@@ -1388,7 +1388,7 @@ public class InAppStoryManager implements IASBackPressHandler {
      * @param manager      (manager) {@link AppearanceManager} for reader. May be null
      */
     public CancellationToken showOnboardingStories(final int limit, final Context outerContext, final AppearanceManager manager) {
-        final CancellationTokenWithStatus token = new CancellationTokenImpl();
+        final CancellationTokenWithStatus token = new CancellationTokenImpl("Onboardings feed: onboarding");
         useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
@@ -1409,7 +1409,7 @@ public class InAppStoryManager implements IASBackPressHandler {
      * @param callback (callback) custom action when story is loaded
      */
     public CancellationToken showStory(final String storyId, final Context context, final AppearanceManager manager, final IShowStoryCallback callback) {
-        final CancellationTokenWithStatus token = new CancellationTokenImpl();
+        final CancellationTokenWithStatus token = new CancellationTokenImpl("Single id: " + storyId);
         useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
@@ -1421,7 +1421,7 @@ public class InAppStoryManager implements IASBackPressHandler {
     }
 
     public CancellationToken showStory(final String storyId, final Context context, final AppearanceManager manager, final IShowStoryCallback callback, final Integer slide) {
-        final CancellationTokenWithStatus token = new CancellationTokenImpl();
+        final CancellationTokenWithStatus token = new CancellationTokenImpl("Single id: " + storyId);
         useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
@@ -1459,7 +1459,7 @@ public class InAppStoryManager implements IASBackPressHandler {
             final AppearanceManager manager,
             final IShowStoryOnceCallback callback
     ) {
-        final CancellationTokenWithStatus token = new CancellationTokenImpl();
+        final CancellationTokenWithStatus token = new CancellationTokenImpl("Single once id: " + storyId);
         useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
@@ -1478,7 +1478,7 @@ public class InAppStoryManager implements IASBackPressHandler {
      * @param manager (manager) {@link AppearanceManager} for reader. May be null
      */
     public CancellationToken showStory(final String storyId, final Context context, final AppearanceManager manager) {
-        final CancellationTokenWithStatus token = new CancellationTokenImpl();
+        final CancellationTokenWithStatus token = new CancellationTokenImpl("Single id: " + storyId);
         useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
@@ -1584,7 +1584,7 @@ public class InAppStoryManager implements IASBackPressHandler {
             final int containerId,
             final InAppMessageScreenActions screenActions
     ) {
-        final CancellationTokenWithStatus token = new CancellationTokenImpl();
+        final CancellationTokenWithStatus token = new CancellationTokenImpl("IAM data: " + openData.toString());
         useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
