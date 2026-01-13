@@ -501,7 +501,7 @@ public abstract class StoriesMainFragment extends Fragment implements
                         final IReaderContent story = core
                                 .contentHolder()
                                 .readerContent()
-                                .getByIdAndType(storyId, launchData.getType());
+                                .getByIdAndType(storyId, launchData.type());
                         final int slideIndex = fragment.readerManager.getByIdAndIndex(storyId).index();
                         if (story != null) {
                             core.callbacksAPI().useCallback(
@@ -513,9 +513,9 @@ public abstract class StoriesMainFragment extends Fragment implements
                                                     new SlideData(
                                                             StoryData.getStoryData(
                                                                     story,
-                                                                    launchData.getFeed(),
-                                                                    launchData.getSourceType(),
-                                                                    launchData.getType()
+                                                                    launchData.feed(),
+                                                                    launchData.sourceType(),
+                                                                    launchData.type()
                                                             ),
                                                             slideIndex,
                                                             story.slideEventPayload(slideIndex)
@@ -544,7 +544,7 @@ public abstract class StoriesMainFragment extends Fragment implements
                                     cause,
                                     slideIndex,
                                     story.slidesCount(),
-                                    launchData.getFeed()
+                                    launchData.feed()
                             );
                         }
                     }
@@ -726,7 +726,7 @@ public abstract class StoriesMainFragment extends Fragment implements
             @Override
             public void use(@NonNull IASCore core) {
                 core.statistic().storiesV1(
-                        launchData.getSessionId(),
+                        launchData.sessionId(),
                         new GetStatisticV1Callback() {
                             @Override
                             public void get(@NonNull IASStatisticStoriesV1 manager) {

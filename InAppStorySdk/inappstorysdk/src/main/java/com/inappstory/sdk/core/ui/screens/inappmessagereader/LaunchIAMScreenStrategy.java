@@ -363,6 +363,7 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
         InAppMessageAppearance appearance = inAppMessage.inAppMessageAppearance();
         core.screensManager().iamReaderViewModel().initState(
                 new IAMReaderState()
+                        .cancellationTokenUID(cancellationToken != null ? cancellationToken.getUniqueId() : null)
                         .sourceType(sourceType)
                         .iamId(inAppMessage.id())
                         .event(inAppMessageOpenSettings.event())

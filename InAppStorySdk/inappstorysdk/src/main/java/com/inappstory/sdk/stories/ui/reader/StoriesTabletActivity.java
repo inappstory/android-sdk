@@ -5,7 +5,6 @@ import static com.inappstory.sdk.game.reader.GameReaderContentFragment.GAME_READ
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.ActivityInfo;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.os.Build;
@@ -20,7 +19,6 @@ import android.view.inputmethod.InputMethodManager;
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
@@ -29,6 +27,7 @@ import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.core.CancellationTokenWithStatus;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASCallbackType;
@@ -64,7 +63,6 @@ import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPag
 import com.inappstory.sdk.stories.utils.IASBackPressHandler;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 import com.inappstory.sdk.stories.utils.Sizes;
-import com.inappstory.sdk.utils.SystemUiUtils;
 
 
 public class StoriesTabletActivity extends IASActivity implements BaseStoryScreen, ShowGoodsCallback {
@@ -92,7 +90,7 @@ public class StoriesTabletActivity extends IASActivity implements BaseStoryScree
                         core
                                 .statistic()
                                 .storiesV1(
-                                        launchData.getSessionId(),
+                                        launchData.sessionId(),
                                         new GetStatisticV1Callback() {
                                             @Override
                                             public void get(@NonNull IASStatisticStoriesV1 manager) {
@@ -475,12 +473,19 @@ public class StoriesTabletActivity extends IASActivity implements BaseStoryScree
                 getSerializableExtra(LaunchStoryScreenData.SERIALIZABLE_KEY);
         appearanceSettings = (LaunchStoryScreenAppearance) getIntent()
                 .getSerializableExtra(LaunchStoryScreenAppearance.SERIALIZABLE_KEY);
-        if (inAppStoryManager == null) {
+        if (inAppStoryManager == null || launchData == null) {
             forceFinish();
             return;
         }
         IASCore core = inAppStoryManager.iasCore();
-        int navColor = appearanceSettings.csNavBarColor();
+        String cancellationTokenUID = launchData.cancellationTokenUID();
+        if (cancellationTokenUID != null) {
+            CancellationTokenWithStatus token = core.cancellationTokenPool().getTokenByUID(cancellationTokenUID);
+            if (token != null && token.cancelled()) {
+                forceFinish();
+                return;
+            }
+        }
         core.screensManager().getStoryScreenHolder().subscribeScreen(StoriesTabletActivity.this);
         View view = getCurrentFocus();
         if (view != null) {
@@ -571,7 +576,7 @@ public class StoriesTabletActivity extends IASActivity implements BaseStoryScree
                 .getOpenReader(ScreenType.STORY))
                 .onHideStatusBar(StoriesTabletActivity.this);
         InAppStoryService.getInstance().getListReaderConnector().readerIsOpened();
-        type = launchData.getType();
+        type = launchData.type();
         if (savedInstanceState1 != null)
             storiesContentFragment = (StoriesContentFragment) getSupportFragmentManager().findFragmentByTag("STORIES_FRAGMENT");
         if (storiesContentFragment != null) {
@@ -790,8 +795,8 @@ public class StoriesTabletActivity extends IASActivity implements BaseStoryScree
                                             new SlideData(
                                                     StoryData.getStoryData(
                                                             story,
-                                                            launchData.getFeed(),
-                                                            launchData.getSourceType(),
+                                                            launchData.feed(),
+                                                            launchData.sourceType(),
                                                             type
                                                     ),
                                                     idWithIndex.index(),
@@ -821,7 +826,7 @@ public class StoriesTabletActivity extends IASActivity implements BaseStoryScree
                             cause,
                             idWithIndex.index(),
                             story.slidesCount(),
-                            launchData.getFeed()
+                            launchData.feed()
                     );
                 }
             });
@@ -883,7 +888,7 @@ public class StoriesTabletActivity extends IASActivity implements BaseStoryScree
                 @Override
                 public void use(@NonNull IASCore core) {
                     core.statistic().storiesV1(
-                            launchData.getSessionId(),
+                            launchData.sessionId(),
                             new GetStatisticV1Callback() {
                                 @Override
                                 public void get(@NonNull IASStatisticStoriesV1 manager) {
@@ -917,7 +922,7 @@ public class StoriesTabletActivity extends IASActivity implements BaseStoryScree
                             .onRestoreStatusBar(StoriesTabletActivity.this);
                     if (launchData != null) {
                         core.statistic().storiesV1(
-                                launchData.getSessionId(),
+                                launchData.sessionId(),
                                 new GetStatisticV1Callback() {
                                     @Override
                                     public void get(@NonNull IASStatisticStoriesV1 manager) {

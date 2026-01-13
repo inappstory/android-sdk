@@ -233,6 +233,7 @@ public final class BottomSheetContentContainer extends IAMContentContainer<InApp
     @Override
     public void closeWithAnimation() {
         bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+
     }
 
     @Override

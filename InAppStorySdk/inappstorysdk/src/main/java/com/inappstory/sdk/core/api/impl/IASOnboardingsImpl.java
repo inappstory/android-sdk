@@ -161,14 +161,16 @@ public class IASOnboardingsImpl implements IASOnboardings {
                             @Override
                             public void onError(int code, String message) {
                                 core.statistic().profiling().setReady(onboardUID);
-                                if (cancellationToken != null && cancellationToken.cancelled()) return;
+                                if (cancellationToken != null && cancellationToken.cancelled())
+                                    return;
                                 loadOnboardingError(usedFeed, "Can't load onboardings: request code " + code);
                             }
 
                             @Override
                             public void timeoutError() {
                                 core.statistic().profiling().setReady(onboardUID);
-                                if (cancellationToken != null && cancellationToken.cancelled()) return;
+                                if (cancellationToken != null && cancellationToken.cancelled())
+                                    return;
                                 loadOnboardingError(usedFeed, "Can't load onboardings: timeout");
                             }
                         },
@@ -230,19 +232,15 @@ public class IASOnboardingsImpl implements IASOnboardings {
             storiesIds.add(story.id());
             core.contentHolder().listsContent().setByIdAndType(story, story.id(), contentType);
         }
-        LaunchStoryScreenData launchData = new LaunchStoryScreenData(
-                null,
-                feed,
-                sessionId,
-                storiesIds,
-                0,
-                false,
-                ShowStory.ACTION_OPEN,
-                SourceType.ONBOARDING,
-                0,
-                ContentType.STORY,
-                null
-        );
+        LaunchStoryScreenData launchData = new LaunchStoryScreenData()
+                .feed(feed)
+                .sessionId(sessionId)
+                .storiesIds(new ArrayList<>(storiesIds))
+                .firstAction(ShowStory.ACTION_OPEN)
+                .sourceType(SourceType.ONBOARDING)
+                .slideIndex(0)
+                .type(ContentType.STORY)
+                .cancellationTokenUID(cancellationToken.getUniqueId());
         core.screensManager().openScreen(
                 outerContext,
                 new LaunchStoryScreenStrategy(core, false).

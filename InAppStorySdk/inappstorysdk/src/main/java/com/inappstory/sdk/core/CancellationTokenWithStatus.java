@@ -4,4 +4,5 @@ import com.inappstory.sdk.CancellationToken;
 
 public interface CancellationTokenWithStatus extends CancellationToken {
     boolean cancelled();
+    long creationTime();
 }

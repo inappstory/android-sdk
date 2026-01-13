@@ -366,19 +366,16 @@ public class StackStoryObserver implements IStackFeedActions {
                     j++;
                 }
             }
-            LaunchStoryScreenData launchData = new LaunchStoryScreenData(
-                    listId,
-                    feed,
-                    sessionId,
-                    readerStories,
-                    openIndex,
-                    showOnlyNewStories,
-                    ShowStory.ACTION_OPEN,
-                    SourceType.STACK,
-                    0,
-                    ContentType.STORY,
-                    null
-            );
+            LaunchStoryScreenData launchData = new LaunchStoryScreenData()
+                    .listUniqueId(listId)
+                    .feed(feed)
+                    .sessionId(sessionId)
+                    .storiesIds(new ArrayList<>(readerStories))
+                    .listIndex(openIndex)
+                    .shownOnlyNewStories(showOnlyNewStories)
+                    .firstAction(ShowStory.ACTION_OPEN)
+                    .sourceType(SourceType.STACK)
+                    .type(ContentType.STORY);
             boolean nonAnonymous = !((IASDataSettingsHolder)core.settingsAPI()).anonymous();
             core.screensManager().openScreen(context,
                     new LaunchStoryScreenStrategy(core, false).

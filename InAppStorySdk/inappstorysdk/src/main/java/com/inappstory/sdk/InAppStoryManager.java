@@ -1259,6 +1259,7 @@ public class InAppStoryManager implements IASBackPressHandler {
         useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
+                core.cancellationTokenPool().addToken(token);
                 core.onboardingsAPI().show(token, outerContext, feed, manager, tags, 1000);
             }
         });
@@ -1277,6 +1278,7 @@ public class InAppStoryManager implements IASBackPressHandler {
         useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
+                core.cancellationTokenPool().addToken(token);
                 core.onboardingsAPI().show(token, outerContext, feed, manager, null, 1000);
             }
         });
@@ -1296,6 +1298,7 @@ public class InAppStoryManager implements IASBackPressHandler {
         useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
+                core.cancellationTokenPool().addToken(token);
                 core.onboardingsAPI().show(token, outerContext, null, manager, tags, 1000);
             }
         });
@@ -1313,6 +1316,7 @@ public class InAppStoryManager implements IASBackPressHandler {
         useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
+                core.cancellationTokenPool().addToken(token);
                 core.onboardingsAPI().show(token, outerContext, null, manager, null, 1000);
             }
         });
@@ -1331,6 +1335,7 @@ public class InAppStoryManager implements IASBackPressHandler {
         useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
+                core.cancellationTokenPool().addToken(token);
                 core.onboardingsAPI().show(token, outerContext, feed, manager, tags, limit);
             }
         });
@@ -1349,6 +1354,7 @@ public class InAppStoryManager implements IASBackPressHandler {
         useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
+                core.cancellationTokenPool().addToken(token);
                 core.onboardingsAPI().show(token, outerContext, feed, manager, null, limit);
             }
         });
@@ -1368,6 +1374,7 @@ public class InAppStoryManager implements IASBackPressHandler {
         useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
+                core.cancellationTokenPool().addToken(token);
                 core.onboardingsAPI().show(token, outerContext, null, manager, tags, limit);
             }
         });
@@ -1385,6 +1392,7 @@ public class InAppStoryManager implements IASBackPressHandler {
         useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
+                core.cancellationTokenPool().addToken(token);
                 core.onboardingsAPI().show(token, outerContext, null, manager, null, limit);
             }
         });
@@ -1405,6 +1413,7 @@ public class InAppStoryManager implements IASBackPressHandler {
         useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
+                core.cancellationTokenPool().addToken(token);
                 core.singleStoryAPI().show(token, context, storyId, manager, callback, 0);
             }
         });
@@ -1416,6 +1425,7 @@ public class InAppStoryManager implements IASBackPressHandler {
         useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
+                core.cancellationTokenPool().addToken(token);
                 core.singleStoryAPI().show(token, context, storyId, manager, callback, slide);
             }
         });
@@ -1453,6 +1463,7 @@ public class InAppStoryManager implements IASBackPressHandler {
         useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
+                core.cancellationTokenPool().addToken(token);
                 core.singleStoryAPI().showOnce(token, context, storyId, manager, callback);
             }
         });
@@ -1471,6 +1482,7 @@ public class InAppStoryManager implements IASBackPressHandler {
         useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
+                core.cancellationTokenPool().addToken(token);
                 core.singleStoryAPI().show(token, context, storyId, manager, null, 0);
             }
         });
@@ -1576,6 +1588,7 @@ public class InAppStoryManager implements IASBackPressHandler {
         useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
+                core.cancellationTokenPool().addToken(token);
                 core.inAppMessageAPI().show(
                         token,
                         openData,

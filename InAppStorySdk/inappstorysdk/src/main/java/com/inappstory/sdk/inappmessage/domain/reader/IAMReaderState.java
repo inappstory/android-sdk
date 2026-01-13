@@ -15,11 +15,17 @@ public class IAMReaderState {
     public boolean contentIsPreloaded = false;
     public Integer iamId = null;
     public String event = null;
+    public String cancellationTokenUID = null;
     public SourceType sourceType = SourceType.EVENT_IN_APP_MESSAGE;
     public InAppMessageData inAppMessageData = null;
 
     public IAMReaderState inAppMessageData(InAppMessageData inAppMessageData) {
         this.inAppMessageData = inAppMessageData;
+        return this;
+    }
+
+    public IAMReaderState cancellationTokenUID(String cancellationTokenUID) {
+        this.cancellationTokenUID = cancellationTokenUID;
         return this;
     }
 
@@ -78,6 +84,7 @@ public class IAMReaderState {
         return new IAMReaderState()
                 .uiState(this.uiState)
                 .sourceType(this.sourceType)
+                .cancellationTokenUID(this.cancellationTokenUID)
                 .loadState(this.loadState)
                 .loaderState(this.loaderState)
                 .iamId(this.iamId)

@@ -140,7 +140,7 @@ public class InAppStoryAPISubscribersManager {
         }
         currentStoryCover.setOpened(true);
         core.storyListCache().saveStoryOpened(coverId, ContentType.STORY);
-        String sessionId = ((IASDataSettingsHolder)core.settingsAPI()).sessionIdOrEmpty();
+        String sessionId = ((IASDataSettingsHolder) core.settingsAPI()).sessionIdOrEmpty();
         if (currentStoryCover.deeplink() != null && !currentStoryCover.deeplink().isEmpty()) {
             service.getListReaderConnector().changeStory(coverId, uniqueKey, false);
 
@@ -247,20 +247,16 @@ public class InAppStoryAPISubscribersManager {
                     j++;
                 }
             }
-            LaunchStoryScreenData launchData = new LaunchStoryScreenData(
-                    uniqueKey,
-                    requestData.feed,
-                    sessionId,
-                    readerStories,
-                    correctedIndex,
-                    false,
-                    ShowStory.ACTION_OPEN,
-                    SourceType.LIST,
-                    0,
-                    ContentType.STORY,
-                    null
-            );
-            boolean nonAnonymous = !((IASDataSettingsHolder)core.settingsAPI()).anonymous();
+            LaunchStoryScreenData launchData = new LaunchStoryScreenData()
+                    .listUniqueId(uniqueKey)
+                    .feed(requestData.feed)
+                    .sessionId(sessionId)
+                    .storiesIds(new ArrayList<>(readerStories))
+                    .listIndex(correctedIndex)
+                    .firstAction(ShowStory.ACTION_OPEN)
+                    .sourceType(SourceType.LIST)
+                    .type(ContentType.STORY);
+            boolean nonAnonymous = !((IASDataSettingsHolder) core.settingsAPI()).anonymous();
             core.screensManager().openScreen(context,
                     new LaunchStoryScreenStrategy(core, false).
                             launchStoryScreenData(launchData).
@@ -513,7 +509,7 @@ public class InAppStoryAPISubscribersManager {
             subscriber.updateStoriesData(
                     storyAPIData,
                     new IASStoryListSessionData().previewAspectRatio(
-                            ((IASDataSettingsHolder)core.settingsAPI()).sessionData().previewAspectRatio
+                            ((IASDataSettingsHolder) core.settingsAPI()).sessionData().previewAspectRatio
                     )
             );
         }
@@ -575,7 +571,7 @@ public class InAppStoryAPISubscribersManager {
                     subscriber.updateStoryData(
                             data,
                             new IASStoryListSessionData().previewAspectRatio(
-                                    ((IASDataSettingsHolder)core.settingsAPI()).sessionData().previewAspectRatio
+                                    ((IASDataSettingsHolder) core.settingsAPI()).sessionData().previewAspectRatio
                             )
                     );
                 }
@@ -643,7 +639,7 @@ public class InAppStoryAPISubscribersManager {
                 subscriber.updateStoriesData(
                         newData,
                         new IASStoryListSessionData().previewAspectRatio(
-                                ((IASDataSettingsHolder)core.settingsAPI()).sessionData().previewAspectRatio
+                                ((IASDataSettingsHolder) core.settingsAPI()).sessionData().previewAspectRatio
                         )
                 );
             }

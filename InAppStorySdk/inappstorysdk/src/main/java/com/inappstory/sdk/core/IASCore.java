@@ -18,7 +18,6 @@ import com.inappstory.sdk.core.api.IASLogs;
 import com.inappstory.sdk.core.api.IASManager;
 import com.inappstory.sdk.core.api.IASOnboardings;
 import com.inappstory.sdk.core.api.IASDataSettings;
-import com.inappstory.sdk.core.api.IASProjectSettings;
 import com.inappstory.sdk.core.api.IASProjectSettingsInternal;
 import com.inappstory.sdk.core.api.IASSessionAssetsHolder;
 import com.inappstory.sdk.core.api.IASSingleStory;
@@ -26,13 +25,11 @@ import com.inappstory.sdk.core.api.IASStackFeed;
 import com.inappstory.sdk.core.api.IASStatistic;
 import com.inappstory.sdk.core.api.IASStoryList;
 import com.inappstory.sdk.core.api.IASStoriesOpenedCache;
-import com.inappstory.sdk.core.data.IAppVersion;
 import com.inappstory.sdk.core.dataholders.IContentHolder;
 import com.inappstory.sdk.core.dataholders.IStoriesListVMHolder;
 import com.inappstory.sdk.core.ui.screens.ScreensManager;
 import com.inappstory.sdk.domain.IWidgetsViewModels;
 import com.inappstory.sdk.network.NetworkClient;
-import com.inappstory.sdk.stories.cache.FilesDownloadManager;
 import com.inappstory.sdk.stories.exceptions.ExceptionManager;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
@@ -77,4 +74,5 @@ public interface IASCore {
     SharedPreferencesAPI sharedPreferencesAPI();
     InAppStoryService inAppStoryService();
     IASAssetsHolder assetsHolder();
+    CancellationTokenPool cancellationTokenPool();
 }

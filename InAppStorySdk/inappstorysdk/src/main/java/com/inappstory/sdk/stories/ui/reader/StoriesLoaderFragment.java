@@ -57,8 +57,8 @@ public class StoriesLoaderFragment extends Fragment {
         if (inAppStoryManager == null) return;
         IListItemContent story = inAppStoryManager.iasCore().contentHolder().listsContent()
                 .getByIdAndType(
-                        launchData.getStoriesIds().get(launchData.getListIndex()),
-                        launchData.getType()
+                        launchData.storiesIds().get(launchData.listIndex()),
+                        launchData.type()
                 );
         if (story == null) return;
         storyId = story.id();

@@ -192,19 +192,14 @@ public class IASSingleStoryImpl implements IASSingleStory {
 
         ArrayList<Integer> stIds = new ArrayList<>();
         stIds.add(story.id);
-        LaunchStoryScreenData launchData = new LaunchStoryScreenData(
-                null,
-                null,
-                sessionId,
-                stIds,
-                0,
-                false,
-                readerAction,
-                readerSource,
-                slide,
-                type,
-                null
-        );
+        LaunchStoryScreenData launchData = new LaunchStoryScreenData()
+                .sessionId(sessionId)
+                .storiesIds(new ArrayList<>(stIds))
+                .firstAction(readerAction)
+                .sourceType(readerSource)
+                .slideIndex(slide)
+                .type(type)
+                .cancellationTokenUID(cancellationToken.getUniqueId());
         boolean nonAnonymous = !((IASDataSettingsHolder) core.settingsAPI()).anonymous();
 
         core.screensManager().openScreen(context,

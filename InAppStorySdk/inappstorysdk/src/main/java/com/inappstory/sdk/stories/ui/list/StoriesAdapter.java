@@ -352,19 +352,16 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
             if (story == null || !story.hideInReader())
                 tempStories.add(storyId);
         }
-        LaunchStoryScreenData launchData = new LaunchStoryScreenData(
-                listID,
-                feed,
-                sessionId,
-                tempStories,
-                tempStories.indexOf(storiesIds.get(index)),
-                false,
-                ShowStory.ACTION_OPEN,
-                isFavoriteList ? SourceType.FAVORITE : SourceType.LIST,
-                0,
-                ContentType.STORY,
-                coordinates
-        );
+        LaunchStoryScreenData launchData = new LaunchStoryScreenData()
+                .listUniqueId(listID)
+                .feed(feed)
+                .sessionId(sessionId)
+                .storiesIds(new ArrayList<>(tempStories))
+                .listIndex(tempStories.indexOf(storiesIds.get(index)))
+                .firstAction(ShowStory.ACTION_OPEN)
+                .sourceType(isFavoriteList ? SourceType.FAVORITE : SourceType.LIST)
+                .type(ContentType.STORY)
+                .initCoordinates(coordinates);
         boolean nonAnonymous = !((IASDataSettingsHolder)core.settingsAPI()).anonymous();
         core.screensManager().openScreen(
                 context,

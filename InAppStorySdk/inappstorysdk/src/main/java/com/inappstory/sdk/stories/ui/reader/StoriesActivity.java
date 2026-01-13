@@ -6,8 +6,6 @@ import static com.inappstory.sdk.game.reader.GameReaderContentFragment.GAME_READ
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
-import android.content.res.Configuration;
-import android.content.res.Resources;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.os.Build;
@@ -21,20 +19,18 @@ import android.view.inputmethod.InputMethodManager;
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.inappstory.sdk.AppearanceManager;
-import com.inappstory.sdk.BuildConfig;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.core.CancellationTokenWithStatus;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASCallbackType;
-import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.IASStatisticStoriesV1;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.data.IReaderContent;
@@ -66,9 +62,6 @@ import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPag
 import com.inappstory.sdk.stories.utils.IASBackPressHandler;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 import com.inappstory.sdk.stories.utils.Sizes;
-import com.inappstory.sdk.utils.SystemUiUtils;
-
-import java.util.Locale;
 
 
 public class StoriesActivity extends IASActivity implements BaseStoryScreen, ShowGoodsCallback {
@@ -95,7 +88,7 @@ public class StoriesActivity extends IASActivity implements BaseStoryScreen, Sho
                         core
                                 .statistic()
                                 .storiesV1(
-                                        launchData.getSessionId(),
+                                        launchData.sessionId(),
                                         new GetStatisticV1Callback() {
                                             @Override
                                             public void get(@NonNull IASStatisticStoriesV1 manager) {
@@ -442,12 +435,26 @@ public class StoriesActivity extends IASActivity implements BaseStoryScreen, Sho
                 getSerializableExtra(LaunchStoryScreenData.SERIALIZABLE_KEY);
         appearanceSettings = (LaunchStoryScreenAppearance) getIntent()
                 .getSerializableExtra(LaunchStoryScreenAppearance.SERIALIZABLE_KEY);
+
+        draggableFrame = findViewById(R.id.draggable_frame);
+
+        blockView = findViewById(R.id.blockView);
+        backTintView = findViewById(R.id.background);
+        animatedContainer = findViewById(R.id.animatedContainer);
+
         if (inAppStoryManager == null || launchData == null) {
             forceFinish();
             return;
         }
-
         IASCore core = inAppStoryManager.iasCore();
+        String cancellationTokenUID = launchData.cancellationTokenUID();
+        if (cancellationTokenUID != null) {
+            CancellationTokenWithStatus token = core.cancellationTokenPool().getTokenByUID(cancellationTokenUID);
+            if (token != null && token.cancelled()) {
+                forceFinish();
+                return;
+            }
+        }
         core.screensManager().getStoryScreenHolder().subscribeScreen(StoriesActivity.this);
         View view = getCurrentFocus();
         if (view != null) {
@@ -458,11 +465,6 @@ public class StoriesActivity extends IASActivity implements BaseStoryScreen, Sho
         closeOnSwipe = appearanceSettings.csCloseOnSwipe();
         closeOnOverscroll = appearanceSettings.csCloseOnOverscroll();
 
-        draggableFrame = findViewById(R.id.draggable_frame);
-
-        blockView = findViewById(R.id.blockView);
-        backTintView = findViewById(R.id.background);
-        animatedContainer = findViewById(R.id.animatedContainer);
         fader = new DraggableElasticLayout.DraggableElasticFader(StoriesActivity.this) {
             @Override
             public void onDrag(
@@ -517,7 +519,7 @@ public class StoriesActivity extends IASActivity implements BaseStoryScreen, Sho
                 .getOpenReader(ScreenType.STORY))
                 .onHideStatusBar(StoriesActivity.this);
         InAppStoryService.getInstance().getListReaderConnector().readerIsOpened();
-        type = launchData.getType();
+        type = launchData.type();
         draggableFrame.post(new Runnable() {
             @Override
             public void run() {
@@ -575,6 +577,21 @@ public class StoriesActivity extends IASActivity implements BaseStoryScreen, Sho
 
 
     private void setStoriesFragment() {
+        InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
+        if (inAppStoryManager == null || launchData == null) {
+            forceFinish();
+            return;
+        }
+        IASCore core = InAppStoryManager.getInstance().iasCore();
+        String cancellationTokenUID = launchData.cancellationTokenUID();
+        if (cancellationTokenUID != null) {
+            CancellationTokenWithStatus token = core.cancellationTokenPool().getTokenByUID(cancellationTokenUID);
+            if (token != null && token.cancelled()) {
+                forceFinish();
+                return;
+            }
+        }
+
         if (storiesContentFragment != null) {
             try {
                 FragmentManager fragmentManager = getSupportFragmentManager();
@@ -703,8 +720,8 @@ public class StoriesActivity extends IASActivity implements BaseStoryScreen, Sho
                                             new SlideData(
                                                     StoryData.getStoryData(
                                                             story,
-                                                            launchData.getFeed(),
-                                                            launchData.getSourceType(),
+                                                            launchData.feed(),
+                                                            launchData.sourceType(),
                                                             type
                                                     ),
                                                     idWithIndex.index(),
@@ -734,7 +751,7 @@ public class StoriesActivity extends IASActivity implements BaseStoryScreen, Sho
                             cause,
                             idWithIndex.index(),
                             story.slidesCount(),
-                            launchData.getFeed()
+                            launchData.feed()
                     );
                 }
             });
@@ -773,7 +790,8 @@ public class StoriesActivity extends IASActivity implements BaseStoryScreen, Sho
             public void run() {
                 getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
                         WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
-                blockView.setVisibility(View.VISIBLE);
+                if (blockView != null)
+                    blockView.setVisibility(View.VISIBLE);
                 finishWithoutAnimation();
             }
         });
@@ -796,7 +814,7 @@ public class StoriesActivity extends IASActivity implements BaseStoryScreen, Sho
                 @Override
                 public void use(@NonNull IASCore core) {
                     core.statistic().storiesV1(
-                            launchData.getSessionId(),
+                            launchData.sessionId(),
                             new GetStatisticV1Callback() {
                                 @Override
                                 public void get(@NonNull IASStatisticStoriesV1 manager) {
@@ -831,7 +849,7 @@ public class StoriesActivity extends IASActivity implements BaseStoryScreen, Sho
                             .onRestoreStatusBar(StoriesActivity.this);
                     if (launchData != null) {
                         core.statistic().storiesV1(
-                                launchData.getSessionId(),
+                                launchData.sessionId(),
                                 new GetStatisticV1Callback() {
                                     @Override
                                     public void get(@NonNull IASStatisticStoriesV1 manager) {

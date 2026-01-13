@@ -18,6 +18,7 @@ import androidx.fragment.app.FragmentTransaction;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.core.CancellationTokenWithStatus;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.ui.screens.inappmessagereader.BaseIAMScreen;
@@ -139,6 +140,18 @@ public class InAppMessageMainFragment extends Fragment implements Observer<IAMRe
         @Override
         public void onShown() {
             readerViewModel.updateCurrentUiState(IAMReaderUIStates.OPENED);
+            InAppStoryManager.useCore(new UseIASCoreCallback() {
+                @Override
+                public void use(@NonNull IASCore core) {
+                    String tokenId = readerViewModel.getCurrentState().cancellationTokenUID;
+                    if (tokenId != null) {
+                        CancellationTokenWithStatus token = core.cancellationTokenPool().getTokenByUID(tokenId);
+                        if (token != null && token.cancelled()) {
+                            forceFinish();
+                        }
+                    }
+                }
+            });
         }
 
         @Override
@@ -261,6 +274,7 @@ public class InAppMessageMainFragment extends Fragment implements Observer<IAMRe
                 hideContainer();
                 break;
             case OPENED:
+
                 if (onOpenAction != null)
                     onOpenAction.onOpen();
                 break;

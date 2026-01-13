@@ -301,17 +301,17 @@ public class StoriesContentFragment extends Fragment
         }
         LaunchStoryScreenData launchData = getLaunchData();
         if (launchData == null
-                || launchData.getStoriesIds() == null
-                || launchData.getStoriesIds().size() <= position) {
+                || launchData.storiesIds() == null
+                || launchData.storiesIds().size() <= position) {
             return;
         }
-        setDraggableAndCloseable(launchData.getStoriesIds().get(position), launchData.getType());
+        setDraggableAndCloseable(launchData.storiesIds().get(position), launchData.type());
     }
 
     public void setDraggableAndCloseable(int storyId, ContentType type) {
         LaunchStoryScreenData launchData = getLaunchData();
         if (storiesViewPager == null || launchData == null) return;
-        if (launchData.getStoriesIds().get(
+        if (launchData.storiesIds().get(
                 storiesViewPager.getCurrentItem()
         ) != storyId) return;
         InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
@@ -357,7 +357,7 @@ public class StoriesContentFragment extends Fragment
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-                core.statistic().storiesV1(launchData.getSessionId(),
+                core.statistic().storiesV1(launchData.sessionId(),
                         new GetStatisticV1Callback() {
                             @Override
                             public void get(@NonNull IASStatisticStoriesV1 manager) {
@@ -506,24 +506,24 @@ public class StoriesContentFragment extends Fragment
                     Bundle arguments = requireArguments();
                     LaunchStoryScreenAppearance appearanceSettings = getAppearanceSettings();
                     LaunchStoryScreenData launchData = getLaunchData();
-                    currentIds = launchData.getStoriesIds();
+                    currentIds = launchData.storiesIds();
                     readerAnimation = appearanceSettings.csStoryReaderAnimation();
 
                     if (currentIds == null || currentIds.isEmpty()) {
                         forceFinish();
                         return;
                     }
-                    ContentType type = launchData.getType();
+                    ContentType type = launchData.type();
                     readerManager = new ReaderManager(
                             core,
-                            launchData.getListUniqueId(),
+                            launchData.listUniqueId(),
                             launchData.shownOnlyNewStories(),
-                            launchData.getSessionId(),
-                            launchData.getFeed(),
-                            launchData.getFeed(),
+                            launchData.sessionId(),
+                            launchData.feed(),
+                            launchData.feed(),
                             type,
-                            launchData.getSourceType() != null ? launchData.getSourceType() : SourceType.SINGLE,
-                            launchData.getFirstAction()
+                            launchData.sourceType() != null ? launchData.sourceType() : SourceType.SINGLE,
+                            launchData.firstAction()
                     );
 
                     storiesViewPager.setHost(StoriesContentFragment.this);
@@ -533,8 +533,8 @@ public class StoriesContentFragment extends Fragment
                     readerManager.firstStoryId = currentIds.get(ind);
 
                     readerManager.startedSlideInd =
-                            launchData.getSlideIndex() != null ?
-                                    launchData.getSlideIndex() : 0;
+                            launchData.slideIndex() != null ?
+                                    launchData.slideIndex() : 0;
 
                     closeOnSwipe = appearanceSettings.csCloseOnSwipe();
                     closeOnOverscroll = appearanceSettings.csCloseOnOverscroll();
@@ -543,7 +543,7 @@ public class StoriesContentFragment extends Fragment
                     requireActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
                     storiesViewPager.setParameters(readerAnimation);
-                    source = getLaunchData().getSourceType();
+                    source = getLaunchData().sourceType();
                     restoreIndices(arguments);
                     outerViewPagerAdapter =
                             new ReaderPagerAdapter(
@@ -558,7 +558,7 @@ public class StoriesContentFragment extends Fragment
                     storiesViewPager.setAdapter(outerViewPagerAdapter);
                     storiesViewPager.addOnPageChangeListener(StoriesContentFragment.this);
 
-                    ind = launchData.getListIndex();
+                    ind = launchData.listIndex();
                     if (ind > 0) {
                         storiesViewPager.setCurrentItem(ind);
                     } else {

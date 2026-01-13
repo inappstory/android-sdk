@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 
-import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.core.CancellationTokenWithStatus;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
@@ -13,7 +12,6 @@ import com.inappstory.sdk.core.ui.screens.holder.IScreensHolder;
 import com.inappstory.sdk.core.ui.screens.launcher.ILaunchScreenCallback;
 import com.inappstory.sdk.core.ui.screens.launcher.LaunchScreenStrategy;
 import com.inappstory.sdk.core.ui.screens.ScreenType;
-import com.inappstory.sdk.core.ui.screens.holder.ScreensHolder;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenReader;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenStoriesReader;
 
@@ -75,10 +73,10 @@ public class LaunchStoryScreenStrategy implements LaunchScreenStrategy {
         }
         currentScreenHolder.startLaunchProcess();
         if (launchStoryScreenData != null) {
-            if (launchStoryScreenData.getStoriesIds().isEmpty()) {
+            if (launchStoryScreenData.storiesIds().isEmpty()) {
                 cantBeOpened = true;
                 message = "No story from list can be opened in reader.";
-            } else if (launchStoryScreenData.getStoriesIds().size() <= launchStoryScreenData.getListIndex()) {
+            } else if (launchStoryScreenData.storiesIds().size() <= launchStoryScreenData.listIndex()) {
                 cantBeOpened = true;
                 message = "Can't open reader from this story index.";
             }

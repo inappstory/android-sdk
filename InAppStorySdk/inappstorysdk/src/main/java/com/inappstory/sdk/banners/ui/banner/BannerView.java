@@ -25,6 +25,7 @@ import androidx.cardview.widget.CardView;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.core.CancellationTokenImpl;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASCallbackType;
@@ -295,6 +296,7 @@ public class BannerView extends FrameLayout implements Observer<BannerState> {
             if (!(getContext() instanceof Activity)) return;
             AppearanceManager appearanceManager = AppearanceManager.checkOrCreateAppearanceManager(null);
             ((IASSingleStoryImpl) core.singleStoryAPI()).show(
+                    new CancellationTokenImpl(),
                     (Activity) getContext(),
                     contentIdWithIndex.id() + "",
                     appearanceManager,

@@ -8,6 +8,7 @@ import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.core.CancellationTokenImpl;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
@@ -248,6 +249,7 @@ public class GameManager {
                     && options.openStory.id != null
                     && !options.openStory.id.isEmpty()) {
                 ((IASSingleStoryImpl) core.singleStoryAPI()).show(
+                        new CancellationTokenImpl(),
                         host.getContext(),
                         options.openStory.id,
                         AppearanceManager.getCommonInstance(),

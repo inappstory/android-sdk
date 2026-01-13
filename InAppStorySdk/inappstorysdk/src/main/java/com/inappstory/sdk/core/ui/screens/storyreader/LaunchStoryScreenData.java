@@ -29,82 +29,138 @@ public class LaunchStoryScreenData implements SerializableWithKey {
 
     @Override
     public int hashCode() {
-        return Objects.hash(sessionId, storiesIds, listIndex, sourceType, slideIndex, feed, type, shownOnlyNewStories);
+        return Objects.hash(
+                sessionId,
+                storiesIds,
+                listIndex,
+                sourceType,
+                slideIndex,
+                feed,
+                type,
+                shownOnlyNewStories
+        );
     }
 
-    public LaunchStoryScreenData(
-            String listUniqueId,
-            String feed,
-            String sessionId,
-            List<Integer> storiesIds,
-            int listIndex,
-            boolean shownOnlyNewStories,
-            int firstAction,
-            SourceType sourceType,
-            Integer slideIndex,
-            ContentType type,
-            StoryItemCoordinates initCoordinates
-    ) {
-        this.listUniqueId = listUniqueId;
-        this.sessionId = sessionId;
-        this.storiesIds = storiesIds;
-        this.listIndex = listIndex;
-        this.shownOnlyNewStories = shownOnlyNewStories;
-        this.sourceType = sourceType;
-        this.firstAction = firstAction;
-        this.slideIndex = slideIndex;
-        this.feed = feed;
-        this.type = type;
+    public LaunchStoryScreenData() {
         this.readerUniqueId = UUID.randomUUID().toString();
-        this.initCoordinates = initCoordinates;
     }
 
-    public String getListUniqueId() {
+    public String listUniqueId() {
         return listUniqueId;
     }
 
-    public List<Integer> getStoriesIds() {
+    public List<Integer> storiesIds() {
         return storiesIds;
     }
 
-    public int getListIndex() {
+    public int listIndex() {
         return listIndex;
     }
 
-    public SourceType getSourceType() {
+    public SourceType sourceType() {
         return sourceType;
     }
 
-    public int getFirstAction() {
+    public int firstAction() {
         return firstAction;
     }
 
-    public Integer getSlideIndex() {
+    public Integer slideIndex() {
         return slideIndex;
     }
 
-    public String getFeed() {
+    public String feed() {
         return feed;
     }
 
-    public String getSessionId() {
+    public String sessionId() {
         return sessionId;
     }
 
-    public ContentType getType() {
+    public ContentType type() {
         return type;
     }
 
-    private final String listUniqueId;
-    private final String sessionId;
-    private final List<Integer> storiesIds;
-    private int listIndex;
-    private final SourceType sourceType;
+
+    public LaunchStoryScreenData listUniqueId(String listUniqueId) {
+        this.listUniqueId = listUniqueId;
+        return this;
+    }
+
+    public LaunchStoryScreenData sessionId(String sessionId) {
+        this.sessionId = sessionId;
+        return this;
+    }
+
+    public LaunchStoryScreenData storiesIds(List<Integer> storiesIds) {
+        this.storiesIds = storiesIds;
+        return this;
+    }
+
+    public LaunchStoryScreenData listIndex(int listIndex) {
+        this.listIndex = listIndex;
+        return this;
+    }
+
+    public LaunchStoryScreenData sourceType(SourceType sourceType) {
+        this.sourceType = sourceType;
+        return this;
+    }
+
+    public LaunchStoryScreenData firstAction(int firstAction) {
+        this.firstAction = firstAction;
+        return this;
+    }
+
+    public LaunchStoryScreenData slideIndex(Integer slideIndex) {
+        this.slideIndex = slideIndex;
+        return this;
+    }
+
+    public LaunchStoryScreenData feed(String feed) {
+        this.feed = feed;
+        return this;
+    }
+
+    public LaunchStoryScreenData type(ContentType type) {
+        this.type = type;
+        return this;
+    }
+
+    public LaunchStoryScreenData shownOnlyNewStories(boolean shownOnlyNewStories) {
+        this.shownOnlyNewStories = shownOnlyNewStories;
+        return this;
+    }
+
+
+    private StoryItemCoordinates initCoordinates = null;
+    private String listUniqueId = null;
+    private String sessionId;
+    private List<Integer> storiesIds;
+    private int listIndex = 0;
+    private SourceType sourceType;
     private int firstAction;
-    private Integer slideIndex;
-    private final String feed;
-    private final ContentType type;
-    private final boolean shownOnlyNewStories;
+    private Integer slideIndex = 0;
+    private String feed = null;
+    private ContentType type;
+    private boolean shownOnlyNewStories = false;
+    private final String readerUniqueId;
+
+    public String cancellationTokenUID() {
+        return cancellationTokenUID;
+    }
+
+    public LaunchStoryScreenData cancellationTokenUID(String cancellationTokenUID) {
+        this.cancellationTokenUID = cancellationTokenUID;
+        return this;
+    }
+
+    private String cancellationTokenUID = null;
+
+    public LaunchStoryScreenData initCoordinates(StoryItemCoordinates initCoordinates) {
+        this.initCoordinates = initCoordinates;
+        return this;
+    }
 
     public void clearSingleTimeParameters() {
         firstAction = 0;
@@ -121,13 +177,9 @@ public class LaunchStoryScreenData implements SerializableWithKey {
         return initCoordinates;
     }
 
-    private final StoryItemCoordinates initCoordinates;
-
     public String getReaderUniqueId() {
         return readerUniqueId;
     }
-
-    private final String readerUniqueId;
 
     @Override
     public String getSerializableKey() {

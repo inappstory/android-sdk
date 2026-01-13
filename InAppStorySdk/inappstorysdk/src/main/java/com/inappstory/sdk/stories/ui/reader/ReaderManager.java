@@ -13,6 +13,7 @@ import androidx.viewpager.widget.ViewPager;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.core.CancellationTokenImpl;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.IASStatisticStoriesV1;
@@ -327,6 +328,7 @@ public class ReaderManager {
             appearanceManager = new AppearanceManager();
         }
         ((IASSingleStoryImpl) core.singleStoryAPI()).show(
+                new CancellationTokenImpl(),
                 host.getContext(),
                 storyId + "",
                 appearanceManager,

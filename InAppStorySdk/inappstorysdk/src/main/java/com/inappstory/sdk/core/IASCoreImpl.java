@@ -18,7 +18,6 @@ import com.inappstory.sdk.core.api.IASLogs;
 import com.inappstory.sdk.core.api.IASManager;
 import com.inappstory.sdk.core.api.IASOnboardings;
 import com.inappstory.sdk.core.api.IASDataSettings;
-import com.inappstory.sdk.core.api.IASProjectSettings;
 import com.inappstory.sdk.core.api.IASProjectSettingsInternal;
 import com.inappstory.sdk.core.api.IASSessionAssetsHolder;
 import com.inappstory.sdk.core.api.IASSingleStory;
@@ -96,9 +95,11 @@ public class IASCoreImpl implements IASCore {
     private final IASBanners banners;
     private final IASAssetsHolder assetsHolder;
     private final IASLimitsHolder limitsHolder;
+    private final CancellationTokenPool cancellationTokenPool;
 
     public IASCoreImpl(Context context) {
         this.context = context;
+        cancellationTokenPool = new CancellationTokenPool();
         widgetsViewModels = new WidgetsViewModels(this);
         exceptionManager = new ExceptionManager(this);
         contentHolder = new ContentHolder();
@@ -313,5 +314,10 @@ public class IASCoreImpl implements IASCore {
     @Override
     public IASAssetsHolder assetsHolder() {
         return assetsHolder;
+    }
+
+    @Override
+    public CancellationTokenPool cancellationTokenPool() {
+        return cancellationTokenPool;
     }
 }

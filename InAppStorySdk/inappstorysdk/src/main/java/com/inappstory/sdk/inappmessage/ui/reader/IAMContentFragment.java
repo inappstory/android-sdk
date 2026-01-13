@@ -15,6 +15,7 @@ import androidx.fragment.app.Fragment;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.core.CancellationTokenImpl;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASCallbackType;
@@ -154,6 +155,7 @@ public class IAMContentFragment extends Fragment implements Observer<IAMReaderSl
         try {
             AppearanceManager appearanceManager = AppearanceManager.checkOrCreateAppearanceManager(null);
             ((IASSingleStoryImpl) core.singleStoryAPI()).show(
+                    new CancellationTokenImpl(),
                     requireActivity(),
                     contentIdWithIndex.id() + "",
                     appearanceManager,
