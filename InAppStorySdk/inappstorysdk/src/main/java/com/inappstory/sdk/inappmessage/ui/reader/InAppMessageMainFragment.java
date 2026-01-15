@@ -203,11 +203,16 @@ public class InAppMessageMainFragment extends Fragment implements Observer<IAMRe
         t.addToBackStack("IAM_CONTENT_FRAGMENT");
         t.commit();
         if (contentContainer != null) {
-            contentContainer.setRefreshClick(v -> {
-                if (contentFragment != null) {
-                    contentFragment.refreshClick();
-                }
-            });
+            contentContainer.setRefreshClick(
+                    new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            if (contentFragment != null) {
+                                contentFragment.refreshClick();
+                            }
+                        }
+                    }
+            );
         }
     }
 
