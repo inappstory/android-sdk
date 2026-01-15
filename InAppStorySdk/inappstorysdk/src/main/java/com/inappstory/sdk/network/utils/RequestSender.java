@@ -4,6 +4,7 @@ package com.inappstory.sdk.network.utils;
 import android.util.Pair;
 
 import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.LoggerTags;
 import com.inappstory.sdk.network.models.Request;
 import com.inappstory.sdk.network.models.Response;
 import com.inappstory.sdk.network.models.ResponseWithRawData;
@@ -22,7 +23,7 @@ public class RequestSender {
         requestLog.buildFromRequest(req, requestId);
         requestLog.setHeaders(connectionWithProperties.second);
         InAppStoryManager.sendApiRequestLog(requestLog);
-        InAppStoryManager.showDLog("InAppStory_Network", requestLog.getCurl());
+        InAppStoryManager.showDLog(LoggerTags.IAS_NETWORK, requestLog.getCurl());
         ResponseWithRawData responseWithRawData = new RawResponseFromConnection().get(connection, requestId);
 
         ApiLogResponse responseLog = new ApiLogResponse();

@@ -8,6 +8,7 @@ import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.LoggerTags;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASDataSettings;
@@ -93,8 +94,8 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
         synchronized (settingsLock) {
             localDeviceId = deviceId;
             if (anonymous) {
-                InAppStoryManager.showDLog(
-                        InAppStoryManager.IAS_ERROR_TAG,
+                InAppStoryManager.showELog(
+                        LoggerTags.IAS_ERROR_TAG,
                         StringsUtils.getErrorStringFromContext(
                                 core.appContext(),
                                 R.string.ias_only_anonymous_usage_user
@@ -105,7 +106,7 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
         }
         if (localDeviceId == null && (newUserId == null || newUserId.isEmpty())) {
             InAppStoryManager.showELog(
-                    InAppStoryManager.IAS_ERROR_TAG,
+                    LoggerTags.IAS_ERROR_TAG,
                     StringsUtils.getErrorStringFromContext(
                             core.appContext(),
                             R.string.ias_usage_without_user_and_device
@@ -115,7 +116,7 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
         }
         if (newUserId == null || StringsUtils.getBytesLength(newUserId) > 255) {
             InAppStoryManager.showELog(
-                    InAppStoryManager.IAS_ERROR_TAG,
+                    LoggerTags.IAS_ERROR_TAG,
                     StringsUtils.getErrorStringFromContext(
                             core.appContext(),
                             R.string.ias_setter_user_length_error
@@ -307,7 +308,7 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
             for (String tag : copyTags) {
                 if (!TagsUtils.checkTagPattern(tag)) {
                     InAppStoryManager.showELog(
-                            InAppStoryManager.IAS_WARN_TAG,
+                            LoggerTags.IAS_WARN_TAG,
                             StringsUtils.getFormattedErrorStringFromContext(
                                     core.appContext(),
                                     R.string.ias_tag_pattern_error,
@@ -321,7 +322,7 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
         }
         if (StringsUtils.getBytesLength(TextUtils.join(",", newList)) > TAG_LIMIT) {
             InAppStoryManager.showELog(
-                    InAppStoryManager.IAS_ERROR_TAG,
+                    LoggerTags.IAS_ERROR_TAG,
                     StringsUtils.getErrorStringFromContext(
                             core.appContext(),
                             R.string.ias_setter_tags_length_error
@@ -512,7 +513,7 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
         boolean needToReloadSession = false;
         if (settings.anonymous() && settings.userId() != null) {
             InAppStoryManager.showDLog(
-                    InAppStoryManager.IAS_WARN_TAG,
+                    LoggerTags.IAS_WARN_TAG,
                     StringsUtils.getErrorStringFromContext(
                             core.appContext(),
                             R.string.ias_only_anonymous_usage_user
@@ -534,7 +535,7 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
             if (settings.anonymous()) {
                 if (settings.userId() != null && !settings.userId().isEmpty()) {
                     InAppStoryManager.showDLog(
-                            InAppStoryManager.IAS_WARN_TAG,
+                            LoggerTags.IAS_WARN_TAG,
                             StringsUtils.getErrorStringFromContext(
                                     core.appContext(),
                                     R.string.ias_only_anonymous_usage_user
@@ -543,7 +544,7 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
                 }
                 if (currentUserId != null && !currentUserId.isEmpty())
                     InAppStoryManager.showDLog(
-                            InAppStoryManager.IAS_WARN_TAG,
+                            LoggerTags.IAS_WARN_TAG,
                             StringsUtils.getErrorStringFromContext(
                                     core.appContext(),
                                     R.string.ias_set_anon_clear_user
@@ -555,7 +556,7 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
                 if (settings.userId() != null) {
                     if (deviceId == null && settings.userId().isEmpty()) {
                         InAppStoryManager.showELog(
-                                InAppStoryManager.IAS_ERROR_TAG,
+                                LoggerTags.IAS_ERROR_TAG,
                                 StringsUtils.getErrorStringFromContext(
                                         core.appContext(),
                                         R.string.ias_usage_without_user_and_device
@@ -565,7 +566,7 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
                     }
                     if (StringsUtils.getBytesLength(settings.userId()) > 255) {
                         InAppStoryManager.showELog(
-                                InAppStoryManager.IAS_ERROR_TAG,
+                                LoggerTags.IAS_ERROR_TAG,
                                 StringsUtils.getErrorStringFromContext(
                                         core.appContext(),
                                         R.string.ias_setter_user_length_error
@@ -591,7 +592,7 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
                 for (String tag : copyTags) {
                     if (!TagsUtils.checkTagPattern(tag)) {
                         InAppStoryManager.showELog(
-                                InAppStoryManager.IAS_WARN_TAG,
+                                LoggerTags.IAS_WARN_TAG,
                                 StringsUtils.getFormattedErrorStringFromContext(
                                         core.appContext(),
                                         R.string.ias_tag_pattern_error,
@@ -604,7 +605,7 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
                 }
                 if (StringsUtils.getBytesLength(TextUtils.join(",", filteredList)) > TAG_LIMIT) {
                     InAppStoryManager.showELog(
-                            InAppStoryManager.IAS_ERROR_TAG,
+                            LoggerTags.IAS_ERROR_TAG,
                             StringsUtils.getErrorStringFromContext(
                                     core.appContext(),
                                     R.string.ias_setter_tags_length_error

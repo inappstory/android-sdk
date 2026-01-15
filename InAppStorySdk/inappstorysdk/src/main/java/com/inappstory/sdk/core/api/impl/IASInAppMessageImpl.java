@@ -1,12 +1,10 @@
 package com.inappstory.sdk.core.api.impl;
 
-import static com.inappstory.sdk.InAppStoryManager.IAS_ERROR_TAG;
-
-import android.content.Context;
 
 import androidx.fragment.app.FragmentManager;
 
 import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.LoggerTags;
 import com.inappstory.sdk.core.CancellationTokenWithStatus;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASCallbackType;
@@ -16,9 +14,8 @@ import com.inappstory.sdk.core.ui.screens.inappmessagereader.LaunchIAMScreenStra
 import com.inappstory.sdk.inappmessage.InAppMessageLoadCallback;
 import com.inappstory.sdk.inappmessage.InAppMessageOpenSettings;
 import com.inappstory.sdk.inappmessage.InAppMessagePreloadSettings;
-import com.inappstory.sdk.inappmessage.InAppMessageScreenActions;import com.inappstory.sdk.stories.api.models.ContentType;
+import com.inappstory.sdk.inappmessage.InAppMessageScreenActions;
 
-import java.util.List;
 
 public class IASInAppMessageImpl implements IASInAppMessage {
 
@@ -33,7 +30,7 @@ public class IASInAppMessageImpl implements IASInAppMessage {
         IASDataSettingsHolder settingsHolder = (IASDataSettingsHolder) core.settingsAPI();
         if (settingsHolder.anonymous()) {
             InAppStoryManager.showELog(
-                    IAS_ERROR_TAG,
+                    LoggerTags.IAS_ERROR_TAG,
                     "In-app messages are unavailable for anonymous mode"
             );
             callback.loadError();
@@ -54,7 +51,7 @@ public class IASInAppMessageImpl implements IASInAppMessage {
         IASDataSettingsHolder settingsHolder = (IASDataSettingsHolder) core.settingsAPI();
         if (settingsHolder.anonymous()) {
             InAppStoryManager.showELog(
-                    IAS_ERROR_TAG,
+                    LoggerTags.IAS_ERROR_TAG,
                     "In-app messages are unavailable for anonymous mode"
             );
             if (screenActions != null)

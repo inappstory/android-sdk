@@ -62,16 +62,8 @@ public class SessionAssetUseCase extends GetCacheFileUseCase<Void> {
                     cacheJournalItem.setDownloadedSize(fileState.totalSize);
                     try {
                         getCache().put(cacheJournalItem);
-                        if (cacheObject.url.contains("widgets/poll.css")) {
-                            InAppStoryManager.showDLog("downloadPollCss", "putToCacheSuccess " + cacheJournalItem.getUniqueKey());
-                        }
                     } catch (IOException e) {
-                        if (cacheObject.url.contains("widgets/poll.css")) {
-                            InAppStoryManager.showDLog("downloadPollCss", "putToCacheError " + e.getMessage());
-                        }
-                    }
-                    if (cacheObject.url.contains("widgets/poll.css")) {
-                        InAppStoryManager.showDLog("downloadPollCss", "success");
+
                     }
                     useCaseCallback.onSuccess(fileState.file);
                 }
@@ -81,10 +73,6 @@ public class SessionAssetUseCase extends GetCacheFileUseCase<Void> {
 
                 }
             };
-
-            if (cacheObject.url.contains("widgets/poll.css")) {
-                InAppStoryManager.showDLog("downloadPollCss", "downloadFile");
-            }
             core
                     .contentLoader()
                     .downloader()
@@ -110,27 +98,15 @@ public class SessionAssetUseCase extends GetCacheFileUseCase<Void> {
     }
 
     private boolean getLocalFile() {
-
-        if (cacheObject.url.contains("widgets/poll.css")) {
-            InAppStoryManager.showDLog("downloadPollCss", "getLocalFile");
-        }
         downloadLog.generateRequestLog(cacheObject.url);
         CacheJournalItem cached = getCache().getJournalItem(uniqueKey);
         DownloadFileState fileState = null;
 
         if (cached != null) {
-            if (cacheObject.url.contains("widgets/poll.css")) {
-                InAppStoryManager.showDLog("downloadPollCss",
-                        uniqueKey + " " + cached.getSha1() + " " + cacheObject.sha1);
-            }
             if (Objects.equals(cached.getSha1(), cacheObject.sha1)) {
                 fileState = getCache().get(uniqueKey);
             } else {
                 deleteCacheKey();
-            }
-        } else {
-            if (cacheObject.url.contains("widgets/poll.css")) {
-                InAppStoryManager.showDLog("downloadPollCss", "getLocalFile cached is null");
             }
         }
 
@@ -140,19 +116,10 @@ public class SessionAssetUseCase extends GetCacheFileUseCase<Void> {
                 downloadLog.generateResponseLog(true, filePath);
                 downloadLog.sendRequestResponseLog();
                 useCaseCallback.onSuccess(file);
-                if (cacheObject.url.contains("widgets/poll.css")) {
-                    InAppStoryManager.showDLog("downloadPollCss", "getLocalFile has local file");
-                }
+
                 return true;
             } else {
-                if (cacheObject.url.contains("widgets/poll.css")) {
-                    InAppStoryManager.showDLog("downloadPollCss", "getLocalFile file is null");
-                }
                 deleteCacheKey();
-            }
-        } else {
-            if (cacheObject.url.contains("widgets/poll.css")) {
-                InAppStoryManager.showDLog("downloadPollCss", "getLocalFile fileState is null");
             }
         }
         return false;

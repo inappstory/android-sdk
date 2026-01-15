@@ -127,7 +127,7 @@ public class InAppStoryManager implements IASBackPressHandler {
                 callback.use(localCore);
             }
         } catch (Exception e) {
-            showELog(IAS_ERROR_TAG, e.getMessage() + "");
+            showELog(LoggerTags.IAS_ERROR_TAG, e.getMessage() + "");
         }
     }
 
@@ -155,7 +155,7 @@ public class InAppStoryManager implements IASBackPressHandler {
                 localExecService.execute(runnable);
             }
         } catch (Exception e) {
-            showELog(IAS_ERROR_TAG, e.getMessage() + "");
+            showELog(LoggerTags.IAS_ERROR_TAG, e.getMessage() + "");
         }
     }
 
@@ -172,7 +172,7 @@ public class InAppStoryManager implements IASBackPressHandler {
                 callback.error();
             }
         } catch (Exception e) {
-            showELog(IAS_ERROR_TAG, e.getMessage() + "");
+            showELog(LoggerTags.IAS_ERROR_TAG, e.getMessage() + "");
         }
     }
 
@@ -207,12 +207,12 @@ public class InAppStoryManager implements IASBackPressHandler {
     private static final IASLogger defaultLogger = new IASLogger() {
         @Override
         public void showELog(String tag, String message) {
-            Log.e(tag, message);
+            Log.e(tag, message != null ? message : "");
         }
 
         @Override
         public void showDLog(String tag, String message) {
-            Log.d(tag, message);
+            Log.d(tag, message != null ? message : "");
         }
     };
 
@@ -724,7 +724,7 @@ public class InAppStoryManager implements IASBackPressHandler {
             }
         if (!(context instanceof Application)) calledFromApplication = false;
         if (!calledFromApplication)
-            showELog(IAS_ERROR_TAG, "Method must be called from Application class and context has to be an applicationContext");
+            showELog(LoggerTags.IAS_ERROR_TAG, "Method must be called from Application class and context has to be an applicationContext");
         synchronized (lock) {
             if (INSTANCE == null) {
                 INSTANCE = new InAppStoryManager(context);
@@ -752,8 +752,6 @@ public class InAppStoryManager implements IASBackPressHandler {
 
     private boolean isSandbox = false;
 
-    public final static String IAS_ERROR_TAG = "InAppStory_SDK_error";
-    public final static String IAS_WARN_TAG = "InAppStory_SDK_warn";
 
     private boolean isInitialized = false;
     private boolean isInitProcess = false;
@@ -776,7 +774,7 @@ public class InAppStoryManager implements IASBackPressHandler {
         Integer errorStringId = null;
         if (core == null) {
             showELog(
-                    IAS_ERROR_TAG,
+                    LoggerTags.IAS_ERROR_TAG,
                     "InAppStoryManager not initialized"
             );
             return;
@@ -794,7 +792,7 @@ public class InAppStoryManager implements IASBackPressHandler {
             for (String tag : copyTags) {
                 if (!TagsUtils.checkTagPattern(tag)) {
                     InAppStoryManager.showELog(
-                            InAppStoryManager.IAS_WARN_TAG,
+                            LoggerTags.IAS_WARN_TAG,
                             StringsUtils.getFormattedErrorStringFromContext(
                                     core.appContext(),
                                     R.string.ias_tag_pattern_error,
@@ -812,7 +810,7 @@ public class InAppStoryManager implements IASBackPressHandler {
         }
         if (errorStringId != null) {
             showELog(
-                    IAS_ERROR_TAG,
+                    LoggerTags.IAS_ERROR_TAG,
                     StringsUtils.getErrorStringFromContext(
                             context,
                             errorStringId
@@ -822,14 +820,22 @@ public class InAppStoryManager implements IASBackPressHandler {
         }
         long freeSpace = context.getCacheDir().getFreeSpace();
         if (freeSpace < MB_5 + MB_10 + MB_10) {
-            showELog(IAS_ERROR_TAG, StringsUtils.getErrorStringFromContext(context,
-                    R.string.ias_min_free_space_error));
+            showELog(
+                    LoggerTags.IAS_ERROR_TAG,
+                    StringsUtils.getErrorStringFromContext(
+                            context,
+                            R.string.ias_min_free_space_error
+                    )
+            );
             return;
         }
         boolean secondaryInit = false;
         synchronized (initLock) {
             if (isInitProcess) {
-                showELog(IAS_ERROR_TAG, "Previous init process still not finished");
+                showELog(
+                        LoggerTags.IAS_ERROR_TAG,
+                        "Previous init process still not finished"
+                );
                 return;
             }
             secondaryInit = isInitialized;
@@ -968,7 +974,7 @@ public class InAppStoryManager implements IASBackPressHandler {
     public void setAppVersion(@NonNull final String version, final int build) {
         if (version.isEmpty() || version.length() > 50) {
             showELog(
-                    IAS_ERROR_TAG,
+                    LoggerTags.IAS_ERROR_TAG,
                     "App Version must be no more than 50 symbols and not empty"
             );
             return;
@@ -1811,13 +1817,19 @@ public class InAppStoryManager implements IASBackPressHandler {
         public InAppStoryManager create() {
             synchronized (lock) {
                 if (INSTANCE == null) {
-                    showELog(IAS_ERROR_TAG, "Method InAppStoryManager.init must be called from Application class");
+                    showELog(
+                            LoggerTags.IAS_ERROR_TAG,
+                            "Method InAppStoryManager.init must be called from Application class"
+                    );
                     return null;
                 }
             }
             if (INSTANCE.core != null)
                 if (!WebViewUtils.isWebViewEnabled(INSTANCE.core)) {
-                    showELog(IAS_ERROR_TAG, "Can't find Chromium WebView on a device");
+                    showELog(
+                            LoggerTags.IAS_ERROR_TAG,
+                            "Can't find Chromium WebView on a device"
+                    );
                     return null;
                 }
             INSTANCE.build(Builder.this);

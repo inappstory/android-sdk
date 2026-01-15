@@ -3,6 +3,7 @@ package com.inappstory.sdk.network.utils;
 import android.util.Pair;
 
 import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.LoggerTags;
 import com.inappstory.sdk.network.models.Response;
 import com.inappstory.sdk.network.models.ResponseWithRawData;
 
@@ -15,7 +16,7 @@ public class RawResponseFromConnection {
     ResponseWithRawData get(HttpURLConnection connection, String requestId) throws Exception {
         ResponseWithRawData responseWithRawData = new ResponseWithRawData();
         int responseCode = connection.getResponseCode();
-        InAppStoryManager.showDLog("InAppStory_Network", requestId + " " + connection.getURL().toString() + " \nStatus Code: " + responseCode);
+        InAppStoryManager.showDLog(LoggerTags.IAS_NETWORK, requestId + " " + connection.getURL().toString() + " \nStatus Code: " + responseCode);
         long contentLength = 0;
         String decompression = null;
         HashMap<String, String> responseHeaders = new ConnectionHeadersMap().get(connection);
@@ -29,14 +30,14 @@ public class RawResponseFromConnection {
         responseWithRawData.responseCode = responseCode;
         if (responseCode < 400) {
             responseWithRawData.decompressedStream = stringFromStream.get(connection.getInputStream(), decompression);
-            InAppStoryManager.showDLog("InAppStory_Network",
+            InAppStoryManager.showDLog(LoggerTags.IAS_NETWORK,
                     requestId + " Response: " + responseWithRawData.decompressedStream);
 
             responseWithRawData.response = new Response.Builder().contentLength(contentLength).
                     headers(responseHeaders).code(responseCode).body(responseWithRawData.decompressedStream).build();
         } else {
             responseWithRawData.decompressedStream = stringFromStream.get(connection.getErrorStream(), decompression);
-            InAppStoryManager.showDLog("InAppStory_Network",
+            InAppStoryManager.showDLog(LoggerTags.IAS_NETWORK,
                     requestId + " Error: " + responseWithRawData.decompressedStream);
             responseWithRawData.response = new Response.Builder().contentLength(contentLength).
                     headers(responseHeaders).code(responseCode).errorBody(responseWithRawData.decompressedStream).build();

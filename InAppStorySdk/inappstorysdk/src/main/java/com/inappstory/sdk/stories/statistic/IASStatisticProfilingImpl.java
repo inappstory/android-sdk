@@ -8,7 +8,7 @@ import android.os.Build;
 import android.telephony.TelephonyManager;
 
 import com.inappstory.sdk.InAppStoryManager;
-import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.LoggerTags;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.IASStatisticProfiling;
@@ -189,7 +189,7 @@ public class IASStatisticProfilingImpl implements IASStatisticProfiling {
         connection.setReadTimeout(30000);
         connection.setRequestMethod("POST");
         int statusCode = connection.getResponseCode();
-        InAppStoryManager.showDLog("InAppStory_Network", connection.getURL().toString() + " \nStatus Code: " + statusCode);
+        InAppStoryManager.showDLog(LoggerTags.IAS_NETWORK, connection.getURL().toString() + " \nStatus Code: " + statusCode);
         connection.disconnect();
         return;
 

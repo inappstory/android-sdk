@@ -1,6 +1,5 @@
 package com.inappstory.sdk.core.api.impl;
 
-import static com.inappstory.sdk.InAppStoryManager.IAS_ERROR_TAG;
 import static com.inappstory.sdk.core.api.impl.IASSettingsImpl.TAG_LIMIT;
 
 import android.content.Context;
@@ -10,6 +9,7 @@ import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.LoggerTags;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.CancellationTokenWithStatus;
 import com.inappstory.sdk.core.IASCore;
@@ -65,7 +65,7 @@ public class IASOnboardingsImpl implements IASOnboardings {
         if (cancellationToken != null && cancellationToken.cancelled()) return;
         if (settingsHolder.anonymous()) {
             InAppStoryManager.showELog(
-                    IAS_ERROR_TAG,
+                    LoggerTags.IAS_ERROR_TAG,
                     "Onboarding stories are unavailable for anonymous mode"
             );
             loadOnboardingError(usedFeed, "Onboarding stories are unavailable for anonymous mode");
@@ -82,7 +82,7 @@ public class IASOnboardingsImpl implements IASOnboardings {
             for (String tag : copyTags) {
                 if (!TagsUtils.checkTagPattern(tag)) {
                     InAppStoryManager.showELog(
-                            InAppStoryManager.IAS_WARN_TAG,
+                            LoggerTags.IAS_WARN_TAG,
                             StringsUtils.getFormattedErrorStringFromContext(
                                     core.appContext(),
                                     R.string.ias_tag_pattern_error,
@@ -95,7 +95,7 @@ public class IASOnboardingsImpl implements IASOnboardings {
             }
             if (StringsUtils.getBytesLength(TextUtils.join(",", filteredList)) > TAG_LIMIT) {
                 InAppStoryManager.showELog(
-                        InAppStoryManager.IAS_ERROR_TAG,
+                        LoggerTags.IAS_ERROR_TAG,
                         StringsUtils.getErrorStringFromContext(
                                 core.appContext(),
                                 R.string.ias_setter_tags_length_error

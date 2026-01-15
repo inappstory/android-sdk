@@ -18,6 +18,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.LoggerTags;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
@@ -504,7 +505,7 @@ public class UgcStoriesList extends RecyclerView {
         InAppStoryManager manager = InAppStoryManager.getInstance();
         if (manager == null) {
             InAppStoryManager.showELog(
-                    InAppStoryManager.IAS_ERROR_TAG,
+                    LoggerTags.IAS_ERROR_TAG,
                     StringsUtils.getErrorStringFromContext(
                             getContext(),
                             R.string.ias_npe_manager

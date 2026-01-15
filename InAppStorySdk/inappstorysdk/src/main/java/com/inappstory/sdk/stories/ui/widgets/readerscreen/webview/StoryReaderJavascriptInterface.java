@@ -5,6 +5,7 @@ import static com.inappstory.sdk.utils.DebugUtils.getMethodName;
 import android.webkit.JavascriptInterface;
 
 import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.LoggerTags;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.network.JsonParser;
@@ -31,7 +32,7 @@ public class StoryReaderJavascriptInterface {
 
 
     private void logMethod(String payload) {
-        InAppStoryManager.showDLog("JS_method_test",
+        InAppStoryManager.showDLog(LoggerTags.IAS_STORY_JS,
                 manager.storyId + " " + getMethodName() + " " + payload);
     }
 

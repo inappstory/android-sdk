@@ -50,6 +50,7 @@ import com.inappstory.iasutilsconnector.filepicker.IFilePicker;
 import com.inappstory.iasutilsconnector.filepicker.OnFilesChooseCallback;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.BuildConfig;
+import com.inappstory.sdk.LoggerTags;
 import com.inappstory.sdk.core.ui.widgets.customicons.CustomIconWithoutStates;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.R;
@@ -165,7 +166,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         @Override
         public void onError(final GameCenterData data, String error) {
             manager.gameLoadError();
-            InAppStoryManager.showDLog("Game_Loading", error);
+            InAppStoryManager.showDLog(LoggerTags.IAS_GAME_LOADING, error);
             webView.post(new Runnable() {
                 @Override
                 public void run() {
@@ -734,8 +735,11 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                             break;
                     }
                 }
-                Log.d("InAppStory_SDK_Game", "Console: " +
-                        consoleMessage.messageLevel().name() + ": " + msg);
+                InAppStoryManager.showDLog(
+                        LoggerTags.IAS_GAME_CONSOLE,
+                        "Console: " +
+                                consoleMessage.messageLevel().name() + ": " + msg
+                );
                 return super.onConsoleMessage(consoleMessage);
             }
 

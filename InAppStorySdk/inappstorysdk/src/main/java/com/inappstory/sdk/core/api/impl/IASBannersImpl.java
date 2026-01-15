@@ -1,8 +1,8 @@
 package com.inappstory.sdk.core.api.impl;
 
-import static com.inappstory.sdk.InAppStoryManager.IAS_ERROR_TAG;
 
 import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.LoggerTags;
 import com.inappstory.sdk.banners.BannerPlacePreloadCallback;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASBanners;
@@ -38,7 +38,7 @@ public class IASBannersImpl implements IASBanners {
 
         if (settings == null || settings.placeId() == null || settings.placeId().isEmpty()) {
             InAppStoryManager.showELog(
-                    IAS_ERROR_TAG,
+                    LoggerTags.IAS_ERROR_TAG,
                     "Incorrect settings for banner place"
             );
             return;
@@ -66,7 +66,7 @@ public class IASBannersImpl implements IASBanners {
                     BannersWidgetLoadStates.EMPTY
             );
             InAppStoryManager.showELog(
-                    IAS_ERROR_TAG,
+                    LoggerTags.IAS_ERROR_TAG,
                     "Banners are unavailable for anonymous mode"
             );
             return;

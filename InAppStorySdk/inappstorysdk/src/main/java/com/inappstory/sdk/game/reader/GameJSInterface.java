@@ -5,6 +5,7 @@ import static com.inappstory.sdk.utils.DebugUtils.getMethodName;
 import android.webkit.JavascriptInterface;
 
 import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.LoggerTags;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.stories.api.models.CachedSessionData;
@@ -92,8 +93,10 @@ public class GameJSInterface {
     }
 
     private void logMethod(String payload) {
-        InAppStoryManager.showDLog("JS_game_method_test",
-                manager.gameCenterId + " " + getMethodName() + " " + payload);
+        InAppStoryManager.showDLog(
+                LoggerTags.IAS_GAME_JS,
+                manager.gameCenterId + " " + getMethodName() + " " + payload
+        );
     }
 
     @JavascriptInterface

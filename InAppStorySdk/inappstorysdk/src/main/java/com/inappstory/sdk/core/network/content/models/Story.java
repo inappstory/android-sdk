@@ -8,6 +8,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.LoggerTags;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.data.IContentWithTimeline;
 import com.inappstory.sdk.core.data.IReaderContentSlide;
@@ -195,7 +196,7 @@ public class Story implements Parcelable, IStory, IContentWithTimeline {
     private IReaderContentSlide slide(int index) {
         if (slides == null || index < 0 || slides.size() <= index) {
             InAppStoryManager.showELog(
-                    InAppStoryManager.IAS_ERROR_TAG,
+                    LoggerTags.IAS_ERROR_TAG,
                     "Slide index out of bounds: " + index + " from " + slidesCount
             );
             return null;
@@ -204,7 +205,7 @@ public class Story implements Parcelable, IStory, IContentWithTimeline {
             if (slide.index() == index) return slide;
         }
         InAppStoryManager.showELog(
-                InAppStoryManager.IAS_ERROR_TAG,
+                LoggerTags.IAS_ERROR_TAG,
                 "Slide " + index + " not in slides array of story " + id()
         );
         return null;

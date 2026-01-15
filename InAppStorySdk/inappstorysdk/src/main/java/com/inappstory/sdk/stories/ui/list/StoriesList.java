@@ -26,6 +26,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.LoggerTags;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.core.IASCore;
@@ -955,7 +956,7 @@ public class StoriesList extends RecyclerView {
             public void use(@NonNull final IASCore core) {
                 if (((IASDataSettingsHolder) core.settingsAPI()).noCorrectUserIdOrDevice()) {
                     InAppStoryManager.showELog(
-                            InAppStoryManager.IAS_ERROR_TAG,
+                            LoggerTags.IAS_ERROR_TAG,
                             StringsUtils.getErrorStringFromContext(
                                     getContext(),
                                     R.string.ias_usage_without_user_and_device
@@ -1028,7 +1029,7 @@ public class StoriesList extends RecyclerView {
             public void error() {
                 setOrRefreshAdapter(new ArrayList<Integer>());
                 InAppStoryManager.showELog(
-                        InAppStoryManager.IAS_ERROR_TAG,
+                        LoggerTags.IAS_ERROR_TAG,
                         StringsUtils.getErrorStringFromContext(
                                 getContext(),
                                 R.string.ias_npe_manager

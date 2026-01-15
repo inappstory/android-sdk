@@ -9,6 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.FragmentManager;
 
 import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.LoggerTags;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.CancellationTokenWithStatus;
 import com.inappstory.sdk.core.IASCore;
@@ -183,7 +184,7 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
             for (String tag : copyTags) {
                 if (!TagsUtils.checkTagPattern(tag)) {
                     InAppStoryManager.showELog(
-                            InAppStoryManager.IAS_WARN_TAG,
+                            LoggerTags.IAS_WARN_TAG,
                             StringsUtils.getFormattedErrorStringFromContext(
                                     core.appContext(),
                                     R.string.ias_tag_pattern_error,
@@ -196,7 +197,7 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
             }
             if (StringsUtils.getBytesLength(TextUtils.join(",", filteredList)) > TAG_LIMIT) {
                 InAppStoryManager.showELog(
-                        InAppStoryManager.IAS_ERROR_TAG,
+                        LoggerTags.IAS_ERROR_TAG,
                         StringsUtils.getErrorStringFromContext(
                                 core.appContext(),
                                 R.string.ias_setter_tags_length_error

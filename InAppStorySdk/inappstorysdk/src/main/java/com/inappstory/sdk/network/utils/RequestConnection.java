@@ -4,6 +4,7 @@ package com.inappstory.sdk.network.utils;
 import android.util.Pair;
 
 import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.LoggerTags;
 import com.inappstory.sdk.network.constants.HttpMethods;
 import com.inappstory.sdk.network.models.Request;
 import com.inappstory.sdk.network.utils.headers.Header;
@@ -33,11 +34,11 @@ public class RequestConnection {
                 request.getBody() != null &&
                 !request.getBody().isEmpty()
         ) {
-            InAppStoryManager.showDLog("InAppStory_Network", requestId + " " + connectionProperties);
+            InAppStoryManager.showDLog(LoggerTags.IAS_NETWORK, requestId + " " + connectionProperties);
             new PostRequestBody().writeToStream(connection, request.getBody());
-            InAppStoryManager.showDLog("InAppStory_Network", requestId + " " + request.getBody());
+            InAppStoryManager.showDLog(LoggerTags.IAS_NETWORK, requestId + " " + request.getBody());
         } else {
-            InAppStoryManager.showDLog("InAppStory_Network", requestId + " " + connectionProperties);
+            InAppStoryManager.showDLog(LoggerTags.IAS_NETWORK, requestId + " " + connectionProperties);
         }
         return new Pair<>(connection, connectionProperties);
     }

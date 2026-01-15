@@ -4,6 +4,7 @@ import android.util.Pair;
 
 
 import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.LoggerTags;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.network.annotations.api.Body;
@@ -176,7 +177,10 @@ public final class NetworkHandler implements InvocationHandler {
             if (!hasSessionReplace) {
                 String session = dataSettingsHolder.sessionIdOrEmpty();
                 if (session.isEmpty()) {
-                    InAppStoryManager.showDLog("AdditionalLog", "Session not set");
+                    InAppStoryManager.showELog(
+                            LoggerTags.IAS_ERROR_TAG,
+                            "Session not set"
+                    );
                     throw new RuntimeException("Wrong session");
                 } else {
                     resHeaders.add(new AuthSessionIdHeader(session));

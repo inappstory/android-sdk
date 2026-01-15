@@ -185,7 +185,6 @@ public class VideoPlayer extends TextureView implements TextureView.SurfaceTextu
             super.onScrollStateChanged(recyclerView, newState);
             if (lastState == SCROLL_STATE_IDLE && newState != SCROLL_STATE_IDLE) {
                 if (mp != null) mp.pause();
-                //  destroy();
             } else if (newState == SCROLL_STATE_IDLE && lastState != SCROLL_STATE_IDLE) {
                 if (mp != null) mp.start();
                 else prepareVideo(getSurfaceTexture());

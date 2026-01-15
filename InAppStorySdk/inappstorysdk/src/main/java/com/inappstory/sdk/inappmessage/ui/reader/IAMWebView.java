@@ -15,6 +15,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.LoggerTags;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
@@ -128,8 +129,10 @@ public class IAMWebView extends IASWebView implements ContentViewInteractor {
         if (slideViewModel == null) return;
         ContentIdWithIndex contentIdWithIndex = slideViewModel.iamId();
         if (contentIdWithIndex != null)
-            InAppStoryManager.showDLog("JS_method_call",
-                    contentIdWithIndex.id() + " " + contentIdWithIndex.index() + " " + payload);
+            InAppStoryManager.showDLog(
+                    LoggerTags.IAS_IAM_JS_CALL,
+                    contentIdWithIndex.id() + " " + contentIdWithIndex.index() + " " + payload
+            );
     }
 
     @Override
@@ -317,11 +320,13 @@ public class IAMWebView extends IASWebView implements ContentViewInteractor {
                                 idWithIndex.index()
                         );
                     }
-
-                    Log.d("InAppStory_SDK_Web", consoleMessage.messageLevel().name() + ": "
-                            + consoleMessage.message() + " -- From line "
-                            + consoleMessage.lineNumber() + " of "
-                            + consoleMessage.sourceId());
+                    InAppStoryManager.showDLog(
+                            LoggerTags.IAS_IAM_CONSOLE,
+                            consoleMessage.messageLevel().name() + ": "
+                                    + consoleMessage.message() + " -- From line "
+                                    + consoleMessage.lineNumber() + " of "
+                                    + consoleMessage.sourceId()
+                    );
                     return super.onConsoleMessage(consoleMessage);
                 }
             });

@@ -1,8 +1,8 @@
 package com.inappstory.sdk.core.api.impl;
 
-import static com.inappstory.sdk.InAppStoryManager.IAS_ERROR_TAG;
 
 import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.LoggerTags;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.IASFavorites;
@@ -28,7 +28,7 @@ public class IASFavoritesImpl implements IASFavorites {
         final IASDataSettingsHolder settingsHolder = ((IASDataSettingsHolder) core.settingsAPI());
         if (settingsHolder.anonymous()) {
             InAppStoryManager.showELog(
-                    IAS_ERROR_TAG,
+                    LoggerTags.IAS_ERROR_TAG,
                     "Favorites are unavailable for anonymous mode"
             );
             return;
@@ -51,7 +51,7 @@ public class IASFavoritesImpl implements IASFavorites {
         final IASDataSettingsHolder settingsHolder = ((IASDataSettingsHolder) core.settingsAPI());
         if (settingsHolder.anonymous()) {
             InAppStoryManager.showELog(
-                    IAS_ERROR_TAG,
+                    LoggerTags.IAS_ERROR_TAG,
                     "Favorites are unavailable for anonymous mode"
             );
             return;

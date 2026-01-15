@@ -17,6 +17,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.LoggerTags;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
@@ -79,7 +80,7 @@ public class BannerWebView extends IASWebView implements ContentViewInteractor {
     private void logMethod(String payload) {
         if (slideViewModel == null) return;
         int contentIdWithIndex = slideViewModel.contentIdAndType().contentId;
-        InAppStoryManager.showDLog("JS_method_call",
+        InAppStoryManager.showDLog(LoggerTags.IAS_BANNER_JS_CALL,
                 contentIdWithIndex + " " + 0 + " " + payload);
     }
 
@@ -308,11 +309,13 @@ public class BannerWebView extends IASWebView implements ContentViewInteractor {
                             2,
                             0
                     );
-
-                    Log.d("InAppStory_SDK_Banners", consoleMessage.messageLevel().name() + ": "
-                            + consoleMessage.message() + " -- From line "
-                            + consoleMessage.lineNumber() + " of "
-                            + consoleMessage.sourceId());
+                    InAppStoryManager.showDLog(
+                            LoggerTags.IAS_BANNER_CONSOLE,
+                            consoleMessage.messageLevel().name() + ": "
+                                    + consoleMessage.message() + " -- From line "
+                                    + consoleMessage.lineNumber() + " of "
+                                    + consoleMessage.sourceId()
+                    );
                     return super.onConsoleMessage(consoleMessage);
                 }
             });

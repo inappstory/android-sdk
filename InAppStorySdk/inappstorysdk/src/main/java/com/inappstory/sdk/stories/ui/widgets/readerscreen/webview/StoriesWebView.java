@@ -20,6 +20,7 @@ import androidx.annotation.Nullable;
 import androidx.core.view.ViewCompat;
 
 import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.LoggerTags;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
@@ -81,7 +82,7 @@ public class StoriesWebView extends IASWebView implements ContentViewInteractor 
     }
 
     private void logMethod(String payload) {
-        InAppStoryManager.showDLog("JS_method_call",
+        InAppStoryManager.showDLog(LoggerTags.IAS_STORY_JS_CALL,
                 manager.storyId + " " + manager.loadedIndex + " " + payload);
     }
 
@@ -439,11 +440,13 @@ public class StoriesWebView extends IASWebView implements ContentViewInteractor 
                                 0,
                                 manager.index);
                     }
-
-                    Log.d("InAppStory_SDK_Web", consoleMessage.messageLevel().name() + ": "
-                            + consoleMessage.message() + " -- From line "
-                            + consoleMessage.lineNumber() + " of "
-                            + consoleMessage.sourceId());
+                    InAppStoryManager.showDLog(
+                            LoggerTags.IAS_STORY_CONSOLE,
+                            consoleMessage.messageLevel().name() + ": "
+                                    + consoleMessage.message() + " -- From line "
+                                    + consoleMessage.lineNumber() + " of "
+                                    + consoleMessage.sourceId()
+                    );
                     return super.onConsoleMessage(consoleMessage);
                 }
             });
