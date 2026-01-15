@@ -1,6 +1,6 @@
 package com.inappstory.sdk;
 
 public interface CancellationToken {
-    void cancel();
+    CancellationTokenCancelResult cancel();
     String getUniqueId();
 }
