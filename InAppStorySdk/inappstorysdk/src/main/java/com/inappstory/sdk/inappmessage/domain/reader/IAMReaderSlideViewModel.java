@@ -42,6 +42,8 @@ import com.inappstory.sdk.utils.UrlEncoder;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -648,11 +650,11 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
                 );
         InAppMessageDownloadManager downloadManager = core.contentLoader().inAppMessageDownloadManager();
         if (state.showOnlyIfLoaded) {
-            if (downloadManager.allSlidesLoaded(readerContent) && downloadManager.checkBundleResources(
-                    this,
-                    true)
-            ) {
-                readerViewModel.updateCurrentLoadState(IAMReaderLoadStates.CONTENT_LOADED);
+            downloadManager.addSubscriber(this);
+            if (downloadManager.concreteSlidesLoaded(readerContent, new HashSet<>(
+                    Collections.singletonList(0)
+            )) && core.assetsHolder().assetsIsDownloaded()) {
+                readerViewModel.updateCurrentLoadState(IAMReaderLoadStates.ASSETS_LOADED);
             } else {
                 readerViewModel.updateCurrentLoadState(IAMReaderLoadStates.CONTENT_FAILED);
                 return false;

@@ -212,12 +212,17 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
             launchScreenError("Need to pass opening settings (id or event)");
             return;
         }
+        final Set<Integer> preloadedIndexes = new HashSet<>();
+        preloadedIndexes.add(0);
         getLocalReaderContent(
                 new GetLocalInAppMessage() {
                     @Override
                     public void get(@NonNull IInAppMessage readerContent) {
                         boolean contentIsPreloaded =
-                                downloadManager.allSlidesLoaded(readerContent) &&
+                                downloadManager.concreteSlidesLoaded(
+                                        readerContent,
+                                        preloadedIndexes
+                                ) &&
                                         downloadManager.allBundlesLoaded();
                         if (localSettings.showOnlyIfLoaded()) {
                             if (contentIsPreloaded) {
@@ -245,8 +250,10 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
                                             public void success(IReaderContent content) {
                                                 if (content != null) {
                                                     boolean contentIsPreloaded =
-                                                            downloadManager.allSlidesLoaded(content) &&
-                                                                    downloadManager.allBundlesLoaded();
+                                                            downloadManager.concreteSlidesLoaded(
+                                                                    content,
+                                                                    preloadedIndexes
+                                                            ) && downloadManager.allBundlesLoaded();
                                                     loadScreen.success(
                                                             (IInAppMessage) content,
                                                             contentIsPreloaded
@@ -283,8 +290,10 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
                                                             @Override
                                                             public void get(@NonNull IInAppMessage readerContent) {
                                                                 boolean contentIsPreloaded =
-                                                                        downloadManager.allSlidesLoaded(readerContent) &&
-                                                                                downloadManager.allBundlesLoaded();
+                                                                        downloadManager.concreteSlidesLoaded(
+                                                                                readerContent,
+                                                                                preloadedIndexes
+                                                                        ) && downloadManager.allBundlesLoaded();
                                                                 loadScreen.success(readerContent,
                                                                         contentIsPreloaded
                                                                 );

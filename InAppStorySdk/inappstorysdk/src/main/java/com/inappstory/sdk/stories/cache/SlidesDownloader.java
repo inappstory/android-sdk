@@ -37,8 +37,7 @@ import java.util.Set;
 
 
 public class SlidesDownloader {
-
-    private final LoopedExecutor loopedExecutor = new LoopedExecutor(100, 100);
+    private final LoopedExecutor loopedExecutor = new LoopedExecutor(10, 20);
 
     public void init() {
         loopedExecutor.init(queueLoadSlideRunnable);
@@ -272,9 +271,10 @@ public class SlidesDownloader {
         }
     }
 
-    public void addSlides(
+    public void addSlidesHighPriority(
             ContentIdAndType contentIdAndType,
             IReaderContent readerContent,
+            Set<Integer> priorityIndexes,
             int loadType,
             boolean forced
     ) {
@@ -296,14 +296,33 @@ public class SlidesDownloader {
                                         .generate()
                                         .forced(forced)
                         );
+                        if (priorityIndexes.contains(slideIndex)) {
+                            maxPriority.add(0, slideTaskKey);
+                        }
                     } else if (slideTask.loadType == 2 && slideTask.forced) {
                         slideLoaded(slideTaskKey);
                     }
+
                 }
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
+    }
+
+    public void addSlides(
+            ContentIdAndType contentIdAndType,
+            IReaderContent readerContent,
+            int loadType,
+            boolean forced
+    ) {
+        addSlidesHighPriority(
+                contentIdAndType,
+                readerContent,
+                new HashSet<>(),
+                loadType,
+                forced
+        );
     }
 
     public void addSubscriber(IReaderSlideViewModel pageViewModel) {
@@ -430,6 +449,27 @@ public class SlidesDownloader {
             loadSlideError(slideTaskKey);
         }
         Log.e("loadSlide", "end " + slideTaskKey);
+    }
+
+    public boolean concreteSlidesLoaded(
+            IReaderContent readerContent,
+            ContentType type,
+            Set<Integer> slidesIndexes
+    ) {
+        int slides = readerContent.actualSlidesCount();
+        for (int i = 0; i < slides; i++) {
+            if (!slidesIndexes.contains(i)) continue;
+            SlideTaskKey key =
+                    new SlideTaskKey(new ContentIdAndType(readerContent.id(), type), i);
+            SlideTask task;
+            synchronized (slideTasksLock) {
+                task = slideTasks.get(key);
+            }
+            if (task == null || task.loadType != 2) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public boolean allSlidesLoaded(

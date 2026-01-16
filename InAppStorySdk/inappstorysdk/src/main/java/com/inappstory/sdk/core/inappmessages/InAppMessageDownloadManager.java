@@ -1,5 +1,7 @@
 package com.inappstory.sdk.core.inappmessages;
 
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.core.IASCore;
@@ -90,11 +92,23 @@ public class InAppMessageDownloadManager {
         return core.assetsHolder().assetsIsDownloaded();
     }
 
+    public boolean concreteSlidesLoaded(IReaderContent readerContent, Set<Integer> indexes) {
+        return slidesDownloader.concreteSlidesLoaded(
+                readerContent,
+                ContentType.IN_APP_MESSAGE,
+                indexes
+        );
+    }
+
     private void addSlides(@NonNull final IReaderContent readerContent, final InAppMessageLoadCallback callback) {
         if (allSlidesLoaded(readerContent)) {
             contentIsLoaded(readerContent, callback);
-            //TODO return?;
+            return;
+            //TODO return or not?
         }
+        if (readerContent.actualSlidesCount() == 0) return;
+        final Set<Integer> indexes = new HashSet<>();
+        indexes.add(0);
         core.contentLoader().inAppMessageDownloadManager().addSubscriber(
                 new IReaderSlideViewModel() {
                     @Override
@@ -152,6 +166,9 @@ public class InAppMessageDownloadManager {
 
                     @Override
                     public void slideLoadSuccess(int index) {
+                        if (readerContent.id() == 475) {
+                            Log.e("SlideLoadSuccess", readerContent.id() + " " + index);
+                        }
                         if (core.contentLoader().inAppMessageDownloadManager()
                                 .allSlidesLoaded(readerContent)) {
                             contentIsLoaded(readerContent, callback);
@@ -166,11 +183,12 @@ public class InAppMessageDownloadManager {
         );
 
 
-        slidesDownloader.addSlides(
+        slidesDownloader.addSlidesHighPriority(
                 new ContentIdAndType(readerContent.id(),
                         ContentType.IN_APP_MESSAGE
                 ),
                 readerContent,
+                indexes,
                 3,
                 true
         );
