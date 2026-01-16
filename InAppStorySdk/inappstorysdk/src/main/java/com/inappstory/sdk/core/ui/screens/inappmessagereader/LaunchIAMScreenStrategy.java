@@ -298,7 +298,10 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
                                                             @Override
                                                             public void get(@NonNull IInAppMessage readerContent) {
                                                                 boolean contentIsPreloaded =
-                                                                        downloadManager.allSlidesLoaded(readerContent) &&
+                                                                        downloadManager.concreteSlidesLoaded(
+                                                                                readerContent,
+                                                                                preloadedIndexes
+                                                                        ) &&
                                                                                 downloadManager.allBundlesLoaded();
                                                                 loadScreen.success(readerContent,
                                                                         contentIsPreloaded
