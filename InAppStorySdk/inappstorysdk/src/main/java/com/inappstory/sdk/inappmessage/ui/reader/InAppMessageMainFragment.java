@@ -292,6 +292,7 @@ public class InAppMessageMainFragment extends Fragment implements Observer<IAMRe
         if (newState == null) return;
         switch (newState) {
             case ASSETS_LOADED:
+            case CONTENT_LOADED:
                 contentFragment.readerSlideViewModel.updateLayout();
                 break;
             case ASSETS_FAILED:

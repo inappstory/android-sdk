@@ -42,6 +42,9 @@ import com.inappstory.sdk.utils.UrlEncoder;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -116,9 +119,9 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
             if (!slideStatObjects.isEmpty()) {
                 try {
                     slideAnalytics = JsonParser.getJson(slideStatObjects);
-                 //   Log.e("SlideTimes", slideAnalytics);
+                    //   Log.e("SlideTimes", slideAnalytics);
                     //  slideAnalytics = new UrlEncoder().encode(slideAnalytics);
-                  //  Log.e("SlideTimes", slideAnalytics);
+                    //  Log.e("SlideTimes", slideAnalytics);
                 } catch (Exception ignored) {
 
                 }
@@ -192,6 +195,7 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
                 break;
         }
     }
+
     private void slideLeftEvent(String event) {
         if (event == null || event.isEmpty()) return;
         final SlideLeftJSPayload slideLeftJSPayload = JsonParser.fromJson(
@@ -648,19 +652,19 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
                 );
         InAppMessageDownloadManager downloadManager = core.contentLoader().inAppMessageDownloadManager();
         if (state.showOnlyIfLoaded) {
-            if (downloadManager.allSlidesLoaded(readerContent) && downloadManager.checkBundleResources(
-                    this,
-                    true)
-            ) {
-                readerViewModel.updateCurrentLoadState(IAMReaderLoadStates.CONTENT_LOADED);
+            downloadManager.addSubscriber(this);
+            if (downloadManager.concreteSlidesLoaded(readerContent, new HashSet<>(
+                    Collections.singletonList(0)
+            )) && core.assetsHolder().assetsIsDownloaded()) {
+                readerViewModel.updateCurrentLoadState(IAMReaderLoadStates.ASSETS_LOADED);
             } else {
                 readerViewModel.updateCurrentLoadState(IAMReaderLoadStates.CONTENT_FAILED);
                 return false;
             }
         } else {
-            downloadManager.addSubscriber(this);
             core.assetsHolder().checkOrAddAssetsIsReadyCallback(assetsIsReadyCallback);
             core.assetsHolder().downloadAssets();
+            downloadManager.addSubscriber(this);
         }
         return true;
     }

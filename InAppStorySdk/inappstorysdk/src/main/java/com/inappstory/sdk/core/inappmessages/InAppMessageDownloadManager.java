@@ -1,5 +1,7 @@
 package com.inappstory.sdk.core.inappmessages;
 
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.core.IASCore;
@@ -16,6 +18,7 @@ import com.inappstory.sdk.stories.cache.SlideTaskKey;
 import com.inappstory.sdk.stories.cache.SlidesDownloader;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -77,6 +80,14 @@ public class InAppMessageDownloadManager {
         return slidesDownloader.allSlidesLoaded(readerContent, ContentType.IN_APP_MESSAGE);
     }
 
+    public boolean concreteSlidesLoaded(IReaderContent readerContent, Set<Integer> indexes) {
+        return slidesDownloader.concreteSlidesLoaded(
+                readerContent,
+                ContentType.IN_APP_MESSAGE,
+                indexes
+        );
+    }
+
     public boolean checkBundleResources(
             final IReaderSlideViewModel pageViewModel,
             boolean sync
@@ -93,8 +104,12 @@ public class InAppMessageDownloadManager {
     private void addSlides(@NonNull final IReaderContent readerContent, final InAppMessageLoadCallback callback) {
         if (allSlidesLoaded(readerContent)) {
             contentIsLoaded(readerContent, callback);
-            //TODO return?;
+            return;
         }
+        if (readerContent.actualSlidesCount() == 0) return;
+        final Set<Integer> indexes = new HashSet<>();
+        indexes.add(0);
+
         core.contentLoader().inAppMessageDownloadManager().addSubscriber(
                 new IReaderSlideViewModel() {
                     @Override
@@ -152,6 +167,7 @@ public class InAppMessageDownloadManager {
 
                     @Override
                     public void slideLoadSuccess(int index) {
+                        Log.e("SlideLoadSuccess", readerContent.id() + " " + index);
                         if (core.contentLoader().inAppMessageDownloadManager()
                                 .allSlidesLoaded(readerContent)) {
                             contentIsLoaded(readerContent, callback);
@@ -166,11 +182,12 @@ public class InAppMessageDownloadManager {
         );
 
 
-        slidesDownloader.addSlides(
+        slidesDownloader.addSlidesHighPriority(
                 new ContentIdAndType(readerContent.id(),
                         ContentType.IN_APP_MESSAGE
                 ),
                 readerContent,
+                indexes,
                 3,
                 true
         );
@@ -209,6 +226,7 @@ public class InAppMessageDownloadManager {
         }
         return true;
     }
+
 
     public void clearSlidesDownloader() {
         slidesDownloader.cleanTasks();
