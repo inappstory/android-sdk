@@ -3,7 +3,9 @@ package com.inappstory.sdk.externalapi.inappmessage;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.FragmentManager;
 
+import com.inappstory.sdk.CancellationToken;
 import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.core.CancellationTokenImpl;
 import com.inappstory.sdk.core.CancellationTokenWithStatus;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
@@ -13,9 +15,7 @@ import com.inappstory.sdk.inappmessage.InAppMessageOpenSettings;
 import com.inappstory.sdk.inappmessage.InAppMessagePreloadSettings;
 import com.inappstory.sdk.inappmessage.InAppMessageScreenActions;
 
-import java.util.List;
-
-public class IASInAppMessageAPIImpl implements IASInAppMessage {
+public class IASInAppMessageExternalAPIImpl implements IASInAppMessageExternalAPI {
     @Override
     public void preload(
             final InAppMessagePreloadSettings inAppMessagePreloadSettings,
@@ -32,18 +32,22 @@ public class IASInAppMessageAPIImpl implements IASInAppMessage {
     }
 
     @Override
-    public void show(
-            final CancellationTokenWithStatus cancellationToken,
+    public CancellationToken show(
             final InAppMessageOpenSettings inAppMessageOpenSettings,
             final FragmentManager fragmentManager,
             final int containerId,
             final InAppMessageScreenActions screenActions
     ) {
+        final CancellationTokenWithStatus token =
+                new CancellationTokenImpl("External IAM data: " +
+                        inAppMessageOpenSettings.toString()
+                );
         InAppStoryManager.useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
+                core.cancellationTokenPool().addToken(token);
                 core.inAppMessageAPI().show(
-                        cancellationToken,
+                        token,
                         inAppMessageOpenSettings,
                         fragmentManager,
                         containerId,
@@ -51,6 +55,7 @@ public class IASInAppMessageAPIImpl implements IASInAppMessage {
                 );
             }
         });
+        return token;
     }
 
 

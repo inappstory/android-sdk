@@ -5,7 +5,9 @@ import android.content.Context;
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.AppearanceManager;
+import com.inappstory.sdk.CancellationToken;
 import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.core.CancellationTokenImpl;
 import com.inappstory.sdk.core.CancellationTokenWithStatus;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
@@ -14,20 +16,22 @@ import com.inappstory.sdk.stories.outercallbacks.common.onboarding.OnboardingLoa
 
 import java.util.List;
 
-public class IASOnboardingsExternalAPIImpl implements IASOnboardings {
-    public void show(
-            final CancellationTokenWithStatus cancellationToken,
+public class IASOnboardingsExternalAPIImpl implements IASOnboardingsExternalAPI {
+    public CancellationToken show(
             final Context context,
             final String feed,
             final AppearanceManager appearanceManager,
             final List<String> tags,
             final int limit
     ) {
+        final CancellationTokenWithStatus token =
+                new CancellationTokenImpl("External Onboardings feed: " + feed);
         InAppStoryManager.useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
+                core.cancellationTokenPool().addToken(token);
                 core.onboardingsAPI().show(
-                        cancellationToken,
+                        token,
                         context,
                         feed,
                         appearanceManager,
@@ -36,6 +40,7 @@ public class IASOnboardingsExternalAPIImpl implements IASOnboardings {
                 );
             }
         });
+        return token;
     }
 
     public void loadCallback(final OnboardingLoadCallback onboardingLoadCallback) {
