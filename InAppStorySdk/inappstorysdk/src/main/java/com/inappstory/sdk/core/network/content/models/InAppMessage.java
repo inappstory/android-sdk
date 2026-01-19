@@ -10,6 +10,7 @@ import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageAppearance;
 import com.inappstory.sdk.inappmessage.ui.appearance.impl.InAppMessageBottomSheetSettings;
 import com.inappstory.sdk.inappmessage.ui.appearance.impl.InAppMessageFullscreenSettings;
 import com.inappstory.sdk.inappmessage.ui.appearance.impl.InAppMessagePopupSettings;
+import com.inappstory.sdk.inappmessage.ui.appearance.impl.InAppMessageToastSettings;
 import com.inappstory.sdk.network.annotations.models.Required;
 import com.inappstory.sdk.network.annotations.models.SerializedName;
 import com.inappstory.sdk.inappmessage.IAMUiContainerType;
@@ -236,6 +237,8 @@ public class InAppMessage implements IInAppMessage {
                 return IAMUiContainerType.POPUP;
             case 3:
                 return IAMUiContainerType.FULLSCREEN;
+            case 4:
+                return IAMUiContainerType.TOAST;
             default:
                 return IAMUiContainerType.BOTTOM_SHEET;
         }
@@ -248,6 +251,8 @@ public class InAppMessage implements IInAppMessage {
                 return new InAppMessagePopupSettings(appearance, disableClose);
             case 3:
                 return new InAppMessageFullscreenSettings(appearance, disableClose);
+            case 4:
+                return new InAppMessageToastSettings(appearance, disableClose);
             default:
                 return new InAppMessageBottomSheetSettings(appearance, disableClose);
         }

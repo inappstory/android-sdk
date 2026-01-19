@@ -1,5 +1,5 @@
 package com.inappstory.sdk.inappmessage;
 
 public enum IAMUiContainerType {
-    BOTTOM_SHEET, POPUP, FULLSCREEN
+    BOTTOM_SHEET, POPUP, FULLSCREEN, TOAST
 }
