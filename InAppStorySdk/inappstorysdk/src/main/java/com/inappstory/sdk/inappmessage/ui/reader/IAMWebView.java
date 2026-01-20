@@ -6,10 +6,10 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.text.TextUtils;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.webkit.ConsoleMessage;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
+import android.webkit.WebViewClient;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -17,36 +17,33 @@ import androidx.annotation.Nullable;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.LoggerTags;
 import com.inappstory.sdk.core.IASCore;
-import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.exceptions.NotImplementedMethodException;
-import com.inappstory.sdk.core.ui.screens.IReaderSlideViewModel;
-import com.inappstory.sdk.inappmessage.domain.reader.IIAMReaderSlideViewModel;
-import com.inappstory.sdk.network.JsonParser;
+import com.inappstory.sdk.core.utils.IWebViewLogger;
 import com.inappstory.sdk.stories.api.models.ContentIdWithIndex;
 import com.inappstory.sdk.stories.ui.views.IASWebView;
 import com.inappstory.sdk.stories.ui.views.IASWebViewClient;
-import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ContentViewInteractor;
 import com.inappstory.sdk.utils.OnSwipeTouchListener;
 import com.inappstory.sdk.utils.StringsUtils;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
-public class IAMWebView extends IASWebView implements ContentViewInteractor {
+public class IAMWebView extends IASWebView implements IAMWebViewActions {
     private boolean clientIsSet = false;
 
-    @Override
-    public void slideViewModel(IReaderSlideViewModel slideViewModel) {
-        if (slideViewModel instanceof IIAMReaderSlideViewModel) {
-            this.slideViewModel = (IIAMReaderSlideViewModel) slideViewModel;
-        }
+    public void setWebViewLogger(IWebViewLogger webViewLogger) {
+        this.webViewLogger = webViewLogger;
     }
 
+    private IWebViewLogger webViewLogger;
+
     @Override
-    public void setClientVariables() {
-        InAppStoryManager.useCore(new UseIASCoreCallback() {
+    public void setSdkClientVariables(
+            String clientVariables
+    ) {
+
+        /*InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
                 Map<String, String> extraOptions = ((IASDataSettingsHolder) core.settingsAPI()).options();
@@ -60,13 +57,17 @@ public class IAMWebView extends IASWebView implements ContentViewInteractor {
                     e.printStackTrace();
                 }
             }
-        });
+        });*/
+        loadUrl("javascript:window.set_sdk_client_variables('" +
+                StringsUtils.getEscapedString(StringsUtils.escapeSingleQuotes(clientVariables)) +
+                "')");
     }
 
-    public void slideInCache(String slideStatus) {
+    @Override
+    public void setSlideInCacheStatus(String slideStatus) {
         String url = "javascript:window.slide_in_cache('" + slideStatus + "')";
         loadUrl(url);
-        logMethod("slideInCache " + slideStatus);
+        //logMethod("slideInCache " + slideStatus);
     }
 
     private String oldEscape(String raw) {
@@ -87,11 +88,9 @@ public class IAMWebView extends IASWebView implements ContentViewInteractor {
                 StringsUtils.getEscapedString(StringsUtils.escapeSingleQuotes(cardAppearance))
                 + "\", " + index + ")";
         loadUrl(url);
-        logMethod("showSlides " + slides.size());
+        //logMethod("showSlides " + slides.size());
     }
 
-
-    private IIAMReaderSlideViewModel slideViewModel;
 
     public IAMWebView(
             @NonNull Context context
@@ -125,19 +124,8 @@ public class IAMWebView extends IASWebView implements ContentViewInteractor {
         });
     }
 
-    private void logMethod(String payload) {
-        if (slideViewModel == null) return;
-        ContentIdWithIndex contentIdWithIndex = slideViewModel.iamId();
-        if (contentIdWithIndex != null)
-            InAppStoryManager.showDLog(
-                    LoggerTags.IAS_IAM_JS_CALL,
-                    contentIdWithIndex.id() + " " + contentIdWithIndex.index() + " " + payload
-            );
-    }
-
     @Override
     public void loadSlide(String content) {
-        if (slideViewModel == null) return;
         String newContent = setDir(content, getContext());
         loadDataWithBaseURL(
                 "file:///data/",
@@ -149,13 +137,6 @@ public class IAMWebView extends IASWebView implements ContentViewInteractor {
     }
 
     @Override
-    public void replaceSlide(String newContent) {
-        evaluateJavascript("(function(){show_slide(\"" + newContent + "\");})()", null);
-        logMethod("show_slide");
-    }
-
-
-    @Override
     public void pauseSlide() {
         loadUrl("javascript:(function(){" +
                 "if ('story_slide_pause' in window) " +
@@ -163,19 +144,16 @@ public class IAMWebView extends IASWebView implements ContentViewInteractor {
                 " window.story_slide_pause(); " +
                 "}" +
                 "})()");
-
-        logMethod("story_slide_pause");
     }
 
     @Override
-    public void startSlide(IASCore core) {
+    public void startSlide() {
         loadUrl("javascript:(function(){" +
                 "if ('story_slide_start' in window) " +
                 "{" +
                 " window.story_slide_start('{\"muted\": false}');" +
                 "}" +
                 "})()");
-        logMethod("story_slide_start");
     }
 
     @Override
@@ -186,22 +164,10 @@ public class IAMWebView extends IASWebView implements ContentViewInteractor {
                 " window.story_slide_resume(); " +
                 "}" +
                 "})()");
-        logMethod("story_slide_resume");
     }
 
     @Override
-    public void restartSlide(IASCore core) {
-        loadUrl("javascript:(function(){" +
-                "if ('story_slide_restart' in window) " +
-                "{" +
-                " window.story_slide_restart('{\"muted\": false}');" +
-                "}" +
-                "})()");
-        logMethod("story_slide_restart");
-    }
-
-    @Override
-    public void stopSlide(boolean newPage) {
+    public void stopSlide() {
         String funAfterCheck = "story_slide_stop('{\"prepareForRestart\": false}'); ";
         loadUrl("javascript:(function(){" +
                 "if ('story_slide_stop' in window) " +
@@ -209,20 +175,12 @@ public class IAMWebView extends IASWebView implements ContentViewInteractor {
                 " window." + funAfterCheck +
                 " }" +
                 "})()");
-        logMethod("story_slide_stop");
     }
 
     @Override
     public void swipeUp() {
         loadUrl("javascript:window.story_slide_swipe_up()");
-        logMethod("story_slide_swipe_up");
-    }
-
-    @Override
-    public void clearSlide(int index) {
-        if (index < 0) return;
-        evaluateJavascript("(function(){clear_slide(" + index + ");})()", null);
-        logMethod("clear_slide " + index);
+        if (webViewLogger != null) webViewLogger.logMethod("story_slide_swipe_up");
     }
 
     @Override
@@ -230,63 +188,13 @@ public class IAMWebView extends IASWebView implements ContentViewInteractor {
         evaluateJavascript(cb + "('" + StringsUtils.escapeSingleQuotes(result) + "');", null);
     }
 
-
     @Override
-    public Context getActivityContext() {
-        return null;
-    }
-
-    @Override
-    public void changeSoundStatus(IASCore core) {
-        if (((IASDataSettingsHolder) core.settingsAPI()).isSoundOn()) {
-            loadUrl("javascript:(function(){story_slide_enable_audio();})()");
-        } else {
-            loadUrl("javascript:(function(){story_slide_disable_audio();})()");
-        }
-    }
-
-    @Override
-    public void cancelDialog(String id) {
-        throw new NotImplementedMethodException();
-    }
-
-    @Override
-    public void sendDialog(String id, String data) {
-        throw new NotImplementedMethodException();
-    }
-
-    @Override
-    public void destroyView() {
-        super.destroyView();
-    }
-
-    @Override
-    public float getCoordinate() {
-        return 0;
-    }
-
-    @Override
-    public void shareComplete(String stId, boolean success) {
-        throw new NotImplementedMethodException();
-    }
-
-    @Override
-    public void freezeUI() {
-        throw new NotImplementedMethodException();
-    }
-
-    @Override
-    public void unfreezeUI() {
-        throw new NotImplementedMethodException();
-    }
-
-
-    @Override
-    public void checkIfClientIsSet() {
+    public void initClient(
+            IAMReaderJavascriptInterface javascriptInterface
+    ) {
         if (!clientIsSet) {
-            if (slideViewModel == null) return;
             addJavascriptInterface(
-                    new IAMReaderJavascriptInterface(slideViewModel),
+                    javascriptInterface,
                     "Android"
             );
             setWebViewClient(new IASWebViewClient());
@@ -311,22 +219,7 @@ public class IAMWebView extends IASWebView implements ContentViewInteractor {
 
                 @Override
                 public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
-                    ContentIdWithIndex idWithIndex = slideViewModel.iamId();
-                    if (idWithIndex != null) {
-                        sendWebConsoleLog(
-                                consoleMessage,
-                                Integer.toString(idWithIndex.id()),
-                                1,
-                                idWithIndex.index()
-                        );
-                    }
-                    InAppStoryManager.showDLog(
-                            LoggerTags.IAS_IAM_CONSOLE,
-                            consoleMessage.messageLevel().name() + ": "
-                                    + consoleMessage.message() + " -- From line "
-                                    + consoleMessage.lineNumber() + " of "
-                                    + consoleMessage.sourceId()
-                    );
+                    if (webViewLogger != null) webViewLogger.logConsole(consoleMessage);
                     return super.onConsoleMessage(consoleMessage);
                 }
             });
@@ -335,15 +228,11 @@ public class IAMWebView extends IASWebView implements ContentViewInteractor {
         clientIsSet = true;
     }
 
-    @Override
-    public void screenshotShare(String id) {
-        evaluateJavascript("share_slide_screenshot(\"" + id + "\");", null);
-        logMethod("share_slide_screenshot");
-    }
 
     @Override
-    public void goodsWidgetComplete(String widgetId) {
-        throw new NotImplementedMethodException();
+    public void destroyView() {
+        super.destroyView();
     }
+
 
 }

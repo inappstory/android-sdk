@@ -21,10 +21,8 @@ import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.api.impl.IASSingleStoryImpl;
-import com.inappstory.sdk.core.banners.BannerState;
 import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenData;
 import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenStrategy;
-import com.inappstory.sdk.core.utils.ColorUtils;
 import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderSlideState;
 import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderState;
 import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderUIStates;
@@ -33,10 +31,6 @@ import com.inappstory.sdk.inappmessage.domain.reader.IIAMReaderViewModel;
 import com.inappstory.sdk.inappmessage.domain.stedata.JsSendApiRequestData;
 import com.inappstory.sdk.inappmessage.domain.stedata.STETypeAndData;
 import com.inappstory.sdk.inappmessage.domain.stedata.SlideInCacheData;
-import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageAppearance;
-import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageBottomSheetAppearance;
-import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageFullscreenAppearance;
-import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessagePopupAppearance;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.jsapiclient.JsApiClient;
 import com.inappstory.sdk.network.jsapiclient.JsApiResponseCallback;
@@ -52,7 +46,7 @@ import com.inappstory.sdk.stories.utils.Observer;
 import java.util.Objects;
 
 public class IAMContentFragment extends Fragment implements Observer<IAMReaderSlideState> {
-    ContentViewInteractor contentWebView;
+    IAMWebViewActions contentWebView;
 
     IIAMReaderSlideViewModel readerSlideViewModel;
     IAMReaderSlideState currentState;
@@ -196,7 +190,7 @@ public class IAMContentFragment extends Fragment implements Observer<IAMReaderSl
             @Override
             public void run() {
                 try {
-                    webView.slideInCache(JsonParser.getJson(slideInCacheData));
+                    webView.setSlideInCacheStatus(JsonParser.getJson(slideInCacheData));
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -325,7 +319,9 @@ public class IAMContentFragment extends Fragment implements Observer<IAMReaderSl
                             new Runnable() {
                                 @Override
                                 public void run() {
-                                    localWebView.setClientVariables();
+                                    localWebView.setSdkClientVariables(
+
+                                    );
                                     localWebView.showSlides(
                                             newValue.slides(),
                                             JsonParser.mapToJsonString(newValue.cardAppearance()),
