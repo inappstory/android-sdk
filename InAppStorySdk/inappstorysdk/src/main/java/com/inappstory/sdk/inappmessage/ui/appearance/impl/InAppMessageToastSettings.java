@@ -67,8 +67,6 @@ public class InAppMessageToastSettings implements InAppMessageToastAppearance {
         if (appearance.containsKey(cardAppearanceKey)) {
             cardAppearance = (Map<String, Object>) appearance.get(cardAppearanceKey);
         }
-        horizontalOffset = 16;
-        verticalOffset = 16;
     }
 
     private Float contentRatio;

@@ -339,10 +339,10 @@ public class ToastContentContainer extends IAMContentContainer<InAppMessageToast
                 layoutParams.gravity |= Gravity.START;
                 break;
             case 2:
-                layoutParams.gravity |= Gravity.CENTER_HORIZONTAL;
+                layoutParams.gravity |= Gravity.END;
                 break;
             default:
-                layoutParams.gravity |= Gravity.END;
+                layoutParams.gravity |= Gravity.CENTER_HORIZONTAL;
                 break;
         }
         float availableWidth = externalContainerRect.width() - 2 * horizontalOffset;
@@ -370,6 +370,16 @@ public class ToastContentContainer extends IAMContentContainer<InAppMessageToast
             layoutParams.width = Math.round(availableHeight * contentRatio);
         }
         maxViewHeight = layoutParams.height + verticalOffset;
+        int closeButtonMargin = Math.min(
+                (layoutParams.height - Sizes.dpToPxExt(30, getContext())) / 2,
+                Sizes.dpToPxExt(16, getContext())
+        );
+        closeButtonLayoutParams.setMargins(
+                closeButtonMargin,
+                closeButtonMargin,
+                closeButtonMargin,
+                closeButtonMargin
+        );
         roundedCornerLayout.setRadius(
                 Sizes.dpToPxExt(appearance.cornerRadius(), getContext())
         );
