@@ -8,6 +8,7 @@ import java.util.List;
 public interface IASAssetsHolder {
     List<SessionAsset> assets();
     void downloadAssets();
+    void reloadAssets(SessionAssetsIsReadyCallback callback);
     void setAssets(List<SessionAsset> assets);
     boolean assetsIsDownloaded();
     void addAssetsIsReadyCallback(SessionAssetsIsReadyCallback callback);

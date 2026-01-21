@@ -4,7 +4,6 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 
 import com.inappstory.sdk.core.utils.ColorUtils;
-import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageAppearance;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageBackdrop;
 import com.inappstory.sdk.inappmessage.ui.appearance.IReaderBackground;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessagePopupAppearance;
@@ -21,7 +20,7 @@ public class InAppMessagePopupSettings implements InAppMessagePopupAppearance {
         this.disableClose = disableClose;
         String contentRatioKey = "content_ratio";
         String cornerRadiusKey = "corner_radius";
-        String horizontalPaddingKey = "horizontal_padding";
+        String horizontalOffsetKey = "horizontal_offset";
         String closeButtonPositionKey = "close_button_position";
         String animationTypeKey = "animation_type";
         String backgroundColorKey = "background_color";
@@ -35,8 +34,8 @@ public class InAppMessagePopupSettings implements InAppMessagePopupAppearance {
         if (appearance.containsKey(cornerRadiusKey)) {
             cornerRadius = numberUtils.convertNumberToInt(appearance.get(cornerRadiusKey));
         }
-        if (appearance.containsKey(horizontalPaddingKey)) {
-            horizontalPadding = numberUtils.convertNumberToInt(appearance.get(horizontalPaddingKey));
+        if (appearance.containsKey(horizontalOffsetKey)) {
+            horizontalOffset = numberUtils.convertNumberToInt(appearance.get(horizontalOffsetKey));
         }
         if (appearance.containsKey(closeButtonPositionKey)) {
             closeButtonPosition = numberUtils.convertNumberToInt(appearance.get(closeButtonPositionKey));
@@ -62,7 +61,7 @@ public class InAppMessagePopupSettings implements InAppMessagePopupAppearance {
 
     private Float contentRatio;
     private Integer cornerRadius;
-    private Integer horizontalPadding;
+    private Integer horizontalOffset;
     private Integer closeButtonPosition;
     private Integer animationType;
     private String backgroundColor;
@@ -78,8 +77,8 @@ public class InAppMessagePopupSettings implements InAppMessagePopupAppearance {
     }
 
     @Override
-    public int horizontalPadding() {
-        return horizontalPadding != null ? horizontalPadding : 16;
+    public int horizontalOffset() {
+        return horizontalOffset != null ? horizontalOffset : 16;
     }
 
     @Override

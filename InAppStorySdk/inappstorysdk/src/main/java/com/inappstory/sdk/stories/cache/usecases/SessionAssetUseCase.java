@@ -1,7 +1,6 @@
 package com.inappstory.sdk.stories.cache.usecases;
 
 
-import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.game.cache.UseCaseCallback;
 import com.inappstory.sdk.lrudiskcache.CacheJournalItem;

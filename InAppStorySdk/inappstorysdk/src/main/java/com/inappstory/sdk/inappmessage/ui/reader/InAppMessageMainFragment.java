@@ -30,6 +30,7 @@ import com.inappstory.sdk.inappmessage.domain.reader.IIAMReaderViewModel;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageAppearance;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageFullscreenAppearance;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessagePopupAppearance;
+import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageToastAppearance;
 import com.inappstory.sdk.inappmessage.ui.appearance.impl.InAppMessageBottomSheetSettings;
 import com.inappstory.sdk.inappmessage.ui.widgets.IAMContainerCallback;
 import com.inappstory.sdk.inappmessage.ui.widgets.IAMContentContainer;
@@ -117,6 +118,12 @@ public class InAppMessageMainFragment extends Fragment implements Observer<IAMRe
         } else if (appearance instanceof InAppMessageFullscreenAppearance) {
             v = inflater.inflate(
                     R.layout.cs_inappmessage_fullscreen_layout,
+                    container,
+                    false
+            );
+        } else if (appearance instanceof InAppMessageToastAppearance) {
+            v = inflater.inflate(
+                    R.layout.cs_inappmessage_toast_layout,
                     container,
                     false
             );
@@ -296,8 +303,10 @@ public class InAppMessageMainFragment extends Fragment implements Observer<IAMRe
                 contentFragment.readerSlideViewModel.updateLayout();
                 break;
             case ASSETS_FAILED:
+                contentContainer.showRefresh();
                 break;
             case ASSETS_LOADING:
+                contentContainer.showLoader();
                 break;
         }
         if (Objects.requireNonNull(newState) == IAMReaderLoadStates.RENDER_READY) {

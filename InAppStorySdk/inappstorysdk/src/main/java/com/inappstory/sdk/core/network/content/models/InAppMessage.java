@@ -13,9 +13,7 @@ import com.inappstory.sdk.inappmessage.ui.appearance.impl.InAppMessagePopupSetti
 import com.inappstory.sdk.inappmessage.ui.appearance.impl.InAppMessageToastSettings;
 import com.inappstory.sdk.network.annotations.models.Required;
 import com.inappstory.sdk.network.annotations.models.SerializedName;
-import com.inappstory.sdk.inappmessage.IAMUiContainerType;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -228,20 +226,6 @@ public class InAppMessage implements IInAppMessage {
     @Override
     public long displayTo() {
         return displayTo != null ? (displayTo * 1000) : -1;
-    }
-
-    @Override
-    public IAMUiContainerType screenType() {
-        switch (screenType) {
-            case 2:
-                return IAMUiContainerType.POPUP;
-            case 3:
-                return IAMUiContainerType.FULLSCREEN;
-            case 4:
-                return IAMUiContainerType.TOAST;
-            default:
-                return IAMUiContainerType.BOTTOM_SHEET;
-        }
     }
 
     @Override

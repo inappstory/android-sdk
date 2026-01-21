@@ -96,7 +96,8 @@ public class IAMContentFragment extends Fragment implements Observer<IAMReaderSl
     }
 
     public void refreshClick() {
-        if (!(contentWebView instanceof IAMWebView)) return;
+        readerSlideViewModel.reloadContent();
+        /*if (!(contentWebView instanceof IAMWebView)) return;
         final IAMWebView localWebView = (IAMWebView) contentWebView;
         IAMReaderSlideState current = currentState;
         if (current == null) return;
@@ -104,7 +105,7 @@ public class IAMContentFragment extends Fragment implements Observer<IAMReaderSl
                 current.slides(),
                 JsonParser.mapToJsonString(current.cardAppearance()),
                 current.slideIndex()
-        );
+        );*/
     }
 
     Observer<STETypeAndData> callToActionDataObserver = new Observer<STETypeAndData>() {

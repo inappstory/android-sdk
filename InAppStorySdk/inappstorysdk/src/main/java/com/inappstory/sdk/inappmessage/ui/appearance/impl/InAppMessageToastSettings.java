@@ -7,22 +7,25 @@ import com.inappstory.sdk.core.utils.ColorUtils;
 import com.inappstory.sdk.inappmessage.ui.appearance.IReaderBackground;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageBackdrop;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageToastAppearance;
+import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.utils.NumberUtils;
 
 import java.util.Map;
 
 public class InAppMessageToastSettings implements InAppMessageToastAppearance {
 
-    public InAppMessageToastSettings() {}
+    public InAppMessageToastSettings() {
+    }
 
     public InAppMessageToastSettings(Map<String, Object> appearance, boolean disableClose) {
         if (appearance == null) return;
         this.disableClose = disableClose;
         String contentRatioKey = "content_ratio";
         String cornerRadiusKey = "corner_radius";
-        String horizontalPaddingKey = "horizontal_padding";
-        String verticalPaddingKey = "vertical_padding";
-        String positionKey = "position";
+        String horizontalPaddingKey = "horizontal_offset";
+        String verticalPaddingKey = "vertical_offset";
+        String verticalPositionKey = "vertical_position";
+        String horizontalPositionKey = "horizontal_position";
         String closeButtonPositionKey = "close_button_position";
         String animationTypeKey = "animation_type";
         String backgroundColorKey = "background_color";
@@ -36,13 +39,16 @@ public class InAppMessageToastSettings implements InAppMessageToastAppearance {
             cornerRadius = numberUtils.convertNumberToInt(appearance.get(cornerRadiusKey));
         }
         if (appearance.containsKey(horizontalPaddingKey)) {
-            horizontalPadding = numberUtils.convertNumberToInt(appearance.get(horizontalPaddingKey));
+            horizontalOffset = numberUtils.convertNumberToInt(appearance.get(horizontalPaddingKey));
         }
         if (appearance.containsKey(verticalPaddingKey)) {
-            verticalPadding = numberUtils.convertNumberToInt(appearance.get(verticalPaddingKey));
+            verticalOffset = numberUtils.convertNumberToInt(appearance.get(verticalPaddingKey));
         }
-        if (appearance.containsKey(positionKey)) {
-            position = numberUtils.convertNumberToInt(appearance.get(positionKey));
+        if (appearance.containsKey(verticalPositionKey)) {
+            verticalPosition = numberUtils.convertNumberToInt(appearance.get(verticalPositionKey));
+        }
+        if (appearance.containsKey(horizontalPositionKey)) {
+            horizontalPosition = numberUtils.convertNumberToInt(appearance.get(horizontalPositionKey));
         }
         if (appearance.containsKey(closeButtonPositionKey)) {
             closeButtonPosition = numberUtils.convertNumberToInt(appearance.get(closeButtonPositionKey));
@@ -61,40 +67,47 @@ public class InAppMessageToastSettings implements InAppMessageToastAppearance {
         if (appearance.containsKey(cardAppearanceKey)) {
             cardAppearance = (Map<String, Object>) appearance.get(cardAppearanceKey);
         }
+        horizontalOffset = 16;
+        verticalOffset = 16;
     }
 
     private Float contentRatio;
     private Integer cornerRadius;
-    private Integer horizontalPadding;
-    private Integer verticalPadding;
+    private Integer horizontalOffset;
+    private Integer verticalOffset;
     private Integer closeButtonPosition;
     private Integer animationType;
     private String backgroundColor;
-    private InAppMessageBackdrop backdrop;
     private IReaderBackground background;
-    private int position = 0; //0 - bottom, 1 - top
+    private int verticalPosition = 0; //0 - bottom, 1 - top
+    private Integer horizontalPosition = 1; //0 - start, 1 - center, 2 - end
     private boolean disableClose;
     private Map<String, Object> cardAppearance;
 
 
     @Override
     public float contentRatio() {
-        return contentRatio != null ? contentRatio : (4 / 3f);
+        return contentRatio != null ? contentRatio : 6.4f;
     }
 
     @Override
-    public int position() {
-        return position;
+    public int horizontalPosition() {
+        return horizontalPosition != null ? horizontalPosition : 1;
     }
 
     @Override
-    public int horizontalPadding() {
-        return horizontalPadding != null ? horizontalPadding : 16;
+    public int verticalPosition() {
+        return verticalPosition;
     }
 
     @Override
-    public int verticalPadding() {
-        return verticalPadding != null ? verticalPadding : 16;
+    public int horizontalOffset() {
+        return horizontalOffset != null ? horizontalOffset : 16;
+    }
+
+    @Override
+    public int verticalOffset() {
+        return verticalOffset != null ? verticalOffset : 16;
     }
 
     @Override
@@ -104,12 +117,12 @@ public class InAppMessageToastSettings implements InAppMessageToastAppearance {
 
     @Override
     public int closeButtonPosition() {
-        return closeButtonPosition != null ? closeButtonPosition : 2;
+        return closeButtonPosition != null ? closeButtonPosition : 0;
     }
 
     @Override
     public int animationType() {
-        return animationType != null ? animationType : 2;
+        return animationType != null ? animationType : 1;
     }
 
     @Override

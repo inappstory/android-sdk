@@ -1,9 +1,7 @@
 package com.inappstory.sdk.core.api.impl;
 
-import androidx.annotation.NonNull;
+import android.util.Log;
 
-import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASAssetsHolder;
 import com.inappstory.sdk.core.network.content.models.SessionAsset;
@@ -13,16 +11,20 @@ import com.inappstory.sdk.stories.cache.usecases.SessionAssetUseCase;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 public class IASAssetsHolderImpl implements IASAssetsHolder {
     private final IASCore core;
 
 
-    private final ExecutorService downloader = Executors.newFixedThreadPool(5);
+    private ExecutorService downloader = Executors.newFixedThreadPool(5);
+    private final ExecutorService mainLoaderThread = Executors.newSingleThreadExecutor();
     private final List<SessionAsset> sessionAssets = new ArrayList<>();
 
     public IASAssetsHolderImpl(IASCore core) {
@@ -38,8 +40,7 @@ public class IASAssetsHolderImpl implements IASAssetsHolder {
         return assets;
     }
 
-    @Override
-    public void downloadAssets() {
+    private void loadAssets() {
         List<SessionAsset> assets = new ArrayList<>();
         synchronized (assetsLock) {
             assets.addAll(sessionAssets);
@@ -53,25 +54,20 @@ public class IASAssetsHolderImpl implements IASAssetsHolder {
         }
         List<Callable<Object>> assetTasks = new ArrayList<>(assets.size());
 
-        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
-            @Override
-            public void use(@NonNull final InAppStoryService service) throws Exception {
-
-            }
-        });
         final boolean[] assetsStatus = {true};
-
+        Collection<Future<?>> futures = new ArrayList<>();
         for (final SessionAsset asset : assets) {
-            assetTasks.add(new Callable<Object>() {
+            futures.add(downloader.submit(new Runnable() {
                 @Override
-                public Object call() throws Exception {
-                    return new SessionAssetUseCase(core,
+                public void run() {
+                    new SessionAssetUseCase(core,
                             new UseCaseCallback<File>() {
                                 @Override
                                 public void onError(String message) {
                                     synchronized (assetsLock) {
                                         assetsStatus[0] = false;
                                     }
+                                    Log.e("IASAssets", message);
                                 }
 
                                 @Override
@@ -82,15 +78,28 @@ public class IASAssetsHolderImpl implements IASAssetsHolder {
                             asset
                     ).getFile();
                 }
-            });
+            }));
         }
-        try {
-            downloader.invokeAll(assetTasks);
-        } catch (InterruptedException e) {
-            synchronized (assetsLock) {
-                assetsStatus[0] = false;
+        for (Future<?> future : futures) {
+            try {
+                boolean success = false;
+                synchronized (assetsLock) {
+                    success = assetsStatus[0];
+                }
+                if (!success) {
+                    downloader.shutdownNow();
+                    downloader = Executors.newFixedThreadPool(5);
+                    break;
+                }
+                future.get();
+
+            } catch (InterruptedException | ExecutionException e) {
+                synchronized (assetsLock) {
+                    assetsStatus[0] = false;
+                }
             }
         }
+
         List<SessionAssetsIsReadyCallback> copyCallbacks = new ArrayList<>();
         synchronized (assetsLock) {
             assetsIsLoading = false;
@@ -110,6 +119,36 @@ public class IASAssetsHolderImpl implements IASAssetsHolder {
             }
         }
 
+    }
+
+    @Override
+    public void downloadAssets() {
+        mainLoaderThread.execute(new Runnable() {
+            @Override
+            public void run() {
+                loadAssets();
+            }
+        });
+
+    }
+
+    @Override
+    public void reloadAssets(SessionAssetsIsReadyCallback callback) {
+        synchronized (assetsLock) {
+            if (assetsIsDownloaded) {
+                callback.isReady();
+                return;
+            }
+            if (assetsDownloadError) {
+                assetsDownloadError = false;
+            }
+            callbacks.add(callback);
+            if (assetsIsLoading) {
+                return;
+            }
+        }
+        callback.assetsIsLoading();
+        downloadAssets();
     }
 
     @Override
@@ -137,6 +176,7 @@ public class IASAssetsHolderImpl implements IASAssetsHolder {
     @Override
     public void addAssetsIsReadyCallback(SessionAssetsIsReadyCallback callback) {
         synchronized (assetsLock) {
+            if (assetsIsLoading) callback.assetsIsLoading();
             callbacks.add(callback);
         }
     }

@@ -1,7 +1,6 @@
 package com.inappstory.sdk.inappmessage;
 
 import com.inappstory.sdk.stories.api.models.ContentType;
-import com.inappstory.sdk.inappmessage.IAMUiContainerType;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ContentData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 

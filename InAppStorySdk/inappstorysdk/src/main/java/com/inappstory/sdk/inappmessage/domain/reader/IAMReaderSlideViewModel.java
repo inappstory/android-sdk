@@ -622,6 +622,7 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
     private final SessionAssetsIsReadyCallback assetsIsReadyCallback = new SessionAssetsIsReadyCallback() {
         @Override
         public void isReady() {
+            core.assetsHolder().removeAssetsIsReadyCallback(assetsIsReadyCallback);
             IAMReaderState state = readerViewModel.getCurrentState();
             if (state == null || state.iamId == null) return;
             readerViewModel.updateCurrentLoadState(IAMReaderLoadStates.ASSETS_LOADED);
@@ -637,9 +638,15 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
 
         @Override
         public void error() {
+            core.assetsHolder().removeAssetsIsReadyCallback(assetsIsReadyCallback);
             readerViewModel.updateCurrentLoadState(IAMReaderLoadStates.ASSETS_FAILED);
         }
     };
+
+    @Override
+    public void reloadContent() {
+        core.assetsHolder().reloadAssets(assetsIsReadyCallback);
+    }
 
     @Override
     public boolean loadContent() {

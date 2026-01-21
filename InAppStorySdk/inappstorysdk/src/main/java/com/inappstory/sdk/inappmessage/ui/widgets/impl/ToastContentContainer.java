@@ -55,6 +55,8 @@ public class ToastContentContainer extends IAMContentContainer<InAppMessageToast
         super(context, attrs, defStyleAttr);
     }
 
+    int maxViewHeight = 0;
+
     @Override
     public void appearance(InAppMessageToastAppearance appearance) {
         super.appearance(appearance);
@@ -106,40 +108,70 @@ public class ToastContentContainer extends IAMContentContainer<InAppMessageToast
                     break;
                 case 1:
                     background.setAlpha(0f);
-                    final int height = getHeight();
-                    mainLayout.setTranslationY(height);
-                    new IndependentAnimator(new IndependentAnimatorListener() {
-                        @Override
-                        public void onStart() {
-                            setVisibility(VISIBLE);
-                        }
+                    final int height = maxViewHeight;
+                    if (appearance.verticalPosition() == 0) {
+                        mainLayout.setTranslationY(height);
+                        new IndependentAnimator(new IndependentAnimatorListener() {
+                            @Override
+                            public void onStart() {
+                                setVisibility(VISIBLE);
+                            }
 
-                        @Override
-                        public void onUpdate(final float progress) {
-                            mainLayout.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    mainLayout.setTranslationY((1f - progress) * height);
-                                    background.setAlpha(progress);
-                                }
-                            });
+                            @Override
+                            public void onUpdate(final float progress) {
+                                mainLayout.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        mainLayout.setTranslationY((1f - progress) * height);
+                                        background.setAlpha(progress);
+                                    }
+                                });
 
-                        }
+                            }
 
-                        @Override
-                        public void onEnd() {
-                            showAnimationEnd();
-                        }
-                    }).start(
-                            200,
-                            new AccelerateInterpolator()
-                    );
+                            @Override
+                            public void onEnd() {
+                                showAnimationEnd();
+                            }
+                        }).start(
+                                200,
+                                new AccelerateInterpolator()
+                        );
+                    } else {
+                        mainLayout.setTranslationY(-height);
+                        new IndependentAnimator(new IndependentAnimatorListener() {
+                            @Override
+                            public void onStart() {
+                                setVisibility(VISIBLE);
+                            }
+
+                            @Override
+                            public void onUpdate(final float progress) {
+                                mainLayout.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        mainLayout.setTranslationY((1f - progress) * -height);
+                                        background.setAlpha(progress);
+                                    }
+                                });
+
+                            }
+
+                            @Override
+                            public void onEnd() {
+                                showAnimationEnd();
+                            }
+                        }).start(
+                                200,
+                                new AccelerateInterpolator()
+                        );
+                    }
                     break;
                 case 2:
                     background.setAlpha(0f);
                     mainLayout.setAlpha(0f);
-                    mainLayout.setScaleX(0.7f);
-                    mainLayout.setScaleY(0.7f);
+                    roundedCornerLayout.setScaleX(0.7f);
+                    roundedCornerLayout.setScaleY(0.7f);
                     new IndependentAnimator(new IndependentAnimatorListener() {
                         @Override
                         public void onStart() {
@@ -148,11 +180,11 @@ public class ToastContentContainer extends IAMContentContainer<InAppMessageToast
 
                         @Override
                         public void onUpdate(final float progress) {
-                            mainLayout.post(new Runnable() {
+                            roundedCornerLayout.post(new Runnable() {
                                 @Override
                                 public void run() {
-                                    mainLayout.setScaleX((0.3f * progress) + 0.7f);
-                                    mainLayout.setScaleY((0.3f * progress) + 0.7f);
+                                    roundedCornerLayout.setScaleX((0.3f * progress) + 0.7f);
+                                    roundedCornerLayout.setScaleY((0.3f * progress) + 0.7f);
                                     mainLayout.setAlpha(progress);
                                     background.setAlpha(progress);
                                 }
@@ -199,30 +231,58 @@ public class ToastContentContainer extends IAMContentContainer<InAppMessageToast
                     closeAnimationEnd();
                     break;
                 case 1:
-                    final float height = getHeight();
-                    new IndependentAnimator(new IndependentAnimatorListener() {
-                        @Override
-                        public void onStart() {
-                            setVisibility(VISIBLE);
-                        }
 
-                        @Override
-                        public void onUpdate(final float progress) {
-                            mainLayout.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    mainLayout.setTranslationY(progress * height);
-                                    background.setAlpha(1f - progress);
-                                }
-                            });
+                    final float height = maxViewHeight;
+                    if (appearance.verticalPosition() == 0) {
+                        new IndependentAnimator(new IndependentAnimatorListener() {
+                            @Override
+                            public void onStart() {
+                                setVisibility(VISIBLE);
+                            }
 
-                        }
+                            @Override
+                            public void onUpdate(final float progress) {
+                                roundedCornerLayout.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        mainLayout.setTranslationY(progress * height);
+                                        background.setAlpha(1f - progress);
+                                    }
+                                });
 
-                        @Override
-                        public void onEnd() {
-                            closeAnimationEnd();
-                        }
-                    }).start(200, new AccelerateInterpolator());
+                            }
+
+                            @Override
+                            public void onEnd() {
+                                closeAnimationEnd();
+                            }
+                        }).start(200, new AccelerateInterpolator());
+                    } else {
+                        new IndependentAnimator(new IndependentAnimatorListener() {
+                            @Override
+                            public void onStart() {
+                                setVisibility(VISIBLE);
+                            }
+
+                            @Override
+                            public void onUpdate(final float progress) {
+                                mainLayout.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        mainLayout.setTranslationY(progress * -height);
+                                        background.setAlpha(1f - progress);
+                                    }
+                                });
+
+                            }
+
+                            @Override
+                            public void onEnd() {
+                                closeAnimationEnd();
+                            }
+                        }).start(200, new AccelerateInterpolator());
+                    }
+
                     break;
                 case 2:
                     new IndependentAnimator(new IndependentAnimatorListener() {
@@ -236,8 +296,8 @@ public class ToastContentContainer extends IAMContentContainer<InAppMessageToast
                             mainLayout.post(new Runnable() {
                                 @Override
                                 public void run() {
-                                    mainLayout.setScaleX(1f - (0.3f * progress));
-                                    mainLayout.setScaleY(1f - (0.3f * progress));
+                                    roundedCornerLayout.setScaleX(1f - (0.3f * progress));
+                                    roundedCornerLayout.setScaleY(1f - (0.3f * progress));
                                     mainLayout.setAlpha(1f - progress);
                                     background.setAlpha(1f - progress);
                                 }
@@ -261,27 +321,41 @@ public class ToastContentContainer extends IAMContentContainer<InAppMessageToast
 
     @Override
     protected void visibleRectIsCalculated() {
-        int horizontalPadding = Sizes.dpToPxExt(appearance.horizontalPadding(), getContext());
-        layoutParams.leftMargin = horizontalPadding;
-        layoutParams.rightMargin = horizontalPadding;
-        float contentRatio = 1.33f;
-        if (appearance.contentRatio() < 5f && appearance.contentRatio() > 0.01f) {
+        int horizontalOffset = Sizes.dpToPxExt(appearance.horizontalOffset(), getContext());
+        int verticalOffset = Sizes.dpToPxExt(appearance.verticalOffset(), getContext());
+        layoutParams.leftMargin = horizontalOffset;
+        layoutParams.rightMargin = horizontalOffset;
+        layoutParams.topMargin = verticalOffset;
+        layoutParams.bottomMargin = verticalOffset;
+        float contentRatio = 6.4f;
+        if (appearance.contentRatio() < 30f && appearance.contentRatio() > 0.01f) {
             contentRatio = appearance.contentRatio();
         }
-        if (appearance.position() == 1) {
+        if (appearance.verticalPosition() == 1) {
             layoutParams.gravity = Gravity.TOP;
         }
-        float availableWidth = externalContainerRect.width() - 2 * horizontalPadding;
+        switch (appearance.horizontalPosition()) {
+            case 0:
+                layoutParams.gravity |= Gravity.START;
+                break;
+            case 2:
+                layoutParams.gravity |= Gravity.CENTER_HORIZONTAL;
+                break;
+            default:
+                layoutParams.gravity |= Gravity.END;
+                break;
+        }
+        float availableWidth = externalContainerRect.width() - 2 * horizontalOffset;
         Point screenSize = Sizes.getScreenSize(getContext());
         if (Sizes.isTablet(getContext())) {
-            availableWidth = Math.min(availableWidth, Sizes.dpToPxExt(340, getContext()));
+            availableWidth = Math.min(availableWidth, Sizes.dpToPxExt(320, getContext()));
         } else {
             availableWidth = Math.min(
                     availableWidth,
-                    Math.min(screenSize.x, screenSize.y) - 2 * horizontalPadding
+                    Math.min(screenSize.x, screenSize.y) - 2 * horizontalOffset
             );
         }
-        float availableHeight = externalContainerRect.height() - 2 * horizontalPadding;
+        float availableHeight = externalContainerRect.height() - verticalOffset;
         float screenContentRatio = availableWidth / availableHeight;
         if (contentRatio >= screenContentRatio) {
             layoutParams.height = Math.min(
@@ -295,6 +369,7 @@ public class ToastContentContainer extends IAMContentContainer<InAppMessageToast
             layoutParams.height = Math.round(availableHeight);
             layoutParams.width = Math.round(availableHeight * contentRatio);
         }
+        maxViewHeight = layoutParams.height + verticalOffset;
         roundedCornerLayout.setRadius(
                 Sizes.dpToPxExt(appearance.cornerRadius(), getContext())
         );
@@ -383,7 +458,7 @@ public class ToastContentContainer extends IAMContentContainer<InAppMessageToast
         content.setId(CONTENT_ID);
         mainLayout.addView(roundedCornerLayout);
         roundedCornerLayout.addView(relativeLayout);
-        mainLayout.addView(closeButton);
+        roundedCornerLayout.addView(closeButton);
         addView(mainLayout);
         if (appearance != null) appearance(appearance);
     }

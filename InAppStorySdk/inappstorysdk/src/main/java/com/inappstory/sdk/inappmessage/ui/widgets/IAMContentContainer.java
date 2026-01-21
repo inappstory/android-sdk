@@ -125,8 +125,8 @@ public abstract class IAMContentContainer<T extends InAppMessageAppearance> exte
             }
         });
         FrameLayout.LayoutParams refreshLP = new FrameLayout.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
+                maxRefreshSize,
+                maxRefreshSize
         );
         refreshLP.gravity = Gravity.CENTER;
         refresh.setLayoutParams(
@@ -144,6 +144,7 @@ public abstract class IAMContentContainer<T extends InAppMessageAppearance> exte
                         ViewGroup.LayoutParams.MATCH_PARENT
                 )
         );
+        refreshContainer.setBackgroundColor(Color.RED);
         refreshContainer.addView(refresh);
     }
 

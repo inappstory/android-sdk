@@ -119,7 +119,7 @@ public class IASContentPreloadImpl implements IASContentPreload {
                         if (assetsHolder.assetsIsDownloaded()) {
                             downloadInAppMessagesContent(content, callback);
                         } else {
-                            assetsHolder.addAssetsIsReadyCallback(new SessionAssetsIsReadyCallback() {
+                            assetsHolder.checkOrAddAssetsIsReadyCallback(new SessionAssetsIsReadyCallback() {
                                 @Override
                                 public void isReady() {
                                     downloadInAppMessagesContent(content, callback);

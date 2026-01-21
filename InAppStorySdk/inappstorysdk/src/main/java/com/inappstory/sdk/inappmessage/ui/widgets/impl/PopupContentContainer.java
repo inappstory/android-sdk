@@ -262,7 +262,7 @@ public class PopupContentContainer extends IAMContentContainer<InAppMessagePopup
 
     @Override
     protected void visibleRectIsCalculated() {
-        int horizontalPadding = Sizes.dpToPxExt(appearance.horizontalPadding(), getContext());
+        int horizontalPadding = Sizes.dpToPxExt(appearance.horizontalOffset(), getContext());
         layoutParams.leftMargin = horizontalPadding;
         layoutParams.rightMargin = horizontalPadding;
         float contentRatio = 1.33f;

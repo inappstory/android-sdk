@@ -8,6 +8,8 @@ import com.inappstory.sdk.stories.utils.Observer;
 import com.inappstory.sdk.stories.utils.SingleTimeEvent;
 
 public interface IIAMReaderSlideViewModel extends IReaderSlideViewModel {
+    void reloadContent();
+
     void addSubscriber(Observer<IAMReaderSlideState> observer);
 
     void removeSubscriber(Observer<IAMReaderSlideState> observer);
