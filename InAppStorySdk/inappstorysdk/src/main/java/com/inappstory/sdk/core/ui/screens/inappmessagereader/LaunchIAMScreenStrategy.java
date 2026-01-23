@@ -377,6 +377,7 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
             String message = "Undefined type of in-app message.";
             launchScreenError(message);
             currentScreenHolder.endLaunchProcess();
+            return;
         }
         core.screensManager().iamReaderViewModel().initState(
                 new IAMReaderState()
