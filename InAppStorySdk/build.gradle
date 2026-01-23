@@ -2,8 +2,8 @@
 
 buildscript {
     ext {
-        inappstory_output_version = "1.21.25"
-        inappstory_output_build = 1035
+        inappstory_output_version = "1.21.26"
+        inappstory_output_build = 1036
         inappstory_target_sdk = 31
         inappstory_min_sdk = 21
 
