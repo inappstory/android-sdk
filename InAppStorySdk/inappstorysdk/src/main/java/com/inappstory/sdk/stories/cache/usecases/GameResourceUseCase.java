@@ -58,6 +58,9 @@ public class GameResourceUseCase extends GetCacheFileUseCase<Void> {
                 getArchiveName(zipUrl) +
                 File.separator +
                 StringsUtils.md5(zipUrl) +
+                File.separator +
+                "resources_" +
+                gameInstanceId +
                 File.separator;
         removeLink = prePath +
                 "resources_" +
