@@ -101,8 +101,8 @@ public class FilesDownloader {
         URL urlS = new URL(url);
         HttpURLConnection urlConnection = (HttpURLConnection) urlS.openConnection();
         urlConnection.setRequestProperty("Accept-Encoding", "br, gzip");
-        urlConnection.setConnectTimeout(1000);
-        urlConnection.setReadTimeout(1000);
+        urlConnection.setConnectTimeout(300000);
+        urlConnection.setReadTimeout(300000);
         urlConnection.setRequestMethod("GET");
         urlConnection.setRequestProperty("User-Agent", core.network().userAgent());
         if (downloadOffset > 0) {
