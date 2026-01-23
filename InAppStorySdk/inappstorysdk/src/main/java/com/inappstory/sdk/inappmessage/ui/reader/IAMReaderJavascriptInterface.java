@@ -3,6 +3,8 @@ package com.inappstory.sdk.inappmessage.ui.reader;
 import android.util.Log;
 import android.webkit.JavascriptInterface;
 
+import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.LoggerTags;
 import com.inappstory.sdk.inappmessage.domain.reader.IIAMReaderSlideViewModel;
 
 public class IAMReaderJavascriptInterface {
@@ -25,7 +27,7 @@ public class IAMReaderJavascriptInterface {
     @JavascriptInterface
     public void storyRenderReady() {
         slideViewModel.renderReady();
-        Log.e("JS_method_test", "storyRenderReady");
+        logMethod("iamRenderReady");
     }
 
     @JavascriptInterface
@@ -51,14 +53,18 @@ public class IAMReaderJavascriptInterface {
     @JavascriptInterface
     public void onCardLoadingStateChange(int state, String reason) {
         slideViewModel.onCardLoadingStateChange(state, reason);
-        Log.e("JS_method_test", "onCardLoadingStateChange " + state + " " + reason);
+        logMethod("onCardLoadingStateChange " + state + " " + reason);
+    }
+
+    private void logMethod(String payload) {
+        InAppStoryManager.showELog(LoggerTags.IAS_IAM_JS, payload);
     }
 
     @JavascriptInterface
     public void onEvent(String name, String event) {
         slideViewModel.onEvent(name, event);
 
-        Log.e("JS_method_test", "onEvent " + name + " " + event);
+        logMethod("onEvent " + name + " " + event);
     }
 
     @JavascriptInterface

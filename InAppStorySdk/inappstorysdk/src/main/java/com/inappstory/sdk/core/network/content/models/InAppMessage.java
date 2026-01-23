@@ -11,6 +11,7 @@ import com.inappstory.sdk.inappmessage.ui.appearance.impl.InAppMessageBottomShee
 import com.inappstory.sdk.inappmessage.ui.appearance.impl.InAppMessageFullscreenSettings;
 import com.inappstory.sdk.inappmessage.ui.appearance.impl.InAppMessagePopupSettings;
 import com.inappstory.sdk.inappmessage.ui.appearance.impl.InAppMessageToastSettings;
+import com.inappstory.sdk.inappmessage.ui.appearance.impl.InAppMessageUndefinedSettings;
 import com.inappstory.sdk.network.annotations.models.Required;
 import com.inappstory.sdk.network.annotations.models.SerializedName;
 
@@ -231,6 +232,8 @@ public class InAppMessage implements IInAppMessage {
     @Override
     public InAppMessageAppearance inAppMessageAppearance() {
         switch (screenType) {
+            case 1:
+                return new InAppMessageBottomSheetSettings(appearance, disableClose);
             case 2:
                 return new InAppMessagePopupSettings(appearance, disableClose);
             case 3:
@@ -238,7 +241,7 @@ public class InAppMessage implements IInAppMessage {
             case 4:
                 return new InAppMessageToastSettings(appearance, disableClose);
             default:
-                return new InAppMessageBottomSheetSettings(appearance, disableClose);
+                return new InAppMessageUndefinedSettings();
         }
     }
 

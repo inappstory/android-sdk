@@ -83,6 +83,20 @@ public class SlidesDownloader {
         }
     }
 
+    public int isSlidesLoaded(ContentIdAndType contentIdAndType) throws IOException {
+        Set<SlideTaskKey> keys;
+        synchronized (slideTasksLock) {
+            keys = new HashSet<>(slideTasks.keySet());
+        }
+        for (SlideTaskKey key : keys) {
+            if (Objects.equals(key.contentIdAndType, contentIdAndType)) {
+                int res = isSlideLoaded(key);
+                if (res != 1) return res;
+            }
+        }
+        return 1;
+    }
+
     public int isSlideLoaded(SlideTaskKey key) throws IOException { //0 - not loaded, 1 - loaded, -1 - loaded with error
         boolean remove = false;
         LruDiskCache cache = core.contentLoader().getCommonCache();
@@ -298,6 +312,9 @@ public class SlidesDownloader {
                                         .forced(forced)
                         );
                         if (priorityIndexes.contains(slideIndex)) {
+                            if (maxPriority.contains(slideTaskKey)) {
+                                maxPriority.remove(slideTaskKey);
+                            }
                             maxPriority.add(0, slideTaskKey);
                         }
                     } else if (slideTask.loadType == 2 && slideTask.forced) {
@@ -377,7 +394,6 @@ public class SlidesDownloader {
         for (IReaderSlideViewModel pageViewModel : pageViewModelsCopy) {
             if (pageViewModel.contentIdAndType().equals(contentIdAndType)) {
                 pageViewModel.slideLoadError(slideTaskKey.index);
-                return;
             }
         }
         core.callbacksAPI().useCallback(

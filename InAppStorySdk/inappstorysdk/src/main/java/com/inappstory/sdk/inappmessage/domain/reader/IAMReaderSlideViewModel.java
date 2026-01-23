@@ -172,9 +172,17 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
                 readerViewModel.updateCurrentLoaderState(IAMReaderLoaderStates.LOADING);
                 break;
             case 1:
+                try {
+                    handler.removeCallbacks(contentFailedByTimeout);
+                } catch (Exception e) {
+                }
                 readerViewModel.updateCurrentLoaderState(IAMReaderLoaderStates.LOADED);
                 break;
             case 2:
+                try {
+                    handler.removeCallbacks(contentFailedByTimeout);
+                } catch (Exception e) {
+                }
                 readerViewModel.updateCurrentLoaderState(IAMReaderLoaderStates.FAILED);
                 break;
             default:
@@ -304,7 +312,11 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
     }
 
     public void storyLoadingFailed(String data) {
-        readerViewModel.updateCurrentLoadState(IAMReaderLoadStates.CONTENT_FAILED);
+        try {
+            handler.removeCallbacks(contentFailedByTimeout);
+        } catch (Exception e) {
+        }
+        readerViewModel.updateCurrentLoadState(IAMReaderLoadStates.CONTENT_FAILED_CLOSE);
     }
 
     public void storyShowSlide(int index) {
@@ -377,6 +389,12 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
 
     public void storyLoaded() {
         readerViewModel.updateCurrentLoadState(IAMReaderLoadStates.CONTENT_LOADED);
+        try {
+
+            Log.e("RemoveTimeoutCallback", "storyLoaded");
+            handler.removeCallbacks(contentFailedByTimeout);
+        } catch (Exception e) {
+        }
         slideStateObservable.updateValue(
                 slideStateObservable
                         .getValue()
@@ -387,6 +405,11 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
 
     public void storyLoaded(String data) {
         readerViewModel.updateCurrentLoadState(IAMReaderLoadStates.CONTENT_LOADED);
+        try {
+            Log.e("RemoveTimeoutCallback", "storyLoaded");
+            handler.removeCallbacks(contentFailedByTimeout);
+        } catch (Exception e) {
+        }
         slideStateObservable.updateValue(
                 slideStateObservable
                         .getValue()
@@ -541,6 +564,11 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
 
     @Override
     public void slideLoadError(int index) {
+        /*if (slideStateObservable.getValue().slideIndex() == index) {
+            readerViewModel.updateCurrentLoadState(IAMReaderLoadStates.CONTENT_FAILED);
+            readerViewModel.updateCurrentLoaderState(IAMReaderLoaderStates.FAILED);
+            return;
+        }*/
         STETypeAndData steTypeAndData = new STETypeAndData(
                 STEDataType.SLIDE_IN_CACHE,
                 new SlideInCacheData()
@@ -592,7 +620,7 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
         List<Integer> errorSlides = new ArrayList<>();
         for (int i = 0; i < readerContent.actualSlidesCount(); i++) {
             slides.add(converter.replaceSlide(readerContent.slideByIndex(i), readerContent, i));
-            int loadStatus = downloadManager.isSlideLoaded(readerContent.id(), i, ContentType.IN_APP_MESSAGE);
+            int loadStatus = downloadManager.isSlideLoaded(readerContent.id(), i);
             if (loadStatus == 1) {
                 loadedSlides.add(i);
             } else if (loadStatus == -1) {
@@ -628,28 +656,85 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
             readerViewModel.updateCurrentLoadState(IAMReaderLoadStates.ASSETS_LOADED);
             InAppMessageDownloadManager downloadManager = core.contentLoader().inAppMessageDownloadManager();
             downloadManager.addInAppMessageTask(state.iamId, null);
-            downloadManager.addInAppMessageTask(state.iamId, null);
         }
 
         @Override
         public void assetsIsLoading() {
             readerViewModel.updateCurrentLoadState(IAMReaderLoadStates.ASSETS_LOADING);
+            readerViewModel.updateCurrentLoaderState(IAMReaderLoaderStates.LOADING);
         }
 
         @Override
         public void error() {
+            try {
+                Log.e("RemoveTimeoutCallback", "error");
+                handler.removeCallbacks(contentFailedByTimeout);
+            } catch (Exception e) {
+            }
             core.assetsHolder().removeAssetsIsReadyCallback(assetsIsReadyCallback);
             readerViewModel.updateCurrentLoadState(IAMReaderLoadStates.ASSETS_FAILED);
+            readerViewModel.updateCurrentLoaderState(IAMReaderLoaderStates.FAILED);
         }
     };
 
     @Override
     public void reloadContent() {
+        try {
+            handler.removeCallbacks(contentFailedByTimeout);
+            handler.postDelayed(contentFailedByTimeout, failedTimeout);
+        } catch (Exception e) {
+        }
+        readerViewModel.updateCurrentLoadState(IAMReaderLoadStates.ASSETS_LOADING);
+        readerViewModel.updateCurrentLoaderState(IAMReaderLoaderStates.LOADING);
+        IAMReaderState state = readerViewModel.getCurrentState();
+        InAppMessageDownloadManager downloadManager = core.contentLoader().inAppMessageDownloadManager();
+        int loadStatus = downloadManager.isSlidesLoaded(state.iamId);
+        if (loadStatus == -1) {
+            downloadManager.removeInAppMessageTask(state.iamId);
+        } else if (core.assetsHolder().assetsIsDownloaded()) {
+            IReaderContent readerContent =
+                    core.contentHolder().readerContent().getByIdAndType(
+                            state.iamId,
+                            ContentType.IN_APP_MESSAGE
+                    );
+            if (downloadManager.concreteSlidesLoaded(
+                    readerContent,
+                    new HashSet<>(
+                            Collections.singletonList(0)
+                    )
+            )) {
+                readerViewModel.updateCurrentLoaderState(IAMReaderLoaderStates.LOADED);
+                try {
+                    Log.e("RemoveTimeoutCallback", "reloadContent");
+                    handler.removeCallbacks(contentFailedByTimeout);
+                } catch (Exception e) {
+                }
+            }
+        }
         core.assetsHolder().reloadAssets(assetsIsReadyCallback);
+
     }
+
+    private final int failedTimeout = 30000;
+    Runnable contentFailedByTimeout = new Runnable() {
+        @Override
+        public void run() {
+            if (readerViewModel != null) {
+                readerViewModel.updateCurrentLoadState(IAMReaderLoadStates.CONTENT_FAILED);
+                readerViewModel.updateCurrentLoaderState(IAMReaderLoaderStates.FAILED);
+            }
+        }
+    };
+
+    Handler handler = new Handler(Looper.getMainLooper());
 
     @Override
     public boolean loadContent() {
+        try {
+            handler.removeCallbacks(contentFailedByTimeout);
+            handler.postDelayed(contentFailedByTimeout, failedTimeout);
+        } catch (Exception e) {
+        }
         IAMReaderState state = readerViewModel.getCurrentState();
         if (state == null || state.iamId == null) return false;
         IReaderContent readerContent =
@@ -665,7 +750,12 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
             )) && core.assetsHolder().assetsIsDownloaded()) {
                 readerViewModel.updateCurrentLoadState(IAMReaderLoadStates.ASSETS_LOADED);
             } else {
-                readerViewModel.updateCurrentLoadState(IAMReaderLoadStates.CONTENT_FAILED);
+                try {
+                    Log.e("RemoveTimeoutCallback", "loadContent");
+                    handler.removeCallbacks(contentFailedByTimeout);
+                } catch (Exception e) {
+                }
+                readerViewModel.updateCurrentLoadState(IAMReaderLoadStates.CONTENT_FAILED_CLOSE);
                 return false;
             }
         } else {

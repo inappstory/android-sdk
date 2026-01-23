@@ -32,6 +32,7 @@ import com.inappstory.sdk.inappmessage.InAppMessageScreenActions;
 import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderState;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageAppearance;
 import com.inappstory.sdk.inappmessage.InAppMessageOpenSettings;
+import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageUndefinedAppearance;
 import com.inappstory.sdk.stories.api.models.CachedSessionData;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenInAppMessageReader;
@@ -372,6 +373,11 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
             return;
         }
         InAppMessageAppearance appearance = inAppMessage.inAppMessageAppearance();
+        if (appearance instanceof InAppMessageUndefinedAppearance) {
+            String message = "Undefined type of in-app message.";
+            launchScreenError(message);
+            currentScreenHolder.endLaunchProcess();
+        }
         core.screensManager().iamReaderViewModel().initState(
                 new IAMReaderState()
                         .cancellationTokenUID(cancellationToken != null ? cancellationToken.getUniqueId() : null)
@@ -450,6 +456,8 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
             List<Integer> contentIds = new ArrayList<>();
             for (IReaderContent content : readerContents) {
                 IInAppMessage inAppMessage = (IInAppMessage) content;
+                if (inAppMessage.inAppMessageAppearance() instanceof InAppMessageUndefinedAppearance)
+                    continue;
                 int messagePriority = inAppMessage.getEventPriority(event);
                 if (messagePriority >= 0 && checkContentForShownFrequency(inAppMessage)) {
                     contentIds.add(content.id());

@@ -245,11 +245,11 @@ public class InAppMessageDownloadManager {
         slidesDownloader.clearSubscribers();
     }
 
-    public int isSlideLoaded(int id, int index, ContentType type) {
+    public int isSlideLoaded(int id, int index) {
         try {
             return slidesDownloader.isSlideLoaded(
                     new SlideTaskKey(
-                            new ContentIdAndType(id, type),
+                            new ContentIdAndType(id, ContentType.IN_APP_MESSAGE),
                             index
                     )
             );
@@ -258,10 +258,22 @@ public class InAppMessageDownloadManager {
         }
     }
 
-    public void changePriorityForSingleWithLoop(ContentIdWithIndex storyId,
-                                                ContentType type) {
-        if (slidesDownloader != null)
-            slidesDownloader.changePriorityForSingleWithLoop(storyId, type);
+    public int isSlidesLoaded(int id) {
+        try {
+            return slidesDownloader.isSlidesLoaded(
+                    new ContentIdAndType(id, ContentType.IN_APP_MESSAGE)
+            );
+        } catch (IOException e) {
+            return 0;
+        }
+    }
+
+    public void removeInAppMessageTask(int id) {
+        slidesDownloader.removeSlideTasks(new ContentIdAndType(id, ContentType.IN_APP_MESSAGE));
+    }
+
+    public void checkInAppMessageTask(int id) {
+        slidesDownloader.removeSlideTasks(new ContentIdAndType(id, ContentType.IN_APP_MESSAGE));
     }
 
 

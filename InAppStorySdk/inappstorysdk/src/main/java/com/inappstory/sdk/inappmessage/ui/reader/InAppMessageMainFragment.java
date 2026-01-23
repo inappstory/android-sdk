@@ -303,10 +303,9 @@ public class InAppMessageMainFragment extends Fragment implements Observer<IAMRe
                 contentFragment.readerSlideViewModel.updateLayout();
                 break;
             case ASSETS_FAILED:
-                contentContainer.showRefresh();
-                break;
+            case CONTENT_FAILED:
+            case CONTENT_LOADING:
             case ASSETS_LOADING:
-                contentContainer.showLoader();
                 break;
         }
         if (Objects.requireNonNull(newState) == IAMReaderLoadStates.RENDER_READY) {
@@ -318,7 +317,7 @@ public class InAppMessageMainFragment extends Fragment implements Observer<IAMRe
            /* if (!contentIsPreloaded && contentContainer != null) {
                 contentContainer.hideLoader();
             }*/
-        } else if (Objects.requireNonNull(newState) == IAMReaderLoadStates.CONTENT_FAILED) {
+        } else if (Objects.requireNonNull(newState) == IAMReaderLoadStates.CONTENT_FAILED_CLOSE) {
             readerViewModel.updateCurrentUiState(IAMReaderUIStates.CLOSING);
         }
     }
