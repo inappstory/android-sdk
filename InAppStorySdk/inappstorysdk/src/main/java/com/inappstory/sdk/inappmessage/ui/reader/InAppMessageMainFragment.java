@@ -9,6 +9,7 @@ import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -182,7 +183,7 @@ public class InAppMessageMainFragment extends Fragment implements Observer<IAMRe
         );*/
     }
 
-    IAMContentFragment contentFragment;
+    IAMContentLayout contentFragment;
 
     @Override
     public void onViewCreated(
@@ -202,22 +203,30 @@ public class InAppMessageMainFragment extends Fragment implements Observer<IAMRe
                         .getIAMScreenHolder().subscribeScreen(InAppMessageMainFragment.this);
             }
         });
-        contentFragment = new IAMContentFragment();
-        FragmentTransaction t = getChildFragmentManager().beginTransaction()
-                .add(
-                        CONTENT_ID,
-                        contentFragment,
-                        "IAM_CONTENT_FRAGMENT"
-                );
-        t.addToBackStack("IAM_CONTENT_FRAGMENT");
-        t.commit();
         if (contentContainer != null) {
             contentContainer.setRefreshClick(v -> {
                 if (contentFragment != null) {
                     contentFragment.refreshClick();
                 }
             });
+
+            contentFragment = new IAMContentLayout(view.getContext());
+            contentFragment.setLayoutParams(
+                    new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                            ViewGroup.LayoutParams.MATCH_PARENT
+                    )
+            );
+            contentContainer.addView(contentFragment);
         }
+       /* FragmentTransaction t = getChildFragmentManager().beginTransaction()
+                .add(
+                        CONTENT_ID,
+                        contentFragment,
+                        "IAM_CONTENT_FRAGMENT"
+                );
+        t.addToBackStack("IAM_CONTENT_FRAGMENT");
+        t.commit();*/
+
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
@@ -334,12 +343,16 @@ public class InAppMessageMainFragment extends Fragment implements Observer<IAMRe
 
     @Override
     public void pauseScreen() {
-
+        if (contentFragment != null) {
+            contentFragment.onPause();
+        }
     }
 
     @Override
     public void resumeScreen() {
-
+        if (contentFragment != null) {
+            contentFragment.onResume();
+        }
     }
 
     @Override
@@ -350,6 +363,18 @@ public class InAppMessageMainFragment extends Fragment implements Observer<IAMRe
     @Override
     public void permissionResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
 
+    }
+
+    @Override
+    public void onPause() {
+        pauseScreen();
+        super.onPause();
+    }
+
+    @Override
+    public void onResume() {
+        resumeScreen();
+        super.onResume();
     }
 
     @Override
