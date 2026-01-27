@@ -218,22 +218,10 @@ public class GameManager {
                 new UseIASCallback<GameReaderCallback>() {
                     @Override
                     public void use(@NonNull GameReaderCallback callback) {
-                        if (eventData == null ||
-                                eventData.isEmpty() ||
-                                eventData.equals("{}") ||
-                                eventData.equals("null")
-                        ) {
-                            callback.closeGame(
-                                    dataModel,
-                                    gameCenterId
-                            );
-                        } else {
-                            callback.finishGame(
-                                    dataModel,
-                                    eventData,
-                                    gameCenterId
-                            );
-                        }
+                        callback.closeGame(
+                                dataModel,
+                                gameCenterId
+                        );
                     }
                 }
         );

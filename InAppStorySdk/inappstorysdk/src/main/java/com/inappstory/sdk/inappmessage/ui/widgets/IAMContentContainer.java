@@ -144,7 +144,6 @@ public abstract class IAMContentContainer<T extends InAppMessageAppearance> exte
                         ViewGroup.LayoutParams.MATCH_PARENT
                 )
         );
-        refreshContainer.setBackgroundColor(Color.RED);
         refreshContainer.addView(refresh);
     }
 
