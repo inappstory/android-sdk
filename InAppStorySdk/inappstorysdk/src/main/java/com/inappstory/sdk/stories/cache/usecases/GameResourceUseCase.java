@@ -1,6 +1,8 @@
 package com.inappstory.sdk.stories.cache.usecases;
 
 
+import android.system.Os;
+
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.game.cache.UseCaseCallback;
@@ -32,7 +34,10 @@ public class GameResourceUseCase extends GetCacheFileUseCase<Void> {
         return "";
     }
 
-    private String removeLink = null;
+
+    private String symlinkKey = null;
+    private String symlinkDir = null;
+
 
     public GameResourceUseCase(
             IASCore core,
@@ -49,7 +54,14 @@ public class GameResourceUseCase extends GetCacheFileUseCase<Void> {
         this.progressCallback = progressCallback;
         this.uniqueKey = StringsUtils.md5(gameInstanceId + "_" + resource.url);
         this.resource = resource;
-        String prePath = getCache().getCacheDir().getAbsolutePath() +
+        String realPath = getCache().getCacheDir().getAbsolutePath() +
+                File.separator +
+                "v2" +
+                File.separator + "gameResources" +
+                File.separator +
+                StringsUtils.md5(resource.url);
+
+        symlinkDir = getCache().getCacheDir().getAbsolutePath() +
                 File.separator +
                 "v2" +
                 File.separator +
@@ -62,20 +74,10 @@ public class GameResourceUseCase extends GetCacheFileUseCase<Void> {
                 "resources_" +
                 gameInstanceId +
                 File.separator;
-        removeLink = prePath +
-                "resources_" +
-                gameInstanceId +
-                File.separator + resource.key;
-        this.filePath = prePath + this.uniqueKey;
+        symlinkKey = symlinkDir + resource.key;
+        this.filePath = realPath;
     }
 
-    private void removeOldFormatFile() {
-        if (removeLink != null) {
-            File file = new File(removeLink);
-            if (file.exists())
-                file.delete();
-        }
-    }
 
     private boolean getLocalResource() {
 
@@ -119,11 +121,31 @@ public class GameResourceUseCase extends GetCacheFileUseCase<Void> {
         return false;
     }
 
+    private void createSymlink() {
+        try {
+            new File(symlinkDir).mkdirs();
+        } catch (Exception e) {
+
+        }
+        try {
+            Os.remove(symlinkKey);
+        } catch (Exception e) {
+
+        }
+        try {
+            Os.symlink(filePath, symlinkKey);
+        } catch (Exception e) {
+            filePath = symlinkKey;
+            e.printStackTrace();
+        }
+    }
+
+
     @Override
     public Void getFile() {
-        removeOldFormatFile();
-        if (getLocalResource()) return null;
-        downloadResource();
+        createSymlink();
+        if (!getLocalResource())
+            downloadResource();
         return null;
     }
 
