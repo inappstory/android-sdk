@@ -1,11 +1,12 @@
 package com.inappstory.sdk.inappmessage.ui.reader;
 
 import static com.inappstory.sdk.inappmessage.ui.widgets.IAMContentContainer.CONTAINER_ID;
-import static com.inappstory.sdk.inappmessage.ui.widgets.IAMContentContainer.CONTENT_ID;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -41,7 +42,7 @@ import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 
 import java.util.Objects;
 
-public class InAppMessageMainFragment extends Fragment implements Observer<IAMReaderState>, BaseIAMScreen {
+public class InAppMessageMainView extends FrameLayout implements Observer<IAMReaderState>, BaseIAMScreen {
     private IAMReaderLoadStates currentLoadState = IAMReaderLoadStates.EMPTY;
     private IAMReaderLoaderStates currentLoaderState = IAMReaderLoaderStates.EMPTY;
     private IAMReaderUIStates currentUIState = IAMReaderUIStates.CLOSED;
@@ -50,17 +51,32 @@ public class InAppMessageMainFragment extends Fragment implements Observer<IAMRe
     private InAppMessageAppearance appearance = new InAppMessageUndefinedSettings();
     private IAMContentContainer contentContainer;
 
+    public InAppMessageMainView(@NonNull Context context) {
+        super(context);
+        init(context);
+    }
+
+    public InAppMessageMainView(@NonNull Context context, @Nullable AttributeSet attrs) {
+        super(context, attrs);
+        init(context);
+    }
+
+    public InAppMessageMainView(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+        super(context, attrs, defStyleAttr);
+        init(context);
+    }
+
     @Override
-    public void onDestroyView() {
+    protected void onDetachedFromWindow() {
         if (readerViewModel != null) {
-            readerViewModel.removeSubscriber(InAppMessageMainFragment.this);
+            readerViewModel.removeSubscriber(InAppMessageMainView.this);
             readerViewModel.clear();
         } else {
             InAppStoryManager.useCore(new UseIASCoreCallback() {
                 @Override
                 public void use(@NonNull IASCore core) {
                     core.screensManager().iamReaderViewModel()
-                            .removeSubscriber(InAppMessageMainFragment.this);
+                            .removeSubscriber(InAppMessageMainView.this);
                 }
             });
         }
@@ -68,16 +84,56 @@ public class InAppMessageMainFragment extends Fragment implements Observer<IAMRe
             @Override
             public void use(@NonNull IASCore core) {
                 core.screensManager().getIAMScreenHolder()
-                        .unsubscribeScreen(InAppMessageMainFragment.this);
+                        .unsubscribeScreen(InAppMessageMainView.this);
             }
         });
-        super.onDestroyView();
+        super.onDetachedFromWindow();
         try {
             if (onCloseAction != null) onCloseAction.onClose();
         } catch (Exception e) {
 
         }
     }
+
+    @Override
+    protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        InAppStoryManager manager = InAppStoryManager.getInstance();
+        if (readerViewModel == null || manager == null) return;
+        if (!contentIsPreloaded) {
+            readerViewModel.updateCurrentUiState(IAMReaderUIStates.OPENING);
+            readerViewModel.updateCurrentLoaderState(IAMReaderLoaderStates.LOADING);
+        }
+        IASCore core = manager.iasCore();
+        core.screensManager()
+                .getIAMScreenHolder().subscribeScreen(InAppMessageMainView.this);
+        String tokenId = readerViewModel.getCurrentState().cancellationTokenUID;
+        if (tokenId != null) {
+            CancellationTokenWithStatus token = core.cancellationTokenPool().getTokenByUID(tokenId);
+            if (token != null) {
+                if (token.cancelled())
+                    forceFinish();
+                else
+                    token.disable();
+            }
+        }
+        if (contentContainer != null) {
+            contentView = new IAMContentLayout(getContext());
+            contentView.setLayoutParams(
+                    new FrameLayout.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT,
+                            ViewGroup.LayoutParams.MATCH_PARENT
+                    )
+            );
+            contentContainer.addViewToContent(contentView);
+            contentContainer.setRefreshClick(v -> {
+                if (contentView != null) {
+                    contentView.refreshClick();
+                }
+            });
+        }
+    }
+
 
     public void setOnOpenAction(InAppMessageOpenAction onOpenAction) {
         this.onOpenAction = onOpenAction;
@@ -91,62 +147,34 @@ public class InAppMessageMainFragment extends Fragment implements Observer<IAMRe
     private InAppMessageOpenAction onOpenAction;
 
 
-    @Nullable
-    @Override
-    public View onCreateView(
-            @NonNull LayoutInflater inflater,
-            @Nullable ViewGroup container,
-            @Nullable Bundle savedInstanceState
-    ) {
+    private void init(Context context) {
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
                 readerViewModel = core.screensManager().iamReaderViewModel();
-                readerViewModel.addSubscriber(InAppMessageMainFragment.this);
+                readerViewModel.addSubscriber(InAppMessageMainView.this);
                 IAMReaderState state = readerViewModel.getCurrentState();
                 contentIsPreloaded = state.contentIsPreloaded;
                 appearance = state.appearance;
             }
         });
-        View v;
+        int layoutId = R.layout.cs_inappmessage_fullscreen_layout;
         if (appearance instanceof InAppMessagePopupAppearance) {
-            v = inflater.inflate(
-                    R.layout.cs_inappmessage_popup_layout,
-                    container,
-                    false
-            );
+            layoutId = R.layout.cs_inappmessage_popup_layout;
         } else if (appearance instanceof InAppMessageFullscreenAppearance) {
-            v = inflater.inflate(
-                    R.layout.cs_inappmessage_fullscreen_layout,
-                    container,
-                    false
-            );
+            layoutId = R.layout.cs_inappmessage_fullscreen_layout;
         } else if (appearance instanceof InAppMessageToastAppearance) {
-            v = inflater.inflate(
-                    R.layout.cs_inappmessage_toast_layout,
-                    container,
-                    false
-            );
+            layoutId = R.layout.cs_inappmessage_toast_layout;
         } else if (appearance instanceof InAppMessageBottomSheetAppearance) {
-            v = inflater.inflate(
-                    R.layout.cs_inappmessage_bottomsheet_layout,
-                    container,
-                    false
-            );
-        } else {
-            v = inflater.inflate(
-                    R.layout.cs_inappmessage_fullscreen_layout,
-                    container,
-                    false
-            );
+            layoutId = R.layout.cs_inappmessage_bottomsheet_layout;
         }
-        contentContainer = v.findViewById(CONTAINER_ID);
+        inflate(context, layoutId, this);
+        contentContainer = findViewById(CONTAINER_ID);
         contentContainer.setVisibility(View.INVISIBLE);
         if (appearance != null) {
             contentContainer.appearance(appearance);
         }
         contentContainer.uiContainerCallback(containerCallback);
-        return v;
     }
 
     IAMContainerCallback containerCallback = new IAMContainerCallback() {
@@ -174,71 +202,13 @@ public class InAppMessageMainFragment extends Fragment implements Observer<IAMRe
     }
 
     public void hideContainer() {
-        if (contentContainer != null) {
-
-        }
         try {
-            FragmentManager fragmentManager = getParentFragmentManager();
-            FragmentTransaction t = fragmentManager.beginTransaction()
-                    .remove(this);
-            t.commit();
-        } catch (Exception e) {
-            e.printStackTrace();
+            ((FrameLayout)getParent()).removeView(this);
+        } catch (Exception ignored) {
         }
     }
 
-    IAMContentFragment contentFragment;
-
-    @Override
-    public void onViewCreated(
-            @NonNull View view,
-            @Nullable Bundle savedInstanceState
-    ) {
-        super.onViewCreated(view, savedInstanceState);
-        if (readerViewModel == null) return;
-        if (!contentIsPreloaded) {
-            readerViewModel.updateCurrentUiState(IAMReaderUIStates.OPENING);
-            readerViewModel.updateCurrentLoaderState(IAMReaderLoaderStates.LOADING);
-        }
-        InAppStoryManager.useCore(new UseIASCoreCallback() {
-            @Override
-            public void use(@NonNull IASCore core) {
-                core.screensManager()
-                        .getIAMScreenHolder().subscribeScreen(InAppMessageMainFragment.this);
-            }
-        });
-        contentFragment = new IAMContentFragment();
-        FragmentTransaction t = getChildFragmentManager().beginTransaction()
-                .add(
-                        CONTENT_ID,
-                        contentFragment,
-                        "IAM_CONTENT_FRAGMENT"
-                );
-        t.addToBackStack("IAM_CONTENT_FRAGMENT");
-        t.commit();
-        if (contentContainer != null) {
-            contentContainer.setRefreshClick(v -> {
-                if (contentFragment != null) {
-                    contentFragment.refreshClick();
-                }
-            });
-        }
-        InAppStoryManager.useCore(new UseIASCoreCallback() {
-            @Override
-            public void use(@NonNull IASCore core) {
-                String tokenId = readerViewModel.getCurrentState().cancellationTokenUID;
-                if (tokenId != null) {
-                    CancellationTokenWithStatus token = core.cancellationTokenPool().getTokenByUID(tokenId);
-                    if (token != null) {
-                        if (token.cancelled())
-                            forceFinish();
-                        else
-                            token.disable();
-                    }
-                }
-            }
-        });
-    }
+    IAMContentLayout contentView;
 
     @Override
     public void onUpdate(final IAMReaderState newValue) {
@@ -290,7 +260,6 @@ public class InAppMessageMainFragment extends Fragment implements Observer<IAMRe
                 hideContainer();
                 break;
             case OPENED:
-
                 if (onOpenAction != null)
                     onOpenAction.onOpen();
                 break;
@@ -305,7 +274,7 @@ public class InAppMessageMainFragment extends Fragment implements Observer<IAMRe
         switch (newState) {
             case ASSETS_LOADED:
             case CONTENT_LOADED:
-                contentFragment.readerSlideViewModel.updateLayout();
+                contentView.readerSlideViewModel.updateLayout();
                 break;
             case ASSETS_FAILED:
             case CONTENT_FAILED:
@@ -339,12 +308,16 @@ public class InAppMessageMainFragment extends Fragment implements Observer<IAMRe
 
     @Override
     public void pauseScreen() {
-
+        if (contentView != null) {
+            contentView.onPause();
+        }
     }
 
     @Override
     public void resumeScreen() {
-        
+        if (contentView != null) {
+            contentView.onResume();
+        }
     }
 
     @Override
@@ -358,19 +331,7 @@ public class InAppMessageMainFragment extends Fragment implements Observer<IAMRe
     }
 
     @Override
-    public void onPause() {
-        pauseScreen();
-        super.onPause();
-    }
-
-    @Override
-    public void onResume() {
-        resumeScreen();
-        super.onResume();
-    }
-
-    @Override
     public FragmentManager getScreenFragmentManager() {
-        return getParentFragmentManager();
+        return null;
     }
 }

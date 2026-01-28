@@ -1,5 +1,7 @@
 package com.inappstory.sdk.core.api;
 
+import android.widget.FrameLayout;
+
 import androidx.fragment.app.FragmentManager;
 
 import com.inappstory.sdk.core.CancellationTokenWithStatus;
@@ -21,6 +23,13 @@ public interface IASInAppMessage {
             InAppMessageOpenSettings inAppMessageOpenSettings,
             FragmentManager fragmentManager,
             int containerId,
+            InAppMessageScreenActions screenActions
+    );
+
+    void show(
+            CancellationTokenWithStatus cancellationToken,
+            InAppMessageOpenSettings inAppMessageOpenSettings,
+            FrameLayout frameLayout,
             InAppMessageScreenActions screenActions
     );
 

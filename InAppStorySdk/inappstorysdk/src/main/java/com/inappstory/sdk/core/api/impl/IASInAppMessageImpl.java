@@ -1,6 +1,8 @@
 package com.inappstory.sdk.core.api.impl;
 
 
+import android.widget.FrameLayout;
+
 import androidx.fragment.app.FragmentManager;
 
 import com.inappstory.sdk.InAppStoryManager;
@@ -63,6 +65,33 @@ public class IASInAppMessageImpl implements IASInAppMessage {
                 new LaunchIAMScreenStrategy(core)
                         .cancellationToken(cancellationToken)
                         .parentContainer(fragmentManager, containerId)
+                        .inAppMessageOpenSettings(openData)
+                        .inAppMessageScreenActions(screenActions)
+        );
+    }
+
+    @Override
+    public void show(
+            CancellationTokenWithStatus cancellationToken,
+            InAppMessageOpenSettings openData,
+            FrameLayout frameLayout,
+            InAppMessageScreenActions screenActions
+    ) {
+        IASDataSettingsHolder settingsHolder = (IASDataSettingsHolder) core.settingsAPI();
+        if (settingsHolder.anonymous()) {
+            InAppStoryManager.showELog(
+                    LoggerTags.IAS_ERROR_TAG,
+                    "In-app messages are unavailable for anonymous mode"
+            );
+            if (screenActions != null)
+                screenActions.readerOpenError("In-app messages are unavailable for anonymous mode");
+            return;
+        }
+        core.screensManager().openScreen(
+                null,
+                new LaunchIAMScreenStrategy(core)
+                        .cancellationToken(cancellationToken)
+                        .frameLayout(frameLayout)
                         .inAppMessageOpenSettings(openData)
                         .inAppMessageScreenActions(screenActions)
         );

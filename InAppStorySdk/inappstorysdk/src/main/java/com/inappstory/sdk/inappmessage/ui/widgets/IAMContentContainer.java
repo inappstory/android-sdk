@@ -37,6 +37,10 @@ public abstract class IAMContentContainer<T extends InAppMessageAppearance> exte
     protected FrameLayout content;
     protected boolean closeEnabled = true;
 
+    public void addViewToContent(View view) {
+        if (content != null) content.addView(view);
+    }
+
     public abstract void clearContentBackground();
 
     protected IAMContainerCallback callback;

@@ -12,6 +12,7 @@ import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Log;
 import android.util.Pair;
+import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.FragmentManager;
@@ -1600,6 +1601,28 @@ public class InAppStoryManager implements IASBackPressHandler {
                         openData,
                         fragmentManager,
                         containerId,
+                        screenActions
+                );
+            }
+        });
+        return token;
+    }
+
+
+    public CancellationToken showInAppMessage(
+            final InAppMessageOpenSettings openData,
+            final FrameLayout frameLayout,
+            final InAppMessageScreenActions screenActions
+    ) {
+        final CancellationTokenWithStatus token = new CancellationTokenImpl("IAM data: " + openData.toString());
+        useCoreInSeparateThread(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.cancellationTokenPool().addToken(token);
+                core.inAppMessageAPI().show(
+                        token,
+                        openData,
+                        frameLayout,
                         screenActions
                 );
             }

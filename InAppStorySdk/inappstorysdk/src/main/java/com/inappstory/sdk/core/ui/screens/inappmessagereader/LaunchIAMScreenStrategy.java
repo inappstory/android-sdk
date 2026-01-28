@@ -4,6 +4,7 @@ import static com.inappstory.sdk.core.api.impl.IASSettingsImpl.TAG_LIMIT;
 
 import android.content.Context;
 import android.text.TextUtils;
+import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.FragmentManager;
@@ -63,6 +64,8 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
     private InAppMessageScreenActions inAppMessageScreenActions;
     private FragmentManager parentContainerFM;
     private int containerId;
+    private boolean showAsFragment = true;
+    private FrameLayout frameLayout;
     private CancellationTokenWithStatus cancellationToken;
 
     public LaunchIAMScreenStrategy(IASCore core) {
@@ -85,6 +88,15 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
     ) {
         this.parentContainerFM = parentContainerFM;
         this.containerId = containerId;
+        showAsFragment = true;
+        return this;
+    }
+
+    public LaunchIAMScreenStrategy frameLayout(
+            FrameLayout frameLayout
+    ) {
+        this.frameLayout = frameLayout;
+        showAsFragment = false;
         return this;
     }
 
@@ -379,6 +391,12 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
             currentScreenHolder.endLaunchProcess();
             return;
         }
+        if ((showAsFragment && parentContainerFM == null) || (!showAsFragment && frameLayout == null)) {
+            String message = "Container for in-app message not found.";
+            launchScreenError(message);
+            currentScreenHolder.endLaunchProcess();
+            return;
+        }
         core.screensManager().iamReaderViewModel().initState(
                 new IAMReaderState()
                         .cancellationTokenUID(cancellationToken != null ? cancellationToken.getUniqueId() : null)
@@ -400,13 +418,22 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
         );
         saveIAMOpened(inAppMessage.id());
         currentScreenHolder.endLaunchProcess();
-        ((IOpenInAppMessageReader) openReader).onOpen(
-                inAppMessage,
-                inAppMessageOpenSettings.showOnlyIfLoaded(),
-                parentContainerFM,
-                containerId,
-                inAppMessageScreenActions
-        );
+        if (showAsFragment) {
+            ((IOpenInAppMessageReader) openReader).onOpenInFragment(
+                    inAppMessage,
+                    inAppMessageOpenSettings.showOnlyIfLoaded(),
+                    parentContainerFM,
+                    containerId,
+                    inAppMessageScreenActions
+            );
+        } else {
+            ((IOpenInAppMessageReader) openReader).onOpenInFrameLayout(
+                    inAppMessage,
+                    inAppMessageOpenSettings.showOnlyIfLoaded(),
+                    frameLayout,
+                    inAppMessageScreenActions
+            );
+        }
     }
 
     private void saveIAMOpened(int iamId) {
