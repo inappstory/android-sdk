@@ -95,6 +95,19 @@ public class BannerCarouselViewModel implements IBannersWidgetViewModel<BannerCa
         return bannerPlaceStateObservable.getValue();
     }
 
+    public void removeBanner(int index) {
+        BannerCarouselState currentState = bannerPlaceStateObservable.getValue();
+        if (currentState.items == null) return;
+        List<IBanner> newItems = new ArrayList<>();
+        for (int i = 0; i < currentState.items.size(); i++) {
+            if (i == index) continue;
+            newItems.add(currentState.items.get(i));
+        }
+        bannerPlaceStateObservable.updateValue(
+                currentState.copy().items(newItems)
+        );
+    }
+
     Observer<BannerCarouselState> localObserver = new Observer<BannerCarouselState>() {
         BannersWidgetLoadStates bannerPlaceLoadState = BannersWidgetLoadStates.NONE;
 

@@ -92,6 +92,11 @@ public class BannerCarousel extends FrameLayout implements Observer<BannerCarous
         loadBanners(false);
     }
 
+    public void removeItemByIndex(int index) {
+        bannerCarouselViewModel.removeBanner(index);
+        ((BannerPagerAdapter)bannerViewPager.getAdapter()).removeBanner(index);
+    }
+
     public void loadCallback(BannerPlaceLoadCallback bannerPlaceLoadCallback) {
         if (bannerPlaceLoadCallback.bannerPlace() == null) {
             if (placeId != null) {
@@ -364,7 +369,7 @@ public class BannerCarousel extends FrameLayout implements Observer<BannerCarous
         bannerViewPager.setSaveFromParentEnabled(false);
         if (bannerViewPager.getAdapter() != null) {
             BannerPagerAdapter pagerAdapter = (BannerPagerAdapter) bannerViewPager.getAdapter();
-            pagerAdapter.unsubscribeFromFirst();
+           // pagerAdapter.unsubscribeFromFirst();
             float iw = Sizes.getScreenSize(getContext()).x -
                     Sizes.dpToPxExt(customBannerPlaceAppearance.prevBannerOffset(), getContext())
                     - Sizes.dpToPxExt(customBannerPlaceAppearance.nextBannerOffset(), getContext());

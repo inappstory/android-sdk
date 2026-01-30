@@ -21,14 +21,14 @@ import com.inappstory.sdk.stories.utils.Observer;
 import java.util.List;
 
 
-public class BannerPagerAdapter extends PagerAdapter implements Observer<BannerState> {
+public class BannerPagerAdapter extends PagerAdapter {
     private final List<IBanner> banners;
     private final IASCore core;
     private final String bannerPlace;
     private final String uniqueId;
     private final float iwRatio;
     private final float itemWidth;
-    private final boolean loop;
+    private boolean loop;
     private final float bannerRadius;
     private final String iterationId;
     private final ICustomBannerPlaceholder bannerPlaceholderCreator;
@@ -62,7 +62,7 @@ public class BannerPagerAdapter extends PagerAdapter implements Observer<BannerS
         this.loop = loop;
         this.core = core;
         this.bannerRadius = bannerRadius;
-        subscribeToFirst();
+        //subscribeToFirst();
     }
 
 
@@ -108,7 +108,7 @@ public class BannerPagerAdapter extends PagerAdapter implements Observer<BannerS
 
     private IBannerPlaceLoadCallback listLoadCallback;
 
-    public void subscribeToFirst() {
+    /*public void subscribeToFirst() {
         if (banners.isEmpty()) return;
         IBanner banner = banners.get(0);
         int bannerId = banner.id();
@@ -119,13 +119,27 @@ public class BannerPagerAdapter extends PagerAdapter implements Observer<BannerS
                 .get(uniqueId)
                 .getBannerViewModel(bannerId, 0);
         bannerViewModel.addSubscriber(this);
-    }
+    }*/
 
     public void clear() {
         this.banners.clear();
     }
 
-    public void unsubscribeFromFirst() {
+    public void removeBanner(int index) {
+        if (this.banners.size() <= index) return;
+        this.banners.remove(index);
+        if (banners.size() == 1) {
+            loop = false;
+        }
+        notifyDataSetChanged();
+    }
+
+    @Override
+    public int getItemPosition(@NonNull Object object) {
+        return POSITION_NONE;
+    }
+
+    /*public void unsubscribeFromFirst() {
         if (banners.isEmpty()) return;
         IBanner banner = banners.get(0);
         int bannerId = banner.id();
@@ -136,7 +150,7 @@ public class BannerPagerAdapter extends PagerAdapter implements Observer<BannerS
                 .get(uniqueId)
                 .getBannerViewModel(bannerId, 0);
         bannerViewModel.removeSubscriber(this);
-    }
+    }*/
 
     @Override
     public float getPageWidth(int position) {
@@ -172,28 +186,4 @@ public class BannerPagerAdapter extends PagerAdapter implements Observer<BannerS
         return view == object;
     }
 
-    @Override
-    public void onUpdate(BannerState newValue) {
-        if (newValue == null) return;
-
-       /* Log.e("ObserverUpdate", Thread.currentThread().getName() + " PagerAdapter onUpdate " + newValue);
-        if (currentState == null ||
-                (newValue.loadState() != currentState.loadState())
-        ) {
-            if (Objects.requireNonNull(newValue.loadState()) == BannerLoadStates.FAILED) {
-                if (listLoadCallback != null)
-                    listLoadCallback.bannerLoadError(newValue.bannerId(), newValue.bannerIsActive());
-            }
-        }
-        if (currentState == null ||
-                (newValue.slideJSStatus() != currentState.slideJSStatus())
-        ) {
-            if (newValue.slideJSStatus() == 1) {
-                if (listLoadCallback != null)
-                    listLoadCallback.bannerLoaded(newValue.bannerId(), newValue.bannerIsActive());
-            }
-
-        }*/
-        //currentState = newValue;
-    }
 }
