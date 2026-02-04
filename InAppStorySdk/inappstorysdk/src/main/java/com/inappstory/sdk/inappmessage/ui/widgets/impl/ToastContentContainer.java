@@ -1,14 +1,19 @@
 package com.inappstory.sdk.inappmessage.ui.widgets.impl;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Point;
+import android.graphics.Rect;
+import android.os.Build;
 import android.util.AttributeSet;
+import android.util.Pair;
 import android.util.SizeF;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowInsets;
 import android.view.animation.AccelerateInterpolator;
 import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
@@ -92,11 +97,6 @@ public class ToastContentContainer extends IAMContentContainer<InAppMessageToast
         closeButton.requestLayout();
     }
 
-    @Override
-    public void clearContentBackground() {
-        content.setBackground(null);
-        content.setBackgroundColor(Color.RED);
-    }
 
 
     public void showWithAnimation() {
@@ -320,7 +320,7 @@ public class ToastContentContainer extends IAMContentContainer<InAppMessageToast
     }
 
     @Override
-    protected void visibleRectIsCalculated() {
+    protected int visibleRectIsCalculated() {
         int horizontalOffset = Sizes.dpToPxExt(appearance.horizontalOffset(), getContext());
         int verticalOffset = Sizes.dpToPxExt(appearance.verticalOffset(), getContext());
         layoutParams.leftMargin = horizontalOffset;
@@ -357,8 +357,10 @@ public class ToastContentContainer extends IAMContentContainer<InAppMessageToast
         }
         float availableHeight = externalContainerRect.height() - verticalOffset;
         float screenContentRatio = availableWidth / availableHeight;
+
+        int height = 0;
         if (contentRatio >= screenContentRatio) {
-            layoutParams.height = Math.min(
+            height = Math.min(
                     Math.round(availableHeight),
                     Math.round(availableWidth / contentRatio)
             );
@@ -366,12 +368,13 @@ public class ToastContentContainer extends IAMContentContainer<InAppMessageToast
                 layoutParams.width = Math.round(availableWidth);
             }
         } else {
-            layoutParams.height = Math.round(availableHeight);
+            height = Math.round(availableHeight);
             layoutParams.width = Math.round(availableHeight * contentRatio);
         }
-        maxViewHeight = layoutParams.height + verticalOffset;
+        layoutParams.height = height;
+        maxViewHeight = height + verticalOffset;
         int closeButtonMargin = Math.min(
-                (layoutParams.height - Sizes.dpToPxExt(30, getContext())) / 2,
+                (height - Sizes.dpToPxExt(30, getContext())) / 2,
                 Sizes.dpToPxExt(16, getContext())
         );
         closeButtonLayoutParams.setMargins(
@@ -387,6 +390,37 @@ public class ToastContentContainer extends IAMContentContainer<InAppMessageToast
                 layoutParams
         );
         mainLayout.requestLayout();
+        return height;
+    }
+
+    @Override
+    protected Pair<Integer, Integer> countSafeArea(int containerHeight) {
+        Rect mainLayoutRect = new Rect();
+        mainLayout.getGlobalVisibleRect(mainLayoutRect);
+        int topOffset = Math.max(mainLayoutRect.top, 0);
+        int bottomOffset = Math.max(mainLayoutRect.bottom, 0);
+        Context context = getContext();
+        Activity activity = null;
+        if (context instanceof Activity) {
+            activity = (Activity) context;
+        }
+        if (activity == null) return new Pair<>(0, 0);
+        int phoneHeight = Sizes.getFullPhoneHeight(activity);
+        int topInsetOffset = 0;
+        int bottomInsetOffset = 0;
+        if (Build.VERSION.SDK_INT >= 23) {
+            if (activity.getWindow() != null) {
+                WindowInsets windowInsets = activity.getWindow().getDecorView().getRootWindowInsets();
+                if (windowInsets != null) {
+                    topInsetOffset = Math.max(0, windowInsets.getStableInsetTop());
+                    bottomInsetOffset = Math.max(0, windowInsets.getStableInsetBottom());
+                }
+            }
+        }
+        return new Pair<>(
+                Math.max(0, topInsetOffset - topOffset),
+                Math.max(0, bottomInsetOffset - (phoneHeight - bottomOffset))
+        );
     }
 
     @Override

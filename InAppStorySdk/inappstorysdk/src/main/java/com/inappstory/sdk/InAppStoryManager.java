@@ -37,6 +37,7 @@ import com.inappstory.sdk.inappmessage.InAppMessageLoadCallback;
 import com.inappstory.sdk.inappmessage.InAppMessageOpenSettings;
 import com.inappstory.sdk.inappmessage.InAppMessagePreloadSettings;
 import com.inappstory.sdk.inappmessage.InAppMessageScreenActions;
+import com.inappstory.sdk.inappmessage.InAppMessageViewController;
 import com.inappstory.sdk.inappmessage.InAppMessageWidgetCallback;
 import com.inappstory.sdk.inappmessage.ShowInAppMessageCallback;
 import com.inappstory.sdk.inappmessage.ShowInAppMessageSlideCallback;
@@ -1612,7 +1613,8 @@ public class InAppStoryManager implements IASBackPressHandler {
     public CancellationToken showInAppMessage(
             final InAppMessageOpenSettings openData,
             final FrameLayout frameLayout,
-            final InAppMessageScreenActions screenActions
+            final InAppMessageScreenActions screenActions,
+            final InAppMessageViewController controller
     ) {
         final CancellationTokenWithStatus token = new CancellationTokenImpl("IAM data: " + openData.toString());
         useCoreInSeparateThread(new UseIASCoreCallback() {
@@ -1623,7 +1625,8 @@ public class InAppStoryManager implements IASBackPressHandler {
                         token,
                         openData,
                         frameLayout,
-                        screenActions
+                        screenActions,
+                        controller
                 );
             }
         });

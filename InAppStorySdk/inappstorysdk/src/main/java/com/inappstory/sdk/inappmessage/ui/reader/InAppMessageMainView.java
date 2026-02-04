@@ -3,20 +3,17 @@ package com.inappstory.sdk.inappmessage.ui.reader;
 import static com.inappstory.sdk.inappmessage.ui.widgets.IAMContentContainer.CONTAINER_ID;
 
 import android.content.Context;
-import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.AttributeSet;
-import android.view.LayoutInflater;
+import android.util.Pair;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.R;
@@ -29,6 +26,7 @@ import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderLoaderStates;
 import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderState;
 import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderUIStates;
 import com.inappstory.sdk.inappmessage.domain.reader.IIAMReaderViewModel;
+import com.inappstory.sdk.inappmessage.InAppMessageViewController;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageAppearance;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageBottomSheetAppearance;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageFullscreenAppearance;
@@ -50,6 +48,11 @@ public class InAppMessageMainView extends FrameLayout implements Observer<IAMRea
     private boolean contentIsPreloaded;
     private InAppMessageAppearance appearance = new InAppMessageUndefinedSettings();
     private IAMContentContainer contentContainer;
+    InAppMessageViewController controller;
+
+    public void setController(InAppMessageViewController controller) {
+        this.controller = controller;
+    }
 
     public InAppMessageMainView(@NonNull Context context) {
         super(context);
@@ -66,8 +69,13 @@ public class InAppMessageMainView extends FrameLayout implements Observer<IAMRea
         init(context);
     }
 
+
+
     @Override
     protected void onDetachedFromWindow() {
+        if (controller != null) {
+            controller.unsubscribeView(this);
+        }
         if (readerViewModel != null) {
             readerViewModel.removeSubscriber(InAppMessageMainView.this);
             readerViewModel.clear();
@@ -98,6 +106,9 @@ public class InAppMessageMainView extends FrameLayout implements Observer<IAMRea
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
+        if (controller != null) {
+            controller.subscribeView(this);
+        }
         InAppStoryManager manager = InAppStoryManager.getInstance();
         if (readerViewModel == null || manager == null) return;
         if (!contentIsPreloaded) {
@@ -178,6 +189,11 @@ public class InAppMessageMainView extends FrameLayout implements Observer<IAMRea
     }
 
     IAMContainerCallback containerCallback = new IAMContainerCallback() {
+        @Override
+        public void countSafeArea(Pair<Integer, Integer> safeArea) {
+            readerViewModel.updateCurrentSafeArea(safeArea);
+        }
+
         @Override
         public void onShown() {
             readerViewModel.updateCurrentUiState(IAMReaderUIStates.OPENED);
@@ -287,10 +303,6 @@ public class InAppMessageMainView extends FrameLayout implements Observer<IAMRea
                     currentUIState != IAMReaderUIStates.OPENING) {
                 readerViewModel.updateCurrentUiState(IAMReaderUIStates.OPENING);
             }
-            //contentContainer.clearContentBackground();
-           /* if (!contentIsPreloaded && contentContainer != null) {
-                contentContainer.hideLoader();
-            }*/
         } else if (Objects.requireNonNull(newState) == IAMReaderLoadStates.CONTENT_FAILED_CLOSE) {
             readerViewModel.updateCurrentUiState(IAMReaderUIStates.CLOSING);
         }

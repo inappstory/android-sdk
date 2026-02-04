@@ -17,6 +17,7 @@ import com.inappstory.sdk.inappmessage.InAppMessageLoadCallback;
 import com.inappstory.sdk.inappmessage.InAppMessageOpenSettings;
 import com.inappstory.sdk.inappmessage.InAppMessagePreloadSettings;
 import com.inappstory.sdk.inappmessage.InAppMessageScreenActions;
+import com.inappstory.sdk.inappmessage.InAppMessageViewController;
 
 
 public class IASInAppMessageImpl implements IASInAppMessage {
@@ -75,7 +76,8 @@ public class IASInAppMessageImpl implements IASInAppMessage {
             CancellationTokenWithStatus cancellationToken,
             InAppMessageOpenSettings openData,
             FrameLayout frameLayout,
-            InAppMessageScreenActions screenActions
+            InAppMessageScreenActions screenActions,
+            InAppMessageViewController controller
     ) {
         IASDataSettingsHolder settingsHolder = (IASDataSettingsHolder) core.settingsAPI();
         if (settingsHolder.anonymous()) {
@@ -93,6 +95,7 @@ public class IASInAppMessageImpl implements IASInAppMessage {
                         .cancellationToken(cancellationToken)
                         .frameLayout(frameLayout)
                         .inAppMessageOpenSettings(openData)
+                        .inAppMessageViewController(controller)
                         .inAppMessageScreenActions(screenActions)
         );
     }

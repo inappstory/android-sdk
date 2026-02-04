@@ -1,5 +1,6 @@
 package com.inappstory.sdk.core.data;
 
+import com.inappstory.sdk.inappmessage.InAppMessageType;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageAppearance;
 
 public interface IInAppMessage extends IReaderContent {
@@ -12,4 +13,5 @@ public interface IInAppMessage extends IReaderContent {
     InAppMessageAppearance inAppMessageAppearance();
     int getEventPriority(String eventToCompare);
     boolean belongsToEvent(String eventToCompare);
+    InAppMessageType messageType();
 }

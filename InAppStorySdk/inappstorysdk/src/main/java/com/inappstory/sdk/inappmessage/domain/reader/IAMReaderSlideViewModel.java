@@ -15,6 +15,7 @@ import com.inappstory.sdk.core.data.IInAppMessage;
 import com.inappstory.sdk.core.data.IReaderContent;
 import com.inappstory.sdk.core.inappmessages.InAppMessageDownloadManager;
 import com.inappstory.sdk.game.cache.SessionAssetsIsReadyCallback;
+import com.inappstory.sdk.inappmessage.InAppMessageSlideData;
 import com.inappstory.sdk.inappmessage.InAppMessageWidgetCallback;
 import com.inappstory.sdk.inappmessage.ShowInAppMessageSlideCallback;
 import com.inappstory.sdk.inappmessage.domain.stedata.JsSendApiRequestData;
@@ -232,18 +233,35 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
             new Handler(Looper.getMainLooper()).post(new Runnable() {
                 @Override
                 public void run() {
-                    core.callbacksAPI().useCallback(
-                            IASCallbackType.SHOW_IN_APP_MESSAGE_SLIDE,
-                            new UseIASCallback<ShowInAppMessageSlideCallback>() {
-                                @Override
-                                public void use(@NonNull ShowInAppMessageSlideCallback callback) {
-                                    callback.showSlide(
-                                            readerViewModel.getCurrentInAppMessageData(),
-                                            showSlideJSPayload.index
-                                    );
-                                }
-                            }
-                    );
+                    IAMReaderState state = readerViewModel.getCurrentState();
+                    Integer iamId = state.iamId;
+                    if (iamId != null) {
+                        IInAppMessage readerContent =
+                                (IInAppMessage) core.contentHolder().readerContent().getByIdAndType(
+                                        state.iamId,
+                                        ContentType.IN_APP_MESSAGE
+                                );
+                        if (readerContent != null) {
+                            core.callbacksAPI().useCallback(
+                                    IASCallbackType.SHOW_IN_APP_MESSAGE_SLIDE,
+                                    new UseIASCallback<ShowInAppMessageSlideCallback>() {
+                                        @Override
+                                        public void use(@NonNull ShowInAppMessageSlideCallback callback) {
+                                            callback.showSlide(
+                                                    new InAppMessageSlideData(
+                                                            showSlideJSPayload.index,
+                                                            readerContent.slideEventPayload(
+                                                                    showSlideJSPayload.index
+                                                            ),
+                                                            readerViewModel.getCurrentInAppMessageData()
+                                                    )
+                                            );
+                                        }
+                                    }
+                            );
+                        }
+                    }
+
                 }
             });
         }
@@ -636,6 +654,7 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
                         .slides(slides)
                         .slidesTotal(slides.size())
                         .renderReady(true)
+                        .safeArea(readerState.safeArea)
                         .cardAppearance(readerContent.inAppMessageAppearance().cardAppearance())
                         .contentStatus(2)
         );

@@ -1,5 +1,7 @@
 package com.inappstory.sdk.inappmessage.domain.reader;
 
+import android.util.Pair;
+
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.core.IASCore;
@@ -46,7 +48,8 @@ public class IAMReaderViewModel implements IIAMReaderViewModel {
                                 inAppMessage.id(),
                                 inAppMessage.statTitle(),
                                 readerState.event,
-                                readerState.sourceType
+                                readerState.sourceType,
+                                inAppMessage.messageType()
                         );
                     }
                 }
@@ -119,6 +122,15 @@ public class IAMReaderViewModel implements IIAMReaderViewModel {
                 this.readerStateObservable.getValue()
                         .copy()
                         .uiState(newState)
+        );
+    }
+
+    @Override
+    public void updateCurrentSafeArea(Pair<Integer, Integer> safeArea) {
+        this.readerStateObservable.updateValue(
+                this.readerStateObservable.getValue()
+                        .copy()
+                        .safeArea(safeArea)
         );
     }
 

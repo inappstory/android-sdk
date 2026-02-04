@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
 import android.util.AttributeSet;
+import android.util.Pair;
 import android.view.View;
 import android.widget.FrameLayout;
 
@@ -42,7 +43,10 @@ import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ContentViewInteractor;
 import com.inappstory.sdk.stories.utils.Observer;
+import com.inappstory.sdk.stories.utils.Sizes;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 public class IAMContentLayout extends FrameLayout implements Observer<IAMReaderSlideState> {
@@ -298,6 +302,21 @@ public class IAMContentLayout extends FrameLayout implements Observer<IAMReaderS
         contentWebView.setBackgroundColor(Color.argb(1, 255, 255, 255));
     }
 
+
+    private String generateShowSlidesConfig(IAMReaderSlideState value) {
+        try {
+            Context context = getContext();
+            Map<String, Object> configMap = new HashMap<>();
+            Pair<Integer, Integer> safeArea = value.safeArea();
+            configMap.put("safeAreaInsetTop", Sizes.pxToDpExt(safeArea.first, context));
+            configMap.put("safeAreaInsetBottom", Sizes.pxToDpExt(safeArea.second, context));
+            return JsonParser.mapToJsonString(configMap);
+        } catch (Exception e) {
+            return "{}";
+        }
+    }
+
+
     @Override
     public void onUpdate(final IAMReaderSlideState newValue) {
         if (newValue == null) return;
@@ -334,7 +353,8 @@ public class IAMContentLayout extends FrameLayout implements Observer<IAMReaderS
                                     localWebView.showSlides(
                                             newValue.slides(),
                                             JsonParser.mapToJsonString(newValue.cardAppearance()),
-                                            0
+                                            0,
+                                            generateShowSlidesConfig(newValue)
                                     );
                                 }
                             }

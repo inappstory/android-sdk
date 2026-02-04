@@ -1,5 +1,7 @@
 package com.inappstory.sdk.inappmessage.domain.reader;
 
+import android.util.Pair;
+
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageAppearance;
 import com.inappstory.sdk.inappmessage.ui.appearance.impl.InAppMessageBottomSheetSettings;
 import com.inappstory.sdk.inappmessage.InAppMessageData;
@@ -16,11 +18,18 @@ public class IAMReaderState {
     public Integer iamId = null;
     public String event = null;
     public String cancellationTokenUID = null;
+    public Pair<Integer, Integer> safeArea = new Pair<>(0, 0);
     public SourceType sourceType = SourceType.EVENT_IN_APP_MESSAGE;
     public InAppMessageData inAppMessageData = null;
 
+
     public IAMReaderState inAppMessageData(InAppMessageData inAppMessageData) {
         this.inAppMessageData = inAppMessageData;
+        return this;
+    }
+
+    public IAMReaderState safeArea(Pair<Integer, Integer> safeArea) {
+        this.safeArea = safeArea;
         return this;
     }
 
@@ -90,6 +99,7 @@ public class IAMReaderState {
                 .iamId(this.iamId)
                 .canBeClosed(this.canBeClosed)
                 .event(this.event)
+                .safeArea(this.safeArea)
                 .inAppMessageData(this.inAppMessageData)
                 .appearance(this.appearance)
                 .showOnlyIfLoaded(this.showOnlyIfLoaded)

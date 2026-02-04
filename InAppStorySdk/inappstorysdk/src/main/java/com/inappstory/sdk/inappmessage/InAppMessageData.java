@@ -9,26 +9,20 @@ public class InAppMessageData extends ContentData {
     private String event;
 
     private String title;
+    private InAppMessageType messageType;
 
     public InAppMessageData(
             int id,
             String campaignName,
-            SourceType sourceType
-    ) {
-        super(sourceType, ContentType.IN_APP_MESSAGE);
-        this.id = id;
-        this.title = campaignName;
-    }
-    public InAppMessageData(
-            int id,
-            String campaignName,
             String event,
-            SourceType sourceType
+            SourceType sourceType,
+            InAppMessageType messageType
     ) {
         super(sourceType, ContentType.IN_APP_MESSAGE);
         this.id = id;
         this.title = campaignName;
         this.event = event;
+        this.messageType = messageType;
     }
 
     public int id() {
@@ -43,6 +37,10 @@ public class InAppMessageData extends ContentData {
         return event;
     }
 
+    public InAppMessageType messageType() {
+        return messageType;
+    }
+
     @Override
     public String toString() {
         return "IAMData{" +
@@ -50,6 +48,7 @@ public class InAppMessageData extends ContentData {
                 ", title='" + title() + '\'' +
                 ", event='" + event() + '\'' +
                 ", sourceType='" + sourceType().name() + '\'' +
+                ", messageType='" + messageType().name() + '\'' +
                 '}';
     }
 }

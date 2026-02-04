@@ -6,6 +6,7 @@ import com.inappstory.sdk.core.data.IInAppMessage;
 import com.inappstory.sdk.core.data.IReaderContentSlide;
 import com.inappstory.sdk.core.data.IResource;
 import com.inappstory.sdk.core.exceptions.NotImplementedMethodException;
+import com.inappstory.sdk.inappmessage.InAppMessageType;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageAppearance;
 import com.inappstory.sdk.inappmessage.ui.appearance.impl.InAppMessageBottomSheetSettings;
 import com.inappstory.sdk.inappmessage.ui.appearance.impl.InAppMessageFullscreenSettings;
@@ -62,7 +63,6 @@ public class InAppMessage implements IInAppMessage {
 
     @SerializedName("appearance")
     public Map<String, Object> appearance;
-
 
     @SerializedName("events")
     public List<InAppMessageEvent> events;
@@ -255,6 +255,22 @@ public class InAppMessage implements IInAppMessage {
             }
         }
         return false;
+    }
+
+    @Override
+    public InAppMessageType messageType() {
+        switch (screenType) {
+            case 1:
+                return InAppMessageType.BOTTOM_SHEET;
+            case 2:
+                return InAppMessageType.POPUP;
+            case 3:
+                return InAppMessageType.FULLSCREEN;
+            case 4:
+                return InAppMessageType.TOAST;
+            default:
+                return InAppMessageType.UNDEFINED;
+        }
     }
 
     @Override

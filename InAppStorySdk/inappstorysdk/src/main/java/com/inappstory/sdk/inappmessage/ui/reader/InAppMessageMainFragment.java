@@ -6,6 +6,7 @@ import static com.inappstory.sdk.inappmessage.ui.widgets.IAMContentContainer.CON
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -151,6 +152,11 @@ public class InAppMessageMainFragment extends Fragment implements Observer<IAMRe
 
     IAMContainerCallback containerCallback = new IAMContainerCallback() {
         @Override
+        public void countSafeArea(Pair<Integer, Integer> safeArea) {
+            readerViewModel.updateCurrentSafeArea(safeArea);
+        }
+
+        @Override
         public void onShown() {
             readerViewModel.updateCurrentUiState(IAMReaderUIStates.OPENED);
 
@@ -290,7 +296,6 @@ public class InAppMessageMainFragment extends Fragment implements Observer<IAMRe
                 hideContainer();
                 break;
             case OPENED:
-
                 if (onOpenAction != null)
                     onOpenAction.onOpen();
                 break;
@@ -318,10 +323,6 @@ public class InAppMessageMainFragment extends Fragment implements Observer<IAMRe
                     currentUIState != IAMReaderUIStates.OPENING) {
                 readerViewModel.updateCurrentUiState(IAMReaderUIStates.OPENING);
             }
-            //contentContainer.clearContentBackground();
-           /* if (!contentIsPreloaded && contentContainer != null) {
-                contentContainer.hideLoader();
-            }*/
         } else if (Objects.requireNonNull(newState) == IAMReaderLoadStates.CONTENT_FAILED_CLOSE) {
             readerViewModel.updateCurrentUiState(IAMReaderUIStates.CLOSING);
         }

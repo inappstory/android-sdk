@@ -3,6 +3,8 @@ package com.inappstory.sdk.core.ui.screens.inappmessagereader;
 import static com.inappstory.sdk.core.api.impl.IASSettingsImpl.TAG_LIMIT;
 
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.TextUtils;
 import android.widget.FrameLayout;
 
@@ -30,10 +32,12 @@ import com.inappstory.sdk.core.ui.screens.holder.IScreensHolder;
 import com.inappstory.sdk.core.ui.screens.launcher.LaunchScreenStrategy;
 import com.inappstory.sdk.core.ui.screens.ScreenType;
 import com.inappstory.sdk.inappmessage.InAppMessageScreenActions;
+import com.inappstory.sdk.inappmessage.InAppMessageViewController;
 import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderState;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageAppearance;
 import com.inappstory.sdk.inappmessage.InAppMessageOpenSettings;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageUndefinedAppearance;
+import com.inappstory.sdk.inappmessage.ui.reader.InAppMessageMainView;
 import com.inappstory.sdk.stories.api.models.CachedSessionData;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenInAppMessageReader;
@@ -61,7 +65,15 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
         return this;
     }
 
+    public LaunchIAMScreenStrategy inAppMessageViewController(
+            InAppMessageViewController inAppMessageViewController
+    ) {
+        this.inAppMessageViewController = inAppMessageViewController;
+        return this;
+    }
+
     private InAppMessageScreenActions inAppMessageScreenActions;
+    private InAppMessageViewController inAppMessageViewController;
     private FragmentManager parentContainerFM;
     private int containerId;
     private boolean showAsFragment = true;
@@ -409,7 +421,8 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
                                         inAppMessage.id(),
                                         inAppMessage.statTitle(),
                                         inAppMessageOpenSettings.event(),
-                                        sourceType
+                                        sourceType,
+                                        inAppMessage.messageType()
                                 )
                         )
                         .contentIsPreloaded(contentIsPreloaded)
@@ -418,22 +431,31 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
         );
         saveIAMOpened(inAppMessage.id());
         currentScreenHolder.endLaunchProcess();
-        if (showAsFragment) {
-            ((IOpenInAppMessageReader) openReader).onOpenInFragment(
-                    inAppMessage,
-                    inAppMessageOpenSettings.showOnlyIfLoaded(),
-                    parentContainerFM,
-                    containerId,
-                    inAppMessageScreenActions
-            );
-        } else {
-            ((IOpenInAppMessageReader) openReader).onOpenInFrameLayout(
-                    inAppMessage,
-                    inAppMessageOpenSettings.showOnlyIfLoaded(),
-                    frameLayout,
-                    inAppMessageScreenActions
-            );
-        }
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                if (showAsFragment) {
+                    ((IOpenInAppMessageReader) openReader).onOpenInFragment(
+                            parentContainerFM,
+                            containerId,
+                            inAppMessageScreenActions
+                    );
+                } else if (frameLayout != null) {
+                    BaseIAMScreen iamScreen = ((IOpenInAppMessageReader) openReader).onOpenInLayout(
+                            frameLayout.getContext(),
+                            inAppMessageScreenActions
+                    );
+                    if (iamScreen instanceof InAppMessageMainView) {
+                        if (inAppMessageViewController != null) {
+                            ((InAppMessageMainView) iamScreen).setController(inAppMessageViewController);
+                        }
+                        frameLayout.addView((InAppMessageMainView) iamScreen);
+                    }
+
+                }
+            }
+        });
+
     }
 
     private void saveIAMOpened(int iamId) {

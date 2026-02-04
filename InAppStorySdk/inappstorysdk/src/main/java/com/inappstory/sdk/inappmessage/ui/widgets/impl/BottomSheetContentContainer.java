@@ -4,17 +4,22 @@ import static com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_
 import static com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED;
 import static com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_HIDDEN;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Point;
+import android.graphics.Rect;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
+import android.os.Build;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.util.Pair;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowInsets;
 import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
@@ -124,7 +129,7 @@ public final class BottomSheetContentContainer extends IAMContentContainer<InApp
     }
 
     @Override
-    protected void visibleRectIsCalculated() {
+    protected int visibleRectIsCalculated() {
         float contentRatio = 1.33f;
         if (appearance.contentRatio() < 5f && appearance.contentRatio() > 0.01f) {
             contentRatio = appearance.contentRatio();
@@ -142,17 +147,18 @@ public final class BottomSheetContentContainer extends IAMContentContainer<InApp
             );
         }
         float screenContentRatio = availableWidth / availableHeight;
+        int height = 0;
         if (contentRatio >= screenContentRatio) {
-            layoutParams.height = Math.min(
+            height = Math.min(
                     Math.round(availableHeight),
                     Math.round(availableWidth / contentRatio)
             );
             layoutParams.width = Math.round(availableWidth);
         } else {
-            layoutParams.height = Math.round(availableHeight);
+            height = Math.round(availableHeight);
             layoutParams.width = Math.round(availableHeight * contentRatio);
         }
-
+        layoutParams.height = height;
         roundedCornerLayout.setRadius(
                 Sizes.dpToPxExt(appearance.cornerRadius(), getContext()),
                 Sizes.dpToPxExt(appearance.cornerRadius(), getContext()),
@@ -163,6 +169,41 @@ public final class BottomSheetContentContainer extends IAMContentContainer<InApp
                 layoutParams
         );
         roundedCornerLayout.requestLayout();
+        return height;
+    }
+
+    @Override
+    protected Pair<Integer, Integer> countSafeArea(int containerHeight) {
+        Rect mainLayoutRect = new Rect(
+                externalContainerRect
+        );
+        mainLayoutRect.top = Math.max(0, mainLayoutRect.bottom - containerHeight);
+        Rect roundedLayoutRect = new Rect();
+        roundedCornerLayout.getGlobalVisibleRect(roundedLayoutRect);
+        Context context = getContext();
+        Activity activity = null;
+        if (context instanceof Activity) {
+            activity = (Activity) context;
+        }
+        if (activity == null) return new Pair<>(0, 0);
+        int topOffset = Math.max(mainLayoutRect.top, 0);
+        int bottomOffset = Math.max(mainLayoutRect.bottom, 0);
+        int phoneHeight = Sizes.getFullPhoneHeight(activity);
+        int topInsetOffset = 0;
+        int bottomInsetOffset = 0;
+        if (Build.VERSION.SDK_INT >= 23) {
+            if (activity.getWindow() != null) {
+                WindowInsets windowInsets = activity.getWindow().getDecorView().getRootWindowInsets();
+                if (windowInsets != null) {
+                    topInsetOffset = Math.max(0, windowInsets.getStableInsetTop());
+                    bottomInsetOffset = Math.max(0, windowInsets.getStableInsetBottom());
+                }
+            }
+        }
+        return new Pair<>(
+                Math.max(0, topInsetOffset - topOffset),
+                Math.max(0, bottomInsetOffset - (phoneHeight - bottomOffset))
+        );
     }
 
     @Override
@@ -212,11 +253,6 @@ public final class BottomSheetContentContainer extends IAMContentContainer<InApp
 
     private int bsState = 0;
 
-    @Override
-    public void clearContentBackground() {
-        content.setBackground(null);
-        content.setBackgroundColor(Color.RED);
-    }
 
     @Override
     public void showWithAnimation() {

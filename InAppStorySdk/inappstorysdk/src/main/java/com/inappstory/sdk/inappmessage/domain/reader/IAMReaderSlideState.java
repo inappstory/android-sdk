@@ -1,5 +1,7 @@
 package com.inappstory.sdk.inappmessage.domain.reader;
 
+import android.util.Pair;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -17,13 +19,23 @@ public class IAMReaderSlideState {
     List<String> slides = new ArrayList<>();
 
     Map<String, Object> cardAppearance;
+    Pair<Integer, Integer> safeArea = new Pair<>(0, 0);
 
     public Map<String, Object> cardAppearance() {
         return cardAppearance != null ? cardAppearance : new HashMap<>();
     }
 
+    public Pair<Integer, Integer> safeArea() {
+        return safeArea != null ? safeArea : new Pair<>(0, 0);
+    }
+
     public IAMReaderSlideState cardAppearance(Map<String, Object> cardAppearance) {
         this.cardAppearance = cardAppearance;
+        return this;
+    }
+
+    public IAMReaderSlideState safeArea(Pair<Integer, Integer> safeArea) {
+        this.safeArea = safeArea;
         return this;
     }
 
@@ -116,6 +128,7 @@ public class IAMReaderSlideState {
                 .slides(this.slides)
                 .layout(this.layout)
                 .cardAppearance(this.cardAppearance)
+                .safeArea(this.safeArea)
                 .slideIndex(this.slideIndex)
                 .slidesTotal(this.slidesTotal)
                 .renderReady(this.renderReady)

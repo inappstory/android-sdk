@@ -2,15 +2,21 @@ package com.inappstory.sdk.inappmessage.ui.widgets;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Rect;
+import android.os.Build;
 import android.util.AttributeSet;
+import android.util.Log;
+import android.util.Pair;
 import android.util.SizeF;
+import android.view.DisplayCutout;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowInsets;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 
@@ -41,12 +47,7 @@ public abstract class IAMContentContainer<T extends InAppMessageAppearance> exte
         if (content != null) content.addView(view);
     }
 
-    public abstract void clearContentBackground();
-
     protected IAMContainerCallback callback;
-
-    public void showContent() {
-    }
 
     public void setRefreshClick(final OnClickListener clickListener) {
         refresh.setClickListener(v -> {
@@ -200,7 +201,10 @@ public abstract class IAMContentContainer<T extends InAppMessageAppearance> exte
         setId(CONTAINER_ID);
     }
 
-    protected abstract void visibleRectIsCalculated();
+
+    protected abstract int visibleRectIsCalculated();
+
+    protected abstract Pair<Integer, Integer> countSafeArea(int containerHeight);
 
     public interface AppearanceCallback {
         void invoke();
@@ -216,7 +220,10 @@ public abstract class IAMContentContainer<T extends InAppMessageAppearance> exte
             @Override
             public void run() {
                 getGlobalVisibleRect(externalContainerRect);
-                visibleRectIsCalculated();
+                int height = visibleRectIsCalculated();
+                if (callback != null) {
+                    callback.countSafeArea(countSafeArea(height));
+                }
                 content.setVisibility(VISIBLE);
             }
         });

@@ -1,9 +1,9 @@
 package com.inappstory.sdk.stories.outercallbacks.common.objects;
 
 
+import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
@@ -11,6 +11,7 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.inappstory.sdk.core.data.IInAppMessage;
+import com.inappstory.sdk.core.ui.screens.inappmessagereader.BaseIAMScreen;
 import com.inappstory.sdk.inappmessage.InAppMessageScreenActions;
 import com.inappstory.sdk.inappmessage.ui.reader.InAppMessageCloseAction;
 import com.inappstory.sdk.inappmessage.ui.reader.InAppMessageMainFragment;
@@ -23,8 +24,6 @@ public class DefaultOpenInAppMessageReader implements IOpenInAppMessageReader {
 
     @Override
     public void onOpenInFragment(
-            IInAppMessage inAppMessage,
-            boolean showOnlyIfLoaded,
             FragmentManager fragmentManager,
             int containerId,
             final InAppMessageScreenActions screenActions
@@ -59,44 +58,38 @@ public class DefaultOpenInAppMessageReader implements IOpenInAppMessageReader {
     }
 
     @Override
-    public void onOpenInFrameLayout(
-            IInAppMessage inAppMessage,
-            boolean showOnlyIfLoaded,
-            FrameLayout layout,
+    public BaseIAMScreen onOpenInLayout(
+            Context context,
             InAppMessageScreenActions screenActions
     ) {
-        new Handler(Looper.getMainLooper()).post(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    InAppMessageMainView inAppMessageView =
-                            new InAppMessageMainView(layout.getContext());
-                    inAppMessageView.setLayoutParams(
-                            new FrameLayout.LayoutParams(
-                                    ViewGroup.LayoutParams.MATCH_PARENT,
-                                    ViewGroup.LayoutParams.MATCH_PARENT
-                            )
-                    );
-                    if (screenActions != null) {
-                        inAppMessageView.setOnOpenAction(new InAppMessageOpenAction() {
-                            @Override
-                            public void onOpen() {
-                                screenActions.readerIsOpened();
-                            }
-                        });
-                        inAppMessageView.setOnCloseAction(new InAppMessageCloseAction() {
-                            @Override
-                            public void onClose() {
-                                screenActions.readerIsClosed();
-                            }
-                        });
+        try {
+            InAppMessageMainView inAppMessageView =
+                    new InAppMessageMainView(context);
+            inAppMessageView.setLayoutParams(
+                    new FrameLayout.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT,
+                            ViewGroup.LayoutParams.MATCH_PARENT
+                    )
+            );
+            if (screenActions != null) {
+                inAppMessageView.setOnOpenAction(new InAppMessageOpenAction() {
+                    @Override
+                    public void onOpen() {
+                        screenActions.readerIsOpened();
                     }
-                    layout.addView(inAppMessageView);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+                });
+                inAppMessageView.setOnCloseAction(new InAppMessageCloseAction() {
+                    @Override
+                    public void onClose() {
+                        screenActions.readerIsClosed();
+                    }
+                });
             }
-        });
+            return inAppMessageView;
+        } catch (Exception e) {
+            return null;
+        }
+
 
     }
 }

@@ -1,5 +1,7 @@
 package com.inappstory.sdk.externalapi.inappmessage;
 
+import android.widget.FrameLayout;
+
 import androidx.annotation.NonNull;
 import androidx.fragment.app.FragmentManager;
 
@@ -14,6 +16,7 @@ import com.inappstory.sdk.inappmessage.InAppMessageLoadCallback;
 import com.inappstory.sdk.inappmessage.InAppMessageOpenSettings;
 import com.inappstory.sdk.inappmessage.InAppMessagePreloadSettings;
 import com.inappstory.sdk.inappmessage.InAppMessageScreenActions;
+import com.inappstory.sdk.inappmessage.InAppMessageViewController;
 
 public class IASInAppMessageExternalAPIImpl implements IASInAppMessageExternalAPI {
     @Override
@@ -52,6 +55,33 @@ public class IASInAppMessageExternalAPIImpl implements IASInAppMessageExternalAP
                         fragmentManager,
                         containerId,
                         screenActions
+                );
+            }
+        });
+        return token;
+    }
+
+    @Override
+    public CancellationToken show(
+            InAppMessageOpenSettings inAppMessageOpenSettings,
+            FrameLayout frameLayout,
+            InAppMessageScreenActions screenActions,
+            InAppMessageViewController controller
+    ) {
+        final CancellationTokenWithStatus token =
+                new CancellationTokenImpl("External IAM data: " +
+                        inAppMessageOpenSettings.toString()
+                );
+        InAppStoryManager.useCoreInSeparateThread(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.cancellationTokenPool().addToken(token);
+                core.inAppMessageAPI().show(
+                        token,
+                        inAppMessageOpenSettings,
+                        frameLayout,
+                        screenActions,
+                        controller
                 );
             }
         });
