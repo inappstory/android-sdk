@@ -86,7 +86,8 @@ public class IAMWebView extends IASWebView implements ContentViewInteractor {
         Log.e("showSlidesConfig", config);
         String url = "javascript:window.show_slides(" + slideArray + ",\"" +
                 StringsUtils.getEscapedString(StringsUtils.escapeSingleQuotes(cardAppearance))
-                + "\", " + index + ")";
+                + "\", " + index + ", \"" +
+                StringsUtils.getEscapedString(StringsUtils.escapeSingleQuotes(config)) + "\")";
         loadUrl(url);
         logMethod("showSlides " + slides.size());
     }
