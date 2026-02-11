@@ -26,7 +26,6 @@ import com.inappstory.sdk.stories.api.models.StatisticSendObject;
 
 public interface ApiInterface {
 
-
     @POST("v2/banner/place/{id}")
     Request getBannerPlace(
             @Path("id") String id,
@@ -91,7 +90,6 @@ public interface ApiInterface {
             @ReplaceHeader(HeadersKeys.ACCEPT_LANGUAGE) String lang
     );
 
-
     @POST("v2/inappmessaging/message/{id}/event/{event_name}")
     Request sendInAppMessageStat(
             @Path("id") String id,
@@ -136,7 +134,6 @@ public interface ApiInterface {
             @Body GameLaunchConfigObject configObject
     );
 
-
     @FormUrlEncoded
     @PUT("v2/game/{id}/instance-user-data")
     Request sendGameData(
@@ -154,7 +151,6 @@ public interface ApiInterface {
             @ReplaceHeader(HeadersKeys.AUTH_SESSION_ID) String xSessionId,
             @ReplaceHeader(HeadersKeys.ACCEPT_LANGUAGE) String lang);
 
-
     @POST("v2/feed/{feed}")
     Request getFeed(
             @Path("feed") String feed,
@@ -168,7 +164,6 @@ public interface ApiInterface {
             @ReplaceHeader(HeadersKeys.ACCEPT_LANGUAGE) String lang
     );
 
-
     @GET("v2/feed/{feed}/onboarding")
     Request getOnboardingFeed(
             @Path("feed") String feed,
@@ -180,7 +175,6 @@ public interface ApiInterface {
             @ReplaceHeader(HeadersKeys.AUTH_SESSION_ID) String xSessionId,
             @ReplaceHeader(HeadersKeys.ACCEPT_LANGUAGE) String lang
     );
-
 
     @GET("v2/story/{id}")
     Request getStoryById(
@@ -238,9 +232,6 @@ public interface ApiInterface {
             @Field("gameLaunched") boolean gameLaunched
     );
 
-
-
-
     @GET("stat/{event_name}")
     @ExcludeHeaders({
             HeadersKeys.ACCEPT,
@@ -272,15 +263,12 @@ public interface ApiInterface {
             @Query("t") String t,
             @Query("m") Integer type);
 
-
     @FormUrlEncoded
     @PUT("v2/story-data/{id}")
     Request sendStoryData(
             @Path("id") String id,
             @Field("data") String data,
             @Query("session_id") String sessionId);
-
-
 
     @POST("v2/story-like/{id}")
     Request storyLike(
@@ -303,7 +291,6 @@ public interface ApiInterface {
 
     @GET("v2/ugc/editor-config")
     Request getUgcEditor();
-
 
     @GET("v2/game/preload")
     @ExcludeHeaders({
