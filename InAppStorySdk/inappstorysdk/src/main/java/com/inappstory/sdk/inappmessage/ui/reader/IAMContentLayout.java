@@ -24,6 +24,7 @@ import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.api.impl.IASSingleStoryImpl;
 import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenData;
 import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenStrategy;
+import com.inappstory.sdk.inappmessage.InAppMessageSlideData;
 import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderSlideState;
 import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderState;
 import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderUIStates;
@@ -208,14 +209,14 @@ public class IAMContentLayout extends FrameLayout implements Observer<IAMReaderS
 
     private void openGameHandle(IASCore core, final ContentId contentId) {
         try {
-            IIAMReaderViewModel readerViewModel = core.screensManager().iamReaderViewModel();
+            if (readerSlideViewModel == null) return;
             if (core.gamesAPI().gameCanBeOpened(contentId.id())) {
                 core.screensManager().openScreen(
                         getContext(),
                         new LaunchGameScreenStrategy(core, true)
                                 .data(new LaunchGameScreenData(
                                         null,
-                                        readerViewModel.getCurrentInAppMessageData(),
+                                        readerSlideViewModel.slideData(),
                                         contentId.id()
                                 ))
                 );

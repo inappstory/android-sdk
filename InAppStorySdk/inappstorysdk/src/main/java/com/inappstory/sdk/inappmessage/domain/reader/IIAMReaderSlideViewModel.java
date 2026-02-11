@@ -2,6 +2,7 @@ package com.inappstory.sdk.inappmessage.domain.reader;
 
 
 import com.inappstory.sdk.core.ui.screens.IReaderSlideViewModel;
+import com.inappstory.sdk.inappmessage.InAppMessageSlideData;
 import com.inappstory.sdk.inappmessage.domain.stedata.STETypeAndData;
 import com.inappstory.sdk.stories.api.models.ContentIdWithIndex;
 import com.inappstory.sdk.stories.utils.Observer;
@@ -29,6 +30,8 @@ public interface IIAMReaderSlideViewModel extends IReaderSlideViewModel {
     SingleTimeEvent<STETypeAndData> singleTimeEvents();
 
     ContentIdWithIndex iamId();
+
+    InAppMessageSlideData slideData();
 
     String modifyContent(String content);
 

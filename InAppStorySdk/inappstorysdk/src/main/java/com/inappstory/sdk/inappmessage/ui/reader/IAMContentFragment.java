@@ -179,14 +179,14 @@ public class IAMContentFragment extends Fragment implements Observer<IAMReaderSl
 
     private void openGameHandle(IASCore core, final ContentId contentId) {
         try {
-            IIAMReaderViewModel readerViewModel = core.screensManager().iamReaderViewModel();
+            if (readerSlideViewModel == null) return;
             if (core.gamesAPI().gameCanBeOpened(contentId.id())) {
                 core.screensManager().openScreen(
                         requireActivity(),
                         new LaunchGameScreenStrategy(core, true)
                                 .data(new LaunchGameScreenData(
                                         null,
-                                        readerViewModel.getCurrentInAppMessageData(),
+                                        readerSlideViewModel.slideData(),
                                         contentId.id()
                                 ))
                 );
