@@ -146,6 +146,7 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
     @Override
     public void updateLayout() {
         IAMReaderState readerState = readerViewModel.getCurrentState();
+        if (readerState == null || readerState.iamId == null) return;
         IReaderContent readerContent =
                 core.contentHolder().readerContent().getByIdAndType(
                         readerState.iamId,
@@ -402,7 +403,7 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
     ) {
         Integer iamId = readerViewModel.getCurrentState().iamId;
         IAMReaderSlideState slideState = slideStateObservable.getValue();
-        if (data != null) {
+        if (iamId != null && data != null) {
             core.statistic().iamV1().sendWidgetEvent(
                     name,
                     data,
@@ -446,7 +447,7 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
 
     public void storySendData(String data) {
         IAMReaderState readerState = readerViewModel.getCurrentState();
-        if (readerState == null) return;
+        if (readerState == null || readerState.iamId == null) return;
         if (core.statistic().iamV1().softDisabled()) return;
         core.network().enqueue(
                 core.network().getApi().sendIAMUserData(
@@ -469,7 +470,7 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
 
     public void setLocalUserData(String data, boolean sendToServer) {
         IAMReaderState readerState = readerViewModel.getCurrentState();
-        if (readerState == null) return;
+        if (readerState == null || readerState.iamId == null) return;
         IASDataSettingsHolder settingsHolder = ((IASDataSettingsHolder) core.settingsAPI());
         CachedSessionData sessionData = settingsHolder.sessionData();
         if (sessionData == null) return;
@@ -506,10 +507,11 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
         IASDataSettingsHolder settingsHolder = ((IASDataSettingsHolder) core.settingsAPI());
         CachedSessionData sessionData = settingsHolder.sessionData();
         if (sessionData == null) return "";
+        Integer iamId = readerViewModel.getCurrentState().iamId;
+        if (iamId == null) return "";
         synchronized (localDataLock) {
             String res = core.keyValueStorage().getString("iam" +
-                    readerViewModel.getCurrentState().iamId
-                    + "__" + sessionData.userId);
+                    iamId + "__" + sessionData.userId);
             return res == null ? "" : res;
         }
     }
