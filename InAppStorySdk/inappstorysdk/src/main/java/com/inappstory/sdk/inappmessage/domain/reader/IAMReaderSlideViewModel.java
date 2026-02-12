@@ -147,9 +147,11 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
     @Override
     public void updateLayout() {
         IAMReaderState readerState = readerViewModel.getCurrentState();
+        Integer iamId = readerState.iamId;
+        if (iamId == null) return;
         IReaderContent readerContent =
                 core.contentHolder().readerContent().getByIdAndType(
-                        readerState.iamId,
+                        iamId,
                         ContentType.IN_APP_MESSAGE
                 );
         if (readerContent == null) return;
@@ -261,7 +263,7 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
         if (iamId != null) {
             IInAppMessage readerContent =
                     (IInAppMessage) core.contentHolder().readerContent().getByIdAndType(
-                            state.iamId,
+                            iamId,
                             ContentType.IN_APP_MESSAGE
                     );
             if (readerContent != null) {
@@ -453,7 +455,7 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
     ) {
         Integer iamId = readerViewModel.getCurrentState().iamId;
         IAMReaderSlideState slideState = slideStateObservable.getValue();
-        if (data != null) {
+        if (iamId != null && data != null) {
             core.statistic().iamV1().sendWidgetEvent(
                     name,
                     data,
@@ -499,9 +501,11 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
         IAMReaderState readerState = readerViewModel.getCurrentState();
         if (readerState == null) return;
         if (core.statistic().iamV1().softDisabled()) return;
+        Integer iamId = readerState.iamId;
+        if (iamId == null) return;
         core.network().enqueue(
                 core.network().getApi().sendIAMUserData(
-                        Integer.toString(readerState.iamId),
+                        Integer.toString(iamId),
                         data
                 ),
                 new NetworkCallback<Response>() {
@@ -520,7 +524,7 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
 
     public void setLocalUserData(String data, boolean sendToServer) {
         IAMReaderState readerState = readerViewModel.getCurrentState();
-        if (readerState == null) return;
+        if (readerState == null || readerState.iamId == null) return;
         IASDataSettingsHolder settingsHolder = ((IASDataSettingsHolder) core.settingsAPI());
         CachedSessionData sessionData = settingsHolder.sessionData();
         if (sessionData == null) return;
@@ -556,10 +560,11 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
     public String getLocalUserData() {
         IASDataSettingsHolder settingsHolder = ((IASDataSettingsHolder) core.settingsAPI());
         CachedSessionData sessionData = settingsHolder.sessionData();
-        if (sessionData == null) return "";
+        Integer iamId = readerViewModel.getCurrentState().iamId;
+        if (sessionData == null || iamId == null) return "";
         synchronized (localDataLock) {
             String res = core.keyValueStorage().getString("iam" +
-                    readerViewModel.getCurrentState().iamId
+                    iamId
                     + "__" + sessionData.userId);
             return res == null ? "" : res;
         }
@@ -636,6 +641,7 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
     @Override
     public void renderReady() {
         IAMReaderState readerState = readerViewModel.getCurrentState();
+        if (readerState.iamId == null) return;
         IInAppMessage readerContent =
                 (IInAppMessage) core.contentHolder().readerContent().getByIdAndType(
                         readerState.iamId,
@@ -717,6 +723,7 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
         readerViewModel.updateCurrentLoaderState(IAMReaderLoaderStates.LOADING);
         IAMReaderState state = readerViewModel.getCurrentState();
         InAppMessageDownloadManager downloadManager = core.contentLoader().inAppMessageDownloadManager();
+        if (state.iamId == null) return;
         int loadStatus = downloadManager.isSlidesLoaded(state.iamId);
         if (loadStatus == -1) {
             downloadManager.removeInAppMessageTask(state.iamId);
