@@ -13,6 +13,7 @@ import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.IASInAppMessage;
 import com.inappstory.sdk.core.ui.screens.inappmessagereader.LaunchIAMScreenStrategy;
+import com.inappstory.sdk.inappmessage.InAppMessageContainerProvider;
 import com.inappstory.sdk.inappmessage.InAppMessageLoadCallback;
 import com.inappstory.sdk.inappmessage.InAppMessageOpenSettings;
 import com.inappstory.sdk.inappmessage.InAppMessagePreloadSettings;
@@ -65,7 +66,33 @@ public class IASInAppMessageImpl implements IASInAppMessage {
                 null,
                 new LaunchIAMScreenStrategy(core)
                         .cancellationToken(cancellationToken)
-                        .parentContainer(fragmentManager, containerId)
+                        .fragment(fragmentManager, containerId)
+                        .inAppMessageOpenSettings(openData)
+                        .inAppMessageScreenActions(screenActions)
+        );
+    }
+
+    @Override
+    public void show(CancellationTokenWithStatus cancellationToken,
+                     InAppMessageOpenSettings openData,
+                     InAppMessageContainerProvider containerProvider,
+                     InAppMessageScreenActions screenActions
+    ) {
+        IASDataSettingsHolder settingsHolder = (IASDataSettingsHolder) core.settingsAPI();
+        if (settingsHolder.anonymous()) {
+            InAppStoryManager.showELog(
+                    LoggerTags.IAS_ERROR_TAG,
+                    "In-app messages are unavailable for anonymous mode"
+            );
+            if (screenActions != null)
+                screenActions.readerOpenError("In-app messages are unavailable for anonymous mode");
+            return;
+        }
+        core.screensManager().openScreen(
+                null,
+                new LaunchIAMScreenStrategy(core)
+                        .cancellationToken(cancellationToken)
+                        .containerProvider(containerProvider)
                         .inAppMessageOpenSettings(openData)
                         .inAppMessageScreenActions(screenActions)
         );
@@ -93,7 +120,7 @@ public class IASInAppMessageImpl implements IASInAppMessage {
                 null,
                 new LaunchIAMScreenStrategy(core)
                         .cancellationToken(cancellationToken)
-                        .frameLayout(frameLayout)
+                        .layout(frameLayout)
                         .inAppMessageOpenSettings(openData)
                         .inAppMessageViewController(controller)
                         .inAppMessageScreenActions(screenActions)

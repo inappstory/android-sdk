@@ -31,6 +31,8 @@ import com.inappstory.sdk.core.network.content.usecase.InAppMessagesUseCase;
 import com.inappstory.sdk.core.ui.screens.holder.IScreensHolder;
 import com.inappstory.sdk.core.ui.screens.launcher.LaunchScreenStrategy;
 import com.inappstory.sdk.core.ui.screens.ScreenType;
+import com.inappstory.sdk.inappmessage.InAppMessageContainerProvider;
+import com.inappstory.sdk.inappmessage.InAppMessageContainerSettings;
 import com.inappstory.sdk.inappmessage.InAppMessageScreenActions;
 import com.inappstory.sdk.inappmessage.InAppMessageViewController;
 import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderState;
@@ -74,6 +76,7 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
 
     private InAppMessageScreenActions inAppMessageScreenActions;
     private InAppMessageViewController inAppMessageViewController;
+    private InAppMessageContainerProvider containerProvider;
     private FragmentManager parentContainerFM;
     private int containerId;
     private boolean showAsFragment = true;
@@ -94,7 +97,7 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
         return this;
     }
 
-    public LaunchIAMScreenStrategy parentContainer(
+    public LaunchIAMScreenStrategy fragment(
             FragmentManager parentContainerFM,
             int containerId
     ) {
@@ -104,7 +107,15 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
         return this;
     }
 
-    public LaunchIAMScreenStrategy frameLayout(
+    public LaunchIAMScreenStrategy containerProvider(
+            @NonNull InAppMessageContainerProvider containerProvider
+    ) {
+        this.containerProvider = containerProvider;
+        return this;
+    }
+
+
+    public LaunchIAMScreenStrategy layout(
             FrameLayout frameLayout
     ) {
         this.frameLayout = frameLayout;
@@ -403,6 +414,20 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
             currentScreenHolder.endLaunchProcess();
             return;
         }
+        InAppMessageData data = new InAppMessageData(
+                inAppMessage.id(),
+                inAppMessage.statTitle(),
+                inAppMessageOpenSettings.event(),
+                sourceType,
+                inAppMessage.messageType()
+        );
+        if (containerProvider != null) {
+            InAppMessageContainerSettings settings = containerProvider.provideContainer(data);
+            frameLayout = settings.layout();
+            parentContainerFM = settings.fragmentManager();
+            containerId = settings.containerId();
+            showAsFragment = (parentContainerFM != null);
+        }
         if ((showAsFragment && parentContainerFM == null) || (!showAsFragment && frameLayout == null)) {
             String message = "Container for in-app message not found.";
             launchScreenError(message);
@@ -416,15 +441,7 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
                         .iamId(inAppMessage.id())
                         .event(inAppMessageOpenSettings.event())
                         .canBeClosed(!inAppMessage.disableClose())
-                        .inAppMessageData(
-                                new InAppMessageData(
-                                        inAppMessage.id(),
-                                        inAppMessage.statTitle(),
-                                        inAppMessageOpenSettings.event(),
-                                        sourceType,
-                                        inAppMessage.messageType()
-                                )
-                        )
+                        .inAppMessageData(data)
                         .contentIsPreloaded(contentIsPreloaded)
                         .showOnlyIfLoaded(inAppMessageOpenSettings.showOnlyIfLoaded())
                         .appearance(appearance)

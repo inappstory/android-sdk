@@ -33,6 +33,7 @@ import com.inappstory.sdk.banners.BannerPlaceLoadSettings;
 import com.inappstory.sdk.core.data.models.InAppStoryUserSettings;
 import com.inappstory.sdk.goods.outercallbacks.ProductCartInteractionCallback;
 import com.inappstory.sdk.inappmessage.CloseInAppMessageCallback;
+import com.inappstory.sdk.inappmessage.InAppMessageContainerProvider;
 import com.inappstory.sdk.inappmessage.InAppMessageLoadCallback;
 import com.inappstory.sdk.inappmessage.InAppMessageOpenSettings;
 import com.inappstory.sdk.inappmessage.InAppMessagePreloadSettings;
@@ -1609,6 +1610,27 @@ public class InAppStoryManager implements IASBackPressHandler {
         return token;
     }
 
+
+    public CancellationToken showInAppMessage(
+            final InAppMessageOpenSettings openData,
+            final InAppMessageContainerProvider containerProvider,
+            final InAppMessageScreenActions screenActions
+    ) {
+        final CancellationTokenWithStatus token = new CancellationTokenImpl("IAM data: " + openData.toString());
+        useCoreInSeparateThread(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.cancellationTokenPool().addToken(token);
+                core.inAppMessageAPI().show(
+                        token,
+                        openData,
+                        containerProvider,
+                        screenActions
+                );
+            }
+        });
+        return token;
+    }
 
     public CancellationToken showInAppMessage(
             final InAppMessageOpenSettings openData,
