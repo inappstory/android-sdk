@@ -87,7 +87,7 @@ public class InAppMessageMainFragment extends Fragment implements Observer<IAMRe
 
     private InAppMessageCloseAction onCloseAction;
     private InAppMessageOpenAction onOpenAction;
-
+    private boolean inflateError = false;
 
     @Nullable
     @Override

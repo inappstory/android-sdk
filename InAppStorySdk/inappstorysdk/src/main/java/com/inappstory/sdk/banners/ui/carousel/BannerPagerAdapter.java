@@ -1,5 +1,8 @@
 package com.inappstory.sdk.banners.ui.carousel;
 
+import android.os.Handler;
+import android.os.Looper;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -7,7 +10,13 @@ import androidx.annotation.NonNull;
 import androidx.viewpager.widget.PagerAdapter;
 
 import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.banners.ui.banner.BannerInit;
 import com.inappstory.sdk.banners.ui.banner.BannerView;
+import com.inappstory.sdk.core.banners.BannerCarouselState;
+import com.inappstory.sdk.core.banners.BannerCarouselViewModel;
+import com.inappstory.sdk.core.banners.BannerLoadStates;
+import com.inappstory.sdk.core.banners.BannerPlaceViewModelsHolder;
+import com.inappstory.sdk.core.banners.BannerWidgetViewModelType;
 import com.inappstory.sdk.core.banners.IBannerPlaceLoadCallback;
 import com.inappstory.sdk.banners.ICustomBannerPlaceholder;
 import com.inappstory.sdk.core.IASCore;
@@ -15,9 +24,12 @@ import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.banners.BannerDownloadManager;
 import com.inappstory.sdk.core.banners.BannerState;
 import com.inappstory.sdk.core.banners.IBannerViewModel;
+import com.inappstory.sdk.core.banners.IBannerWidgetState;
+import com.inappstory.sdk.core.banners.IBannersWidgetViewModel;
 import com.inappstory.sdk.core.data.IBanner;
 import com.inappstory.sdk.stories.utils.Observer;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -65,18 +77,10 @@ public class BannerPagerAdapter extends PagerAdapter implements Observer<BannerS
         subscribeToFirst();
     }
 
-
     @NonNull
     @Override
     public Object instantiateItem(@NonNull ViewGroup container, int position) {
-        BannerView bannerView = new BannerView(container.getContext());
-        bannerView.setLoadingPlaceholder(bannerPlaceholderCreator.onCreate(container.getContext()));
-        bannerView.setBannerRadius(bannerRadius);
-        String tag = "banner_" + position;
-        bannerView.setTag(tag);
         IBanner banner = banners.get(position % banners.size());
-        bannerView.setBannerBackground(banner.bannerAppearance().backgroundDrawable());
-        bannerView.setSize(itemWidth, banner.bannerAppearance().singleBannerAspectRatio(), false);
         final int bannerId = banner.id();
         final IBannerViewModel bannerViewModel = core
                 .widgetViewModels()
@@ -88,6 +92,46 @@ public class BannerPagerAdapter extends PagerAdapter implements Observer<BannerS
                         bannerId,
                         position
                 );
+        BannerView bannerView = new BannerView(container.getContext(), new BannerInit() {
+            @Override
+            public void onInitResult(boolean initSuccess) {
+                if (!initSuccess) {
+                    InAppStoryManager.useCore(new UseIASCoreCallback() {
+                        @Override
+                        public void use(@NonNull IASCore core) {
+                            BannerPlaceViewModelsHolder holder = core
+                                    .widgetViewModels()
+                                    .bannerPlaceViewModels();
+                            IBannersWidgetViewModel bannersWidgetViewModel =
+                                    holder.get(
+                                            uniqueId
+                                    );
+                            final IBannerWidgetState widgetState = bannersWidgetViewModel.getCurrentBannerPlaceState().copy().items(new ArrayList<>());
+                            if (widgetState instanceof BannerCarouselState) {
+                                ((BannerCarouselState) widgetState).currentIndex(null);
+                            }
+                            bannersWidgetViewModel.updateState(
+                                    widgetState
+                            );
+                            new Handler().postDelayed(new Runnable() {
+                                @Override
+                                public void run() {
+                                    bannersWidgetViewModel.updateState(widgetState.items(banners));
+                                }
+                            }, 300);
+                        }
+                    });
+                }
+            }
+        });
+        bannerView.setLoadingPlaceholder(bannerPlaceholderCreator.onCreate(container.getContext()));
+        bannerView.setBannerRadius(bannerRadius);
+        String tag = "banner_" + position;
+        bannerView.setTag(tag);
+
+        bannerView.setBannerBackground(banner.bannerAppearance().backgroundDrawable());
+        bannerView.setSize(itemWidth, banner.bannerAppearance().singleBannerAspectRatio(), false);
+
         bannerViewModel.iterationId(iterationId);
         bannerView.viewModel(
                 bannerViewModel
@@ -156,7 +200,9 @@ public class BannerPagerAdapter extends PagerAdapter implements Observer<BannerS
 
     @Override
     public int getCount() {
-        return (loop ? 500 : 1) * banners.size();
+        int size = (loop ? 500 : 1) * banners.size();
+        Log.e("bannersSize", size + "");
+        return size;
     }
 
     public int getDataCount() {

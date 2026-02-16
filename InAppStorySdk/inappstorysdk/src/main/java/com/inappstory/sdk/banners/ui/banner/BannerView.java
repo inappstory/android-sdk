@@ -12,6 +12,7 @@ import android.net.Uri;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.InflateException;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -50,6 +51,7 @@ import com.inappstory.sdk.stories.utils.Observer;
 import com.inappstory.sdk.stories.utils.Sizes;
 
 import java.util.Objects;
+import java.util.Random;
 import java.util.UUID;
 
 public class BannerView extends FrameLayout implements Observer<BannerState> {
@@ -57,6 +59,11 @@ public class BannerView extends FrameLayout implements Observer<BannerState> {
     public BannerView(@NonNull Context context) {
         super(context);
         init(context);
+    }
+
+    public BannerView(@NonNull Context context, BannerInit bannerInit) {
+        super(context);
+        bannerInit.onInitResult((init(context)));
     }
 
     private IBannerViewModel bannerViewModel;
@@ -76,12 +83,14 @@ public class BannerView extends FrameLayout implements Observer<BannerState> {
 
     public void viewModel(IBannerViewModel bannerViewModel) {
         this.bannerViewModel = bannerViewModel;
-        bannerWebView.slideViewModel(bannerViewModel);
+        if (bannerWebView != null)
+            bannerWebView.slideViewModel(bannerViewModel);
         BannerState state = bannerViewModel.getCurrentBannerState();
         bannerId = state.bannerId();
         Log.e("UpdateBannerState", state.toString());
         onUpdate(state);
-        bannerWebView.checkIfClientIsSet();
+        if (bannerWebView != null)
+            bannerWebView.checkIfClientIsSet();
     }
 
 
@@ -114,20 +123,28 @@ public class BannerView extends FrameLayout implements Observer<BannerState> {
     BannerState currentState;
 
     @SuppressLint("WrongViewCast")
-    private void init(Context context) {
-        View.inflate(context, R.layout.cs_banner_item, this);
+    private boolean init(Context context) {
+        boolean initSuccess = true;
+        try {
+            View.inflate(context, R.layout.cs_banner_item, this);
+        } catch (Exception e) {
+            initSuccess = false;
+            View.inflate(context, R.layout.cs_banner_inflate_error_layout, this);
+        }
         bannerContainer = findViewById(R.id.bannerContainer);
         bannerContainer.setCardBackgroundColor(Color.TRANSPARENT);
         bannerContainer.setCardElevation(0f);
         bannerContainer.setUseCompatPadding(false);
         loaderContainer = findViewById(R.id.loaderContainer);
-        bannerWebView = findViewById(R.id.contentWebView);
         backgroundView = findViewById(R.id.background);
-        bannerWebView.setHost(this);
         loaderContainer.addView(createLoader(context));
         loaderContainer.addView(createRefresh(context));
-        Log.e("BannerPagerAdapter", "initView");
-        bannerWebView.setBackgroundColor(Color.argb(1, 255, 255, 255));
+        bannerWebView = findViewById(R.id.contentWebView);
+        if (bannerWebView != null) {
+            bannerWebView.setHost(this);
+            bannerWebView.setBackgroundColor(Color.argb(1, 255, 255, 255));
+        }
+        return initSuccess;
     }
 
     public void setLoadingPlaceholder(View view) {
@@ -417,16 +434,6 @@ public class BannerView extends FrameLayout implements Observer<BannerState> {
                 refresh.setVisibility(GONE);
             }
         });
-    }
-
-    public BannerView(@NonNull Context context, @Nullable AttributeSet attrs) {
-        super(context, attrs);
-        init(context);
-    }
-
-    public BannerView(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
-        super(context, attrs, defStyleAttr);
-        init(context);
     }
 
     private final String uniqueId = UUID.randomUUID().toString();
