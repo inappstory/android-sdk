@@ -66,11 +66,22 @@ public class IAMContentFragment extends Fragment implements Observer<IAMReaderSl
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(
-                R.layout.cs_inappmessage_content_layout,
-                container,
-                false
-        );
+        View v;
+        try {
+            v = inflater.inflate(
+                    R.layout.cs_inappmessage_content_layout,
+                    container,
+                    false
+            );
+        } catch (Exception e) {
+            e.printStackTrace();
+            v = inflater.inflate(
+                    R.layout.cs_inappmessage_inflate_error_layout,
+                    container,
+                    false
+            );
+        }
+        return v;
     }
 
     @Override
@@ -79,7 +90,8 @@ public class IAMContentFragment extends Fragment implements Observer<IAMReaderSl
             readerSlideViewModel.removeSubscriber(this);
             readerSlideViewModel.singleTimeEvents().unsubscribe(callToActionDataObserver);
         }
-        contentWebView.stopSlide(false);
+        if (contentWebView != null)
+            contentWebView.stopSlide(false);
         super.onDestroyView();
     }
 
@@ -89,7 +101,8 @@ public class IAMContentFragment extends Fragment implements Observer<IAMReaderSl
         isPaused = true;
         if (readerSlideViewModel != null)
             readerSlideViewModel.readerIsClosing();
-        contentWebView.pauseSlide();
+        if (contentWebView != null)
+            contentWebView.pauseSlide();
     }
 
     @Override
@@ -97,7 +110,8 @@ public class IAMContentFragment extends Fragment implements Observer<IAMReaderSl
         super.onResume();
         if (readerSlideViewModel != null)
             readerSlideViewModel.readerIsOpened(!isPaused);
-        contentWebView.resumeSlide();
+        if (contentWebView != null)
+            contentWebView.resumeSlide();
     }
 
     public void refreshClick() {
@@ -221,7 +235,8 @@ public class IAMContentFragment extends Fragment implements Observer<IAMReaderSl
         ).sendApiRequest(apiRequestData.data(), new JsApiResponseCallback() {
             @Override
             public void onJsApiResponse(String result, String cb) {
-                contentWebView.loadJsApiResponse(result, cb);
+                if (contentWebView != null)
+                    contentWebView.loadJsApiResponse(result, cb);
             }
         });
     }
@@ -275,22 +290,26 @@ public class IAMContentFragment extends Fragment implements Observer<IAMReaderSl
                 IIAMReaderViewModel readerViewModel = core.screensManager().iamReaderViewModel();
                 IAMReaderState readerState = readerViewModel.getCurrentState();
                 readerSlideViewModel = readerViewModel.slideViewModel();
-                if (readerSlideViewModel != null) {
-                    contentWebView.slideViewModel(readerSlideViewModel);
-                    contentWebView.checkIfClientIsSet();
-                    readerSlideViewModel.addSubscriber(
-                            IAMContentFragment.this
-                    );
-                    readerSlideViewModel.singleTimeEvents().subscribe(
-                            callToActionDataObserver
-                    );
-                    if (!readerSlideViewModel.loadContent()) {
-                        readerViewModel.updateCurrentUiState(IAMReaderUIStates.CLOSED);
-                        return;
+                if (contentWebView != null) {
+                    if (readerSlideViewModel != null) {
+                        contentWebView.slideViewModel(readerSlideViewModel);
+                        contentWebView.checkIfClientIsSet();
+                        readerSlideViewModel.addSubscriber(
+                                IAMContentFragment.this
+                        );
+                        readerSlideViewModel.singleTimeEvents().subscribe(
+                                callToActionDataObserver
+                        );
+                        if (!readerSlideViewModel.loadContent()) {
+                            readerViewModel.updateCurrentUiState(IAMReaderUIStates.CLOSED);
+                            return;
+                        }
                     }
+                    if (readerState != null)
+                        setWebViewBackground();
+                } else {
+                    readerViewModel.updateCurrentUiState(IAMReaderUIStates.CLOSED);
                 }
-                if (readerState != null)
-                    setWebViewBackground();
             }
         });
     }

@@ -584,6 +584,8 @@ public class ReaderPageFragment extends Fragment {
     }
 
 
+    private boolean inflateError = false;
+
     private View createWebViewContainer(Context context) {
         LinearLayout webViewContainer = new LinearLayout(context);
         RelativeLayout.LayoutParams webViewContainerParams = new RelativeLayout.LayoutParams(
@@ -592,12 +594,18 @@ public class ReaderPageFragment extends Fragment {
         webViewContainer.setElevation(4);
         webViewContainer.setOrientation(LinearLayout.VERTICAL);
         webViewContainer.setLayoutParams(webViewContainerParams);
-        storiesView = new StoriesWebView(context);
-        storiesView.setId(R.id.ias_stories_view);
-        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
-                MATCH_PARENT, MATCH_PARENT);
-        storiesView.setLayoutParams(lp);
-        webViewContainer.addView(((StoriesWebView) storiesView));
+
+        try {
+            storiesView = new StoriesWebView(context);
+            storiesView.setId(R.id.ias_stories_view);
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                    MATCH_PARENT, MATCH_PARENT);
+            storiesView.setLayoutParams(lp);
+            webViewContainer.addView(((StoriesWebView) storiesView));
+        } catch (Exception e) {
+            inflateError = true;
+        }
+
         return webViewContainer;
     }
 
@@ -729,6 +737,12 @@ public class ReaderPageFragment extends Fragment {
     @Override
     public void onViewCreated(final @NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        if (inflateError) {
+            if (getParentFragment() instanceof StoriesContentFragment) {
+                ((StoriesContentFragment) getParentFragment()).forceFinish();
+            }
+            return;
+        }
         setOffsets(view);
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override

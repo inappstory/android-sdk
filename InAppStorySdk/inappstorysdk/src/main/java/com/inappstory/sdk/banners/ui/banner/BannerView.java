@@ -59,6 +59,11 @@ public class BannerView extends FrameLayout implements Observer<BannerState> {
         init(context);
     }
 
+    public BannerView(@NonNull Context context, BannerInit bannerInit) {
+        super(context);
+        bannerInit.onInitResult((init(context)));
+    }
+
     private IBannerViewModel bannerViewModel;
     private BannerWebView bannerWebView;
     private View backgroundView;
@@ -114,20 +119,28 @@ public class BannerView extends FrameLayout implements Observer<BannerState> {
     BannerState currentState;
 
     @SuppressLint("WrongViewCast")
-    private void init(Context context) {
-        View.inflate(context, R.layout.cs_banner_item, this);
+    private boolean init(Context context) {
+        boolean initSuccess = true;
+        try {
+            View.inflate(context, R.layout.cs_banner_item, this);
+        } catch (Exception e) {
+            initSuccess = false;
+            View.inflate(context, R.layout.cs_banner_inflate_error_layout, this);
+        }
         bannerContainer = findViewById(R.id.bannerContainer);
         bannerContainer.setCardBackgroundColor(Color.TRANSPARENT);
         bannerContainer.setCardElevation(0f);
         bannerContainer.setUseCompatPadding(false);
         loaderContainer = findViewById(R.id.loaderContainer);
-        bannerWebView = findViewById(R.id.contentWebView);
         backgroundView = findViewById(R.id.background);
-        bannerWebView.setHost(this);
         loaderContainer.addView(createLoader(context));
         loaderContainer.addView(createRefresh(context));
-        Log.e("BannerPagerAdapter", "initView");
-        bannerWebView.setBackgroundColor(Color.argb(1, 255, 255, 255));
+        bannerWebView = findViewById(R.id.contentWebView);
+        if (bannerWebView != null) {
+            bannerWebView.setHost(this);
+            bannerWebView.setBackgroundColor(Color.argb(1, 255, 255, 255));
+        }
+        return initSuccess;
     }
 
     public void setLoadingPlaceholder(View view) {
