@@ -1,17 +1,16 @@
 package com.inappstory.sdk.refactoring.stories.usecases;
 
 import com.inappstory.sdk.refactoring.core.utils.models.ResultCallback;
-import com.inappstory.sdk.refactoring.stories.data.local.StoryFeedDTO;
 import com.inappstory.sdk.refactoring.stories.repositories.IStoryRepository;
 
-public class GetFavoriteCovers {
+public class DislikeStory {
     private final IStoryRepository storyRepository;
 
-    public GetFavoriteCovers(IStoryRepository storyRepository) {
+    public DislikeStory(IStoryRepository storyRepository) {
         this.storyRepository = storyRepository;
     }
 
-    void invoke(ResultCallback<StoryFeedDTO> callback) {
-        this.storyRepository.getFavoriteCovers(callback);
+    void invoke(String storyId, boolean dislike, ResultCallback<Boolean> callback) {
+        this.storyRepository.dislikeStory(storyId, dislike, callback);
     }
 }

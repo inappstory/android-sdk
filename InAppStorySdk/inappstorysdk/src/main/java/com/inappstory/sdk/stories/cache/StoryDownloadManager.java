@@ -16,7 +16,7 @@ import com.inappstory.sdk.stories.api.models.ContentIdWithIndex;
 import com.inappstory.sdk.core.network.content.models.Image;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.core.network.content.models.Story;
-import com.inappstory.sdk.stories.api.models.StoryListType;
+import com.inappstory.sdk.refactoring.stories.data.network.NStoryListType;
 import com.inappstory.sdk.core.network.content.callbacks.LoadFavoritesCallback;
 import com.inappstory.sdk.core.network.content.callbacks.LoadStoriesCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.SimpleListCallback;
@@ -372,7 +372,7 @@ public class StoryDownloadManager {
 
                                 @Override
                                 public Type getType() {
-                                    return new StoryListType();
+                                    return new NStoryListType();
                                 }
 
                                 @Override

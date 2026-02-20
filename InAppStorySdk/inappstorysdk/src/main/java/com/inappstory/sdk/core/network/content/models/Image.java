@@ -5,6 +5,8 @@ import android.os.Parcelable;
 
 import com.inappstory.sdk.network.annotations.models.SerializedName;
 
+import java.util.Objects;
+
 public class Image implements Parcelable {
     public static final String TYPE_SMALL = "s";
     public static final String TYPE_MEDIUM = "m";
@@ -105,5 +107,28 @@ public class Image implements Parcelable {
                 ", type='" + type + '\'' +
                 ", expire=" + expire +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Image)) return false;
+        Image image = (Image) o;
+        return width == image.width &&
+                height == image.height &&
+                expire == image.expire &&
+                Objects.equals(url, image.url) &&
+                Objects.equals(type, image.type);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(
+                url,
+                width,
+                height,
+                type,
+                expire
+        );
     }
 }

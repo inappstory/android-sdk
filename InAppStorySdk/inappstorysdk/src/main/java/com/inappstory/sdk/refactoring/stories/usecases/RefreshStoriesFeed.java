@@ -4,14 +4,14 @@ import com.inappstory.sdk.refactoring.core.utils.models.ResultCallback;
 import com.inappstory.sdk.refactoring.stories.data.local.StoryFeedDTO;
 import com.inappstory.sdk.refactoring.stories.repositories.IStoryRepository;
 
-public class GetOnboardingStoriesFeed {
+public class RefreshStoriesFeed {
     private final IStoryRepository storyRepository;
 
-    public GetOnboardingStoriesFeed(IStoryRepository storyRepository) {
+    public RefreshStoriesFeed(IStoryRepository storyRepository) {
         this.storyRepository = storyRepository;
     }
 
     void invoke(StoryFeedParameters feedParameters, ResultCallback<StoryFeedDTO> callback) {
-        this.storyRepository.getOnboardingStoriesFeed(feedParameters, callback);
+        this.storyRepository.getStoriesFeed(feedParameters, false, callback);
     }
 }
