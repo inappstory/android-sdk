@@ -50,10 +50,28 @@ public class StoryLocalDataSource implements IStoryLocalDataSource {
     @Override
     public boolean addOrUpdateStoryCover(@NonNull StoryCoverDTO storyCover) {
         synchronized (contentLock) {
+            if (!favoriteCoversLoaded) return false;
             if (favoriteCovers.contains(storyCover)) return false;
             favoriteCovers.add(storyCover);
         }
         return true;
+    }
+
+    @Override
+    public boolean removeStoryCover(@NonNull String storyId) {
+        if (favoriteCoversLoaded) {
+            synchronized (contentLock) {
+                Iterator<StoryCoverDTO> coversIterator = favoriteCovers.iterator();
+                while (coversIterator.hasNext()) {
+                    StoryCoverDTO storyCover = coversIterator.next();
+                    if (storyCover != null && Objects.equals(Integer.toString(storyCover.id()), storyId)) {
+                        coversIterator.remove();
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     @Override
@@ -98,12 +116,12 @@ public class StoryLocalDataSource implements IStoryLocalDataSource {
                     storyDTO.like = storyListItemDTO.like();
                     storyDTO.favorite = storyListItemDTO.favorite();
                 }
-                StoryCoverDTO storyCoverDTO = new StoryListItemDTOToStoryCoverDTOMapper().convert(storyListItemDTO);
+               /* StoryCoverDTO storyCoverDTO = new StoryListItemDTOToStoryCoverDTOMapper().convert(storyListItemDTO);
                 if (storyListItemDTO.favorite() && !favoriteCovers.contains(storyCoverDTO)) {
                     favoriteCovers.add(storyCoverDTO);
                 } else if (!storyListItemDTO.favorite() && favoriteCovers.contains(storyCoverDTO)) {
                     favoriteCovers.remove(storyCoverDTO);
-                }
+                }*/
             }
         }
     }
@@ -112,6 +130,7 @@ public class StoryLocalDataSource implements IStoryLocalDataSource {
     public boolean updateFavoriteCovers(@NonNull List<StoryListItemDTO> stories) {
         boolean favoriteCoversUpdated = false;
         synchronized (contentLock) {
+            favoriteCoversLoaded = true;
             for (StoryListItemDTO storyListItemDTO : stories) {
                 StoryCoverDTO storyCoverDTO = new StoryListItemDTOToStoryCoverDTOMapper().convert(storyListItemDTO);
                 if (storyListItemDTO.favorite() && !favoriteCovers.contains(storyCoverDTO)) {
@@ -157,71 +176,54 @@ public class StoryLocalDataSource implements IStoryLocalDataSource {
 
     @Override
     public boolean likeDislikeStory(@NonNull String storyId, int likeValue) {
+        synchronized (contentLock) {
+            for (StoryListItemDTO listItemDTO : storyListItems.values()) {
+                if (storyId.equals(Integer.toString(listItemDTO.id())) && listItemDTO.like() != likeValue) {
+                    listItemDTO.like(likeValue);
+                    break;
+                }
+            }
+            for (StoryDTO storyDTO: stories.values()) {
+                if (storyId.equals(Integer.toString(storyDTO.id())) && storyDTO.like() != likeValue) {
+                    storyDTO.like(likeValue);
+                    return true;
+                }
+            }
+        }
         return false;
     }
 
     @Override
     public boolean addStoryToFavorite(@NonNull String storyId) {
-        if (favoriteCoversLoaded) {
-
+        synchronized (contentLock) {
+            StoryFeedDTO favFeed = feeds.get(favFeedKey);
+            if (favFeed == null || favFeed.storiesIds.contains(storyId)) return false;
+            favFeed.storiesIds.add(storyId);
         }
-        return false;
+        return true;
     }
 
     @Override
     public boolean removeStoryFromFavorite(@NonNull String storyId) {
         synchronized (contentLock) {
-            if (favoriteCoversLoaded) {
-                Iterator<StoryCoverDTO> coversIterator = favoriteCovers.iterator();
-                while (coversIterator.hasNext()) {
-                    StoryCoverDTO storyCover = coversIterator.next();
-                    if (storyCover != null && Objects.equals(Integer.toString(storyCover.id()), storyId))
-                        coversIterator.remove();
-                }
-            }
+            StoryFeedDTO favFeed = feeds.get(favFeedKey);
+            if (favFeed == null) return false;
+            return favFeed.storiesIds.remove(storyId);
         }
-
-        return false;
     }
 
     @Override
     public void removeAllFavorites() {
-
+        synchronized (contentLock) {
+            StoryFeedDTO favFeed = feeds.get(favFeedKey);
+            if (favFeed == null) return;
+            favFeed.storiesIds.clear();
+            favoriteCovers.clear();
+        }
     }
 
     @Override
     public Result<StoryDTO> getStoryById(@NonNull String storyId) {
         return null;
-    }
-
-    @Override
-    public void addStoryChangeSubscriber(@NonNull IStoryChangeSubscriber subscriber) {
-        Set<IStoryChangeSubscriber> tempStoryChangeSubscribers;
-        String storyId = subscriber.getStoryId();
-        synchronized (subscribersLock) {
-            tempStoryChangeSubscribers = storyChangeSubscribers.get(storyId);
-            if (tempStoryChangeSubscribers == null) {
-                tempStoryChangeSubscribers = new HashSet<>();
-                storyChangeSubscribers.put(storyId, tempStoryChangeSubscribers);
-            }
-        }
-        StoryDTO current;
-        synchronized (contentLock) {
-            current = stories.get(storyId);
-        }
-        if (tempStoryChangeSubscribers.add(subscriber)) {
-            if (current != null)
-                subscriber.onChange(current);
-        }
-    }
-
-    @Override
-    public void removeStoryChangeSubscriber(@NonNull IStoryChangeSubscriber subscriber) {
-        String storyId = subscriber.getStoryId();
-        synchronized (subscribersLock) {
-            if (storyChangeSubscribers.get(storyId) != null) {
-                storyChangeSubscribers.get(storyId).remove(subscriber);
-            }
-        }
     }
 }

@@ -17,6 +17,8 @@ public interface IStoryLocalDataSource {
 
     boolean addOrUpdateStoryCover(@NonNull StoryCoverDTO storyCover);
 
+    boolean removeStoryCover(@NonNull String storyId);
+
     boolean addOrUpdateStory(@NonNull StoryDTO story);
 
     void addOrUpdateStoryListItems(@NonNull List<StoryListItemDTO> story);
@@ -41,8 +43,4 @@ public interface IStoryLocalDataSource {
     void removeAllFavorites();
 
     Result<StoryDTO> getStoryById(@NonNull String storySlugOrId);
-
-    void addStoryChangeSubscriber(@NonNull IStoryChangeSubscriber subscriber);
-
-    void removeStoryChangeSubscriber(@NonNull IStoryChangeSubscriber subscriber);
 }

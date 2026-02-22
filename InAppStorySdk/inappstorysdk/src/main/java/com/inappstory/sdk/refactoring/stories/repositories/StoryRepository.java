@@ -25,6 +25,8 @@ public class StoryRepository implements IStoryRepository {
 
     private final IStoryLocalDataSource storyLocalDataSource;
     private final IStoryAPIDataSource storyAPIDataSource;
+    private final IStoryChangesSubscribersHolder changesSubscribersHolder =
+            new StoryChangesSubscribersHolder();
 
     public StoryRepository(IStoryLocalDataSource localDataSource, IStoryAPIDataSource apiDataSource) {
         this.storyAPIDataSource = apiDataSource;
@@ -44,17 +46,29 @@ public class StoryRepository implements IStoryRepository {
                     storyFeedResultCallback.error(new Error<>("Can't retrieve stories in feed " + feedParameters.feed()));
                 } else {
                     StoryFeedDTO feedDTO = new StoryFeedDTO();
-                    List<StoryListItemDTO> listItems = new ArrayList<>();
+                    List<StoryListItemDTO> updatedListItems = new ArrayList<>();
+                    boolean updateFavoriteCell = false;
                     for (NStory story : feed.stories) {
                         String storyId = Integer.toString(story.id);
                         if (feedDTO.storiesIds.contains(storyId)) continue;
                         feedDTO.storiesIds.add(storyId);
-                        listItems.add(new NStoryToStoryListItemDTOMapper().convert(story));
+                        StoryListItemDTO storyListItemDTO = new NStoryToStoryListItemDTOMapper().convert(story);
+                        if (storyLocalDataSource.addOrUpdateStoryListItem(storyListItemDTO)) {
+                            updatedListItems.add(storyListItemDTO);
+                        }
+                        if (storyListItemDTO.favorite()) {
+                            updateFavoriteCell |= storyLocalDataSource.addOrUpdateStoryCover(
+                                    new NStoryToStoryCoverDTOMapper().convert(story)
+                            );
+                        }
                     }
                     feedDTO.hasFavorite = feed.hasFavorite();
-                    storyLocalDataSource.addOrUpdateStoryListItems(listItems);
                     storyLocalDataSource.addOrUpdateStoriesFeed(feedParameters, feedDTO);
                     storyFeedResultCallback.success(feedDTO);
+                    for (StoryListItemDTO listItem : updatedListItems) {
+                        changesSubscribersHolder.notifyStoryListItemChange(listItem);
+                    }
+                    if (updateFavoriteCell) changesSubscribersHolder.notifyFavoriteCellChanges();
                 }
             }
 
