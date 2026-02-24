@@ -1,5 +1,6 @@
 package com.inappstory.sdk.refactoring.stories.repositories;
 
+import com.inappstory.sdk.refactoring.stories.IFavoriteFeedChangeSubscriber;
 import com.inappstory.sdk.refactoring.stories.IStoryCoverCellChangeSubscriber;
 import com.inappstory.sdk.refactoring.stories.IStoryListItemChangeSubscriber;
 import com.inappstory.sdk.refactoring.stories.data.local.StoryCoverDTO;
@@ -12,6 +13,8 @@ public interface IStoryChangesSubscribersHolder {
     void removeStoryChangeSubscriber(IStoryListItemChangeSubscriber subscriber);
     void addCoverCellChangeSubscriber(IStoryCoverCellChangeSubscriber subscriber);
     void removeCoverCellChangeSubscriber(IStoryCoverCellChangeSubscriber subscriber);
+    void addFavoriteFeedChangeSubscriber(IFavoriteFeedChangeSubscriber subscriber);
+    void removeFavoriteFeedChangeSubscriber(IFavoriteFeedChangeSubscriber subscriber);
     void notifyStoryListItemChange(StoryListItemDTO story);
     void notifyFavoriteCellChanges(List<StoryCoverDTO> covers);
     void notifyFavoriteFeedChanges(String storyId, boolean add);
