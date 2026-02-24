@@ -1,6 +1,8 @@
 package com.inappstory.sdk.game.reader.logger;
 
 import android.os.Handler;
+import android.text.TextUtils;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 
@@ -15,6 +17,8 @@ import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public abstract class AbstractGameLogger {
 
@@ -26,6 +30,8 @@ public abstract class AbstractGameLogger {
     protected final String consoleInfo = "consoleInfo";
     protected final String sdkError = "sdkError";
     protected final String sdkWarn = "sdkWarn";
+
+    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
 
     private final IASCore core;
 
@@ -83,15 +89,29 @@ public abstract class AbstractGameLogger {
         });
     }
 
-    public final void sendDebugLog(final String message) {
-        new Handler().post(new Runnable() {
-            @Override
-            public void run() {
-                core.logs().logSaver().saveLog(createBaseLog().type("debug").message(message));
-            }
-        });
-    }
+    List<String> multipleLogs = new ArrayList<>();
+    int lastType = -1;
 
+    public final void sendDebugLog(int type, final String message) {
+        if (type == 3 && multipleLogs.size() < 20) {
+            multipleLogs.add(message);
+        } else {
+            final String msg;
+            if (type == 3) {
+                msg = TextUtils.join(" *** ", multipleLogs);
+                multipleLogs.clear();
+            } else {
+                msg = message;
+            }
+            executorService.submit(new Runnable() {
+                @Override
+                public void run() {
+                    Log.e("DebugLog", msg);
+                    core.logs().logSaver().saveLog(createBaseLog().type("debug").message(msg));
+                }
+            });
+        }
+    }
 
 
     public final void stopQueue() {
@@ -105,7 +125,7 @@ public abstract class AbstractGameLogger {
     protected final GameLog createBaseLog() {
         return new GameLog(
                 gameInstanceId,
-                ((IASDataSettingsHolder)core.settingsAPI()).sessionIdOrEmpty(),
+                ((IASDataSettingsHolder) core.settingsAPI()).sessionIdOrEmpty(),
                 System.currentTimeMillis() / 1000,
                 launchTryNumber,
                 gameLoaded
