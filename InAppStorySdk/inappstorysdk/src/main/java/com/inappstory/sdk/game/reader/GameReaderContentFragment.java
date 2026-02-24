@@ -67,6 +67,7 @@ import com.inappstory.sdk.game.cache.FilePathAndContent;
 import com.inappstory.sdk.game.cache.SetGameLoggerCallback;
 import com.inappstory.sdk.game.cache.UseCaseCallback;
 import com.inappstory.sdk.game.cache.UseCaseWarnCallback;
+import com.inappstory.sdk.game.reader.logger.GameLog;
 import com.inappstory.sdk.game.ui.GameProgressLoader;
 import com.inappstory.sdk.game.utils.GameConstants;
 import com.inappstory.sdk.imageloader.CustomFileLoader;
@@ -1617,6 +1618,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         webView.post(new Runnable() {
             @Override
             public void run() {
+                manager.logger.sendDebugLog("userAccelerationSensorCbActivate();");
                 webView.evaluateJavascript("userAccelerationSensorCbActivate();", null);
             }
         });
@@ -1627,6 +1629,10 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         webView.post(new Runnable() {
             @Override
             public void run() {
+                manager.logger.sendDebugLog("userAccelerationSensorCbError("
+                        + type + ","
+                        + message + ");"
+                );
                 webView.evaluateJavascript(
                         "userAccelerationSensorCbError("
                                 + type + ","
@@ -1642,6 +1648,11 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         webView.post(new Runnable() {
             @Override
             public void run() {
+                manager.logger.sendDebugLog("userAccelerationSensorCbRead("
+                        + x + ","
+                        + y + ","
+                        + z + ");"
+                );
                 webView.evaluateJavascript(
                         "userAccelerationSensorCbRead("
                                 + x + ","

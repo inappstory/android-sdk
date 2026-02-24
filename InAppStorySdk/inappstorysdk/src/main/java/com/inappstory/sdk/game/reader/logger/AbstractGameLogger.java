@@ -83,6 +83,17 @@ public abstract class AbstractGameLogger {
         });
     }
 
+    public final void sendDebugLog(final String message) {
+        new Handler().post(new Runnable() {
+            @Override
+            public void run() {
+                core.logs().logSaver().saveLog(createBaseLog().type("debug").message(message));
+            }
+        });
+    }
+
+
+
     public final void stopQueue() {
         core.logs().logSender().stop();
     }

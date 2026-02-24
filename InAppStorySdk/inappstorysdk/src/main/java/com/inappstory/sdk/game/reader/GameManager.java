@@ -140,6 +140,7 @@ public class GameManager {
     public void initUserAccelerationSensor(String options) {
         GameAcceleratorOptions gameAcceleratorOptions =
                 JsonParser.fromJson(options, GameAcceleratorOptions.class);
+        logger.sendDebugLog("initUserAccelerationSensor(" + options + ")");
         core.acceleratorUtils().init(
                 gameAcceleratorOptions.frequency,
                 new IAcceleratorInitCallback() {
@@ -163,12 +164,14 @@ public class GameManager {
 
     @JavascriptInterface
     public void startUserAccelerationSensor() {
+        logger.sendDebugLog("startUserAccelerationSensor()");
         if (host != null)
             core.acceleratorUtils().subscribe(host);
     }
 
     @JavascriptInterface
     public void stopUserAccelerationSensor() {
+        logger.sendDebugLog("stopUserAccelerationSensor()");
         if (host != null)
             core.acceleratorUtils().unsubscribe(host);
     }
