@@ -164,7 +164,7 @@ public interface ApiInterface {
             @ReplaceHeader(HeadersKeys.ACCEPT_LANGUAGE) String lang
     );
 
-    @GET("v2/feed/{feed}/onboarding")
+    @POST("v2/feed/{feed}/onboarding")
     Request getOnboardingFeed(
             @Path("feed") String feed,
             @Query("test") String test,

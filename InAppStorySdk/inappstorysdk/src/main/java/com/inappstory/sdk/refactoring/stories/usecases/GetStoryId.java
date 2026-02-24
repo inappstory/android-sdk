@@ -4,14 +4,14 @@ import com.inappstory.sdk.refactoring.core.utils.models.ResultCallback;
 import com.inappstory.sdk.refactoring.stories.data.local.StoryDTO;
 import com.inappstory.sdk.refactoring.stories.repositories.IStoryRepository;
 
-public class GetStoryBySlugOrId {
+public class GetStoryId {
     private final IStoryRepository storyRepository;
 
-    public GetStoryBySlugOrId(IStoryRepository storyRepository) {
+    public GetStoryId(IStoryRepository storyRepository) {
         this.storyRepository = storyRepository;
     }
 
-    void invoke(String storySlugOrId, boolean once, ResultCallback<StoryDTO> callback) {
-        this.storyRepository.getStoryBySlugOrId(storySlugOrId, once, callback);
+    void invoke(String storySlugOrId, ResultCallback<StoryDTO> callback) {
+        this.storyRepository.getStoryBySlugOrId(storySlugOrId, false, callback);
     }
 }

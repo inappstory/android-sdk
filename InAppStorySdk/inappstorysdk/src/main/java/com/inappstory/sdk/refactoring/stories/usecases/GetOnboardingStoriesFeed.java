@@ -11,7 +11,7 @@ public class GetOnboardingStoriesFeed {
         this.storyRepository = storyRepository;
     }
 
-    void invoke(StoryFeedParameters feedParameters, ResultCallback<StoryFeedDTO> callback) {
-        this.storyRepository.getOnboardingStoriesFeed(feedParameters, callback);
+    void invoke(StoryFeedParameters feedParameters, int limit, ResultCallback<StoryFeedDTO> callback) {
+        this.storyRepository.getOnboardingStoriesFeed(feedParameters, limit, callback);
     }
 }

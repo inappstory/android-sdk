@@ -26,6 +26,7 @@ public interface IStoryRepository {
 
     void getOnboardingStoriesFeed(
             StoryFeedParameters feedParameters,
+            int limit,
             ResultCallback<StoryFeedDTO> storyFeedResultCallback
     );
 
@@ -53,6 +54,9 @@ public interface IStoryRepository {
 
     void getStoryBySlugOrId(
             String storySlugOrId,
+            boolean once,
             ResultCallback<StoryDTO> storyByIdResultCallback
     );
+
+    void destroy();
 }

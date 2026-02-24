@@ -5,37 +5,30 @@ import androidx.annotation.NonNull;
 import com.inappstory.sdk.refactoring.core.utils.models.Error;
 import com.inappstory.sdk.refactoring.core.utils.models.Result;
 import com.inappstory.sdk.refactoring.core.utils.models.Success;
-import com.inappstory.sdk.refactoring.stories.IStoryChangeSubscriber;
 import com.inappstory.sdk.refactoring.stories.data.local.StoryCoverDTO;
 import com.inappstory.sdk.refactoring.stories.data.local.StoryDTO;
 import com.inappstory.sdk.refactoring.stories.data.local.StoryFeedDTO;
 import com.inappstory.sdk.refactoring.stories.data.local.StoryListItemDTO;
-import com.inappstory.sdk.refactoring.stories.data.mappers.StoryListItemDTOToStoryCoverDTOMapper;
-import com.inappstory.sdk.refactoring.stories.usecases.StoryFavoriteFeedParameters;
 import com.inappstory.sdk.refactoring.stories.usecases.StoryFeedParameters;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 
 public class StoryLocalDataSource implements IStoryLocalDataSource {
 
     private final List<StoryCoverDTO> favoriteCovers = new ArrayList<>();
     private boolean favoriteCoversLoaded = false;
     private final Map<String, StoryListItemDTO> storyListItems = new HashMap<>();
-    private final StoryFeedParameters favFeedKey =
-            new StoryFavoriteFeedParameters();
     private final Map<String, StoryDTO> stories = new HashMap<>();
     private final Map<StoryFeedParameters, StoryFeedDTO> feeds = new HashMap<>();
     private final Object contentLock = new Object();
 
     public StoryLocalDataSource() {
-        feeds.put(favFeedKey, null);
+
     }
 
     @Override
@@ -58,6 +51,14 @@ public class StoryLocalDataSource implements IStoryLocalDataSource {
     }
 
     @Override
+    public void setStoryCovers(@NonNull List<StoryCoverDTO> storyCovers) {
+        synchronized (contentLock) {
+            favoriteCovers.clear();
+            favoriteCovers.addAll(storyCovers);
+        }
+    }
+
+    @Override
     public boolean removeStoryCover(@NonNull String storyId) {
         if (favoriteCoversLoaded) {
             synchronized (contentLock) {
@@ -72,6 +73,13 @@ public class StoryLocalDataSource implements IStoryLocalDataSource {
             }
         }
         return false;
+    }
+
+    @Override
+    public List<StoryCoverDTO> getFavoriteCovers() {
+        synchronized (contentLock) {
+            return favoriteCovers;
+        }
     }
 
     @Override
@@ -105,45 +113,6 @@ public class StoryLocalDataSource implements IStoryLocalDataSource {
 
     }*/
 
-    @Override
-    public void addOrUpdateStoryListItems(@NonNull List<StoryListItemDTO> stories) {
-        synchronized (contentLock) {
-            for (StoryListItemDTO storyListItemDTO : stories) {
-                String key = Integer.toString(storyListItemDTO.id());
-                storyListItems.put(key, storyListItemDTO);
-                StoryDTO storyDTO = this.stories.get(key);
-                if (storyDTO != null) {
-                    storyDTO.like = storyListItemDTO.like();
-                    storyDTO.favorite = storyListItemDTO.favorite();
-                }
-               /* StoryCoverDTO storyCoverDTO = new StoryListItemDTOToStoryCoverDTOMapper().convert(storyListItemDTO);
-                if (storyListItemDTO.favorite() && !favoriteCovers.contains(storyCoverDTO)) {
-                    favoriteCovers.add(storyCoverDTO);
-                } else if (!storyListItemDTO.favorite() && favoriteCovers.contains(storyCoverDTO)) {
-                    favoriteCovers.remove(storyCoverDTO);
-                }*/
-            }
-        }
-    }
-
-    @Override
-    public boolean updateFavoriteCovers(@NonNull List<StoryListItemDTO> stories) {
-        boolean favoriteCoversUpdated = false;
-        synchronized (contentLock) {
-            favoriteCoversLoaded = true;
-            for (StoryListItemDTO storyListItemDTO : stories) {
-                StoryCoverDTO storyCoverDTO = new StoryListItemDTOToStoryCoverDTOMapper().convert(storyListItemDTO);
-                if (storyListItemDTO.favorite() && !favoriteCovers.contains(storyCoverDTO)) {
-                    favoriteCovers.add(storyCoverDTO);
-                    favoriteCoversUpdated = true;
-                } else if (!storyListItemDTO.favorite() && favoriteCovers.contains(storyCoverDTO)) {
-                    favoriteCovers.remove(storyCoverDTO);
-                    favoriteCoversUpdated = true;
-                }
-            }
-        }
-        return favoriteCoversUpdated;
-    }
 
     @Override
     public boolean addOrUpdateStoryListItem(@NonNull StoryListItemDTO story) {
@@ -162,16 +131,6 @@ public class StoryLocalDataSource implements IStoryLocalDataSource {
             this.feeds.put(feedParameters, feed);
         }
         return true;
-    }
-
-    @Override
-    public Result<List<StoryCoverDTO>> getFavoriteCovers() {
-        synchronized (contentLock) {
-            if (favoriteCoversLoaded)
-                return new Success<>(favoriteCovers);
-            else
-                return new Error<>("Favorite covers not loaded");
-        }
     }
 
     @Override
@@ -194,30 +153,8 @@ public class StoryLocalDataSource implements IStoryLocalDataSource {
     }
 
     @Override
-    public boolean addStoryToFavorite(@NonNull String storyId) {
-        synchronized (contentLock) {
-            StoryFeedDTO favFeed = feeds.get(favFeedKey);
-            if (favFeed == null || favFeed.storiesIds.contains(storyId)) return false;
-            favFeed.storiesIds.add(storyId);
-        }
-        return true;
-    }
-
-    @Override
-    public boolean removeStoryFromFavorite(@NonNull String storyId) {
-        synchronized (contentLock) {
-            StoryFeedDTO favFeed = feeds.get(favFeedKey);
-            if (favFeed == null) return false;
-            return favFeed.storiesIds.remove(storyId);
-        }
-    }
-
-    @Override
     public void removeAllFavorites() {
         synchronized (contentLock) {
-            StoryFeedDTO favFeed = feeds.get(favFeedKey);
-            if (favFeed == null) return;
-            favFeed.storiesIds.clear();
             favoriteCovers.clear();
         }
     }
@@ -225,5 +162,19 @@ public class StoryLocalDataSource implements IStoryLocalDataSource {
     @Override
     public Result<StoryDTO> getStoryById(@NonNull String storyId) {
         return null;
+    }
+
+    @Override
+    public Result<StoryListItemDTO> getStoryListItemById(@NonNull String storyId) {
+        synchronized (contentLock) {
+            StoryListItemDTO storyListItemDTO = this.storyListItems.get(storyId);
+            if (storyListItemDTO == null) return new Error<>("No local item with id: " + storyId);
+            else return new Success<>(storyListItemDTO);
+        }
+    }
+
+    @Override
+    public void destroy() {
+
     }
 }

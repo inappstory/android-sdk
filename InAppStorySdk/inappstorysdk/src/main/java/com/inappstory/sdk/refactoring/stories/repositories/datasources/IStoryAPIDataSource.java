@@ -51,7 +51,9 @@ public interface IStoryAPIDataSource {
             ResultCallback<Void> removeAllFavoritesCallback
     );
 
-    Result<NStory> getStoryBySlugOrId(
-            String storySlugOrId
+    void getStoryBySlugOrId(
+            String storySlugOrId,
+            boolean once,
+            ResultCallback<NStory> storyResultCallback
     );
 }

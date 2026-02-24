@@ -5,6 +5,7 @@ import com.inappstory.sdk.core.network.content.models.Feed;
 import com.inappstory.sdk.core.network.content.models.Story;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.network.models.RequestLocalParameters;
+import com.inappstory.sdk.network.models.Response;
 import com.inappstory.sdk.refactoring.core.utils.models.Error;
 import com.inappstory.sdk.refactoring.core.utils.models.Error424;
 import com.inappstory.sdk.refactoring.core.utils.models.Result;
@@ -13,6 +14,8 @@ import com.inappstory.sdk.refactoring.core.utils.models.Success;
 import com.inappstory.sdk.refactoring.core.utils.models.TimeoutError;
 import com.inappstory.sdk.refactoring.stories.data.network.NFeed;
 import com.inappstory.sdk.refactoring.stories.data.network.NStory;
+import com.inappstory.sdk.refactoring.stories.data.network.NStoryCover;
+import com.inappstory.sdk.refactoring.stories.data.network.NStoryCoverListType;
 import com.inappstory.sdk.refactoring.stories.usecases.StoryFeedParameters;
 import com.inappstory.sdk.refactoring.stories.data.network.NStoryListType;
 import com.inappstory.sdk.stories.api.models.TargetingBodyObject;
@@ -116,7 +119,7 @@ public class StoryAPIDataSource implements IStoryAPIDataSource {
     }
 
     @Override
-    public void getFavoriteCovers(ResultCallback<List<NStory>> storyFeedResultCallback) {
+    public void getFavoriteCovers(ResultCallback<List<NStoryCover>> storyFeedResultCallback) {
         core.network().enqueue(
                 core.network().getApi().getStories(
                         core.projectSettingsAPI().testKey(),
@@ -128,15 +131,15 @@ public class StoryAPIDataSource implements IStoryAPIDataSource {
                         requestLocalParameters.sessionId(),
                         requestLocalParameters.locale()
                 ),
-                new NetworkCallback<List<NStory>>() {
+                new NetworkCallback<List<NStoryCover>>() {
                     @Override
-                    public void onSuccess(List<NStory> response) {
+                    public void onSuccess(List<NStoryCover> response) {
                         storyFeedResultCallback.invoke(new Success<>(response));
                     }
 
                     @Override
                     public Type getType() {
-                        return new NStoryListType();
+                        return new NStoryCoverListType();
                     }
 
                     @Override
@@ -205,17 +208,74 @@ public class StoryAPIDataSource implements IStoryAPIDataSource {
 
     @Override
     public void likeStory(String storyId, boolean like, ResultCallback<Boolean> likeResultCallback) {
+        core.network().enqueue(
+                core.network().getApi().storyLike(storyId, like ? 1 : 0),
+                new NetworkCallback<Response>() {
+                    @Override
+                    public void onSuccess(Response response) {
+                        likeResultCallback.success(like);
+                    }
 
+
+                    @Override
+                    public void errorDefault(String message) {
+                        likeResultCallback.error(new Error<>(message));
+                    }
+
+                    @Override
+                    public Type getType() {
+                        return null;
+                    }
+                }
+        );
     }
 
     @Override
     public void dislikeStory(String storyId, boolean dislike, ResultCallback<Boolean> dislikeResultCallback) {
+        core.network().enqueue(
+                core.network().getApi().storyLike(storyId, dislike ? -1 : 0),
+                new NetworkCallback<Response>() {
+                    @Override
+                    public void onSuccess(Response response) {
+                        dislikeResultCallback.success(dislike);
+                    }
 
+
+                    @Override
+                    public void errorDefault(String message) {
+                        dislikeResultCallback.error(new Error<>(message));
+                    }
+
+                    @Override
+                    public Type getType() {
+                        return null;
+                    }
+                }
+        );
     }
 
     @Override
     public void favoriteStory(String storyId, boolean favorite, ResultCallback<Boolean> favoriteResultCallback) {
+        core.network().enqueue(
+                core.network().getApi().storyFavorite(storyId, favorite ? 1 : 0),
+                new NetworkCallback<Response>() {
+                    @Override
+                    public void onSuccess(Response response) {
+                        favoriteResultCallback.success(favorite);
+                    }
 
+
+                    @Override
+                    public void errorDefault(String message) {
+                        favoriteResultCallback.error(new Error<>(message));
+                    }
+
+                    @Override
+                    public Type getType() {
+                        return null;
+                    }
+                }
+        );
     }
 
     @Override
@@ -224,7 +284,38 @@ public class StoryAPIDataSource implements IStoryAPIDataSource {
     }
 
     @Override
-    public Result<NStory> getStoryBySlugOrId(String storySlugOrId) {
-        return new Error<>(null);
+    public void getStoryBySlugOrId(
+            String storySlugOrId,
+            boolean once,
+            ResultCallback<NStory> storyResultCallback
+    ) {
+        core.network().enqueue(
+                core.network().getApi().getStoryById(
+                        storySlugOrId,
+                        core.projectSettingsAPI().testKey(),
+                        once ? 1 : 0,
+                        1,
+                        "slides,layout",
+                        requestLocalParameters.userId(),
+                        requestLocalParameters.sessionId(),
+                        requestLocalParameters.locale()
+                ),
+                new NetworkCallback<NStory>() {
+                    @Override
+                    public void onSuccess(NStory response) {
+                        storyResultCallback.success(response);
+                    }
+
+                    @Override
+                    public Type getType() {
+                        return NStory.class;
+                    }
+
+                    @Override
+                    public void errorDefault(String message) {
+                        storyResultCallback.error(new Error<>(message));
+                    }
+                }
+        );
     }
 }
