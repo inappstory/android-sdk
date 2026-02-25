@@ -112,6 +112,8 @@ public class StoryChangesSubscribersHolder implements IStoryChangesSubscribersHo
     public void destroy() {
         synchronized (subLock) {
             listSubscribers.clear();
+            favoriteFeedChangeSubscribers.clear();
+            coverCellSubscribers.clear();
         }
     }
 }

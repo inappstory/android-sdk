@@ -1,4 +1,4 @@
-package com.inappstory.sdk.refactoring.session.repositories.datasources.local;
+package com.inappstory.sdk.refactoring.session.repositories.datasources;
 
 import com.inappstory.sdk.refactoring.session.data.local.SessionDTO;
 
