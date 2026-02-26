@@ -6,17 +6,19 @@ import com.inappstory.sdk.refactoring.session.data.local.SessionDTO;
 
 public interface ISessionRepository {
     void getSession(
-            ResultCallback<SessionDTO> closeSessionCallback
+            ResultCallback<SessionDTO> getSessionCallback
     );
 
     void updateSession(
-            ResultCallback<Void> updateSessionCallback);
+            ResultCallback<Void> updateSessionCallback
+    );
 
     void closeSession(
+            UniqueSessionParameters sessionParameters,
             ResultCallback<Void> closeSessionCallback
     );
 
-    void setCurrentSessionParameters(
+    void newSessionParameters(
             UniqueSessionParameters sessionParameters,
             ResultCallback<Void> closeSessionCallback
     );

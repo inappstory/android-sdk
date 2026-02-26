@@ -3,27 +3,28 @@ package com.inappstory.sdk.refactoring.stories.usecases;
 import com.inappstory.sdk.refactoring.core.utils.models.ResultCallback;
 import com.inappstory.sdk.refactoring.core.utils.models.UseCaseWithSession;
 import com.inappstory.sdk.refactoring.session.repositories.ISessionRepository;
+import com.inappstory.sdk.refactoring.stories.data.local.StoryDTO;
 import com.inappstory.sdk.refactoring.stories.repositories.IStoryRepository;
 
-public class FavoriteStory extends UseCaseWithSession<Boolean> {
+public class GetStoryById extends UseCaseWithSession<StoryDTO> {
     private final IStoryRepository storyRepository;
-    private final String storyId;
-    private final boolean favorite;
+    private final String storySlugOrId;
+    private final boolean once;
 
-    public FavoriteStory(
-            IStoryRepository storyRepository,
+    protected GetStoryById(
             ISessionRepository sessionRepository,
-            String storyId,
-            boolean favorite
+            IStoryRepository storyRepository,
+            String storySlugOrId,
+            boolean once
     ) {
         super(sessionRepository);
         this.storyRepository = storyRepository;
-        this.storyId = storyId;
-        this.favorite = favorite;
+        this.storySlugOrId = storySlugOrId;
+        this.once = once;
     }
 
     @Override
-    protected void invokeWithSession(ResultCallback<Boolean> callback) {
-        this.storyRepository.favoriteStory(storyId, favorite, callback);
+    protected void invokeWithSession(ResultCallback<StoryDTO> callback) {
+        this.storyRepository.getStoryBySlugOrId(storySlugOrId, false, callback);
     }
 }

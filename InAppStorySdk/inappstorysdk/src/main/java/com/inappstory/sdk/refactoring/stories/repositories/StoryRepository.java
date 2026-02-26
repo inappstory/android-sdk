@@ -1,5 +1,7 @@
 package com.inappstory.sdk.refactoring.stories.repositories;
 
+import com.inappstory.sdk.core.api.IASStatisticProfiling;
+import com.inappstory.sdk.core.utils.IConnectionCheck;
 import com.inappstory.sdk.refactoring.core.utils.models.Error;
 import com.inappstory.sdk.refactoring.core.utils.models.Result;
 import com.inappstory.sdk.refactoring.core.utils.models.ResultCallback;
@@ -27,11 +29,18 @@ public class StoryRepository implements IStoryRepository {
 
     private final IStoryLocalDataSource storyLocalDataSource;
     private final IStoryAPIDataSource storyAPIDataSource;
-    private final IStoryChangesSubscribersHolder changesSubscribersHolder =
-            new StoryChangesSubscribersHolder();
+    private final IASStatisticProfiling profiling;
+    private final IStoryChangesSubscribersHolder changesSubscribersHolder;
 
-    public StoryRepository(IStoryLocalDataSource localDataSource, IStoryAPIDataSource apiDataSource) {
+    public StoryRepository(
+            IStoryLocalDataSource localDataSource,
+            IStoryAPIDataSource apiDataSource,
+            IASStatisticProfiling profiling,
+            IStoryChangesSubscribersHolder changesSubscribersHolder
+    ) {
+        this.changesSubscribersHolder = changesSubscribersHolder;
         this.storyAPIDataSource = apiDataSource;
+        this.profiling = profiling;
         this.storyLocalDataSource = localDataSource;
     }
 

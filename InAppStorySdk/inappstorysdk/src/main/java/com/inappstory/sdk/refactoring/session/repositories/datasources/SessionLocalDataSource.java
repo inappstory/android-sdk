@@ -10,9 +10,15 @@ public class SessionLocalDataSource {
 
     public void removeSession(String sessionId) {
         synchronized (lock) {
-            if (session != null && Objects.equals(session.sessionId, sessionId)) {
+            if (session != null && Objects.equals(session.sessionId(), sessionId)) {
                 session = null;
             }
+        }
+    }
+
+    public void setSession(SessionDTO session) {
+        synchronized (lock) {
+           this.session = session;
         }
     }
 

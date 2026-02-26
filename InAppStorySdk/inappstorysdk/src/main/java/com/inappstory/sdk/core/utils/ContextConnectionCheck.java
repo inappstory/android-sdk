@@ -7,12 +7,18 @@ import android.net.NetworkCapabilities;
 import android.net.NetworkInfo;
 import android.os.Build;
 
-public class ConnectionCheck {
+public class ContextConnectionCheck implements IConnectionCheck {
+
+    private final Context context;
+
+    public ContextConnectionCheck(Context context) {
+        this.context = context;
+    }
 
     public void check(
-            Context context,
-            ConnectionCheckCallback callback
+            SimpleConnectionCheckCallback callback
     ) {
+        if (context == null) return;
         ConnectivityManager connectivityManager = (ConnectivityManager) context
                 .getSystemService(Context.CONNECTIVITY_SERVICE);
         boolean result = false;

@@ -49,6 +49,7 @@ import com.inappstory.sdk.core.dataholders.IContentHolder;
 import com.inappstory.sdk.core.dataholders.IStoriesListVMHolder;
 import com.inappstory.sdk.core.dataholders.StoriesListVMHolder;
 import com.inappstory.sdk.core.ui.screens.ScreensManager;
+import com.inappstory.sdk.core.utils.ContextConnectionCheck;
 import com.inappstory.sdk.domain.IWidgetsViewModels;
 import com.inappstory.sdk.domain.WidgetsViewModels;
 import com.inappstory.sdk.network.NetworkClient;
@@ -96,9 +97,11 @@ public class IASCoreImpl implements IASCore {
     private final IASAssetsHolder assetsHolder;
     private final IASLimitsHolder limitsHolder;
     private final CancellationTokenPool cancellationTokenPool;
+    private final ContextConnectionCheck connectionCheck;
 
     public IASCoreImpl(Context context) {
         this.context = context;
+        this.connectionCheck = new ContextConnectionCheck(context);
         cancellationTokenPool = new CancellationTokenPool();
         widgetsViewModels = new WidgetsViewModels(this);
         exceptionManager = new ExceptionManager(this);
@@ -154,6 +157,11 @@ public class IASCoreImpl implements IASCore {
     @Override
     public Context appContext() {
         return context;
+    }
+
+    @Override
+    public ContextConnectionCheck connectionChecker() {
+        return connectionCheck;
     }
 
     @Override
