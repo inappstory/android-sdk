@@ -57,7 +57,7 @@ public class SessionRepository implements ISessionRepository {
         if (localSession == null) {
             getRemoteSession();
         } else {
-            getSessionSuccess(localSession);
+            invokeGetSessionCallbacksWithSuccess(localSession);
         }
     }
 
@@ -67,7 +67,7 @@ public class SessionRepository implements ISessionRepository {
             sessionParameters = currentParameters;
         }
         if (sessionParameters == null) {
-            getSessionError(new Error<>("Wrong session parameters"));
+            invokeGetSessionCallbacksWithError(new Error<>("Wrong session parameters"));
             return;
         }
         ResultCallback<NSession> callback = new ResultCallback<NSession>() {
@@ -84,19 +84,20 @@ public class SessionRepository implements ISessionRepository {
                     latestSessionId = sessionDTO.sessionId();
                     latestDeviceId = ((IASDataSettingsHolder) core.settingsAPI()).deviceId();
                 }
+                subscribersHolder.notifyNewSession(sessionDTO);
                 sessionLocalDataSource.setSession(sessionDTO);
-                getSessionSuccess(sessionDTO);
+                invokeGetSessionCallbacksWithSuccess(sessionDTO);
             }
 
             @Override
             public void error(Error<NSession> result) {
-                getSessionError(new NoSessionError<>());
+                invokeGetSessionCallbacksWithError(new NoSessionError<>());
             }
         };
         sessionAPIDataSource.getSession(sessionParameters, callback);
     }
 
-    private void getSessionSuccess(SessionDTO sessionDTO) {
+    private void invokeGetSessionCallbacksWithSuccess(SessionDTO sessionDTO) {
         List<ResultCallback<SessionDTO>> callbacks;
         synchronized (getSessionLock) {
             callbacks = new ArrayList<>(getSessionCallbacks);
@@ -108,7 +109,7 @@ public class SessionRepository implements ISessionRepository {
         }
     }
 
-    private void getSessionError(Error error) {
+    private void invokeGetSessionCallbacksWithError(Error error) {
         List<ResultCallback<SessionDTO>> callbacks;
         synchronized (getSessionLock) {
             callbacks = new ArrayList<>(getSessionCallbacks);
