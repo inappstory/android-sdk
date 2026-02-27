@@ -680,6 +680,7 @@ public class StoriesContentFragment extends Fragment
     public boolean onBackPressed() {
         InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
         if (inAppStoryManager == null) return false;
+        if (readerManager == null) return false;
         IReaderContent story = inAppStoryManager.iasCore().contentHolder()
                 .readerContent()
                 .getByIdAndType(
