@@ -455,7 +455,8 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
                     ((IOpenInAppMessageReader) openReader).onOpenInFragment(
                             parentContainerFM,
                             containerId,
-                            inAppMessageScreenActions
+                            inAppMessageScreenActions,
+                            inAppMessageViewController
                     );
                 } else if (frameLayout != null) {
                     BaseIAMScreen iamScreen = ((IOpenInAppMessageReader) openReader).onOpenInLayout(

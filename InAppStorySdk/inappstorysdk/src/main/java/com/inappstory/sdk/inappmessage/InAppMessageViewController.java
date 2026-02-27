@@ -1,16 +1,17 @@
 package com.inappstory.sdk.inappmessage;
 
+import com.inappstory.sdk.core.ui.screens.inappmessagereader.BaseIAMScreen;
 import com.inappstory.sdk.inappmessage.domain.reader.IAMViewController;
 import com.inappstory.sdk.inappmessage.ui.reader.InAppMessageMainView;
 
 public final class InAppMessageViewController implements IAMViewController {
-    InAppMessageMainView inAppMessageMainView = null;
+    BaseIAMScreen inAppMessageMainView = null;
 
-    public void subscribeView(InAppMessageMainView inAppMessageMainView) {
+    public void subscribeView(BaseIAMScreen inAppMessageMainView) {
         this.inAppMessageMainView = inAppMessageMainView;
     }
 
-    public void unsubscribeView(InAppMessageMainView inAppMessageMainView) {
+    public void unsubscribeView(BaseIAMScreen inAppMessageMainView) {
         if (this.inAppMessageMainView == inAppMessageMainView) {
             this.inAppMessageMainView = null;
         }

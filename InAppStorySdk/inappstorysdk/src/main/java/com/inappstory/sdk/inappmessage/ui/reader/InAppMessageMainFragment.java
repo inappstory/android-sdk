@@ -24,6 +24,7 @@ import com.inappstory.sdk.core.CancellationTokenWithStatus;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.ui.screens.inappmessagereader.BaseIAMScreen;
+import com.inappstory.sdk.inappmessage.InAppMessageViewController;
 import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderLoadStates;
 import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderLoaderStates;
 import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderState;
@@ -50,9 +51,17 @@ public class InAppMessageMainFragment extends Fragment implements Observer<IAMRe
     private boolean contentIsPreloaded;
     private InAppMessageAppearance appearance = new InAppMessageUndefinedSettings();
     private IAMContentContainer contentContainer;
+    InAppMessageViewController controller;
+
+    public void setController(InAppMessageViewController controller) {
+        this.controller = controller;
+    }
 
     @Override
     public void onDestroyView() {
+        if (controller != null) {
+            controller.unsubscribeView(this);
+        }
         if (readerViewModel != null) {
             readerViewModel.removeSubscriber(InAppMessageMainFragment.this);
             readerViewModel.clear();
@@ -202,6 +211,9 @@ public class InAppMessageMainFragment extends Fragment implements Observer<IAMRe
     ) {
         super.onViewCreated(view, savedInstanceState);
         if (readerViewModel == null) return;
+        if (controller != null) {
+            controller.subscribeView(this);
+        }
         if (!contentIsPreloaded) {
             readerViewModel.updateCurrentUiState(IAMReaderUIStates.OPENING);
             readerViewModel.updateCurrentLoaderState(IAMReaderLoaderStates.LOADING);
