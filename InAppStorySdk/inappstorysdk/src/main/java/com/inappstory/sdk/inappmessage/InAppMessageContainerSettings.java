@@ -5,6 +5,8 @@ import android.widget.FrameLayout;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.FragmentManager;
 
+import com.inappstory.sdk.inappmessage.domain.reader.IAMViewController;
+
 public class InAppMessageContainerSettings {
     private int containerId = 0;
     private FragmentManager fragmentManager = null;

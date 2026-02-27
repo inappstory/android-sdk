@@ -88,11 +88,15 @@ public class IASInAppMessageImpl implements IASInAppMessage {
                 screenActions.readerOpenError("In-app messages are unavailable for anonymous mode");
             return;
         }
+        InAppMessageViewController viewController = null;
+        if (containerProvider.layoutController() instanceof InAppMessageViewController)
+            viewController = (InAppMessageViewController) containerProvider.layoutController();
         core.screensManager().openScreen(
                 null,
                 new LaunchIAMScreenStrategy(core)
                         .cancellationToken(cancellationToken)
                         .containerProvider(containerProvider)
+                        .inAppMessageViewController(viewController)
                         .inAppMessageOpenSettings(openData)
                         .inAppMessageScreenActions(screenActions)
         );
