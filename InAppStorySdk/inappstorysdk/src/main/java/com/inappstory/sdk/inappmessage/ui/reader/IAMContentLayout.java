@@ -90,6 +90,7 @@ public class IAMContentLayout extends FrameLayout implements Observer<IAMReaderS
             );
             return;
         }
+        initialized = true;
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
