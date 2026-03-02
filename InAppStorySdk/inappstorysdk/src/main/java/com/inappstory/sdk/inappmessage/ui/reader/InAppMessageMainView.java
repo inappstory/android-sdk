@@ -46,12 +46,14 @@ public class InAppMessageMainView extends FrameLayout implements Observer<IAMRea
     private IAMReaderUIStates currentUIState = IAMReaderUIStates.CLOSED;
     private IIAMReaderViewModel readerViewModel;
     private boolean contentIsPreloaded;
+    private boolean initialized;
     private InAppMessageAppearance appearance = new InAppMessageUndefinedSettings();
     private IAMContentContainer contentContainer;
     InAppMessageViewController controller;
 
     public void setController(InAppMessageViewController controller) {
         this.controller = controller;
+        controller.subscribeView(this);
     }
 
     public InAppMessageMainView(@NonNull Context context) {
@@ -70,15 +72,10 @@ public class InAppMessageMainView extends FrameLayout implements Observer<IAMRea
     }
 
 
-
     @Override
     protected void onDetachedFromWindow() {
-        if (controller != null) {
-            controller.unsubscribeView(this);
-        }
         if (readerViewModel != null) {
             readerViewModel.removeSubscriber(InAppMessageMainView.this);
-            readerViewModel.clear();
         } else {
             InAppStoryManager.useCore(new UseIASCoreCallback() {
                 @Override
@@ -96,52 +93,52 @@ public class InAppMessageMainView extends FrameLayout implements Observer<IAMRea
             }
         });
         super.onDetachedFromWindow();
-        try {
-            if (onCloseAction != null) onCloseAction.onClose();
-        } catch (Exception e) {
-
-        }
     }
 
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
-        if (controller != null) {
-            controller.subscribeView(this);
-        }
         InAppStoryManager manager = InAppStoryManager.getInstance();
         if (readerViewModel == null || manager == null) return;
-        if (!contentIsPreloaded) {
-            readerViewModel.updateCurrentUiState(IAMReaderUIStates.OPENING);
-            readerViewModel.updateCurrentLoaderState(IAMReaderLoaderStates.LOADING);
-        }
-        IASCore core = manager.iasCore();
-        core.screensManager()
-                .getIAMScreenHolder().subscribeScreen(InAppMessageMainView.this);
-        String tokenId = readerViewModel.getCurrentState().cancellationTokenUID;
-        if (tokenId != null) {
-            CancellationTokenWithStatus token = core.cancellationTokenPool().getTokenByUID(tokenId);
-            if (token != null) {
-                if (token.cancelled())
-                    forceFinish();
-                else
-                    token.disable();
+        if (initialized) {
+            IASCore core = manager.iasCore();
+            core.screensManager()
+                    .getIAMScreenHolder().subscribeScreen(InAppMessageMainView.this);
+            readerViewModel.addSubscriber(InAppMessageMainView.this);
+        } else {
+            initialized = true;
+            if (!contentIsPreloaded) {
+                readerViewModel.updateCurrentUiState(IAMReaderUIStates.OPENING);
+                readerViewModel.updateCurrentLoaderState(IAMReaderLoaderStates.LOADING);
             }
-        }
-        if (contentContainer != null) {
-            contentView = new IAMContentLayout(getContext());
-            contentView.setLayoutParams(
-                    new FrameLayout.LayoutParams(
-                            ViewGroup.LayoutParams.MATCH_PARENT,
-                            ViewGroup.LayoutParams.MATCH_PARENT
-                    )
-            );
-            contentContainer.addViewToContent(contentView);
-            contentContainer.setRefreshClick(v -> {
-                if (contentView != null) {
-                    contentView.refreshClick();
+            IASCore core = manager.iasCore();
+            core.screensManager()
+                    .getIAMScreenHolder().subscribeScreen(InAppMessageMainView.this);
+            String tokenId = readerViewModel.getCurrentState().cancellationTokenUID;
+            if (tokenId != null) {
+                CancellationTokenWithStatus token = core.cancellationTokenPool().getTokenByUID(tokenId);
+                if (token != null) {
+                    if (token.cancelled())
+                        forceFinish();
+                    else
+                        token.disable();
                 }
-            });
+            }
+            if (contentContainer != null) {
+                contentView = new IAMContentLayout(getContext());
+                contentView.setLayoutParams(
+                        new FrameLayout.LayoutParams(
+                                ViewGroup.LayoutParams.MATCH_PARENT,
+                                ViewGroup.LayoutParams.MATCH_PARENT
+                        )
+                );
+                contentContainer.addViewToContent(contentView);
+                contentContainer.setRefreshClick(v -> {
+                    if (contentView != null) {
+                        contentView.refreshClick();
+                    }
+                });
+            }
         }
     }
 
@@ -219,7 +216,7 @@ public class InAppMessageMainView extends FrameLayout implements Observer<IAMRea
 
     public void hideContainer() {
         try {
-            ((FrameLayout)getParent()).removeView(this);
+            ((FrameLayout) getParent()).removeView(this);
         } catch (Exception ignored) {
         }
     }
@@ -311,12 +308,43 @@ public class InAppMessageMainView extends FrameLayout implements Observer<IAMRea
     @Override
     public void forceFinish() {
         contentContainer.closeWithoutAnimation();
+        destroyView();
+    }
+
+    private void destroyView() {
+        if (controller != null) controller.unsubscribeView(this);
+        if (readerViewModel != null) {
+            readerViewModel.removeSubscriber(InAppMessageMainView.this);
+            readerViewModel.clear();
+        } else {
+            InAppStoryManager.useCore(new UseIASCoreCallback() {
+                @Override
+                public void use(@NonNull IASCore core) {
+                    core.screensManager().iamReaderViewModel()
+                            .removeSubscriber(InAppMessageMainView.this);
+                }
+            });
+        }
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.screensManager().getIAMScreenHolder()
+                        .unsubscribeScreen(InAppMessageMainView.this);
+            }
+        });
+        try {
+            if (onCloseAction != null) onCloseAction.onClose();
+        } catch (Exception e) {
+
+        }
+        readerViewModel = null;
     }
 
     @Override
     public void close() {
         contentContainer.closeWithAnimation();
     }
+
 
     @Override
     public void pauseScreen() {

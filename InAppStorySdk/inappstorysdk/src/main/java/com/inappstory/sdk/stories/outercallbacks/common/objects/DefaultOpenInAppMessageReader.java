@@ -30,7 +30,7 @@ public class DefaultOpenInAppMessageReader implements IOpenInAppMessageReader {
             int containerId,
             final InAppMessageScreenActions screenActions,
             final IAMViewController viewController
-            ) {
+    ) {
         try {
             InAppMessageMainFragment inAppMessageFragment =
                     new InAppMessageMainFragment();
@@ -64,13 +64,14 @@ public class DefaultOpenInAppMessageReader implements IOpenInAppMessageReader {
     }
 
     @Override
-    public BaseIAMScreen onOpenInLayout(
-            Context context,
-            InAppMessageScreenActions screenActions
+    public void onOpenInLayout(
+            FrameLayout frameLayout,
+            InAppMessageScreenActions screenActions,
+            IAMViewController viewController
     ) {
         try {
             InAppMessageMainView inAppMessageView =
-                    new InAppMessageMainView(context);
+                    new InAppMessageMainView(frameLayout.getContext());
             inAppMessageView.setLayoutParams(
                     new FrameLayout.LayoutParams(
                             ViewGroup.LayoutParams.MATCH_PARENT,
@@ -91,11 +92,10 @@ public class DefaultOpenInAppMessageReader implements IOpenInAppMessageReader {
                     }
                 });
             }
-            return inAppMessageView;
+            if (viewController instanceof InAppMessageViewController)
+                inAppMessageView.setController((InAppMessageViewController) viewController);
+            frameLayout.addView(inAppMessageView);
         } catch (Exception e) {
-            return null;
         }
-
-
     }
 }

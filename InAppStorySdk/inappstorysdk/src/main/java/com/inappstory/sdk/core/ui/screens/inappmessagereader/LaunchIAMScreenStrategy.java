@@ -72,7 +72,6 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
     private InAppMessageContainerProvider containerProvider;
     private FragmentManager parentContainerFM;
     private int containerId;
-    private boolean showAsFragment = true;
     private FrameLayout frameLayout;
     private CancellationTokenWithStatus cancellationToken;
 
@@ -96,7 +95,6 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
     ) {
         this.parentContainerFM = parentContainerFM;
         this.containerId = containerId;
-        showAsFragment = true;
         return this;
     }
 
@@ -112,15 +110,15 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
             FrameLayout frameLayout
     ) {
         this.frameLayout = frameLayout;
-        showAsFragment = false;
         return this;
     }
 
 
     @Override
-    public void launch(Context context,
-                       final IOpenReader openReader,
-                       final IScreensHolder screensHolders
+    public void launch(
+            Context context,
+            final IOpenReader openReader,
+            final IScreensHolder screensHolders
     ) {
 
         checkIfMessageCanBeOpened(
@@ -142,7 +140,10 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
         );
     }
 
-    private void getLocalReaderContent(GetLocalInAppMessage getLocalInAppMessage, List<String> tagsToCheck) {
+    private void getLocalReaderContent(
+            GetLocalInAppMessage getLocalInAppMessage,
+            List<String> tagsToCheck
+    ) {
         if (inAppMessageOpenSettings.id() != null) {
             IInAppMessage inAppMessage = (IInAppMessage) core.contentHolder().readerContent().getByIdAndType(
                     inAppMessageOpenSettings.id(),
@@ -199,7 +200,8 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
     }
 
     private void checkIfMessageCanBeOpened(final CheckLocalIAMCallback loadScreen) {
-        final InAppMessageDownloadManager downloadManager = core.contentLoader().inAppMessageDownloadManager();
+        final InAppMessageDownloadManager downloadManager =
+                core.contentLoader().inAppMessageDownloadManager();
         final InAppMessageOpenSettings localSettings = inAppMessageOpenSettings;
         final List<String> localTags = new ArrayList<>();
 
@@ -425,14 +427,13 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
                 iamViewController = (InAppMessageViewController) viewController;
             else
                 iamViewController = null;
-            showAsFragment = (parentContainerFM != null);
         } else {
             String message = "Container for in-app message not provided.";
             launchScreenError(message);
             currentScreenHolder.endLaunchProcess();
             return;
         }
-        if (!showAsFragment && frameLayout == null) {
+        if (parentContainerFM == null && frameLayout == null) {
             String message = "Container for in-app message not found.";
             launchScreenError(message);
             currentScreenHolder.endLaunchProcess();
@@ -455,7 +456,7 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
-                if (showAsFragment) {
+                if (parentContainerFM != null) {
                     ((IOpenInAppMessageReader) openReader).onOpenInFragment(
                             parentContainerFM,
                             containerId,
@@ -463,17 +464,11 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
                             iamViewController
                     );
                 } else if (frameLayout != null) {
-                    BaseIAMScreen iamScreen = ((IOpenInAppMessageReader) openReader).onOpenInLayout(
-                            frameLayout.getContext(),
-                            inAppMessageScreenActions
+                    ((IOpenInAppMessageReader) openReader).onOpenInLayout(
+                            frameLayout,
+                            inAppMessageScreenActions,
+                            iamViewController
                     );
-                    if (iamScreen instanceof InAppMessageMainView) {
-                        if (iamViewController != null) {
-                            ((InAppMessageMainView) iamScreen).setController(iamViewController);
-                        }
-                        frameLayout.addView((InAppMessageMainView) iamScreen);
-                    }
-
                 }
             }
         });

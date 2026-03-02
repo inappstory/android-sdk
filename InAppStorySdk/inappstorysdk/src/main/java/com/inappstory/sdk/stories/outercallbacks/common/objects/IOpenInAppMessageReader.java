@@ -2,6 +2,7 @@ package com.inappstory.sdk.stories.outercallbacks.common.objects;
 
 import android.content.Context;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 
 import androidx.fragment.app.FragmentManager;
 
@@ -18,8 +19,9 @@ public interface IOpenInAppMessageReader extends IOpenReader {
             IAMViewController viewController
     );
 
-    BaseIAMScreen onOpenInLayout(
-            Context context,
-            InAppMessageScreenActions screenActions
+    void onOpenInLayout(
+            FrameLayout frameLayout,
+            InAppMessageScreenActions screenActions,
+            IAMViewController viewController
     );
 }
