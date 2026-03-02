@@ -36,6 +36,7 @@ import com.inappstory.sdk.inappmessage.InAppMessageContainerSettings;
 import com.inappstory.sdk.inappmessage.InAppMessageScreenActions;
 import com.inappstory.sdk.inappmessage.InAppMessageViewController;
 import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderState;
+import com.inappstory.sdk.inappmessage.domain.reader.IAMViewController;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageAppearance;
 import com.inappstory.sdk.inappmessage.InAppMessageOpenSettings;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageUndefinedAppearance;
@@ -67,15 +68,7 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
         return this;
     }
 
-    public LaunchIAMScreenStrategy inAppMessageViewController(
-            InAppMessageViewController inAppMessageViewController
-    ) {
-        this.inAppMessageViewController = inAppMessageViewController;
-        return this;
-    }
-
     private InAppMessageScreenActions inAppMessageScreenActions;
-    private InAppMessageViewController inAppMessageViewController;
     private InAppMessageContainerProvider containerProvider;
     private FragmentManager parentContainerFM;
     private int containerId;
@@ -421,14 +414,25 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
                 sourceType,
                 inAppMessage.messageType()
         );
+        final InAppMessageViewController iamViewController;
         if (containerProvider != null) {
             InAppMessageContainerSettings settings = containerProvider.provideContainer(data);
             frameLayout = settings.layout();
             parentContainerFM = settings.fragmentManager();
             containerId = settings.containerId();
+            IAMViewController viewController = containerProvider.layoutController();
+            if (viewController instanceof InAppMessageViewController)
+                iamViewController = (InAppMessageViewController) viewController;
+            else
+                iamViewController = null;
             showAsFragment = (parentContainerFM != null);
+        } else {
+            String message = "Container for in-app message not provided.";
+            launchScreenError(message);
+            currentScreenHolder.endLaunchProcess();
+            return;
         }
-        if ((showAsFragment && parentContainerFM == null) || (!showAsFragment && frameLayout == null)) {
+        if (!showAsFragment && frameLayout == null) {
             String message = "Container for in-app message not found.";
             launchScreenError(message);
             currentScreenHolder.endLaunchProcess();
@@ -456,7 +460,7 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
                             parentContainerFM,
                             containerId,
                             inAppMessageScreenActions,
-                            inAppMessageViewController
+                            iamViewController
                     );
                 } else if (frameLayout != null) {
                     BaseIAMScreen iamScreen = ((IOpenInAppMessageReader) openReader).onOpenInLayout(
@@ -464,8 +468,8 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
                             inAppMessageScreenActions
                     );
                     if (iamScreen instanceof InAppMessageMainView) {
-                        if (inAppMessageViewController != null) {
-                            ((InAppMessageMainView) iamScreen).setController(inAppMessageViewController);
+                        if (iamViewController != null) {
+                            ((InAppMessageMainView) iamScreen).setController(iamViewController);
                         }
                         frameLayout.addView((InAppMessageMainView) iamScreen);
                     }

@@ -12,6 +12,7 @@ import com.inappstory.sdk.core.CancellationTokenWithStatus;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASInAppMessage;
+import com.inappstory.sdk.inappmessage.InAppMessageContainerProvider;
 import com.inappstory.sdk.inappmessage.InAppMessageLoadCallback;
 import com.inappstory.sdk.inappmessage.InAppMessageOpenSettings;
 import com.inappstory.sdk.inappmessage.InAppMessagePreloadSettings;
@@ -54,6 +55,31 @@ public class IASInAppMessageExternalAPIImpl implements IASInAppMessageExternalAP
                         inAppMessageOpenSettings,
                         fragmentManager,
                         containerId,
+                        screenActions
+                );
+            }
+        });
+        return token;
+    }
+
+    @Override
+    public CancellationToken show(
+            InAppMessageOpenSettings inAppMessageOpenSettings,
+            InAppMessageContainerProvider containerProvider,
+            InAppMessageScreenActions screenActions
+    ) {
+        final CancellationTokenWithStatus token =
+                new CancellationTokenImpl("External IAM data: " +
+                        inAppMessageOpenSettings.toString()
+                );
+        InAppStoryManager.useCoreInSeparateThread(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.cancellationTokenPool().addToken(token);
+                core.inAppMessageAPI().show(
+                        token,
+                        inAppMessageOpenSettings,
+                        containerProvider,
                         screenActions
                 );
             }

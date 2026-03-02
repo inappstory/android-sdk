@@ -14,11 +14,14 @@ import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.IASInAppMessage;
 import com.inappstory.sdk.core.ui.screens.inappmessagereader.LaunchIAMScreenStrategy;
 import com.inappstory.sdk.inappmessage.InAppMessageContainerProvider;
+import com.inappstory.sdk.inappmessage.InAppMessageContainerSettings;
+import com.inappstory.sdk.inappmessage.InAppMessageData;
 import com.inappstory.sdk.inappmessage.InAppMessageLoadCallback;
 import com.inappstory.sdk.inappmessage.InAppMessageOpenSettings;
 import com.inappstory.sdk.inappmessage.InAppMessagePreloadSettings;
 import com.inappstory.sdk.inappmessage.InAppMessageScreenActions;
 import com.inappstory.sdk.inappmessage.InAppMessageViewController;
+import com.inappstory.sdk.inappmessage.domain.reader.IAMViewController;
 
 
 public class IASInAppMessageImpl implements IASInAppMessage {
@@ -66,17 +69,28 @@ public class IASInAppMessageImpl implements IASInAppMessage {
                 null,
                 new LaunchIAMScreenStrategy(core)
                         .cancellationToken(cancellationToken)
-                        .fragment(fragmentManager, containerId)
+                        .containerProvider(new InAppMessageContainerProvider() {
+                            @Override
+                            public InAppMessageContainerSettings provideContainer(InAppMessageData messageData) {
+                                return new InAppMessageContainerSettings().fragment(fragmentManager, containerId);
+                            }
+
+                            @Override
+                            public IAMViewController layoutController() {
+                                return null;
+                            }
+                        })
                         .inAppMessageOpenSettings(openData)
                         .inAppMessageScreenActions(screenActions)
         );
     }
 
     @Override
-    public void show(CancellationTokenWithStatus cancellationToken,
-                     InAppMessageOpenSettings openData,
-                     InAppMessageContainerProvider containerProvider,
-                     InAppMessageScreenActions screenActions
+    public void show(
+            CancellationTokenWithStatus cancellationToken,
+            InAppMessageOpenSettings openData,
+            InAppMessageContainerProvider containerProvider,
+            InAppMessageScreenActions screenActions
     ) {
         IASDataSettingsHolder settingsHolder = (IASDataSettingsHolder) core.settingsAPI();
         if (settingsHolder.anonymous()) {
@@ -88,15 +102,11 @@ public class IASInAppMessageImpl implements IASInAppMessage {
                 screenActions.readerOpenError("In-app messages are unavailable for anonymous mode");
             return;
         }
-        InAppMessageViewController viewController = null;
-        if (containerProvider.layoutController() instanceof InAppMessageViewController)
-            viewController = (InAppMessageViewController) containerProvider.layoutController();
         core.screensManager().openScreen(
                 null,
                 new LaunchIAMScreenStrategy(core)
                         .cancellationToken(cancellationToken)
                         .containerProvider(containerProvider)
-                        .inAppMessageViewController(viewController)
                         .inAppMessageOpenSettings(openData)
                         .inAppMessageScreenActions(screenActions)
         );
@@ -125,8 +135,18 @@ public class IASInAppMessageImpl implements IASInAppMessage {
                 new LaunchIAMScreenStrategy(core)
                         .cancellationToken(cancellationToken)
                         .layout(frameLayout)
+                        .containerProvider(new InAppMessageContainerProvider() {
+                            @Override
+                            public InAppMessageContainerSettings provideContainer(InAppMessageData messageData) {
+                                return new InAppMessageContainerSettings().layout(frameLayout);
+                            }
+
+                            @Override
+                            public IAMViewController layoutController() {
+                                return controller;
+                            }
+                        })
                         .inAppMessageOpenSettings(openData)
-                        .inAppMessageViewController(controller)
                         .inAppMessageScreenActions(screenActions)
         );
     }

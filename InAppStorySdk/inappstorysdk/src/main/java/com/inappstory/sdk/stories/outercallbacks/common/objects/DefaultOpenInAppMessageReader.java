@@ -40,7 +40,7 @@ public class DefaultOpenInAppMessageReader implements IOpenInAppMessageReader {
                             inAppMessageFragment,
                             IN_APP_MESSAGE_FRAGMENT
                     );
-            t.commit();
+            t.commitNow();
             if (screenActions != null) {
                 inAppMessageFragment.setOnOpenAction(new InAppMessageOpenAction() {
                     @Override
@@ -59,7 +59,7 @@ public class DefaultOpenInAppMessageReader implements IOpenInAppMessageReader {
                 inAppMessageFragment.setController((InAppMessageViewController) viewController);
             }
         } catch (Exception e) {
-
+            e.printStackTrace();
         }
     }
 

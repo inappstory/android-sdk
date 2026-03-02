@@ -5,6 +5,7 @@ import android.widget.FrameLayout;
 import androidx.fragment.app.FragmentManager;
 
 import com.inappstory.sdk.CancellationToken;
+import com.inappstory.sdk.inappmessage.InAppMessageContainerProvider;
 import com.inappstory.sdk.inappmessage.InAppMessageLoadCallback;
 import com.inappstory.sdk.inappmessage.InAppMessageOpenSettings;
 import com.inappstory.sdk.inappmessage.InAppMessagePreloadSettings;
@@ -21,6 +22,12 @@ public interface IASInAppMessageExternalAPI {
             InAppMessageOpenSettings inAppMessageOpenSettings,
             FragmentManager fragmentManager,
             int containerId,
+            InAppMessageScreenActions screenActions
+    );
+
+    CancellationToken show(
+            InAppMessageOpenSettings inAppMessageOpenSettings,
+            InAppMessageContainerProvider containerProvider,
             InAppMessageScreenActions screenActions
     );
 
