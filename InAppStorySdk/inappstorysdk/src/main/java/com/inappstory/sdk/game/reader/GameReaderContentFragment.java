@@ -1615,7 +1615,6 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
 
     public void acceleratorSensorIsActive() {
         if (webView == null) return;
-        manager.logger.sendDebugLog(1, "userAccelerationSensorCbActivate();");
         webView.post(new Runnable() {
             @Override
             public void run() {
@@ -1626,10 +1625,6 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
 
     public void acceleratorSensorActivationError(final String type, final String message) {
         if (webView == null) return;
-        manager.logger.sendDebugLog(1, "userAccelerationSensorCbError("
-                + type + ","
-                + message + ");"
-        );
         webView.post(new Runnable() {
             @Override
             public void run() {
@@ -1646,11 +1641,6 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
     @Override
     public void onEvent(final float x, final float y, final float z) {
         if (webView == null) return;
-        manager.logger.sendDebugLog(3, "userAccelerationSensorCbRead("
-                + x + ","
-                + y + ","
-                + z + ");"
-        );
         webView.post(new Runnable() {
             @Override
             public void run() {
