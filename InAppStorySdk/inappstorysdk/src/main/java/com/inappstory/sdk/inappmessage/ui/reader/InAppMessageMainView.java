@@ -312,6 +312,9 @@ public class InAppMessageMainView extends FrameLayout implements Observer<IAMRea
     }
 
     private void destroyView() {
+        if (contentView != null) {
+            contentView.destroyView();
+        }
         if (controller != null) controller.unsubscribeView(this);
         if (readerViewModel != null) {
             readerViewModel.removeSubscriber(InAppMessageMainView.this);

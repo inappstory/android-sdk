@@ -55,6 +55,7 @@ public class IAMContentLayout extends FrameLayout implements Observer<IAMReaderS
 
     IIAMReaderSlideViewModel readerSlideViewModel;
     IAMReaderSlideState currentState;
+    boolean initialized = false;
 
     public IAMContentLayout(@NonNull Context context) {
         super(context);
@@ -80,6 +81,15 @@ public class IAMContentLayout extends FrameLayout implements Observer<IAMReaderS
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
+        if (initialized) {
+            readerSlideViewModel.addSubscriber(
+                    IAMContentLayout.this
+            );
+            readerSlideViewModel.singleTimeEvents().subscribe(
+                    callToActionDataObserver
+            );
+            return;
+        }
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
@@ -109,6 +119,14 @@ public class IAMContentLayout extends FrameLayout implements Observer<IAMReaderS
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
+        if (readerSlideViewModel != null) {
+            readerSlideViewModel.removeSubscriber(this);
+            readerSlideViewModel.singleTimeEvents().unsubscribe(callToActionDataObserver);
+        }
+
+    }
+
+    public void destroyView() {
         if (readerSlideViewModel != null) {
             readerSlideViewModel.removeSubscriber(this);
             readerSlideViewModel.singleTimeEvents().unsubscribe(callToActionDataObserver);
