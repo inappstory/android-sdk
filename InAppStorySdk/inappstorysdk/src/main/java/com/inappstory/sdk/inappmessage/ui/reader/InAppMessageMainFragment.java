@@ -55,6 +55,7 @@ public class InAppMessageMainFragment extends Fragment implements Observer<IAMRe
 
     public void setController(InAppMessageViewController controller) {
         this.controller = controller;
+        controller.subscribeView(this);
     }
 
     @Override
