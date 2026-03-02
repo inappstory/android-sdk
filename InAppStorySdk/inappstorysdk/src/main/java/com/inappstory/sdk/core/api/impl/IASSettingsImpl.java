@@ -507,6 +507,7 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
     public void inAppStorySettings(IInAppStoryUserSettings settings) {
         final Locale currentLang;
         final String currentUserId;
+        final String currentUserSign;
         final boolean currentSendStatistic;
         final boolean currentAnonymous;
         final String currentDeviceId;
@@ -524,6 +525,7 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
             currentLang = this.lang;
             currentSendStatistic = this.sendStatistic;
             currentUserId = this.userId;
+            currentUserSign = this.userSign;
             currentAnonymous = this.anonymous;
             if (!currentAnonymous) {
                 currentDeviceId = deviceId;
@@ -574,15 +576,13 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
                         );
                         return;
                     }
-                    if (currentUserId != null && currentUserId.equals(settings.userId())) {
-                        if (!Objects.equals(userSign, settings.userSign())) {
+                    if (settings.userId() != null) {
+                        if (!Objects.equals(currentUserId, settings.userId()) ||
+                                !Objects.equals(currentUserSign, settings.userSign())) {
                             userSign = settings.userSign();
                             userId = settings.userId();
                             needToReloadSession = true;
                         }
-                    } else if (currentUserId == null) {
-                        userSign = settings.userSign();
-                        userId = settings.userId();
                     }
                 }
             }
