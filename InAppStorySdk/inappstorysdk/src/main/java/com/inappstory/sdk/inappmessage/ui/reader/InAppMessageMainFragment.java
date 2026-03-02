@@ -352,12 +352,16 @@ public class InAppMessageMainFragment extends Fragment implements Observer<IAMRe
 
     @Override
     public void pauseScreen() {
-
+        if (contentFragment != null) {
+            contentFragment.pauseScreen();
+        }
     }
 
     @Override
     public void resumeScreen() {
-        
+        if (contentFragment != null) {
+            contentFragment.resumeScreen();
+        }
     }
 
     @Override
@@ -372,13 +376,13 @@ public class InAppMessageMainFragment extends Fragment implements Observer<IAMRe
 
     @Override
     public void onPause() {
-        pauseScreen();
+        //pauseScreen();
         super.onPause();
     }
 
     @Override
     public void onResume() {
-        resumeScreen();
+        //resumeScreen();
         super.onResume();
     }
 

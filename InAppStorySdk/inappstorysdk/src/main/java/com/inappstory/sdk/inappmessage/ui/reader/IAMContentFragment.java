@@ -98,6 +98,10 @@ public class IAMContentFragment extends Fragment implements Observer<IAMReaderSl
     @Override
     public void onPause() {
         super.onPause();
+        pauseScreen();
+    }
+
+    public void pauseScreen() {
         isPaused = true;
         if (readerSlideViewModel != null)
             readerSlideViewModel.readerIsClosing();
@@ -105,13 +109,17 @@ public class IAMContentFragment extends Fragment implements Observer<IAMReaderSl
             contentWebView.pauseSlide();
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
+    public void resumeScreen() {
         if (readerSlideViewModel != null)
             readerSlideViewModel.readerIsOpened(!isPaused);
         if (contentWebView != null)
             contentWebView.resumeSlide();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        resumeScreen();
     }
 
     public void refreshClick() {
