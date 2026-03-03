@@ -19,6 +19,10 @@ public class BannerPreviewViewModel extends BannerCarouselViewModel {
 
     @Override
     public void loadBanners(boolean skipCache) {
+        if (!skipCache) {
+            if (core.widgetViewModels().bannerPlaceViewModels().copyFromCache(uniqueId, placeId))
+                return;
+        }
         InAppStoryManager.useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
