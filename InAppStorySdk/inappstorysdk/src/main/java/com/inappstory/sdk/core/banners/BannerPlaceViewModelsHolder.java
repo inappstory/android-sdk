@@ -63,6 +63,8 @@ public class BannerPlaceViewModelsHolder {
                     case LAZY_LIST:
                         viewModels.put(uniqueId, new BannerListViewModel(core, uniqueId));
                         break;
+                    case PREVIEW:
+                        viewModels.put(uniqueId, new BannerPreviewViewModel(core, uniqueId));
                     case PAGER:
                     case DATA:
                         viewModels.put(uniqueId, new BannerCarouselViewModel(core, uniqueId));
