@@ -2,6 +2,7 @@ package com.inappstory.sdk.banners.ui.carousel;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -37,7 +38,7 @@ public class BannerPreview extends BannerCarousel {
                 bannerCarouselViewModel =
                         (BannerPreviewViewModel) holder.getOrCreate(
                                 uniqueId(),
-                                BannerWidgetViewModelType.PAGER
+                                BannerWidgetViewModelType.PREVIEW
                         );
             }
         });

@@ -162,8 +162,7 @@ public class IASBannersImpl implements IASBanners {
             return;
         }
         final String bannerId = settings.placeId();
-        final String placeId = "previewBannerPlaceForBanner_" + bannerId;
-        final String uniqueId = settings.uniqueId() != null ? settings.uniqueId() : "";
+        final String placeId = settings.placeId();
         final IBannersWidgetViewModel bannerPlaceViewModel = core
                 .widgetViewModels()
                 .bannerPlaceViewModels()
@@ -178,8 +177,8 @@ public class IASBannersImpl implements IASBanners {
                                     BannersWidgetLoadStates.EMPTY)
             );
             updateStateForAllRelatives(
-                    placeId,
-                    uniqueId,
+                    bannerId,
+                    null,
                     new ArrayList<IBanner>(),
                     null,
                     BannersWidgetLoadStates.EMPTY
@@ -204,7 +203,7 @@ public class IASBannersImpl implements IASBanners {
         );
         updateStateForAllRelatives(
                 placeId,
-                uniqueId,
+                null,
                 null,
                 settings.tags(),
                 BannersWidgetLoadStates.LOADING
@@ -222,7 +221,7 @@ public class IASBannersImpl implements IASBanners {
 
                 updateStateForAllRelatives(
                         placeId,
-                        uniqueId,
+                        null,
                         content,
                         null,
                         content.isEmpty() ? BannersWidgetLoadStates.EMPTY : BannersWidgetLoadStates.LOADED
@@ -239,7 +238,7 @@ public class IASBannersImpl implements IASBanners {
                 bannerPlaceViewModel.updateState(state);
                 updateStateForAllRelatives(
                         placeId,
-                        uniqueId,
+                        null,
                         new ArrayList<IBanner>(),
                         null,
                         BannersWidgetLoadStates.EMPTY
@@ -256,7 +255,7 @@ public class IASBannersImpl implements IASBanners {
                 bannerPlaceViewModel.updateState(state);
                 updateStateForAllRelatives(
                         placeId,
-                        uniqueId,
+                        null,
                         new ArrayList<IBanner>(),
                         null,
                         BannersWidgetLoadStates.FAILED

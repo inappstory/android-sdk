@@ -39,7 +39,7 @@ public interface ApiInterface {
             @ReplaceHeader(HeadersKeys.ACCEPT_LANGUAGE) String lang
     );
 
-    @POST("v2/banner/{id}")
+    @GET("v2/banner/{id}")
     Request getBannerById(
             @Path("id") String id,
             @Query("fields") String fields,

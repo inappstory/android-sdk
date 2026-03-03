@@ -68,7 +68,7 @@ public class BannerUseCase {
 
                                     @Override
                                     public Type getType() {
-                                        return BannerPlaceModel.class;
+                                        return Banner.class;
                                     }
 
                                     @Override
