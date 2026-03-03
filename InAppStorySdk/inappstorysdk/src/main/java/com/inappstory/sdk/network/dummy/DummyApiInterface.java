@@ -19,6 +19,11 @@ public class DummyApiInterface implements ApiInterface {
     }
 
     @Override
+    public Request getBannerById(String id, String fields, String expand, String xUserId, String xSessionId, String lang) {
+        return new DummyRequest();
+    }
+
+    @Override
     public Request getInAppMessages(Integer srcList, String ids, TargetingBodyObject target, String fields, String expand, String xUserId, String xSessionId, String lang) {
         return new DummyRequest();
     }
