@@ -21,12 +21,12 @@ import java.util.Set;
 import java.util.UUID;
 
 public class BannerCarouselViewModel implements IBannersWidgetViewModel<BannerCarouselState> {
-    private final Observable<BannerCarouselState> bannerPlaceStateObservable =
+    protected final Observable<BannerCarouselState> bannerPlaceStateObservable =
             new Observable<>(new BannerCarouselState());
 
-    private final IASCore core;
-    private String placeId;
-    private final String uid = UUID.randomUUID().toString();
+    protected final IASCore core;
+    protected String placeId;
+    protected final String uid = UUID.randomUUID().toString();
 
     public void tags(List<String> tags) {
         this.tags.clear();
@@ -34,8 +34,8 @@ public class BannerCarouselViewModel implements IBannersWidgetViewModel<BannerCa
         updateState(new BannerCarouselState().tags(tags));
     }
 
-    private final List<String> tags = new ArrayList<>();
-    private String uniqueId;
+    protected final List<String> tags = new ArrayList<>();
+    protected String uniqueId;
     BannerViewModelsHolder bannerViewModelsHolder;
 
     public BannerCarouselViewModel(IASCore core, String uniqueId) {

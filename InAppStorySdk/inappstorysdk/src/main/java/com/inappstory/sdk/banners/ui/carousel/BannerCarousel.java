@@ -52,9 +52,9 @@ import java.util.UUID;
 
 public class BannerCarousel extends FrameLayout implements Observer<BannerCarouselState>, IBannersWidget {
     private BannerViewPager bannerViewPager;
-    private BannerCarouselViewModel bannerCarouselViewModel;
+    protected BannerCarouselViewModel bannerCarouselViewModel;
     private String placeId;
-    private IASCore core;
+    protected IASCore core;
     private ICustomBannerCarouselAppearance customBannerPlaceAppearance = new DefaultBannerCarouselAppearance();
     private String lastLaunchedTag = "";
     private final String defaultUniqueId = UUID.randomUUID().toString();
@@ -469,6 +469,10 @@ public class BannerCarousel extends FrameLayout implements Observer<BannerCarous
         View.inflate(context, R.layout.cs_banner_widget, this);
         bannerViewPager = findViewById(R.id.banner_pager);
         bannerViewPager.addOnPageChangeListener(pageChangeListener);
+        initViewModel();
+    }
+
+    protected void initViewModel() {
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {

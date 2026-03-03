@@ -17,6 +17,7 @@ import com.inappstory.sdk.core.banners.BannerPlaceUseCaseCallback;
 import com.inappstory.sdk.core.data.IBanner;
 import com.inappstory.sdk.core.network.content.usecase.BannerPlaceUseCase;
 import com.inappstory.sdk.banners.BannerData;
+import com.inappstory.sdk.core.network.content.usecase.BannerUseCase;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -31,6 +32,8 @@ public class IASBannersImpl implements IASBanners {
     public IASBannersImpl(IASCore core) {
         this.core = core;
     }
+
+
 
     @Override
     public void loadBannerPlace(final BannerPlaceLoadSettings settings) {
@@ -75,6 +78,121 @@ public class IASBannersImpl implements IASBanners {
                 core,
                 placeId,
                 settings.tags()
+        );
+        bannerPlaceViewModel.updateState(
+                new BannerCarouselState()
+                        .placeId(placeId)
+                        .tags(settings.tags())
+                        .loadState(
+                                BannersWidgetLoadStates.LOADING
+                        )
+        );
+        updateStateForAllRelatives(
+                placeId,
+                uniqueId,
+                null,
+                settings.tags(),
+                BannersWidgetLoadStates.LOADING
+        );
+        bannerPlaceUseCase.get(new BannerPlaceUseCaseCallback() {
+            @Override
+            public void success(List<IBanner> content) {
+                IBannerWidgetState state = bannerPlaceViewModel.getCurrentBannerPlaceState()
+                        .copy()
+                        .iterationId(UUID.randomUUID().toString())
+                        .items(content)
+                        .loadState(
+                                content.isEmpty() ? BannersWidgetLoadStates.EMPTY : BannersWidgetLoadStates.LOADED);
+                bannerPlaceViewModel.updateState(state);
+
+                updateStateForAllRelatives(
+                        placeId,
+                        uniqueId,
+                        content,
+                        null,
+                        content.isEmpty() ? BannersWidgetLoadStates.EMPTY : BannersWidgetLoadStates.LOADED
+                );
+            }
+
+            @Override
+            public void isEmpty() {
+                IBannerWidgetState state = bannerPlaceViewModel.getCurrentBannerPlaceState()
+                        .copy()
+                        .items(new ArrayList<IBanner>())
+                        .loadState(
+                                BannersWidgetLoadStates.EMPTY);
+                bannerPlaceViewModel.updateState(state);
+                updateStateForAllRelatives(
+                        placeId,
+                        uniqueId,
+                        new ArrayList<IBanner>(),
+                        null,
+                        BannersWidgetLoadStates.EMPTY
+                );
+            }
+
+            @Override
+            public void error() {
+                IBannerWidgetState state = bannerPlaceViewModel.getCurrentBannerPlaceState()
+                        .copy()
+                        .items(new ArrayList<>())
+                        .loadState(
+                                BannersWidgetLoadStates.FAILED);
+                bannerPlaceViewModel.updateState(state);
+                updateStateForAllRelatives(
+                        placeId,
+                        uniqueId,
+                        new ArrayList<IBanner>(),
+                        null,
+                        BannersWidgetLoadStates.FAILED
+                );
+            }
+        });
+    }
+
+    @Override
+    public void loadPreviewBannerPlace(BannerPlaceLoadSettings settings) {
+        final IASDataSettingsHolder settingsHolder = ((IASDataSettingsHolder) core.settingsAPI());
+
+        if (settings == null || settings.placeId() == null || settings.placeId().isEmpty()) {
+            InAppStoryManager.showELog(
+                    LoggerTags.IAS_ERROR_TAG,
+                    "Incorrect settings for banner place"
+            );
+            return;
+        }
+        final String bannerId = settings.placeId();
+        final String placeId = "previewBannerPlaceForBanner_" + bannerId;
+        final String uniqueId = settings.uniqueId() != null ? settings.uniqueId() : "";
+        final IBannersWidgetViewModel bannerPlaceViewModel = core
+                .widgetViewModels()
+                .bannerPlaceViewModels()
+                .getOrCreateContentPlaceViewModel(placeId);
+        if (settingsHolder.anonymous()) {
+
+            bannerPlaceViewModel.updateState(
+                    bannerPlaceViewModel.getCurrentBannerPlaceState()
+                            .copy()
+                            .items(new ArrayList<>())
+                            .loadState(
+                                    BannersWidgetLoadStates.EMPTY)
+            );
+            updateStateForAllRelatives(
+                    placeId,
+                    uniqueId,
+                    new ArrayList<IBanner>(),
+                    null,
+                    BannersWidgetLoadStates.EMPTY
+            );
+            InAppStoryManager.showELog(
+                    LoggerTags.IAS_ERROR_TAG,
+                    "Banners are unavailable for anonymous mode"
+            );
+            return;
+        }
+        BannerUseCase bannerPlaceUseCase = new BannerUseCase(
+                core,
+                bannerId
         );
         bannerPlaceViewModel.updateState(
                 new BannerCarouselState()

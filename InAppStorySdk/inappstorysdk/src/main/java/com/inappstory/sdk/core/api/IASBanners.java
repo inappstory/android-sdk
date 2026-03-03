@@ -14,4 +14,8 @@ public interface IASBanners {
             BannerPlaceLoadSettings bannerPlace
     );
 
+    void loadPreviewBannerPlace(
+            BannerPlaceLoadSettings bannerPlace
+    );
+
 }

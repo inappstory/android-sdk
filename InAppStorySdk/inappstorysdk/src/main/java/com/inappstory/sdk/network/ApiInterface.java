@@ -39,6 +39,16 @@ public interface ApiInterface {
             @ReplaceHeader(HeadersKeys.ACCEPT_LANGUAGE) String lang
     );
 
+    @POST("v2/banner/{id}")
+    Request getBannerById(
+            @Path("id") String id,
+            @Query("fields") String fields,
+            @Query("expand") String expand,
+            @ReplaceHeader(HeadersKeys.USER_ID) String xUserId,
+            @ReplaceHeader(HeadersKeys.AUTH_SESSION_ID) String xSessionId,
+            @ReplaceHeader(HeadersKeys.ACCEPT_LANGUAGE) String lang
+    );
+
     @FormUrlEncoded
     @PUT("v2/banner/{id}/data")
     Request sendBannerUserData(
