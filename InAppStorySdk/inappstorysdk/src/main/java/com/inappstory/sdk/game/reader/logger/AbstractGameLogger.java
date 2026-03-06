@@ -14,6 +14,7 @@ import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
+import com.inappstory.sdk.utils.WebViewUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -126,6 +127,7 @@ public abstract class AbstractGameLogger {
         return new GameLog(
                 gameInstanceId,
                 ((IASDataSettingsHolder) core.settingsAPI()).sessionIdOrEmpty(),
+                WebViewUtils.getWebViewVersion(core),
                 System.currentTimeMillis() / 1000,
                 launchTryNumber,
                 gameLoaded

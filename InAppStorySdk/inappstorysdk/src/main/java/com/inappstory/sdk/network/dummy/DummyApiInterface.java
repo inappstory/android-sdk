@@ -146,6 +146,7 @@ public class DummyApiInterface implements ApiInterface {
             int launchTryNumber,
             Long timestamp,
             String message,
+            String webViewVersion,
             String stacktrace,
             String logSession,
             boolean gameLaunched

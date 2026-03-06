@@ -1155,6 +1155,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                             @Override
                             public void onError(UseCaseError error) {
                                 if (manager != null && manager.logger != null) {
+                                    manager.logger.startQueue(false);
                                     manager.logger.sendSdkError(error.message(), null);
                                 }
                                 gameLoadedErrorCallback.onError(
@@ -1214,6 +1215,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                                     @Override
                                     public void run() {
                                         if (manager != null && manager.logger != null) {
+                                            manager.logger.startQueue(false);
                                             manager.logger.sendSdkError(error.message(), null);
                                         }
                                         gameLoadedErrorCallback.onError(

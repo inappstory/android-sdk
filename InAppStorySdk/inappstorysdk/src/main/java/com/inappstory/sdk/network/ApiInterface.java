@@ -243,6 +243,7 @@ public interface ApiInterface {
             @Field("launchTryNumber") int launchTryNumber,
             @Field("timestamp") Long timestamp,
             @Field("message") String message,
+            @Field("webViewVersion") String webViewVersion,
             @Field("stacktrace") String stacktrace,
             @Field("logSession") String logSession,
             @Field("gameLaunched") boolean gameLaunched

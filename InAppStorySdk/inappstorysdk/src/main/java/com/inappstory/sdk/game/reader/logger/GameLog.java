@@ -8,6 +8,7 @@ public class GameLog {
     public GameLog(
             String gameInstanceId,
             String logSession,
+            int webViewVersion,
             Long timestamp,
             int launchTryNumber,
             boolean gameLoaded
@@ -15,6 +16,7 @@ public class GameLog {
         this.gameInstanceId = gameInstanceId;
         this.timestamp = timestamp;
         this.logSession = logSession;
+        this.webViewVersion = Integer.toString(webViewVersion);
         this.gameLoaded = gameLoaded;
         this.launchTryNumber = launchTryNumber;
     }
@@ -31,6 +33,11 @@ public class GameLog {
 
     GameLog stacktrace(String stacktrace) {
         this.stacktrace = stacktrace;
+        return this;
+    }
+
+    GameLog webViewVersion(String webViewVersion) {
+        this.webViewVersion = webViewVersion;
         return this;
     }
 
@@ -54,6 +61,10 @@ public class GameLog {
 
     String message() {
         return message;
+    }
+
+    String webViewVersion() {
+        return webViewVersion;
     }
 
     String logSession() {
@@ -94,6 +105,7 @@ public class GameLog {
 
     public String message;
     public String logSession;
+    public String webViewVersion;
     public String stacktrace;
     public boolean gameLoaded;
 
