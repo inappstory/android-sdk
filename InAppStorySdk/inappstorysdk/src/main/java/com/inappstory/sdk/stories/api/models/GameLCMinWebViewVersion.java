@@ -8,6 +8,8 @@ public class GameLCMinWebViewVersion implements IGameLaunchCondition {
     public int minVersion;
     @SerializedName("message")
     public String message;
+    @SerializedName("loggerMessage")
+    public String loggerMessage;
 
     @Override
     public GameLaunchConditionType conditionType() {
@@ -17,5 +19,10 @@ public class GameLCMinWebViewVersion implements IGameLaunchCondition {
     @Override
     public String errorMessage() {
         return message;
+    }
+
+    @Override
+    public String loggerErrorMessage() {
+        return loggerMessage;
     }
 }

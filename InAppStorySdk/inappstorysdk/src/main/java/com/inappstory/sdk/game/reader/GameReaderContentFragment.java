@@ -1221,7 +1221,9 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                                         gameLoadedErrorCallback.onError(
                                                 null,
                                                 error instanceof UIUseCaseError,
-                                                error.message()
+                                                (error instanceof UIUseCaseError) ?
+                                                        ((UIUseCaseError) error).uiMessage() :
+                                                        error.message()
                                         );
                                     }
                                 });

@@ -13,11 +13,8 @@ import com.inappstory.sdk.stories.api.models.GameCenterData;
 import com.inappstory.sdk.stories.api.models.GameLaunchConditionsChecker;
 import com.inappstory.sdk.stories.api.models.WebResource;
 import com.inappstory.sdk.stories.cache.DownloadInterruption;
-import com.inappstory.sdk.stories.cache.FilesDownloadManager;
 import com.inappstory.sdk.stories.cache.usecases.ArchiveUseCase;
 import com.inappstory.sdk.stories.cache.usecases.GameFolderUseCase;
-import com.inappstory.sdk.stories.statistic.IASStatisticProfilingImpl;
-import com.inappstory.sdk.stories.utils.KeyValueStorage;
 import com.inappstory.sdk.utils.ProgressCallback;
 
 import java.io.File;
@@ -125,7 +122,8 @@ public class GameCacheManager {
                 if (result instanceof GLCError) {
                     gameLoadCallback.onError(
                             new UIUseCaseError(
-                                    ((GLCError) result).message
+                                    ((GLCError) result).uiMessage,
+                                    ((GLCError) result).logMessage
                             )
                     );
                     return;

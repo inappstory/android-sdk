@@ -1,7 +1,14 @@
 package com.inappstory.sdk.game.cache;
 
 public final class UIUseCaseError extends SimpleUseCaseError {
-    public UIUseCaseError(String message) {
-        super(message);
+    private final String uiMessage;
+
+    public UIUseCaseError(String uiMessage, String logMessage) {
+        super(logMessage != null ? logMessage : "");
+        this.uiMessage = uiMessage;
+    }
+
+    public String uiMessage() {
+        return uiMessage != null ? uiMessage : "";
     }
 }

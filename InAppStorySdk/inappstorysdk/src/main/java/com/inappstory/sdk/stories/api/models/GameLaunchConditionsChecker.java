@@ -27,7 +27,10 @@ public class GameLaunchConditionsChecker {
                 ) {
                     return new GLCSuccess();
                 } else {
-                    return new GLCError(condition.errorMessage());
+                    return new GLCError(
+                            condition.errorMessage(),
+                            condition.loggerErrorMessage()
+                    );
                 }
             }
         }
