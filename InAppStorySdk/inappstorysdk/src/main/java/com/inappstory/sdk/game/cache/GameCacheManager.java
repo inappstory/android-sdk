@@ -21,6 +21,7 @@ import com.inappstory.sdk.stories.utils.KeyValueStorage;
 import com.inappstory.sdk.utils.ProgressCallback;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -116,7 +117,9 @@ public class GameCacheManager {
                         new GameLaunchConditionsChecker(core);
                 ConditionsResult result =
                         checker.checkConditions(
-                                data.gameLaunchConditions.launchConditions()
+                                data.gameLaunchConditions != null ?
+                                        data.gameLaunchConditions.launchConditions() :
+                                        new ArrayList<>()
                         );
                 gameModelCallback.onSuccess(data);
                 if (result instanceof GLCError) {
