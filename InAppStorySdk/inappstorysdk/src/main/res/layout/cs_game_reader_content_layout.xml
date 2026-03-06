@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:id="@+id/gr_content_layout"
     android:background="@android:color/black"
     android:clickable="true"
     tools:context=".game.reader.GameActivity">
@@ -50,14 +51,34 @@
                     android:layout_height="match_parent"
                     android:scaleType="centerCrop" />
 
-                <com.inappstory.sdk.stories.ui.widgets.TouchFrameLayout
-                    android:id="@+id/gameRefresh"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:id="@+id/gameRefreshContainer"
                     android:layout_centerInParent="true"
                     android:alpha="0"
-                    android:elevation="4dp"
-                    android:visibility="gone" />
+                    android:visibility="gone"
+                    android:elevation="4dp">
+
+                    <com.inappstory.sdk.stories.ui.widgets.TouchFrameLayout
+                        android:id="@+id/gameRefresh"
+                        android:layout_width="40dp"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_height="40dp" />
+                    <TextView
+                        android:layout_marginTop="16dp"
+                        android:layout_width="match_parent"
+                        android:visibility="gone"
+                        android:paddingHorizontal="24dp"
+                        android:textSize="16sp"
+                        android:textAlignment="viewStart"
+                        android:textColor="@color/white"
+                        android:maxLines="10"
+                        android:ellipsize="end"
+                        android:id="@+id/additionalErrorText"
+                        android:layout_height="wrap_content"/>
+                </LinearLayout>
 
                 <com.inappstory.sdk.game.ui.GameProgressLoader
                     android:id="@+id/gameProgressLoader"
@@ -86,6 +107,6 @@
         android:layout_marginBottom="8dp"
         android:background="@null"
         android:elevation="10dp"
-        android:visibility="gone"/>
+        android:visibility="gone" />
 </RelativeLayout>
 

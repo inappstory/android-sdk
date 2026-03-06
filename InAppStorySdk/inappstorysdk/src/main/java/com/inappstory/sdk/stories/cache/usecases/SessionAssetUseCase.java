@@ -2,6 +2,7 @@ package com.inappstory.sdk.stories.cache.usecases;
 
 
 import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.game.cache.SimpleUseCaseError;
 import com.inappstory.sdk.game.cache.UseCaseCallback;
 import com.inappstory.sdk.lrudiskcache.CacheJournalItem;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
@@ -53,7 +54,7 @@ public class SessionAssetUseCase extends GetCacheFileUseCase<Void> {
                 public void finish(DownloadFileState fileState) {
                     downloadLog.sendResponseLog();
                     if (fileState == null) {
-                        useCaseCallback.onError("Can't download bundle file: " + cacheObject.url);
+                        useCaseCallback.onError(new SimpleUseCaseError("Can't download bundle file: " + cacheObject.url));
                         return;
                     }
                     CacheJournalItem cacheJournalItem = generateCacheItem();
@@ -85,7 +86,7 @@ public class SessionAssetUseCase extends GetCacheFileUseCase<Void> {
                     );
 
         } catch (Exception e) {
-            useCaseCallback.onError(e.getMessage());
+            useCaseCallback.onError(new SimpleUseCaseError(e.getMessage()));
         }
     }
 

@@ -370,7 +370,7 @@ public class GameManager {
             clearTries();
             if (logger != null)
                 logger.startQueue(false);
-            host.gameLoadedErrorCallback.onError(null, reason);
+            host.gameLoadedErrorCallback.onError(null, false, reason);
         }
     }
 

@@ -26,6 +26,7 @@ import com.inappstory.sdk.core.utils.ConnectionCheck;
 import com.inappstory.sdk.core.utils.ConnectionCheckCallback;
 import com.inappstory.sdk.core.utils.StringWithPlaceholders;
 import com.inappstory.sdk.game.cache.SuccessUseCaseCallback;
+import com.inappstory.sdk.game.cache.UseCaseError;
 import com.inappstory.sdk.game.reader.GameStoryData;
 import com.inappstory.sdk.imageloader.CustomFileLoader;
 import com.inappstory.sdk.stories.api.models.ContentType;
@@ -112,7 +113,7 @@ public class StackStoryObserver implements IStackFeedActions {
                     }
 
                     @Override
-                    public void onError(String message) {
+                    public void onError(UseCaseError message) {
                         localStackStoryData.updateStoryDataCover(
                                 null,
                                 StackStoryCoverLoadType.IMAGE,
@@ -133,7 +134,7 @@ public class StackStoryObserver implements IStackFeedActions {
                     }
 
                     @Override
-                    public void onError(String message) {
+                    public void onError(UseCaseError message) {
                         localStackStoryData.updateStoryDataCover(
                                 null,
                                 StackStoryCoverLoadType.VIDEO,

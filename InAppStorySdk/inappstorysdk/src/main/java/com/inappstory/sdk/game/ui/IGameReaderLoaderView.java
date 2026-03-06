@@ -5,4 +5,5 @@ import android.view.View;
 
 public interface IGameReaderLoaderView extends IGameProgressLoader {
     View getView(Context context);
+    void changeLayoutDirection(View view, int layoutDirection);
 }

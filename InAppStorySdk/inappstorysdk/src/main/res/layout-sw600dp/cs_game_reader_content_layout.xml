@@ -5,6 +5,7 @@
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:clickable="true"
+    android:id="@+id/gr_content_layout"
     tools:context=".game.reader.GameActivity">
 
     <View
@@ -64,14 +65,34 @@
                     android:layout_height="match_parent"
                     android:scaleType="centerCrop" />
 
-                <com.inappstory.sdk.stories.ui.widgets.TouchFrameLayout
-                    android:layout_width="40dp"
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
                     android:layout_centerInParent="true"
-                    android:id="@+id/gameRefresh"
-                    android:alpha="0"
-                    android:elevation="2dp"
                     android:visibility="gone"
-                    android:layout_height="40dp"/>
+                    android:id="@+id/gameRefreshContainer"
+                    android:elevation="4dp"
+                    android:alpha="0"
+                    android:gravity="center_horizontal">
+
+                    <com.inappstory.sdk.stories.ui.widgets.TouchFrameLayout
+                        android:id="@+id/gameRefresh"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp" />
+                    <TextView
+                        android:layout_marginTop="16dp"
+                        android:layout_width="match_parent"
+                        android:visibility="gone"
+                        android:paddingHorizontal="24dp"
+                        android:textSize="16sp"
+                        android:textAlignment="center"
+                        android:textColor="@color/white"
+                        android:maxLines="10"
+                        android:ellipsize="end"
+                        android:id="@+id/additionalErrorText"
+                        android:layout_height="wrap_content"/>
+                </LinearLayout>
 
                 <com.inappstory.sdk.game.ui.GameProgressLoader
                     android:layout_width="match_parent"

@@ -31,6 +31,7 @@ import com.inappstory.sdk.externalapi.StoryFavoriteItemAPIData;
 import com.inappstory.sdk.externalapi.storylist.IASStoryListRequestData;
 import com.inappstory.sdk.externalapi.storylist.IASStoryListSessionData;
 import com.inappstory.sdk.game.cache.SuccessUseCaseCallback;
+import com.inappstory.sdk.game.cache.UseCaseError;
 import com.inappstory.sdk.game.reader.GameStoryData;
 import com.inappstory.sdk.imageloader.CustomFileLoader;
 import com.inappstory.sdk.stories.api.models.ContentType;
@@ -343,7 +344,7 @@ public class InAppStoryAPISubscribersManager {
                     }
 
                     @Override
-                    public void onError(String message) {
+                    public void onError(UseCaseError error) {
                         favoriteItemAPIData.add(new StoryFavoriteItemAPIData(favoriteImage, null));
                         cacheFavoriteCellImage(iterator, favoriteItemAPIData, uniqueId);
                     }

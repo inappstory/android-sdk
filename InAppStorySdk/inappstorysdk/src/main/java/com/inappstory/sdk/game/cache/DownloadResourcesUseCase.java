@@ -71,8 +71,8 @@ public class DownloadResourcesUseCase {
                     interruption,
                     new UseCaseCallback<Void>() {
                         @Override
-                        public void onError(String message) {
-                            useCaseCallback.onError(message);
+                        public void onError(UseCaseError error) {
+                            useCaseCallback.onError(error);
                             terminate = true;
                         }
 

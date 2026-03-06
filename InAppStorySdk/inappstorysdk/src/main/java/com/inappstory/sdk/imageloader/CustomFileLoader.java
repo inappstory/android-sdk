@@ -5,7 +5,9 @@ import androidx.annotation.NonNull;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
+import com.inappstory.sdk.game.cache.SimpleUseCaseError;
 import com.inappstory.sdk.game.cache.SuccessUseCaseCallback;
+import com.inappstory.sdk.game.cache.UseCaseError;
 import com.inappstory.sdk.memcache.GetBitmapFromCacheWithFilePath;
 import com.inappstory.sdk.memcache.IGetBitmapFromMemoryCache;
 import com.inappstory.sdk.memcache.IGetBitmapFromMemoryCacheError;
@@ -41,8 +43,8 @@ public class CustomFileLoader {
                             }
 
                             @Override
-                            public void onError(String message) {
-                                useCaseCallback.onError(message);
+                            public void onError(UseCaseError error) {
+                                useCaseCallback.onError(error);
                             }
                         }
                 ).getFile();
@@ -50,7 +52,7 @@ public class CustomFileLoader {
 
             @Override
             public void error() {
-                useCaseCallback.onError("");
+                useCaseCallback.onError(new SimpleUseCaseError(""));
             }
         });
     }
@@ -67,7 +69,7 @@ public class CustomFileLoader {
             }
 
             @Override
-            public void onError(String message) {
+            public void onError(UseCaseError message) {
                 error.onError();
             }
         });

@@ -8,6 +8,7 @@ import android.system.Os;
 import android.util.Log;
 
 import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.game.cache.SimpleUseCaseError;
 import com.inappstory.sdk.game.cache.UseCaseCallback;
 import com.inappstory.sdk.lrudiskcache.CacheJournalItem;
 import com.inappstory.sdk.lrudiskcache.FileChecker;
@@ -155,7 +156,7 @@ public class GameResourceUseCase extends GetCacheFileUseCase<Void> {
                     resource.key == null ||
                     resource.key.isEmpty()
             ) {
-                useCaseCallback.onError("Wrong resource key or url");
+                useCaseCallback.onError(new SimpleUseCaseError("Wrong resource key or url"));
                 return;
             }
             long offset = 0;
@@ -172,7 +173,7 @@ public class GameResourceUseCase extends GetCacheFileUseCase<Void> {
                             public void finish(DownloadFileState fileState) {
                                 downloadLog.sendResponseLog();
                                 if (fileState == null || fileState.downloadedSize != fileState.totalSize) {
-                                    useCaseCallback.onError("Download interrupted");
+                                    useCaseCallback.onError(new SimpleUseCaseError("Download interrupted"));
                                 } else {
                                     if (fileChecker.checkWithShaAndSize(
                                             fileState.file,
@@ -186,12 +187,12 @@ public class GameResourceUseCase extends GetCacheFileUseCase<Void> {
                                         try {
                                             getCache().put(cacheJournalItem);
                                         } catch (IOException e) {
-                                            useCaseCallback.onError(e.getMessage());
+                                            useCaseCallback.onError(new SimpleUseCaseError(e.getMessage()));
                                         }
                                         progressCallback.onProgress(resource.size, resource.size);
                                         useCaseCallback.onSuccess(null);
                                     } else {
-                                        useCaseCallback.onError("Wrong size or sha1");
+                                        useCaseCallback.onError(new SimpleUseCaseError("Wrong size or sha1"));
                                     }
                                 }
                             }
@@ -230,12 +231,12 @@ public class GameResourceUseCase extends GetCacheFileUseCase<Void> {
                                 callback
                         );
             } catch (Exception e) {
-                useCaseCallback.onError(e.getMessage());
+                useCaseCallback.onError(new SimpleUseCaseError(e.getMessage()));
                 e.printStackTrace();
             }
         } catch (Exception e) {
             core.exceptionManager().createExceptionLog(e);
-            useCaseCallback.onError(e.getMessage());
+            useCaseCallback.onError(new SimpleUseCaseError(e.getMessage()));
         }
     }
 

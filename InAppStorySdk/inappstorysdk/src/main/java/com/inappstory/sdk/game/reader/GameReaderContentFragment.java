@@ -21,6 +21,11 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.TextPaint;
+import android.text.method.LinkMovementMethod;
+import android.text.style.ClickableSpan;
 import android.util.Log;
 import android.util.SizeF;
 import android.view.LayoutInflater;
@@ -37,6 +42,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -65,8 +71,11 @@ import com.inappstory.sdk.core.ui.screens.gamereader.BaseGameScreen;
 import com.inappstory.sdk.core.ui.screens.gamereader.GameReaderOverlapContainerDataForShare;
 import com.inappstory.sdk.game.cache.FilePathAndContent;
 import com.inappstory.sdk.game.cache.SetGameLoggerCallback;
+import com.inappstory.sdk.game.cache.UIUseCaseError;
 import com.inappstory.sdk.game.cache.UseCaseCallback;
+import com.inappstory.sdk.game.cache.UseCaseError;
 import com.inappstory.sdk.game.cache.UseCaseWarnCallback;
+import com.inappstory.sdk.game.cache.UseCaseWithShowErrorCallback;
 import com.inappstory.sdk.game.reader.logger.GameLog;
 import com.inappstory.sdk.game.ui.GameProgressLoader;
 import com.inappstory.sdk.game.utils.GameConstants;
@@ -83,6 +92,8 @@ import com.inappstory.sdk.stories.outercallbacks.common.reader.ContentData;
 import com.inappstory.sdk.inappmessage.InAppMessageData;
 import com.inappstory.sdk.stories.ui.widgets.TouchFrameLayout;
 import com.inappstory.sdk.utils.IAcceleratorSubscriber;
+import com.inappstory.sdk.utils.MDStringModel;
+import com.inappstory.sdk.utils.MDStringReplacement;
 import com.inappstory.sdk.utils.UrlEncoder;
 import com.inappstory.sdk.network.utils.UserAgent;
 import com.inappstory.sdk.share.IASShareData;
@@ -116,12 +127,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 public class GameReaderContentFragment extends Fragment implements OverlapFragmentObserver, IASBackPressHandler, IAcceleratorSubscriber {
     private IASWebView webView;
     private ImageView loader;
     private FrameLayout gameWebViewContainer;
     private TouchFrameLayout closeButton;
+    private TextView additionalError;
     private View blackTop;
     private View blackBottom;
     private View webViewAndLoaderContainer;
@@ -132,6 +147,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
     public static final int GAME_READER_REQUEST = 405;
 
     private TouchFrameLayout refreshGame;
+    private LinearLayout refreshGameContainer;
 
     private boolean onBackPressedLocked = false;
 
@@ -165,7 +181,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
 
     GameLoadedError gameLoadedErrorCallback = new GameLoadedError() {
         @Override
-        public void onError(final GameCenterData data, String error) {
+        public void onError(GameCenterData data, final boolean showInUI, final String error) {
             manager.gameLoadError();
             InAppStoryManager.showDLog(LoggerTags.IAS_GAME_LOADING, error);
             if (webView != null)
@@ -173,12 +189,59 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                     @Override
                     public void run() {
                         closeButton.setVisibility(View.VISIBLE);
+                        if (showInUI) {
+                            additionalError.setVisibility(View.VISIBLE);
+                            additionalError.setText(parseErrorMDText(error));
+                            additionalError.setMovementMethod(LinkMovementMethod.getInstance());
+                        } else {
+                            additionalError.setVisibility(View.GONE);
+                        }
                         showRefresh.run();
                     }
                 });
         }
     };
 
+    private void defaultUrlClick(String url) {
+        Intent i = new Intent(Intent.ACTION_VIEW);
+        i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        i.setData(Uri.parse(url));
+        try {
+            getContext().startActivity(i);
+            if (getContext() instanceof Activity) {
+                ((Activity) getContext()).overridePendingTransition(R.anim.popup_show, R.anim.empty_animation);
+            }
+        } catch (Exception e) {
+
+        }
+    }
+
+    private SpannableString parseErrorMDText(String raw) {
+        MDStringModel stringModel = StringsUtils.generateMDStringReplacement(raw);
+        if (stringModel == null) return new SpannableString(raw);
+        SpannableString ss = new SpannableString(stringModel.valueText);
+        String currentKeyReplacedString = stringModel.keyText;
+        for (int i = 0; i < stringModel.replacements.size(); i++) {
+            MDStringReplacement replacement = stringModel.replacements.get(i);
+            ClickableSpan clickableSpan = new ClickableSpan() {
+                @Override
+                public void onClick(View textView) {
+                    defaultUrlClick(replacement.link);
+                }
+
+                @Override
+                public void updateDrawState(TextPaint ds) {
+                    super.updateDrawState(ds);
+                    ds.setUnderlineText(true);
+                }
+            };
+            int startIndex = currentKeyReplacedString.indexOf(replacement.key);
+            int endIndex = startIndex + replacement.value.length();
+            ss.setSpan(clickableSpan, startIndex, endIndex, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            currentKeyReplacedString = currentKeyReplacedString.replace(replacement.key, replacement.value);
+        }
+        return ss;
+    }
 
     public void shareComplete(String id, boolean success) {
         if (webView != null)
@@ -469,7 +532,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                     public void onClick(View v) {
                         interruption.active = false;
                         progressLoader.setProgress(0, 100);
-                        changeView(progressLoader, refreshGame);
+                        changeView(progressLoader, refreshGameContainer);
                         new Handler().postDelayed(new Runnable() {
                             @Override
                             public void run() {
@@ -904,7 +967,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
     Runnable showRefresh = new Runnable() {
         @Override
         public void run() {
-            changeView(refreshGame, progressLoader);
+            changeView(refreshGameContainer, progressLoader);
         }
     };
 
@@ -940,7 +1003,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
     private void checkIntentValues(IASCore core, final GameLoadedError callback) {
         String gameId = gameReaderLaunchData.getGameId();
         if (gameId == null) {
-            callback.onError(null, "No game id");
+            callback.onError(null, false, "No game id");
             forceFinish();
             return;
         }
@@ -1022,6 +1085,8 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         );
     }
 
+    private int currentLayoutDirection = View.LAYOUT_DIRECTION_LTR;
+
     void downloadGame(
             final String gameId,
             final boolean forceReloadArchive
@@ -1056,8 +1121,8 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                             }
 
                             @Override
-                            public void onError(String message) {
-                                InAppStoryManager.showDLog("Game_Loading", message);
+                            public void onError(UseCaseError error) {
+                                InAppStoryManager.showDLog("Game_Loading", error.message());
                             }
 
                             @Override
@@ -1075,9 +1140,9 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                             }
 
                             @Override
-                            public void onError(String message) {
-                                progressLoader.launchLoaderAnimation(null);
-                                InAppStoryManager.showDLog("Game_Loading", message);
+                            public void onError(UseCaseError error) {
+                                progressLoader.launchLoaderAnimation(null, currentLayoutDirection);
+                                InAppStoryManager.showDLog("Game_Loading", error.message());
                             }
 
                             @Override
@@ -1088,11 +1153,15 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                         },
                         new UseCaseCallback<IGameCenterData>() {
                             @Override
-                            public void onError(String message) {
+                            public void onError(UseCaseError error) {
                                 if (manager != null && manager.logger != null) {
-                                    manager.logger.sendSdkError(message, null);
+                                    manager.logger.sendSdkError(error.message(), null);
                                 }
-                                gameLoadedErrorCallback.onError(null, message);
+                                gameLoadedErrorCallback.onError(
+                                        null,
+                                        false,
+                                        error.message()
+                                );
                             }
 
                             @Override
@@ -1104,6 +1173,10 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                                     @Override
                                     public void run() {
                                         GameCenterData gameCenterData = (GameCenterData) iGameCenterData;
+                                        currentLayoutDirection = gameCenterData.layoutDirectionRaw();
+                                        if (getView() != null)
+                                            getView().setLayoutDirection(currentLayoutDirection);
+                                        progressLoader.layoutDirection(currentLayoutDirection);
                                         progressLoader.setIndeterminate(false);
                                         manager.statusHolder.setTotalReloadTries(
                                                 gameCenterData.canTryReloadCount()
@@ -1134,15 +1207,20 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                             }
                         },
                         new UseCaseCallback<FilePathAndContent>() {
+
                             @Override
-                            public void onError(final String message) {
+                            public void onError(final UseCaseError error) {
                                 webView.post(new Runnable() {
                                     @Override
                                     public void run() {
                                         if (manager != null && manager.logger != null) {
-                                            manager.logger.sendSdkError(message, null);
+                                            manager.logger.sendSdkError(error.message(), null);
                                         }
-                                        gameLoadedErrorCallback.onError(null, message);
+                                        gameLoadedErrorCallback.onError(
+                                                null,
+                                                error instanceof UIUseCaseError,
+                                                error.message()
+                                        );
                                     }
                                 });
                             }
@@ -1151,7 +1229,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                             public void onSuccess(final FilePathAndContent result) {
                                 CachedSessionData sessionData = ((IASDataSettingsHolder) core.settingsAPI()).sessionData();
                                 if (sessionData == null) {
-                                    gameLoadedErrorCallback.onError(null, "No session found");
+                                    gameLoadedErrorCallback.onError(null, false, "No session found");
                                     return;
                                 }
                                 if (sessionData.preloadGames)
@@ -1404,7 +1482,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
 
     private void setLoader(File splashFile) {
         Log.e("LoaderFile", "Anim " + (splashFile != null ? splashFile.getAbsolutePath() : "empty"));
-        progressLoader.launchLoaderAnimation(splashFile);
+        progressLoader.launchLoaderAnimation(splashFile, currentLayoutDirection);
     }
 
     private void setStaticSplashScreen(File splashFile) {
@@ -1447,6 +1525,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         Context context = view.getContext();
 
         refreshGame = view.findViewById(R.id.gameRefresh);
+        refreshGameContainer = view.findViewById(R.id.gameRefreshContainer);
         int maxRefreshSize = Sizes.dpToPxExt(40, context);
         final CustomIconWithoutStates refreshIconInterface = AppearanceManager.getCommonInstance().csCustomIcons().refreshIcon();
         final View refreshView = refreshIconInterface.createIconView(context, new SizeF(maxRefreshSize, maxRefreshSize));
@@ -1461,6 +1540,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         });
 
         closeButton = view.findViewById(R.id.close_button);
+        additionalError = view.findViewById(R.id.additionalErrorText);
         int maxCloseSize = Sizes.dpToPxExt(30, context);
         final CustomIconWithoutStates closeIconInterface = AppearanceManager.getCommonInstance().csCustomIcons().closeIcon();
         final View closeView = closeIconInterface.createIconView(context, new SizeF(maxCloseSize, maxCloseSize));

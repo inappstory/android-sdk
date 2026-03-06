@@ -14,6 +14,8 @@ import android.widget.TextView;
 import com.inappstory.sdk.stories.ui.widgets.LoadProgressBar;
 import com.inappstory.sdk.stories.utils.Sizes;
 
+import java.util.Locale;
+
 
 public class GameReaderLoadProgressBarWithText extends RelativeLayout implements IGameReaderLoaderView {
 
@@ -23,8 +25,14 @@ public class GameReaderLoadProgressBarWithText extends RelativeLayout implements
     TextView progressText;
 
 
+    public int currentLayoutDirection = LAYOUT_DIRECTION_LTR;
+
     public GameReaderLoadProgressBarWithText(Context context) {
         this(context, null);
+    }
+
+    public GameReaderLoadProgressBarWithText(int currentLayoutDirection, Context context) {
+        this(currentLayoutDirection, context, null, 0);
     }
 
     private final int strokeWidthDP = 4;
@@ -46,10 +54,21 @@ public class GameReaderLoadProgressBarWithText extends RelativeLayout implements
         initViews();
     }
 
+    public GameReaderLoadProgressBarWithText(
+            int currentLayoutDirection,
+                                             Context context,
+                                             AttributeSet attrs,
+                                             int defStyleAttr
+    ) {
+        super(context, attrs, defStyleAttr);
+        this.currentLayoutDirection = currentLayoutDirection;
+        initViews();
+    }
+
     private void initViews() {
         RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT,
-                Sizes.dpToPxExt((int)(2.5 * sizeDP), getContext())
+                Sizes.dpToPxExt((int) (2.5 * sizeDP), getContext())
         );
         lp.addRule(CENTER_IN_PARENT);
         setLayoutParams(lp);
@@ -73,7 +92,7 @@ public class GameReaderLoadProgressBarWithText extends RelativeLayout implements
         lp.addRule(CENTER_HORIZONTAL);
         progressText.setLayoutParams(lp);
         progressText.setTextColor(Color.WHITE);
-        progressText.setText("0 %");
+        progressText.setText(String.format(Locale.US, "%d %%", 0));
         addView(progressText);
     }
 
@@ -82,13 +101,17 @@ public class GameReaderLoadProgressBarWithText extends RelativeLayout implements
         return this;
     }
 
-    @SuppressLint("DefaultLocale")
+    @Override
+    public void changeLayoutDirection(View view, int layoutDirection) {
+        this.progressText.setLayoutDirection(layoutDirection);
+    }
+
     @Override
     public void setProgress(int progress, int max) {
         int currentProgress = (max == 0) ? 0 : (int) (90 * ((1f * progress) / max));
         currentProgress = Math.min(currentProgress, 90);
         this.progressBar.setProgress(currentProgress, 90);
-        this.progressText.setText(String.format("%d %%", currentProgress));
+        this.progressText.setText(String.format(Locale.US, "%d %%", currentProgress));
     }
 
     @Override
@@ -96,10 +119,9 @@ public class GameReaderLoadProgressBarWithText extends RelativeLayout implements
         this.isIndeterminate = indeterminate;
     }
 
-    @SuppressLint("DefaultLocale")
     @Override
     public void launchFinalAnimation() {
         this.progressBar.setProgress(100, 100);
-        this.progressText.setText(String.format("%d %%", 100));
+        this.progressText.setText(String.format(Locale.US, "%d %%", 100));
     }
 }

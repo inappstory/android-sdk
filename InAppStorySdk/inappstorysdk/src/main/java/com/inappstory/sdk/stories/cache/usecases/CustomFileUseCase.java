@@ -3,6 +3,7 @@ package com.inappstory.sdk.stories.cache.usecases;
 import android.util.Log;
 
 import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.game.cache.SimpleUseCaseError;
 import com.inappstory.sdk.game.cache.UseCaseCallback;
 import com.inappstory.sdk.lrudiskcache.CacheJournalItem;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
@@ -56,7 +57,7 @@ public class CustomFileUseCase extends GetCacheFileUseCase<Void> {
                                     public void finish(DownloadFileState fileState) {
                                         downloadLog.sendResponseLog();
                                         if (fileState == null || fileState.downloadedSize != fileState.totalSize) {
-                                            getFileCallback.onError("");
+                                            getFileCallback.onError(new SimpleUseCaseError(""));
                                             return;
                                         }
                                         Log.e("ScenarioDownload", "Downloaded: " + uniqueKey + " Url: " + url);
@@ -67,7 +68,7 @@ public class CustomFileUseCase extends GetCacheFileUseCase<Void> {
                                             getCache().put(cacheJournalItem);
                                         } catch (IOException e) {
 
-                                            getFileCallback.onError(e.getMessage());
+                                            getFileCallback.onError(new SimpleUseCaseError(e.getMessage()));
                                         }
                                         getFileCallback.onSuccess(new File(filePath));
                                     }
@@ -90,7 +91,7 @@ public class CustomFileUseCase extends GetCacheFileUseCase<Void> {
                                         );
 
                             } catch (Exception e) {
-                                getFileCallback.onError(e.getMessage());
+                                getFileCallback.onError(new SimpleUseCaseError(e.getMessage()));
                             }
                         }
                     });

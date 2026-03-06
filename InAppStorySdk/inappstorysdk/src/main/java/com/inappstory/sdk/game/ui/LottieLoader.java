@@ -84,4 +84,9 @@ public class LottieLoader implements IGameReaderLoaderView {
     public View getView(Context context) {
         return (View) lottieView;
     }
+
+    @Override
+    public void changeLayoutDirection(View view, int layoutDirection) {
+
+    }
 }

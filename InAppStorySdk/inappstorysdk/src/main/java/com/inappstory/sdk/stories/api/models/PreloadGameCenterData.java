@@ -50,6 +50,16 @@ public class PreloadGameCenterData implements IGameCenterData {
     }
 
     @Override
+    public String layoutDirectionString() {
+        return null;
+    }
+
+    @Override
+    public int layoutDirectionRaw() {
+        return 0;
+    }
+
+    @Override
     public GameSplashAnimation splashAnimation() {
         return splashAnimation;
     }

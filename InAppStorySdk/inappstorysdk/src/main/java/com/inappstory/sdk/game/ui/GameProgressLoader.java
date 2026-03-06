@@ -19,6 +19,7 @@ import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 
 import java.io.File;
+import java.util.Locale;
 
 
 public class GameProgressLoader extends RelativeLayout implements IGameProgressLoader {
@@ -64,7 +65,7 @@ public class GameProgressLoader extends RelativeLayout implements IGameProgressL
 
     IGameProgressLoader progressLoader = null;
 
-    public void launchLoaderAnimation(final File customFile) {
+    public void launchLoaderAnimation(final File customFile, final int currentLayoutDirection) {
         post(new Runnable() {
             @Override
             public void run() {
@@ -78,11 +79,30 @@ public class GameProgressLoader extends RelativeLayout implements IGameProgressL
                     progressLoader = new LottieLoader(getContext(), customFile);
                     v = ((LottieLoader) progressLoader).getView(getContext());
                 } else {
-                    GameReaderLoadProgressBarWithText loadProgressBar = new GameReaderLoadProgressBarWithText(getContext());
+                    GameReaderLoadProgressBarWithText loadProgressBar = new GameReaderLoadProgressBarWithText(
+                            currentLayoutDirection,
+                            getContext()
+                    );
                     progressLoader = loadProgressBar;
                     v = loadProgressBar;
                 }
                 addView(v);
+            }
+        });
+
+    }
+
+    public void layoutDirection(int layoutDirection) {
+        post(new Runnable() {
+            @Override
+            public void run() {
+                if (progressLoader instanceof GameReaderLoadProgressBarWithText) {
+                    ((GameReaderLoadProgressBarWithText) progressLoader)
+                            .changeLayoutDirection(
+                                    (GameReaderLoadProgressBarWithText) progressLoader,
+                                    layoutDirection
+                            );
+                }
             }
         });
 

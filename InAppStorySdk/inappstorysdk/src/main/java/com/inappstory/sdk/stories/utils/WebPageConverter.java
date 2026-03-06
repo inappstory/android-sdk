@@ -16,6 +16,7 @@ import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.game.cache.UseCaseCallback;
 import com.inappstory.sdk.core.data.IResource;
 import com.inappstory.sdk.core.data.IReaderContent;
+import com.inappstory.sdk.game.cache.UseCaseError;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderType;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
 import com.inappstory.sdk.core.network.content.models.SessionAsset;
@@ -71,7 +72,7 @@ public class WebPageConverter {
                         core,
                         new UseCaseCallback<File>() {
                             @Override
-                            public void onError(String message) {
+                            public void onError(UseCaseError message) {
 
                             }
 

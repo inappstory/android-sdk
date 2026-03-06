@@ -1,6 +1,7 @@
 package com.inappstory.sdk.stories.cache.usecases;
 
 import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.game.cache.SimpleUseCaseError;
 import com.inappstory.sdk.game.cache.UseCaseCallback;
 import com.inappstory.sdk.lrudiskcache.CacheJournalItem;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
@@ -67,7 +68,7 @@ public class SessionAssetLocalUseCase extends GetCacheFileUseCase<Void> {
                 deleteCacheKey();
             }
         }
-        useCaseCallback.onError("No local file");
+        useCaseCallback.onError(new SimpleUseCaseError("No local file"));
         return false;
     }
 

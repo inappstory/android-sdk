@@ -7,6 +7,7 @@ import com.inappstory.sdk.core.api.IASAssetsHolder;
 import com.inappstory.sdk.core.network.content.models.SessionAsset;
 import com.inappstory.sdk.game.cache.SessionAssetsIsReadyCallback;
 import com.inappstory.sdk.game.cache.UseCaseCallback;
+import com.inappstory.sdk.game.cache.UseCaseError;
 import com.inappstory.sdk.stories.cache.usecases.SessionAssetUseCase;
 
 import java.io.File;
@@ -63,11 +64,10 @@ public class IASAssetsHolderImpl implements IASAssetsHolder {
                     new SessionAssetUseCase(core,
                             new UseCaseCallback<File>() {
                                 @Override
-                                public void onError(String message) {
+                                public void onError(UseCaseError error) {
                                     synchronized (assetsLock) {
                                         assetsStatus[0] = false;
                                     }
-                                    Log.e("IASAssets", message);
                                 }
 
                                 @Override

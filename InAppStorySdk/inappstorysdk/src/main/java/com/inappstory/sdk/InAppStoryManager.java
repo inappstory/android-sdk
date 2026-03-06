@@ -1872,7 +1872,7 @@ public class InAppStoryManager implements IASBackPressHandler {
                     return null;
                 }
             }
-            if (INSTANCE.core != null)
+            if (INSTANCE.core != null) {
                 if (!WebViewUtils.isWebViewEnabled(INSTANCE.core)) {
                     showELog(
                             LoggerTags.IAS_ERROR_TAG,
@@ -1880,6 +1880,7 @@ public class InAppStoryManager implements IASBackPressHandler {
                     );
                     return null;
                 }
+            }
             INSTANCE.build(Builder.this);
             return INSTANCE;
         }
