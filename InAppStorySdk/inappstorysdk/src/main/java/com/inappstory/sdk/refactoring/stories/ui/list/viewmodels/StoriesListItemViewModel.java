@@ -3,6 +3,7 @@ package com.inappstory.sdk.refactoring.stories.ui.list.viewmodels;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.refactoring.core.utils.observers.Observable;
 import com.inappstory.sdk.refactoring.core.utils.observers.Observer;
+import com.inappstory.sdk.refactoring.stories.IStoriesListItemChangeSubscriber;
 import com.inappstory.sdk.refactoring.stories.data.local.StoriesListItemDTO;
 import com.inappstory.sdk.refactoring.stories.ui.list.states.StoriesListItemClickType;
 import com.inappstory.sdk.refactoring.stories.ui.list.states.StoriesListItemCoverState;
@@ -10,16 +11,22 @@ import com.inappstory.sdk.refactoring.stories.ui.list.states.StoriesListItemStat
 import com.inappstory.sdk.stories.cache.usecases.IGetStoryCoverCallback;
 import com.inappstory.sdk.stories.cache.usecases.StoryCoverUseCase;
 
-public class StoriesListItemViewModel {
+public class StoriesListItemViewModel implements IStoriesListItemChangeSubscriber {
     private final Observable<StoriesListItemState> storiesListItemStateObservable =
             new Observable<>(null);
 
     private StoriesListItemDTO listItemDTO;
 
     private final IASCore core;
+    private final String storyId;
 
-    public StoriesListItemViewModel(IASCore core) {
+    public StoriesListItemViewModel(
+            IASCore core,
+            String storyId
+    ) {
         this.core = core;
+        this.storyId = storyId;
+        core.storyChangesSubscribers().addStoryChangeSubscriber(this);
     }
 
     public void addSubscriber(Observer<StoriesListItemState> observer) {
@@ -119,7 +126,14 @@ public class StoriesListItemViewModel {
         ).getFile();
     }
 
-    public void setItem(StoriesListItemDTO dto) {
+    public void clear() {
+        core.storyChangesSubscribers().removeStoryChangeSubscriber(this);
+        listItemDTO = null;
+        storiesListItemStateObservable.updateValue(null);
+    }
+
+    @Override
+    public void onChange(StoriesListItemDTO dto) {
         if (dto == null) return;
         listItemDTO = dto;
         StoriesListItemClickType clickType = StoriesListItemClickType.STORY;
@@ -147,7 +161,8 @@ public class StoriesListItemViewModel {
         );
     }
 
-    public void clear() {
-
+    @Override
+    public String getStoryId() {
+        return storyId;
     }
 }

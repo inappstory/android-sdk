@@ -48,11 +48,14 @@ import com.inappstory.sdk.core.dataholders.ContentHolder;
 import com.inappstory.sdk.core.dataholders.IContentHolder;
 import com.inappstory.sdk.core.dataholders.IStoriesListVMHolder;
 import com.inappstory.sdk.core.dataholders.StoriesListVMHolder;
+import com.inappstory.sdk.core.exceptions.NotImplementedMethodException;
 import com.inappstory.sdk.core.ui.screens.ScreensManager;
 import com.inappstory.sdk.core.utils.ContextConnectionCheck;
 import com.inappstory.sdk.domain.IWidgetsViewModels;
 import com.inappstory.sdk.domain.WidgetsViewModels;
 import com.inappstory.sdk.network.NetworkClient;
+import com.inappstory.sdk.refactoring.stories.repositories.IStoryChangesSubscribersHolder;
+import com.inappstory.sdk.refactoring.stories.ui.list.viewmodels.StoriesListViewModelsHolder;
 import com.inappstory.sdk.stories.exceptions.ExceptionManager;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
@@ -327,5 +330,15 @@ public class IASCoreImpl implements IASCore {
     @Override
     public CancellationTokenPool cancellationTokenPool() {
         return cancellationTokenPool;
+    }
+
+    @Override
+    public IStoryChangesSubscribersHolder storyChangesSubscribers() {
+        throw new NotImplementedMethodException();
+    }
+
+    @Override
+    public StoriesListViewModelsHolder storiesListViewModels() {
+        throw new NotImplementedMethodException();
     }
 }

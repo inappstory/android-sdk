@@ -47,6 +47,7 @@ public class StoriesListItemContainer
             this.listItemViewModel.removeSubscriber(this);
         this.listItemViewModel = null;
         this.appearanceManager = null;
+        this.currentState = null;
     }
 
     private void stateIsUpdated(StoriesListItemState value) {
@@ -93,6 +94,7 @@ public class StoriesListItemContainer
     public void onUpdate(StoriesListItemState newValue) {
         if (Objects.equals(newValue, currentState)) return;
         if (newValue == null) {
+            currentState = null;
             return;
         }
         if (currentState == null) {
