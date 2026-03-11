@@ -1,6 +1,6 @@
 package com.inappstory.sdk.refactoring.session.data.mappers;
 
-import com.inappstory.sdk.refactoring.core.utils.models.Mapper;
+import com.inappstory.sdk.refactoring.core.utils.usecases.Mapper;
 import com.inappstory.sdk.refactoring.session.data.local.SessionDTO;
 import com.inappstory.sdk.refactoring.session.data.network.NSession;
 

@@ -2,14 +2,14 @@ package com.inappstory.sdk.refactoring.stories.repositories.datasources;
 
 import androidx.annotation.NonNull;
 
-import com.inappstory.sdk.refactoring.core.utils.models.Error;
-import com.inappstory.sdk.refactoring.core.utils.models.Result;
-import com.inappstory.sdk.refactoring.core.utils.models.Success;
+import com.inappstory.sdk.refactoring.core.utils.results.Error;
+import com.inappstory.sdk.refactoring.core.utils.results.Result;
+import com.inappstory.sdk.refactoring.core.utils.results.Success;
 import com.inappstory.sdk.refactoring.stories.data.local.StoryCoverDTO;
 import com.inappstory.sdk.refactoring.stories.data.local.StoryDTO;
 import com.inappstory.sdk.refactoring.stories.data.local.StoryFeedDTO;
-import com.inappstory.sdk.refactoring.stories.data.local.StoryListItemDTO;
-import com.inappstory.sdk.refactoring.stories.usecases.StoryFeedParameters;
+import com.inappstory.sdk.refactoring.stories.data.local.StoriesListItemDTO;
+import com.inappstory.sdk.refactoring.stories.usecases.StoriesFeedParameters;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -22,9 +22,9 @@ public class StoryLocalDataSource implements IStoryLocalDataSource {
 
     private final List<StoryCoverDTO> favoriteCovers = new ArrayList<>();
     private boolean favoriteCoversLoaded = false;
-    private final Map<String, StoryListItemDTO> storyListItems = new HashMap<>();
+    private final Map<String, StoriesListItemDTO> storyListItems = new HashMap<>();
     private final Map<String, StoryDTO> stories = new HashMap<>();
-    private final Map<StoryFeedParameters, StoryFeedDTO> feeds = new HashMap<>();
+    private final Map<StoriesFeedParameters, StoryFeedDTO> feeds = new HashMap<>();
     private final Object contentLock = new Object();
 
     public StoryLocalDataSource() {
@@ -32,7 +32,7 @@ public class StoryLocalDataSource implements IStoryLocalDataSource {
     }
 
     @Override
-    public Result<StoryFeedDTO> getStoriesFeed(@NonNull StoryFeedParameters feedParameters) {
+    public Result<StoryFeedDTO> getStoriesFeed(@NonNull StoriesFeedParameters feedParameters) {
         synchronized (contentLock) {
             StoryFeedDTO feedDTO = this.feeds.get(feedParameters);
             if (feedDTO == null) return new Error<>("No local feed");
@@ -115,7 +115,7 @@ public class StoryLocalDataSource implements IStoryLocalDataSource {
 
 
     @Override
-    public boolean addOrUpdateStoryListItem(@NonNull StoryListItemDTO story) {
+    public boolean addOrUpdateStoryListItem(@NonNull StoriesListItemDTO story) {
         String key = Integer.toString(story.id());
         synchronized (contentLock) {
             if (Objects.equals(this.storyListItems.get(key), story)) return false;
@@ -125,7 +125,7 @@ public class StoryLocalDataSource implements IStoryLocalDataSource {
     }
 
     @Override
-    public boolean addOrUpdateStoriesFeed(@NonNull StoryFeedParameters feedParameters, @NonNull StoryFeedDTO feed) {
+    public boolean addOrUpdateStoriesFeed(@NonNull StoriesFeedParameters feedParameters, @NonNull StoryFeedDTO feed) {
         synchronized (contentLock) {
             if (Objects.equals(this.feeds.get(feedParameters), feed)) return false;
             this.feeds.put(feedParameters, feed);
@@ -136,7 +136,7 @@ public class StoryLocalDataSource implements IStoryLocalDataSource {
     @Override
     public boolean likeDislikeStory(@NonNull String storyId, int likeValue) {
         synchronized (contentLock) {
-            for (StoryListItemDTO listItemDTO : storyListItems.values()) {
+            for (StoriesListItemDTO listItemDTO : storyListItems.values()) {
                 if (storyId.equals(Integer.toString(listItemDTO.id())) && listItemDTO.like() != likeValue) {
                     listItemDTO.like(likeValue);
                     break;
@@ -165,11 +165,11 @@ public class StoryLocalDataSource implements IStoryLocalDataSource {
     }
 
     @Override
-    public Result<StoryListItemDTO> getStoryListItemById(@NonNull String storyId) {
+    public Result<StoriesListItemDTO> getStoryListItemById(@NonNull String storyId) {
         synchronized (contentLock) {
-            StoryListItemDTO storyListItemDTO = this.storyListItems.get(storyId);
-            if (storyListItemDTO == null) return new Error<>("No local item with id: " + storyId);
-            else return new Success<>(storyListItemDTO);
+            StoriesListItemDTO storiesListItemDTO = this.storyListItems.get(storyId);
+            if (storiesListItemDTO == null) return new Error<>("No local item with id: " + storyId);
+            else return new Success<>(storiesListItemDTO);
         }
     }
 

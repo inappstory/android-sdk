@@ -1,6 +1,6 @@
 package com.inappstory.sdk.refactoring.stories.usecases;
 
-import com.inappstory.sdk.refactoring.core.utils.models.ResultCallback;
+import com.inappstory.sdk.refactoring.core.utils.results.ResultCallback;
 import com.inappstory.sdk.refactoring.stories.repositories.IStoryRepository;
 
 public class LikeStory {

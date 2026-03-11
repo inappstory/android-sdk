@@ -1,8 +1,7 @@
 package com.inappstory.sdk.refactoring.stories.usecases;
 
-import com.inappstory.sdk.refactoring.core.utils.models.ResultCallback;
-import com.inappstory.sdk.refactoring.stories.data.local.StoryFeedDTO;
-import com.inappstory.sdk.refactoring.stories.data.local.StoryListItemDTO;
+import com.inappstory.sdk.refactoring.core.utils.results.ResultCallback;
+import com.inappstory.sdk.refactoring.stories.data.local.StoriesListItemDTO;
 import com.inappstory.sdk.refactoring.stories.repositories.IStoryRepository;
 
 import java.util.List;
@@ -14,7 +13,7 @@ public class GetFavoriteStories {
         this.storyRepository = storyRepository;
     }
 
-    void invoke(ResultCallback<List<StoryListItemDTO>> callback) {
+    void invoke(ResultCallback<List<StoriesListItemDTO>> callback) {
         this.storyRepository.getFavoriteStories(callback);
     }
 }

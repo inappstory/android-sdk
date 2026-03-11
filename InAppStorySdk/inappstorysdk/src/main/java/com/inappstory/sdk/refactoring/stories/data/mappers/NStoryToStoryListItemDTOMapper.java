@@ -1,14 +1,13 @@
 package com.inappstory.sdk.refactoring.stories.data.mappers;
 
-import com.inappstory.sdk.refactoring.core.utils.models.Mapper;
-import com.inappstory.sdk.refactoring.stories.data.local.StoryDTO;
-import com.inappstory.sdk.refactoring.stories.data.local.StoryListItemDTO;
+import com.inappstory.sdk.refactoring.core.utils.usecases.Mapper;
+import com.inappstory.sdk.refactoring.stories.data.local.StoriesListItemDTO;
 import com.inappstory.sdk.refactoring.stories.data.network.NStory;
 
-public class NStoryToStoryListItemDTOMapper implements Mapper<NStory, StoryListItemDTO> {
+public class NStoryToStoryListItemDTOMapper implements Mapper<NStory, StoriesListItemDTO> {
     @Override
-    public StoryListItemDTO convert(NStory obj) {
-        return new StoryListItemDTO(
+    public StoriesListItemDTO convert(NStory obj) {
+        return new StoriesListItemDTO(
                 obj.id,
                 obj.title,
                 obj.titleColor,

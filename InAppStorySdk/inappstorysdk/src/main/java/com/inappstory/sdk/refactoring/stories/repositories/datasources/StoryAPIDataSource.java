@@ -1,26 +1,21 @@
 package com.inappstory.sdk.refactoring.stories.repositories.datasources;
 
 import com.inappstory.sdk.core.IASCore;
-import com.inappstory.sdk.core.api.IASStatisticProfiling;
-import com.inappstory.sdk.core.network.content.models.Feed;
-import com.inappstory.sdk.core.network.content.models.Story;
-import com.inappstory.sdk.core.utils.ConnectionCheckCallback;
 import com.inappstory.sdk.core.utils.SimpleConnectionCheckCallback;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.network.models.RequestLocalParameters;
 import com.inappstory.sdk.network.models.Response;
-import com.inappstory.sdk.refactoring.core.utils.models.Error;
-import com.inappstory.sdk.refactoring.core.utils.models.Error424;
-import com.inappstory.sdk.refactoring.core.utils.models.NoInternetError;
-import com.inappstory.sdk.refactoring.core.utils.models.Result;
-import com.inappstory.sdk.refactoring.core.utils.models.ResultCallback;
-import com.inappstory.sdk.refactoring.core.utils.models.Success;
-import com.inappstory.sdk.refactoring.core.utils.models.TimeoutError;
+import com.inappstory.sdk.refactoring.core.utils.results.Error;
+import com.inappstory.sdk.refactoring.core.utils.results.Error424;
+import com.inappstory.sdk.refactoring.core.utils.results.NoInternetError;
+import com.inappstory.sdk.refactoring.core.utils.results.ResultCallback;
+import com.inappstory.sdk.refactoring.core.utils.results.Success;
+import com.inappstory.sdk.refactoring.core.utils.results.TimeoutError;
 import com.inappstory.sdk.refactoring.stories.data.network.NFeed;
 import com.inappstory.sdk.refactoring.stories.data.network.NStory;
 import com.inappstory.sdk.refactoring.stories.data.network.NStoryCover;
 import com.inappstory.sdk.refactoring.stories.data.network.NStoryCoverListType;
-import com.inappstory.sdk.refactoring.stories.usecases.StoryFeedParameters;
+import com.inappstory.sdk.refactoring.stories.usecases.StoriesFeedParameters;
 import com.inappstory.sdk.refactoring.stories.data.network.NStoryListType;
 import com.inappstory.sdk.stories.api.models.TargetingBodyObject;
 import com.inappstory.sdk.refactoring.stories.data.network.LoadNFeedCallback;
@@ -38,7 +33,7 @@ public class StoryAPIDataSource implements IStoryAPIDataSource {
     }
 
     @Override
-    public void getStoriesFeed(StoryFeedParameters feedParameters, ResultCallback<NFeed> storyFeedResultCallback) {
+    public void getStoriesFeed(StoriesFeedParameters feedParameters, ResultCallback<NFeed> storyFeedResultCallback) {
         final LoadNFeedCallback feedCallback = new LoadNFeedCallback() {
             @Override
             public void onSuccess(NFeed response) {
@@ -208,7 +203,7 @@ public class StoryAPIDataSource implements IStoryAPIDataSource {
 
     @Override
     public void getOnboardingStoriesFeed(
-            StoryFeedParameters feedParameters,
+            StoriesFeedParameters feedParameters,
             int limit,
             ResultCallback<NFeed> storyFeedResultCallback
     ) {

@@ -155,12 +155,6 @@ public final class StoriesListDefaultItem implements IStoriesListItem {
 
             return;
         }
-        InAppStoryManager.useCore(new UseIASCoreCallback() {
-            @Override
-            public void use(@NonNull IASCore core) {
-
-            }
-        });
         manager.getBitmap(path, new IGetBitmap() {
             @Override
             public void onSuccess(Bitmap bitmap) {

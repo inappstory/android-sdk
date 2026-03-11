@@ -1,17 +1,16 @@
 package com.inappstory.sdk.refactoring.stories.repositories.datasources;
 
-import com.inappstory.sdk.refactoring.core.utils.models.Result;
-import com.inappstory.sdk.refactoring.core.utils.models.ResultCallback;
+import com.inappstory.sdk.refactoring.core.utils.results.ResultCallback;
 import com.inappstory.sdk.refactoring.stories.data.network.NFeed;
 import com.inappstory.sdk.refactoring.stories.data.network.NStory;
 import com.inappstory.sdk.refactoring.stories.data.network.NStoryCover;
-import com.inappstory.sdk.refactoring.stories.usecases.StoryFeedParameters;
+import com.inappstory.sdk.refactoring.stories.usecases.StoriesFeedParameters;
 
 import java.util.List;
 
 public interface IStoryAPIDataSource {
     void getStoriesFeed(
-            StoryFeedParameters feedParameters,
+            StoriesFeedParameters feedParameters,
             ResultCallback<NFeed> storyFeedResultCallback
     );
 
@@ -24,7 +23,7 @@ public interface IStoryAPIDataSource {
     );
 
     void getOnboardingStoriesFeed(
-            StoryFeedParameters feedParameters,
+            StoriesFeedParameters feedParameters,
             int limit,
             ResultCallback<NFeed> storyFeedResultCallback
     );

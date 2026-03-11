@@ -1,23 +1,23 @@
 package com.inappstory.sdk.refactoring.stories.repositories;
 
-import com.inappstory.sdk.refactoring.core.utils.models.ResultCallback;
+import com.inappstory.sdk.refactoring.core.utils.results.ResultCallback;
 import com.inappstory.sdk.refactoring.stories.data.local.StoryCoverDTO;
 import com.inappstory.sdk.refactoring.stories.data.local.StoryDTO;
 import com.inappstory.sdk.refactoring.stories.data.local.StoryFeedDTO;
-import com.inappstory.sdk.refactoring.stories.data.local.StoryListItemDTO;
-import com.inappstory.sdk.refactoring.stories.usecases.StoryFeedParameters;
+import com.inappstory.sdk.refactoring.stories.data.local.StoriesListItemDTO;
+import com.inappstory.sdk.refactoring.stories.usecases.StoriesFeedParameters;
 
 import java.util.List;
 
 public interface IStoryRepository {
     void getStoriesFeed(
-            StoryFeedParameters feedParameters,
+            StoriesFeedParameters feedParameters,
             boolean useLocal,
             ResultCallback<StoryFeedDTO> storyFeedResultCallback
     );
 
     void getFavoriteStories(
-            ResultCallback<List<StoryListItemDTO>> storyFeedResultCallback
+            ResultCallback<List<StoriesListItemDTO>> storyFeedResultCallback
     );
 
     void getFavoriteCovers(
@@ -25,7 +25,7 @@ public interface IStoryRepository {
     );
 
     void getOnboardingStoriesFeed(
-            StoryFeedParameters feedParameters,
+            StoriesFeedParameters feedParameters,
             int limit,
             ResultCallback<StoryFeedDTO> storyFeedResultCallback
     );

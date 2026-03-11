@@ -1,8 +1,7 @@
 package com.inappstory.sdk.refactoring.stories.usecases;
 
-import com.inappstory.sdk.refactoring.core.utils.models.ResultCallback;
+import com.inappstory.sdk.refactoring.core.utils.results.ResultCallback;
 import com.inappstory.sdk.refactoring.stories.data.local.StoryCoverDTO;
-import com.inappstory.sdk.refactoring.stories.data.local.StoryFeedDTO;
 import com.inappstory.sdk.refactoring.stories.repositories.IStoryRepository;
 
 import java.util.List;

@@ -1,15 +1,14 @@
 package com.inappstory.sdk.refactoring.stories.data.mappers;
 
 import com.inappstory.sdk.core.network.content.models.Image;
-import com.inappstory.sdk.refactoring.core.utils.models.Mapper;
+import com.inappstory.sdk.refactoring.core.utils.usecases.Mapper;
 import com.inappstory.sdk.refactoring.stories.data.local.StoryCoverDTO;
-import com.inappstory.sdk.refactoring.stories.data.local.StoryDTO;
-import com.inappstory.sdk.refactoring.stories.data.local.StoryListItemDTO;
+import com.inappstory.sdk.refactoring.stories.data.local.StoriesListItemDTO;
 
-public class StoryListItemDTOToStoryCoverDTOMapper implements Mapper<StoryListItemDTO, StoryCoverDTO> {
+public class StoryListItemDTOToStoryCoverDTOMapper implements Mapper<StoriesListItemDTO, StoryCoverDTO> {
 
     @Override
-    public StoryCoverDTO convert(StoryListItemDTO obj) {
+    public StoryCoverDTO convert(StoriesListItemDTO obj) {
         return new StoryCoverDTO(
                 obj.id(),
                 obj.imageCoverByQuality(Image.QUALITY_MEDIUM),

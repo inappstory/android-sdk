@@ -1,15 +1,14 @@
 package com.inappstory.sdk.refactoring.stories.repositories;
 
 import com.inappstory.sdk.core.api.IASStatisticProfiling;
-import com.inappstory.sdk.core.utils.IConnectionCheck;
-import com.inappstory.sdk.refactoring.core.utils.models.Error;
-import com.inappstory.sdk.refactoring.core.utils.models.Result;
-import com.inappstory.sdk.refactoring.core.utils.models.ResultCallback;
-import com.inappstory.sdk.refactoring.core.utils.models.Success;
+import com.inappstory.sdk.refactoring.core.utils.results.Error;
+import com.inappstory.sdk.refactoring.core.utils.results.Result;
+import com.inappstory.sdk.refactoring.core.utils.results.ResultCallback;
+import com.inappstory.sdk.refactoring.core.utils.results.Success;
 import com.inappstory.sdk.refactoring.stories.data.local.StoryCoverDTO;
 import com.inappstory.sdk.refactoring.stories.data.local.StoryDTO;
 import com.inappstory.sdk.refactoring.stories.data.local.StoryFeedDTO;
-import com.inappstory.sdk.refactoring.stories.data.local.StoryListItemDTO;
+import com.inappstory.sdk.refactoring.stories.data.local.StoriesListItemDTO;
 import com.inappstory.sdk.refactoring.stories.data.mappers.NStoryCoverToStoryCoverDTOMapper;
 import com.inappstory.sdk.refactoring.stories.data.mappers.NStoryToStoryCoverDTOMapper;
 import com.inappstory.sdk.refactoring.stories.data.mappers.NStoryToStoryDTOMapper;
@@ -20,7 +19,7 @@ import com.inappstory.sdk.refactoring.stories.data.network.NStory;
 import com.inappstory.sdk.refactoring.stories.data.network.NStoryCover;
 import com.inappstory.sdk.refactoring.stories.repositories.datasources.IStoryAPIDataSource;
 import com.inappstory.sdk.refactoring.stories.repositories.datasources.IStoryLocalDataSource;
-import com.inappstory.sdk.refactoring.stories.usecases.StoryFeedParameters;
+import com.inappstory.sdk.refactoring.stories.usecases.StoriesFeedParameters;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,7 +46,7 @@ public class StoryRepository implements IStoryRepository {
 
     @Override
     public void getStoriesFeed(
-            StoryFeedParameters feedParameters,
+            StoriesFeedParameters feedParameters,
             boolean useLocal,
             final ResultCallback<StoryFeedDTO> storyFeedResultCallback
     ) {
@@ -58,17 +57,17 @@ public class StoryRepository implements IStoryRepository {
                     storyFeedResultCallback.error(new Error<>("Can't retrieve stories in feed " + feedParameters.feed()));
                 } else {
                     StoryFeedDTO feedDTO = new StoryFeedDTO();
-                    List<StoryListItemDTO> updatedListItems = new ArrayList<>();
+                    List<StoriesListItemDTO> updatedListItems = new ArrayList<>();
                     boolean updateFavoriteCell = false;
                     for (NStory story : feed.stories) {
                         String storyId = Integer.toString(story.id);
                         if (feedDTO.storiesIds.contains(storyId)) continue;
                         feedDTO.storiesIds.add(storyId);
-                        StoryListItemDTO storyListItemDTO = new NStoryToStoryListItemDTOMapper().convert(story);
-                        if (storyLocalDataSource.addOrUpdateStoryListItem(storyListItemDTO)) {
-                            updatedListItems.add(storyListItemDTO);
+                        StoriesListItemDTO storiesListItemDTO = new NStoryToStoryListItemDTOMapper().convert(story);
+                        if (storyLocalDataSource.addOrUpdateStoryListItem(storiesListItemDTO)) {
+                            updatedListItems.add(storiesListItemDTO);
                         }
-                        if (storyListItemDTO.favorite()) {
+                        if (storiesListItemDTO.favorite()) {
                             updateFavoriteCell |= storyLocalDataSource.addOrUpdateStoryCover(
                                     new NStoryToStoryCoverDTOMapper().convert(story)
                             );
@@ -77,7 +76,7 @@ public class StoryRepository implements IStoryRepository {
                     feedDTO.hasFavorite = feed.hasFavorite();
                     storyLocalDataSource.addOrUpdateStoriesFeed(feedParameters, feedDTO);
 
-                    for (StoryListItemDTO listItem : updatedListItems) {
+                    for (StoriesListItemDTO listItem : updatedListItems) {
                         changesSubscribersHolder.notifyStoryListItemChange(listItem);
                     }
                     if (updateFavoriteCell)
@@ -106,25 +105,25 @@ public class StoryRepository implements IStoryRepository {
     }
 
     @Override
-    public void getFavoriteStories(ResultCallback<List<StoryListItemDTO>> storyFeedResultCallback) {
+    public void getFavoriteStories(ResultCallback<List<StoriesListItemDTO>> storyFeedResultCallback) {
         storyAPIDataSource.getFavoriteStories(new ResultCallback<List<NStory>>() {
             @Override
             public void success(List<NStory> items) {
-                List<StoryListItemDTO> stories = new ArrayList<>();
-                List<StoryListItemDTO> updatedListItems = new ArrayList<>();
+                List<StoriesListItemDTO> stories = new ArrayList<>();
+                List<StoriesListItemDTO> updatedListItems = new ArrayList<>();
                 boolean updateFavoriteCell = false;
                 for (NStory item : items) {
-                    StoryListItemDTO storyListItemDTO = new NStoryToStoryListItemDTOMapper().convert(item);
+                    StoriesListItemDTO storiesListItemDTO = new NStoryToStoryListItemDTOMapper().convert(item);
                     StoryCoverDTO storyCoverDTO = new NStoryToStoryCoverDTOMapper().convert(item);
-                    stories.add(storyListItemDTO);
-                    if (storyLocalDataSource.addOrUpdateStoryListItem(storyListItemDTO)) {
-                        updatedListItems.add(storyListItemDTO);
+                    stories.add(storiesListItemDTO);
+                    if (storyLocalDataSource.addOrUpdateStoryListItem(storiesListItemDTO)) {
+                        updatedListItems.add(storiesListItemDTO);
                     }
                     updateFavoriteCell |= storyLocalDataSource.addOrUpdateStoryCover(
                             storyCoverDTO
                     );
                 }
-                for (StoryListItemDTO listItem : updatedListItems) {
+                for (StoriesListItemDTO listItem : updatedListItems) {
                     changesSubscribersHolder.notifyStoryListItemChange(listItem);
                 }
                 if (updateFavoriteCell)
@@ -161,7 +160,7 @@ public class StoryRepository implements IStoryRepository {
     }
 
     @Override
-    public void getOnboardingStoriesFeed(StoryFeedParameters feedParameters, int limit, ResultCallback<StoryFeedDTO> storyFeedResultCallback) {
+    public void getOnboardingStoriesFeed(StoriesFeedParameters feedParameters, int limit, ResultCallback<StoryFeedDTO> storyFeedResultCallback) {
         ResultCallback<NFeed> resultCallback = new ResultCallback<NFeed>() {
             @Override
             public void success(NFeed feed) {
@@ -169,17 +168,17 @@ public class StoryRepository implements IStoryRepository {
                     storyFeedResultCallback.error(new Error<>("Can't retrieve stories in feed " + feedParameters.feed()));
                 } else {
                     StoryFeedDTO feedDTO = new StoryFeedDTO();
-                    List<StoryListItemDTO> updatedListItems = new ArrayList<>();
+                    List<StoriesListItemDTO> updatedListItems = new ArrayList<>();
                     boolean updateFavoriteCell = false;
                     for (NStory story : feed.stories) {
                         String storyId = Integer.toString(story.id);
                         if (feedDTO.storiesIds.contains(storyId)) continue;
                         feedDTO.storiesIds.add(storyId);
-                        StoryListItemDTO storyListItemDTO = new NStoryToStoryListItemDTOMapper().convert(story);
-                        if (storyLocalDataSource.addOrUpdateStoryListItem(storyListItemDTO)) {
-                            updatedListItems.add(storyListItemDTO);
+                        StoriesListItemDTO storiesListItemDTO = new NStoryToStoryListItemDTOMapper().convert(story);
+                        if (storyLocalDataSource.addOrUpdateStoryListItem(storiesListItemDTO)) {
+                            updatedListItems.add(storiesListItemDTO);
                         }
-                        if (storyListItemDTO.favorite()) {
+                        if (storiesListItemDTO.favorite()) {
                             updateFavoriteCell |= storyLocalDataSource.addOrUpdateStoryCover(
                                     new NStoryToStoryCoverDTOMapper().convert(story)
                             );
@@ -188,7 +187,7 @@ public class StoryRepository implements IStoryRepository {
                     feedDTO.hasFavorite = feed.hasFavorite();
                     storyLocalDataSource.addOrUpdateStoriesFeed(feedParameters, feedDTO);
 
-                    for (StoryListItemDTO listItem : updatedListItems) {
+                    for (StoriesListItemDTO listItem : updatedListItems) {
                         changesSubscribersHolder.notifyStoryListItemChange(listItem);
                     }
                     if (updateFavoriteCell)
@@ -246,11 +245,11 @@ public class StoryRepository implements IStoryRepository {
             public void success(Boolean res) {
                 changesSubscribersHolder.notifyFavoriteFeedChanges(storyId, favorite);
                 if (favorite) {
-                    Result<StoryListItemDTO> itemResult = storyLocalDataSource.getStoryListItemById(storyId);
+                    Result<StoriesListItemDTO> itemResult = storyLocalDataSource.getStoryListItemById(storyId);
                     if (itemResult instanceof Success) {
                         StoryCoverDTO storyCoverDTO =
                                 new StoryListItemDTOToStoryCoverDTOMapper().convert(
-                                        ((Success<StoryListItemDTO>) itemResult).data()
+                                        ((Success<StoriesListItemDTO>) itemResult).data()
                                 );
                         if (storyLocalDataSource.addOrUpdateStoryCover(storyCoverDTO)) {
                             changesSubscribersHolder.notifyFavoriteCellChanges(
@@ -306,9 +305,9 @@ public class StoryRepository implements IStoryRepository {
                 boolean updateFavoriteCell;
                 boolean updateListItem;
                 String storyId = Integer.toString(storyDTO.id);
-                StoryListItemDTO storyListItemDTO = new NStoryToStoryListItemDTOMapper().convert(story);
+                StoriesListItemDTO storiesListItemDTO = new NStoryToStoryListItemDTOMapper().convert(story);
                 storyLocalDataSource.addOrUpdateStory(storyDTO);
-                updateListItem = storyLocalDataSource.addOrUpdateStoryListItem(storyListItemDTO);
+                updateListItem = storyLocalDataSource.addOrUpdateStoryListItem(storiesListItemDTO);
                 if (story.favorite) {
                     updateFavoriteCell = storyLocalDataSource.addOrUpdateStoryCover(
                             new NStoryToStoryCoverDTOMapper().convert(story)
@@ -323,7 +322,7 @@ public class StoryRepository implements IStoryRepository {
                             storyLocalDataSource.getFavoriteCovers()
                     );
                 if (updateListItem)
-                    changesSubscribersHolder.notifyStoryListItemChange(storyListItemDTO);
+                    changesSubscribersHolder.notifyStoryListItemChange(storiesListItemDTO);
                 storyByIdResultCallback.success(storyDTO);
             }
 

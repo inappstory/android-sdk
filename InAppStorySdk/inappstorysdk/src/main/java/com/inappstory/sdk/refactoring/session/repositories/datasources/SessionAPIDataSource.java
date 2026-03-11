@@ -9,13 +9,10 @@ import android.util.DisplayMetrics;
 
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
-import com.inappstory.sdk.core.network.content.models.SessionResponse;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
-import com.inappstory.sdk.refactoring.core.utils.models.Error;
-import com.inappstory.sdk.refactoring.core.utils.models.ResultCallback;
+import com.inappstory.sdk.refactoring.core.utils.results.Error;
+import com.inappstory.sdk.refactoring.core.utils.results.ResultCallback;
 import com.inappstory.sdk.refactoring.session.UniqueSessionParameters;
-import com.inappstory.sdk.refactoring.session.callbacks.CloseSessionCallback;
-import com.inappstory.sdk.refactoring.session.callbacks.GetSessionCallback;
 import com.inappstory.sdk.refactoring.session.data.network.NSession;
 import com.inappstory.sdk.stories.api.models.SessionRequestFields;
 import com.inappstory.sdk.stories.api.models.StatisticSendObject;

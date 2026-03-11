@@ -2,17 +2,17 @@ package com.inappstory.sdk.refactoring.stories.repositories.datasources;
 
 import androidx.annotation.NonNull;
 
-import com.inappstory.sdk.refactoring.core.utils.models.Result;
+import com.inappstory.sdk.refactoring.core.utils.results.Result;
 import com.inappstory.sdk.refactoring.stories.data.local.StoryCoverDTO;
 import com.inappstory.sdk.refactoring.stories.data.local.StoryDTO;
 import com.inappstory.sdk.refactoring.stories.data.local.StoryFeedDTO;
-import com.inappstory.sdk.refactoring.stories.data.local.StoryListItemDTO;
-import com.inappstory.sdk.refactoring.stories.usecases.StoryFeedParameters;
+import com.inappstory.sdk.refactoring.stories.data.local.StoriesListItemDTO;
+import com.inappstory.sdk.refactoring.stories.usecases.StoriesFeedParameters;
 
 import java.util.List;
 
 public interface IStoryLocalDataSource {
-    Result<StoryFeedDTO> getStoriesFeed(@NonNull StoryFeedParameters feedParameters);
+    Result<StoryFeedDTO> getStoriesFeed(@NonNull StoriesFeedParameters feedParameters);
 
     boolean addOrUpdateStoryCover(@NonNull StoryCoverDTO storyCover);
 
@@ -24,9 +24,9 @@ public interface IStoryLocalDataSource {
 
     boolean addOrUpdateStory(@NonNull StoryDTO story);
 
-    boolean addOrUpdateStoryListItem(@NonNull StoryListItemDTO story);
+    boolean addOrUpdateStoryListItem(@NonNull StoriesListItemDTO story);
 
-    boolean addOrUpdateStoriesFeed(@NonNull StoryFeedParameters feedParameters, @NonNull StoryFeedDTO feed);
+    boolean addOrUpdateStoriesFeed(@NonNull StoriesFeedParameters feedParameters, @NonNull StoryFeedDTO feed);
 
     boolean likeDislikeStory(
             @NonNull String storyId,
@@ -37,7 +37,7 @@ public interface IStoryLocalDataSource {
 
     Result<StoryDTO> getStoryById(@NonNull String storySlugOrId);
 
-    Result<StoryListItemDTO> getStoryListItemById(@NonNull String storyId);
+    Result<StoriesListItemDTO> getStoryListItemById(@NonNull String storyId);
 
     void destroy();
 }

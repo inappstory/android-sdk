@@ -1,11 +1,11 @@
 package com.inappstory.sdk.refactoring.stories.repositories;
 
-import com.inappstory.sdk.refactoring.stories.IFavoriteFeedChangeSubscriber;
-import com.inappstory.sdk.refactoring.stories.IStoryCoverCellChangeSubscriber;
-import com.inappstory.sdk.refactoring.stories.IStoryListItemChangeSubscriber;
+import com.inappstory.sdk.refactoring.stories.IStoriesFavoriteFeedChangeSubscriber;
+import com.inappstory.sdk.refactoring.stories.IStoriesListFavoriteCellChangeSubscriber;
+import com.inappstory.sdk.refactoring.stories.IStoriesListItemChangeSubscriber;
 
 import com.inappstory.sdk.refactoring.stories.data.local.StoryCoverDTO;
-import com.inappstory.sdk.refactoring.stories.data.local.StoryListItemDTO;
+import com.inappstory.sdk.refactoring.stories.data.local.StoriesListItemDTO;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -15,16 +15,16 @@ import java.util.Map;
 import java.util.Set;
 
 public class StoryChangesSubscribersHolder implements IStoryChangesSubscribersHolder {
-    Map<String, Set<IStoryListItemChangeSubscriber>> listSubscribers = new HashMap<>();
-    Set<IStoryCoverCellChangeSubscriber> coverCellSubscribers = new HashSet<>();
-    Set<IFavoriteFeedChangeSubscriber> favoriteFeedChangeSubscribers = new HashSet<>();
+    Map<String, Set<IStoriesListItemChangeSubscriber>> listSubscribers = new HashMap<>();
+    Set<IStoriesListFavoriteCellChangeSubscriber> coverCellSubscribers = new HashSet<>();
+    Set<IStoriesFavoriteFeedChangeSubscriber> favoriteFeedChangeSubscribers = new HashSet<>();
     private final Object subLock = new Object();
 
     @Override
-    public void addStoryChangeSubscriber(IStoryListItemChangeSubscriber subscriber) {
+    public void addStoryChangeSubscriber(IStoriesListItemChangeSubscriber subscriber) {
         String storyId = subscriber.getStoryId();
         synchronized (subLock) {
-            Set<IStoryListItemChangeSubscriber> listItemChangeSubscribers = listSubscribers.get(storyId);
+            Set<IStoriesListItemChangeSubscriber> listItemChangeSubscribers = listSubscribers.get(storyId);
             if (listItemChangeSubscribers == null) {
                 listItemChangeSubscribers = new HashSet<>();
                 listSubscribers.put(storyId, listItemChangeSubscribers);
@@ -34,76 +34,76 @@ public class StoryChangesSubscribersHolder implements IStoryChangesSubscribersHo
     }
 
     @Override
-    public void removeStoryChangeSubscriber(IStoryListItemChangeSubscriber subscriber) {
+    public void removeStoryChangeSubscriber(IStoriesListItemChangeSubscriber subscriber) {
         String storyId = subscriber.getStoryId();
         synchronized (subLock) {
-            Set<IStoryListItemChangeSubscriber> listItemChangeSubscribers = listSubscribers.get(storyId);
+            Set<IStoriesListItemChangeSubscriber> listItemChangeSubscribers = listSubscribers.get(storyId);
             if (listItemChangeSubscribers == null) return;
             listItemChangeSubscribers.remove(subscriber);
         }
     }
 
     @Override
-    public void addCoverCellChangeSubscriber(IStoryCoverCellChangeSubscriber subscriber) {
+    public void addCoverCellChangeSubscriber(IStoriesListFavoriteCellChangeSubscriber subscriber) {
         synchronized (subLock) {
             coverCellSubscribers.add(subscriber);
         }
     }
 
     @Override
-    public void removeCoverCellChangeSubscriber(IStoryCoverCellChangeSubscriber subscriber) {
+    public void removeCoverCellChangeSubscriber(IStoriesListFavoriteCellChangeSubscriber subscriber) {
         synchronized (subLock) {
             coverCellSubscribers.remove(subscriber);
         }
     }
 
     @Override
-    public void addFavoriteFeedChangeSubscriber(IFavoriteFeedChangeSubscriber subscriber) {
+    public void addFavoriteFeedChangeSubscriber(IStoriesFavoriteFeedChangeSubscriber subscriber) {
         synchronized (subLock) {
             favoriteFeedChangeSubscribers.add(subscriber);
         }
     }
 
     @Override
-    public void removeFavoriteFeedChangeSubscriber(IFavoriteFeedChangeSubscriber subscriber) {
+    public void removeFavoriteFeedChangeSubscriber(IStoriesFavoriteFeedChangeSubscriber subscriber) {
         synchronized (subLock) {
             favoriteFeedChangeSubscribers.remove(subscriber);
         }
     }
 
     @Override
-    public void notifyStoryListItemChange(StoryListItemDTO story) {
+    public void notifyStoryListItemChange(StoriesListItemDTO story) {
         String storyId = Integer.toString(story.id());
-        List<IStoryListItemChangeSubscriber> localSubscribers = new ArrayList<>();
+        List<IStoriesListItemChangeSubscriber> localSubscribers = new ArrayList<>();
         synchronized (subLock) {
-            Set<IStoryListItemChangeSubscriber> listItemChangeSubscribers = listSubscribers.get(storyId);
+            Set<IStoriesListItemChangeSubscriber> listItemChangeSubscribers = listSubscribers.get(storyId);
             if (listItemChangeSubscribers == null) return;
             localSubscribers.addAll(listItemChangeSubscribers);
         }
-        for (IStoryListItemChangeSubscriber subscriber : localSubscribers) {
+        for (IStoriesListItemChangeSubscriber subscriber : localSubscribers) {
             subscriber.onChange(story);
         }
     }
 
     @Override
     public void notifyFavoriteCellChanges(List<StoryCoverDTO> covers) {
-        List<IStoryCoverCellChangeSubscriber> localSubscribers = new ArrayList<>();
+        List<IStoriesListFavoriteCellChangeSubscriber> localSubscribers = new ArrayList<>();
         synchronized (subLock) {
             localSubscribers.addAll(coverCellSubscribers);
         }
         List<StoryCoverDTO> coverDTOs = new ArrayList<>(covers);
-        for (IStoryCoverCellChangeSubscriber subscriber : localSubscribers) {
+        for (IStoriesListFavoriteCellChangeSubscriber subscriber : localSubscribers) {
             subscriber.onChange(coverDTOs);
         }
     }
 
     @Override
     public void notifyFavoriteFeedChanges(String storyId, boolean add) {
-        List<IFavoriteFeedChangeSubscriber> localSubscribers = new ArrayList<>();
+        List<IStoriesFavoriteFeedChangeSubscriber> localSubscribers = new ArrayList<>();
         synchronized (subLock) {
             localSubscribers.addAll(favoriteFeedChangeSubscribers);
         }
-        for (IFavoriteFeedChangeSubscriber subscriber : localSubscribers) {
+        for (IStoriesFavoriteFeedChangeSubscriber subscriber : localSubscribers) {
             subscriber.onChange(storyId, add);
         }
     }
