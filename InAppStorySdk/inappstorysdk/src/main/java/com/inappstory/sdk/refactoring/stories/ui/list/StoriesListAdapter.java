@@ -10,8 +10,7 @@ import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.refactoring.stories.ui.list.states.StoriesListState;
 import com.inappstory.sdk.refactoring.stories.ui.list.viewmodels.StoriesListItemViewModel;
 import com.inappstory.sdk.refactoring.stories.ui.list.viewmodels.StoriesListItemViewModelCreator;
-import com.inappstory.sdk.refactoring.stories.ui.list.viewmodels.StoriesListViewModel;
-import com.inappstory.sdk.refactoring.stories.ui.list.viewmodels.StoriesListViewModelsHolder;
+import com.inappstory.sdk.refactoring.stories.ui.list.viewmodels.BaseStoriesListViewModel;
 import com.inappstory.sdk.refactoring.stories.ui.views.IGetFavoriteListItem;
 import com.inappstory.sdk.refactoring.stories.ui.views.IStoriesListItem;
 import com.inappstory.sdk.stories.utils.Observer;
@@ -22,7 +21,7 @@ import java.util.List;
 public class StoriesListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         implements Observer<StoriesListState> {
     StoriesListState storiesListState = new StoriesListState();
-    StoriesListViewModel viewModel;
+    BaseStoriesListViewModel viewModel;
     private final IASCore core;
     private final AppearanceManager appearanceManager;
     private final IStoriesListItem storiesListItemCreator;
@@ -30,7 +29,7 @@ public class StoriesListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
     public StoriesListAdapter(
             IASCore core,
             AppearanceManager appearanceManager,
-            StoriesListViewModel viewModel,
+            BaseStoriesListViewModel viewModel,
             IStoriesListItem storiesListItemCreator,
             IGetFavoriteListItem storiesListFavoriteCellCreator
     ) {

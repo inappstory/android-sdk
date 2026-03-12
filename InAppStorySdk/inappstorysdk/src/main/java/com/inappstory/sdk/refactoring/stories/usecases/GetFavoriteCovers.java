@@ -13,7 +13,7 @@ public class GetFavoriteCovers {
         this.storyRepository = storyRepository;
     }
 
-    void invoke(ResultCallback<List<StoryCoverDTO>> callback) {
+    public void invoke(ResultCallback<List<StoryCoverDTO>> callback) {
         this.storyRepository.getFavoriteCovers(callback);
     }
 }

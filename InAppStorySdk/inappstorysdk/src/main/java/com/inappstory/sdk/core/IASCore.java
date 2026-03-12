@@ -32,6 +32,7 @@ import com.inappstory.sdk.core.utils.ContextConnectionCheck;
 import com.inappstory.sdk.domain.IWidgetsViewModels;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.refactoring.stories.repositories.IStoryChangesSubscribersHolder;
+import com.inappstory.sdk.refactoring.stories.repositories.IStoryRepository;
 import com.inappstory.sdk.refactoring.stories.ui.list.viewmodels.StoriesListViewModelsHolder;
 import com.inappstory.sdk.stories.exceptions.ExceptionManager;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
@@ -82,4 +83,5 @@ public interface IASCore {
 
     IStoryChangesSubscribersHolder storyChangesSubscribers();
     StoriesListViewModelsHolder storiesListViewModels();
+    IStoryRepository storyRepository();
 }

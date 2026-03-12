@@ -11,7 +11,7 @@ public class GetStoriesFeed {
         this.storyRepository = storyRepository;
     }
 
-    void invoke(StoriesFeedParameters feedParameters, ResultCallback<StoryFeedDTO> callback) {
+    public void invoke(StoriesFeedParameters feedParameters, ResultCallback<StoryFeedDTO> callback) {
         this.storyRepository.getStoriesFeed(feedParameters, true, callback);
     }
 }

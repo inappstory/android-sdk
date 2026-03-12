@@ -5,7 +5,7 @@ import java.util.Map;
 
 public class StoriesListViewModelsHolder {
     private final Map<String, StoriesListItemViewModel> listItemsViewModels = new HashMap<>();
-    private final Map<String, StoriesListViewModel> listViewModels = new HashMap<>();
+    private final Map<String, BaseStoriesListViewModel> listViewModels = new HashMap<>();
     private final StoriesListFavoriteCellViewModel favoriteCellViewModel =
             new StoriesListFavoriteCellViewModel();
 
@@ -29,17 +29,17 @@ public class StoriesListViewModelsHolder {
         listItemsViewModels.clear();
     }
 
-    public StoriesListViewModel getOrCreateStoriesListViewModel(
+    public BaseStoriesListViewModel getOrCreateStoriesListViewModel(
             String key,
             StoriesListViewModelCreator creator
     ) {
         synchronized (lock) {
-            StoriesListViewModel storiesListViewModel = listViewModels.get(key);
-            if (storiesListViewModel == null) {
-                storiesListViewModel = creator.create();
-                listViewModels.put(key, storiesListViewModel);
+            BaseStoriesListViewModel baseStoriesListViewModel = listViewModels.get(key);
+            if (baseStoriesListViewModel == null) {
+                baseStoriesListViewModel = creator.create();
+                listViewModels.put(key, baseStoriesListViewModel);
             }
-            return storiesListViewModel;
+            return baseStoriesListViewModel;
         }
     }
 }
