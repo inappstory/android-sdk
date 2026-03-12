@@ -317,8 +317,10 @@ public class StoriesWebView extends IASWebView implements ContentViewInteractor 
         clearHistory();
         clearCache(true);
         loadUrl("about:blank");
-        manager.loadedId = -1;
-        manager.loadedIndex = -1;
+        if (manager != null) {
+            manager.loadedId = -1;
+            manager.loadedIndex = -1;
+        }
         removeAllViews();
         destroyDrawingCache();
         this.context = null;
