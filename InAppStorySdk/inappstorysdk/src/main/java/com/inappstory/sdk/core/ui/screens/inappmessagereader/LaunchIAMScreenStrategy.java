@@ -417,23 +417,26 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
                 inAppMessage.messageType()
         );
         final InAppMessageViewController iamViewController;
+        boolean containerProvided = false;
         if (containerProvider != null) {
             InAppMessageContainerSettings settings = containerProvider.provideContainer(data);
-            frameLayout = settings.layout();
-            parentContainerFM = settings.fragmentManager();
-            containerId = settings.containerId();
-            IAMViewController viewController = containerProvider.layoutController();
-            if (viewController instanceof InAppMessageViewController)
-                iamViewController = (InAppMessageViewController) viewController;
-            else
+            if (settings != null) {
+                frameLayout = settings.layout();
+                parentContainerFM = settings.fragmentManager();
+                containerId = settings.containerId();
+                IAMViewController viewController = containerProvider.layoutController();
+                if (viewController instanceof InAppMessageViewController)
+                    iamViewController = (InAppMessageViewController) viewController;
+                else
+                    iamViewController = null;
+                containerProvided = (parentContainerFM != null || frameLayout != null);
+            } else {
                 iamViewController = null;
+            }
         } else {
-            String message = "Container for in-app message not provided.";
-            launchScreenError(message);
-            currentScreenHolder.endLaunchProcess();
-            return;
+            iamViewController = null;
         }
-        if (parentContainerFM == null && frameLayout == null) {
+        if (!containerProvided) {
             String message = "Container for in-app message not found.";
             launchScreenError(message);
             currentScreenHolder.endLaunchProcess();
