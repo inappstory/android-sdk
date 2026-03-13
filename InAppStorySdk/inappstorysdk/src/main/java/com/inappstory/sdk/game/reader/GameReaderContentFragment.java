@@ -1498,8 +1498,14 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                     splashFile.getAbsolutePath(),
                     new IGetBitmapFromMemoryCache() {
                         @Override
-                        public void get(Bitmap bitmap) {
-                            loader.setImageBitmap(bitmap);
+                        public void get(final Bitmap bitmap) {
+                            loader.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    loader.setImageBitmap(bitmap);
+                                }
+                            });
+
                         }
                     },
                     null
