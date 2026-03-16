@@ -374,7 +374,6 @@ public class StoriesViewManager {
         clearShowRefreshCommon();
         synchronized (latestIndexLock) {
             if (commonWaitError) return;
-            Log.e("showRefreshCommon", "start load");
             showRefresh = new ShowRefresh(index, false);
             showLoader = new ShowLoader(index);
             showRefreshHandler.postDelayed(showLoader, 500);
@@ -390,7 +389,6 @@ public class StoriesViewManager {
         clearShowRefreshCommon();
         synchronized (latestIndexLock) {
             commonWaitError = false;
-            Log.e("showRefreshCommon", "start");
             showRefreshCommon = new ShowRefresh(index, true);
             showRefreshHandler.postDelayed(showRefreshCommon, 30000);
         }
@@ -849,7 +847,6 @@ public class StoriesViewManager {
     }
 
     public void changeIndex(int index) {
-        Log.e("changeIndex", index + "");
         pageManager.openSlideByIndex(index);
     }
 
@@ -867,7 +864,6 @@ public class StoriesViewManager {
             slideLoadError(data.slideIndex);
             getPageManager().clearSlideTimerFromJS();
         } else if (data.showLoader) {
-            Log.e("updateTimeline", "showLoader");
             synchronized (latestIndexLock) {
                 showLoader = new ShowLoader(index, false, false);
                 showRefreshHandler.post(showLoader);

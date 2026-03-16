@@ -232,7 +232,6 @@ public class StoriesList extends RecyclerView {
 
     @Override
     public void onDetachedFromWindow() {
-        Log.e("StoriesListMeasures", "onDetachedFromWindow");
         super.onDetachedFromWindow();
         scheduledTimerCheckVisibility.cancel(false);
         InAppStoryService.useInstance(new UseServiceInstanceCallback() {
@@ -252,7 +251,6 @@ public class StoriesList extends RecyclerView {
 
     @Override
     public void onAttachedToWindow() {
-        Log.e("StoriesListMeasures", "onAttachedToWindow");
         super.onAttachedToWindow();
         scheduledTimerCheckVisibility = executorService.scheduleAtFixedRate(
                 checkVisibilityRunnable,

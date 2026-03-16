@@ -196,7 +196,6 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
     @Override
     public void onEvent(String name, String event) {
         if (name == null || name.isEmpty()) return;
-        Log.e("OnEvent", name + " " + event);
         switch (name) {
             case "showSlide":
                 showSlideEvent(event);
@@ -296,8 +295,6 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
 
     public void slideClick(String payload) {
         if (payload != null && !payload.isEmpty()) {
-
-            Log.e("IASClickPayload", payload);
             SlideLinkObject object = JsonParser.fromJson(payload, SlideLinkObject.class);
             if (object != null) {
                 ClickAction action = ClickAction.BUTTON;
@@ -420,8 +417,6 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
     public void storyLoaded() {
         readerViewModel.updateCurrentLoadState(IAMReaderLoadStates.CONTENT_LOADED);
         try {
-
-            Log.e("RemoveTimeoutCallback", "storyLoaded");
             handler.removeCallbacks(contentFailedByTimeout);
         } catch (Exception e) {
         }
@@ -436,7 +431,6 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
     public void storyLoaded(String data) {
         readerViewModel.updateCurrentLoadState(IAMReaderLoadStates.CONTENT_LOADED);
         try {
-            Log.e("RemoveTimeoutCallback", "storyLoaded");
             handler.removeCallbacks(contentFailedByTimeout);
         } catch (Exception e) {
         }
@@ -702,7 +696,6 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
         @Override
         public void error() {
             try {
-                Log.e("RemoveTimeoutCallback", "error");
                 handler.removeCallbacks(contentFailedByTimeout);
             } catch (Exception e) {
             }
@@ -741,7 +734,6 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
             )) {
                 readerViewModel.updateCurrentLoaderState(IAMReaderLoaderStates.LOADED);
                 try {
-                    Log.e("RemoveTimeoutCallback", "reloadContent");
                     handler.removeCallbacks(contentFailedByTimeout);
                 } catch (Exception e) {
                 }
@@ -787,7 +779,6 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
                 readerViewModel.updateCurrentLoadState(IAMReaderLoadStates.ASSETS_LOADED);
             } else {
                 try {
-                    Log.e("RemoveTimeoutCallback", "loadContent");
                     handler.removeCallbacks(contentFailedByTimeout);
                 } catch (Exception e) {
                 }

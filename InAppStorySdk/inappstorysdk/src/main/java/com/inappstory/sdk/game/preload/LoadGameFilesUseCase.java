@@ -49,7 +49,6 @@ public class LoadGameFilesUseCase {
             final IGameCenterData data,
             final SuccessUseCaseCallback<IGameCenterData> successUseCaseCallback
     ) {
-        Log.e("ArchiveUseCase", "loadGameData " + interruption.toString());
         if (interruption.active) return;
         if (data.url() == null || data.url().isEmpty()) return;
         final List<GameArchiveItem> archiveItems = data.archiveItems();

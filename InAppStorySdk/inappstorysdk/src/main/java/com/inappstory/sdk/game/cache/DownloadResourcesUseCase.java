@@ -144,9 +144,7 @@ public class DownloadResourcesUseCase {
 
     @WorkerThread
     public void download() {
-        Log.e("DownloadGameResources", "Start: " + System.currentTimeMillis());
         downloadParallel();
-        Log.e("DownloadGameResources", "End: " + System.currentTimeMillis());
     }
 
     @WorkerThread

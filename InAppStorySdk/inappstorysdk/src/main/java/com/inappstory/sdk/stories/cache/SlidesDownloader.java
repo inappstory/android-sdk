@@ -435,37 +435,27 @@ public class SlidesDownloader {
     };
 
     private void loadSlide(SlideTaskKey slideTaskKey) {
-        Log.e("loadSlide", "start " + slideTaskKey);
         try {
             SlideTask slideTask;
             synchronized (slideTasksLock) {
                 slideTask = slideTasks.get(slideTaskKey);
             }
-            Log.e("slidesDownloader", "loadSlide start " + slideTaskKey + " " + slideTask);
             if (slideTask == null) {
                 loopedExecutor.freeExecutor();
-                Log.e("loadSlide", "end no task " + slideTaskKey);
                 return;
             }
             if (!(new LoadSlideUseCase(slideTask, core).loadWithResult())) {
-                Log.e("slidesDownloader", "loadSlide error " + slideTaskKey);
                 loadSlideError(slideTaskKey);
-                Log.e("loadSlide", "end error " + slideTaskKey);
                 return;
             }
-            Log.e("slidesDownloader", "loadSlide end sync " + slideTaskKey);
             synchronized (slideTasksLock) {
                 slideTask.loadType = 2;
             }
-            Log.e("slidesDownloader", "loadSlide end unsync " + slideTaskKey);
             slideLoaded(slideTaskKey);
             loopedExecutor.freeExecutor();
         } catch (Throwable t) {
-            Log.e("slidesDownloader", "loadSlide error " + slideTaskKey + " " + t.getMessage());
-            Log.e("loadSlide", "end error " + slideTaskKey);
             loadSlideError(slideTaskKey);
         }
-        Log.e("loadSlide", "end " + slideTaskKey);
     }
 
     public boolean allSlidesLoaded(

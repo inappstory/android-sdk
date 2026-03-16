@@ -107,7 +107,6 @@ public abstract class AbstractGameLogger {
             executorService.submit(new Runnable() {
                 @Override
                 public void run() {
-                    Log.e("DebugLog", msg);
                     core.logs().logSaver().saveLog(createBaseLog().type("debug").message(msg));
                 }
             });

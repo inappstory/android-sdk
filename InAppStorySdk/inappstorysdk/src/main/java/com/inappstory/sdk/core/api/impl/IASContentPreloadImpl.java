@@ -59,7 +59,7 @@ public class IASContentPreloadImpl implements IASContentPreload {
                         new Handler(Looper.getMainLooper()).post(new Runnable() {
                             @Override
                             public void run() {
-                                Log.d("IAS_Game_Preloading", "Game " + result.id() + " is loaded");
+                               // Log.d("IAS_Game_Preloading", "Game " + result.id() + " is loaded");
                             }
                         });
                     }
@@ -199,7 +199,6 @@ public class IASContentPreloadImpl implements IASContentPreload {
 
     @Override
     public void restartGamePreloader() {
-        Log.e("ArchiveUseCase", "restartGamePreloader");
         gamePreloader.restart();
     }
 

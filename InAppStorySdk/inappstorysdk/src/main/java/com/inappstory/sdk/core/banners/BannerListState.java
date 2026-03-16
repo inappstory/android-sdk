@@ -32,11 +32,9 @@ public class BannerListState implements IBannerWidgetState {
     }
 
     public BannerListState() {
-        Log.e("BannerPlaceState", "Create");
     }
 
     private BannerListState(List<IBanner> items) {
-        Log.e("BannerPlaceState", "Copy");
         this.items = new ArrayList<>(items);
     }
 

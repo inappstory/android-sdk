@@ -113,7 +113,6 @@ public class StoriesContentFragment extends Fragment
                 invMask.setVisibility(View.VISIBLE);
             }
             if (lastState == 1) {
-                Log.e("StoriesViewPager", lastState + " onPageScrolled");
                 readerManager.pauseCurrent(false);
             }
         }
@@ -666,7 +665,6 @@ public class StoriesContentFragment extends Fragment
     public void onPageScrollStateChanged(int state) {
         readerManager.onPageScrollStateChanged(state);
         lastState = state;
-        Log.e("StoriesViewPager", state + " onPageScrollStateChanged");
     }
 
     public void setCurrentItem(int ind) {

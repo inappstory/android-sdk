@@ -33,7 +33,6 @@ public class BannerJavascriptInterface {
 
     @JavascriptInterface
     public void updateTimeline(String data) {
-        Log.e("BannerJS", "updateTimeline " + data);
         slideViewModel.updateTimeline(data);
     }
 
@@ -114,7 +113,6 @@ public class BannerJavascriptInterface {
 
     @JavascriptInterface
     public void storyShowNext() {
-        Log.e("BannerJS", "storyShowNext");
         slideViewModel.showNext();
     }
 

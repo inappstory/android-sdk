@@ -102,8 +102,6 @@ public class GameCacheManager {
 
                     if (animSplashScreenCallback != null)
                         animSplashScreenCallback.onSuccess(result);
-                } else {
-                    Log.e("Game_Loading", result.getAbsolutePath() + " not exists");
                 }
             }
         });
@@ -181,7 +179,6 @@ public class GameCacheManager {
                                 if (animSplashScreenCallback != null)
                                     animSplashScreenCallback.onSuccess(result);
                         } else {
-                            Log.e("Game_Loading", result.getAbsolutePath() + " not exists");
                             if (animSplashScreenCallback != null)
                                 animSplashScreenCallback.onSuccess(null);
                         }
@@ -358,12 +355,9 @@ public class GameCacheManager {
                                 !forceReloadArchive
                         );
 
-
-                Log.e("ArchiveUseCase", "GameCacheManager0");
                 gameUseCasesThread.submit(new Runnable() {
                     @Override
                     public void run() {
-                        Log.e("ArchiveUseCase", "GameCacheManager");
                         getZipFileUseCase.getFile();
                     }
                 });
@@ -371,7 +365,6 @@ public class GameCacheManager {
 
             @Override
             public void onError(String message) {
-                Log.e("Game_Loading", message);
                 gameLoadCallback.onError(new SimpleUseCaseError("Can't retrieve game from game center: " + message));
             }
 

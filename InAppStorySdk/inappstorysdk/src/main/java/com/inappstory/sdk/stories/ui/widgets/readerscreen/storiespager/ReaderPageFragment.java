@@ -232,7 +232,7 @@ public class ReaderPageFragment extends Fragment {
             view.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
                 @Override
                 public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
-                    Log.e("ScreenSizes", "View " + v.getTop() + " " + v.getBottom());
+                    //Log.e("ScreenSizes", "View " + v.getTop() + " " + v.getBottom());
                 }
             });
 
@@ -274,14 +274,7 @@ public class ReaderPageFragment extends Fragment {
                 int restHeight = Math.max(0, screenSize.y - maxRatioHeight) + topInsetOffset;
                 LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) blackTop.getLayoutParams();
                 lp.height = restHeight;
-                Log.e("ScreenSizes",
-                        "ScreenSizeY: " + screenSize.y + "\nPhoneHeight: " +
-                                phoneHeight + "\nWindowHeight: " + windowHeight + "\nMaxRatioHeight: " +
-                                maxRatioHeight + "\nTopInsetOffset:" +
-                                topInsetOffset + "\nBottomInsetOffset:" + bottomInsetOffset + "\n");
                 blackTop.requestLayout();
-
-                Log.e("ScreenSizes", "blackBottom:" + blackBottom.getHeight() + "\nblackTop:" + restHeight);
             }
 
         }
@@ -413,13 +406,11 @@ public class ReaderPageFragment extends Fragment {
     }
 
     private void showLoaderContainerAnimated() {
-        Log.e("hideLoader", "showLoaderContainerAnimated");
         loaderContainer.clearAnimation();
         loaderContainer.animate().alpha(1f).setStartDelay(300).setDuration(300).start();
     }
 
     private void hideLoaderContainerAnimated() {
-        Log.e("hideLoader", "hideLoaderContainerAnimated");
         loaderContainer.clearAnimation();
         loaderContainer.animate().alpha(0f).setDuration(300).start();
     }

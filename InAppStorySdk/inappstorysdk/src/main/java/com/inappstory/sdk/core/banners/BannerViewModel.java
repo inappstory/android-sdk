@@ -551,7 +551,6 @@ public class BannerViewModel implements IBannerViewModel {
                         System.currentTimeMillis() - lastStartTimer >= timerDuration;
             }
             if (cancel) {
-                Log.e("cancelTimerTask", uid);
                 synchronized (timerLock) {
                     pauseShift = 0;
                     paused = false;

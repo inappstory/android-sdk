@@ -37,10 +37,8 @@ public class StoryCoverUseCase extends GetCacheFileUseCase<Void> {
     @Override
     public Void getFile() {
         downloadLog.generateRequestLog(url);
-        Log.e("ScenarioDownload", "UniqueKey: " + uniqueKey);
         DownloadFileState fileState = getCache().get(uniqueKey);
         if (fileState == null || fileState.downloadedSize != fileState.totalSize) {
-            Log.e("ScenarioDownload", "Download: " + uniqueKey + " Url: " + url);
             downloadLog.sendRequestLog();
             downloadLog.generateResponseLog(false, filePath);
             core.contentLoader().filesDownloadManager()
@@ -56,7 +54,6 @@ public class StoryCoverUseCase extends GetCacheFileUseCase<Void> {
                                             getStoryCoverCallback.error();
                                             return;
                                         }
-                                        Log.e("ScenarioDownload", "Downloaded: " + uniqueKey + " Url: " + url);
                                         CacheJournalItem cacheJournalItem = generateCacheItem();
                                         cacheJournalItem.setSize(fileState.totalSize);
                                         cacheJournalItem.setDownloadedSize(fileState.totalSize);
@@ -92,7 +89,6 @@ public class StoryCoverUseCase extends GetCacheFileUseCase<Void> {
                         }
                     });
         } else {
-            Log.e("ScenarioDownload", "Cached: " + uniqueKey);
             downloadLog.generateResponseLog(true, filePath);
             downloadLog.sendRequestResponseLog();
             getStoryCoverCallback.success(filePath);

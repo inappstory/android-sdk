@@ -399,7 +399,6 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         payloadMap.put("response", filesWithTypes);
         String payload = JsonParser.mapToJsonString(payloadMap);
         String webString = "window." + cbName + "('" + StringsUtils.escapeSingleQuotes(payload) + "');";
-        Log.e("webString", webString);
         if (webView != null)
             webView.evaluateJavascript(webString, null);
     }
@@ -1095,7 +1094,6 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull final IASCore core) {
-                Log.e("ArchiveUseCase", "downloadGame");
                 core.contentPreload().pauseGamePreloader();
                 core.contentLoader().gameCacheManager().getGame(
                         gameId,
@@ -1485,7 +1483,6 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
     }
 
     private void setLoader(File splashFile) {
-        Log.e("LoaderFile", "Anim " + (splashFile != null ? splashFile.getAbsolutePath() : "empty"));
         progressLoader.launchLoaderAnimation(splashFile, currentLayoutDirection);
     }
 

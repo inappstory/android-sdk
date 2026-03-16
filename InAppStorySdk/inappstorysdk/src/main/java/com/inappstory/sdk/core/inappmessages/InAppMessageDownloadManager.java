@@ -167,7 +167,6 @@ public class InAppMessageDownloadManager {
 
                     @Override
                     public void slideLoadSuccess(int index) {
-                        Log.e("SlideLoadSuccess", readerContent.id() + " " + index);
                         if (core.contentLoader().inAppMessageDownloadManager()
                                 .allSlidesLoaded(readerContent)) {
                             contentIsLoaded(readerContent, callback);

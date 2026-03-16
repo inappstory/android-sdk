@@ -429,7 +429,6 @@ public class SessionManager {
                     List<List<Object>> stat = new ArrayList<>(manager.extractCurrentStatistic());
                     final String sessionCloseUID =
                             core.statistic().profiling().addTask("api_session_close");
-                    Log.e("statisticTests", "closeSession");
                     core.network().enqueue(
                             core.network().getApi().sessionClose(
                                     new StatisticSendObject(

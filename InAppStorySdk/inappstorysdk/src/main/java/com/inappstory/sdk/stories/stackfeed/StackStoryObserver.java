@@ -154,7 +154,6 @@ public class StackStoryObserver implements IStackFeedActions {
             stackStoryUpdated.onUpdate(null);
         }
         final Story currentStory = stories.get(newIndex);
-        Log.e("NewStackStoryData", newIndex + " " + currentStory.isOpened());
         String image = currentStory.imageCoverByQuality(appearanceManager.csCoverQuality());
         final String video = currentStory.videoCover();
         boolean[] statuses = new boolean[stories.size()];

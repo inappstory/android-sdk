@@ -36,16 +36,13 @@ public class BannerCarouselState implements IBannerCarouselState {
     }
 
     public BannerCarouselState() {
-        Log.e("BannerPlaceState", "Create");
     }
 
     private BannerCarouselState(List<IBanner> items) {
-        Log.e("BannerPlaceState", "Copy");
         this.items = new ArrayList<>(items);
     }
 
     public BannerCarouselState currentIndex(Integer currentIndex) {
-        Log.e("BannerPlaceState", "currentIndex " + currentIndex);
         this.currentIndex = currentIndex;
         return this;
     }

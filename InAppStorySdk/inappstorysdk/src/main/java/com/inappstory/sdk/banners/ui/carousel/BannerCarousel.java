@@ -199,7 +199,6 @@ public class BannerCarousel extends FrameLayout implements Observer<BannerCarous
                 BannerView currentBannerView = bannerViewPager.findViewWithTag(lastLaunchedTag);
                 if (currentBannerView != null) currentBannerView.stopBanner();
             }
-            Log.e("SlideLC", "onPageSelected " + position);
             BannerView currentBannerView = bannerViewPager.findViewWithTag(newLaunchedTag);
             if (currentBannerView != null) {
                 currentBannerView.startBanner();
@@ -386,7 +385,6 @@ public class BannerCarousel extends FrameLayout implements Observer<BannerCarous
             );
             ViewGroup.LayoutParams layoutParams = bannerViewPager.getLayoutParams();
             layoutParams.height = WRAP_CONTENT;
-            Log.e("BannerProfiling", "setAdapter deInit" + placeId);
             bannerViewPager.setAdapter(adapter);
             pagerAdapter.clear();
         }
@@ -519,7 +517,6 @@ public class BannerCarousel extends FrameLayout implements Observer<BannerCarous
         if (bannerCarouselViewModel == null) return;
         if (currentLoadState == BannersWidgetLoadStates.LOADED && newValue.currentIndex() != null) {
             if (bannerViewPager.getCurrentItem() != newValue.currentIndex()) {
-                Log.e("Indexes", bannerViewPager.getCurrentItem() + " " + newValue.currentIndex());
                 bannerViewPager.post(new Runnable() {
                     @Override
                     public void run() {
@@ -556,7 +553,6 @@ public class BannerCarousel extends FrameLayout implements Observer<BannerCarous
                                 )
                         );
                         bannerViewPager.setOffscreenPageLimit(1);
-                        Log.e("BannerProfiling", "setAdapter empty" + placeId);
                         IASDataSettingsHolder dataSettingsHolder = ((IASDataSettingsHolder) core.settingsAPI());
                         if (dataSettingsHolder.changeLayoutDirection()) {
                             Configuration configuration = new Configuration();
@@ -624,7 +620,6 @@ public class BannerCarousel extends FrameLayout implements Observer<BannerCarous
                                 )
                         );
                         bannerViewPager.setOffscreenPageLimit(1);
-                        Log.e("BannerProfiling", "setAdapter values" + placeId);
                         IASDataSettingsHolder dataSettingsHolder = ((IASDataSettingsHolder) core.settingsAPI());
                         if (dataSettingsHolder.changeLayoutDirection()) {
                             Configuration configuration = new Configuration();

@@ -15,7 +15,7 @@ public class CancellationTokenImpl implements CancellationTokenWithStatus {
     private final long creationTime = System.currentTimeMillis();
 
     public CancellationTokenImpl(String operationData) {
-        Log.e("IAS_SDK_Cancel_Token", uid + " Created " + operationData);
+     //   Log.e("IAS_SDK_Cancel_Token", uid + " Created " + operationData);
     }
 
     public CancellationTokenImpl() {
@@ -24,7 +24,7 @@ public class CancellationTokenImpl implements CancellationTokenWithStatus {
 
     public boolean cancelled() {
         boolean cancelledStatus = cancelled.get();
-        Log.e("IAS_SDK_Cancel_Token", uid + " Status: " + cancelled);
+     //   Log.e("IAS_SDK_Cancel_Token", uid + " Status: " + cancelled);
         return cancelledStatus;
     }
 
@@ -41,15 +41,15 @@ public class CancellationTokenImpl implements CancellationTokenWithStatus {
     @Override
     public CancellationTokenCancelResult cancel() {
         if (disabled.get()) {
-            Log.e("IAS_SDK_Cancel_Token", uid + " can't be cancelled. Operation already finished");
+       //     Log.e("IAS_SDK_Cancel_Token", uid + " can't be cancelled. Operation already finished");
             return CancellationTokenCancelResult.ERROR_OPERATION_FINISHED;
         } else {
             boolean success = cancelled.compareAndSet(false, true);
             if (success) {
-                Log.e("IAS_SDK_Cancel_Token", uid + " cancelled");
+          //      Log.e("IAS_SDK_Cancel_Token", uid + " cancelled");
                 return CancellationTokenCancelResult.SUCCESS;
             } else {
-                Log.e("IAS_SDK_Cancel_Token", uid + " already cancelled");
+            //    Log.e("IAS_SDK_Cancel_Token", uid + " already cancelled");
                 return CancellationTokenCancelResult.ERROR_ALREADY_CANCELLED;
             }
         }
