@@ -86,7 +86,7 @@ public class StoriesListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
                 );
             }
 
-        }
+        } else f (holder instanceof )
     }
 
     @Override
