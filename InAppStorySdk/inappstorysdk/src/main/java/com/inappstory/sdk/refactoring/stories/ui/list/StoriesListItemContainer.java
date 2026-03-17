@@ -1,11 +1,15 @@
 package com.inappstory.sdk.refactoring.stories.ui.list;
 
+import android.app.Activity;
+import android.content.Context;
 import android.view.View;
+import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.inappstory.sdk.AppearanceManager;
+import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.utils.ColorUtils;
 import com.inappstory.sdk.refactoring.core.utils.observers.Observer;
 import com.inappstory.sdk.refactoring.stories.ui.list.states.StoriesListItemCoverState;
@@ -24,11 +28,50 @@ public class StoriesListItemContainer
     private AppearanceManager appearanceManager;
 
 
+    public ViewGroup getParent() {
+        return parent;
+    }
+
+    ViewGroup parent = null;
+
     public StoriesListItemContainer(
-            @NonNull View itemView
+            @NonNull View itemView,
+            ViewGroup parent,
+            IStoriesListItem storiesListItem
     ) {
         super(itemView);
+        this.storiesListItem = storiesListItem;
+        this.parent = parent;
     }
+
+    private View getDefaultVideoCell() {
+        IStoriesListItem iStoriesListItem = storiesListItem;
+        if (iStoriesListItem == null) return null;
+        return iStoriesListItem.getVideoView() != null ?
+                iStoriesListItem.getVideoView() :
+                iStoriesListItem.getView();
+    }
+
+    private View getDefaultCell() {
+        IStoriesListItem iStoriesListItem = storiesListItem;
+        if (iStoriesListItem == null) return null;
+        return iStoriesListItem.getView();
+    }
+
+
+    private boolean viewCanBeUsed() {
+        ViewGroup parent = this.parent;
+        if (parent == null) return false;
+        if (!parent.isAttachedToWindow()) return false;
+        Context context = parent.getContext();
+        if (context == null)
+            return false;
+        if (context instanceof Activity) {
+            return !((Activity) context).isFinishing() && !((Activity) context).isDestroyed();
+        }
+        return true;
+    }
+
 
     public void attachView(
             StoriesListItemViewModel viewModel,
@@ -50,24 +93,36 @@ public class StoriesListItemContainer
         this.currentState = null;
     }
 
-    private void stateIsUpdated(StoriesListItemState value) {
-        IStoriesListItem storiesListItem = this.storiesListItem;
-        if (storiesListItem != null) {
-            storiesListItem.setId(
-                    itemView,
-                    value.id()
-            );
-            storiesListItem.setTitle(
-                    itemView,
-                    value.title(),
-                    ColorUtils.parseColorRGBA(value.titleColor())
-            );
-            storiesListItem.setHasAudio(itemView, value.hasAudio());
-            storiesListItem.setOpened(itemView, value.isOpened());
+    private void stateIsCreated(StoriesListItemState value) {
+        ViewGroup vg = itemView.findViewById(R.id.baseLayout);
+        vg.removeAllViews();
+        if (value.hasVideoUrl()) {
+            vg.addView(getDefaultVideoCell());
+        } else {
+            vg.addView(getDefaultCell());
         }
+        stateIsUpdated(value);
+    }
+
+    private void stateIsUpdated(StoriesListItemState value) {
+        if (!viewCanBeUsed()) return;
+        IStoriesListItem storiesListItem = this.storiesListItem;
+        if (storiesListItem == null) return;
+        storiesListItem.setId(
+                itemView,
+                value.id()
+        );
+        storiesListItem.setTitle(
+                itemView,
+                value.title(),
+                ColorUtils.parseColorRGBA(value.titleColor())
+        );
+        storiesListItem.setHasAudio(itemView, value.hasAudio());
+        storiesListItem.setOpened(itemView, value.isOpened());
     }
 
     private void updateImageCover(StoriesListItemCoverState coverState) {
+        if (!viewCanBeUsed()) return;
         IStoriesListItem storiesListItem = this.storiesListItem;
         if (storiesListItem != null) {
             storiesListItem.setImage(itemView, coverState.imagePath(), ColorUtils.parseColorRGBA(
@@ -77,6 +132,7 @@ public class StoriesListItemContainer
     }
 
     private void updateVideoCover(StoriesListItemCoverState coverState) {
+        if (!viewCanBeUsed()) return;
         IStoriesListItem storiesListItem = this.storiesListItem;
         if (storiesListItem != null) {
             storiesListItem.setVideo(itemView, coverState.videoPath());
@@ -84,6 +140,7 @@ public class StoriesListItemContainer
     }
 
     private void updateOpenedStatus(boolean isOpened) {
+        if (!viewCanBeUsed()) return;
         IStoriesListItem storiesListItem = this.storiesListItem;
         if (storiesListItem != null) {
             storiesListItem.setOpened(itemView, isOpened);
@@ -98,7 +155,7 @@ public class StoriesListItemContainer
             return;
         }
         if (currentState == null) {
-            stateIsUpdated(newValue);
+            stateIsCreated(newValue);
             listItemViewModel.initCover(appearanceManager.csCoverQuality());
             listItemViewModel.loadCoverResources(appearanceManager.csCoverQuality());
         } else {

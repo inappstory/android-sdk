@@ -154,6 +154,7 @@ public class StoriesListItemViewModel implements IStoriesListItemChangeSubscribe
                         dto.title(),
                         dto.titleColor(),
                         dto.isOpened(),
+                        dto.videoCover() != null && !dto.videoCover().isEmpty(),
                         dto.hasAudio(),
                         clickType,
                         payload

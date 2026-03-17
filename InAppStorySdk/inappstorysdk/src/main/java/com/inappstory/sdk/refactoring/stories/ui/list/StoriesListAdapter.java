@@ -1,11 +1,14 @@
 package com.inappstory.sdk.refactoring.stories.ui.list;
 
+import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.inappstory.sdk.AppearanceManager;
+import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.refactoring.stories.ui.list.states.StoriesListState;
 import com.inappstory.sdk.refactoring.stories.ui.list.viewmodels.StoriesListItemViewModel;
@@ -24,17 +27,19 @@ public class StoriesListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
     BaseStoriesListViewModel viewModel;
     private final IASCore core;
     private final AppearanceManager appearanceManager;
-    private final IStoriesListItem storiesListItemCreator;
+    private final @NonNull IStoriesListItem storiesListItemCreator;
+    private final @NonNull IGetFavoriteListItem storiesListFavoriteCellCreator;
 
     public StoriesListAdapter(
             IASCore core,
             AppearanceManager appearanceManager,
             BaseStoriesListViewModel viewModel,
-            IStoriesListItem storiesListItemCreator,
-            IGetFavoriteListItem storiesListFavoriteCellCreator
+            @NonNull IStoriesListItem storiesListItemCreator,
+            @NonNull IGetFavoriteListItem storiesListFavoriteCellCreator
     ) {
         this.viewModel = viewModel;
         this.storiesListItemCreator = storiesListItemCreator;
+        this.storiesListFavoriteCellCreator = storiesListFavoriteCellCreator;
         this.core = core;
         this.appearanceManager = appearanceManager;
         viewModel.addSubscriber(this);
@@ -47,10 +52,16 @@ public class StoriesListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View v = LayoutInflater.from(parent.getContext()).inflate(
+                R.layout.cs_story_list_custom_item,
+                parent,
+                false
+        );
         if (viewType == -1) {
-
+            return new StoriesListFavoriteCellContainer(v, parent, storiesListFavoriteCellCreator);
+        } else {
+            return new StoriesListItemContainer(v, parent, storiesListItemCreator);
         }
-        return null;
     }
 
     @Override
@@ -82,11 +93,15 @@ public class StoriesListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
                         ),
                         storiesListItemCreator,
                         appearanceManager
-
                 );
             }
 
-        } else f (holder instanceof )
+        } else if (holder instanceof StoriesListFavoriteCellContainer) {
+            ((StoriesListFavoriteCellContainer) holder).attachView(
+                    core.storiesListViewModels().getOrCreateFavoriteCellViewModel(),
+                    storiesListFavoriteCellCreator
+            );
+        }
     }
 
     @Override
@@ -94,6 +109,8 @@ public class StoriesListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         super.onViewDetachedFromWindow(holder);
         if (holder instanceof StoriesListItemContainer) {
             ((StoriesListItemContainer) holder).detachView();
+        } else if (holder instanceof StoriesListFavoriteCellContainer) {
+            ((StoriesListFavoriteCellContainer) holder).detachView();
         }
     }
 
@@ -102,7 +119,7 @@ public class StoriesListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         if (holder.getItemViewType() == -1) {
 
         } else {
-            
+
         }
     }
 

@@ -8,6 +8,7 @@ public class StoriesListItemState {
     private String title;
     private String titleColor;
     private StoriesListItemCoverState coverState;
+    private boolean hasVideoUrl;
     private boolean hasAudio;
     private boolean isOpened;
     private StoriesListItemClickType clickType = StoriesListItemClickType.STORY;
@@ -21,6 +22,7 @@ public class StoriesListItemState {
             String title,
             String titleColor,
             boolean isOpened,
+            boolean hasVideoUrl,
             boolean hasAudio,
             StoriesListItemClickType clickType,
             String clickTypePayload
@@ -29,6 +31,7 @@ public class StoriesListItemState {
         this.title = title;
         this.titleColor = titleColor;
         this.hasAudio = hasAudio;
+        this.hasVideoUrl = hasVideoUrl;
         this.clickType = clickType;
         this.isOpened = isOpened;
         this.clickTypePayload = clickTypePayload;
@@ -69,6 +72,10 @@ public class StoriesListItemState {
         return hasAudio;
     }
 
+    public boolean hasVideoUrl() {
+        return hasVideoUrl;
+    }
+
     public StoriesListItemClickType clickType() {
         return clickType;
     }
@@ -85,6 +92,7 @@ public class StoriesListItemState {
         state.id = this.id;
         state.title = this.title;
         state.titleColor = this.titleColor;
+        state.hasVideoUrl = this.hasVideoUrl;
         state.hasAudio = this.hasAudio;
         state.clickType = this.clickType;
         state.clickTypePayload = this.clickTypePayload;
@@ -98,6 +106,7 @@ public class StoriesListItemState {
         StoriesListItemState state = (StoriesListItemState) o;
         return id == state.id &&
                 hasAudio == state.hasAudio &&
+                hasVideoUrl == state.hasVideoUrl &&
                 isOpened == state.isOpened &&
                 Objects.equals(title, state.title) &&
                 Objects.equals(titleColor, state.titleColor) &&
@@ -113,6 +122,7 @@ public class StoriesListItemState {
                 title,
                 titleColor,
                 coverState,
+                hasVideoUrl,
                 hasAudio,
                 isOpened,
                 clickType,

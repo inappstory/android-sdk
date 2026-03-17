@@ -1,19 +1,21 @@
 package com.inappstory.sdk.refactoring.stories.ui.list.states;
 
-import com.inappstory.sdk.refactoring.stories.data.local.StoryCoverDTO;
-
 import java.util.ArrayList;
 import java.util.List;
 
 public class StoriesListFavoriteCellState {
-    public StoriesListFavoriteCellState(List<StoryCoverDTO> covers) {
+    public StoriesListFavoriteCellState(List<StoriesListFavoriteCellItemState> covers) {
         if (covers != null)
             this.covers = new ArrayList<>(covers);
     }
 
-    public List<StoryCoverDTO> covers() {
+    public List<StoriesListFavoriteCellItemState> covers() {
         return covers;
     }
 
-    List<StoryCoverDTO> covers = new ArrayList<>();
+    List<StoriesListFavoriteCellItemState> covers = new ArrayList<>();
+
+    public StoriesListFavoriteCellState copy() {
+        return new StoriesListFavoriteCellState(covers);
+    }
 }

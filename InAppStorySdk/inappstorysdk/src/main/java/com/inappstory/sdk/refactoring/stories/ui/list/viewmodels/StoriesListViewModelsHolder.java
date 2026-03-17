@@ -1,15 +1,28 @@
 package com.inappstory.sdk.refactoring.stories.ui.list.viewmodels;
 
+import com.inappstory.sdk.core.IASCore;
+
 import java.util.HashMap;
 import java.util.Map;
 
 public class StoriesListViewModelsHolder {
+    private final IASCore core;
+
     private final Map<String, StoriesListItemViewModel> listItemsViewModels = new HashMap<>();
     private final Map<String, BaseStoriesListViewModel> listViewModels = new HashMap<>();
-    private final StoriesListFavoriteCellViewModel favoriteCellViewModel =
-            new StoriesListFavoriteCellViewModel();
+    private StoriesListFavoriteCellViewModel favoriteCellViewModel;
+
+    public StoriesListFavoriteCellViewModel getOrCreateFavoriteCellViewModel() {
+        if (favoriteCellViewModel == null)
+            favoriteCellViewModel = new StoriesListFavoriteCellViewModel(core);
+        return favoriteCellViewModel;
+    }
 
     private final Object lock = new Object();
+
+    public StoriesListViewModelsHolder(IASCore core) {
+        this.core = core;
+    }
 
     public StoriesListItemViewModel getOrCreateStoriesListItemViewModel(
             String key,

@@ -1,14 +1,19 @@
 package com.inappstory.sdk.refactoring.stories.ui.list;
 
+import android.app.Activity;
+import android.content.Context;
 import android.view.View;
+import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.inappstory.sdk.AppearanceManager;
+import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.utils.ColorUtils;
 import com.inappstory.sdk.refactoring.core.utils.observers.Observer;
 import com.inappstory.sdk.refactoring.stories.data.local.StoryCoverDTO;
+import com.inappstory.sdk.refactoring.stories.ui.list.states.StoriesListFavoriteCellItemState;
 import com.inappstory.sdk.refactoring.stories.ui.list.states.StoriesListFavoriteCellState;
 import com.inappstory.sdk.refactoring.stories.ui.list.states.StoriesListItemCoverState;
 import com.inappstory.sdk.refactoring.stories.ui.list.states.StoriesListItemState;
@@ -27,23 +32,39 @@ public class StoriesListFavoriteCellContainer
     private StoriesListFavoriteCellState currentState;
     private StoriesListFavoriteCellViewModel favoriteCellViewModel;
     private IGetFavoriteListItem favoriteCellItem;
-    private AppearanceManager appearanceManager;
 
+    public ViewGroup getParent() {
+        return parent;
+    }
+
+    ViewGroup parent = null;
 
     public StoriesListFavoriteCellContainer(
-            @NonNull View itemView
+            @NonNull View itemView,
+            ViewGroup parent,
+            IGetFavoriteListItem favoriteCellItem
     ) {
         super(itemView);
+        this.favoriteCellItem = favoriteCellItem;
+        this.parent = parent;
+        ViewGroup vg = itemView.findViewById(R.id.baseLayout);
+        vg.removeAllViews();
+        vg.addView(getDefaultFavoriteCell());
+    }
+
+
+    private View getDefaultFavoriteCell() {
+        IGetFavoriteListItem favoriteCellItem = this.favoriteCellItem;
+        if (favoriteCellItem == null) return null;
+        return favoriteCellItem.getFavoriteItem();
     }
 
     public void attachView(
             StoriesListFavoriteCellViewModel viewModel,
-            IGetFavoriteListItem storiesListItem,
-            AppearanceManager appearanceManager
+            IGetFavoriteListItem favoriteCellItem
     ) {
         this.favoriteCellViewModel = viewModel;
-        this.favoriteCellItem = storiesListItem;
-        this.appearanceManager = appearanceManager;
+        this.favoriteCellItem = favoriteCellItem;
         viewModel.addSubscriber(this);
     }
 
@@ -52,52 +73,51 @@ public class StoriesListFavoriteCellContainer
         if (this.favoriteCellViewModel != null)
             this.favoriteCellViewModel.removeSubscriber(this);
         this.favoriteCellViewModel = null;
-        this.appearanceManager = null;
         this.currentState = null;
+    }
+
+    private boolean viewCanBeUsed() {
+        ViewGroup parent = this.parent;
+        if (parent == null) return false;
+        if (!parent.isAttachedToWindow()) return false;
+        Context context = parent.getContext();
+        if (context == null)
+            return false;
+        if (context instanceof Activity) {
+            return !((Activity) context).isFinishing() && !((Activity) context).isDestroyed();
+        }
+        return true;
     }
 
     private void stateIsUpdated(StoriesListFavoriteCellState value) {
         IGetFavoriteListItem favoriteListItem = this.favoriteCellItem;
+        if (favoriteListItem == null) return;
         List<Integer> backgroundColors = new ArrayList<>();
         List<String> images = new ArrayList<>();
-        for (StoryCoverDTO cover : value.covers()) {
-            if (cover.backgroundColor())
+        for (StoriesListFavoriteCellItemState cover : value.covers()) {
+            backgroundColors.add(cover.backgroundColor());
+            images.add(cover.filePath());
+        }
+        favoriteListItem.setImages(
+                itemView,
+                images,
+                backgroundColors,
+                value.covers().size()
+        );
+    }
+
+    private void stateIsCreated(StoriesListFavoriteCellState value) {
+        IGetFavoriteListItem favoriteListItem = this.favoriteCellItem;
+        List<Integer> backgroundColors = new ArrayList<>();
+        for (StoriesListFavoriteCellItemState cover : value.covers()) {
+            backgroundColors.add(cover.backgroundColor());
         }
         if (favoriteListItem != null) {
-            favoriteListItem.setImages(
+            favoriteListItem.bindFavoriteItem(
                     itemView,
-                    value.id()
+                    backgroundColors,
+                    value.covers().size()
             );
-            storiesListItem.setTitle(
-                    itemView,
-                    value.title(),
-                    ColorUtils.parseColorRGBA(value.titleColor())
-            );
-            storiesListItem.setHasAudio(itemView, value.hasAudio());
-            storiesListItem.setOpened(itemView, value.isOpened());
-        }
-    }
-
-    private void updateImageCover(StoriesListItemCoverState coverState) {
-        IStoriesListItem storiesListItem = this.storiesListItem;
-        if (storiesListItem != null) {
-            storiesListItem.setImage(itemView, coverState.imagePath(), ColorUtils.parseColorRGBA(
-                    coverState.backgroundColor()
-            ));
-        }
-    }
-
-    private void updateVideoCover(StoriesListItemCoverState coverState) {
-        IStoriesListItem storiesListItem = this.storiesListItem;
-        if (storiesListItem != null) {
-            storiesListItem.setVideo(itemView, coverState.videoPath());
-        }
-    }
-
-    private void updateOpenedStatus(boolean isOpened) {
-        IStoriesListItem storiesListItem = this.storiesListItem;
-        if (storiesListItem != null) {
-            storiesListItem.setOpened(itemView, isOpened);
         }
     }
 
@@ -109,33 +129,9 @@ public class StoriesListFavoriteCellContainer
             return;
         }
         if (currentState == null) {
-            stateIsUpdated(newValue);
-            listItemViewModel.initCover(appearanceManager.csCoverQuality());
-            listItemViewModel.loadCoverResources(appearanceManager.csCoverQuality());
+            stateIsCreated(newValue);
         } else {
-            if (currentState.isOpened() != newValue.isOpened()) {
-                updateOpenedStatus(newValue.isOpened());
-            }
-            StoriesListItemCoverState newCoverState = newValue.coverState();
-            if (newCoverState != null) {
-                if (!Objects.equals(currentState.coverState(), newCoverState)) {
-                    if (currentState.coverState() == null) {
-                        updateImageCover(newCoverState);
-                        if (newCoverState.videoPath() != null) {
-                            updateVideoCover(newCoverState);
-                        }
-                    } else {
-                        if (!Objects.equals(currentState.coverState().imagePath(),
-                                newCoverState.imagePath())) {
-                            updateImageCover(newCoverState);
-                        }
-                        if (!Objects.equals(currentState.coverState().videoPath(),
-                                newCoverState.videoPath())) {
-                            updateVideoCover(newCoverState);
-                        }
-                    }
-                }
-            }
+            stateIsUpdated(newValue);
         }
         currentState = newValue;
     }
