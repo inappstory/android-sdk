@@ -5,11 +5,14 @@ import com.inappstory.sdk.refactoring.stories.data.local.StoryCoverDTO;
 import com.inappstory.sdk.refactoring.stories.data.local.StoryDTO;
 import com.inappstory.sdk.refactoring.stories.data.local.StoryFeedDTO;
 import com.inappstory.sdk.refactoring.stories.data.local.StoriesListItemDTO;
+import com.inappstory.sdk.refactoring.stories.repositories.datasources.IStoryAPIDataSource;
 import com.inappstory.sdk.refactoring.stories.usecases.StoriesFeedParameters;
 
 import java.util.List;
 
 public interface IStoryRepository {
+    void updateApiDataSource(IStoryAPIDataSource storyAPIDataSource);
+
     void getStoriesFeed(
             StoriesFeedParameters feedParameters,
             boolean useLocal,
@@ -57,6 +60,8 @@ public interface IStoryRepository {
             boolean once,
             ResultCallback<StoryDTO> storyByIdResultCallback
     );
+
+    StoriesListItemDTO getLocalStoryListItem(String storyId);
 
     void destroy();
 }

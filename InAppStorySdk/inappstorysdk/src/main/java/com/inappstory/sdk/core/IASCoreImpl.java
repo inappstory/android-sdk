@@ -9,6 +9,7 @@ import com.inappstory.sdk.core.api.IASBanners;
 import com.inappstory.sdk.core.api.IASCallbacks;
 import com.inappstory.sdk.core.api.IASContentLoader;
 import com.inappstory.sdk.core.api.IASContentPreload;
+import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.IASExternalUtilsAPI;
 import com.inappstory.sdk.core.api.IASFavorites;
 import com.inappstory.sdk.core.api.IASGames;
@@ -54,8 +55,19 @@ import com.inappstory.sdk.core.utils.ContextConnectionCheck;
 import com.inappstory.sdk.domain.IWidgetsViewModels;
 import com.inappstory.sdk.domain.WidgetsViewModels;
 import com.inappstory.sdk.network.NetworkClient;
+import com.inappstory.sdk.network.models.RequestLocalParameters;
+import com.inappstory.sdk.refactoring.session.INewSessionSubscriber;
+import com.inappstory.sdk.refactoring.session.data.local.SessionDTO;
+import com.inappstory.sdk.refactoring.session.repositories.ISessionRepository;
+import com.inappstory.sdk.refactoring.session.repositories.ISessionSubscribersHolder;
+import com.inappstory.sdk.refactoring.session.repositories.SessionRepository;
+import com.inappstory.sdk.refactoring.session.repositories.SessionSubscribersHolder;
 import com.inappstory.sdk.refactoring.stories.repositories.IStoryChangesSubscribersHolder;
 import com.inappstory.sdk.refactoring.stories.repositories.IStoryRepository;
+import com.inappstory.sdk.refactoring.stories.repositories.StoryChangesSubscribersHolder;
+import com.inappstory.sdk.refactoring.stories.repositories.StoryRepository;
+import com.inappstory.sdk.refactoring.stories.repositories.datasources.StoryAPIDataSource;
+import com.inappstory.sdk.refactoring.stories.repositories.datasources.StoryLocalDataSource;
 import com.inappstory.sdk.refactoring.stories.ui.list.viewmodels.StoriesListViewModelsHolder;
 import com.inappstory.sdk.stories.exceptions.ExceptionManager;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
@@ -66,7 +78,7 @@ import com.inappstory.sdk.utils.IAcceleratorUtils;
 import com.inappstory.sdk.utils.IVibrateUtils;
 import com.inappstory.sdk.utils.VibrateUtils;
 
-public class IASCoreImpl implements IASCore {
+public class IASCoreImpl implements IASCore, INewSessionSubscriber {
     private AppearanceManager commonAppearance = null;
     private final IASCallbacks callbacks;
     private final IASFavorites favorites;
@@ -102,6 +114,11 @@ public class IASCoreImpl implements IASCore {
     private final IASLimitsHolder limitsHolder;
     private final CancellationTokenPool cancellationTokenPool;
     private final ContextConnectionCheck connectionCheck;
+    private final IStoryRepository storyRepository;
+    private final ISessionRepository sessionRepository;
+    private final StoriesListViewModelsHolder storiesListViewModelsHolder;
+    private final IStoryChangesSubscribersHolder storyChangesSubscribersHolder;
+    private final ISessionSubscribersHolder sessionSubscribersHolder;
 
     public IASCoreImpl(Context context) {
         this.context = context;
@@ -138,6 +155,17 @@ public class IASCoreImpl implements IASCore {
         assetsHolder = new IASAssetsHolderImpl(this);
         limitsHolder = new IASLimitsHolderImpl();
         projectSettings = new IASProjectSettingsImpl(this);
+        storyChangesSubscribersHolder = new StoryChangesSubscribersHolder();
+        storiesListViewModelsHolder = new StoriesListViewModelsHolder(this);
+        sessionSubscribersHolder = new SessionSubscribersHolder();
+        sessionSubscribersHolder.addNewSessionSubscriber(this);
+        sessionRepository = new SessionRepository(this, sessionSubscribersHolder);
+        storyRepository = new StoryRepository(
+                new StoryLocalDataSource(),
+                null,
+                statistic.profiling(),
+                storyChangesSubscribersHolder
+        );
         Thread.setDefaultUncaughtExceptionHandler(new IASExceptionHandler(this));
         externalUtilsAPI.init();
     }
@@ -335,16 +363,36 @@ public class IASCoreImpl implements IASCore {
 
     @Override
     public IStoryChangesSubscribersHolder storyChangesSubscribers() {
-        throw new NotImplementedMethodException();
+        return storyChangesSubscribersHolder;
     }
 
     @Override
     public StoriesListViewModelsHolder storiesListViewModels() {
-        throw new NotImplementedMethodException();
+        return storiesListViewModelsHolder;
     }
 
     @Override
     public IStoryRepository storyRepository() {
-        throw new NotImplementedMethodException();
+        return storyRepository;
+    }
+
+    @Override
+    public ISessionRepository sessionRepository() {
+        return sessionRepository;
+    }
+
+    @Override
+    public void onNewSession(SessionDTO sessionDTO) {
+        IASDataSettingsHolder dataSettingsHolder = (IASDataSettingsHolder) settings;
+
+        storyRepository.updateApiDataSource(
+                new StoryAPIDataSource(new RequestLocalParameters()
+                        .sessionId(sessionDTO.sessionId())
+                        .locale(dataSettingsHolder.lang())
+                        .userId(dataSettingsHolder.userId())
+                        .anonymous(dataSettingsHolder.anonymous()),
+                        this
+                )
+        );
     }
 }

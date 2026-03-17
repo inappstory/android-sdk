@@ -1,5 +1,7 @@
 package com.inappstory.sdk.refactoring.stories.ui.list;
 
+import android.os.Handler;
+import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,16 +12,18 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.refactoring.core.utils.observers.Observer;
 import com.inappstory.sdk.refactoring.stories.ui.list.states.StoriesListState;
 import com.inappstory.sdk.refactoring.stories.ui.list.viewmodels.StoriesListItemViewModel;
 import com.inappstory.sdk.refactoring.stories.ui.list.viewmodels.StoriesListItemViewModelCreator;
 import com.inappstory.sdk.refactoring.stories.ui.list.viewmodels.BaseStoriesListViewModel;
 import com.inappstory.sdk.refactoring.stories.ui.views.IGetFavoriteListItem;
 import com.inappstory.sdk.refactoring.stories.ui.views.IStoriesListItem;
-import com.inappstory.sdk.stories.utils.Observer;
+import com.inappstory.sdk.stories.utils.Sizes;
 
+import java.util.ArrayList;
 import java.util.List;
-
+import java.util.Objects;
 
 public class StoriesListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         implements Observer<StoriesListState> {
@@ -27,15 +31,16 @@ public class StoriesListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
     BaseStoriesListViewModel viewModel;
     private final IASCore core;
     private final AppearanceManager appearanceManager;
-    private final @NonNull IStoriesListItem storiesListItemCreator;
-    private final @NonNull IGetFavoriteListItem storiesListFavoriteCellCreator;
+    private IStoriesListItem storiesListItemCreator;
+    private IGetFavoriteListItem storiesListFavoriteCellCreator;
+    private List<String> storiesIds = new ArrayList<>();
 
     public StoriesListAdapter(
             IASCore core,
             AppearanceManager appearanceManager,
             BaseStoriesListViewModel viewModel,
-            @NonNull IStoriesListItem storiesListItemCreator,
-            @NonNull IGetFavoriteListItem storiesListFavoriteCellCreator
+            IStoriesListItem storiesListItemCreator,
+            IGetFavoriteListItem storiesListFavoriteCellCreator
     ) {
         this.viewModel = viewModel;
         this.storiesListItemCreator = storiesListItemCreator;
@@ -57,11 +62,38 @@ public class StoriesListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
                 parent,
                 false
         );
+        int pWidth = parent.getWidth();
+        pWidth = pWidth > 0 ? pWidth : Sizes.getScreenSize(parent.getContext()).x;
         if (viewType == -1) {
+            if (storiesListFavoriteCellCreator == null)
+                storiesListFavoriteCellCreator = new StoriesListDefaultFavoriteCell(
+                        appearanceManager,
+                        parent.getContext(),
+                        parent.getLayoutDirection(),
+                        pWidth
+                );
             return new StoriesListFavoriteCellContainer(v, parent, storiesListFavoriteCellCreator);
         } else {
+            if (storiesListItemCreator == null)
+                storiesListItemCreator = new StoriesListDefaultItem(
+                        appearanceManager,
+                        new StoriesListDefaultItemPresenter(),
+                        parent.getContext(),
+                        parent.getLayoutDirection(),
+                        pWidth
+                );
             return new StoriesListItemContainer(v, parent, storiesListItemCreator);
         }
+    }
+
+    public void loadStories() {
+        if (viewModel != null)
+            viewModel.loadStories();
+    }
+
+    @Override
+    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+
     }
 
     @Override
@@ -115,33 +147,38 @@ public class StoriesListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
     }
 
     @Override
-    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
-        if (holder.getItemViewType() == -1) {
-
-        } else {
-
-        }
-    }
-
-    @Override
     public int getItemCount() {
-        int size = storiesListState.storiesIds().size();
+        int size = storiesIds.size();
         if (size == 0) return 0;
         return size + (storiesListState.hasFavorite() ? 1 : 0);
     }
 
     @Override
     public void onUpdate(StoriesListState newValue) {
-        if (storiesListState.storiesIds().equals(newValue.storiesIds())) {
+        if (Objects.equals(storiesListState.storiesIds(), newValue.storiesIds())) {
             storiesListState = newValue.copy();
-            if (newValue.hasFavorite()) {
-                notifyItemInserted(storiesListState.storiesIds().size());
-            } else {
-                notifyItemRemoved(storiesListState.storiesIds().size());
-            }
+            new Handler(Looper.getMainLooper()).post(new Runnable() {
+                @Override
+                public void run() {
+                    if (newValue.hasFavorite()) {
+                        notifyItemInserted(storiesListState.storiesIds().size());
+                    } else {
+                        notifyItemRemoved(storiesListState.storiesIds().size());
+                    }
+                }
+            });
+
         } else {
             storiesListState = newValue.copy();
-            notifyDataSetChanged();
+            storiesIds.clear();
+            storiesIds.addAll(newValue.storiesIds());
+            new Handler(Looper.getMainLooper()).post(new Runnable() {
+                @Override
+                public void run() {
+                    notifyDataSetChanged();
+                }
+            });
+
         }
     }
 }

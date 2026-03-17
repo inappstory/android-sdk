@@ -116,7 +116,7 @@ public class NetworkClient {
                 return response;
             }
             IASDataSettingsHolder dataSettingsHolder = (IASDataSettingsHolder) core.settingsAPI();
-            RequestLocalParameters currentParameters = new RequestLocalParameters()
+           /* RequestLocalParameters currentParameters = new RequestLocalParameters()
                     .sessionId(dataSettingsHolder.sessionIdOrEmpty())
                     .userId(dataSettingsHolder.userId())
                     .sendStatistic(dataSettingsHolder.sendStatistic())
@@ -128,7 +128,7 @@ public class NetworkClient {
                 response.logId = requestId;
                 callback.onFailure(response);
                 return response;
-            }
+            }*/
             if (response.code == 204) {
                 callback.onEmptyContent();
                 return response;

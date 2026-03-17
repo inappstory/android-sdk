@@ -4,6 +4,18 @@ package com.inappstory.sdk.refactoring.stories.ui.list.states;
 import java.util.Objects;
 
 public class StoriesListItemState {
+    @Override
+    public String toString() {
+        return "StoriesListItemState{" +
+                "id=" + id +
+                ", title='" + title + '\'' +
+                ", titleColor='" + titleColor + '\'' +
+                ", coverState=" + coverState +
+                ", hasVideoUrl=" + hasVideoUrl +
+                ", isOpened=" + isOpened +
+                '}';
+    }
+
     private int id;
     private String title;
     private String titleColor;

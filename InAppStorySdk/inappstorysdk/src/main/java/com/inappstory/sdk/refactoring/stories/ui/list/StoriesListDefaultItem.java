@@ -16,12 +16,12 @@ import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.ui.widgets.roundedlayout.RoundedCornerLayout;
 import com.inappstory.sdk.memcache.IGetBitmap;
 import com.inappstory.sdk.refactoring.stories.ui.views.IStoriesListDefaultItemPresenter;
+import com.inappstory.sdk.refactoring.stories.ui.views.IStoriesListItem;
 import com.inappstory.sdk.stories.ui.video.VideoPlayer;
-import com.inappstory.sdk.stories.ui.views.IStoriesListItem;
 import com.inappstory.sdk.stories.ui.widgets.StoryListItemBorder;
 import com.inappstory.sdk.stories.utils.Sizes;
 
-public class StoriesListDefaultItem  implements IStoriesListItem {
+public class StoriesListDefaultItem implements IStoriesListItem {
     private AppCompatImageView image;
     private VideoPlayer video;
     private AppCompatTextView titleView;

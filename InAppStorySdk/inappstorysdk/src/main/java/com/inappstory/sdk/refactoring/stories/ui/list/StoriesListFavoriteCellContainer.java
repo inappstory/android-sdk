@@ -52,7 +52,6 @@ public class StoriesListFavoriteCellContainer
         vg.addView(getDefaultFavoriteCell());
     }
 
-
     private View getDefaultFavoriteCell() {
         IGetFavoriteListItem favoriteCellItem = this.favoriteCellItem;
         if (favoriteCellItem == null) return null;
@@ -92,6 +91,7 @@ public class StoriesListFavoriteCellContainer
     private void stateIsUpdated(StoriesListFavoriteCellState value) {
         IGetFavoriteListItem favoriteListItem = this.favoriteCellItem;
         if (favoriteListItem == null) return;
+        if (!viewCanBeUsed()) return;
         List<Integer> backgroundColors = new ArrayList<>();
         List<String> images = new ArrayList<>();
         for (StoriesListFavoriteCellItemState cover : value.covers()) {
@@ -108,6 +108,7 @@ public class StoriesListFavoriteCellContainer
 
     private void stateIsCreated(StoriesListFavoriteCellState value) {
         IGetFavoriteListItem favoriteListItem = this.favoriteCellItem;
+        if (!viewCanBeUsed()) return;
         List<Integer> backgroundColors = new ArrayList<>();
         for (StoriesListFavoriteCellItemState cover : value.covers()) {
             backgroundColors.add(cover.backgroundColor());

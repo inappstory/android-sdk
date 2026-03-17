@@ -8,6 +8,10 @@ public class NPlaceholderToPlaceholderDTOMapper
         implements Mapper<NSessionPlaceholder, SessionPlaceholderDTO> {
     @Override
     public SessionPlaceholderDTO convert(NSessionPlaceholder obj) {
-        return null;
+        if (obj == null) return null;
+        return new SessionPlaceholderDTO(
+                obj.name,
+                obj.defaultVal
+        );
     }
 }

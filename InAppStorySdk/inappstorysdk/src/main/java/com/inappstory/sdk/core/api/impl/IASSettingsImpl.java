@@ -658,14 +658,26 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
                 }
             }
         }
-        if (needToReloadSession) {
-            refreshSession(currentUserId,
+
+        core.sessionRepository().newSessionParameters(
+                new com.inappstory.sdk.refactoring.session.UniqueSessionParameters()
+                        .anonymous(settings.anonymous())
+                        .userId(settings.userId())
+                        .userSign(settings.userSign())
+                        .locale(settings.lang()),
+                null
+        );
+       /* if (needToReloadSession) {
+            refreshSession(
+                    currentUserId,
                     currentDeviceId,
                     currentLang,
                     currentSendStatistic,
                     currentAnonymous
             );
-        }
+        } else {
+
+        }*/
     }
 
     @Override

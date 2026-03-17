@@ -25,60 +25,64 @@ public final class StoriesFeedListViewModel extends BaseStoriesListViewModel {
     }
 
     private void loadFeed() {
-        new GetStoriesFeed(core.storyRepository())
-                .invoke(
-                        feedParameters,
-                        new ResultCallback<StoryFeedDTO>() {
-                            @Override
-                            public void success(StoryFeedDTO result) {
-                                StoriesListState state = storiesListStateObservable.getValue();
-                                if (state == null)
-                                    state = new StoriesListState();
-                                else
-                                    state = state.copy();
-                                storiesListStateObservable.updateValue(
-                                        state.storiesIds(result.storiesIds())
-                                );
-                                if (result.hasFavorite()) {
-                                    loadCovers();
-                                }
-                            }
-
-                            @Override
-                            public void error(Error<StoryFeedDTO> result) {
-                                storiesListStateObservable.updateValue(
-                                        new StoriesListState()
-                                );
-                            }
+        new GetStoriesFeed(
+                core.sessionRepository(),
+                core.storyRepository(),
+                feedParameters
+        ).invoke(
+                new ResultCallback<StoryFeedDTO>() {
+                    @Override
+                    public void success(StoryFeedDTO result) {
+                        StoriesListState state = storiesListStateObservable.getValue();
+                        if (state == null)
+                            state = new StoriesListState();
+                        else
+                            state = state.copy();
+                        storiesListStateObservable.updateValue(
+                                state.storiesIds(result.storiesIds())
+                        );
+                        if (result.hasFavorite()) {
+                            loadCovers();
                         }
-                );
+                    }
+
+                    @Override
+                    public void error(Error<StoryFeedDTO> result) {
+                        storiesListStateObservable.updateValue(
+                                new StoriesListState()
+                        );
+                    }
+                }
+        );
     }
 
     private void loadCovers() {
-        new GetFavoriteCovers(core.storyRepository())
-                .invoke(
-                        new ResultCallback<List<StoryCoverDTO>>() {
-                            @Override
-                            public void success(List<StoryCoverDTO> result) {
-                                StoriesListState state = storiesListStateObservable.getValue();
-                                if (state == null)
-                                    state = new StoriesListState().hasFavorite(false);
-                                else
-                                    state = state.copy().hasFavorite(!(result == null || result.isEmpty()));
-                                storiesListStateObservable.updateValue(state);
-                            }
+        new GetFavoriteCovers(
+                core.sessionRepository(),
+                core.storyRepository()
+        ).invoke(
+                new ResultCallback<List<StoryCoverDTO>>() {
+                    @Override
+                    public void success(List<StoryCoverDTO> result) {
+                        StoriesListState state = storiesListStateObservable.getValue();
+                        if (state == null)
+                            state = new StoriesListState().hasFavorite(false);
+                        else
+                            state = state.copy().hasFavorite(!(result == null || result.isEmpty()));
+                        storiesListStateObservable.updateValue(state);
+                    }
 
-                            @Override
-                            public void error(Error<List<StoryCoverDTO>> result) {
-                                StoriesListState state = storiesListStateObservable.getValue();
-                                if (state == null)
-                                    state = new StoriesListState().hasFavorite(false);
-                                else
-                                    state = state.copy().hasFavorite(false);
-                                storiesListStateObservable.updateValue(state);
-                            }
-                        }
-                );
+                    @Override
+                    public void error(Error<List<StoryCoverDTO>> result) {
+                        StoriesListState state = storiesListStateObservable.getValue();
+                        if (state == null)
+                            state = new StoriesListState().hasFavorite(false);
+                        else
+                            state = state.copy().hasFavorite(false);
+                        storiesListStateObservable.updateValue(state);
+                    }
+                }
+        );
     }
 
     @Override

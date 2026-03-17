@@ -2,6 +2,9 @@ package com.inappstory.sdk.refactoring.stories.ui.list;
 
 import android.app.Activity;
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -18,6 +21,7 @@ import com.inappstory.sdk.refactoring.stories.ui.list.viewmodels.StoriesListItem
 import com.inappstory.sdk.refactoring.stories.ui.views.IStoriesListItem;
 
 import java.util.Objects;
+import java.util.UUID;
 
 public class StoriesListItemContainer
         extends RecyclerView.ViewHolder
@@ -26,7 +30,7 @@ public class StoriesListItemContainer
     private StoriesListItemViewModel listItemViewModel;
     private IStoriesListItem storiesListItem;
     private AppearanceManager appearanceManager;
-
+    private String uuid = UUID.randomUUID().toString();
 
     public ViewGroup getParent() {
         return parent;
@@ -94,14 +98,20 @@ public class StoriesListItemContainer
     }
 
     private void stateIsCreated(StoriesListItemState value) {
-        ViewGroup vg = itemView.findViewById(R.id.baseLayout);
-        vg.removeAllViews();
-        if (value.hasVideoUrl()) {
-            vg.addView(getDefaultVideoCell());
-        } else {
-            vg.addView(getDefaultCell());
-        }
-        stateIsUpdated(value);
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                ViewGroup vg = itemView.findViewById(R.id.baseLayout);
+                vg.removeAllViews();
+                if (value.hasVideoUrl()) {
+                    vg.addView(getDefaultVideoCell());
+                } else {
+                    vg.addView(getDefaultCell());
+                }
+                stateIsUpdated(value);
+            }
+        });
+
     }
 
     private void stateIsUpdated(StoriesListItemState value) {
@@ -150,32 +160,33 @@ public class StoriesListItemContainer
     @Override
     public void onUpdate(StoriesListItemState newValue) {
         if (Objects.equals(newValue, currentState)) return;
+        StoriesListItemState current = currentState != null ? currentState.copy() : null;
+        currentState = newValue;
         if (newValue == null) {
-            currentState = null;
             return;
         }
-        if (currentState == null) {
+        if (current == null) {
             stateIsCreated(newValue);
             listItemViewModel.initCover(appearanceManager.csCoverQuality());
             listItemViewModel.loadCoverResources(appearanceManager.csCoverQuality());
         } else {
-            if (currentState.isOpened() != newValue.isOpened()) {
+            if (current.isOpened() != newValue.isOpened()) {
                 updateOpenedStatus(newValue.isOpened());
             }
             StoriesListItemCoverState newCoverState = newValue.coverState();
             if (newCoverState != null) {
-                if (!Objects.equals(currentState.coverState(), newCoverState)) {
-                    if (currentState.coverState() == null) {
+                if (!Objects.equals(current.coverState(), newCoverState)) {
+                    if (current.coverState() == null) {
                         updateImageCover(newCoverState);
                         if (newCoverState.videoPath() != null) {
                             updateVideoCover(newCoverState);
                         }
                     } else {
-                        if (!Objects.equals(currentState.coverState().imagePath(),
+                        if (!Objects.equals(current.coverState().imagePath(),
                                 newCoverState.imagePath())) {
                             updateImageCover(newCoverState);
                         }
-                        if (!Objects.equals(currentState.coverState().videoPath(),
+                        if (!Objects.equals(current.coverState().videoPath(),
                                 newCoverState.videoPath())) {
                             updateVideoCover(newCoverState);
                         }
@@ -183,6 +194,7 @@ public class StoriesListItemContainer
                 }
             }
         }
-        currentState = newValue;
+
+        Log.e("onListItemUpdate", uuid + " " + newValue);
     }
 }

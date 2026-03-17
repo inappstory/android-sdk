@@ -2,6 +2,7 @@ package com.inappstory.sdk.refactoring.stories.repositories;
 
 import com.inappstory.sdk.core.api.IASStatisticProfiling;
 import com.inappstory.sdk.refactoring.core.utils.results.Error;
+import com.inappstory.sdk.refactoring.core.utils.results.NoSessionError;
 import com.inappstory.sdk.refactoring.core.utils.results.Result;
 import com.inappstory.sdk.refactoring.core.utils.results.ResultCallback;
 import com.inappstory.sdk.refactoring.core.utils.results.Success;
@@ -27,7 +28,7 @@ import java.util.List;
 public class StoryRepository implements IStoryRepository {
 
     private final IStoryLocalDataSource storyLocalDataSource;
-    private final IStoryAPIDataSource storyAPIDataSource;
+    private IStoryAPIDataSource storyAPIDataSource;
     private final IASStatisticProfiling profiling;
     private final IStoryChangesSubscribersHolder changesSubscribersHolder;
 
@@ -43,6 +44,11 @@ public class StoryRepository implements IStoryRepository {
         this.storyLocalDataSource = localDataSource;
     }
 
+
+    @Override
+    public void updateApiDataSource(IStoryAPIDataSource storyAPIDataSource) {
+        this.storyAPIDataSource = storyAPIDataSource;
+    }
 
     @Override
     public void getStoriesFeed(
@@ -106,6 +112,10 @@ public class StoryRepository implements IStoryRepository {
 
     @Override
     public void getFavoriteStories(ResultCallback<List<StoriesListItemDTO>> storyFeedResultCallback) {
+        if (storyAPIDataSource == null) {
+            storyFeedResultCallback.error(new NoSessionError<>());
+            return;
+        }
         storyAPIDataSource.getFavoriteStories(new ResultCallback<List<NStory>>() {
             @Override
             public void success(List<NStory> items) {
@@ -142,6 +152,10 @@ public class StoryRepository implements IStoryRepository {
 
     @Override
     public void getFavoriteCovers(ResultCallback<List<StoryCoverDTO>> storyFeedResultCallback) {
+        if (storyAPIDataSource == null) {
+            storyFeedResultCallback.error(new NoSessionError<>());
+            return;
+        }
         storyAPIDataSource.getFavoriteCovers(new ResultCallback<List<NStoryCover>>() {
             @Override
             public void success(List<NStoryCover> items) {
@@ -161,6 +175,10 @@ public class StoryRepository implements IStoryRepository {
 
     @Override
     public void getOnboardingStoriesFeed(StoriesFeedParameters feedParameters, int limit, ResultCallback<StoryFeedDTO> storyFeedResultCallback) {
+        if (storyAPIDataSource == null) {
+            storyFeedResultCallback.error(new NoSessionError<>());
+            return;
+        }
         ResultCallback<NFeed> resultCallback = new ResultCallback<NFeed>() {
             @Override
             public void success(NFeed feed) {
@@ -208,6 +226,10 @@ public class StoryRepository implements IStoryRepository {
 
     @Override
     public void likeStory(String storyId, boolean like, ResultCallback<Boolean> likeResultCallback) {
+        if (storyAPIDataSource == null) {
+            likeResultCallback.error(new NoSessionError<>());
+            return;
+        }
         storyAPIDataSource.likeStory(storyId, like, new ResultCallback<Boolean>() {
             @Override
             public void success(Boolean result) {
@@ -224,6 +246,10 @@ public class StoryRepository implements IStoryRepository {
 
     @Override
     public void dislikeStory(String storyId, boolean dislike, ResultCallback<Boolean> dislikeResultCallback) {
+        if (storyAPIDataSource == null) {
+            dislikeResultCallback.error(new NoSessionError<>());
+            return;
+        }
         storyAPIDataSource.dislikeStory(storyId, dislike, new ResultCallback<Boolean>() {
             @Override
             public void success(Boolean result) {
@@ -240,6 +266,10 @@ public class StoryRepository implements IStoryRepository {
 
     @Override
     public void favoriteStory(String storyId, boolean favorite, ResultCallback<Boolean> favoriteResultCallback) {
+        if (storyAPIDataSource == null) {
+            favoriteResultCallback.error(new NoSessionError<>());
+            return;
+        }
         storyAPIDataSource.favoriteStory(storyId, favorite, new ResultCallback<Boolean>() {
             @Override
             public void success(Boolean res) {
@@ -275,6 +305,10 @@ public class StoryRepository implements IStoryRepository {
 
     @Override
     public void removeAllFavorites(ResultCallback<Void> removeAllFavoritesCallback) {
+        if (storyAPIDataSource == null) {
+            removeAllFavoritesCallback.error(new NoSessionError<>());
+            return;
+        }
         storyAPIDataSource.removeAllFavorites(new ResultCallback<Void>() {
             @Override
             public void success(Void result) {
@@ -333,6 +367,10 @@ public class StoryRepository implements IStoryRepository {
         };
         Result<StoryDTO> result = storyLocalDataSource.getStoryById(storySlugOrId);
         if (result instanceof Error) {
+            if (storyAPIDataSource == null) {
+                storyByIdResultCallback.error(new NoSessionError<>());
+                return;
+            }
             storyAPIDataSource.getStoryBySlugOrId(
                     storySlugOrId,
                     once,
@@ -341,6 +379,15 @@ public class StoryRepository implements IStoryRepository {
         } else if (result instanceof Success) {
             storyByIdResultCallback.success(((Success<StoryDTO>) result).data());
         }
+    }
+
+    @Override
+    public StoriesListItemDTO getLocalStoryListItem(String storyId) {
+        Result<StoriesListItemDTO> result = storyLocalDataSource.getStoryListItemById(storyId);
+        if (result instanceof Success) {
+            return ((Success<StoriesListItemDTO>) result).data();
+        }
+        return null;
     }
 
     @Override

@@ -31,6 +31,7 @@ import com.inappstory.sdk.core.ui.screens.ScreensManager;
 import com.inappstory.sdk.core.utils.ContextConnectionCheck;
 import com.inappstory.sdk.domain.IWidgetsViewModels;
 import com.inappstory.sdk.network.NetworkClient;
+import com.inappstory.sdk.refactoring.session.repositories.ISessionRepository;
 import com.inappstory.sdk.refactoring.stories.repositories.IStoryChangesSubscribersHolder;
 import com.inappstory.sdk.refactoring.stories.repositories.IStoryRepository;
 import com.inappstory.sdk.refactoring.stories.ui.list.viewmodels.StoriesListViewModelsHolder;
@@ -84,4 +85,5 @@ public interface IASCore {
     IStoryChangesSubscribersHolder storyChangesSubscribers();
     StoriesListViewModelsHolder storiesListViewModels();
     IStoryRepository storyRepository();
+    ISessionRepository sessionRepository();
 }

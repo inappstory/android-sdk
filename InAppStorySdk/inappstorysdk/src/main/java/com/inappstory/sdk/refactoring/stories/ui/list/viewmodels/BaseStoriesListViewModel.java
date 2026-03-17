@@ -6,16 +6,14 @@ import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASStatisticStoriesV1;
 import com.inappstory.sdk.network.models.RequestLocalParameters;
 import com.inappstory.sdk.refactoring.core.utils.observers.Observable;
-import com.inappstory.sdk.refactoring.stories.ui.list.states.StoriesListItemState;
+import com.inappstory.sdk.refactoring.core.utils.observers.Observer;
 import com.inappstory.sdk.refactoring.stories.ui.list.states.StoriesListState;
 import com.inappstory.sdk.refactoring.stories.usecases.StoriesFeedParameters;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.statistic.GetStatisticV1Callback;
 import com.inappstory.sdk.stories.statistic.IASStatisticStoriesV2Impl;
-import com.inappstory.sdk.stories.utils.Observer;
 
 import java.util.List;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -74,10 +72,10 @@ public abstract class BaseStoriesListViewModel {
     }
 
     public void addSubscriber(Observer<StoriesListState> observer) {
-
+        this.storiesListStateObservable.subscribe(observer);
     }
 
     public void removeSubscriber(Observer<StoriesListState> observer) {
-
+        this.storiesListStateObservable.unsubscribe(observer);
     }
 }

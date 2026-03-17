@@ -2,26 +2,39 @@ package com.inappstory.sdk.refactoring.stories.ui.list;
 
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.inappstory.sdk.AppearanceManager;
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.UseIASCoreCallback;
+import com.inappstory.sdk.core.api.IASDataSettingsHolder;
+import com.inappstory.sdk.refactoring.stories.ui.list.viewmodels.BaseStoriesListViewModel;
+import com.inappstory.sdk.refactoring.stories.ui.list.viewmodels.StoriesFeedListViewModel;
+import com.inappstory.sdk.refactoring.stories.ui.list.viewmodels.StoriesListViewModelCreator;
+import com.inappstory.sdk.refactoring.stories.usecases.StoriesFeedParameters;
 import com.inappstory.sdk.stories.outercallbacks.storieslist.ListCallback;
 import com.inappstory.sdk.stories.outercallbacks.storieslist.ListScrollCallback;
 import com.inappstory.sdk.stories.ui.list.ShownStoriesListItem;
 import com.inappstory.sdk.stories.ui.list.StoryTouchListener;
 import com.inappstory.sdk.stories.utils.Observer;
+import com.inappstory.sdk.utils.StringsUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class StoriesList extends RecyclerView implements Observer<Boolean> {
     private AppearanceManager appearanceManager;
@@ -55,11 +68,30 @@ public class StoriesList extends RecyclerView implements Observer<Boolean> {
     private String uniqueID;
     private String feed = DEFAULT_FEED;
 
+    private String getUniqueID() {
+        if (uniqueID == null || uniqueID.isEmpty()) return feed;
+        return uniqueID;
+    }
+
     private final Object lock = new Object();
 
 
     public void setAppearanceManager(AppearanceManager appearanceManager) {
         this.appearanceManager = appearanceManager;
+        if (layoutManager == defaultLayoutManager && appearanceManager.csColumnCount() != null) {
+            setLayoutManager(new GridLayoutManager(getContext(), appearanceManager.csColumnCount()) {
+                @Override
+                public int scrollVerticallyBy(int dy, Recycler recycler, State state) {
+                    int scrollRange = super.scrollVerticallyBy(dy, recycler, state);
+                    int overScroll = dy - scrollRange;
+                    if (overScroll != 0 && scrollCallback != null) {
+                        //  scrollCallback.onOverscroll(0, overScroll);
+                    }
+                    return scrollRange;
+                }
+            });
+        } else
+            setLayoutManager(layoutManager);
     }
 
     private AppearanceManager getAppearanceManager() {
@@ -117,17 +149,63 @@ public class StoriesList extends RecyclerView implements Observer<Boolean> {
         this.scrollCallback = scrollCallback;
     }
 
-    public void setFeed(String feed) {
 
+    public void setFeed(String feed) {
+        if (feed != null && !feed.isEmpty())
+            this.feed = feed;
+        else
+            this.feed = DEFAULT_FEED;
+        updateAdapter();
+    }
+
+    private void updateAdapter() {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                AppearanceManager appearanceManager = getAppearanceManager();
+                IASDataSettingsHolder settingsHolder = (IASDataSettingsHolder) core.settingsAPI();
+                List<String> nonSortedTags = new ArrayList<>(settingsHolder.tags());
+                Collections.sort(nonSortedTags);
+                String key = (uniqueID != null && !uniqueID.isEmpty()) ? uniqueID :
+                        StringsUtils.md5(feed + TextUtils.join(",", nonSortedTags));
+                if (getAdapter() != null) {
+                    ((StoriesListAdapter) getAdapter()).destroy();
+                }
+                setAdapter(
+                        new StoriesListAdapter(
+                                core,
+                                appearanceManager,
+                                core.storiesListViewModels().getOrCreateStoriesListViewModel(
+                                        key,
+                                        new StoriesListViewModelCreator() {
+                                            @Override
+                                            public BaseStoriesListViewModel create() {
+                                                return new StoriesFeedListViewModel(core,
+                                                        new StoriesFeedParameters(
+                                                                feed,
+                                                                nonSortedTags,
+                                                                settingsHolder.options()));
+                                            }
+                                        }
+                                ),
+                                null,
+                                null
+                        )
+                );
+            }
+        });
     }
 
     public void setUniqueID(String uniqueID) {
         this.uniqueID = uniqueID;
+        updateAdapter();
     }
 
 
     public void loadStories() {
-
+        Adapter adapter = getAdapter();
+        if (adapter instanceof StoriesListAdapter)
+            ((StoriesListAdapter) adapter).loadStories();
     }
 
     private void init(@NonNull Context context, @Nullable AttributeSet attrs) {
@@ -138,6 +216,9 @@ public class StoriesList extends RecyclerView implements Observer<Boolean> {
         );
         addOnItemTouchListener(itemTouchListener);
         scrollToPosition(0);
+        setLayoutManager(defaultLayoutManager);
+        updateAdapter();
+
     }
 
     private void addListScrollCallback() {

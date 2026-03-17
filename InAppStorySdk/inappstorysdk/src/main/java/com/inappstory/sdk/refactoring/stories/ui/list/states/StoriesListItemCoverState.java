@@ -55,4 +55,13 @@ public class StoriesListItemCoverState {
                 .videoPath(videoPath)
                 .backgroundColor(backgroundColor);
     }
+
+    @Override
+    public String toString() {
+        return "StoriesListItemCoverState{" +
+                "backgroundColor='" + backgroundColor + '\'' +
+                ", imagePath='" + imagePath + '\'' +
+                ", videoPath='" + videoPath + '\'' +
+                '}';
+    }
 }

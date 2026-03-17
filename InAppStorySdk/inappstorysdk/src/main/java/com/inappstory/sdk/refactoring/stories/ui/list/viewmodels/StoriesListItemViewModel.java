@@ -26,7 +26,9 @@ public class StoriesListItemViewModel implements IStoriesListItemChangeSubscribe
     ) {
         this.core = core;
         this.storyId = storyId;
+        onChange(core.storyRepository().getLocalStoryListItem(storyId));
         core.storyChangesSubscribers().addStoryChangeSubscriber(this);
+
     }
 
     public void addSubscriber(Observer<StoriesListItemState> observer) {
