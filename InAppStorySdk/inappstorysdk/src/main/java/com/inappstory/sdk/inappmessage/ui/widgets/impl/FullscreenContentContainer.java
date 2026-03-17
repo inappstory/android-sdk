@@ -153,7 +153,12 @@ public class FullscreenContentContainer extends IAMContentContainer<InAppMessage
 
                         @Override
                         public void onEnd() {
-                            showAnimationEnd();
+                            container.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    showAnimationEnd();
+                                }
+                            });
                         }
                     }).start(
                             200,
@@ -188,7 +193,13 @@ public class FullscreenContentContainer extends IAMContentContainer<InAppMessage
 
                         @Override
                         public void onEnd() {
-                            showAnimationEnd();
+                            container.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    showAnimationEnd();
+                                }
+                            });
+
                         }
                     }).start(
                             200,
@@ -284,7 +295,6 @@ public class FullscreenContentContainer extends IAMContentContainer<InAppMessage
         }
 
     }
-
 
 
     @Override

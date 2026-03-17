@@ -48,8 +48,12 @@ public class InAppMessageMainFragment extends Fragment implements Observer<IAMRe
     private InAppMessageAppearance appearance = new InAppMessageBottomSheetSettings();
     private IAMContentContainer contentContainer;
 
+
     @Override
     public void onDestroyView() {
+        if (contentContainer != null) {
+            contentContainer.uiContainerCallback(null);
+        }
         if (readerViewModel != null) {
             readerViewModel.removeSubscriber(InAppMessageMainFragment.this);
             readerViewModel.clear();
