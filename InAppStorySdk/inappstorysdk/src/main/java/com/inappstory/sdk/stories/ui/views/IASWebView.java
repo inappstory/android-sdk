@@ -118,4 +118,12 @@ public class IASWebView extends WebView {
         }
     }
 
+    public String setDir(String html, String dirString) {
+        try {
+            return html.replace("{{%dir}}", dirString);
+        } catch (Exception e) {
+            return html;
+        }
+    }
+
 }

@@ -280,7 +280,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                                                 filePathAndContent.getFilePath(),
                                                 webView.setDir(
                                                         filePathAndContent.getFileContent(),
-                                                        getContext()
+                                                        currentLayoutDirectionString
                                                 ),
                                                 "text/html; charset=utf-8", "UTF-8",
                                                 null
@@ -1085,6 +1085,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
     }
 
     private int currentLayoutDirection = View.LAYOUT_DIRECTION_LTR;
+    private String currentLayoutDirectionString = "ltr";
 
     void downloadGame(
             final String gameId,
@@ -1173,6 +1174,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                                     public void run() {
                                         GameCenterData gameCenterData = (GameCenterData) iGameCenterData;
                                         currentLayoutDirection = gameCenterData.layoutDirectionRaw();
+                                        currentLayoutDirectionString = gameCenterData.layoutDirectionString();
                                         if (getView() != null)
                                             getView().setLayoutDirection(currentLayoutDirection);
                                         progressLoader.layoutDirection(currentLayoutDirection);
@@ -1243,15 +1245,15 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                                             init = false;
                                             initWithEmpty = false;
                                         }
+                                        progressLoader.setIndeterminate(true);
                                         webView.loadDataWithBaseURL(
                                                 result.getFilePath(),
                                                 webView.setDir(
                                                         result.getFileContent(),
-                                                        getContext()
+                                                        currentLayoutDirectionString
                                                 ),
                                                 "text/html; charset=utf-8", "UTF-8",
                                                 null);
-                                        progressLoader.setIndeterminate(true);
                                     }
                                 });
                             }

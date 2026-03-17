@@ -137,17 +137,30 @@ public class NetworkClient {
                     return response;
                 } else {
                     Object obj;
+                    Class parseClass;
                     if (callback.getType() instanceof ParameterizedType) {
                         ParameterizedType parameterizedType = (ParameterizedType) callback.getType();
-                        obj = JsonParser.listFromJson(response.body,
-                                (Class) (parameterizedType.getActualTypeArguments()[0]));
+                        parseClass = (Class) (parameterizedType.getActualTypeArguments()[0]);
+                        obj = JsonParser.listFromJson(response.body, parseClass);
                     } else {
-                        obj = JsonParser.fromJson(response.body, (Class) callback.getType());
+                        parseClass = (Class) callback.getType();
+                        obj = JsonParser.fromJson(response.body, parseClass);
                     }
                     if (obj != null) {
                         callback.onSuccess(obj);
-                        return response;
+                    } else {
+                        String error = "";
+                        try {
+                            error = "Can't parse model " + parseClass.getSimpleName();
+                        } catch (Exception e) {
+
+                        }
+                        response = new Response.Builder().code(response.code)
+                                .errorBody(error).build();
+                        response.logId = requestId;
+                        callback.onFailure(response);
                     }
+                    return response;
                 }
             }
             response = new Response.Builder().code(response.code)
