@@ -60,6 +60,9 @@ public class InAppMessageMainFragment extends Fragment implements Observer<IAMRe
 
     @Override
     public void onDestroyView() {
+        if (contentContainer != null) {
+            contentContainer.uiContainerCallback(null);
+        }
         if (controller != null) {
             controller.unsubscribeView(this);
         }

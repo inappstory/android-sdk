@@ -92,30 +92,33 @@ public class IAMReaderViewModel implements IIAMReaderViewModel {
         IAMReaderUIStates currentUiState = readerState.uiState;
 
         if (currentUiState != newState) {
+            InAppMessageData messageData = getCurrentInAppMessageData();
             if (newState == IAMReaderUIStates.OPENED) {
-                core.callbacksAPI().useCallback(
-                        IASCallbackType.SHOW_IN_APP_MESSAGE,
-                        new UseIASCallback<ShowInAppMessageCallback>() {
-                            @Override
-                            public void use(@NonNull ShowInAppMessageCallback callback) {
-                                callback.showInAppMessage(
-                                        getCurrentInAppMessageData()
-                                );
+                if (messageData != null)
+                    core.callbacksAPI().useCallback(
+                            IASCallbackType.SHOW_IN_APP_MESSAGE,
+                            new UseIASCallback<ShowInAppMessageCallback>() {
+                                @Override
+                                public void use(@NonNull ShowInAppMessageCallback callback) {
+                                    callback.showInAppMessage(
+                                            messageData
+                                    );
+                                }
                             }
-                        }
-                );
+                    );
             } else if (newState == IAMReaderUIStates.CLOSED) {
-                core.callbacksAPI().useCallback(
-                        IASCallbackType.CLOSE_IN_APP_MESSAGE,
-                        new UseIASCallback<CloseInAppMessageCallback>() {
-                            @Override
-                            public void use(@NonNull CloseInAppMessageCallback callback) {
-                                callback.closeInAppMessage(
-                                        getCurrentInAppMessageData()
-                                );
+                if (messageData != null)
+                    core.callbacksAPI().useCallback(
+                            IASCallbackType.CLOSE_IN_APP_MESSAGE,
+                            new UseIASCallback<CloseInAppMessageCallback>() {
+                                @Override
+                                public void use(@NonNull CloseInAppMessageCallback callback) {
+                                    callback.closeInAppMessage(
+                                            messageData
+                                    );
+                                }
                             }
-                        }
-                );
+                    );
             }
         }
         this.readerStateObservable.updateValue(
@@ -154,8 +157,9 @@ public class IAMReaderViewModel implements IIAMReaderViewModel {
 
     @Override
     public void clear() {
+        InAppMessageData inAppMessageData = this.readerStateObservable.getValue().inAppMessageData;
         this.readerStateObservable.updateValue(
-                new IAMReaderState()
+                new IAMReaderState().inAppMessageData(inAppMessageData)
         );
         this.slideViewModel.clear();
     }
