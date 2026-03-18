@@ -112,6 +112,7 @@ public class StoryListItem extends BaseStoryListItem {
                             new IGetStoryCoverCallback() {
                                 @Override
                                 public void success(final String file) {
+                                    core.contentHolder().listsContent().setPathByUrl(videoUrl, file);
                                     itemView.post(new Runnable() {
                                         @Override
                                         public void run() {

@@ -2,6 +2,7 @@ package com.inappstory.sdk.refactoring.stories.ui.list;
 
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -92,21 +93,18 @@ public class StoriesListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
     }
 
     @Override
-    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
-
-    }
-
-    @Override
-    public int getItemViewType(int position) {
-        if (position == storiesListState.storiesIds().size()) return -1;
-        return position;
-    }
-
-    @Override
-    public void onViewAttachedToWindow(@NonNull RecyclerView.ViewHolder holder) {
-        super.onViewAttachedToWindow(holder);
+    public void onViewRecycled(@NonNull RecyclerView.ViewHolder holder) {
+        super.onViewRecycled(holder);
         if (holder instanceof StoriesListItemContainer) {
-            int position = holder.getAbsoluteAdapterPosition();
+            ((StoriesListItemContainer) holder).detachView();
+        } else if (holder instanceof StoriesListFavoriteCellContainer) {
+            ((StoriesListFavoriteCellContainer) holder).detachView();
+        }
+    }
+
+    @Override
+    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+        if (holder instanceof StoriesListItemContainer) {
             List<String> storiesIds = storiesListState.storiesIds();
             if (storiesIds != null && position >= 0 && position < storiesIds.size()) {
                 final String storyId = storiesIds.get(position);
@@ -136,14 +134,17 @@ public class StoriesListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         }
     }
 
+
+
     @Override
-    public void onViewDetachedFromWindow(@NonNull RecyclerView.ViewHolder holder) {
-        super.onViewDetachedFromWindow(holder);
-        if (holder instanceof StoriesListItemContainer) {
-            ((StoriesListItemContainer) holder).detachView();
-        } else if (holder instanceof StoriesListFavoriteCellContainer) {
-            ((StoriesListFavoriteCellContainer) holder).detachView();
-        }
+    public long getItemId(int position) {
+        return position;
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        if (position == storiesListState.storiesIds().size()) return -1;
+        return position;
     }
 
     @Override

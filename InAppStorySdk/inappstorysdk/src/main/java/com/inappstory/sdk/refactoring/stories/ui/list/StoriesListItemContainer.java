@@ -85,6 +85,8 @@ public class StoriesListItemContainer
         this.listItemViewModel = viewModel;
         this.storiesListItem = storiesListItem;
         this.appearanceManager = appearanceManager;
+        if (currentState != null)
+            stateIsCreated(currentState);
         viewModel.addSubscriber(this);
     }
 
@@ -94,58 +96,86 @@ public class StoriesListItemContainer
             this.listItemViewModel.removeSubscriber(this);
         this.listItemViewModel = null;
         this.appearanceManager = null;
-        this.currentState = null;
+        // this.currentState = null;
     }
 
+    Handler handler = new Handler(Looper.getMainLooper());
+    ViewGroup vg;
     private void stateIsCreated(StoriesListItemState value) {
-        new Handler(Looper.getMainLooper()).post(new Runnable() {
-            @Override
-            public void run() {
-                ViewGroup vg = itemView.findViewById(R.id.baseLayout);
-                vg.removeAllViews();
-                if (value.hasVideoUrl()) {
-                    vg.addView(getDefaultVideoCell());
-                } else {
-                    vg.addView(getDefaultCell());
-                }
-                stateIsUpdated(value);
-            }
-        });
 
+        vg = itemView.findViewById(R.id.baseLayout);
+        vg.removeAllViews();
+        if (value.hasVideoUrl()) {
+            vg.addView(getDefaultVideoCell());
+        } else {
+            vg.addView(getDefaultCell());
+        }
+        stateIsUpdated(value);
     }
 
     private void stateIsUpdated(StoriesListItemState value) {
-        if (!viewCanBeUsed()) return;
+
         IStoriesListItem storiesListItem = this.storiesListItem;
         if (storiesListItem == null) return;
-        storiesListItem.setId(
-                itemView,
-                value.id()
-        );
-        storiesListItem.setTitle(
-                itemView,
-                value.title(),
-                ColorUtils.parseColorRGBA(value.titleColor())
-        );
-        storiesListItem.setHasAudio(itemView, value.hasAudio());
-        storiesListItem.setOpened(itemView, value.isOpened());
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                if (!viewCanBeUsed())
+                    return;
+                storiesListItem.setId(
+                        itemView,
+                        value.id()
+                );
+                storiesListItem.setTitle(
+                        itemView,
+                        value.title(),
+                        ColorUtils.parseColorRGBA(value.titleColor())
+                );
+                storiesListItem.setHasAudio(itemView, value.hasAudio());
+                storiesListItem.setOpened(itemView, value.isOpened());
+            }
+        });
+        updateImageCover(value.coverState());
+        if (value.hasVideoUrl())
+            updateVideoCover(value.coverState());
     }
 
     private void updateImageCover(StoriesListItemCoverState coverState) {
-        if (!viewCanBeUsed()) return;
+
         IStoriesListItem storiesListItem = this.storiesListItem;
+        if (coverState == null)
+            coverState = new StoriesListItemCoverState();
         if (storiesListItem != null) {
-            storiesListItem.setImage(itemView, coverState.imagePath(), ColorUtils.parseColorRGBA(
-                    coverState.backgroundColor()
-            ));
+            StoriesListItemCoverState finalCoverState = coverState;
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (!viewCanBeUsed()) return;
+                    storiesListItem.setImage(
+                            itemView,
+                            finalCoverState.imagePath(),
+                            ColorUtils.parseColorRGBA(
+                                    finalCoverState.backgroundColor()
+                            )
+                    );
+                }
+            });
+
         }
     }
 
     private void updateVideoCover(StoriesListItemCoverState coverState) {
-        if (!viewCanBeUsed()) return;
         IStoriesListItem storiesListItem = this.storiesListItem;
+        if (coverState == null) coverState = new StoriesListItemCoverState();
         if (storiesListItem != null) {
-            storiesListItem.setVideo(itemView, coverState.videoPath());
+            StoriesListItemCoverState finalCoverState = coverState;
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (!viewCanBeUsed()) return;
+                    storiesListItem.setVideo(itemView, finalCoverState.videoPath());
+                }
+            });
         }
     }
 
@@ -153,7 +183,13 @@ public class StoriesListItemContainer
         if (!viewCanBeUsed()) return;
         IStoriesListItem storiesListItem = this.storiesListItem;
         if (storiesListItem != null) {
-            storiesListItem.setOpened(itemView, isOpened);
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (!viewCanBeUsed()) return;
+                    storiesListItem.setOpened(itemView, isOpened);
+                }
+            });
         }
     }
 
@@ -165,11 +201,13 @@ public class StoriesListItemContainer
         if (newValue == null) {
             return;
         }
+        Log.e("listUpdateCurrentState", uuid + " onUpdate " + newValue);
         if (current == null) {
             stateIsCreated(newValue);
             listItemViewModel.initCover(appearanceManager.csCoverQuality());
             listItemViewModel.loadCoverResources(appearanceManager.csCoverQuality());
         } else {
+            stateIsUpdated(newValue);
             if (current.isOpened() != newValue.isOpened()) {
                 updateOpenedStatus(newValue.isOpened());
             }
@@ -194,7 +232,5 @@ public class StoriesListItemContainer
                 }
             }
         }
-
-        Log.e("onListItemUpdate", uuid + " " + newValue);
     }
 }

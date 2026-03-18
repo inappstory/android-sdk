@@ -43,14 +43,18 @@ public class StoriesListItemViewModel implements IStoriesListItemChangeSubscribe
         StoriesListItemDTO dto = listItemDTO;
         StoriesListItemState state = storiesListItemStateObservable.getValue();
         if (dto == null || state == null) return;
-        String path = core.contentHolder().listsContent().getPathByUrl(
+        String imagePath = core.contentHolder().listsContent().getPathByUrl(
                 dto.imageCoverByQuality(imageQuality)
+        );
+        String videoPath = core.contentHolder().listsContent().getPathByUrl(
+                dto.videoCover()
         );
         storiesListItemStateObservable.updateValue(
                 state.copy().coverState(
                         new StoriesListItemCoverState()
                                 .backgroundColor(dto.backgroundColor())
-                                .imagePath(path)
+                                .imagePath(imagePath)
+                                .videoPath(videoPath)
                 )
         );
     }

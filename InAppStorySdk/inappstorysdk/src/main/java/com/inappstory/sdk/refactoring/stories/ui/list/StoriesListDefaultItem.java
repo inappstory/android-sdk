@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.util.LayoutDirection;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -133,6 +134,7 @@ public class StoriesListDefaultItem implements IStoriesListItem {
     @Override
     public void setTitle(View itemView, String title, Integer titleColor) {
         if (titleView == null) return;
+        Log.e("listUpdateCurrentState", "setTitle " + title + "");
         titleView.setText(title);
         if (titleColor != null) {
             titleView.setTextColor(titleColor);
@@ -149,6 +151,7 @@ public class StoriesListDefaultItem implements IStoriesListItem {
         if (image == null) return;
         if (path == null) {
             image.setImageResource(0);
+            Log.e("listUpdateCurrentState", "setBackgroundColor " + backgroundColor + "");
             image.setBackgroundColor(backgroundColor);
             return;
         }
