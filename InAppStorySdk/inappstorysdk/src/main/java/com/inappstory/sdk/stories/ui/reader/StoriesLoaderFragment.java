@@ -52,7 +52,7 @@ public class StoriesLoaderFragment extends Fragment {
 
     int storyId = -1;
 
-    void setViews(View view) {
+    void setViews(View view, int mirrored) {
         InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
         if (inAppStoryManager == null) return;
         IListItemContent story = inAppStoryManager.iasCore().contentHolder().listsContent()
@@ -65,7 +65,7 @@ public class StoriesLoaderFragment extends Fragment {
         ButtonsPanel buttonsPanel = view.findViewById(R.id.ias_buttons_panel);
         View aboveButtonsPanel = view.findViewById(R.id.ias_above_buttons_panel);
         View closeButton = view.findViewById(R.id.ias_close_button);
-        int mirrorScale = view.getResources().getInteger(R.integer.mirrorScaleX);
+        int mirrorScale = 1 - 2 * mirrored;
         closeButton.setScaleX(mirrorScale);
         if (story.disableClose())
             closeButton.setVisibility(View.GONE);
@@ -246,7 +246,7 @@ public class StoriesLoaderFragment extends Fragment {
         if (!Sizes.isTablet(context) && appearanceSettings.csReaderBackgroundColor() != Color.BLACK) {
             linearLayout.setBackgroundColor(Color.BLACK);
         }
-        setLinearContainer(context, linearLayout);
+        setLinearContainer(context, linearLayout, root != null ? root.getLayoutDirection() : 0);
         res.addView(linearLayout);
         View emptyView = new View(context);
         emptyView.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
@@ -263,7 +263,7 @@ public class StoriesLoaderFragment extends Fragment {
 
     }
 
-    private void setLinearContainer(Context context, LinearLayout linearLayout) {
+    private void setLinearContainer(Context context, LinearLayout linearLayout, int mirrored) {
         View blackTop = new View(context);
         blackTop.setId(R.id.ias_black_top);
         blackTop.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0));
@@ -298,9 +298,11 @@ public class StoriesLoaderFragment extends Fragment {
         RelativeLayout cardContent = new RelativeLayout(context);
         cardContent.setLayoutParams(new CardView.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
                 CardView.LayoutParams.MATCH_PARENT));
-        cardContent.addView(createTimelineContainer(context));
+        cardContent.addView(createTimelineContainer(context, mirrored));
         main.addView(cardContent);
-        content.addView(createButtonsPanel(context));
+        ButtonsPanel buttonsPanel = createButtonsPanel(context);
+        buttonsPanel.mirror(mirrored == 1);
+        content.addView(buttonsPanel);
         content.addView(aboveButtonsPanel);
         content.addView(main);
         linearLayout.addView(blackTop);
@@ -318,7 +320,7 @@ public class StoriesLoaderFragment extends Fragment {
         return screen;
     }
 
-    private RelativeLayout createTimelineContainer(Context context) {
+    private RelativeLayout createTimelineContainer(Context context, int mirrored) {
         RelativeLayout timelineContainer = new RelativeLayout(context);
         RelativeLayout.LayoutParams tclp = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,
                 RelativeLayout.LayoutParams.WRAP_CONTENT);
@@ -408,12 +410,13 @@ public class StoriesLoaderFragment extends Fragment {
         } catch (Exception e) {
             InAppStoryManager.handleException(e);
         }
+        final int mirrored = container != null ? container.getLayoutDirection() : 0;
         view.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
             @Override
             public void onViewAttachedToWindow(View v) {
                 if (v.isAttachedToWindow()) {
                     bindViews(v);
-                    setViews(v);
+                    setViews(v, mirrored);
                 }
             }
 
