@@ -7,6 +7,7 @@ import androidx.annotation.WorkerThread;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.lrudiskcache.FileChecker;
 import com.inappstory.sdk.core.data.IDownloadResource;
+import com.inappstory.sdk.lrudiskcache.FileCheckerSuccess;
 import com.inappstory.sdk.stories.cache.DownloadFileState;
 import com.inappstory.sdk.stories.cache.usecases.GameSplashUseCase;
 
@@ -55,7 +56,7 @@ public class DownloadSplashUseCase {
                     resource.size(),
                     resource.sha1(),
                     false
-            )) {
+            ) instanceof FileCheckerSuccess) {
                 splashScreenCallback.onSuccess(oldSplash);
                 return;
             }

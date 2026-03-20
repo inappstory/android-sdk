@@ -9,6 +9,8 @@ import com.inappstory.sdk.game.cache.SimpleUseCaseError;
 import com.inappstory.sdk.game.cache.UseCaseCallback;
 import com.inappstory.sdk.lrudiskcache.CacheJournalItem;
 import com.inappstory.sdk.lrudiskcache.FileChecker;
+import com.inappstory.sdk.lrudiskcache.FileCheckerError;
+import com.inappstory.sdk.lrudiskcache.FileCheckerResult;
 import com.inappstory.sdk.lrudiskcache.FileManager;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.stories.cache.DownloadFileState;
@@ -100,12 +102,12 @@ public class ArchiveUseCase extends GetCacheFileUseCase<Void> {
 
         downloadLog.generateRequestLog(url);
         if (cachedArchive != null) {
-            if (!fileChecker.checkWithShaAndSize(
+            if (fileChecker.checkWithShaAndSize(
                     cachedArchive,
                     archiveSize,
                     archiveSha1,
                     true
-            )) {
+            ) instanceof FileCheckerError) {
                 File directory = new File(
                         cachedArchive.getParent() +
                                 File.separator + uniqueKey);
@@ -194,13 +196,18 @@ public class ArchiveUseCase extends GetCacheFileUseCase<Void> {
                 public void finish(DownloadFileState fileState) {
                     if (fileState != null && fileState.file != null) {
                         if (fileState.downloadedSize == fileState.totalSize) {
-                            if (!fileChecker.checkWithShaAndSize(
+                            FileCheckerResult checkerResult = fileChecker.checkWithShaAndSize(
                                     fileState.file,
                                     archiveSize,
                                     archiveSha1,
                                     true
-                            )) {
-                                useCaseCallback.onError(new SimpleUseCaseError("File sha or size is incorrect"));
+                            );
+                            if (checkerResult instanceof FileCheckerError) {
+                                useCaseCallback.onError(
+                                        new SimpleUseCaseError(
+                                                "Game archive sha or size is incorrect: " + checkerResult
+                                        )
+                                );
                             } else {
                                 useCaseCallback.onSuccess(fileState.file);
                             }

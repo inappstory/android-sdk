@@ -12,6 +12,8 @@ import com.inappstory.sdk.game.cache.SimpleUseCaseError;
 import com.inappstory.sdk.game.cache.UseCaseCallback;
 import com.inappstory.sdk.lrudiskcache.CacheJournalItem;
 import com.inappstory.sdk.lrudiskcache.FileChecker;
+import com.inappstory.sdk.lrudiskcache.FileCheckerResult;
+import com.inappstory.sdk.lrudiskcache.FileCheckerSuccess;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.stories.api.models.WebResource;
 import com.inappstory.sdk.stories.cache.DownloadFileState;
@@ -110,7 +112,7 @@ public class GameResourceUseCase extends GetCacheFileUseCase<Void> {
                     resource.size,
                     resource.sha1,
                     true
-            )) {
+            ) instanceof FileCheckerSuccess) {
                 progressCallback.onProgress(resource.size, resource.size);
                 useCaseCallback.onSuccess(null);
                 downloadLog.generateResponseLog(true, filePath);
@@ -124,7 +126,7 @@ public class GameResourceUseCase extends GetCacheFileUseCase<Void> {
                 resource.size,
                 resource.sha1,
                 true
-        )) {
+        ) instanceof FileCheckerSuccess) {
             progressCallback.onProgress(resource.size, resource.size);
             useCaseCallback.onSuccess(null);
             try {
@@ -175,12 +177,13 @@ public class GameResourceUseCase extends GetCacheFileUseCase<Void> {
                                 if (fileState == null || fileState.downloadedSize != fileState.totalSize) {
                                     useCaseCallback.onError(new SimpleUseCaseError("Download interrupted"));
                                 } else {
-                                    if (fileChecker.checkWithShaAndSize(
+                                    FileCheckerResult checkerResult = fileChecker.checkWithShaAndSize(
                                             fileState.file,
                                             resource.size,
                                             resource.sha1,
                                             true
-                                    )) {
+                                    );
+                                    if (checkerResult instanceof FileCheckerSuccess) {
                                         CacheJournalItem cacheJournalItem = generateCacheItem();
                                         cacheJournalItem.setSize(fileState.totalSize);
                                         cacheJournalItem.setDownloadedSize(fileState.totalSize);
@@ -192,7 +195,9 @@ public class GameResourceUseCase extends GetCacheFileUseCase<Void> {
                                         progressCallback.onProgress(resource.size, resource.size);
                                         useCaseCallback.onSuccess(null);
                                     } else {
-                                        useCaseCallback.onError(new SimpleUseCaseError("Wrong size or sha1"));
+                                        useCaseCallback.onError(
+                                                new SimpleUseCaseError("Wrong size or sha1: " + checkerResult)
+                                        );
                                     }
                                 }
                             }

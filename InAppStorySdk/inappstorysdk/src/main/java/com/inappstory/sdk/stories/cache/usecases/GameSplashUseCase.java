@@ -6,6 +6,7 @@ import androidx.annotation.WorkerThread;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.lrudiskcache.CacheJournalItem;
 import com.inappstory.sdk.lrudiskcache.FileChecker;
+import com.inappstory.sdk.lrudiskcache.FileCheckerSuccess;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.core.data.IDownloadResource;
 import com.inappstory.sdk.stories.cache.DownloadFileState;
@@ -61,7 +62,7 @@ public class GameSplashUseCase extends GetCacheFileUseCase<DownloadFileState> {
                                         splashScreen.size(),
                                         splashScreen.sha1(),
                                         true
-                                )) {
+                                ) instanceof FileCheckerSuccess) {
                                     CacheJournalItem cacheJournalItem = generateCacheItem();
                                     cacheJournalItem.setSize(state.totalSize);
                                     cacheJournalItem.setDownloadedSize(state.totalSize);

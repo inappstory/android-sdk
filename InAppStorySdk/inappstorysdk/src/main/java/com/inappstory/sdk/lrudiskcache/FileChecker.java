@@ -3,6 +3,7 @@ package com.inappstory.sdk.lrudiskcache;
 import java.io.File;
 import java.io.FileInputStream;
 import java.security.MessageDigest;
+import java.util.Objects;
 
 public class FileChecker {
 
@@ -31,13 +32,22 @@ public class FileChecker {
         }
     }
 
-    public boolean checkWithShaAndSize(File file, Long size, String sha, boolean removeIfNotCorrect) {
-        if (file == null || !file.exists()) return false;
-        if (size == null || size <= 0 || sha == null || sha.isEmpty()) return true;
-        boolean compare = file.length() == size && getFileSHA1(file).equals(sha);
-        if (!compare && removeIfNotCorrect) {
+    public FileCheckerResult checkWithShaAndSize(File file, Long size, String sha, boolean removeIfNotCorrect) {
+        if (file == null || !file.exists()) return new FileCheckerError("file not exist");
+        if (size == null || size <= 0 || sha == null || sha.isEmpty())
+            return new FileCheckerSuccess();
+        FileCheckerResult result = new FileCheckerSuccess();
+        if (file.length() != size) {
+            result = new FileCheckerError("expected size: " + size + ", actual: " + file.length());
+        } else {
+            String actualSha = getFileSHA1(file);
+            if (!Objects.equals(actualSha, sha)) {
+                result = new FileCheckerError("expected sha1: " + sha + ", actual: " + actualSha);
+            }
+        }
+        if (result instanceof FileCheckerError && removeIfNotCorrect) {
             file.delete();
         }
-        return compare;
+        return result;
     }
 }
