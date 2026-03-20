@@ -1624,6 +1624,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         }
         closeButton.requestLayout();
         closeButton.setVisibility(View.VISIBLE);
+        loader.setVisibility(View.VISIBLE);
     }
 
     void loadJsApiResponse(String gameResponse, String cb) {
