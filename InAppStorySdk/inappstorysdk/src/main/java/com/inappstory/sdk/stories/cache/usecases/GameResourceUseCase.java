@@ -1,9 +1,6 @@
 package com.inappstory.sdk.stories.cache.usecases;
 
 
-import android.os.Handler;
-import android.os.Looper;
-import android.system.ErrnoException;
 import android.system.Os;
 import android.util.Log;
 
@@ -24,6 +21,8 @@ import com.inappstory.sdk.utils.StringsUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class GameResourceUseCase extends GetCacheFileUseCase<Void> {
     private final WebResource resource;
@@ -40,7 +39,7 @@ public class GameResourceUseCase extends GetCacheFileUseCase<Void> {
         return "";
     }
 
-    private String symlinkKey = null;
+    private List<String> symlinkKeys = new ArrayList<>();
     private String symlinkDir = null;
 
     public GameResourceUseCase(
@@ -50,9 +49,11 @@ public class GameResourceUseCase extends GetCacheFileUseCase<Void> {
             ProgressCallback progressCallback,
             DownloadInterruption interruption,
             UseCaseCallback<Void> useCaseCallback,
-            WebResource resource
+            List<WebResource> resources
     ) {
         super(core);
+        if (resources == null || resources.isEmpty()) throw new RuntimeException("");
+        WebResource resource = resources.get(0);
         this.useCaseCallback = useCaseCallback;
         this.interruption = interruption;
         this.progressCallback = progressCallback;
@@ -78,26 +79,32 @@ public class GameResourceUseCase extends GetCacheFileUseCase<Void> {
                 "resources_" +
                 gameInstanceId +
                 File.separator;
-        symlinkKey = symlinkDir + resource.key;
+        for (WebResource webResource: resources) {
+            symlinkKeys.add(symlinkDir + webResource.key);
+        }
         this.filePath = realPath;
     }
 
-    private void createSymlink() {
+    private void createSymlinks() {
         try {
             new File(symlinkDir).mkdirs();
         } catch (Exception e) {
 
         }
-        try {
-            Os.remove(symlinkKey);
-        } catch (Exception e) {
+        for (String symlinkKey: symlinkKeys) {
+            try {
+                Os.remove(symlinkKey);
+            } catch (Exception e) {
 
-        }
-        try {
-            Os.symlink(filePath, symlinkKey);
-        } catch (Exception e) {
-            filePath = symlinkKey;
-            e.printStackTrace();
+            }
+            try {
+                Log.e("GameSymlink",resource.url + " " + symlinkKey);
+                Os.symlink(filePath, symlinkKey);
+            } catch (Exception e) {
+                filePath = symlinkKey;
+                e.printStackTrace();
+                break;
+            }
         }
     }
 
@@ -145,13 +152,14 @@ public class GameResourceUseCase extends GetCacheFileUseCase<Void> {
 
     @Override
     public Void getFile() {
-        createSymlink();
+        createSymlinks();
         if (!getLocalResource())
             downloadResource();
         return null;
     }
 
     private void downloadResource() {
+        Log.e("Game_downloadResource", "" + resource.url);
         try {
             if (resource.url == null ||
                     resource.url.isEmpty() ||
@@ -196,7 +204,7 @@ public class GameResourceUseCase extends GetCacheFileUseCase<Void> {
                                         useCaseCallback.onSuccess(null);
                                     } else {
                                         useCaseCallback.onError(
-                                                new SimpleUseCaseError("Wrong size or sha1: " + checkerResult)
+                                                new SimpleUseCaseError("Wrong size or sha1 for url " + resource.url + ": " + checkerResult)
                                         );
                                     }
                                 }

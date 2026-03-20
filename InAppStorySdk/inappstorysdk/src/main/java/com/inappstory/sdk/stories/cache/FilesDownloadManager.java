@@ -1,8 +1,6 @@
 package com.inappstory.sdk.stories.cache;
 
 
-import android.os.Handler;
-
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.lrudiskcache.CacheSize;
 import com.inappstory.sdk.lrudiskcache.LruCachesHolder;
@@ -15,10 +13,43 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class FilesDownloadManager {
+
+    private class FileDownloadKey {
+        public String url() {
+            return url;
+        }
+
+        public String filePath() {
+            return filePath;
+        }
+
+        private final String url;
+        private final String filePath;
+
+        private FileDownloadKey(String url, String filePath) {
+            this.url = url;
+            this.filePath = filePath;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof FileDownloadKey)) return false;
+            FileDownloadKey that = (FileDownloadKey) o;
+            return Objects.equals(url, that.url) &&
+                    Objects.equals(filePath, that.filePath);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(url, filePath);
+        }
+    }
 
     public LruCachesHolder getCachesHolder() {
         return cachesHolder;
@@ -35,31 +66,33 @@ public class FilesDownloadManager {
     private LruCachesHolder cachesHolder;
     private final DownloadThreadsHolder downloadThreadsHolder;
 
-    private final Map<String, List<FinishDownloadFileCallback>> downloadFileCallbacks = new HashMap<>();
+    private final Map<FileDownloadKey, List<FinishDownloadFileCallback>> downloadFileCallbacks = new HashMap<>();
 
     private final Object finishLock = new Object();
 
-    public boolean addFinishCallback(String url, FinishDownloadFileCallback callback) {
+    public boolean addFinishCallback(String url, String outputFile, FinishDownloadFileCallback callback) {
         boolean isNewUrl = true;
+        FileDownloadKey key = new FileDownloadKey(url, outputFile);
         synchronized (finishLock) {
-            if (!downloadFileCallbacks.containsKey(url)) {
+            if (!downloadFileCallbacks.containsKey(key)) {
                 downloadFileCallbacks.put(
-                        url,
+                        key,
                         new ArrayList<FinishDownloadFileCallback>()
                 );
             } else {
                 isNewUrl = false;
             }
-            downloadFileCallbacks.get(url).add(callback);
+            downloadFileCallbacks.get(key).add(callback);
             return isNewUrl;
         }
     }
 
-    public void invokeFinishCallbacks(String url, DownloadFileState state) {
+    public void invokeFinishCallbacks(String url, String outputFile, DownloadFileState state) {
         List<FinishDownloadFileCallback> callbacks = new ArrayList<>();
+        FileDownloadKey key = new FileDownloadKey(url, outputFile);
         synchronized (finishLock) {
-            if (downloadFileCallbacks.containsKey(url)) {
-                callbacks.addAll(downloadFileCallbacks.remove(url));
+            if (downloadFileCallbacks.containsKey(key)) {
+                callbacks.addAll(downloadFileCallbacks.remove(key));
             }
         }
         for (FinishDownloadFileCallback callback : callbacks) {

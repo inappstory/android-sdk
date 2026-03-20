@@ -185,7 +185,8 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         @Override
         public void onError(GameCenterData data, final boolean showInUI, final String error) {
             manager.gameLoadError();
-            InAppStoryManager.showDLog(LoggerTags.IAS_GAME_LOADING, error);
+            if (error != null)
+                InAppStoryManager.showDLog(LoggerTags.IAS_GAME_LOADING, error);
             if (webView != null)
                 webView.post(new Runnable() {
                     @Override

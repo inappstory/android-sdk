@@ -46,7 +46,6 @@ public class FilesDownloader {
     }
 
 
-
     public static String getFileExtensionFromUrl(String url) {
         String croppedUrl = deleteQueryArgumentsFromUrl(url, true);
         String[] parts = croppedUrl.split("/");
@@ -89,8 +88,14 @@ public class FilesDownloader {
             FinishDownloadFileCallback finishCallback
     ) throws Exception {
         DownloadFileState state = null;
+        String finishCallbackOutputFile = outputFile != null ?
+                outputFile.getAbsolutePath() : "";
         FilesDownloadManager manager = core.contentLoader().filesDownloadManager();
-        if (manager != null && !manager.addFinishCallback(url, finishCallback)) {
+        if (manager != null && !manager.addFinishCallback(
+                url,
+                finishCallbackOutputFile,
+                finishCallback)
+        ) {
             finishCallback.waiting();
             return null;
         }
@@ -121,7 +126,7 @@ public class FilesDownloader {
             urlConnection.connect();
         } catch (Exception e) {
             if (manager != null)
-                manager.invokeFinishCallbacks(url, null);
+                manager.invokeFinishCallbacks(url, finishCallbackOutputFile, null);
             return null;
         }
         int status = urlConnection.getResponseCode();
@@ -132,7 +137,7 @@ public class FilesDownloader {
         if (freeSpace > 0 && sz > freeSpace) {
             urlConnection.disconnect();
             if (manager != null)
-                manager.invokeFinishCallbacks(url, null);
+                manager.invokeFinishCallbacks(url, finishCallbackOutputFile, null);
             return null;
         }
         boolean allowPartial = false;
@@ -170,7 +175,7 @@ public class FilesDownloader {
             );
             apiLogResponse.generateFile(status, res, headers);
             if (manager != null)
-                manager.invokeFinishCallbacks(url, null);
+                manager.invokeFinishCallbacks(url, finishCallbackOutputFile, null);
             return null;
         }
 
@@ -197,7 +202,7 @@ public class FilesDownloader {
                     if (allowPartial)
                         state = new DownloadFileState(outputFile, sz, outputFile.length());
                     if (manager != null)
-                        manager.invokeFinishCallbacks(url, state);
+                        manager.invokeFinishCallbacks(url, finishCallbackOutputFile, state);
                     return state;
                 } else {
                     fileOutputStream.write(buffer, 0, bufferLength);
@@ -216,7 +221,7 @@ public class FilesDownloader {
             }
         }
         if (manager != null)
-            manager.invokeFinishCallbacks(url, state);
+            manager.invokeFinishCallbacks(url, finishCallbackOutputFile, state);
         return state;
     }
 

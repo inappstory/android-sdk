@@ -17,7 +17,9 @@ import com.inappstory.sdk.utils.ProgressCallback;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -79,7 +81,15 @@ public class DownloadResourcesUseCase {
     private void downloadParallel() {
         final boolean[] assetsStatus = {true};
         Collection<Future<?>> futures = new ArrayList<>();
-        for (final WebResource resource : resources) {
+        Map<String, List<WebResource>> groupedResourcesMap = new HashMap<>();
+        for (WebResource resource : resources) {
+            if (resource.url == null) continue;
+            if (!groupedResourcesMap.containsKey(resource.url)) {
+                groupedResourcesMap.put(resource.url, new ArrayList<>());
+            }
+            groupedResourcesMap.get(resource.url).add(resource);
+        }
+        for (final List<WebResource> groupedResources : groupedResourcesMap.values()) {
             futures.add(loadResourcesThreads.submit(new Runnable() {
                 @Override
                 public void run() {
@@ -112,7 +122,7 @@ public class DownloadResourcesUseCase {
 
                                 }
                             },
-                            resource
+                            groupedResources
                     ).getFile();
                 }
             }));
@@ -149,9 +159,9 @@ public class DownloadResourcesUseCase {
 
     @WorkerThread
     private void downloadSync() {
-        final long[] cnt = new long[1];
-        terminate = false;
-        for (WebResource resource : resources) {
+     /**  final long[] cnt = new long[1];
+       terminate = false;
+       for (WebResource resource : resources) {
             if (terminate) {
                 return;
             }
@@ -185,6 +195,6 @@ public class DownloadResourcesUseCase {
             ).getFile();
             cnt[0] = cnt[0] + resource.size;
         }
-        useCaseCallback.onSuccess(null);
+        useCaseCallback.onSuccess(null); */
     }
 }
