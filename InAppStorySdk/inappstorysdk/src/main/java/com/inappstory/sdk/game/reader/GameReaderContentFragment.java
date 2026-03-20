@@ -1642,6 +1642,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                     Sizes.dpToPxExt(16, getContext());
         }
         closeButton.requestLayout();
+        closeButton.setVisibility(View.VISIBLE);
     }
 
     void loadJsApiResponse(String gameResponse, String cb) {
