@@ -1399,13 +1399,16 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
     }
 
     private void checkInsets() {
-        getView().getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-            @Override
-            public void onGlobalLayout() {
-                getView().getViewTreeObserver().removeGlobalOnLayoutListener(this);
-                setOffsets(isFullscreen, new Pair<>(startedTop, startedBottom));
-            }
-        });
+        final View view = getView();
+        if (view != null) {
+            view.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                @Override
+                public void onGlobalLayout() {
+                    view.getViewTreeObserver().removeGlobalOnLayoutListener(this);
+                    setOffsets(isFullscreen, new Pair<>(startedTop, startedBottom));
+                }
+            });
+        }
         if (Build.VERSION.SDK_INT >= 28) {
             new Handler(Looper.getMainLooper()).post(new Runnable() {
                 @Override
@@ -1413,13 +1416,6 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                     if (getActivity() == null) return;
                     if (getActivity().getWindow() != null) {
                         WindowInsets windowInsets = getActivity().getWindow().getDecorView().getRootWindowInsets();
-                        if (windowInsets != null) {
-                            ((RelativeLayout.LayoutParams) closeButton.getLayoutParams()).topMargin =
-                                    Math.max(windowInsets.getStableInsetTop(),
-                                            Sizes.dpToPxExt(16, getContext())
-                                    );
-                            closeButton.requestLayout();
-                        }
                         if (Sizes.isTablet(getContext())) {
 
                             View gameContainer = getView().findViewById(R.id.gameContainer);
@@ -1584,6 +1580,22 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
     private void setOffsets(boolean isFullscreen, Pair<Integer, Integer> startedOffsets) {
         FragmentActivity fragmentActivity = getActivity();
         if (fragmentActivity == null) return;
+
+        int topInsetOffset = 0;
+        int bottomInsetOffset = 0;
+        if (startedOffsets != null) {
+            topInsetOffset = startedOffsets.first;
+            bottomInsetOffset = startedOffsets.second;
+        } else if (Build.VERSION.SDK_INT >= 23) {
+            if (fragmentActivity.getWindow() != null) {
+                WindowInsets windowInsets = fragmentActivity.getWindow().getDecorView().getRootWindowInsets();
+                if (windowInsets != null) {
+                    topInsetOffset = Math.max(0, windowInsets.getStableInsetTop());
+                    bottomInsetOffset = Math.max(0, windowInsets.getStableInsetBottom());
+                }
+            }
+        }
+        RelativeLayout.LayoutParams buttonLP = (RelativeLayout.LayoutParams) closeButton.getLayoutParams();
         if (!Sizes.isTablet(fragmentActivity)) {
 
             if (blackTop != null) {
@@ -1599,28 +1611,16 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                     // window.getLocationInWindow(location2);
                 }
 
-                int topInsetOffset = 0;
-                int bottomInsetOffset = 0;
-                if (startedOffsets != null) {
-                    topInsetOffset = startedOffsets.first;
-                    bottomInsetOffset = startedOffsets.second;
-                } else if (Build.VERSION.SDK_INT >= 23) {
-                    if (fragmentActivity.getWindow() != null) {
-                        WindowInsets windowInsets = fragmentActivity.getWindow().getDecorView().getRootWindowInsets();
-                        if (windowInsets != null) {
-                            topInsetOffset = Math.max(0, windowInsets.getStableInsetTop());
-                            bottomInsetOffset = Math.max(0, windowInsets.getStableInsetBottom());
-                        }
-                    }
-                }
 
                 if (!isFullscreen) {
                     LinearLayout.LayoutParams topLp = (LinearLayout.LayoutParams) blackTop.getLayoutParams();
                     LinearLayout.LayoutParams bottomLp = (LinearLayout.LayoutParams) blackBottom.getLayoutParams();
                     if (location[1] < topInsetOffset) {
                         topLp.height = topInsetOffset - location[1];
+                        buttonLP.topMargin = topInsetOffset - location[1] + Sizes.dpToPxExt(16, getContext());
                     } else {
                         topLp.height = 0;
+                        buttonLP.topMargin = Sizes.dpToPxExt(16, getContext());
                     }
                     if (phoneHeight - location[1] - bottomInsetOffset < windowHeight) {
                         bottomLp.height = bottomInsetOffset;
@@ -1629,9 +1629,19 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                     }
                     blackTop.requestLayout();
                     blackBottom.requestLayout();
+                } else {
+                    if (location[1] < topInsetOffset) {
+                        buttonLP.topMargin = topInsetOffset - location[1] + Sizes.dpToPxExt(16, getContext());
+                    } else {
+                        buttonLP.topMargin = Sizes.dpToPxExt(16, getContext());
+                    }
                 }
             }
+        } else {
+            buttonLP.topMargin =
+                    Sizes.dpToPxExt(16, getContext());
         }
+        closeButton.requestLayout();
     }
 
     void loadJsApiResponse(String gameResponse, String cb) {
