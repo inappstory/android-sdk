@@ -5,11 +5,18 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Pair;
+import android.view.View;
 import android.view.Window;
+import android.view.WindowInsets;
+import android.widget.LinearLayout;
+
+import androidx.fragment.app.FragmentActivity;
 
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.game.reader.GameActivity;
 import com.inappstory.sdk.stories.utils.ActivityUtils;
+import com.inappstory.sdk.stories.utils.Sizes;
 
 
 public class DefaultOpenGameReader implements IOpenGameReader {
@@ -37,6 +44,9 @@ public class DefaultOpenGameReader implements IOpenGameReader {
                             window.getDecorView().getSystemUiVisibility()
                     )
             );
+            Pair<Integer, Integer> startedOffsets = getStartedOffsets(context);
+            bundle.putInt("startedTop", startedOffsets.first);
+            bundle.putInt("startedBottom", startedOffsets.second);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                 bundle.putInt("parentLayoutInDisplayCutoutMode",
                         ((Activity) context).getIntent().getIntExtra(
@@ -58,6 +68,27 @@ public class DefaultOpenGameReader implements IOpenGameReader {
             } catch (Exception e) {
             }
         }
+    }
+
+    private Pair<Integer, Integer> getStartedOffsets(Context context) {
+        int topInsetOffset = 0;
+        int bottomInsetOffset = 0;
+        Activity activity;
+        if (context instanceof Activity) {
+            activity = (Activity) context;
+            if (!Sizes.isTablet(activity)) {
+                if (Build.VERSION.SDK_INT >= 28) {
+                    if (activity.getWindow() != null) {
+                        WindowInsets windowInsets = activity.getWindow().getDecorView().getRootWindowInsets();
+                        if (windowInsets != null) {
+                            topInsetOffset = Math.max(0, windowInsets.getStableInsetTop());
+                            bottomInsetOffset = Math.max(0, windowInsets.getStableInsetBottom());
+                        }
+                    }
+                }
+            }
+        }
+        return new Pair<>(topInsetOffset, bottomInsetOffset);
     }
 
     @Override

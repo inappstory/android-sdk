@@ -27,11 +27,13 @@ import android.text.TextPaint;
 import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
 import android.util.Log;
+import android.util.Pair;
 import android.util.SizeF;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.view.WindowInsets;
 import android.webkit.ConsoleMessage;
 import android.webkit.PermissionRequest;
@@ -1050,7 +1052,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                 }
             });
         }
-        setOffsets(isFullscreen);
+        setOffsets(isFullscreen, null);
     }
 
     private long startDownloadTime;
@@ -1397,6 +1399,13 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
     }
 
     private void checkInsets() {
+        getView().getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                getView().getViewTreeObserver().removeGlobalOnLayoutListener(this);
+                setOffsets(isFullscreen, new Pair<>(startedTop, startedBottom));
+            }
+        });
         if (Build.VERSION.SDK_INT >= 28) {
             new Handler(Looper.getMainLooper()).post(new Runnable() {
                 @Override
@@ -1512,6 +1521,9 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         }
     }
 
+    int startedTop = 0;
+    int startedBottom = 0;
+
     @SuppressLint("UseCompatLoadingForDrawables")
     @Nullable
     @Override
@@ -1524,6 +1536,8 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         gameReaderLaunchData = (GameReaderLaunchData) getArguments().getSerializable(
                 GameReaderLaunchData.SERIALIZABLE_KEY
         );
+        startedTop = getArguments().getInt("startedTop", 0);
+        startedBottom = getArguments().getInt("startedBottom", 0);
         gameWebViewContainer = view.findViewById(R.id.gameWebviewContainer);
         loader = view.findViewById(R.id.loader);
         baseContainer = view.findViewById(R.id.draggable_frame);
@@ -1567,7 +1581,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         return view;
     }
 
-    private void setOffsets(boolean isFullscreen) {
+    private void setOffsets(boolean isFullscreen, Pair<Integer, Integer> startedOffsets) {
         FragmentActivity fragmentActivity = getActivity();
         if (fragmentActivity == null) return;
         if (!Sizes.isTablet(fragmentActivity)) {
@@ -1587,7 +1601,10 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
 
                 int topInsetOffset = 0;
                 int bottomInsetOffset = 0;
-                if (Build.VERSION.SDK_INT >= 23) {
+                if (startedOffsets != null) {
+                    topInsetOffset = startedOffsets.first;
+                    bottomInsetOffset = startedOffsets.second;
+                } else if (Build.VERSION.SDK_INT >= 23) {
                     if (fragmentActivity.getWindow() != null) {
                         WindowInsets windowInsets = fragmentActivity.getWindow().getDecorView().getRootWindowInsets();
                         if (windowInsets != null) {
@@ -1598,16 +1615,20 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                 }
 
                 if (!isFullscreen) {
+                    LinearLayout.LayoutParams topLp = (LinearLayout.LayoutParams) blackTop.getLayoutParams();
+                    LinearLayout.LayoutParams bottomLp = (LinearLayout.LayoutParams) blackBottom.getLayoutParams();
                     if (location[1] < topInsetOffset) {
-                        LinearLayout.LayoutParams topLp = (LinearLayout.LayoutParams) blackTop.getLayoutParams();
-                        topLp.height = topInsetOffset;
-                        blackTop.requestLayout();
+                        topLp.height = topInsetOffset - location[1];
+                    } else {
+                        topLp.height = 0;
                     }
                     if (phoneHeight - location[1] - bottomInsetOffset < windowHeight) {
-                        LinearLayout.LayoutParams bottomLp = (LinearLayout.LayoutParams) blackBottom.getLayoutParams();
                         bottomLp.height = bottomInsetOffset;
-                        blackBottom.requestLayout();
+                    } else {
+                        bottomLp.height = 0;
                     }
+                    blackTop.requestLayout();
+                    blackBottom.requestLayout();
                 }
             }
         }
