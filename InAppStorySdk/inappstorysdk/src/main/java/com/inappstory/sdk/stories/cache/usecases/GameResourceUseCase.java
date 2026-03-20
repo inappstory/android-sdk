@@ -98,7 +98,6 @@ public class GameResourceUseCase extends GetCacheFileUseCase<Void> {
 
             }
             try {
-                Log.e("GameSymlink",resource.url + " " + symlinkKey);
                 Os.symlink(filePath, symlinkKey);
             } catch (Exception e) {
                 filePath = symlinkKey;
@@ -159,7 +158,6 @@ public class GameResourceUseCase extends GetCacheFileUseCase<Void> {
     }
 
     private void downloadResource() {
-        Log.e("Game_downloadResource", "" + resource.url);
         try {
             if (resource.url == null ||
                     resource.url.isEmpty() ||
