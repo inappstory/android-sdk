@@ -1409,35 +1409,6 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                 }
             });
         }
-        if (Build.VERSION.SDK_INT >= 28) {
-            new Handler(Looper.getMainLooper()).post(new Runnable() {
-                @Override
-                public void run() {
-                    if (getActivity() == null) return;
-                    if (getActivity().getWindow() != null) {
-                        WindowInsets windowInsets = getActivity().getWindow().getDecorView().getRootWindowInsets();
-                        if (Sizes.isTablet(getContext())) {
-
-                            View gameContainer = getView().findViewById(R.id.gameContainer);
-                            if (gameContainer != null) {
-                                Point size = Sizes.getScreenSize(getContext());
-                                if (windowInsets != null) {
-                                    size.y -= (windowInsets.getStableInsetTop() +
-                                            windowInsets.getStableInsetBottom());
-                                }
-                                gameContainer.getLayoutParams().height = size.y;
-                                gameContainer.getLayoutParams().width = (int) (size.y / 1.5f);
-                                gameContainer.requestLayout();
-                            }
-                        }
-                    }
-
-                    closeButton.setVisibility(View.VISIBLE);
-                }
-            });
-        } else {
-            closeButton.setVisibility(View.VISIBLE);
-        }
     }
 
 
@@ -1595,6 +1566,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                 }
             }
         }
+
         RelativeLayout.LayoutParams buttonLP = (RelativeLayout.LayoutParams) closeButton.getLayoutParams();
         if (!Sizes.isTablet(fragmentActivity)) {
 
@@ -1638,6 +1610,15 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                 }
             }
         } else {
+            View gameContainer = getView().findViewById(R.id.gameContainer);
+            if (gameContainer != null) {
+                Point size = Sizes.getScreenSize(getContext());
+                size.y -= (topInsetOffset +
+                        bottomInsetOffset);
+                gameContainer.getLayoutParams().height = size.y;
+                gameContainer.getLayoutParams().width = (int) (size.y / 1.5f);
+                gameContainer.requestLayout();
+            }
             buttonLP.topMargin =
                     Sizes.dpToPxExt(16, getContext());
         }
