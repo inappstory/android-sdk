@@ -1041,6 +1041,10 @@ public class InAppStoryManager implements IASBackPressHandler {
         return new Pair<>(BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE);
     }
 
+    public static long getBuildTS() {
+        return BuildConfig.VERSION_TS;
+    }
+
 
     public void preloadGames() {
         useCoreInSeparateThread(new UseIASCoreCallback() {
