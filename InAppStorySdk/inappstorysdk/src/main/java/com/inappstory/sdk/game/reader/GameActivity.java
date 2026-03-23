@@ -107,6 +107,8 @@ public class GameActivity extends IASActivity implements BaseGameScreen {
                         gameReaderLaunchData.getSerializableKey(),
                         gameReaderLaunchData
                 );
+                args.putInt("startedTop", getIntent().getIntExtra("startedTop", 0));
+                args.putInt("startedBottom", getIntent().getIntExtra("startedBottom", 0));
                 fragment.setArguments(args);
                 FragmentManager fragmentManager = getScreenFragmentManager();
                 FragmentTransaction t = fragmentManager.beginTransaction()

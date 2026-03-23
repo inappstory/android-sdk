@@ -98,7 +98,7 @@ public class ReaderPageFragment extends Fragment {
     }
 
 
-    void bindViews(View view) {
+    void bindViews(View view, int mirrored) {
         close = view.findViewById(R.id.ias_close_button);
         refresh = view.findViewById(R.id.ias_refresh_button);
         blackTop = view.findViewById(R.id.ias_black_top);
@@ -107,7 +107,8 @@ public class ReaderPageFragment extends Fragment {
         storiesView = view.findViewById(R.id.ias_stories_view);
         timeline = view.findViewById(R.id.ias_timeline);
 
-        int mirrorScale = view.getResources().getInteger(R.integer.mirrorScaleX);
+        int mirrorScale = 1 - mirrored * 2;
+        buttonsPanel.mirror(mirrored == 1);
         close.setScaleX(mirrorScale);
         timeline.setScaleX(mirrorScale);
         try {
@@ -431,7 +432,10 @@ public class ReaderPageFragment extends Fragment {
         appearanceSettings = (LaunchStoryScreenAppearance)
                 requireArguments().getSerializable(LaunchStoryScreenAppearance.SERIALIZABLE_KEY);
         try {
-            return createFragmentView(container);
+            View v = createFragmentView(container);
+            if (container != null)
+                v.setLayoutDirection(container.getLayoutDirection());
+            return v;
         } catch (Exception e) {
             e.printStackTrace();
             InAppStoryManager.handleException(e);
@@ -757,7 +761,7 @@ public class ReaderPageFragment extends Fragment {
                 if (parentManager != null) {
                     parentManager.addSubscriber(manager);
                 }
-                bindViews(view);
+                bindViews(view, view.getLayoutDirection());
                 setActions();
                 if (setManagers(core)) {
                     manager.startCommonTimer();
