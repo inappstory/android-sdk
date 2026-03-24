@@ -75,4 +75,5 @@ public interface IASCore {
     InAppStoryService inAppStoryService();
     IASAssetsHolder assetsHolder();
     CancellationTokenPool cancellationTokenPool();
+    String buildHash();
 }

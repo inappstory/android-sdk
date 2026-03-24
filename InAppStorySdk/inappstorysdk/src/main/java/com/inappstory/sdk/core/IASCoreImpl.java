@@ -3,6 +3,7 @@ package com.inappstory.sdk.core;
 import android.content.Context;
 
 import com.inappstory.sdk.AppearanceManager;
+import com.inappstory.sdk.BuildConfig;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.core.api.IASAssetsHolder;
 import com.inappstory.sdk.core.api.IASBanners;
@@ -319,5 +320,10 @@ public class IASCoreImpl implements IASCore {
     @Override
     public CancellationTokenPool cancellationTokenPool() {
         return cancellationTokenPool;
+    }
+
+    @Override
+    public String buildHash() {
+        return BuildConfig.GIT_HASH;
     }
 }

@@ -17,6 +17,8 @@ def getGroupId = { ->
     return "io.github.inappstory"
 }
 
+def gitCommitHash = 'git rev-parse --verify --short HEAD'.execute().text.trim()
+
 android {
     compileSdk inappstory_target_sdk
 
@@ -29,7 +31,7 @@ android {
 
         buildConfigField 'int', 'VERSION_CODE', "$inappstory_output_build"
         buildConfigField 'String', 'VERSION_NAME', "\"$inappstory_output_version\""
-        buildConfigField 'long', 'VERSION_TS', "" + System.currentTimeMillis()
+        buildConfigField 'String', 'GIT_HASH', "\"${gitCommitHash}\""
 
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
