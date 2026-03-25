@@ -242,6 +242,7 @@ public class BannerListViewModel implements IBannersWidgetViewModel<BannerListSt
                             new BannerPlaceLoadSettings()
                                     .placeId(placeId)
                                     .uniqueId(uniqueId)
+                                    .widgetUID(widgetUID)
                                     .tags(
                                             tags.isEmpty() ? null :
                                                     new ArrayList<>(tags)
@@ -251,6 +252,8 @@ public class BannerListViewModel implements IBannersWidgetViewModel<BannerListSt
             });
         }
     }
+
+    private String widgetUID = UUID.randomUUID().toString();
 
     @Override
     public void loadBanners(boolean skipCache) {
@@ -264,6 +267,7 @@ public class BannerListViewModel implements IBannersWidgetViewModel<BannerListSt
                 core.bannersAPI().loadBannerPlace(
                         new BannerPlaceLoadSettings()
                                 .placeId(placeId)
+                                .widgetUID(widgetUID)
                                 .uniqueId(uniqueId)
                                 .tags(
                                         tags.isEmpty() ? null :

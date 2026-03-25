@@ -4,18 +4,15 @@ package com.inappstory.sdk.stories.ui.list;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.TypedArray;
-import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
-import android.view.ViewTreeObserver;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -40,7 +37,7 @@ import com.inappstory.sdk.core.ui.screens.storyreader.StoryScreenHolder;
 import com.inappstory.sdk.network.models.RequestLocalParameters;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.core.network.content.callbacks.LoadStoriesCallback;
-import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
+import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallbackWithUID;
 import com.inappstory.sdk.stories.callbacks.OnFavoriteItemClick;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoryItemCoordinates;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
@@ -50,17 +47,16 @@ import com.inappstory.sdk.stories.outercallbacks.storieslist.ListScrollCallback;
 import com.inappstory.sdk.stories.statistic.GetStatisticV1Callback;
 import com.inappstory.sdk.stories.statistic.IASStatisticStoriesV2Impl;
 import com.inappstory.sdk.stories.ui.reader.ActiveStoryItem;
-import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.ugc.list.OnUGCItemClick;
 import com.inappstory.sdk.utils.ScheduledTPEManager;
 import com.inappstory.sdk.utils.StringsUtils;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -336,6 +332,8 @@ public class StoriesList extends RecyclerView {
 
     OnItemTouchListener itemTouchListener;
 
+    String widgetUID = UUID.randomUUID().toString();
+
     private boolean hasSessionUGC() {
         InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
         if (inAppStoryManager == null) return false;
@@ -388,7 +386,12 @@ public class StoriesList extends RecyclerView {
                         final List<Integer> newIndexes = core.statistic().newStatisticPreviews(indexes);
                         if (newIndexes.isEmpty()) return;
                         core.sessionManager().useOrOpenSession(
-                                new OpenSessionCallback() {
+                                new OpenSessionCallbackWithUID() {
+                                    @Override
+                                    public String getUID() {
+                                        return widgetUID;
+                                    }
+
                                     @Override
                                     public void onSuccess(RequestLocalParameters requestLocalParameters) {
                                         core.statistic().storiesV2().sendViewStory(
@@ -1016,6 +1019,7 @@ public class StoriesList extends RecyclerView {
                 };
                 core.contentLoader().storyDownloadManager().loadStories(
                         getFeed(),
+                        widgetUID,
                         lcallback,
                         null,
                         isFavoriteList,

@@ -77,6 +77,7 @@ public class IASBannersImpl implements IASBanners {
         BannerPlaceUseCase bannerPlaceUseCase = new BannerPlaceUseCase(
                 core,
                 placeId,
+                settings.widgetUID(),
                 settings.tags()
         );
         bannerPlaceViewModel.updateState(
@@ -281,6 +282,7 @@ public class IASBannersImpl implements IASBanners {
         BannerPlaceUseCase bannerPlaceUseCase = new BannerPlaceUseCase(
                 core,
                 placeId,
+                null,
                 settings.tags()
         );
         final IBannersWidgetViewModel bannerPlaceViewModel = core

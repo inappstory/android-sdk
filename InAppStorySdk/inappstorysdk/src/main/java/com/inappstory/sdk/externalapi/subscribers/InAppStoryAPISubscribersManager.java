@@ -276,6 +276,7 @@ public class InAppStoryAPISubscribersManager {
         final StoryDownloadManager downloadManager = core.contentLoader().storyDownloadManager();
         downloadManager.loadStories(
                 data.feed,
+                null,
                 new LoadStoriesCallback() {
                     @Override
                     public void storiesLoaded(List<Integer> storiesIds) {

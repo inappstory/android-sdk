@@ -266,6 +266,7 @@ public class BannerCarouselViewModel implements IBannersWidgetViewModel<BannerCa
                     core.bannersAPI().loadBannerPlace(
                             new BannerPlaceLoadSettings()
                                     .placeId(placeId)
+                                    .widgetUID(widgetUID)
                                     .uniqueId(uniqueId)
                                     .tags(
                                             tags.isEmpty() ? null :
@@ -276,6 +277,8 @@ public class BannerCarouselViewModel implements IBannersWidgetViewModel<BannerCa
             });
         }
     }
+
+    protected String widgetUID = UUID.randomUUID().toString();
 
     @Override
     public void loadBanners(boolean skipCache) {
@@ -289,6 +292,7 @@ public class BannerCarouselViewModel implements IBannersWidgetViewModel<BannerCa
                 core.bannersAPI().loadBannerPlace(
                         new BannerPlaceLoadSettings()
                                 .placeId(placeId)
+                                .widgetUID(widgetUID)
                                 .uniqueId(uniqueId)
                                 .tags(
                                         tags.isEmpty() ? null :

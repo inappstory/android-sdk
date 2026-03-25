@@ -337,7 +337,6 @@ public class BannerList extends RecyclerView implements Observer<BannerListState
         }
     }
 
-
     private void initAttrs(@NonNull Context context, @Nullable AttributeSet attrs) {
         TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.BannerPlace);
         setPlaceId(typedArray.getString(R.styleable.BannerPlace_cs_place_id));

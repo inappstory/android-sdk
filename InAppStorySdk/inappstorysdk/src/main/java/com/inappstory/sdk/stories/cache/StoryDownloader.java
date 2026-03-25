@@ -30,6 +30,7 @@ import com.inappstory.sdk.stories.api.models.TargetingBodyObject;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadFeedCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadListCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
+import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallbackWithUID;
 import com.inappstory.sdk.stories.outercallbacks.common.errors.ErrorCallback;
 import com.inappstory.sdk.stories.utils.LoopedExecutor;
 import com.inappstory.sdk.utils.StringsUtils;
@@ -262,7 +263,7 @@ class StoryDownloader {
                     setStoryLoadType(key, 2);
                 }
             }
-            if (((IASDataSettingsHolder)core.settingsAPI()).sessionIdOrEmpty().isEmpty()) {
+            if (((IASDataSettingsHolder) core.settingsAPI()).sessionIdOrEmpty().isEmpty()) {
                 if (!isRefreshing) {
                     isRefreshing = true;
                     core.sessionManager().openSession(
@@ -448,6 +449,7 @@ class StoryDownloader {
 
     void loadStoryListByFeed(
             final String feed,
+            final String widgetUID,
             final SimpleApiCallback<List<Story>> callback,
             final boolean retry
     ) {
@@ -456,7 +458,12 @@ class StoryDownloader {
                 new ConnectionCheckCallback(core) {
                     @Override
                     public void success() {
-                        core.sessionManager().useOrOpenSession(new OpenSessionCallback() {
+                        core.sessionManager().useOrOpenSession(new OpenSessionCallbackWithUID() {
+                            @Override
+                            public String getUID() {
+                                return widgetUID;
+                            }
+
                             @Override
                             public void onSuccess(final RequestLocalParameters requestLocalParameters) {
                                 final String loadStoriesUID =
@@ -509,7 +516,11 @@ class StoryDownloader {
                                                 callback.onError(message);
                                                 closeSessionIf424();
                                                 if (retry)
-                                                    loadStoryListByFeed(feed, callback, false);
+                                                    loadStoryListByFeed(feed,
+                                                            widgetUID,
+                                                            callback,
+                                                            false
+                                                    );
                                             }
                                         },
                                         requestLocalParameters
@@ -537,11 +548,17 @@ class StoryDownloader {
 
     void loadStoryList(
             final SimpleApiCallback<List<Story>> callback,
+            final String widgetUID,
             final boolean isFavorite,
             final boolean retry
     ) {
         core.sessionManager().useOrOpenSession(
-                new OpenSessionCallback() {
+                new OpenSessionCallbackWithUID() {
+                    @Override
+                    public String getUID() {
+                        return widgetUID;
+                    }
+
                     @Override
                     public void onSuccess(final RequestLocalParameters requestLocalParameters) {
                         final String loadStoriesUID = core.statistic().profiling().addTask(
@@ -589,7 +606,7 @@ class StoryDownloader {
                                         callback.onError(message);
                                         closeSessionIf424();
                                         if (retry)
-                                            loadStoryList(callback, isFavorite, false);
+                                            loadStoryList(callback, widgetUID, isFavorite, false);
                                     }
                                 },
                                 requestLocalParameters

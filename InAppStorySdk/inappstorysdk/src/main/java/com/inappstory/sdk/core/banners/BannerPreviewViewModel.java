@@ -28,6 +28,7 @@ public class BannerPreviewViewModel extends BannerCarouselViewModel {
             public void use(@NonNull IASCore core) {
                 core.bannersAPI().loadPreviewBannerPlace(
                         new BannerPlaceLoadSettings()
+                                .widgetUID(widgetUID)
                                 .placeId(placeId)
                                 .uniqueId(uniqueId)
                 );

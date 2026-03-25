@@ -30,6 +30,7 @@ import com.inappstory.sdk.stories.api.models.SessionRequestFields;
 import com.inappstory.sdk.core.network.content.models.SessionResponse;
 import com.inappstory.sdk.stories.api.models.StatisticSendObject;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
+import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallbackWithUID;
 import com.inappstory.sdk.stories.outercallbacks.common.errors.ErrorCallback;
 import com.inappstory.sdk.stories.statistic.GetStatisticV1Callback;
 import com.inappstory.sdk.ugc.extinterfaces.IOpenSessionCallback;
@@ -217,12 +218,31 @@ public class SessionManager {
             SessionRequestFields.sessionAssets
     });
 
+    private void replaceOrAddCallback(OpenSessionCallback callback) {
+        if (callback == null) return;
+        if (callback instanceof OpenSessionCallbackWithUID) {
+            String newUid = ((OpenSessionCallbackWithUID) callback).getUID();
+            if (newUid != null) {
+                for (int i = 0; i < callbacks.size(); i++) {
+                    if (callbacks.get(i) instanceof OpenSessionCallbackWithUID) {
+                        if (((OpenSessionCallbackWithUID) callbacks.get(i)).
+                                getUID().
+                                equals(newUid)
+                        ) {
+                            callbacks.set(i, callback);
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+        callbacks.add(callback);
+    }
 
     public void openSession(final OpenSessionCallback callback) {
         synchronized (openProcessLock) {
             if (openProcess) {
-                if (callback != null)
-                    callbacks.add(callback);
+                replaceOrAddCallback(callback);
                 return;
             }
         }

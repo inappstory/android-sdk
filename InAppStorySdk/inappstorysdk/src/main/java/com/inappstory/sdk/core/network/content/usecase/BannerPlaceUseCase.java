@@ -15,6 +15,7 @@ import com.inappstory.sdk.network.models.RequestLocalParameters;
 import com.inappstory.sdk.stories.api.models.TargetingBodyObject;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
+import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallbackWithUID;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -24,11 +25,13 @@ import java.util.Set;
 public class BannerPlaceUseCase {
     private final IASCore core;
     private final String placeId;
+    private final String widgetUID;
     private final List<String> tags;
 
-    public BannerPlaceUseCase(IASCore core, String placeId, List<String> tags) {
+    public BannerPlaceUseCase(IASCore core, String placeId, String widgetUID, List<String> tags) {
         this.core = core;
         this.placeId = placeId;
+        this.widgetUID = widgetUID;
         this.tags = tags;
     }
 
@@ -55,7 +58,12 @@ public class BannerPlaceUseCase {
                 new ConnectionCheckCallback(core) {
                     @Override
                     public void success() {
-                        OpenSessionCallback openSessionCallback = new OpenSessionCallback() {
+                        OpenSessionCallback openSessionCallback = new OpenSessionCallbackWithUID() {
+                            @Override
+                            public String getUID() {
+                                return widgetUID;
+                            }
+
                             @Override
                             public void onSuccess(final RequestLocalParameters sessionParameters) {
                                 NetworkCallback<BannerPlaceModel> networkCallback = new NetworkCallback<BannerPlaceModel>() {

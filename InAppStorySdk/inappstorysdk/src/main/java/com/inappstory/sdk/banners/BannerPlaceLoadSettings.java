@@ -8,6 +8,8 @@ public class BannerPlaceLoadSettings {
 
     private String uniqueId;
 
+    private String widgetUID;
+
     private List<String> tags;
 
     public String placeId() {
@@ -18,6 +20,10 @@ public class BannerPlaceLoadSettings {
         return uniqueId;
     }
 
+    public String widgetUID() {
+        return widgetUID;
+    }
+
     public List<String> tags() {
         return tags;
     }
@@ -25,6 +31,11 @@ public class BannerPlaceLoadSettings {
 
     public BannerPlaceLoadSettings placeId(String placeId) {
         this.placeId = placeId;
+        return this;
+    }
+
+    public BannerPlaceLoadSettings widgetUID(String widgetUID) {
+        this.widgetUID = widgetUID;
         return this;
     }
 

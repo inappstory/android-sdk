@@ -270,6 +270,7 @@ public class StoryDownloadManager {
 
     public void loadStories(
             String feed,
+            String widgetUID,
             final LoadStoriesCallback callback,
             final LoadFavoritesCallback favCallback,
             boolean isFavorite,
@@ -444,10 +445,17 @@ public class StoryDownloadManager {
             }
         };
         if (feed != null && !isFavorite) {
-            storyDownloader.loadStoryListByFeed(feed, loadCallback, true);
+            storyDownloader.loadStoryListByFeed(feed,
+                    widgetUID,
+                    loadCallback,
+                    true
+            );
         } else {
             storyDownloader.loadStoryList(
-                    isFavorite ? loadCallbackWithoutFav : loadCallback, isFavorite, true
+                    isFavorite ? loadCallbackWithoutFav : loadCallback,
+                    widgetUID,
+                    isFavorite,
+                    true
             );
         }
     }
