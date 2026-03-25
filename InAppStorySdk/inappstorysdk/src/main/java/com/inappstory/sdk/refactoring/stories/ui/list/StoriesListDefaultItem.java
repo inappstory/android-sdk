@@ -11,6 +11,7 @@ import android.view.View;
 
 import androidx.appcompat.widget.AppCompatImageView;
 import androidx.appcompat.widget.AppCompatTextView;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.R;
@@ -23,15 +24,6 @@ import com.inappstory.sdk.stories.ui.widgets.StoryListItemBorder;
 import com.inappstory.sdk.stories.utils.Sizes;
 
 public class StoriesListDefaultItem implements IStoriesListItem {
-    private AppCompatImageView image;
-    private VideoPlayer video;
-    private AppCompatTextView titleView;
-    private AppCompatImageView hasAudioIcon;
-    private StoryListItemBorder borderView;
-    private View gradient;
-
-    private View container;
-    private RoundedCornerLayout cornerLayout;
 
     private final AppearanceManager appearanceManager;
 
@@ -61,9 +53,8 @@ public class StoriesListDefaultItem implements IStoriesListItem {
                 null,
                 false
         );
-        bindViews(v);
-        setContainerSize();
-        setDefaultViews();
+        setContainerSize(v);
+        setDefaultViews(v);
         return v;
     }
 
@@ -74,14 +65,15 @@ public class StoriesListDefaultItem implements IStoriesListItem {
                 null,
                 false
         );
-        bindViews(v);
-        bindVideoViews(v);
-        setContainerSize();
-        setDefaultViews();
+        setContainerSize(v);
+        setDefaultViews(v);
         return v;
     }
 
-    private void setContainerSize() {
+    private void setContainerSize(View v) {
+
+        View container = v.findViewById(R.id.container);
+
         if (container == null) return;
         Integer rh = appearanceManager.getRealHeight(context, parentWidth);
         Integer rw = appearanceManager.getRealWidth(context, parentWidth);
@@ -94,7 +86,16 @@ public class StoriesListDefaultItem implements IStoriesListItem {
         container.requestLayout();
     }
 
-    private void setDefaultViews() {
+    private void setDefaultViews(View v) {
+        AppCompatTextView titleView = v.findViewById(R.id.title);
+        StoryListItemBorder borderView = v.findViewById(R.id.border);
+        View gradient = v.findViewById(R.id.cell_gradient);
+        RoundedCornerLayout cornerLayout = v.findViewById(R.id.item_cv);
+        AppCompatImageView hasAudioIcon = v.findViewById(R.id.hasAudio);
+
+        if (hasAudioIcon != null) {
+            hasAudioIcon.setScaleX(layoutDirection == LayoutDirection.RTL ? -1 : 1);
+        }
         if (cornerLayout != null) {
             cornerLayout.setBackgroundColor(Color.TRANSPARENT);
             cornerLayout.setRadius(Math.max(appearanceManager.csListItemRadius(context) - Sizes.dpToPxExt(4, context), 0));
@@ -111,20 +112,6 @@ public class StoriesListDefaultItem implements IStoriesListItem {
         }
     }
 
-    private void bindViews(View parent) {
-        container = parent.findViewById(R.id.container);
-        cornerLayout = parent.findViewById(R.id.item_cv);
-        titleView = parent.findViewById(R.id.title);
-        hasAudioIcon = parent.findViewById(R.id.hasAudio);
-        hasAudioIcon.setScaleX(layoutDirection == LayoutDirection.RTL ? -1 : 1);
-        image = parent.findViewById(R.id.image);
-        borderView = parent.findViewById(R.id.border);
-        gradient = parent.findViewById(R.id.cell_gradient);
-    }
-
-    private void bindVideoViews(View parent) {
-        video = parent.findViewById(R.id.video);
-    }
 
     @Override
     public void setId(View itemView, int id) {
@@ -133,6 +120,7 @@ public class StoriesListDefaultItem implements IStoriesListItem {
 
     @Override
     public void setTitle(View itemView, String title, Integer titleColor) {
+        AppCompatTextView titleView = itemView.findViewById(R.id.title);
         if (titleView == null) return;
         Log.e("listUpdateCurrentState", "setTitle " + title + "");
         titleView.setText(title);
@@ -148,6 +136,7 @@ public class StoriesListDefaultItem implements IStoriesListItem {
 
     @Override
     public void setImage(View itemView, String path, final int backgroundColor) {
+        AppCompatImageView image = itemView.findViewById(R.id.image);
         if (image == null) return;
         if (path == null) {
             image.setImageResource(0);
@@ -171,12 +160,14 @@ public class StoriesListDefaultItem implements IStoriesListItem {
 
     @Override
     public void setHasAudio(View itemView, boolean hasAudio) {
+        View hasAudioIcon = itemView.findViewById(R.id.hasAudio);
         if (hasAudioIcon == null) return;
         hasAudioIcon.setVisibility(hasAudio ? View.VISIBLE : View.GONE);
     }
 
     @Override
     public void setVideo(View itemView, String videoPath) {
+        VideoPlayer video = itemView.findViewById(R.id.video);
         if (video != null) {
             if (videoPath != null) {
                 video.release();
@@ -189,6 +180,7 @@ public class StoriesListDefaultItem implements IStoriesListItem {
 
     @Override
     public void setOpened(View itemView, boolean isOpened) {
+        StoryListItemBorder borderView = itemView.findViewById(R.id.border);
         if (borderView != null) {
             borderView.setVisibility(
                     isOpened ?

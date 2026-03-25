@@ -135,7 +135,6 @@ public class StoriesListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
     }
 
 
-
     @Override
     public long getItemId(int position) {
         return position;

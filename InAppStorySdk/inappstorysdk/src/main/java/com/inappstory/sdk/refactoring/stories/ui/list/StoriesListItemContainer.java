@@ -51,14 +51,15 @@ public class StoriesListItemContainer
     private View getDefaultVideoCell() {
         IStoriesListItem iStoriesListItem = storiesListItem;
         if (iStoriesListItem == null) return null;
-        return iStoriesListItem.getVideoView() != null ?
-                iStoriesListItem.getVideoView() :
-                iStoriesListItem.getView();
+        View videoView = iStoriesListItem.getVideoView();
+        return videoView != null ?
+                videoView : iStoriesListItem.getView();
     }
 
     private View getDefaultCell() {
         IStoriesListItem iStoriesListItem = storiesListItem;
         if (iStoriesListItem == null) return null;
+        Log.e("listUpdateCurrentState", uuid + " getView");
         return iStoriesListItem.getView();
     }
 
@@ -82,15 +83,23 @@ public class StoriesListItemContainer
             IStoriesListItem storiesListItem,
             AppearanceManager appearanceManager
     ) {
+        Log.e("listUpdateCurrentState", uuid + " attachView");
         this.listItemViewModel = viewModel;
         this.storiesListItem = storiesListItem;
         this.appearanceManager = appearanceManager;
-        if (currentState != null)
+        if (currentState != null) {
+            createView(currentState.hasVideoUrl());
             stateIsCreated(currentState);
+        } else {
+            createView(false);
+        }
         viewModel.addSubscriber(this);
     }
 
     public void detachView() {
+
+        Log.e("listUpdateCurrentState", uuid + " detachView");
+        v = null;
         this.storiesListItem = null;
         if (this.listItemViewModel != null)
             this.listItemViewModel.removeSubscriber(this);
@@ -101,20 +110,28 @@ public class StoriesListItemContainer
 
     Handler handler = new Handler(Looper.getMainLooper());
     ViewGroup vg;
-    private void stateIsCreated(StoriesListItemState value) {
+    View v;
 
+    private void createView(boolean hasVideo) {
+        Log.e("listUpdateCurrentState", uuid + " viewIsCreated");
         vg = itemView.findViewById(R.id.baseLayout);
-        vg.removeAllViews();
-        if (value.hasVideoUrl()) {
-            vg.addView(getDefaultVideoCell());
-        } else {
-            vg.addView(getDefaultCell());
+        if (v == null) {
+            vg.removeAllViews();
+            if (hasVideo) {
+                v = getDefaultVideoCell();
+            } else {
+                v = getDefaultCell();
+            }
+            vg.addView(v);
         }
+    }
+
+    private void stateIsCreated(StoriesListItemState value) {
+        Log.e("listUpdateCurrentState", uuid + " stateIsCreated " + value);
         stateIsUpdated(value);
     }
 
     private void stateIsUpdated(StoriesListItemState value) {
-
         IStoriesListItem storiesListItem = this.storiesListItem;
         if (storiesListItem == null) return;
         handler.post(new Runnable() {
@@ -122,6 +139,7 @@ public class StoriesListItemContainer
             public void run() {
                 if (!viewCanBeUsed())
                     return;
+                Log.e("listUpdateCurrentState", uuid + " stateIsUpdated " + value);
                 storiesListItem.setId(
                         itemView,
                         value.id()
@@ -151,6 +169,7 @@ public class StoriesListItemContainer
                 @Override
                 public void run() {
                     if (!viewCanBeUsed()) return;
+                    Log.e("listUpdateCurrentState", uuid + " updateImageCover " + finalCoverState);
                     storiesListItem.setImage(
                             itemView,
                             finalCoverState.imagePath(),
@@ -173,6 +192,7 @@ public class StoriesListItemContainer
                 @Override
                 public void run() {
                     if (!viewCanBeUsed()) return;
+                    Log.e("listUpdateCurrentState", uuid + " updateVideoCover " + finalCoverState);
                     storiesListItem.setVideo(itemView, finalCoverState.videoPath());
                 }
             });
@@ -201,7 +221,6 @@ public class StoriesListItemContainer
         if (newValue == null) {
             return;
         }
-        Log.e("listUpdateCurrentState", uuid + " onUpdate " + newValue);
         if (current == null) {
             stateIsCreated(newValue);
             listItemViewModel.initCover(appearanceManager.csCoverQuality());
