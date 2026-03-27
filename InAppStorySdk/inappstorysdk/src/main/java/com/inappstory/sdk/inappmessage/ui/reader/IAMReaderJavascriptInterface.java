@@ -1,6 +1,5 @@
 package com.inappstory.sdk.inappmessage.ui.reader;
 
-import android.util.Log;
 import android.webkit.JavascriptInterface;
 
 import com.inappstory.sdk.InAppStoryManager;

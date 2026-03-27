@@ -553,10 +553,8 @@ public class ReaderPageFragment extends Fragment {
         createLoader();
         createRefreshButton(context);
         loaderContainer = new RelativeLayout(context);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            loaderContainer.setElevation(10);
-            loader.setElevation(11);
-        }
+        loaderContainer.setElevation(10);
+        loader.setElevation(11);
         loaderContainer.setAlpha(0.99f);
         loaderContainer.setLayoutParams(
                 new RelativeLayout.LayoutParams(
