@@ -559,6 +559,18 @@ public class StoriesViewManager {
         }
     }
 
+    public void onVerticalScrollChanged(float oldY, float newY) {
+
+        if (storiesView instanceof StoriesWebView) {
+            if (newY == 0f) {
+                ((StoriesWebView)storiesView).passOverscroll(true);
+            } else {
+                ((StoriesWebView)storiesView).passOverscroll(false);
+            }
+        }
+
+    }
+
 
     public void shareComplete(String stId, boolean success) {
         storiesView.shareComplete(stId, success);
@@ -790,6 +802,10 @@ public class StoriesViewManager {
 
     public void swipeVerticalGestureEnabled(boolean enabled) {
         pageManager.swipeVerticalGestureEnabled(enabled);
+    }
+
+    public void contentInScrollProcess(boolean contentInScrollProcess) {
+        pageManager.contentInScrollProcess(contentInScrollProcess);
     }
 
     public void backPressEnabled(boolean enabled) {

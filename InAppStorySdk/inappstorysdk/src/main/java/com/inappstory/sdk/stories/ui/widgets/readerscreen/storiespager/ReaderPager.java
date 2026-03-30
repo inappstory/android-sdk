@@ -53,9 +53,15 @@ public class ReaderPager extends BothSideViewPager {
     public static PageTransformer depthTransformer = new DepthTransformer();
     public static PageTransformer coverTransformer = new CoverTransformer();
     private boolean swipeVerticalEnabled = true;
+    private boolean contentInScrollProcess = false;
 
     public void swipeVerticalEnabled(boolean swipeVerticalEnabled) {
         this.swipeVerticalEnabled = swipeVerticalEnabled;
+    }
+
+
+    public void contentInScrollProcess(boolean contentInScrollProcess) {
+        this.contentInScrollProcess = contentInScrollProcess;
     }
 
     public void setTransformAnimation(int transformAnimation) {
@@ -137,7 +143,7 @@ public class ReaderPager extends BothSideViewPager {
                 || motionEvent.getAction() == MotionEvent.ACTION_CANCEL) {
             pressedEndY = motionEvent.getY() - pressedY;
             pressedEndX = motionEvent.getX() - pressedX;
-            if (swipeVerticalEnabled) {
+            if (swipeVerticalEnabled && !contentInScrollProcess) {
                 if (pressedEndY > 400) {
                     host.swipeDownEvent(getCurrentItem());
                     return true;
@@ -147,14 +153,14 @@ public class ReaderPager extends BothSideViewPager {
                     return true;
                 }
             }
-            if (swipeRightCondition &&
+            if (!contentInScrollProcess && swipeRightCondition &&
                     pressedEndX * pressedEndX > pressedEndY * pressedEndY &&
                     pressedEndX > 300) {
                 host.swipeRightEvent(getCurrentItem());
                 return true;
             }
 
-            if (swipeLeftCondition &&
+            if (!contentInScrollProcess && swipeLeftCondition &&
                     pressedEndX * pressedEndX > pressedEndY * pressedEndY &&
                     pressedEndX < -300) {
                 host.swipeLeftEvent(getCurrentItem());

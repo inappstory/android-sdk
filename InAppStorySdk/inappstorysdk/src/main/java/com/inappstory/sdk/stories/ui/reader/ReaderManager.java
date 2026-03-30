@@ -193,6 +193,13 @@ public class ReaderManager {
             manager.swipeUp();
     }
 
+    public void contentInScrollProcess(boolean contentInScrollProcess) {
+        if (host != null) {
+            host.storiesViewPager.contentInScrollProcess(contentInScrollProcess);
+        }
+    }
+
+
     public void swipeVerticalGestureEnabled(boolean enabled) {
         if (host != null) {
             host.storiesViewPager.swipeVerticalEnabled(enabled);

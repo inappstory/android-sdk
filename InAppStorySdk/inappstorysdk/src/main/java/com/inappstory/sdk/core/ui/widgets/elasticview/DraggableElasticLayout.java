@@ -38,7 +38,7 @@ public class DraggableElasticLayout extends FrameLayout {
     private float dragElacticity = 0.8f;
 
     // state
-    private float totalDrag;
+    public float totalDrag;
     private float totalDisabledDrag;
     private boolean draggingDown = false;
     private boolean draggingUp = false;
@@ -238,6 +238,7 @@ public class DraggableElasticLayout extends FrameLayout {
     }
 
     boolean disableClose = false;
+    public boolean useSwipeCallbacks = true;
 
     public void disableClose(boolean disableClose) {
         this.disableClose = disableClose;
@@ -245,13 +246,18 @@ public class DraggableElasticLayout extends FrameLayout {
 
     @Override
     public void onStopNestedScroll(View child) {
-        if (totalDisabledDrag > 400) {
-            swipeUpCallback();
-        } else if (!disableClose && totalDisabledDrag < -400) {
-            swipeDownCallback();
+        if (useSwipeCallbacks) {
+            if (totalDisabledDrag > 400) {
+                swipeUpCallback();
+            } else if (!disableClose && totalDisabledDrag < -400) {
+                Log.e("swCallbacks", "swipeDownCallback");
+                swipeDownCallback();
+            }
         }
         if (Math.abs(totalDrag) >= dragDismissDistance && !disabled && verticalGesturesEnabled) {
-            dispatchDismissCallback();
+            Log.e("swCallbacks", "dispatchDismissCallback");
+            if (useSwipeCallbacks)
+                dispatchDismissCallback();
         } else {
             if (mLastActionEvent == MotionEvent.ACTION_DOWN) {
                 setTranslationY(0f);

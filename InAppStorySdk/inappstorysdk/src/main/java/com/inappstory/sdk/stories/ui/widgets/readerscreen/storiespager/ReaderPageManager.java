@@ -132,6 +132,13 @@ public class ReaderPageManager implements IReaderSlideViewModel {
         swipeGestureEnabled = enabled;
     }
 
+    public void contentInScrollProcess(boolean contentInScrollProcess) {
+        if (parentManager != null) {
+            parentManager.contentInScrollProcess(contentInScrollProcess);
+        }
+    }
+
+
     public void backPressEnabled(boolean enabled) {
         if (parentManager != null) {
             parentManager.backPressEnabled(enabled);

@@ -6,7 +6,6 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.webkit.ConsoleMessage;
 import android.webkit.ValueCallback;
@@ -49,22 +48,22 @@ public class IASWebView extends WebView implements NestedScrollingChild {
 
     DraggableElasticLayout parent;
 
+
+    DraggableElasticLayout.DraggableElasticDragCallback callback = new DraggableElasticLayout.DraggableElasticDragCallback() {
+        @Override
+        public void onDrag(float elasticOffset, float elasticOffsetPixels, float rawOffset, float rawOffsetPixels) {
+            swiped = elasticOffsetPixels > 0f;
+            Log.e("DraggableCallback", "" + swiped);
+            //super.onDrag(elasticOffset, elasticOffsetPixels, rawOffset, rawOffsetPixels);
+        }
+    };
+
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
-       /* if (findElasticParent(this)) {
-            parent.addListener(new DraggableElasticLayout.DraggableElasticDragCallback() {
-                @Override
-                public void onDrag(float elasticOffset, float elasticOffsetPixels, float rawOffset, float rawOffsetPixels) {
-                    if (elasticOffsetPixels <= 0f) {
-                        passOverscroll = false;
-                    }
-                    //super.onDrag(elasticOffset, elasticOffsetPixels, rawOffset, rawOffsetPixels);
-                }
-            });
-        }*/
-
-
+        if (findElasticParent(this)) {
+            parent.addListener(callback);
+        }
     }
 
     boolean findElasticParent(View current) {
@@ -85,6 +84,8 @@ public class IASWebView extends WebView implements NestedScrollingChild {
 
     @Override
     protected void onDetachedFromWindow() {
+        if (parent != null)
+            parent.removeListener(callback);
         parent = null;
         super.onDetachedFromWindow();
     }
@@ -193,17 +194,6 @@ public class IASWebView extends WebView implements NestedScrollingChild {
         return super.onInterceptTouchEvent(ev);
     }
 
-    @Override
-    public boolean dispatchTouchEvent(MotionEvent ev) {
-        final int action = ev.getAction();
-       /* if (passOverscroll && action == MotionEvent.ACTION_MOVE) {
-            MotionEvent cancelEvent = MotionEvent.obtain(ev);
-            cancelEvent.setAction(MotionEvent.ACTION_CANCEL);
-            dispatchTouchEvent(cancelEvent);
-        }*/
-        Log.e("ScrollEvents", "WebView TouchEv dispatchTouchEvent " + passOverscroll + " " + action);
-        return super.dispatchTouchEvent(ev);
-    }
 
     @Override
     public boolean onTouchEvent(MotionEvent ev) {
@@ -213,6 +203,10 @@ public class IASWebView extends WebView implements NestedScrollingChild {
         Log.e("ScrollEvents", "WebView TouchEv onTouchEvent " + passOverscroll + " " + action);
         if (action == MotionEvent.ACTION_DOWN) {
             mNestedOffsetY = 0;
+            if (parent != null)
+                parent.useSwipeCallbacks = passOverscroll;
+            contentNotInScrollProcess = passOverscroll;
+            contentInScrollProcess(!contentNotInScrollProcess);
         }
         int eventY = (int) event.getY();
         event.offsetLocation(0, mNestedOffsetY);
@@ -227,7 +221,7 @@ public class IASWebView extends WebView implements NestedScrollingChild {
                     event.offsetLocation(0, -mScrollOffset[1]);
                     mNestedOffsetY += mScrollOffset[1];
                 }
-                if (!passOverscroll) {
+                if (!swiped) {
                     returnValue = super.onTouchEvent(event);
                 } else {
                     returnValue = false;
@@ -251,14 +245,14 @@ public class IASWebView extends WebView implements NestedScrollingChild {
             case MotionEvent.ACTION_CANCEL:
                 returnValue = super.onTouchEvent(event);
                 // end NestedScroll
-                passOverscroll = false;
+                // passOverscroll = false;
+                swiped = false;
                 stopNestedScroll();
                 break;
         }
-        return returnValue && !passOverscroll;
+        return returnValue && !swiped;
     }
 
-    // Nested Scroll implements
     @Override
     public void setNestedScrollingEnabled(boolean enabled) {
         mChildHelper.setNestedScrollingEnabled(enabled);
@@ -296,51 +290,48 @@ public class IASWebView extends WebView implements NestedScrollingChild {
     public boolean dispatchNestedScroll(int dxConsumed, int dyConsumed, int dxUnconsumed, int dyUnconsumed,
 
                                         int[] offsetInWindow) {
-        boolean res = mChildHelper.dispatchNestedScroll(
+
+        return passOverscroll && mChildHelper.dispatchNestedScroll(
                 dxConsumed,
                 dyConsumed,
                 dxUnconsumed,
                 dyUnconsumed,
                 offsetInWindow
         );
-        Log.e("ScrollEvents", "WebView dispatchNestedScroll " + " " + dyConsumed
-                + " " + " " + dyUnconsumed + " " + consumedToString(offsetInWindow));
-        return passOverscroll && res;
     }
 
     @Override
     public boolean dispatchNestedPreScroll(int dx, int dy, int[] consumed, int[] offsetInWindow) {
-        boolean res = mChildHelper.dispatchNestedPreScroll(
+        return passOverscroll && mChildHelper.dispatchNestedPreScroll(
                 dx,
                 dy,
                 consumed,
                 offsetInWindow
         );
-        Log.e("ScrollEvents", "WebView dispatchNestedPreScroll " + " " + mNestedOffsetY + " " + mLastY + " " + dy + " " +
-                consumedToString(consumed) + " " + consumedToString(offsetInWindow) + " " + res);
-
-        return passOverscroll && res;
     }
 
-    @Override
-    public boolean dispatchNestedFling(float velocityX, float velocityY, boolean consumed) {
-        return passOverscroll && mChildHelper.dispatchNestedFling(velocityX, velocityY, consumed);
+    protected void contentInScrollProcess(boolean contentInScrollProcess) {}
+
+    public boolean passOverscroll = true;
+    private boolean contentNotInScrollProcess = false;
+
+    public void passOverscroll(boolean passOverscroll) {
+        this.passOverscroll = passOverscroll;
+        if (parent != null)
+            parent.useSwipeCallbacks &= passOverscroll;
+        contentNotInScrollProcess &= passOverscroll;
+        contentInScrollProcess(!contentNotInScrollProcess);
     }
 
-    private boolean passOverscroll = false;
+    public boolean swiped = false;
 
     @Override
     protected void onScrollChanged(int l, int t, int oldl, int oldt) {
-        if (t <= 0)
-            passOverscroll = true;
+        /* if (t <= 0)
+            passOverscroll = true;*/
         Log.e("ScrollEvents", "WebView onScrollChanged " + " " + l
                 + " " + oldl + " " + t + " " + oldt);
         super.onScrollChanged(l, t, oldl, oldt);
-    }
-
-    @Override
-    public boolean dispatchNestedPreFling(float velocityX, float velocityY) {
-        return passOverscroll && mChildHelper.dispatchNestedPreFling(velocityX, velocityY);
     }
 
     public String setDir(String html, String dirString) {

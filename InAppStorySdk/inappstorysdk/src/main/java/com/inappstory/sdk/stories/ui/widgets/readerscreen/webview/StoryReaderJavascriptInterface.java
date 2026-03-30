@@ -2,6 +2,7 @@ package com.inappstory.sdk.stories.ui.widgets.readerscreen.webview;
 
 import static com.inappstory.sdk.utils.DebugUtils.getMethodName;
 
+import android.util.Log;
 import android.webkit.JavascriptInterface;
 
 import com.inappstory.sdk.InAppStoryManager;
@@ -43,6 +44,12 @@ public class StoryReaderJavascriptInterface {
     public void storyClick(String payload) {
         manager.slideClick(payload);
         logMethod(payload);
+    }
+
+    @JavascriptInterface
+    public void onVerticalScrollChange(float scrollY, float oldScrollY) {
+        manager.onVerticalScrollChanged(oldScrollY, scrollY);
+        logMethod(oldScrollY + " " + scrollY);
     }
 
     @JavascriptInterface
