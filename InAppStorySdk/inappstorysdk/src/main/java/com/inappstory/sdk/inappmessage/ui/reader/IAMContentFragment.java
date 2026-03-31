@@ -62,6 +62,12 @@ public class IAMContentFragment extends Fragment implements Observer<IAMReaderSl
     IIAMReaderSlideViewModel readerSlideViewModel;
     IAMReaderSlideState currentState;
 
+    public void changeContentWebViewSwipe(boolean swiped) {
+        if (contentWebView instanceof IAMWebView) {
+            ((IAMWebView) contentWebView).swiped = swiped;
+        }
+    }
+
 
     @Nullable
     @Override
@@ -88,6 +94,9 @@ public class IAMContentFragment extends Fragment implements Observer<IAMReaderSl
     public void onDestroyView() {
         if (readerSlideViewModel != null) {
             readerSlideViewModel.removeSubscriber(this);
+            if (contentWebView != null) {
+                readerSlideViewModel.removeScrollSubscriber((IAMWebView) contentWebView);
+            }
             readerSlideViewModel.singleTimeEvents().unsubscribe(callToActionDataObserver);
         }
         if (contentWebView != null)
@@ -300,6 +309,8 @@ public class IAMContentFragment extends Fragment implements Observer<IAMReaderSl
                 readerSlideViewModel = readerViewModel.slideViewModel();
                 if (contentWebView != null) {
                     if (readerSlideViewModel != null) {
+                        final IAMWebView webView = (IAMWebView) contentWebView;
+                        readerSlideViewModel.addScrollSubscriber(webView);
                         contentWebView.slideViewModel(readerSlideViewModel);
                         contentWebView.checkIfClientIsSet();
                         readerSlideViewModel.addSubscriber(

@@ -50,9 +50,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+
 public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
     private final Observable<IAMReaderSlideState> slideStateObservable =
             new Observable<>(new IAMReaderSlideState());
+    private final Observable<IAMReaderScrollState> scrollStateObservable =
+            new Observable<>(new IAMReaderScrollState(0f));
+
     private final IAMReaderSlideStatState slideTimeState = new IAMReaderSlideStatState();
 
     public SingleTimeEvent<STETypeAndData> singleTimeEvents() {
@@ -74,13 +78,23 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
     }
 
     @Override
-    public void addSubscriber(Observer<IAMReaderSlideState> observable) {
-        this.slideStateObservable.subscribe(observable);
+    public void addSubscriber(Observer<IAMReaderSlideState> observer) {
+        this.slideStateObservable.subscribe(observer);
     }
 
     @Override
-    public void removeSubscriber(Observer<IAMReaderSlideState> observable) {
-        this.slideStateObservable.unsubscribe(observable);
+    public void removeSubscriber(Observer<IAMReaderSlideState> observer) {
+        this.slideStateObservable.unsubscribe(observer);
+    }
+
+    @Override
+    public void addScrollSubscriber(Observer<IAMReaderScrollState> observer) {
+        this.scrollStateObservable.subscribe(observer);
+    }
+
+    @Override
+    public void removeScrollSubscriber(Observer<IAMReaderScrollState> observer) {
+        this.scrollStateObservable.unsubscribe(observer);
     }
 
     @Override
@@ -166,6 +180,11 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
                         .contentStatus(1)
                         .layout(layout)
         );
+    }
+
+    @Override
+    public void onVerticalScrollChange(float scrollY, float oldScrollY) {
+        scrollStateObservable.updateValue(new IAMReaderScrollState(scrollY));
     }
 
     @Override

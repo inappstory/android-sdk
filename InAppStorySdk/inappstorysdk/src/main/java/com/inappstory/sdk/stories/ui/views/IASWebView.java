@@ -278,19 +278,10 @@ public class IASWebView extends WebView implements NestedScrollingChild {
         return mChildHelper.hasNestedScrollingParent();
     }
 
-    private String consumedToString(int[] consumed) {
-        String res = "";
-        for (int j : consumed) {
-            res += j + ",";
-        }
-        return res;
-    }
-
     @Override
     public boolean dispatchNestedScroll(int dxConsumed, int dyConsumed, int dxUnconsumed, int dyUnconsumed,
 
                                         int[] offsetInWindow) {
-
         return passOverscroll && mChildHelper.dispatchNestedScroll(
                 dxConsumed,
                 dyConsumed,
@@ -316,6 +307,7 @@ public class IASWebView extends WebView implements NestedScrollingChild {
     private boolean contentNotInScrollProcess = false;
 
     public void passOverscroll(boolean passOverscroll) {
+        Log.e("passOverscroll", passOverscroll + "");
         this.passOverscroll = passOverscroll;
         if (parent != null)
             parent.useSwipeCallbacks &= passOverscroll;

@@ -29,12 +29,14 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.inappstory.sdk.core.ui.widgets.roundedlayout.RoundedCornerLayout;
 import com.inappstory.sdk.core.utils.ColorUtils;
+import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderScrollState;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageBottomSheetAppearance;
 import com.inappstory.sdk.inappmessage.ui.widgets.BottomSheetLine;
 import com.inappstory.sdk.inappmessage.ui.widgets.IAMContentContainer;
+import com.inappstory.sdk.stories.utils.Observer;
 import com.inappstory.sdk.stories.utils.Sizes;
 
-public final class BottomSheetContentContainer extends IAMContentContainer<InAppMessageBottomSheetAppearance> {
+public final class BottomSheetContentContainer extends IAMContentContainer<InAppMessageBottomSheetAppearance> implements Observer<IAMReaderScrollState> {
     private BottomSheetBehavior<RoundedCornerLayout> bottomSheetBehavior;
     private RoundedCornerLayout roundedCornerLayout;
     private CoordinatorLayout.LayoutParams layoutParams;
@@ -121,12 +123,19 @@ public final class BottomSheetContentContainer extends IAMContentContainer<InApp
             public void onSlide(@NonNull View bottomSheet, float slideOffset) {
                 if (slideOffset >= 0 && slideOffset <= 1f)
                     background.setAlpha(slideOffset);
+                if (slideCallback != null) slideCallback.onSlide(slideOffset);
             }
         });
         coordinatorLayout.addView(roundedCornerLayout);
         addView(coordinatorLayout);
         if (appearance != null) appearance(appearance);
     }
+
+    public void slideCallback(BottomSheetSlideCallback slideCallback) {
+        this.slideCallback = slideCallback;
+    }
+
+    BottomSheetSlideCallback slideCallback = null;
 
     @Override
     protected int visibleRectIsCalculated() {
@@ -277,4 +286,9 @@ public final class BottomSheetContentContainer extends IAMContentContainer<InApp
         bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
     }
 
+    @Override
+    public void onUpdate(IAMReaderScrollState newValue) {
+        if (bottomSheetBehavior != null)
+            bottomSheetBehavior.setDraggable(closeEnabled && newValue.passOverscroll());
+    }
 }

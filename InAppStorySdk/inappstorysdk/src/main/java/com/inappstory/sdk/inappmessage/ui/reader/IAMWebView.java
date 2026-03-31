@@ -6,7 +6,6 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.text.TextUtils;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.webkit.ConsoleMessage;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
@@ -21,12 +20,14 @@ import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.exceptions.NotImplementedMethodException;
 import com.inappstory.sdk.core.ui.screens.IReaderSlideViewModel;
+import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderScrollState;
 import com.inappstory.sdk.inappmessage.domain.reader.IIAMReaderSlideViewModel;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.ContentIdWithIndex;
 import com.inappstory.sdk.stories.ui.views.IASWebView;
 import com.inappstory.sdk.stories.ui.views.IASWebViewClient;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ContentViewInteractor;
+import com.inappstory.sdk.stories.utils.Observer;
 import com.inappstory.sdk.utils.OnSwipeTouchListener;
 import com.inappstory.sdk.utils.StringsUtils;
 
@@ -34,7 +35,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class IAMWebView extends IASWebView implements ContentViewInteractor {
+public class IAMWebView extends IASWebView implements ContentViewInteractor, Observer<IAMReaderScrollState> {
     private boolean clientIsSet = false;
 
     @Override
@@ -139,7 +140,9 @@ public class IAMWebView extends IASWebView implements ContentViewInteractor {
     @Override
     public void loadSlide(String content) {
         if (slideViewModel == null) return;
+        contentInScrollProcess(false);
         String newContent = setDir(content, getContext());
+
         loadDataWithBaseURL(
                 "file:///data/",
                 newContent,
@@ -170,6 +173,7 @@ public class IAMWebView extends IASWebView implements ContentViewInteractor {
 
     @Override
     public void startSlide(IASCore core) {
+        passOverscroll(true);
         loadUrl("javascript:(function(){" +
                 "if ('story_slide_start' in window) " +
                 "{" +
@@ -347,4 +351,8 @@ public class IAMWebView extends IASWebView implements ContentViewInteractor {
         throw new NotImplementedMethodException();
     }
 
+    @Override
+    public void onUpdate(IAMReaderScrollState newValue) {
+        passOverscroll(newValue.passOverscroll());
+    }
 }

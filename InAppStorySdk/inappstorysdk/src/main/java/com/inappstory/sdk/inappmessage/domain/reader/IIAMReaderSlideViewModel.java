@@ -15,6 +15,10 @@ public interface IIAMReaderSlideViewModel extends IReaderSlideViewModel {
 
     void removeSubscriber(Observer<IAMReaderSlideState> observer);
 
+    void addScrollSubscriber(Observer<IAMReaderScrollState> observer);
+
+    void removeScrollSubscriber(Observer<IAMReaderScrollState> observer);
+
     void readerIsOpened(boolean fromScratch);
 
     void readerIsClosing();
@@ -22,6 +26,8 @@ public interface IIAMReaderSlideViewModel extends IReaderSlideViewModel {
     void closeReader();
 
     void updateLayout();
+
+    void onVerticalScrollChange(float scrollY, float oldScrollY);
 
     void onCardLoadingStateChange(int state, String reason);
 

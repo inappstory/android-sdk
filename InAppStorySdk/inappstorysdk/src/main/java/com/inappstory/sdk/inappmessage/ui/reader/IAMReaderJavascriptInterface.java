@@ -1,6 +1,5 @@
 package com.inappstory.sdk.inappmessage.ui.reader;
 
-import android.util.Log;
 import android.webkit.JavascriptInterface;
 
 import com.inappstory.sdk.InAppStoryManager;
@@ -22,6 +21,13 @@ public class IAMReaderJavascriptInterface {
     @JavascriptInterface
     public void updateTimeline(String data) {
         slideViewModel.updateTimeline(data);
+    }
+
+
+
+    @JavascriptInterface
+    public void onVerticalScrollChange(float scrollY, float oldScrollY) {
+        slideViewModel.onVerticalScrollChange(scrollY, oldScrollY);
     }
 
     @JavascriptInterface

@@ -6,6 +6,7 @@ import static com.inappstory.sdk.inappmessage.ui.widgets.IAMContentContainer.CON
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -38,6 +39,8 @@ import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageToastAppearance
 import com.inappstory.sdk.inappmessage.ui.appearance.impl.InAppMessageUndefinedSettings;
 import com.inappstory.sdk.inappmessage.ui.widgets.IAMContainerCallback;
 import com.inappstory.sdk.inappmessage.ui.widgets.IAMContentContainer;
+import com.inappstory.sdk.inappmessage.ui.widgets.impl.BottomSheetContentContainer;
+import com.inappstory.sdk.inappmessage.ui.widgets.impl.BottomSheetSlideCallback;
 import com.inappstory.sdk.stories.utils.Observer;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 
@@ -62,6 +65,10 @@ public class InAppMessageMainFragment extends Fragment implements Observer<IAMRe
     public void onDestroyView() {
         if (contentContainer != null) {
             contentContainer.uiContainerCallback(null);
+            if (readerViewModel != null && contentContainer instanceof BottomSheetContentContainer)
+                readerViewModel.slideViewModel().removeScrollSubscriber(
+                        (BottomSheetContentContainer) contentContainer
+                );
         }
         if (controller != null) {
             controller.unsubscribeView(this);
@@ -244,6 +251,20 @@ public class InAppMessageMainFragment extends Fragment implements Observer<IAMRe
                     contentFragment.refreshClick();
                 }
             });
+            if (contentContainer instanceof BottomSheetContentContainer) {
+                ((BottomSheetContentContainer) contentContainer).slideCallback(new BottomSheetSlideCallback() {
+                    @Override
+                    public void onSlide(float slideOffset) {
+                        Log.e("contentFragmentOffset", "" + slideOffset);
+                        if (contentFragment != null) {
+                            contentFragment.changeContentWebViewSwipe(slideOffset < 1 && slideOffset > 0);
+                        }
+                    }
+                });
+                readerViewModel.slideViewModel().addScrollSubscriber(
+                        (BottomSheetContentContainer) contentContainer
+                );
+            }
         }
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
