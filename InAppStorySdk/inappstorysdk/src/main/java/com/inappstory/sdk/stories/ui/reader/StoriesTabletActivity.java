@@ -473,6 +473,7 @@ public class StoriesTabletActivity extends IASActivity implements BaseStoryScree
                 getSerializableExtra(LaunchStoryScreenData.SERIALIZABLE_KEY);
         appearanceSettings = (LaunchStoryScreenAppearance) getIntent()
                 .getSerializableExtra(LaunchStoryScreenAppearance.SERIALIZABLE_KEY);
+        blockView = findViewById(R.id.blockView);
         if (inAppStoryManager == null || launchData == null) {
             forceFinish();
             return;
@@ -523,7 +524,6 @@ public class StoriesTabletActivity extends IASActivity implements BaseStoryScree
         dialogsLayoutParams.height = maxHeight;
         dialogsView.requestLayout();
         goodsView.requestLayout();
-        blockView = findViewById(R.id.blockView);
         backTintView = findViewById(R.id.background);
         animatedContainer = findViewById(R.id.animatedContainer);
         fader = new DraggableElasticLayout.DraggableElasticFader(StoriesTabletActivity.this) {
@@ -869,7 +869,8 @@ public class StoriesTabletActivity extends IASActivity implements BaseStoryScree
             public void run() {
                 getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
                         WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
-                blockView.setVisibility(View.VISIBLE);
+                if (blockView != null)
+                    blockView.setVisibility(View.VISIBLE);
                 finishWithoutAnimation();
             }
         });
