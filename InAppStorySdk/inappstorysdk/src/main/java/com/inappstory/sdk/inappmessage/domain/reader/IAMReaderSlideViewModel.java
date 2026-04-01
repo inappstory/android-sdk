@@ -242,6 +242,7 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
                 event,
                 ShowSlideJSPayload.class
         );
+        scrollStateObservable.updateValue(new IAMReaderScrollState(0f));
         if (showSlideJSPayload != null) {
             slideStateObservable.updateValue(
                     slideStateObservable
