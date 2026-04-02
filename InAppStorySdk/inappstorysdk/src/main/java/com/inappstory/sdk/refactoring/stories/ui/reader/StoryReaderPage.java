@@ -10,9 +10,10 @@ import androidx.annotation.Nullable;
 
 import com.inappstory.sdk.refactoring.core.utils.observers.Observer;
 import com.inappstory.sdk.refactoring.stories.ui.reader.states.StoryReaderPageState;
+import com.inappstory.sdk.refactoring.stories.ui.reader.viewmodels.StoryReaderPageViewModel;
 import com.inappstory.sdk.stories.ui.widgets.TouchFrameLayout;
 
-public class StoryReaderPage extends FrameLayout implements Observer<StoryReaderPageState> {
+public class StoryReaderPage extends FrameLayout {
     StoryReaderPageLoader loader;
     StoryReaderPageContent content;
     StoryReaderPageTimeline timeline;
@@ -20,6 +21,14 @@ public class StoryReaderPage extends FrameLayout implements Observer<StoryReader
     View topOffsetView;
     View bottomOffsetView;
     TouchFrameLayout closeButton;
+
+
+    StoryReaderPageViewModel viewModel;
+
+    public void viewModel(StoryReaderPageViewModel viewModel) {
+        this.viewModel = viewModel;
+        if (buttons != null) buttons.viewModel(viewModel);
+    }
 
     public void setOffsets(int top, int bottom) {
 
@@ -44,8 +53,4 @@ public class StoryReaderPage extends FrameLayout implements Observer<StoryReader
 
     }
 
-    @Override
-    public void onUpdate(StoryReaderPageState newValue) {
-
-    }
 }

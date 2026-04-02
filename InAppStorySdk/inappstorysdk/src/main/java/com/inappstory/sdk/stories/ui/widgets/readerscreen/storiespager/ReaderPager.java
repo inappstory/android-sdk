@@ -63,7 +63,6 @@ public class ReaderPager extends BothSideViewPager {
     }
 
     private int transformAnimation;
-    boolean closeOnSwipe;
 
     public void setParameters(int transformAnimation) {
         this.transformAnimation = transformAnimation;
@@ -71,9 +70,7 @@ public class ReaderPager extends BothSideViewPager {
     }
 
     public void init(@Nullable AttributeSet attrs) {
-        if (attrs != null) {
-            TypedArray typedArray = getContext().obtainStyledAttributes(attrs, R.styleable.ReaderPager);
-        }
+
     }
 
     public void init() {
