@@ -2,6 +2,7 @@ package com.inappstory.sdk.refactoring.stories.ui.reader.viewmodels;
 
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.refactoring.core.utils.observers.Observable;
+import com.inappstory.sdk.refactoring.core.utils.observers.Observer;
 import com.inappstory.sdk.refactoring.stories.ui.list.states.StoryListItemCoordinates;
 import com.inappstory.sdk.refactoring.stories.ui.reader.states.StoryReaderOpenState;
 import com.inappstory.sdk.refactoring.stories.ui.reader.states.StoryReaderState;
@@ -14,6 +15,13 @@ public class StoryReaderViewModel {
     private final Observable<StoryReaderState> storyReaderStateObservable =
             new Observable<>(new StoryReaderState());
 
+    public void addSubscriber(Observer<StoryReaderState> observer) {
+        storyReaderStateObservable.subscribeAndGetValue(observer);
+    }
+
+    public void removeSubscriber(Observer<StoryReaderState> observer) {
+        storyReaderStateObservable.unsubscribe(observer);
+    }
 
     public void cleanReaderData() {
         storyReaderStateObservable.updateValue(new StoryReaderState());
