@@ -34,12 +34,6 @@ public class IASWebView extends WebView {
         init();
     }
 
-    @Override
-    public void evaluateJavascript(@NonNull String script, @Nullable ValueCallback<String> resultCallback) {
-        Log.d("InAppStory_SDK_Game", script);
-        super.evaluateJavascript(script, resultCallback);
-    }
-
     protected void init() {
         getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE);
         //setBackgroundColor(getResources().getColor(R.color.black));

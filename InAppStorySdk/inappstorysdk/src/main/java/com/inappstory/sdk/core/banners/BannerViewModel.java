@@ -420,7 +420,6 @@ public class BannerViewModel implements IBannerViewModel {
                     System.currentTimeMillis() - shift - lastTimer,
                     iterationId
             );
-            // TODO Add duration first
         }
         if (eventData != null) {
             final Map<String, String> widgetEventMap = JsonParser.toMap(eventData);

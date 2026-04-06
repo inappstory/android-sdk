@@ -1,20 +1,26 @@
 package com.inappstory.sdk.refactoring.stories.ui.reader.states;
 
 public class StoryReaderPageState {
-    public StoryReaderPageLoaderType loaderType() {
-        return loaderType;
+    final String storyId;
+    int slideIndex;
+    final int pageIndex;
+
+    public StoryReaderPageState(String storyId, int pageIndex) {
+        this.storyId = storyId;
+        this.pageIndex = pageIndex;
     }
 
-    public StoryReaderPageState loaderType(StoryReaderPageLoaderType loaderType) {
-        this.loaderType = loaderType;
+    public int slideIndex() {
+        return slideIndex;
+    }
+
+    public StoryReaderPageState slideIndex(int slideIndex) {
+        this.slideIndex = slideIndex;
         return this;
     }
 
     public StoryReaderPageState copy() {
-        return new StoryReaderPageState().
-                loaderType(this.loaderType);
+        return new StoryReaderPageState(storyId, pageIndex).
+                slideIndex(this.slideIndex);
     }
-
-    private StoryReaderPageLoaderType loaderType = StoryReaderPageLoaderType.HIDDEN;
-
 }
