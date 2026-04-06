@@ -14,6 +14,14 @@ public class StoryReaderPageState {
         return slideIndex;
     }
 
+    public String storyId() {
+        return storyId;
+    }
+
+    public int pageIndex() {
+        return pageIndex;
+    }
+
     public StoryReaderPageState slideIndex(int slideIndex) {
         this.slideIndex = slideIndex;
         return this;

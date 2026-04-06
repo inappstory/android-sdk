@@ -1,17 +1,38 @@
 package com.inappstory.sdk.refactoring.stories.ui.reader.viewmodels;
 
+import android.content.Context;
 import android.webkit.JavascriptInterface;
 
+import com.inappstory.sdk.AppearanceManager;
+import com.inappstory.sdk.core.CancellationTokenImpl;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
+import com.inappstory.sdk.core.api.impl.IASSingleStoryImpl;
+import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenData;
+import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenStrategy;
+import com.inappstory.sdk.inappmessage.domain.reader.IIAMReaderViewModel;
+import com.inappstory.sdk.inappmessage.domain.stedata.CallToActionData;
+import com.inappstory.sdk.inappmessage.domain.stedata.JsSendApiRequestData;
+import com.inappstory.sdk.inappmessage.domain.stedata.STEDataType;
+import com.inappstory.sdk.inappmessage.domain.stedata.STETypeAndData;
 import com.inappstory.sdk.network.JsonParser;
+import com.inappstory.sdk.network.jsapiclient.JsApiClient;
+import com.inappstory.sdk.network.jsapiclient.JsApiResponseCallback;
 import com.inappstory.sdk.refactoring.core.utils.observers.Observable;
 import com.inappstory.sdk.refactoring.core.utils.observers.Observer;
+import com.inappstory.sdk.refactoring.stories.ui.reader.singletimeevents.JsSendApiRequestResponse;
 import com.inappstory.sdk.refactoring.stories.ui.reader.states.StoryReaderButtonsState;
 import com.inappstory.sdk.refactoring.stories.ui.reader.states.StoryReaderPageLoaderState;
 import com.inappstory.sdk.refactoring.stories.ui.reader.states.StoryReaderPageState;
+import com.inappstory.sdk.stories.api.models.ContentIdWithIndex;
 import com.inappstory.sdk.stories.api.models.StoryLoadedData;
 import com.inappstory.sdk.stories.api.models.UpdateTimelineData;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
+import com.inappstory.sdk.stories.outerevents.ShowStory;
+import com.inappstory.sdk.stories.utils.SingleTimeEvent;
+import com.inappstory.sdk.utils.ClipboardUtils;
+
+import java.util.Objects;
 
 public class StoryReaderPageViewModel {
     private final IASCore core;
@@ -19,6 +40,13 @@ public class StoryReaderPageViewModel {
 
     private final Observable<StoryReaderPageLoaderState> storyReaderPageLoaderStateObservable =
             new Observable<>(new StoryReaderPageLoaderState());
+
+    public SingleTimeEvent<STETypeAndData> singleTimeEvents() {
+        return singleTimeEvents;
+    }
+
+    private final SingleTimeEvent<STETypeAndData> singleTimeEvents =
+            new SingleTimeEvent<>();
 
     private final Observable<StoryReaderPageState> storyReaderPageStateObservable;
 
@@ -61,6 +89,17 @@ public class StoryReaderPageViewModel {
         storyReaderPageButtonsStateObservable.unsubscribe(observer);
     }
 
+    public void updateLatestClickCoordinates(float coordinate) {
+        clickCoordinates = (int) coordinate;
+    }
+
+    private int clickCoordinates = -1;
+
+    private int getClickCoordinates() {
+        int resCoordinates = clickCoordinates;
+        clickCoordinates = -1;
+        return resCoordinates;
+    }
 
     public void clickOnRefresh() {
     }
@@ -80,11 +119,24 @@ public class StoryReaderPageViewModel {
     public void shareClick() {
     }
 
+    private void navigate(int coordinate, boolean forbidden) {
+
+    }
+
+    private void handleClickPayload(String payload) {
+
+    }
 
     @JavascriptInterface
     public void storyClick(String payload) { //page
-        manager.slideClick(payload);
-        logMethod(payload);
+        int coordinate = getClickCoordinates();
+        if (payload == null || payload.isEmpty() || payload.equals("test")) {
+            navigate(coordinate, false);
+        } else if (payload.equals("forbidden")) {
+            navigate(coordinate, true);
+        } else {
+            handleClickPayload(payload);
+        }
     }
 
     @JavascriptInterface
@@ -107,62 +159,132 @@ public class StoryReaderPageViewModel {
 
     @JavascriptInterface
     public void writeToClipboard(String payload) { //common
-        manager.writeToClipboard(payload);
-        logMethod(payload);
+        ClipboardUtils.writeToClipboard(payload, core.appContext());
     }
 
     @JavascriptInterface
     public void vibrate(int[] vibratePattern) {
-        manager.vibrate(vibratePattern);
-    } //common
-
-
-    @JavascriptInterface
-    public void storyFreezeUI() { //reader
-        manager.freezeUI();
-        logMethod("");
+        core.vibrateUtils().vibrate(vibratePattern);
     }
 
 
     @JavascriptInterface
-    public void storyRenderReady() { //page
-        manager.renderReady();
-        logMethod("");
+    public void storyFreezeUI() {
+        singleTimeEvents.updateValue(
+                new STETypeAndData(
+                        STEDataType.FREEZE_UI,
+                        null
+                )
+        );
+    }
+
+
+    @JavascriptInterface
+    public void storyRenderReady() {
+        singleTimeEvents.updateValue(
+                new STETypeAndData(
+                        STEDataType.RENDER_READY,
+                        null
+                )
+        );
     }
 
 
     @JavascriptInterface
     public void storyUnfreezeUI() { //reader
-        manager.unfreezeUI();
-        logMethod("");
+        singleTimeEvents.updateValue(
+                new STETypeAndData(
+                        STEDataType.UNFREEZE_UI,
+                        null
+                )
+        );
     }
 
     @JavascriptInterface
     public void storyShowSlide(int index) { //page
-        if (manager.index != index) {
-            manager.changeIndex(index);
+        StoryReaderPageState pageState = storyReaderPageStateObservable.getValue();
+        if (pageState.slideIndex() != index) {
+            storyReaderPageStateObservable.updateValue(pageState.copy().slideIndex(index));
         }
-        logMethod("" + index);
+    }
+
+    public void openAnotherStory(Context context, int id, int index) {
+        try {
+            AppearanceManager appearanceManager = AppearanceManager.checkOrCreateAppearanceManager(null);
+            ((IASSingleStoryImpl) core.singleStoryAPI()).show(
+                    new CancellationTokenImpl(),
+                    context,
+                    Integer.toString(id),
+                    appearanceManager,
+                    null,
+                    index,
+                    true,
+                    SourceType.SINGLE,
+                    ShowStory.ACTION_CUSTOM
+            );
+        } catch (Exception e) {
+
+        }
+    }
+
+    public void openGame(Context context, String gameInstanceId) {
+        try {
+            if (core.gamesAPI().gameCanBeOpened(gameInstanceId)) {
+                core.screensManager().openScreen(
+                        context,
+                        new LaunchGameScreenStrategy(core, true)
+                                .data(new LaunchGameScreenData(
+                                        null,
+                                        readerViewModel.getCurrentInAppMessageData(),
+                                        gameInstanceId
+                                ))
+                );
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @JavascriptInterface
-    public void showSingleStory(int id, int index) { // page/reader/common
-        logMethod("" + id + " " + index);
-        if (manager.storyId != id) {
-            manager.showSingleStory(id, index);
-        } else if (manager.index != index) {
-            manager.changeIndex(index);
+    public void showSingleStory(int id, int index) {
+
+        StoryReaderPageState pageState = storyReaderPageStateObservable.getValue();
+        if (!Objects.equals(pageState.storyId(), Integer.toString(id))) {
+            singleTimeEvents.updateValue(
+                    new STETypeAndData(STEDataType.OPEN_STORY,
+                            new ContentIdWithIndex(id, index)
+                    )
+            );
+        } else if (pageState.slideIndex() != index) {
+            storyReaderPageStateObservable.updateValue(pageState.copy().slideIndex(index));
         }
     }
 
     @JavascriptInterface
     public void sendApiRequest(String data) {
-        manager.sendApiRequest(data);
-    } //common?/page
+        new JsApiClient(
+                core,
+                core.appContext(),
+                core.projectSettingsAPI().host()
+        ).sendApiRequest(data, new JsApiResponseCallback() {
+            @Override
+            public void onJsApiResponse(String result, String cb) {
+                singleTimeEvents.updateValue(
+                        new STETypeAndData(STEDataType.JS_SEND_API_RESPONSE,
+                                new JsSendApiRequestResponse()
+                                        .cb(cb)
+                                        .result(result)
+                        )
+                );
+            }
+        });
+
+    }
 
 
     @JavascriptInterface
-    public void openGame(String gameInstanceId) { //common
+    public void openGame(String gameInstanceId) {
+
         manager.openGameReaderFromGameCenter(gameInstanceId);
         logMethod(gameInstanceId);
     }

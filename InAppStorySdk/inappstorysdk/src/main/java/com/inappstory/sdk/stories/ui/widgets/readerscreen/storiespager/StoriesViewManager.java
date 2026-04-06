@@ -626,7 +626,6 @@ public class StoriesViewManager {
         String uniqueId = null;
         if (storiesContentFragment != null) {
             uniqueId = storiesContentFragment.getReaderUniqueId();
-            storiesContentFragment.observeGameReader();
         }
         Context localContext = pageManager.host.getContext();
         if (localContext == null) localContext = context;
