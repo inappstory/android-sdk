@@ -1,6 +1,8 @@
 package com.inappstory.sdk.refactoring.stories.ui.reader.states;
 
 import com.inappstory.sdk.refactoring.stories.ui.list.states.StoryListItemCoordinates;
+import com.inappstory.sdk.stories.api.models.ContentType;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,12 +14,12 @@ public class StoryReaderState {
     private boolean horizontalSwipeInProgress = false;
     private boolean verticalSwipeInProgress = false;
 
+
     private StoryListItemCoordinates currentCoordinates = null;
 
     private StoryReaderOpenState openState = StoryReaderOpenState.CLOSED;
 
     private int currentPage = 0;
-    private List<String> storiesIds = new ArrayList<>();
     private ReviewDialogState reviewDialogState = null;
     private ShareDataState shareDataState = null;
     private GoodsV1WidgetState goodsV1WidgetState = null;
@@ -54,11 +56,6 @@ public class StoryReaderState {
 
     public StoryReaderState currentPage(int currentPage) {
         this.currentPage = currentPage;
-        return this;
-    }
-
-    public StoryReaderState storiesIds(List<String> storiesIds) {
-        this.storiesIds = storiesIds;
         return this;
     }
 
@@ -105,10 +102,6 @@ public class StoryReaderState {
         return currentPage;
     }
 
-    public List<String> storiesIds() {
-        return storiesIds;
-    }
-
     public ReviewDialogState reviewDialogState() {
         return reviewDialogState;
     }
@@ -124,7 +117,6 @@ public class StoryReaderState {
     public StoryReaderState copy() {
         return new StoryReaderState()
                 .openState(openState)
-                .storiesIds(storiesIds)
                 .reviewDialogState(reviewDialogState)
                 .goodsV1WidgetState(goodsV1WidgetState)
                 .shareDataState(shareDataState)

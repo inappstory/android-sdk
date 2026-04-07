@@ -20,7 +20,7 @@ public class StoryReader extends FrameLayout implements Observer<StoryReaderStat
     private ContainerProvider shareContainer;
     private ContainerProvider goodsContainer;
     private ContainerProvider reviewContainer;
-    private StoryReaderState currentValue = new StoryReaderState();
+    private StoryReaderState currentValue = null;
 
     public void shareContainer(ContainerProvider shareContainer) {
         this.shareContainer = shareContainer;

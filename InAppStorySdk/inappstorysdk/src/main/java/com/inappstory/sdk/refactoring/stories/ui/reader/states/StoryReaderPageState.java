@@ -1,7 +1,12 @@
 package com.inappstory.sdk.refactoring.stories.ui.reader.states;
 
+import com.inappstory.sdk.refactoring.stories.data.local.StoriesListItemDTO;
+import com.inappstory.sdk.refactoring.stories.data.local.StoryDTO;
+
 public class StoryReaderPageState {
     final String storyId;
+    StoryDTO storyDTO;
+    StoriesListItemDTO storiesListItemDTO;
     int slideIndex;
     final int pageIndex;
 
@@ -18,6 +23,14 @@ public class StoryReaderPageState {
         return storyId;
     }
 
+    public StoriesListItemDTO storyListItem() {
+        return storiesListItemDTO;
+    }
+
+    public StoryDTO story() {
+        return storyDTO;
+    }
+
     public int pageIndex() {
         return pageIndex;
     }
@@ -27,8 +40,20 @@ public class StoryReaderPageState {
         return this;
     }
 
+    public StoryReaderPageState storyListItem(StoriesListItemDTO storiesListItemDTO) {
+        this.storiesListItemDTO = storiesListItemDTO;
+        return this;
+    }
+
+    public StoryReaderPageState story(StoryDTO storyDTO) {
+        this.storyDTO = storyDTO;
+        return this;
+    }
+
     public StoryReaderPageState copy() {
         return new StoryReaderPageState(storyId, pageIndex).
-                slideIndex(this.slideIndex);
+                slideIndex(this.slideIndex).
+                storyListItem(this.storiesListItemDTO).
+                story(this.storyDTO);
     }
 }

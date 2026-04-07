@@ -4,16 +4,30 @@ import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.refactoring.core.utils.observers.Observable;
 import com.inappstory.sdk.refactoring.core.utils.observers.Observer;
 import com.inappstory.sdk.refactoring.stories.ui.list.states.StoryListItemCoordinates;
+import com.inappstory.sdk.refactoring.stories.ui.reader.states.StoryReaderImmutableState;
 import com.inappstory.sdk.refactoring.stories.ui.reader.states.StoryReaderOpenState;
 import com.inappstory.sdk.refactoring.stories.ui.reader.states.StoryReaderState;
+import com.inappstory.sdk.stories.api.models.ContentType;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
+import com.inappstory.sdk.stories.outerevents.ShowStory;
 
 import java.util.List;
 
 public class StoryReaderViewModel {
     private final IASCore core;
 
+    public StoryReaderImmutableState readerImmutableState() {
+        return readerImmutableState;
+    }
+
+    private StoryReaderImmutableState readerImmutableState = null;
+
     private final Observable<StoryReaderState> storyReaderStateObservable =
             new Observable<>(new StoryReaderState());
+
+    public StoryReaderState getReaderState() {
+        return storyReaderStateObservable.getValue();
+    }
 
     public void addSubscriber(Observer<StoryReaderState> observer) {
         storyReaderStateObservable.subscribeAndGetValue(observer);
@@ -25,17 +39,18 @@ public class StoryReaderViewModel {
 
     public void cleanReaderData() {
         storyReaderStateObservable.updateValue(new StoryReaderState());
+        this.readerImmutableState = null;
     }
 
     public boolean openReader(
-            List<String> storiesIds,
+            StoryReaderImmutableState immutableState,
             StoryListItemCoordinates startedCoordinates
     ) {
         StoryReaderState state = storyReaderStateObservable.getValue();
+        this.readerImmutableState = immutableState;
         if (state.openState() == StoryReaderOpenState.CLOSED) {
             storyReaderStateObservable.updateValue(
                     new StoryReaderState()
-                            .storiesIds(storiesIds)
                             .currentCoordinates(startedCoordinates)
             );
             return true;
@@ -94,6 +109,10 @@ public class StoryReaderViewModel {
         storyReaderStateObservable.updateValue(
                 state.copy().openState(StoryReaderOpenState.CLOSING)
         );
+    }
+
+    public void navigateToIndex(int index, int action) {
+
     }
 
     public StoryReaderViewModel(IASCore core) {

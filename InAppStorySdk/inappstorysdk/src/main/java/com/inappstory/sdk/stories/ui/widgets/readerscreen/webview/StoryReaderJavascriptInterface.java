@@ -167,14 +167,12 @@ public class StoryReaderJavascriptInterface {
     @JavascriptInterface
     public void storyStarted() { //page
         manager.storyStartedEvent();
-        manager.pageFinished();
         logMethod("");
     }
 
     @JavascriptInterface
     public void storyStarted(double startTime) { //page
         manager.storyStartedEvent();
-        manager.pageFinished();
         logMethod("" + startTime);
     }
 

@@ -1,6 +1,7 @@
 package com.inappstory.sdk.refactoring.stories.ui.reader.viewmodels;
 
 import android.content.Context;
+import android.media.AudioManager;
 import android.webkit.JavascriptInterface;
 
 import com.inappstory.sdk.AppearanceManager;
@@ -8,6 +9,8 @@ import com.inappstory.sdk.core.CancellationTokenImpl;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.impl.IASSingleStoryImpl;
+import com.inappstory.sdk.core.data.IReaderContent;
+import com.inappstory.sdk.core.data.IStatData;
 import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenData;
 import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenStrategy;
 import com.inappstory.sdk.inappmessage.domain.reader.IIAMReaderViewModel;
@@ -22,14 +25,22 @@ import com.inappstory.sdk.refactoring.core.utils.observers.Observable;
 import com.inappstory.sdk.refactoring.core.utils.observers.Observer;
 import com.inappstory.sdk.refactoring.stories.ui.reader.singletimeevents.JsSendApiRequestResponse;
 import com.inappstory.sdk.refactoring.stories.ui.reader.states.StoryReaderButtonsState;
+import com.inappstory.sdk.refactoring.stories.ui.reader.states.StoryReaderImmutableState;
 import com.inappstory.sdk.refactoring.stories.ui.reader.states.StoryReaderPageLoaderState;
 import com.inappstory.sdk.refactoring.stories.ui.reader.states.StoryReaderPageState;
+import com.inappstory.sdk.refactoring.stories.ui.reader.states.StoryReaderState;
+import com.inappstory.sdk.stories.api.models.ContentId;
 import com.inappstory.sdk.stories.api.models.ContentIdWithIndex;
+import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.StoryLoadedData;
 import com.inappstory.sdk.stories.api.models.UpdateTimelineData;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
+import com.inappstory.sdk.stories.utils.AudioModes;
 import com.inappstory.sdk.stories.utils.SingleTimeEvent;
+import com.inappstory.sdk.utils.AudioManagerUtils;
 import com.inappstory.sdk.utils.ClipboardUtils;
 
 import java.util.Objects;
@@ -204,8 +215,19 @@ public class StoryReaderPageViewModel {
     public void storyShowSlide(int index) { //page
         StoryReaderPageState pageState = storyReaderPageStateObservable.getValue();
         if (pageState.slideIndex() != index) {
-            storyReaderPageStateObservable.updateValue(pageState.copy().slideIndex(index));
+            int corIndex = correctIndex(index, pageState);
+            if (corIndex >= 0)
+                storyReaderPageStateObservable.updateValue(pageState.copy().slideIndex(corIndex));
         }
+    }
+
+    private int correctIndex(int index, StoryReaderPageState pageState) {
+        IStatData storyStatData = pageState.story();
+        if (storyStatData == null) storyStatData = pageState.storyListItem();
+        if (storyStatData == null) return -1;
+        if (index < 0) return -1;
+        if (index >= storyStatData.slidesCount()) return -1;
+        return index;
     }
 
     public void openAnotherStory(Context context, int id, int index) {
@@ -227,15 +249,43 @@ public class StoryReaderPageViewModel {
         }
     }
 
+    private SlideData getSlideData(StoryReaderPageState pageState) {
+        if (pageState.story() == null) return null;
+        int index = pageState.slideIndex();
+        IReaderContent story = pageState.story();
+        StoryData storyData = getStoryData(pageState);
+        if (storyData == null) return null;
+        return new SlideData(
+                storyData,
+                pageState.slideIndex(),
+                story.slideEventPayload(index)
+        );
+    }
+
+    private StoryData getStoryData(StoryReaderPageState pageState) {
+        IStatData storyStatData = pageState.story();
+        if (storyStatData == null) storyStatData = pageState.storyListItem();
+        if (storyStatData == null) return null;
+        StoryReaderImmutableState readerImmutableState = readerViewModel.readerImmutableState();
+        return StoryData.getStoryData(
+                storyStatData,
+                readerImmutableState.feed(),
+                readerImmutableState.sourceType(),
+                readerImmutableState.contentType()
+        );
+    }
+
     public void openGame(Context context, String gameInstanceId) {
         try {
+            StoryReaderPageState pageState = storyReaderPageStateObservable.getValue();
+            if (pageState.story() == null) return;
             if (core.gamesAPI().gameCanBeOpened(gameInstanceId)) {
                 core.screensManager().openScreen(
                         context,
                         new LaunchGameScreenStrategy(core, true)
                                 .data(new LaunchGameScreenData(
-                                        null,
-                                        readerViewModel.getCurrentInAppMessageData(),
+                                        readerViewModel.readerImmutableState().readerUniqueId(),
+                                        getSlideData(pageState),
                                         gameInstanceId
                                 ))
                 );
@@ -281,71 +331,76 @@ public class StoryReaderPageViewModel {
 
     }
 
+    private void clearPageTimer() {
+    }
 
     @JavascriptInterface
     public void openGame(String gameInstanceId) {
-
-        manager.openGameReaderFromGameCenter(gameInstanceId);
-        logMethod(gameInstanceId);
+        singleTimeEvents.updateValue(
+                new STETypeAndData(STEDataType.OPEN_GAME,
+                        new ContentId(gameInstanceId)
+                )
+        );
     }
 
     @JavascriptInterface
     public void setAudioManagerMode(String mode) { //common
-        manager.setAudioManagerMode(mode);
-        logMethod(mode);
+        new AudioManagerUtils(core).setAudioManagerMode(mode);
     }
 
 
     @JavascriptInterface
     public void storyShowNext() { //reader
-        manager.storyShowNext();
-        logMethod("");
+        StoryReaderPageState pageState = storyReaderPageStateObservable.getValue();
+        clearPageTimer();
+        readerViewModel.navigateToIndex(pageState.pageIndex() + 1, ShowStory.ACTION_CUSTOM);
     }
 
     @JavascriptInterface
     public void storyShowPrev() { //reader
-        manager.storyShowPrev();
-        logMethod("");
+        StoryReaderPageState pageState = storyReaderPageStateObservable.getValue();
+        clearPageTimer();
+        readerViewModel.navigateToIndex(pageState.pageIndex() - 1, ShowStory.ACTION_CUSTOM);
     }
 
     @JavascriptInterface
     public void storyShowNextSlide(long delay) { //page
         if (delay == 0) {
-            manager.changeIndex(manager.index + 1);
+            StoryReaderPageState pageState = storyReaderPageStateObservable.getValue();
+            int corIndex = correctIndex(pageState.slideIndex() + 1, pageState);
+            if (corIndex >= 0)
+                storyReaderPageStateObservable.updateValue(pageState.copy().slideIndex(corIndex));
         }
-        logMethod("" + delay);
     }
 
     @JavascriptInterface
-    public void storyShowNextSlide() { //page
-        manager.changeIndex(manager.index + 1);
-        logMethod("");
+    public void storyShowNextSlide() {
+        StoryReaderPageState pageState = storyReaderPageStateObservable.getValue();
+        int corIndex = correctIndex(pageState.slideIndex() + 1, pageState);
+        if (corIndex >= 0)
+            storyReaderPageStateObservable.updateValue(pageState.copy().slideIndex(corIndex));
     }
 
     @JavascriptInterface
     public void storyShowTextInput(String id, String data) { // page/reader?
         manager.storyShowTextInput(id, data);
-        logMethod("");
     }
 
     @JavascriptInterface
     public void storyStarted() { //page
         manager.storyStartedEvent();
         manager.pageFinished();
-        logMethod("");
     }
 
     @JavascriptInterface
     public void storyStarted(double startTime) { //page
         manager.storyStartedEvent();
         manager.pageFinished();
-        logMethod("" + startTime);
     }
 
     @JavascriptInterface
     public void storyLoaded() { //page
         manager.storyLoaded(-1);
-        logMethod("");
     }
 
     @JavascriptInterface
@@ -378,49 +433,37 @@ public class StoryReaderPageViewModel {
             boolean forceEnableStatisticV2
     ) { //page
         manager.sendStoryWidgetEvent(name, data, eventData, forceEnableStatisticV2);
-        logMethod(name + " " + data + " " + eventData + " " + forceEnableStatisticV2);
-    }
-
-    @JavascriptInterface
-    public void emptyLoaded() {
-        logMethod("");
     }
 
     @JavascriptInterface
     public void share(String id, String data) { //page
         manager.share(id, data);
-        logMethod(id + " " + data);
     }
 
 
     @JavascriptInterface
     public void disableVerticalSwipeGesture() { // page/reader
         manager.swipeVerticalGestureEnabled(false);
-        logMethod("");
     }
 
     @JavascriptInterface
     public void enableVerticalSwipeGesture() { // page/reader
         manager.swipeVerticalGestureEnabled(true);
-        logMethod("");
     }
 
     @JavascriptInterface
     public void disableBackpress() { // reader
         manager.backPressEnabled(false);
-        logMethod("");
     }
 
     @JavascriptInterface
     public void enableBackpress() { // reader
         manager.backPressEnabled(true);
-        logMethod("");
     }
 
     @JavascriptInterface
     public void storySendData(String data) { //page
         manager.storySendData(data);
-        logMethod(data);
     }
 
     @JavascriptInterface
@@ -434,7 +477,6 @@ public class StoryReaderPageViewModel {
     @JavascriptInterface
     public void closeStory(String reason) { //reader
         manager.closeStory(reason.toLowerCase());
-        logMethod(reason);
     }
 
     @JavascriptInterface
@@ -442,7 +484,6 @@ public class StoryReaderPageViewModel {
         synchronized (localDataLock) {
             String res = core.keyValueStorage().getString("story" + manager.storyId
                     + "__" + ((IASDataSettingsHolder) core.settingsAPI()).userId());
-            logMethod(res != null ? res : "");
             return res == null ? "" : res;
         }
     }
