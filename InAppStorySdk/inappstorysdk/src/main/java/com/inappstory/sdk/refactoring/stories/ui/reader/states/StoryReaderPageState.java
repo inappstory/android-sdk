@@ -9,6 +9,7 @@ public class StoryReaderPageState {
     StoriesListItemDTO storiesListItemDTO;
     int slideIndex;
     final int pageIndex;
+    private boolean currentSlideIsLoaded;
 
     public StoryReaderPageState(String storyId, int pageIndex) {
         this.storyId = storyId;

@@ -80,6 +80,13 @@ public class StoryReaderViewModel {
         );
     }
 
+    public void backPressEnabled(boolean backPressEnabled) {
+        StoryReaderState state = storyReaderStateObservable.getValue();
+        storyReaderStateObservable.updateValue(
+                state.copy().backPressEnabled(backPressEnabled)
+        );
+    }
+
     public void horizontalSwipeInProgress(boolean horizontalSwipeInProgress) {
         StoryReaderState state = storyReaderStateObservable.getValue();
         storyReaderStateObservable.updateValue(

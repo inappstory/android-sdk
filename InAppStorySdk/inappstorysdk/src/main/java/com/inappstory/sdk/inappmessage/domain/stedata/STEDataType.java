@@ -14,5 +14,9 @@ public enum STEDataType {
     RENDER_READY,
     NAVIGATE,
     UPDATE_TIMELINE,
-
+    START_SLIDE,
+    RESTART_SLIDE,
+    PAUSE_SLIDE,
+    RESUME_SLIDE,
+    STOP_SLIDE
 }

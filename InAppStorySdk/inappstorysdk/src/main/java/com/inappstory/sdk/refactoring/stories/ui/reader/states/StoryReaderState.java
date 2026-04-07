@@ -13,6 +13,7 @@ public class StoryReaderState {
     private boolean verticalSwipeIsAllowed = true;
     private boolean horizontalSwipeInProgress = false;
     private boolean verticalSwipeInProgress = false;
+    private boolean backPressEnabled = true;
 
 
     private StoryListItemCoordinates currentCoordinates = null;
@@ -23,6 +24,11 @@ public class StoryReaderState {
     private ReviewDialogState reviewDialogState = null;
     private ShareDataState shareDataState = null;
     private GoodsV1WidgetState goodsV1WidgetState = null;
+
+    public StoryReaderState backPressEnabled(boolean backPressEnabled) {
+        this.backPressEnabled = backPressEnabled;
+        return this;
+    }
 
     public StoryReaderState currentCoordinates(StoryListItemCoordinates currentCoordinates) {
         this.currentCoordinates = currentCoordinates;
@@ -94,6 +100,10 @@ public class StoryReaderState {
         return verticalSwipeInProgress;
     }
 
+    public boolean backPressEnabled() {
+        return backPressEnabled;
+    }
+
     public StoryReaderOpenState openState() {
         return openState;
     }
@@ -121,6 +131,7 @@ public class StoryReaderState {
                 .goodsV1WidgetState(goodsV1WidgetState)
                 .shareDataState(shareDataState)
                 .currentPage(currentPage)
+                .backPressEnabled(backPressEnabled)
                 .currentCoordinates(currentCoordinates)
                 .horizontalSwipeIsAllowed(horizontalSwipeIsAllowed)
                 .horizontalSwipeInProgress(horizontalSwipeInProgress)
