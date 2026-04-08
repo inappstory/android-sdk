@@ -9,6 +9,9 @@ import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.data.IInAppMessage;
 import com.inappstory.sdk.inappmessage.CloseInAppMessageCallback;
+import com.inappstory.sdk.inappmessage.InAppMessageViewController;
+import com.inappstory.sdk.inappmessage.ui.reader.InAppMessageCloseAction;
+import com.inappstory.sdk.inappmessage.ui.reader.InAppMessageOpenAction;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.inappmessage.ShowInAppMessageCallback;
 import com.inappstory.sdk.inappmessage.InAppMessageData;
@@ -155,6 +158,41 @@ public class IAMReaderViewModel implements IIAMReaderViewModel {
         );
     }
 
+
+    private InAppMessageCloseAction onCloseAction;
+    private InAppMessageOpenAction onOpenAction;
+    InAppMessageViewController controller;
+
+    @Override
+    public void openAction(InAppMessageOpenAction openAction) {
+        this.onOpenAction = openAction;
+    }
+
+    @Override
+    public void closeAction(InAppMessageCloseAction closeAction) {
+        this.onCloseAction = closeAction;
+    }
+
+    @Override
+    public void onOpenAction() {
+        if (onOpenAction != null) onOpenAction.onOpen();
+    }
+
+    @Override
+    public void onCloseAction() {
+        if (onCloseAction != null) onCloseAction.onClose();
+    }
+
+    @Override
+    public void controller(InAppMessageViewController controller) {
+        this.controller = controller;
+    }
+
+    @Override
+    public InAppMessageViewController controller() {
+        return controller;
+    }
+
     @Override
     public void clear() {
         InAppMessageData inAppMessageData = this.readerStateObservable.getValue().inAppMessageData;
@@ -162,5 +200,8 @@ public class IAMReaderViewModel implements IIAMReaderViewModel {
                 new IAMReaderState().inAppMessageData(inAppMessageData)
         );
         this.slideViewModel.clear();
+        this.onCloseAction = null;
+        this.onOpenAction = null;
+        this.controller = null;
     }
 }

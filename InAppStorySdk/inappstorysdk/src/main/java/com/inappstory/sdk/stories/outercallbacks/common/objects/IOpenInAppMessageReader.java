@@ -14,14 +14,10 @@ import com.inappstory.sdk.inappmessage.domain.reader.IAMViewController;
 public interface IOpenInAppMessageReader extends IOpenReader {
     void onOpenInFragment(
             FragmentManager fragmentManager,
-            int containerId,
-            InAppMessageScreenActions screenActions,
-            IAMViewController viewController
+            int containerId
     );
 
     void onOpenInLayout(
-            FrameLayout frameLayout,
-            InAppMessageScreenActions screenActions,
-            IAMViewController viewController
+            FrameLayout frameLayout
     );
 }

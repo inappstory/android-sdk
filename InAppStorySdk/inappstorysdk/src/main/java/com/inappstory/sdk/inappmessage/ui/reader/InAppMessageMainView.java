@@ -35,6 +35,7 @@ import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageToastAppearance
 import com.inappstory.sdk.inappmessage.ui.appearance.impl.InAppMessageUndefinedSettings;
 import com.inappstory.sdk.inappmessage.ui.widgets.IAMContainerCallback;
 import com.inappstory.sdk.inappmessage.ui.widgets.IAMContentContainer;
+import com.inappstory.sdk.inappmessage.ui.widgets.impl.BottomSheetContentContainer;
 import com.inappstory.sdk.stories.utils.Observer;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 
@@ -74,8 +75,11 @@ public class InAppMessageMainView extends FrameLayout implements Observer<IAMRea
 
     @Override
     protected void onDetachedFromWindow() {
-        if (readerViewModel != null) {
-            readerViewModel.removeSubscriber(InAppMessageMainView.this);
+        IIAMReaderViewModel viewModel = readerViewModel;
+        if (viewModel != null) {
+            viewModel.removeSubscriber(InAppMessageMainView.this);
+
+
         } else {
             InAppStoryManager.useCore(new UseIASCoreCallback() {
                 @Override
@@ -100,6 +104,7 @@ public class InAppMessageMainView extends FrameLayout implements Observer<IAMRea
         super.onAttachedToWindow();
         InAppStoryManager manager = InAppStoryManager.getInstance();
         if (readerViewModel == null || manager == null) return;
+
         if (initialized) {
             IASCore core = manager.iasCore();
             core.screensManager()
@@ -143,23 +148,13 @@ public class InAppMessageMainView extends FrameLayout implements Observer<IAMRea
     }
 
 
-    public void setOnOpenAction(InAppMessageOpenAction onOpenAction) {
-        this.onOpenAction = onOpenAction;
-    }
-
-    public void setOnCloseAction(InAppMessageCloseAction onCloseAction) {
-        this.onCloseAction = onCloseAction;
-    }
-
-    private InAppMessageCloseAction onCloseAction;
-    private InAppMessageOpenAction onOpenAction;
-
-
     private void init(Context context) {
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
                 readerViewModel = core.screensManager().iamReaderViewModel();
+                if (readerViewModel.controller() != null)
+                    readerViewModel.controller().subscribeView(InAppMessageMainView.this);
                 readerViewModel.addSubscriber(InAppMessageMainView.this);
                 IAMReaderState state = readerViewModel.getCurrentState();
                 contentIsPreloaded = state.contentIsPreloaded;
@@ -215,6 +210,7 @@ public class InAppMessageMainView extends FrameLayout implements Observer<IAMRea
     }
 
     public void hideContainer() {
+        destroyView();
         try {
             ((FrameLayout) getParent()).removeView(this);
         } catch (Exception ignored) {
@@ -273,8 +269,7 @@ public class InAppMessageMainView extends FrameLayout implements Observer<IAMRea
                 hideContainer();
                 break;
             case OPENED:
-                if (onOpenAction != null)
-                    onOpenAction.onOpen();
+                if (readerViewModel != null) readerViewModel.onOpenAction();
                 break;
         }
     }
@@ -311,20 +306,34 @@ public class InAppMessageMainView extends FrameLayout implements Observer<IAMRea
         destroyView();
     }
 
+    private void clearViewModel(IIAMReaderViewModel readerViewModel) {
+        if (readerViewModel == null) return;
+        readerViewModel.onCloseAction();
+        readerViewModel.removeSubscriber(InAppMessageMainView.this);
+        if (readerViewModel.controller() != null)
+            readerViewModel.controller().unsubscribeView(this);
+        if (contentContainer instanceof BottomSheetContentContainer) {
+            readerViewModel.slideViewModel().removeScrollSubscriber(
+                    (BottomSheetContentContainer) contentContainer
+            );
+        }
+        readerViewModel.clear();
+    }
+
     private void destroyView() {
         if (contentView != null) {
             contentView.destroyView();
         }
-        if (controller != null) controller.unsubscribeView(this);
+        if (contentContainer != null) {
+            contentContainer.uiContainerCallback(null);
+        }
         if (readerViewModel != null) {
-            readerViewModel.removeSubscriber(InAppMessageMainView.this);
-            readerViewModel.clear();
+            clearViewModel(readerViewModel);
         } else {
             InAppStoryManager.useCore(new UseIASCoreCallback() {
                 @Override
                 public void use(@NonNull IASCore core) {
-                    core.screensManager().iamReaderViewModel()
-                            .removeSubscriber(InAppMessageMainView.this);
+                    clearViewModel(core.screensManager().iamReaderViewModel());
                 }
             });
         }
@@ -335,11 +344,6 @@ public class InAppMessageMainView extends FrameLayout implements Observer<IAMRea
                         .unsubscribeScreen(InAppMessageMainView.this);
             }
         });
-        try {
-            if (onCloseAction != null) onCloseAction.onClose();
-        } catch (Exception e) {
-
-        }
         readerViewModel = null;
     }
 

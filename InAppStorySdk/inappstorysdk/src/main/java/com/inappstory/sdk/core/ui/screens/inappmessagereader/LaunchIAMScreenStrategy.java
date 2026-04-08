@@ -37,10 +37,13 @@ import com.inappstory.sdk.inappmessage.InAppMessageScreenActions;
 import com.inappstory.sdk.inappmessage.InAppMessageViewController;
 import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderState;
 import com.inappstory.sdk.inappmessage.domain.reader.IAMViewController;
+import com.inappstory.sdk.inappmessage.domain.reader.IIAMReaderViewModel;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageAppearance;
 import com.inappstory.sdk.inappmessage.InAppMessageOpenSettings;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageUndefinedAppearance;
+import com.inappstory.sdk.inappmessage.ui.reader.InAppMessageCloseAction;
 import com.inappstory.sdk.inappmessage.ui.reader.InAppMessageMainView;
+import com.inappstory.sdk.inappmessage.ui.reader.InAppMessageOpenAction;
 import com.inappstory.sdk.stories.api.models.CachedSessionData;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenInAppMessageReader;
@@ -442,7 +445,8 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
             currentScreenHolder.endLaunchProcess();
             return;
         }
-        core.screensManager().iamReaderViewModel().initState(
+        IIAMReaderViewModel readerViewModel = core.screensManager().iamReaderViewModel();
+        readerViewModel.initState(
                 new IAMReaderState()
                         .cancellationTokenUID(cancellationToken != null ? cancellationToken.getUniqueId() : null)
                         .sourceType(sourceType)
@@ -454,6 +458,21 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
                         .showOnlyIfLoaded(inAppMessageOpenSettings.showOnlyIfLoaded())
                         .appearance(appearance)
         );
+        readerViewModel.controller(iamViewController);
+        readerViewModel.openAction(new InAppMessageOpenAction() {
+            @Override
+            public void onOpen() {
+                if (inAppMessageScreenActions != null)
+                    inAppMessageScreenActions.readerIsOpened();
+            }
+        });
+        readerViewModel.closeAction(new InAppMessageCloseAction() {
+            @Override
+            public void onClose() {
+                if (inAppMessageScreenActions != null)
+                    inAppMessageScreenActions.readerIsClosed();
+            }
+        });
         saveIAMOpened(inAppMessage.id());
         currentScreenHolder.endLaunchProcess();
         new Handler(Looper.getMainLooper()).post(new Runnable() {
@@ -462,15 +481,11 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
                 if (parentContainerFM != null) {
                     ((IOpenInAppMessageReader) openReader).onOpenInFragment(
                             parentContainerFM,
-                            containerId,
-                            inAppMessageScreenActions,
-                            iamViewController
+                            containerId
                     );
                 } else if (frameLayout != null) {
                     ((IOpenInAppMessageReader) openReader).onOpenInLayout(
-                            frameLayout,
-                            inAppMessageScreenActions,
-                            iamViewController
+                            frameLayout
                     );
                 }
             }
