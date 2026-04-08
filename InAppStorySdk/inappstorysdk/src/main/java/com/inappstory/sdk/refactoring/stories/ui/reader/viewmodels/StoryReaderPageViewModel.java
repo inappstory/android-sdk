@@ -2,6 +2,7 @@ package com.inappstory.sdk.refactoring.stories.ui.reader.viewmodels;
 
 import android.content.Context;
 import android.media.AudioManager;
+import android.util.Log;
 import android.webkit.JavascriptInterface;
 
 import androidx.annotation.NonNull;
@@ -36,6 +37,7 @@ import com.inappstory.sdk.refactoring.stories.ui.reader.states.StoryReaderImmuta
 import com.inappstory.sdk.refactoring.stories.ui.reader.states.StoryReaderPageLoaderState;
 import com.inappstory.sdk.refactoring.stories.ui.reader.states.StoryReaderPageLoaderType;
 import com.inappstory.sdk.refactoring.stories.ui.reader.states.StoryReaderPageState;
+import com.inappstory.sdk.refactoring.stories.ui.reader.states.StoryReaderPageTimelineState;
 import com.inappstory.sdk.refactoring.stories.ui.reader.states.StoryReaderState;
 import com.inappstory.sdk.stories.api.models.ContentId;
 import com.inappstory.sdk.stories.api.models.ContentIdWithIndex;
@@ -46,7 +48,9 @@ import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryWidgetCallback;
+import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
+import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.StoriesViewManager;
 import com.inappstory.sdk.stories.utils.AudioModes;
 import com.inappstory.sdk.stories.utils.SingleTimeEvent;
 import com.inappstory.sdk.utils.AudioManagerUtils;
@@ -60,6 +64,10 @@ import java.util.Objects;
 public class StoryReaderPageViewModel {
     private final IASCore core;
     private final StoryReaderViewModel readerViewModel;
+    private final StoryReaderPageTimelineManager timelineManager =
+            new StoryReaderPageTimelineManager(this);
+    private final StoryReaderPageTimerManager timerManager;
+
 
     private final Observable<StoryReaderPageLoaderState> storyReaderPageLoaderStateObservable =
             new Observable<>(new StoryReaderPageLoaderState());
@@ -73,6 +81,10 @@ public class StoryReaderPageViewModel {
 
     private final Observable<StoryReaderPageState> storyReaderPageStateObservable;
 
+    public StoryReaderPageState storyReaderPageState() {
+        return storyReaderPageStateObservable.getValue();
+    }
+
     private final Observable<StoryReaderButtonsState> storyReaderPageButtonsStateObservable =
             new Observable<>(new StoryReaderButtonsState());
 
@@ -84,6 +96,7 @@ public class StoryReaderPageViewModel {
     ) {
         this.core = core;
         this.readerViewModel = readerViewModel;
+        timerManager = new StoryReaderPageTimerManager(core, this);
         storyReaderPageStateObservable =
                 new Observable<>(new StoryReaderPageState(storyId, pageIndex));
     }
@@ -110,6 +123,14 @@ public class StoryReaderPageViewModel {
 
     public void removeButtonsStateSubscriber(Observer<StoryReaderButtonsState> observer) {
         storyReaderPageButtonsStateObservable.unsubscribe(observer);
+    }
+
+    public void addTimelineStateSubscriber(Observer<StoryReaderPageTimelineState> observer) {
+        timelineManager.addTimelineStateSubscriber(observer);
+    }
+
+    public void removeTimelineStateSubscriber(Observer<StoryReaderPageTimelineState> observer) {
+        timelineManager.removeTimelineStateSubscriber(observer);
     }
 
     public void updateLatestClickCoordinates(float coordinate) {
@@ -155,79 +176,10 @@ public class StoryReaderPageViewModel {
 
     }
 
-    @JavascriptInterface
-    public void storyClick(String payload) { //page
-        int coordinate = getClickCoordinates();
-        if (payload == null || payload.isEmpty() || payload.equals("test")) {
-            navigate(coordinate, false);
-        } else if (payload.equals("forbidden")) {
-            navigate(coordinate, true);
-        } else {
-            handleClickPayload(payload);
-        }
+    public void nextSlideAuto() {
+
     }
 
-    @JavascriptInterface
-    public void updateTimeline(String data) { //page
-        if (data != null) {
-            UpdateTimelineData updateTimelineData = JsonParser.fromJson(data, UpdateTimelineData.class);
-            manager.updateTimeline(updateTimelineData);
-        }
-        logMethod(data);
-    }
-
-    @JavascriptInterface
-    public void writeToClipboard(String payload) { //common
-        ClipboardUtils.writeToClipboard(payload, core.appContext());
-    }
-
-    @JavascriptInterface
-    public void vibrate(int[] vibratePattern) {
-        core.vibrateUtils().vibrate(vibratePattern);
-    }
-
-
-    @JavascriptInterface
-    public void storyFreezeUI() {
-        singleTimeEvents.updateValue(
-                new STETypeAndData(
-                        STEDataType.FREEZE_UI,
-                        null
-                )
-        );
-    }
-
-
-    @JavascriptInterface
-    public void storyRenderReady() {
-        singleTimeEvents.updateValue(
-                new STETypeAndData(
-                        STEDataType.RENDER_READY,
-                        null
-                )
-        );
-    }
-
-
-    @JavascriptInterface
-    public void storyUnfreezeUI() { //reader
-        singleTimeEvents.updateValue(
-                new STETypeAndData(
-                        STEDataType.UNFREEZE_UI,
-                        null
-                )
-        );
-    }
-
-    @JavascriptInterface
-    public void storyShowSlide(int index) { //page
-        StoryReaderPageState pageState = storyReaderPageStateObservable.getValue();
-        if (pageState.slideIndex() != index) {
-            int corIndex = correctIndex(index, pageState);
-            if (corIndex >= 0)
-                storyReaderPageStateObservable.updateValue(pageState.copy().slideIndex(corIndex));
-        }
-    }
 
     private int correctIndex(int index, StoryReaderPageState pageState) {
         IStatData storyStatData = pageState.story();
@@ -285,7 +237,7 @@ public class StoryReaderPageViewModel {
 
     public void openGame(Context context, String gameInstanceId) {
         try {
-            StoryReaderPageState pageState = storyReaderPageStateObservable.getValue();
+            StoryReaderPageState pageState = storyReaderPageState();
             if (pageState.story() == null) return;
             if (core.gamesAPI().gameCanBeOpened(gameInstanceId)) {
                 core.screensManager().openScreen(
@@ -303,120 +255,55 @@ public class StoryReaderPageViewModel {
         }
     }
 
-    @JavascriptInterface
-    public void showSingleStory(int id, int index) {
 
-        StoryReaderPageState pageState = storyReaderPageStateObservable.getValue();
-        if (!Objects.equals(pageState.storyId(), Integer.toString(id))) {
-            singleTimeEvents.updateValue(
-                    new STETypeAndData(STEDataType.OPEN_STORY,
-                            new ContentIdWithIndex(id, index)
-                    )
+    private void pauseTimers() {
+        timerManager.pauseSlideTimer();
+        timelineManager.stopTimer();
+    }
+
+
+    private void clearTimer() {
+        timelineManager.clearTimer();
+    }
+
+    public void updateTimeline(final UpdateTimelineData data) {
+        StoryReaderPageState pageState = storyReaderPageState();
+        if (pageState.slideIndex() != data.slideIndex) return;
+        if (data.showError) {
+            slideLoadError(data.slideIndex);
+            pauseTimers();
+            clearTimer();
+        } else if (data.showLoader) {
+            storyReaderPageLoaderStateObservable.updateValue(
+                    new StoryReaderPageLoaderState()
+                            .loaderType(StoryReaderPageLoaderType.LOADING)
             );
-        } else if (pageState.slideIndex() != index) {
-            storyReaderPageStateObservable.updateValue(pageState.copy().slideIndex(index));
+        } else {
+            storyReaderPageLoaderStateObservable.updateValue(
+                    new StoryReaderPageLoaderState()
+                            .loaderType(StoryReaderPageLoaderType.HIDDEN)
+            );
+        }
+        if (data.action == null) return;
+        if (data.action.equals("start")) {
+            timerManager.startSlideTimer(data.duration, data.currentTime);
+            timelineManager.startTimer(data.currentTime, data.slideIndex, data.duration);
+        } else if (data.action.equals("pause")) {
+            pauseTimers();
+        } else if (data.action.equals("stop")) {
+            pauseTimers();
+        } else if (data.action.equals("before_start")) {
+            timelineManager.setCurrentIndex(data.slideIndex);
         }
     }
 
-    @JavascriptInterface
-    public void sendApiRequest(String data) {
-        new JsApiClient(
-                core,
-                core.appContext(),
-                core.projectSettingsAPI().host()
-        ).sendApiRequest(data, new JsApiResponseCallback() {
-            @Override
-            public void onJsApiResponse(String result, String cb) {
-                singleTimeEvents.updateValue(
-                        new STETypeAndData(STEDataType.JS_SEND_API_RESPONSE,
-                                new JsSendApiRequestResponse()
-                                        .cb(cb)
-                                        .result(result)
-                        )
-                );
-            }
-        });
-
-    }
 
     private void clearPageTimer() {
-    }
-
-    @JavascriptInterface
-    public void openGame(String gameInstanceId) {
-        singleTimeEvents.updateValue(
-                new STETypeAndData(STEDataType.OPEN_GAME,
-                        new ContentId(gameInstanceId)
-                )
-        );
-    }
-
-    @JavascriptInterface
-    public void setAudioManagerMode(String mode) { //common
-        new AudioManagerUtils(core).setAudioManagerMode(mode);
+        timerManager.setTimerDuration(0);
+        timelineManager.stopTimer();
     }
 
 
-    @JavascriptInterface
-    public void storyShowNext() { //reader
-        StoryReaderPageState pageState = storyReaderPageStateObservable.getValue();
-        clearPageTimer();
-        readerViewModel.navigateToIndex(pageState.pageIndex() + 1, ShowStory.ACTION_CUSTOM);
-    }
-
-    @JavascriptInterface
-    public void storyShowPrev() { //reader
-        StoryReaderPageState pageState = storyReaderPageStateObservable.getValue();
-        clearPageTimer();
-        readerViewModel.navigateToIndex(pageState.pageIndex() - 1, ShowStory.ACTION_CUSTOM);
-    }
-
-    @JavascriptInterface
-    public void storyShowNextSlide(long delay) { //page
-        if (delay == 0) {
-            StoryReaderPageState pageState = storyReaderPageStateObservable.getValue();
-            int corIndex = correctIndex(pageState.slideIndex() + 1, pageState);
-            if (corIndex >= 0)
-                storyReaderPageStateObservable.updateValue(pageState.copy().slideIndex(corIndex));
-        }
-    }
-
-    @JavascriptInterface
-    public void storyShowNextSlide() {
-        StoryReaderPageState pageState = storyReaderPageStateObservable.getValue();
-        int corIndex = correctIndex(pageState.slideIndex() + 1, pageState);
-        if (corIndex >= 0)
-            storyReaderPageStateObservable.updateValue(pageState.copy().slideIndex(corIndex));
-    }
-
-    @JavascriptInterface
-    public void storyShowTextInput(String id, String data) { // page/reader?
-        manager.storyShowTextInput(id, data);
-    }
-
-    @JavascriptInterface
-    public void storyStarted() { //page
-        manager.storyStartedEvent();
-    }
-
-    @JavascriptInterface
-    public void storyStarted(double startTime) { //page
-        manager.storyStartedEvent();
-    }
-
-    @JavascriptInterface
-    public void storyLoaded() { //page
-        slideLoaded(null);
-    }
-
-    @JavascriptInterface
-    public void storyLoaded(String data) { //page
-        if (data != null) {
-            slideLoaded(JsonParser.fromJson(data, StoryLoadedData.class));
-        } else {
-            slideLoaded(null);
-        }
-    }
 
     public void pauseSlide() {
         singleTimeEvents.updateValue(
@@ -468,7 +355,7 @@ public class StoryReaderPageViewModel {
     private boolean currentSlideIsLoaded = false;
 
     private void slideLoaded(StoryLoadedData loadedData) {
-        StoryReaderPageState pageState = storyReaderPageStateObservable.getValue();
+        StoryReaderPageState pageState = storyReaderPageState();
         int currentIndex = pageState.slideIndex();
         if (loadedData == null || currentIndex == loadedData.index) {
             currentSlideIsLoaded = true;
@@ -485,11 +372,211 @@ public class StoryReaderPageViewModel {
         }
     }
 
+
+    private void slideLoadError(int index) {
+        storyReaderPageLoaderStateObservable.updateValue(
+                new StoryReaderPageLoaderState().loaderType(StoryReaderPageLoaderType.REFRESH)
+        );
+        timelineManager.setCurrentIndex(index);
+    }
+
+    private void sendStoryDataToServer(String storyId, String data) {
+        core.network().enqueue(
+                core.network().getApi().sendStoryData(
+                        storyId,
+                        data,
+                        readerViewModel.readerImmutableState().sessionParameters().sessionId()
+                ),
+                new NetworkCallback<Response>() {
+                    @Override
+                    public void onSuccess(Response response) {
+
+                    }
+
+                    @Override
+                    public Type getType() {
+                        return null;
+                    }
+                }
+        );
+    }
+
+
+    @JavascriptInterface
+    public void storyClick(String payload) { //page
+        int coordinate = getClickCoordinates();
+        if (payload == null || payload.isEmpty() || payload.equals("test")) {
+            navigate(coordinate, false);
+        } else if (payload.equals("forbidden")) {
+            navigate(coordinate, true);
+        } else {
+            handleClickPayload(payload);
+        }
+    }
+
+    @JavascriptInterface
+    public void updateTimeline(String data) { //page
+        if (data != null) {
+            UpdateTimelineData updateTimelineData = JsonParser.fromJson(data, UpdateTimelineData.class);
+            updateTimeline(updateTimelineData);
+        }
+    }
+
+    @JavascriptInterface
+    public void writeToClipboard(String payload) { //common
+        ClipboardUtils.writeToClipboard(payload, core.appContext());
+    }
+
+    @JavascriptInterface
+    public void vibrate(int[] vibratePattern) {
+        core.vibrateUtils().vibrate(vibratePattern);
+    }
+
+
+    @JavascriptInterface
+    public void storyFreezeUI() {
+        singleTimeEvents.updateValue(
+                new STETypeAndData(
+                        STEDataType.FREEZE_UI,
+                        null
+                )
+        );
+    }
+
+
+    @JavascriptInterface
+    public void storyRenderReady() {
+        singleTimeEvents.updateValue(
+                new STETypeAndData(
+                        STEDataType.RENDER_READY,
+                        null
+                )
+        );
+    }
+
+
+    @JavascriptInterface
+    public void storyUnfreezeUI() { //reader
+        singleTimeEvents.updateValue(
+                new STETypeAndData(
+                        STEDataType.UNFREEZE_UI,
+                        null
+                )
+        );
+    }
+
+    @JavascriptInterface
+    public void storyShowSlide(int index) { //page
+        StoryReaderPageState pageState = storyReaderPageState();
+        if (pageState.slideIndex() != index) {
+            int corIndex = correctIndex(index, pageState);
+            if (corIndex >= 0)
+                storyReaderPageStateObservable.updateValue(pageState.copy().slideIndex(corIndex));
+        }
+    }
+
+    @JavascriptInterface
+    public void showSingleStory(int id, int index) {
+
+        StoryReaderPageState pageState = storyReaderPageState();
+        if (!Objects.equals(pageState.storyId(), Integer.toString(id))) {
+            singleTimeEvents.updateValue(
+                    new STETypeAndData(STEDataType.OPEN_STORY,
+                            new ContentIdWithIndex(id, index)
+                    )
+            );
+        } else if (pageState.slideIndex() != index) {
+            storyReaderPageStateObservable.updateValue(pageState.copy().slideIndex(index));
+        }
+    }
+
+    @JavascriptInterface
+    public void sendApiRequest(String data) {
+        new JsApiClient(
+                core,
+                core.appContext(),
+                core.projectSettingsAPI().host()
+        ).sendApiRequest(data, new JsApiResponseCallback() {
+            @Override
+            public void onJsApiResponse(String result, String cb) {
+                singleTimeEvents.updateValue(
+                        new STETypeAndData(STEDataType.JS_SEND_API_RESPONSE,
+                                new JsSendApiRequestResponse()
+                                        .cb(cb)
+                                        .result(result)
+                        )
+                );
+            }
+        });
+
+    }
+
+    @JavascriptInterface
+    public void openGame(String gameInstanceId) {
+        singleTimeEvents.updateValue(
+                new STETypeAndData(STEDataType.OPEN_GAME,
+                        new ContentId(gameInstanceId)
+                )
+        );
+    }
+
+    @JavascriptInterface
+    public void setAudioManagerMode(String mode) { //common
+        new AudioManagerUtils(core).setAudioManagerMode(mode);
+    }
+
+
+    @JavascriptInterface
+    public void storyShowNext() { //reader
+        StoryReaderPageState pageState = storyReaderPageState();
+        clearPageTimer();
+        readerViewModel.navigateToIndex(pageState.pageIndex() + 1, ShowStory.ACTION_CUSTOM);
+    }
+
+    @JavascriptInterface
+    public void storyShowPrev() { //reader
+        StoryReaderPageState pageState = storyReaderPageState();
+        clearPageTimer();
+        readerViewModel.navigateToIndex(pageState.pageIndex() - 1, ShowStory.ACTION_CUSTOM);
+    }
+
+    @JavascriptInterface
+    public void storyShowNextSlide(long delay) { //page
+        if (delay == 0) {
+            StoryReaderPageState pageState = storyReaderPageState();
+            int corIndex = correctIndex(pageState.slideIndex() + 1, pageState);
+            if (corIndex >= 0)
+                storyReaderPageStateObservable.updateValue(pageState.copy().slideIndex(corIndex));
+        }
+    }
+
+    @JavascriptInterface
+    public void storyShowNextSlide() {
+        StoryReaderPageState pageState = storyReaderPageState();
+        int corIndex = correctIndex(pageState.slideIndex() + 1, pageState);
+        if (corIndex >= 0)
+            storyReaderPageStateObservable.updateValue(pageState.copy().slideIndex(corIndex));
+    }
+
+    @JavascriptInterface
+    public void storyLoaded() { //page
+        slideLoaded(null);
+    }
+
+    @JavascriptInterface
+    public void storyLoaded(String data) { //page
+        if (data != null) {
+            slideLoaded(JsonParser.fromJson(data, StoryLoadedData.class));
+        } else {
+            slideLoaded(null);
+        }
+    }
+
     @JavascriptInterface
     public void storyLoadingFailed(String data) { //page
         if (data != null) {
             StoryLoadedData loadedData = JsonParser.fromJson(data, StoryLoadedData.class);
-            StoryReaderPageState pageState = storyReaderPageStateObservable.getValue();
+            StoryReaderPageState pageState = storyReaderPageState();
             if (
                     Objects.equals(pageState.storyId(), Integer.toString(loadedData.id)) &&
                             pageState.slideIndex() == loadedData.index
@@ -497,10 +584,6 @@ public class StoryReaderPageViewModel {
                 slideLoadError(pageState.slideIndex());
             }
         }
-    }
-
-    private void slideLoadError(int index) {
-
     }
 
     @JavascriptInterface
@@ -518,7 +601,7 @@ public class StoryReaderPageViewModel {
                     forceEnableStatisticV2
             );
         if (eventData != null) {
-            StoryReaderPageState pageState = storyReaderPageStateObservable.getValue();
+            StoryReaderPageState pageState = storyReaderPageState();
             if (pageState.story() == null) return;
             final Map<String, String> widgetEventMap = JsonParser.toMap(eventData);
             if (widgetEventMap != null)
@@ -538,10 +621,6 @@ public class StoryReaderPageViewModel {
         }
     }
 
-    @JavascriptInterface
-    public void share(String id, String data) { //page
-        manager.share(id, data);
-    }
 
 
     @JavascriptInterface
@@ -565,13 +644,8 @@ public class StoryReaderPageViewModel {
     }
 
     @JavascriptInterface
-    public void storySendData(String data) { //page
-        manager.storySendData(data);
-    }
-
-    @JavascriptInterface
     public void storySetLocalData(String data, boolean sendToServer) { //page
-        StoryReaderPageState pageState = storyReaderPageStateObservable.getValue();
+        StoryReaderPageState pageState = storyReaderPageState();
         String storyId = pageState.storyId();
         synchronized (localDataLock) {
             core.keyValueStorage().saveString("story" + storyId + "__" +
@@ -581,35 +655,13 @@ public class StoryReaderPageViewModel {
         if (core.statistic().storiesV1().softDisabled()) return;
 
         if (sendToServer) {
-            core.network().enqueue(
-                    core.network().getApi().sendStoryData(
-                            storyId,
-                            data,
-                            ((IASDataSettingsHolder)core.settingsAPI()).sessionIdOrEmpty()
-                    ),
-                    new NetworkCallback<Response>() {
-                        @Override
-                        public void onSuccess(Response response) {
-
-                        }
-
-                        @Override
-                        public Type getType() {
-                            return null;
-                        }
-                    }
-            );
+            sendStoryDataToServer(storyId, data);
         }
     }
 
     @JavascriptInterface
-    public void closeStory(String reason) { //reader
-        manager.closeStory(reason.toLowerCase());
-    }
-
-    @JavascriptInterface
     public String storyGetLocalData() {  //page
-        StoryReaderPageState pageState = storyReaderPageStateObservable.getValue();
+        StoryReaderPageState pageState = storyReaderPageState();
         synchronized (localDataLock) {
             String res = core.keyValueStorage().getString("story" + pageState.storyId()
                     + "__" + ((IASDataSettingsHolder) core.settingsAPI()).userId());
@@ -621,21 +673,68 @@ public class StoryReaderPageViewModel {
 
     @JavascriptInterface
     public void shareSlideScreenshotCb(String shareId, boolean result) {  //page
-        manager.screenshotShareCallback(shareId);
+        //TODO("Not implemented")
     }
 
     @JavascriptInterface
     public void productCartUpdate(String productCartData, String callbacks) { //page?
-        manager.productCartUpdate(productCartData, callbacks);
+        //TODO("Not implemented")
     }
 
     @JavascriptInterface
     public void productCartClicked() {
-        manager.productCartClicked();
+        //TODO("Not implemented")
     } //page?
 
     @JavascriptInterface
     public void productCartGetState(String callbacks) {
-        manager.productCartGetState(callbacks);
+        //TODO("Not implemented")
+    }
+
+    @JavascriptInterface
+    public void share(String id, String data) { //page
+        //TODO("Not implemented")
+    }
+
+    @JavascriptInterface
+    public void storyShowTextInput(String id, String data) { // page/reader?
+        //TODO("Not implemented")
+    }
+
+
+    @JavascriptInterface
+    public void closeStory(String reason) {
+        String reasonLow = reason.toLowerCase();
+        int closeStoryAction = CloseStory.CLICK;
+        switch (reasonLow) {
+            case "custom":
+                closeStoryAction = CloseStory.CUSTOM;
+                break;
+            case "swipe":
+                closeStoryAction = CloseStory.SWIPE;
+                break;
+            case "auto":
+                closeStoryAction = CloseStory.AUTO;
+                break;
+        }
+        core.screensManager().getStoryScreenHolder().closeScreenWithAction(closeStoryAction);
+    }
+
+    @JavascriptInterface
+    public void storySendData(String data) {
+        if (core.statistic().storiesV1().softDisabled()) return;
+        StoryReaderPageState pageState = storyReaderPageState();
+        String storyId = pageState.storyId();
+        sendStoryDataToServer(storyId, data);
+    }
+
+    @JavascriptInterface
+    public void storyStarted() { //page
+        manager.storyStartedEvent();
+    }
+
+    @JavascriptInterface
+    public void storyStarted(double startTime) { //page
+        manager.storyStartedEvent();
     }
 }

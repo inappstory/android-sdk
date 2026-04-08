@@ -102,7 +102,7 @@ public class StoryReaderViewModel {
         );
     }
 
-    public void closeReader() {
+    public void closeReader(String reason) {
         StoryReaderState state = storyReaderStateObservable.getValue();
         if (state.openState() == StoryReaderOpenState.OPENED) {
             storyReaderStateObservable.updateValue(
@@ -114,7 +114,7 @@ public class StoryReaderViewModel {
     public void forceCloseReader() {
         StoryReaderState state = storyReaderStateObservable.getValue();
         storyReaderStateObservable.updateValue(
-                state.copy().openState(StoryReaderOpenState.CLOSING)
+                state.copy().openState(StoryReaderOpenState.FORCE_CLOSING)
         );
     }
 

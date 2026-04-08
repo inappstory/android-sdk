@@ -54,7 +54,6 @@ public class StoryTimeline extends View {
     private StoryTimelineState state = null;
     private Paint fillPaint = null;
     private Paint backgroundPaint = null;
-    private int timelineWidth = getWidth();
 
 
     public StoryTimelineManager getTimelineManager() {
@@ -117,11 +116,6 @@ public class StoryTimeline extends View {
         }
         invalidate();
     }
-
-    private final AtomicInteger bgColor = new AtomicInteger(Color.parseColor(StorySlideTimeline.DEFAULT_TIMELINE_BACKGROUND_COLOR));
-    private final AtomicInteger fgColor = new AtomicInteger(Color.parseColor(StorySlideTimeline.DEFAULT_TIMELINE_FOREGROUND_COLOR));
-    private final AtomicBoolean bgColorChanged = new AtomicBoolean(false);
-    private final AtomicBoolean fgColorChanged = new AtomicBoolean(false);
 
     private void drawSegments(Canvas canvas) {
         float segmentWidth = (getWidth() - parameters.gapWidth * (state.slidesCount - 1)) / state.slidesCount;

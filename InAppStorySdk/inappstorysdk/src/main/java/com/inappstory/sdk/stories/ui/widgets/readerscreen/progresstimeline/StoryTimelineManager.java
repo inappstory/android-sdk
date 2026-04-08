@@ -30,21 +30,6 @@ public class StoryTimelineManager {
         this.currentIndex = currentIndex;
         this.timerStart = timerStart;
         this.timerDuration = timerDuration;
-        /*Runnable hostVisibility = new Runnable() {
-            @Override
-            public void run() {
-                if (slidesCount <= 1 && StoryTimelineManager.this.timerDuration == 0)
-                    host.setVisibility(View.INVISIBLE);
-                else
-                    host.setVisibility(View.VISIBLE);
-            }
-        };
-        if (Looper.myLooper() == Looper.getMainLooper()) {
-            hostVisibility.run();
-        } else {
-            host.post(hostVisibility);
-        }*/
-
         this.timerStartTimestamp = System.currentTimeMillis();
         this.isActive = true;
         scheduledFuture = executorService.scheduleAtFixedRate(
@@ -121,7 +106,7 @@ public class StoryTimelineManager {
         }
     }
 
-    public void setProgress(final float progress) {
+    private void setProgress(final float progress) {
         StoryTimeline localHost = host;
         if (localHost != null) {
             localHost.post(new Runnable() {
