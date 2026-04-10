@@ -4,27 +4,24 @@ import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
-import android.webkit.WebView;
-import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.view.ViewCompat;
 
-import com.inappstory.sdk.InAppStoryManager;
-import com.inappstory.sdk.LoggerTags;
-import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.refactoring.shared.ui.IASWebView;
 import com.inappstory.sdk.refactoring.stories.ui.reader.viewmodels.StoryReaderPageViewModel;
-import com.inappstory.sdk.stories.ui.widgets.readerscreen.webview.StoriesWebView;
 import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.utils.StringsUtils;
 
 public class StoryReaderPageContent extends IASWebView implements IStoriesContentView {
 
-    private StoryReaderPageViewModel pageViewModel;
+    private StoryReaderPageViewModel viewModel;
+
+    public void viewModel(StoryReaderPageViewModel viewModel) {
+        this.viewModel = viewModel;
+    }
 
     public void touchIsLocked(boolean touchIsLocked) {
         this.touchIsLocked = touchIsLocked;
@@ -45,7 +42,7 @@ public class StoryReaderPageContent extends IASWebView implements IStoriesConten
                             Sizes.dpToPxExt(400, getContext()));
                     coordinate = sz - coordinate;
                 }
-                if (pageViewModel != null) pageViewModel.updateLatestClickCoordinates(coordinate);
+                if (viewModel != null) viewModel.updateLatestClickCoordinates(coordinate);
                 break;
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_CANCEL:

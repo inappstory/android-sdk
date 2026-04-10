@@ -1,9 +1,10 @@
-package com.inappstory.sdk.stories.api.models;
+package com.inappstory.sdk.refactoring.core.utils.stedata;
 
-import com.inappstory.sdk.inappmessage.domain.stedata.STEData;
+import com.inappstory.sdk.refactoring.core.utils.observers.ISTEData;
+
 import java.io.Serializable;
 
-public class ContentIdWithIndex implements Serializable, STEData {
+public class ContentIdWithIndex implements Serializable, ISTEData {
     private final int id;
 
     public int id() {

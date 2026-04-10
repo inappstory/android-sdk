@@ -374,7 +374,7 @@ public class StoriesActivity extends IASActivity implements BaseStoryScreen, Sho
         boolean draggable = appearanceSettings == null ||
                 appearanceSettings.csIsDraggable();
         if (draggableFrame != null)
-            draggableFrame.dragIsDisabled(draggable && disable);
+            draggableFrame.dragIsDisabled(!draggable && disable);
     }
 
     @Override

@@ -392,7 +392,7 @@ public class StoriesTabletActivity extends IASActivity implements BaseStoryScree
         boolean draggable = appearanceSettings == null ||
                 appearanceSettings.csIsDraggable();
         if (draggableFrame != null)
-            draggableFrame.dragIsDisabled(draggable && disable);
+            draggableFrame.dragIsDisabled(!draggable && disable);
     }
 
     @Override

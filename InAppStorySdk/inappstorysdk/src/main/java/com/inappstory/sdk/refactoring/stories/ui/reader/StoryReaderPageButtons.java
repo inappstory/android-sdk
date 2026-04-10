@@ -47,6 +47,7 @@ public class StoryReaderPageButtons extends LinearLayout implements Observer<Sto
 
     public void viewModel(StoryReaderPageViewModel viewModel) {
         this.viewModel = viewModel;
+        viewModel.addButtonsStateSubscriber(this);
     }
 
     StoryReaderPageViewModel viewModel;

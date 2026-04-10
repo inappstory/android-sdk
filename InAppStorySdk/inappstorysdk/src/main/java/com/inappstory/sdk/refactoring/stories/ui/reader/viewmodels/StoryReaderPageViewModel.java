@@ -1,8 +1,6 @@
 package com.inappstory.sdk.refactoring.stories.ui.reader.viewmodels;
 
 import android.content.Context;
-import android.media.AudioManager;
-import android.util.Log;
 import android.webkit.JavascriptInterface;
 
 import androidx.annotation.NonNull;
@@ -18,11 +16,6 @@ import com.inappstory.sdk.core.data.IReaderContent;
 import com.inappstory.sdk.core.data.IStatData;
 import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenData;
 import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenStrategy;
-import com.inappstory.sdk.inappmessage.domain.reader.IIAMReaderViewModel;
-import com.inappstory.sdk.inappmessage.domain.stedata.CallToActionData;
-import com.inappstory.sdk.inappmessage.domain.stedata.JsSendApiRequestData;
-import com.inappstory.sdk.inappmessage.domain.stedata.STEDataType;
-import com.inappstory.sdk.inappmessage.domain.stedata.STETypeAndData;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.network.jsapiclient.JsApiClient;
@@ -30,18 +23,19 @@ import com.inappstory.sdk.network.jsapiclient.JsApiResponseCallback;
 import com.inappstory.sdk.network.models.Response;
 import com.inappstory.sdk.refactoring.core.utils.observers.Observable;
 import com.inappstory.sdk.refactoring.core.utils.observers.Observer;
+import com.inappstory.sdk.refactoring.core.utils.observers.STETypeAndData;
+import com.inappstory.sdk.refactoring.core.utils.observers.SingleTimeEvent;
+import com.inappstory.sdk.refactoring.core.utils.stedata.ContentId;
+import com.inappstory.sdk.refactoring.core.utils.stedata.ContentIdWithIndex;
 import com.inappstory.sdk.refactoring.stories.ui.reader.singletimeevents.JsSendApiRequestResponse;
 import com.inappstory.sdk.refactoring.stories.ui.reader.singletimeevents.StartSlide;
+import com.inappstory.sdk.refactoring.stories.ui.reader.singletimeevents.StoriesSTEDataType;
 import com.inappstory.sdk.refactoring.stories.ui.reader.states.StoryReaderButtonsState;
 import com.inappstory.sdk.refactoring.stories.ui.reader.states.StoryReaderImmutableState;
 import com.inappstory.sdk.refactoring.stories.ui.reader.states.StoryReaderPageLoaderState;
 import com.inappstory.sdk.refactoring.stories.ui.reader.states.StoryReaderPageLoaderType;
 import com.inappstory.sdk.refactoring.stories.ui.reader.states.StoryReaderPageState;
 import com.inappstory.sdk.refactoring.stories.ui.reader.states.StoryReaderPageTimelineState;
-import com.inappstory.sdk.refactoring.stories.ui.reader.states.StoryReaderState;
-import com.inappstory.sdk.stories.api.models.ContentId;
-import com.inappstory.sdk.stories.api.models.ContentIdWithIndex;
-import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.StoryLoadedData;
 import com.inappstory.sdk.stories.api.models.UpdateTimelineData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
@@ -50,9 +44,6 @@ import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryWidgetCallback;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
-import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.StoriesViewManager;
-import com.inappstory.sdk.stories.utils.AudioModes;
-import com.inappstory.sdk.stories.utils.SingleTimeEvent;
 import com.inappstory.sdk.utils.AudioManagerUtils;
 import com.inappstory.sdk.utils.ClipboardUtils;
 import com.inappstory.sdk.utils.StringsUtils;
@@ -80,6 +71,9 @@ public class StoryReaderPageViewModel {
             new SingleTimeEvent<>();
 
     private final Observable<StoryReaderPageState> storyReaderPageStateObservable;
+
+    private final Observable<Boolean> storyReaderPageCloseObservable =
+            new Observable<>(true);
 
     public StoryReaderPageState storyReaderPageState() {
         return storyReaderPageStateObservable.getValue();
@@ -117,6 +111,14 @@ public class StoryReaderPageViewModel {
         storyReaderPageStateObservable.unsubscribe(observer);
     }
 
+    public void addCloseSubscriber(Observer<Boolean> observer) {
+        storyReaderPageCloseObservable.subscribeAndGetValue(observer);
+    }
+
+    public void removeCloseSubscriber(Observer<Boolean> observer) {
+        storyReaderPageCloseObservable.unsubscribe(observer);
+    }
+
     public void addButtonsStateSubscriber(Observer<StoryReaderButtonsState> observer) {
         storyReaderPageButtonsStateObservable.subscribeAndGetValue(observer);
     }
@@ -146,6 +148,7 @@ public class StoryReaderPageViewModel {
     }
 
     public void clickOnRefresh() {
+
     }
 
     public void likeClick() {
@@ -307,7 +310,7 @@ public class StoryReaderPageViewModel {
 
     public void pauseSlide() {
         singleTimeEvents.updateValue(
-                new STETypeAndData(STEDataType.PAUSE_SLIDE,
+                new STETypeAndData(StoriesSTEDataType.PAUSE_SLIDE,
                         null
                 )
         );
@@ -315,7 +318,7 @@ public class StoryReaderPageViewModel {
 
     public void resumeSlide() {
         singleTimeEvents.updateValue(
-                new STETypeAndData(STEDataType.RESUME_SLIDE,
+                new STETypeAndData(StoriesSTEDataType.RESUME_SLIDE,
                         null
                 )
         );
@@ -324,7 +327,7 @@ public class StoryReaderPageViewModel {
     public void startSlide() {
         if (currentSlideIsLoaded) {
             singleTimeEvents.updateValue(
-                    new STETypeAndData(STEDataType.START_SLIDE,
+                    new STETypeAndData(StoriesSTEDataType.START_SLIDE,
                             new StartSlide()
                                     .soundOn(((IASDataSettingsHolder) core.settingsAPI()).isSoundOn())
                     )
@@ -335,7 +338,7 @@ public class StoryReaderPageViewModel {
     public void restartSlide() {
         if (currentSlideIsLoaded) {
             singleTimeEvents.updateValue(
-                    new STETypeAndData(STEDataType.RESTART_SLIDE,
+                    new STETypeAndData(StoriesSTEDataType.RESTART_SLIDE,
                             new StartSlide()
                                     .soundOn(((IASDataSettingsHolder) core.settingsAPI()).isSoundOn())
                     )
@@ -346,7 +349,7 @@ public class StoryReaderPageViewModel {
     public void stopSlide() {
         singleTimeEvents.updateValue(
                 new STETypeAndData(
-                        STEDataType.STOP_SLIDE,
+                        StoriesSTEDataType.STOP_SLIDE,
                         null
                 )
         );
@@ -437,7 +440,7 @@ public class StoryReaderPageViewModel {
     public void storyFreezeUI() {
         singleTimeEvents.updateValue(
                 new STETypeAndData(
-                        STEDataType.FREEZE_UI,
+                        StoriesSTEDataType.FREEZE_UI,
                         null
                 )
         );
@@ -448,7 +451,7 @@ public class StoryReaderPageViewModel {
     public void storyRenderReady() {
         singleTimeEvents.updateValue(
                 new STETypeAndData(
-                        STEDataType.RENDER_READY,
+                        StoriesSTEDataType.RENDER_READY,
                         null
                 )
         );
@@ -459,7 +462,7 @@ public class StoryReaderPageViewModel {
     public void storyUnfreezeUI() { //reader
         singleTimeEvents.updateValue(
                 new STETypeAndData(
-                        STEDataType.UNFREEZE_UI,
+                        StoriesSTEDataType.UNFREEZE_UI,
                         null
                 )
         );
@@ -481,7 +484,7 @@ public class StoryReaderPageViewModel {
         StoryReaderPageState pageState = storyReaderPageState();
         if (!Objects.equals(pageState.storyId(), Integer.toString(id))) {
             singleTimeEvents.updateValue(
-                    new STETypeAndData(STEDataType.OPEN_STORY,
+                    new STETypeAndData(StoriesSTEDataType.OPEN_STORY,
                             new ContentIdWithIndex(id, index)
                     )
             );
@@ -500,7 +503,7 @@ public class StoryReaderPageViewModel {
             @Override
             public void onJsApiResponse(String result, String cb) {
                 singleTimeEvents.updateValue(
-                        new STETypeAndData(STEDataType.JS_SEND_API_RESPONSE,
+                        new STETypeAndData(StoriesSTEDataType.JS_SEND_API_RESPONSE,
                                 new JsSendApiRequestResponse()
                                         .cb(cb)
                                         .result(result)
@@ -514,7 +517,7 @@ public class StoryReaderPageViewModel {
     @JavascriptInterface
     public void openGame(String gameInstanceId) {
         singleTimeEvents.updateValue(
-                new STETypeAndData(STEDataType.OPEN_GAME,
+                new STETypeAndData(StoriesSTEDataType.OPEN_GAME,
                         new ContentId(gameInstanceId)
                 )
         );
@@ -730,11 +733,19 @@ public class StoryReaderPageViewModel {
 
     @JavascriptInterface
     public void storyStarted() { //page
-        manager.storyStartedEvent();
+        StoryReaderPageState pageState = storyReaderPageState();
+        if (pageState.story() == null) return;
+        readerViewModel.swipeUpIsAllowed(pageState.story().hasSwipeUp());
+        readerViewModel.closeIsAllowed(!pageState.story().disableClose());
+        core.statistic().profiling().setReady(pageState.storyId() + "_" + pageState.slideIndex());
     }
 
     @JavascriptInterface
     public void storyStarted(double startTime) { //page
-        manager.storyStartedEvent();
+        StoryReaderPageState pageState = storyReaderPageState();
+        if (pageState.story() == null) return;
+        readerViewModel.swipeUpIsAllowed(pageState.story().hasSwipeUp());
+        readerViewModel.closeIsAllowed(!pageState.story().disableClose());
+        core.statistic().profiling().setReady(pageState.storyId() + "_" + pageState.slideIndex());
     }
 }

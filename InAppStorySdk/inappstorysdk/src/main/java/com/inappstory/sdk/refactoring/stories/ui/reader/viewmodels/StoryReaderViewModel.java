@@ -80,6 +80,20 @@ public class StoryReaderViewModel {
         );
     }
 
+    public void swipeUpIsAllowed(boolean swipeUpIsAllowed) {
+        StoryReaderState state = storyReaderStateObservable.getValue();
+        storyReaderStateObservable.updateValue(
+                state.copy().swipeUpAllowed(swipeUpIsAllowed)
+        );
+    }
+
+    public void closeIsAllowed(boolean closeIsAllowed) {
+        StoryReaderState state = storyReaderStateObservable.getValue();
+        storyReaderStateObservable.updateValue(
+                state.copy().closeAllowed(closeIsAllowed)
+        );
+    }
+
     public void backPressEnabled(boolean backPressEnabled) {
         StoryReaderState state = storyReaderStateObservable.getValue();
         storyReaderStateObservable.updateValue(

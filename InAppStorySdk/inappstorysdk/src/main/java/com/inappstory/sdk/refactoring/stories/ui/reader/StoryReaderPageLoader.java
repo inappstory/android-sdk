@@ -24,6 +24,7 @@ import com.inappstory.sdk.core.ui.widgets.customicons.CustomIconWithoutStates;
 import com.inappstory.sdk.refactoring.core.utils.observers.Observer;
 import com.inappstory.sdk.refactoring.stories.ui.reader.states.StoryReaderPageLoaderState;
 import com.inappstory.sdk.refactoring.stories.ui.reader.states.StoryReaderPageLoaderType;
+import com.inappstory.sdk.refactoring.stories.ui.reader.viewmodels.StoryReaderPageViewModel;
 import com.inappstory.sdk.stories.ui.widgets.TouchFrameLayout;
 import com.inappstory.sdk.stories.utils.Sizes;
 
@@ -32,6 +33,12 @@ public class StoryReaderPageLoader extends RelativeLayout
     private StoryReaderPageLoaderType lastType = StoryReaderPageLoaderType.HIDDEN;
     private TouchFrameLayout refresh;
     private FrameLayout loading;
+    StoryReaderPageViewModel viewModel;
+
+    public void viewModel(StoryReaderPageViewModel viewModel) {
+        this.viewModel = viewModel;
+        viewModel.addLoaderStateSubscriber(this);
+    }
 
     public StoryReaderPageLoader(@NonNull Context context) {
         super(context);
@@ -46,16 +53,6 @@ public class StoryReaderPageLoader extends RelativeLayout
     public StoryReaderPageLoader(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         init(context);
-    }
-
-    public void setRefreshClickListener(OnClickListener clickListener) {
-        if (refresh != null)
-            refresh.setClickListener(clickListener);
-    }
-
-    private void clearListeners() {
-        if (refresh != null)
-            refresh.setClickListener(null);
     }
 
     @SuppressLint("UseCompatLoadingForDrawables")
@@ -86,6 +83,12 @@ public class StoryReaderPageLoader extends RelativeLayout
             }
         });
         refresh.setLayoutParams(refreshLp);
+        refresh.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (viewModel != null) viewModel.clickOnRefresh();
+            }
+        });
     }
 
     private void createLoading(Context context) {
@@ -176,27 +179,29 @@ public class StoryReaderPageLoader extends RelativeLayout
 
     @Override
     public void onUpdate(StoryReaderPageLoaderState newValue) {
-        switch (lastType) {
-            case LOADING:
-                hideLoading();
-                break;
-            case HIDDEN:
-                show();
-                break;
-            case REFRESH:
-                hideRefresh();
-                break;
-        }
-        switch (newValue.loaderType()) {
-            case HIDDEN:
-                hide();
-                break;
-            case LOADING:
-                showLoading();
-                break;
-            case REFRESH:
-                showRefresh();
-                break;
+        if (lastType != newValue.loaderType()) {
+            switch (lastType) {
+                case LOADING:
+                    hideLoading();
+                    break;
+                case HIDDEN:
+                    show();
+                    break;
+                case REFRESH:
+                    hideRefresh();
+                    break;
+            }
+            switch (newValue.loaderType()) {
+                case HIDDEN:
+                    hide();
+                    break;
+                case LOADING:
+                    showLoading();
+                    break;
+                case REFRESH:
+                    showRefresh();
+                    break;
+            }
         }
         lastType = newValue.loaderType();
     }
