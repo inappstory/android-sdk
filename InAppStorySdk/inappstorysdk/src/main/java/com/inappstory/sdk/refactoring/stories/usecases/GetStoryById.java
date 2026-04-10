@@ -9,22 +9,19 @@ import com.inappstory.sdk.refactoring.stories.repositories.IStoryRepository;
 public class GetStoryById extends UseCaseWithSession<StoryDTO> {
     private final IStoryRepository storyRepository;
     private final String storySlugOrId;
-    private final boolean once;
 
-    protected GetStoryById(
+    public GetStoryById(
             ISessionRepository sessionRepository,
             IStoryRepository storyRepository,
-            String storySlugOrId,
-            boolean once
+            String storySlugOrId
     ) {
         super(sessionRepository);
         this.storyRepository = storyRepository;
         this.storySlugOrId = storySlugOrId;
-        this.once = once;
     }
 
     @Override
     protected void invokeWithSession(ResultCallback<StoryDTO> callback) {
-        this.storyRepository.getStoryBySlugOrId(storySlugOrId, false, callback);
+        this.storyRepository.getStoryBySlugOrId(storySlugOrId, false, false, callback);
     }
 }

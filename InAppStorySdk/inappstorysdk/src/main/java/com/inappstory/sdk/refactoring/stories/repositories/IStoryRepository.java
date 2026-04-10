@@ -58,6 +58,7 @@ public interface IStoryRepository {
     void getStoryBySlugOrId(
             String storySlugOrId,
             boolean once,
+            boolean remote,
             ResultCallback<StoryDTO> storyByIdResultCallback
     );
 

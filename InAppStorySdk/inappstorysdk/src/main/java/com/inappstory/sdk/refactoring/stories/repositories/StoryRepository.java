@@ -326,8 +326,7 @@ public class StoryRepository implements IStoryRepository {
         });
     }
 
-    @Override
-    public void getStoryBySlugOrId(
+    private void getStoryBySlugOrIdRemote(
             String storySlugOrId,
             boolean once,
             ResultCallback<StoryDTO> storyByIdResultCallback
@@ -371,6 +370,66 @@ public class StoryRepository implements IStoryRepository {
                 storyByIdResultCallback.error(new NoSessionError<>());
                 return;
             }
+            storyAPIDataSource.getStoryBySlugOrId(
+                    storySlugOrId,
+                    once,
+                    resultCallback
+            );
+        } else if (result instanceof Success) {
+            storyByIdResultCallback.success(((Success<StoryDTO>) result).data());
+        }
+    }
+
+    @Override
+    public void getStoryBySlugOrId(
+            String storySlugOrId,
+            boolean once,
+            boolean remote,
+            ResultCallback<StoryDTO> storyByIdResultCallback
+    ) {
+        Result<StoryDTO> result = storyLocalDataSource.getStoryById(storySlugOrId);
+        if (remote || result instanceof Error) {
+            if (storyAPIDataSource == null) {
+                storyByIdResultCallback.error(new NoSessionError<>());
+                return;
+            }
+            ResultCallback<NStory> resultCallback = new ResultCallback<NStory>() {
+                @Override
+                public void success(NStory story) {
+                    StoryDTO storyDTO = new NStoryToStoryDTOMapper().convert(story);
+                    boolean updateFavoriteCell;
+                    boolean updateListItem;
+                    String storyId = Integer.toString(storyDTO.id);
+                    StoriesListItemDTO storiesListItemDTO = new NStoryToStoryListItemDTOMapper().convert(story);
+                    storyLocalDataSource.addOrUpdateStory(storyDTO);
+                    updateListItem = storyLocalDataSource.addOrUpdateStoryListItem(storiesListItemDTO);
+                    if (story.favorite) {
+                        updateFavoriteCell = storyLocalDataSource.addOrUpdateStoryCover(
+                                new NStoryToStoryCoverDTOMapper().convert(story)
+                        );
+                    } else {
+                        updateFavoriteCell = storyLocalDataSource.removeStoryCover(
+                                storyId
+                        );
+                    }
+                    if (updateFavoriteCell)
+                        changesSubscribersHolder.notifyFavoriteCellChanges(
+                                storyLocalDataSource.getFavoriteCovers()
+                        );
+                    if (updateListItem)
+                        changesSubscribersHolder.notifyStoryListItemChange(storiesListItemDTO);
+                    storyByIdResultCallback.success(storyDTO);
+                }
+
+                @Override
+                public void error(Error<NStory> result) {
+                    storyByIdResultCallback.error(
+                            new Error<>(
+                                    "Can't retrieve story with id or slug: " + storySlugOrId
+                            )
+                    );
+                }
+            };
             storyAPIDataSource.getStoryBySlugOrId(
                     storySlugOrId,
                     once,
