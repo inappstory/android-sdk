@@ -3,7 +3,7 @@ package com.inappstory.sdk.refactoring.core.downloader;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DownloadQueue<T> {
+public class DownloadStack<T> {
     private final List<T> ids = new ArrayList<>();
 
     public boolean contains(T id) {
@@ -21,8 +21,8 @@ public class DownloadQueue<T> {
         return copy;
     }
 
-    public void remove(T id) {
-        ids.remove(id);
+    public boolean remove(T id) {
+        return ids.remove(id);
     }
 
     public void push(T id) {

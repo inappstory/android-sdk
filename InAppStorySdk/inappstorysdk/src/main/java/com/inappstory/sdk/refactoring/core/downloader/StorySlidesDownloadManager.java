@@ -21,18 +21,43 @@ public class StorySlidesDownloadManager {
 
     private final IASCore core;
 
-    private final SlideTaskDownloadQueue firstPriorityTaskKeys = new SlideTaskDownloadQueue();
-    private final SlideTaskDownloadQueue secondPriorityTaskKeys = new SlideTaskDownloadQueue();
-    private final SlideTaskDownloadQueue commonPriorityTaskKeys = new SlideTaskDownloadQueue();
+    private final SlideTaskDownloadStack firstPriorityTaskKeys = new SlideTaskDownloadStack();
+    private final SlideTaskDownloadStack secondPriorityTaskKeys = new SlideTaskDownloadStack();
+    private final SlideTaskDownloadStack commonPriorityTaskKeys = new SlideTaskDownloadStack();
     private SlideTaskKey currentLoadKey = null;
 
     private final Object slideTaskKeysLock = new Object();
     private final List<SlideTaskKey> loadedSlides = new ArrayList<>();
     private final Map<SlideTaskKey, SlideTask> tasks = new HashMap<>();
     private final Object subLock = new Object();
+    private final Map<SlideTaskKey, DownloadContentPriority> downloadPriorities = new HashMap<>();
 
 
     List<IReaderContentDownloaderSubscriber> subscribers = new ArrayList<>();
+
+
+    public void removeFromCache(
+            IReaderContent readerContent,
+            ContentType type
+    ) {
+        List<SlideTaskKey> keys = new ArrayList<>();
+        for (int i = 0; i < readerContent.slidesCount(); i++) {
+            keys.add(
+                    new SlideTaskKey(
+                            new ContentIdAndType(
+                                    readerContent.id(),
+                                    type
+                            ),
+                            i
+                    )
+            );
+        }
+        synchronized (slideTaskKeysLock) {
+            for (SlideTaskKey key : keys) {
+                loadedSlides.remove(key);
+            }
+        }
+    }
 
 
     public void addSubscriber(IReaderContentDownloaderSubscriber subscriber) {
@@ -111,14 +136,14 @@ public class StorySlidesDownloadManager {
                     currentKey.contentIdAndType
             );
             if (downloadResult instanceof Error) {
-                for (IReaderContentDownloaderSubscriber subscriber: subscribersById) {
+                for (IReaderContentDownloaderSubscriber subscriber : subscribersById) {
                     subscriber.slideLoadError(currentKey.index);
                 }
             } else if (downloadResult instanceof Success) {
                 synchronized (slideTaskKeysLock) {
                     loadedSlides.add(currentKey);
                 }
-                for (IReaderContentDownloaderSubscriber subscriber: subscribersById) {
+                for (IReaderContentDownloaderSubscriber subscriber : subscribersById) {
                     checkBundleResources(subscriber, currentKey.index);
                 }
             }
@@ -184,13 +209,118 @@ public class StorySlidesDownloadManager {
         }
     }
 
+    public void renewStoryPriorities(
+            ContentIdAndType mainId,
+            int mainIndex,
+            int mainCount
+    ) {
+        synchronized (slideTaskKeysLock) {
+            for (int i = mainCount - 1; i >= 0; i--) {
+                SlideTaskKey key =  new SlideTaskKey(
+                        new ContentIdAndType(
+                                mainId.contentId,
+                                mainId.contentType
+                        ),
+                        i
+                );
+                if (i == mainIndex || i == mainIndex + 1) {
+                    downloadPriorities.put(
+                            key,
+                            DownloadContentPriority.PRIMARY);
+                    putKeyToPriority(key, DownloadContentPriority.PRIMARY, true);
+                } else {
+                    downloadPriorities.put(
+                            key,
+                            DownloadContentPriority.COMMON);
+                    putKeyToPriority(key, DownloadContentPriority.COMMON, true);
+                }
+            }
+        }
+    }
+
+    public void renewAllPriorities(
+            ContentIdAndType mainId,
+            int mainIndex,
+            int mainCount,
+
+            ContentIdAndType prevId,
+            int prevIndex,
+            int prevCount,
+
+            ContentIdAndType nextId,
+            int nextIndex,
+            int nextCount
+    ) {
+        synchronized (slideTaskKeysLock) {
+            downloadPriorities.clear();
+            firstPriorityTaskKeys.clear();
+            secondPriorityTaskKeys.clear();
+            commonPriorityTaskKeys.clear();
+            for (int i = mainCount - 1; i >= 0; i--) {
+                SlideTaskKey key =  new SlideTaskKey(
+                        new ContentIdAndType(
+                                mainId.contentId,
+                                mainId.contentType
+                        ),
+                        i
+                );
+                if (i == mainIndex || i == mainIndex + 1) {
+                    downloadPriorities.put(
+                            key,
+                            DownloadContentPriority.PRIMARY);
+                    putKeyToPriority(key, DownloadContentPriority.PRIMARY, false);
+                } else {
+                    downloadPriorities.put(
+                            key,
+                            DownloadContentPriority.COMMON);
+                    putKeyToPriority(key, DownloadContentPriority.COMMON, false);
+                }
+            }
+            if (prevId != null) {
+                for (int i = prevCount - 1; i >= 0; i--) {
+                    if (i == prevIndex || i == prevIndex + 1) {
+                        SlideTaskKey key =  new SlideTaskKey(
+                                new ContentIdAndType(
+                                        prevId.contentId,
+                                        prevId.contentType
+                                ),
+                                i
+                        );
+                        downloadPriorities.put(
+                                key,
+                                DownloadContentPriority.SECONDARY);
+                        putKeyToPriority(key, DownloadContentPriority.SECONDARY, false);
+                    }
+                }
+            }
+            if (nextId != null) {
+                for (int i = nextCount - 1; i >= 0; i--) {
+                    if (i == nextIndex || i == nextIndex + 1) {
+                        SlideTaskKey key =  new SlideTaskKey(
+                                new ContentIdAndType(
+                                        nextId.contentId,
+                                        nextId.contentType
+                                ),
+                                i
+                        );
+                        downloadPriorities.put(
+                                key,
+                                DownloadContentPriority.SECONDARY);
+                        putKeyToPriority(key, DownloadContentPriority.SECONDARY, false);
+                    }
+                }
+            }
+        }
+    }
+
     public void addTasks(
             IReaderContent content,
-            int index,
-            ContentType type,
-            DownloadContentPriority priority
+            ContentType type
     ) {
         int maxCount = content.actualSlidesCount();
+        synchronized (slideTaskKeysLock) {
+            for (int i = 0; i <)
+        }
         if (priority == DownloadContentPriority.SECONDARY)
             maxCount = Math.min(maxCount, 2);
         synchronized (slideTaskKeysLock) {
@@ -218,19 +348,25 @@ public class StorySlidesDownloadManager {
         }
     }
 
-    private void putKeyToPriority(SlideTaskKey key, DownloadContentPriority priority) {
+    private void putKeyToPriority(SlideTaskKey key, DownloadContentPriority priority, boolean moveOnly) {
+        if (key == currentLoadKey) return;
+        if (!tasks.containsKey(key)) return;
+        boolean removed = !moveOnly;
         if (priority == DownloadContentPriority.PRIMARY) {
-            secondPriorityTaskKeys.remove(key);
-            commonPriorityTaskKeys.remove(key);
-            firstPriorityTaskKeys.push(key);
+            removed |= secondPriorityTaskKeys.remove(key);
+            removed |= commonPriorityTaskKeys.remove(key);
+            if (removed)
+                firstPriorityTaskKeys.push(key);
         } else if (priority == DownloadContentPriority.SECONDARY) {
-            firstPriorityTaskKeys.remove(key);
-            commonPriorityTaskKeys.remove(key);
-            secondPriorityTaskKeys.push(key);
+            removed |= firstPriorityTaskKeys.remove(key);
+            removed |= commonPriorityTaskKeys.remove(key);
+            if (removed)
+                secondPriorityTaskKeys.push(key);
         } else if (priority == DownloadContentPriority.COMMON) {
-            if (firstPriorityTaskKeys.contains(key) || secondPriorityTaskKeys.contains(key))
-                return;
-            commonPriorityTaskKeys.push(key);
+            removed |= firstPriorityTaskKeys.remove(key);
+            removed |= secondPriorityTaskKeys.remove(key);
+            if (removed)
+                commonPriorityTaskKeys.push(key);
         }
     }
 }

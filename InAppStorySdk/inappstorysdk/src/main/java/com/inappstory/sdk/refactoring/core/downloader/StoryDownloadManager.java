@@ -15,7 +15,7 @@ import java.util.Map;
 import java.util.Objects;
 
 public class StoryDownloadManager {
-    StoryDownloadQueue currentStoryQueue = new StoryDownloadQueue();
+    StoryDownloadStack currentStoryQueue = new StoryDownloadStack();
     private final IASCore core;
     private final Object downloadLock = new Object();
     private final Object subLock = new Object();
@@ -35,6 +35,12 @@ public class StoryDownloadManager {
     }
 
     List<IReaderContentDownloaderSubscriber> subscribers = new ArrayList<>();
+
+    public void removeFromCache(ContentIdAndType contentIdAndType) {
+        synchronized (downloadLock) {
+            cachedContent.remove(contentIdAndType);
+        }
+    }
 
     private List<IReaderContentDownloaderSubscriber> getSubscribersByStoryId(ContentIdAndType id) {
         List<IReaderContentDownloaderSubscriber> subscribersById = new ArrayList<>();

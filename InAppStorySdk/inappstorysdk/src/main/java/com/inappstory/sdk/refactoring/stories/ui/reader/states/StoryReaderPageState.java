@@ -3,13 +3,17 @@ package com.inappstory.sdk.refactoring.stories.ui.reader.states;
 import com.inappstory.sdk.refactoring.stories.data.local.StoriesListItemDTO;
 import com.inappstory.sdk.refactoring.stories.data.local.StoryDTO;
 
+import java.util.List;
+
 public class StoryReaderPageState {
-    final String storyId;
-    StoryDTO storyDTO;
-    StoriesListItemDTO storiesListItemDTO;
-    int slideIndex;
-    final int pageIndex;
+    private final String storyId;
+    private StoryDTO storyDTO;
+    private StoriesListItemDTO storiesListItemDTO;
+    private int slideIndex;
+    private final int pageIndex;
     private boolean currentSlideIsLoaded;
+    private List<Integer> cachedSlides;
+
 
     public StoryReaderPageState(String storyId, int pageIndex) {
         this.storyId = storyId;

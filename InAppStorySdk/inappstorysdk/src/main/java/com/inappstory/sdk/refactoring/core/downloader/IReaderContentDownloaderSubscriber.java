@@ -10,4 +10,5 @@ public interface IReaderContentDownloaderSubscriber {
     void contentLoadSuccess(IReaderContent content);
     void slideLoadSuccess(int index);
     ContentIdAndType externalSubscriber();
+    boolean useOnce();
 }
