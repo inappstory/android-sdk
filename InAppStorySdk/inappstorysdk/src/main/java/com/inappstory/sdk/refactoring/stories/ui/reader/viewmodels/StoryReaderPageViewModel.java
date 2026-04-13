@@ -21,6 +21,7 @@ import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.network.jsapiclient.JsApiClient;
 import com.inappstory.sdk.network.jsapiclient.JsApiResponseCallback;
 import com.inappstory.sdk.network.models.Response;
+import com.inappstory.sdk.refactoring.core.downloader.IReaderContentDownloaderSubscriber;
 import com.inappstory.sdk.refactoring.core.utils.observers.Observable;
 import com.inappstory.sdk.refactoring.core.utils.observers.Observer;
 import com.inappstory.sdk.refactoring.core.utils.observers.STETypeAndData;
@@ -38,6 +39,7 @@ import com.inappstory.sdk.refactoring.stories.ui.reader.states.StoryReaderPageSt
 import com.inappstory.sdk.refactoring.stories.ui.reader.states.StoryReaderPageTimelineState;
 import com.inappstory.sdk.stories.api.models.StoryLoadedData;
 import com.inappstory.sdk.stories.api.models.UpdateTimelineData;
+import com.inappstory.sdk.stories.cache.ContentIdAndType;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
@@ -52,7 +54,7 @@ import java.lang.reflect.Type;
 import java.util.Map;
 import java.util.Objects;
 
-public class StoryReaderPageViewModel {
+public class StoryReaderPageViewModel implements IReaderContentDownloaderSubscriber {
     private final IASCore core;
     private final StoryReaderViewModel readerViewModel;
     private final StoryReaderPageTimelineManager timelineManager =
@@ -82,6 +84,11 @@ public class StoryReaderPageViewModel {
     private final Observable<StoryReaderButtonsState> storyReaderPageButtonsStateObservable =
             new Observable<>(new StoryReaderButtonsState());
 
+    public void destroy() {
+        core.storyDownloadManager().removeSubscriber(this);
+        core.storySlidesDownloadManager().removeSubscriber(this);
+    }
+
     public StoryReaderPageViewModel(
             IASCore core,
             StoryReaderViewModel readerViewModel,
@@ -91,8 +98,17 @@ public class StoryReaderPageViewModel {
         this.core = core;
         this.readerViewModel = readerViewModel;
         timerManager = new StoryReaderPageTimerManager(core, this);
+
         storyReaderPageStateObservable =
-                new Observable<>(new StoryReaderPageState(storyId, pageIndex));
+                new Observable<>(
+                        new StoryReaderPageState(
+                                storyId,
+                                pageIndex,
+                                readerViewModel.readerImmutableState().contentType()
+                        )
+                );
+        core.storyDownloadManager().addSubscriber(this);
+        core.storySlidesDownloadManager().addSubscriber(this);
     }
 
     public void addLoaderStateSubscriber(Observer<StoryReaderPageLoaderState> observer) {
@@ -307,7 +323,6 @@ public class StoryReaderPageViewModel {
     }
 
 
-
     public void pauseSlide() {
         singleTimeEvents.updateValue(
                 new STETypeAndData(StoriesSTEDataType.PAUSE_SLIDE,
@@ -368,7 +383,7 @@ public class StoryReaderPageViewModel {
         } else {
             return;
         }
-        if (readerViewModel.getReaderState().currentPage() == pageState.pageIndex()) {
+        if (readerViewModel.readerState().currentPage() == pageState.pageIndex()) {
             startSlide();
         } else {
             stopSlide();
@@ -376,11 +391,38 @@ public class StoryReaderPageViewModel {
     }
 
 
-    private void slideLoadError(int index) {
+    @Override
+    public ContentIdAndType contentIdAndType() {
+        StoryReaderPageState state = storyReaderPageState();
+        return new ContentIdAndType(
+                Integer.parseInt(state.storyId()),
+                state.contentType()
+        );
+    }
+
+    @Override
+    public void contentLoadError() {
+        storyReaderPageLoaderStateObservable.updateValue(
+                new StoryReaderPageLoaderState().loaderType(StoryReaderPageLoaderType.REFRESH)
+        );
+    }
+
+    @Override
+    public void slideLoadError(int index) {
         storyReaderPageLoaderStateObservable.updateValue(
                 new StoryReaderPageLoaderState().loaderType(StoryReaderPageLoaderType.REFRESH)
         );
         timelineManager.setCurrentIndex(index);
+    }
+
+    @Override
+    public void contentLoadSuccess(IReaderContent content) {
+        core.storySlidesDownloadManager().addTasks(content, contentIdAndType().contentType);
+    }
+
+    @Override
+    public void slideLoadSuccess(int index) {
+
     }
 
     private void sendStoryDataToServer(String storyId, String data) {
@@ -623,7 +665,6 @@ public class StoryReaderPageViewModel {
             );
         }
     }
-
 
 
     @JavascriptInterface

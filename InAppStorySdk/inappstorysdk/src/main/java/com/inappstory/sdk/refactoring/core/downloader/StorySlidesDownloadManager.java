@@ -198,17 +198,6 @@ public class StorySlidesDownloadManager {
         loopedExecutor.init(invokeQueueTask);
     }
 
-    public void revokeTaskPriorities() {
-        synchronized (slideTaskKeysLock) {
-            List<SlideTaskKey> taskKeys = firstPriorityTaskKeys.retrieve();
-            taskKeys.addAll(secondPriorityTaskKeys.retrieve());
-            for (SlideTaskKey key : taskKeys) {
-                if (Objects.equals(key, currentLoadKey)) continue;
-                commonPriorityTaskKeys.push(key);
-            }
-        }
-    }
-
     public void renewStoryPriorities(
             ContentIdAndType mainId,
             int mainIndex,

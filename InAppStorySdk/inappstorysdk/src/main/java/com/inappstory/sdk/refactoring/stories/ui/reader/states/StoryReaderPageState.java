@@ -2,11 +2,13 @@ package com.inappstory.sdk.refactoring.stories.ui.reader.states;
 
 import com.inappstory.sdk.refactoring.stories.data.local.StoriesListItemDTO;
 import com.inappstory.sdk.refactoring.stories.data.local.StoryDTO;
+import com.inappstory.sdk.stories.api.models.ContentType;
 
 import java.util.List;
 
 public class StoryReaderPageState {
     private final String storyId;
+    private final ContentType contentType;
     private StoryDTO storyDTO;
     private StoriesListItemDTO storiesListItemDTO;
     private int slideIndex;
@@ -15,8 +17,9 @@ public class StoryReaderPageState {
     private List<Integer> cachedSlides;
 
 
-    public StoryReaderPageState(String storyId, int pageIndex) {
+    public StoryReaderPageState(String storyId, int pageIndex, ContentType contentType) {
         this.storyId = storyId;
+        this.contentType = contentType;
         this.pageIndex = pageIndex;
     }
 
@@ -26,6 +29,10 @@ public class StoryReaderPageState {
 
     public String storyId() {
         return storyId;
+    }
+
+    public ContentType contentType() {
+        return contentType;
     }
 
     public StoriesListItemDTO storyListItem() {
@@ -56,7 +63,7 @@ public class StoryReaderPageState {
     }
 
     public StoryReaderPageState copy() {
-        return new StoryReaderPageState(storyId, pageIndex).
+        return new StoryReaderPageState(storyId, pageIndex, contentType).
                 slideIndex(this.slideIndex).
                 storyListItem(this.storiesListItemDTO).
                 story(this.storyDTO);

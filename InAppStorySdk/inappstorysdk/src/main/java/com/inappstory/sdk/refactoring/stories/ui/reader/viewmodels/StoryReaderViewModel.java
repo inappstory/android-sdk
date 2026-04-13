@@ -7,11 +7,6 @@ import com.inappstory.sdk.refactoring.stories.ui.list.states.StoryListItemCoordi
 import com.inappstory.sdk.refactoring.stories.ui.reader.states.StoryReaderImmutableState;
 import com.inappstory.sdk.refactoring.stories.ui.reader.states.StoryReaderOpenState;
 import com.inappstory.sdk.refactoring.stories.ui.reader.states.StoryReaderState;
-import com.inappstory.sdk.stories.api.models.ContentType;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
-import com.inappstory.sdk.stories.outerevents.ShowStory;
-
-import java.util.List;
 
 public class StoryReaderViewModel {
     private final IASCore core;
@@ -25,7 +20,7 @@ public class StoryReaderViewModel {
     private final Observable<StoryReaderState> storyReaderStateObservable =
             new Observable<>(new StoryReaderState());
 
-    public StoryReaderState getReaderState() {
+    public StoryReaderState readerState() {
         return storyReaderStateObservable.getValue();
     }
 

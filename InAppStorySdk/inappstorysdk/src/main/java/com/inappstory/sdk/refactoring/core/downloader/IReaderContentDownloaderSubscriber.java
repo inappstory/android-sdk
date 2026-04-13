@@ -9,6 +9,4 @@ public interface IReaderContentDownloaderSubscriber {
     void slideLoadError(int index);
     void contentLoadSuccess(IReaderContent content);
     void slideLoadSuccess(int index);
-    ContentIdAndType externalSubscriber();
-    boolean useOnce();
 }
