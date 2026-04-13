@@ -24,7 +24,7 @@ public class IASStatisticIAMV1Impl implements IASStatisticIAMV1 {
 
     public IASStatisticIAMV1Impl(IASCore core) {
         this.core = core;
-        loopedExecutor.init(queueTasksRunnable);
+        loopedExecutor.task(queueTasksRunnable);
     }
 
     private final IASCore core;

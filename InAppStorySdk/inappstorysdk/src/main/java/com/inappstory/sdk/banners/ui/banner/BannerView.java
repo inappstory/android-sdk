@@ -297,7 +297,12 @@ public class BannerView extends FrameLayout implements Observer<BannerState> {
                                     (ContentId) newValue.data()
                             );
                             break;
-
+                        case FREEZE_UI:
+                            getParentForAccessibility().requestDisallowInterceptTouchEvent(true);
+                            break;
+                        case UNFREEZE_UI:
+                            getParentForAccessibility().requestDisallowInterceptTouchEvent(false);
+                            break;
                     }
                 }
             });
@@ -521,7 +526,7 @@ public class BannerView extends FrameLayout implements Observer<BannerState> {
                     if (newValue.content() != null &&
                             !newValue.content().isEmpty()) {
                         if (bannerWebView != null) {
-                            if (bannerViewModel.bannerIsActive()) {
+                            if (bannerViewModel != null && bannerViewModel.bannerIsActive()) {
                                 bannerWebView.post(
                                         new Runnable() {
                                             @Override

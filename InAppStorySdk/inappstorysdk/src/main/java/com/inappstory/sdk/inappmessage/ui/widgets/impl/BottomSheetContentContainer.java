@@ -289,6 +289,10 @@ public final class BottomSheetContentContainer extends IAMContentContainer<InApp
     @Override
     public void onUpdate(IAMReaderScrollState newValue) {
         if (bottomSheetBehavior != null)
-            bottomSheetBehavior.setDraggable(closeEnabled && newValue.passOverscroll());
+            bottomSheetBehavior.setDraggable(
+                    closeEnabled &&
+                    newValue.passOverscroll() &&
+                    newValue.verticalGestureEnabled()
+            );
     }
 }

@@ -56,7 +56,7 @@ class StoryDownloader {
     private final LoopedExecutor loopedExecutor = new LoopedExecutor(100, 100);
 
     void init() {
-        loopedExecutor.init(queueStoryReadRunnable);
+        loopedExecutor.task(queueStoryReadRunnable);
     }
 
     private DownloadStoryCallback callback;

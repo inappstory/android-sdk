@@ -165,6 +165,11 @@ public class IAMReaderJavascriptInterface {
     }
 
     @JavascriptInterface
+    public void storyUnfreezeUI() {
+        slideViewModel.storyUnfreezeUI();
+    }
+
+    @JavascriptInterface
     public void closeStory(String reason) {
         slideViewModel.closeReader();
     }
@@ -188,6 +193,17 @@ public class IAMReaderJavascriptInterface {
     @JavascriptInterface
     public void shareSlideScreenshotCb(String shareId, boolean result) {
         slideViewModel.shareSlideScreenshotCb(shareId, result);
+    }
+
+
+    @JavascriptInterface
+    public void disableVerticalSwipeGesture() {
+        slideViewModel.disableVerticalSwipeGesture();
+    }
+
+    @JavascriptInterface
+    public void enableVerticalSwipeGesture() {
+        slideViewModel.enableVerticalSwipeGesture();
     }
 
 

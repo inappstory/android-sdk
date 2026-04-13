@@ -1,14 +1,11 @@
 package com.inappstory.sdk.stories.cache;
 
-import android.util.Log;
-
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASAssetsHolder;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.UseIASCallback;
-import com.inappstory.sdk.core.banners.BannerViewModel;
 import com.inappstory.sdk.core.data.IListItemContent;
 import com.inappstory.sdk.core.dataholders.IListsContentHolder;
 import com.inappstory.sdk.core.dataholders.IReaderContentHolder;
@@ -34,14 +31,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 
 public class SlidesDownloader {
 
     private final LoopedExecutor loopedExecutor = new LoopedExecutor(10, 20);
+    private final ExecutorService loadSlideExecutor = Executors.newSingleThreadExecutor();
 
     public void init() {
-        loopedExecutor.init(queueLoadSlideRunnable);
+        loopedExecutor.task(queueLoadSlideRunnable);
     }
 
     public void destroy() {

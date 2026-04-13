@@ -95,6 +95,8 @@ public interface IIAMReaderSlideViewModel extends IReaderSlideViewModel {
 
     void storyFreezeUI();
 
+    void storyUnfreezeUI();
+
     void storySendData(String data);
 
     void setLocalUserData(String data, boolean sendToServer);
@@ -102,6 +104,10 @@ public interface IIAMReaderSlideViewModel extends IReaderSlideViewModel {
     String getLocalUserData();
 
     void shareSlideScreenshotCb(String shareId, boolean result);
+
+    void enableVerticalSwipeGesture();
+
+    void disableVerticalSwipeGesture();
 
     void defaultTap(String val);
 }

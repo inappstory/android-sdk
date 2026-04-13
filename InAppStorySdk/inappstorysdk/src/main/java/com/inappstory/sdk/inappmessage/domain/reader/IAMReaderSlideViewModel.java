@@ -511,6 +511,30 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
     public void storyFreezeUI() {
     }
 
+    public void storyUnfreezeUI() {
+
+    }
+
+    @Override
+    public void enableVerticalSwipeGesture() {
+        scrollStateObservable.updateValue(
+                scrollStateObservable
+                        .getValue()
+                        .copy()
+                        .verticalGestureEnabled(true)
+        );
+    }
+
+    @Override
+    public void disableVerticalSwipeGesture() {
+        scrollStateObservable.updateValue(
+                scrollStateObservable
+                        .getValue()
+                        .copy()
+                        .verticalGestureEnabled(false)
+        );
+    }
+
     public void storySendData(String data) {
         IAMReaderState readerState = readerViewModel.getCurrentState();
         if (readerState == null) return;

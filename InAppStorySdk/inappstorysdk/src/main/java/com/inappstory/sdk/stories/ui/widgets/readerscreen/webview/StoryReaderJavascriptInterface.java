@@ -88,6 +88,11 @@ public class StoryReaderJavascriptInterface {
         logMethod("");
     }
 
+    @JavascriptInterface
+    public void storyUnfreezeUI() {
+        manager.unfreezeUI();
+        logMethod("");
+    }
 
     @JavascriptInterface
     public void storyRenderReady() {
@@ -95,12 +100,6 @@ public class StoryReaderJavascriptInterface {
         logMethod("");
     }
 
-
-    @JavascriptInterface
-    public void storyUnfreezeUI() {
-        manager.unfreezeUI();
-        logMethod("");
-    }
 
     @JavascriptInterface
     public void storyShowSlide(int index) {

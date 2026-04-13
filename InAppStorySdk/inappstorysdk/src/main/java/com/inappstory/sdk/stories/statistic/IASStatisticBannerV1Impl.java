@@ -1,10 +1,7 @@
 package com.inappstory.sdk.stories.statistic;
 
-import android.util.Log;
-
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASStatisticBannerV1;
-import com.inappstory.sdk.core.api.IASStatisticIAMV1;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.models.Response;
 import com.inappstory.sdk.stories.utils.LoopedExecutor;
@@ -27,7 +24,7 @@ public class IASStatisticBannerV1Impl implements IASStatisticBannerV1 {
 
     public IASStatisticBannerV1Impl(IASCore core) {
         this.core = core;
-        loopedExecutor.init(queueTasksRunnable);
+        loopedExecutor.task(queueTasksRunnable);
     }
 
     private final IASCore core;

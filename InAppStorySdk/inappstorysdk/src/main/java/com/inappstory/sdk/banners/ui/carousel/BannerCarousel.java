@@ -25,6 +25,7 @@ import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.banners.BannerCarouselNavigationCallback;
 import com.inappstory.sdk.banners.BannerPlaceLoadCallback;
+import com.inappstory.sdk.banners.OnVerticalGestureAvailabilityCallback;
 import com.inappstory.sdk.banners.ui.IBannersWidget;
 import com.inappstory.sdk.banners.ui.banner.BannerView;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
@@ -42,6 +43,7 @@ import com.inappstory.sdk.core.banners.IBannersWidgetViewModel;
 import com.inappstory.sdk.core.banners.ICustomBannerCarouselAppearance;
 import com.inappstory.sdk.core.data.IBanner;
 import com.inappstory.sdk.banners.BannerData;
+import com.inappstory.sdk.inappmessage.domain.stedata.STETypeAndData;
 import com.inappstory.sdk.stories.utils.Observer;
 import com.inappstory.sdk.stories.utils.Sizes;
 
@@ -149,10 +151,23 @@ public class BannerCarousel extends FrameLayout implements Observer<BannerCarous
 
     private BannerPlaceLoadCallback bannerPlaceLoadCallback = null;
 
+
     public void navigationCallback(BannerCarouselNavigationCallback bannerCarouselNavigationCallback) {
         this.bannerCarouselNavigationCallback = bannerCarouselNavigationCallback != null ?
                 bannerCarouselNavigationCallback : emptyBannerCarouselNavigationCallback;
     }
+
+    public void verticalGestureAvailability(OnVerticalGestureAvailabilityCallback callback) {
+        this.verticalGestureAvailabilityCallback = callback != null ?
+                callback : emptyVerticalGestureAvailabilityCallback;
+    }
+
+    private OnVerticalGestureAvailabilityCallback emptyVerticalGestureAvailabilityCallback = new OnVerticalGestureAvailabilityCallback() {
+        @Override
+        public void onAvailabilityChanged(boolean available) {
+
+        }
+    };
 
     private BannerCarouselNavigationCallback emptyBannerCarouselNavigationCallback = new BannerCarouselNavigationCallback() {
 
@@ -168,7 +183,10 @@ public class BannerCarousel extends FrameLayout implements Observer<BannerCarous
     };
 
 
-    private BannerCarouselNavigationCallback bannerCarouselNavigationCallback = emptyBannerCarouselNavigationCallback;
+    private BannerCarouselNavigationCallback bannerCarouselNavigationCallback =
+            emptyBannerCarouselNavigationCallback;
+    private OnVerticalGestureAvailabilityCallback verticalGestureAvailabilityCallback =
+            emptyVerticalGestureAvailabilityCallback;
 
     BannerViewPager.PageChangeListener pageChangeListener = new BannerViewPager.PageChangeListener() {
         @Override
@@ -415,9 +433,26 @@ public class BannerCarousel extends FrameLayout implements Observer<BannerCarous
         }
     }
 
+    Observer<STETypeAndData> steObserver = new Observer<STETypeAndData>() {
+        @Override
+        public void onUpdate(STETypeAndData newValue) {
+            if (newValue == null) return;
+            switch (newValue.type()) {
+                case ENABLE_VERTICAL_SWIPE:
+                    verticalGestureAvailabilityCallback.onAvailabilityChanged(true);
+                    break;
+                case DISABLE_VERTICAL_SWIPE:
+                    verticalGestureAvailabilityCallback.onAvailabilityChanged(false);
+                    break;
+            }
+        }
+    };
+
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
+        if (bannerCarouselViewModel != null)
+            bannerCarouselViewModel.singleTimeEvents().subscribeAndGetValue(steObserver);
         resumeAutoscroll();
     }
 
@@ -437,6 +472,9 @@ public class BannerCarousel extends FrameLayout implements Observer<BannerCarous
     protected void onDetachedFromWindow() {
         // deInit();
         super.onDetachedFromWindow();
+
+        if (bannerCarouselViewModel != null)
+            bannerCarouselViewModel.singleTimeEvents().subscribeAndGetValue(steObserver);
         pauseAutoscroll();
     }
 
@@ -483,6 +521,8 @@ public class BannerCarousel extends FrameLayout implements Observer<BannerCarous
                                 uniqueId(),
                                 BannerWidgetViewModelType.PAGER
                         );
+                if (bannerCarouselViewModel != null)
+                    bannerCarouselViewModel.singleTimeEvents().subscribeSingle(steObserver);
             }
         });
     }

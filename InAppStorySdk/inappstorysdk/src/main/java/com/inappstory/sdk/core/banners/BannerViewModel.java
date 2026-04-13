@@ -1,7 +1,5 @@
 package com.inappstory.sdk.core.banners;
 
-import android.util.Log;
-
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.banners.BannerPlacePreloadCallback;
@@ -30,13 +28,13 @@ import com.inappstory.sdk.stories.api.models.UpdateTimelineData;
 import com.inappstory.sdk.stories.cache.ContentIdAndType;
 import com.inappstory.sdk.banners.BannerData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickAction;
+import com.inappstory.sdk.stories.utils.LoopedExecutor;
 import com.inappstory.sdk.stories.utils.Observable;
 import com.inappstory.sdk.stories.utils.Observer;
 import com.inappstory.sdk.stories.utils.SingleTimeEvent;
 import com.inappstory.sdk.stories.utils.WebPageConvertCallback;
 import com.inappstory.sdk.stories.utils.WebPageConverter;
 import com.inappstory.sdk.utils.ClipboardUtils;
-import com.inappstory.sdk.utils.ScheduledTPEManager;
 import com.inappstory.sdk.utils.StringsUtils;
 
 import java.lang.reflect.Type;
@@ -45,8 +43,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 
 public class BannerViewModel implements IBannerViewModel {
 
@@ -58,9 +54,6 @@ public class BannerViewModel implements IBannerViewModel {
 
     private final IASCore core;
 
-
-    private ScheduledFuture scheduledFuture;
-    private final ScheduledTPEManager executorService = new ScheduledTPEManager();
 
     public void iterationId(String iterationId) {
         this.iterationId = iterationId;
@@ -261,6 +254,16 @@ public class BannerViewModel implements IBannerViewModel {
     }
 
     @Override
+    public void disableVerticalSwipeGesture() {
+        bannerWidgetViewModel.disableVerticalSwipeGesture();
+    }
+
+    @Override
+    public void enableVerticalSwipeGesture() {
+        bannerWidgetViewModel.enableVerticalSwipeGesture();
+    }
+
+    @Override
     public void updateCurrentLoadState(BannerLoadStates bannerLoadState) {
         this.stateObservable.updateValue(
                 this.stateObservable.getValue()
@@ -446,12 +449,22 @@ public class BannerViewModel implements IBannerViewModel {
 
     @Override
     public void freezeUI() {
-
+        singleTimeEvents.updateValue(
+                new STETypeAndData(
+                        STEDataType.FREEZE_UI,
+                        null
+                )
+        );
     }
 
     @Override
     public void unfreezeUI() {
-
+        singleTimeEvents.updateValue(
+                new STETypeAndData(
+                        STEDataType.UNFREEZE_UI,
+                        null
+                )
+        );
     }
 
     private final Object localDataLock = new Object();
@@ -545,7 +558,10 @@ public class BannerViewModel implements IBannerViewModel {
         public void run() {
             boolean cancel = false;
             synchronized (timerLock) {
-                if (paused) return;
+                if (paused) {
+                    loopedExecutor.freeExecutor();
+                    return;
+                }
                 cancel = lastStartTimer >= 0 &&
                         timerDuration > 0 &&
                         System.currentTimeMillis() - lastStartTimer >= timerDuration;
@@ -559,6 +575,7 @@ public class BannerViewModel implements IBannerViewModel {
                 cancelTask();
                 autoSlideEnd();
             }
+            loopedExecutor.freeExecutor();
         }
     }
 
@@ -574,10 +591,7 @@ public class BannerViewModel implements IBannerViewModel {
     }
 
     private void cancelTask() {
-        if (scheduledFuture != null)
-            scheduledFuture.cancel(false);
-        scheduledFuture = null;
-        executorService.shutdown();
+        loopedExecutor.cancelTask();
     }
 
     private void startTimer(long maxTimerDuration, long timerDuration) {
@@ -588,13 +602,11 @@ public class BannerViewModel implements IBannerViewModel {
             pauseShift = 0;
             this.timerDuration = timerDuration;
         }
-        scheduledFuture = executorService.scheduleAtFixedRate(
-                timerTask,
-                1L,
-                50L,
-                TimeUnit.MILLISECONDS
-        );
+        loopedExecutor.task(timerTask);
     }
+
+
+    LoopedExecutor loopedExecutor = new LoopedExecutor(1L, 50L);
 
     @Override
     public void bannerIsShown() {
@@ -685,6 +697,8 @@ public class BannerViewModel implements IBannerViewModel {
                         .bannerPlace(bannerPlace)
                         .loadState(BannerLoadStates.EMPTY)
         );
+        loopedExecutor.cancelTask();
+        loopedExecutor.shutdown();
     }
 
     @Override

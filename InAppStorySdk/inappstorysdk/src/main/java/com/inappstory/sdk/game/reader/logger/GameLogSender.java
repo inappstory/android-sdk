@@ -2,9 +2,7 @@ package com.inappstory.sdk.game.reader.logger;
 
 import androidx.annotation.NonNull;
 
-import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.core.IASCore;
-import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.network.models.Response;
 import com.inappstory.sdk.utils.ScheduledTPEManager;
@@ -12,8 +10,6 @@ import com.inappstory.sdk.utils.ScheduledTPEManager;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 public class GameLogSender implements IGameLogSender {

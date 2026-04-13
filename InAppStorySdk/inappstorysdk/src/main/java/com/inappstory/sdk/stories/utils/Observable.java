@@ -26,6 +26,13 @@ public class Observable<T> {
         return true;
     }
 
+    public boolean subscribeSingle(Observer<T> listener) {
+        synchronized (listenerLock) {
+            listeners.clear();
+            listeners.add(listener);
+        }
+        return true;
+    }
 
     public boolean subscribeAndGetValue(final Observer<T> listener) {
         synchronized (listenerLock) {

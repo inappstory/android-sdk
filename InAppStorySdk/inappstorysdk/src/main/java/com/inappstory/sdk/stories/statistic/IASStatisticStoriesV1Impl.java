@@ -15,7 +15,6 @@ import com.inappstory.sdk.utils.ScheduledTPEManager;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 public class IASStatisticStoriesV1Impl implements IASStatisticStoriesV1 {

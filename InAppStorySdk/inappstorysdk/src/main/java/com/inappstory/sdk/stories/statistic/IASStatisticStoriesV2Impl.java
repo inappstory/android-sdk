@@ -188,7 +188,7 @@ public class IASStatisticStoriesV2Impl implements IASStatisticStoriesV2 {
                 }
             }
         });
-        loopedExecutor.init(queueTasksRunnable);
+        loopedExecutor.task(queueTasksRunnable);
     }
 
     public void cleanFakeEvents() {

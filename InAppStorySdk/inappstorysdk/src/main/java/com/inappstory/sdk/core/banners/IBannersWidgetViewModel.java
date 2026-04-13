@@ -17,6 +17,10 @@ public interface IBannersWidgetViewModel<T extends IBannerWidgetState> {
 
     IBannerViewModel getBannerViewModel(int id, int index);
 
+    void disableVerticalSwipeGesture();
+
+    void enableVerticalSwipeGesture();
+
     void sendOpenStat(int bannerId, String iterationId);
 
     void removeBannerViewModel(IBannerViewModel bannerViewModel);

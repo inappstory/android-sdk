@@ -116,6 +116,15 @@ public class BannerJavascriptInterface {
         slideViewModel.showNext();
     }
 
+    @JavascriptInterface
+    public void disableVerticalSwipeGesture() {
+        slideViewModel.disableVerticalSwipeGesture();
+    }
+
+    @JavascriptInterface
+    public void enableVerticalSwipeGesture() {
+        slideViewModel.enableVerticalSwipeGesture();
+    }
 
     @JavascriptInterface
     public void storySetLocalData(String data, boolean sendToServer) {

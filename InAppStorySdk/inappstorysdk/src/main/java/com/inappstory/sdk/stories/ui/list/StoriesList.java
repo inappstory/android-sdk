@@ -243,7 +243,7 @@ public class StoriesList extends RecyclerView {
         });
     }
 
-    private ScheduledTPEManager executorService = new ScheduledTPEManager();
+    private final ScheduledTPEManager executorService = new ScheduledTPEManager();
 
     @Override
     public void onAttachedToWindow() {

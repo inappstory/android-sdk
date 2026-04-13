@@ -8,6 +8,7 @@ import com.inappstory.sdk.banners.BannerPlaceLoadSettings;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.data.IBanner;
+import com.inappstory.sdk.inappmessage.domain.stedata.STEDataType;
 import com.inappstory.sdk.inappmessage.domain.stedata.STETypeAndData;
 import com.inappstory.sdk.stories.utils.Observable;
 import com.inappstory.sdk.stories.utils.Observer;
@@ -169,6 +170,16 @@ public class BannerListViewModel implements IBannersWidgetViewModel<BannerListSt
     @Override
     public void removeBannerViewModel(IBannerViewModel bannerViewModel) {
         bannerViewModelsHolder.removeViewModel(bannerViewModel);
+    }
+
+    @Override
+    public void enableVerticalSwipeGesture() {
+        singleTimeEvents.updateValue(new STETypeAndData(STEDataType.ENABLE_VERTICAL_SWIPE, null));
+    }
+
+    @Override
+    public void disableVerticalSwipeGesture() {
+        singleTimeEvents.updateValue(new STETypeAndData(STEDataType.DISABLE_VERTICAL_SWIPE, null));
     }
 
     @Override
