@@ -8,7 +8,7 @@ public class HostFromSecretKey {
     private String key;
 
 
-    private static final String TEST_DOMAIN = "https://api.test.inappstory.com/";
+    private static final String TEST_DOMAIN = "https://api.test.inappstory.ru/";
     private static final String PRODUCT_DOMAIN = "https://api.inappstory.ru/";
 
     public HostFromSecretKey(String key) {

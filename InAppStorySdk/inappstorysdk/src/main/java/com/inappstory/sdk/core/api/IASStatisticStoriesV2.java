@@ -1,6 +1,9 @@
 package com.inappstory.sdk.core.api;
 
+import com.inappstory.sdk.stories.api.models.SlideLayerKey;
+
 import java.util.List;
+import java.util.Map;
 
 public interface IASStatisticStoriesV2 extends StatDisabled {
 
@@ -59,6 +62,7 @@ public interface IASStatisticStoriesV2 extends StatDisabled {
     void sendDislikeStory(final int i,
                           final int si,
                           final String feedId);
+
     void sendFavoriteStory(final int i,
                            final int si,
                            final String feedId);
@@ -73,10 +77,23 @@ public interface IASStatisticStoriesV2 extends StatDisabled {
                         int mode,
                         final String feedId);
 
-    void sendStoryWidgetEvent(final String name,
-                              final String data,
-                              final String feedId,
-                              boolean forceSend);
+    void sendStoryWidgetEvent(
+            final String name,
+            final String data,
+            final String feedId,
+            boolean forceSend
+    );
+
+    void sendSlideScrollEvents(String feedId);
+
+    Map<SlideLayerKey, Float> getScrollEvents();
+
+    void setScrollEvents(Map<SlideLayerKey, Float> scrollEvents);
+
+    void addScrollEvent(
+            SlideLayerKey key,
+            float value
+    );
 
     void sendGameEvent(final String name,
                        final String data,

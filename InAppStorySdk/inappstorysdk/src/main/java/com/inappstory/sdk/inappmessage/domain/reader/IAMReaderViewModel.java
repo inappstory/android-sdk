@@ -1,5 +1,6 @@
 package com.inappstory.sdk.inappmessage.domain.reader;
 
+import android.util.Log;
 import android.util.Pair;
 
 import androidx.annotation.NonNull;
@@ -92,6 +93,7 @@ public class IAMReaderViewModel implements IIAMReaderViewModel {
     @Override
     public void updateCurrentUiState(IAMReaderUIStates newState) {
         final IAMReaderState readerState = this.readerStateObservable.getValue();
+        Log.e("sendIAMScrollEvent", "updateCurrentUiState");
         IAMReaderUIStates currentUiState = readerState.uiState;
 
         if (currentUiState != newState) {
@@ -122,6 +124,10 @@ public class IAMReaderViewModel implements IIAMReaderViewModel {
                                 }
                             }
                     );
+                Log.e("sendIAMScrollEvent", "CloseIAM");
+                if (slideViewModel != null) {
+                    slideViewModel.sendSlideScrollEvents();
+                }
             }
         }
         this.readerStateObservable.updateValue(

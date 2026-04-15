@@ -5,7 +5,6 @@ import android.media.AudioManager;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Vibrator;
-import android.util.Log;
 import android.view.View;
 
 import androidx.annotation.NonNull;
@@ -27,6 +26,8 @@ import com.inappstory.sdk.goods.models.ProductCartUpdateJSData;
 import com.inappstory.sdk.goods.outercallbacks.ProductCart;
 import com.inappstory.sdk.goods.outercallbacks.ProductCartUpdatedProcessCallback;
 import com.inappstory.sdk.stories.api.models.ContentType;
+import com.inappstory.sdk.stories.api.models.OnVerticalScrollJSData;
+import com.inappstory.sdk.stories.api.models.SlideLayerKey;
 import com.inappstory.sdk.stories.api.models.UpdateTimelineData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
@@ -54,6 +55,8 @@ import com.inappstory.sdk.utils.ClipboardUtils;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 public class StoriesViewManager {
@@ -78,6 +81,7 @@ public class StoriesViewManager {
         if (eventData != null)
             pageManager.widgetEvent(name, eventData);
     }
+
 
     void screenshotShare(String shareId) {
         if (storiesView != null)
@@ -454,7 +458,6 @@ public class StoriesViewManager {
         String innerWebData = story.slideByIndex(index);
         if (innerWebData == null) return;
         if (storiesView == null || !(storiesView instanceof StoriesWebView)) return;
-
         WebPageConvertCallback callback = new WebPageConvertCallback() {
             @Override
             public void onConvert(String replaceData, String firstData, int lastIndex) {
@@ -559,16 +562,28 @@ public class StoriesViewManager {
         }
     }
 
-    public void onVerticalScrollChanged(float oldY, float newY) {
+    private final Map<SlideLayerKey, Float> scrollValues = new HashMap<>();
 
+    private void onChangePassOverscroll(float newY) {
         if (storiesView instanceof StoriesWebView) {
             if (newY == 0f) {
-                ((StoriesWebView)storiesView).passOverscroll(true);
+                ((StoriesWebView) storiesView).passOverscroll(true);
             } else {
-                ((StoriesWebView)storiesView).passOverscroll(false);
+                ((StoriesWebView) storiesView).passOverscroll(false);
             }
         }
+    }
 
+    public void onVerticalScrollChanged(OnVerticalScrollJSData verticalScrollData) {
+        onChangePassOverscroll(verticalScrollData.scrollY);
+        if (verticalScrollData.isScrollableLayer) {
+            SlideLayerKey key = new SlideLayerKey(
+                    verticalScrollData.cardId,
+                    verticalScrollData.slideIndex,
+                    verticalScrollData.layerIndex
+            );
+            core.statistic().storiesV2().addScrollEvent(key, verticalScrollData.scrollPercent);
+        }
     }
 
 
@@ -780,7 +795,7 @@ public class StoriesViewManager {
                     core.network().getApi().sendStoryData(
                             Integer.toString(storyId),
                             data,
-                            ((IASDataSettingsHolder)core.settingsAPI()).sessionIdOrEmpty()
+                            ((IASDataSettingsHolder) core.settingsAPI()).sessionIdOrEmpty()
                     ),
                     new NetworkCallback<Response>() {
                         @Override
@@ -818,7 +833,7 @@ public class StoriesViewManager {
                 core.network().getApi().sendStoryData(
                         Integer.toString(storyId),
                         data,
-                        ((IASDataSettingsHolder)core.settingsAPI()).sessionIdOrEmpty()
+                        ((IASDataSettingsHolder) core.settingsAPI()).sessionIdOrEmpty()
                 ),
                 new NetworkCallback<Response>() {
                     @Override

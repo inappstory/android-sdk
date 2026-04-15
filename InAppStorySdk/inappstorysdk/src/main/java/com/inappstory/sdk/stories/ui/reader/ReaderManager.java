@@ -498,6 +498,7 @@ public class ReaderManager {
     void changeStory() {
         final List<Integer> lst = new ArrayList<>();
         lst.add(currentStoryId);
+        core.statistic().storiesV2().sendSlideScrollEvents(feedId);
         if (contentType == ContentType.STORY)
             core.statistic().storiesV1(getSessionId(), new GetStatisticV1Callback() {
                 @Override

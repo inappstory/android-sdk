@@ -29,6 +29,8 @@ import com.inappstory.sdk.stories.api.models.CachedSessionData;
 import com.inappstory.sdk.stories.api.models.ContentId;
 import com.inappstory.sdk.stories.api.models.ContentIdWithIndex;
 import com.inappstory.sdk.stories.api.models.ContentType;
+import com.inappstory.sdk.stories.api.models.OnVerticalScrollJSData;
+import com.inappstory.sdk.stories.api.models.SlideLayerKey;
 import com.inappstory.sdk.stories.api.models.SlideLinkObject;
 import com.inappstory.sdk.stories.cache.ContentIdAndType;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickAction;
@@ -86,6 +88,7 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
     public void removeSubscriber(Observer<IAMReaderSlideState> observer) {
         this.slideStateObservable.unsubscribe(observer);
     }
+
 
     @Override
     public void addScrollSubscriber(Observer<IAMReaderScrollState> observer) {
@@ -183,8 +186,18 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
     }
 
     @Override
-    public void onVerticalScrollChange(float scrollY, float oldScrollY) {
-        scrollStateObservable.updateValue(new IAMReaderScrollState(scrollY));
+    public void onVerticalScrollChange(OnVerticalScrollJSData scrollData) {
+        scrollStateObservable.updateValue(new IAMReaderScrollState(scrollData.scrollY));
+        if (scrollData.isScrollableLayer) {
+            core.statistic().iamV1().addScrollEvent(
+                    new SlideLayerKey(
+                            scrollData.cardId,
+                            scrollData.slideIndex,
+                            scrollData.layerIndex
+                    ),
+                    scrollData.scrollY
+            );
+        }
     }
 
     @Override
@@ -225,7 +238,12 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
         }
     }
 
+    public void sendSlideScrollEvents() {
+        core.statistic().iamV1().sendSlideScrollEvents(slideTimeState.iterationId());
+    }
+
     private void slideLeftEvent(String event) {
+        sendSlideScrollEvents();
         if (event == null || event.isEmpty()) return;
         final SlideLeftJSPayload slideLeftJSPayload = JsonParser.fromJson(
                 event,
@@ -242,7 +260,7 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
                 event,
                 ShowSlideJSPayload.class
         );
-        scrollStateObservable.updateValue(new IAMReaderScrollState(0f));
+        // scrollStateObservable.updateValue(new IAMReaderScrollState(0f));
         if (showSlideJSPayload != null) {
             slideStateObservable.updateValue(
                     slideStateObservable
@@ -305,12 +323,6 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
             return new ContentIdWithIndex(iamId, 0);
         }
         return null;
-    }
-
-    @Override
-    public String modifyContent(String content) {
-        return content.replace("<head>",
-                "<head>" + "<style> html { background: #00000000 !important; } </style>");
     }
 
     public void slideClick(String payload) {

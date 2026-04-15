@@ -5,6 +5,7 @@ import com.inappstory.sdk.core.ui.screens.IReaderSlideViewModel;
 import com.inappstory.sdk.inappmessage.InAppMessageSlideData;
 import com.inappstory.sdk.inappmessage.domain.stedata.STETypeAndData;
 import com.inappstory.sdk.stories.api.models.ContentIdWithIndex;
+import com.inappstory.sdk.stories.api.models.OnVerticalScrollJSData;
 import com.inappstory.sdk.stories.utils.Observer;
 import com.inappstory.sdk.stories.utils.SingleTimeEvent;
 
@@ -27,7 +28,7 @@ public interface IIAMReaderSlideViewModel extends IReaderSlideViewModel {
 
     void updateLayout();
 
-    void onVerticalScrollChange(float scrollY, float oldScrollY);
+    void onVerticalScrollChange(OnVerticalScrollJSData scrollData);
 
     void onCardLoadingStateChange(int state, String reason);
 
@@ -38,8 +39,6 @@ public interface IIAMReaderSlideViewModel extends IReaderSlideViewModel {
     ContentIdWithIndex iamId();
 
     InAppMessageSlideData slideData();
-
-    String modifyContent(String content);
 
     void slideClick(String payload);
 

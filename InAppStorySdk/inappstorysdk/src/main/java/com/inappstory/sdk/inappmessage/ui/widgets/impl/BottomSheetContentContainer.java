@@ -36,7 +36,8 @@ import com.inappstory.sdk.inappmessage.ui.widgets.IAMContentContainer;
 import com.inappstory.sdk.stories.utils.Observer;
 import com.inappstory.sdk.stories.utils.Sizes;
 
-public final class BottomSheetContentContainer extends IAMContentContainer<InAppMessageBottomSheetAppearance> implements Observer<IAMReaderScrollState> {
+public final class BottomSheetContentContainer extends IAMContentContainer<InAppMessageBottomSheetAppearance>
+        implements Observer<IAMReaderScrollState> {
     private BottomSheetBehavior<RoundedCornerLayout> bottomSheetBehavior;
     private RoundedCornerLayout roundedCornerLayout;
     private CoordinatorLayout.LayoutParams layoutParams;
@@ -288,6 +289,7 @@ public final class BottomSheetContentContainer extends IAMContentContainer<InApp
 
     @Override
     public void onUpdate(IAMReaderScrollState newValue) {
+        Log.e("IAMReaderScrollState", newValue.toString());
         if (bottomSheetBehavior != null)
             bottomSheetBehavior.setDraggable(
                     closeEnabled &&

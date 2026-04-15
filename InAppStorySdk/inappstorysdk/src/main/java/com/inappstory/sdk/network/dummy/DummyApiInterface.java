@@ -46,6 +46,7 @@ public class DummyApiInterface implements ApiInterface {
         return new DummyRequest();
     }
 
+
     @Override
     public Request sendInAppMessageStat(
             String id,
@@ -55,6 +56,7 @@ public class DummyApiInterface implements ApiInterface {
             Integer slideIndex,
             Integer slideTotal,
             Long durationMs,
+            String value,
             String widgetId,
             String widgetLabel,
             String widgetValue,
@@ -168,6 +170,7 @@ public class DummyApiInterface implements ApiInterface {
             Integer slideIndex,
             Integer slideTotal,
             Long durationMs,
+            String value,
             String widgetId,
             String widgetLabel,
             String widgetValue,

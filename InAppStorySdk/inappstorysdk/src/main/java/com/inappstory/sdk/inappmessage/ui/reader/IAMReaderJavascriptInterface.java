@@ -5,6 +5,8 @@ import android.webkit.JavascriptInterface;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.LoggerTags;
 import com.inappstory.sdk.inappmessage.domain.reader.IIAMReaderSlideViewModel;
+import com.inappstory.sdk.network.JsonParser;
+import com.inappstory.sdk.stories.api.models.OnVerticalScrollJSData;
 
 public class IAMReaderJavascriptInterface {
     private final IIAMReaderSlideViewModel slideViewModel;
@@ -26,8 +28,10 @@ public class IAMReaderJavascriptInterface {
 
 
     @JavascriptInterface
-    public void onVerticalScrollChange(float scrollY, float oldScrollY) {
-        slideViewModel.onVerticalScrollChange(scrollY, oldScrollY);
+    public void onVerticalScrollChange(String data) {
+        OnVerticalScrollJSData verticalScrollData =
+                JsonParser.fromJson(data, OnVerticalScrollJSData.class);
+        slideViewModel.onVerticalScrollChange(verticalScrollData);
     }
 
     @JavascriptInterface

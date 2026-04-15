@@ -21,6 +21,7 @@ import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.core.network.content.models.Story;
+import com.inappstory.sdk.stories.api.models.SlideLayerKey;
 import com.inappstory.sdk.stories.api.models.SlideLinkObject;
 import com.inappstory.sdk.stories.cache.ContentIdAndType;
 import com.inappstory.sdk.stories.managers.TimerManager;
@@ -263,6 +264,7 @@ public class ReaderPageManager implements IReaderSlideViewModel {
         );
     }
 
+
     public void widgetEvent(final String widgetName, String widgetData) {
         final IReaderContent story = core.contentHolder().readerContent().getByIdAndType(
                 storyId, getViewContentType()
@@ -398,9 +400,15 @@ public class ReaderPageManager implements IReaderSlideViewModel {
         isPaused = true;
         if (withBackground) {
             timerManager.pauseTimerAndRefreshStat();
+            cachedScrollEvents = core.statistic().storiesV2().getScrollEvents();
+            core.statistic().storiesV2().sendSlideScrollEvents(
+                    getFeedId()
+            );
         }
         webViewManager.pauseStory();
     }
+
+    Map<SlideLayerKey, Float> cachedScrollEvents;
 
     boolean isPaused;
 
@@ -409,6 +417,9 @@ public class ReaderPageManager implements IReaderSlideViewModel {
         if (!isPaused) return;
         isPaused = false;
         if (withBackground) {
+            if (cachedScrollEvents != null) {
+                core.statistic().storiesV2().setScrollEvents(cachedScrollEvents);
+            }
             timerManager.resumeTimerAndRefreshStat();
         }
         webViewManager.resumeStory();
@@ -549,6 +560,9 @@ public class ReaderPageManager implements IReaderSlideViewModel {
                 storyId + "_" + slideIndex);
         isPaused = false;
         pauseTimers();
+        core.statistic().storiesV2().sendSlideScrollEvents(
+                getFeedId()
+        );
         core.statistic().storiesV2().sendCurrentState();
         startCommonTimer();
         core.contentLoader().storyDownloadManager().changePriorityForSingle(
@@ -689,6 +703,11 @@ public class ReaderPageManager implements IReaderSlideViewModel {
             host.storyLoadError();
     }
 
+    public void gatherScrollEvents() {
+        core.statistic().storiesV2().sendSlideScrollEvents(
+                getFeedId()
+        );
+    }
 
     @Override
     public void slideLoadSuccess(int index) {

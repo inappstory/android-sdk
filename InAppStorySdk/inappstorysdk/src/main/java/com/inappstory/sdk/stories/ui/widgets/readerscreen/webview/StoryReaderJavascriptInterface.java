@@ -10,6 +10,7 @@ import com.inappstory.sdk.LoggerTags;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.network.JsonParser;
+import com.inappstory.sdk.stories.api.models.OnVerticalScrollJSData;
 import com.inappstory.sdk.stories.api.models.StoryLoadedData;
 import com.inappstory.sdk.stories.api.models.UpdateTimelineData;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.StoriesViewManager;
@@ -47,9 +48,10 @@ public class StoryReaderJavascriptInterface {
     }
 
     @JavascriptInterface
-    public void onVerticalScrollChange(float scrollY, float oldScrollY) {
-        manager.onVerticalScrollChanged(oldScrollY, scrollY);
-        logMethod(oldScrollY + " " + scrollY);
+    public void onVerticalScrollChange(String data) {
+        OnVerticalScrollJSData verticalScrollData =
+                JsonParser.fromJson(data, OnVerticalScrollJSData.class);
+        manager.onVerticalScrollChanged(verticalScrollData);
     }
 
     @JavascriptInterface

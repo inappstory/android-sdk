@@ -12,6 +12,14 @@ public class IAMReaderScrollState {
         return this;
     }
 
+    @Override
+    public String toString() {
+        return "IAMReaderScrollState{" +
+                "verticalGestureEnabled=" + verticalGestureEnabled +
+                ", currentOffsetY=" + currentOffsetY +
+                '}';
+    }
+
     private boolean verticalGestureEnabled = true;
 
     public boolean passOverscroll() {

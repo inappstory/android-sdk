@@ -29,6 +29,8 @@ public class StoryStatisticV2Task {
     public Integer slideTotal;
     @SerializedName("d")
     public Long durationMs;
+    @SerializedName("v")
+    public String value;
     @SerializedName("wi")
     public String widgetId;
     @SerializedName("wl")

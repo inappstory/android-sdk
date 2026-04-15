@@ -12,8 +12,10 @@ import android.net.Uri;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewParent;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
@@ -298,16 +300,33 @@ public class BannerView extends FrameLayout implements Observer<BannerState> {
                             );
                             break;
                         case FREEZE_UI:
-                            getParentForAccessibility().requestDisallowInterceptTouchEvent(true);
+                            lockTouchEvents = true;
+                            // requestDisallowInterceptTouchEventForAllParents(BannerView.this, true);
+                            getParent().requestDisallowInterceptTouchEvent(true);
                             break;
                         case UNFREEZE_UI:
-                            getParentForAccessibility().requestDisallowInterceptTouchEvent(false);
+                            lockTouchEvents = false;
+                           // requestDisallowInterceptTouchEventForAllParents(BannerView.this, false);
+                            getParent().requestDisallowInterceptTouchEvent(false);
                             break;
                     }
                 }
             });
         }
     };
+
+
+    private boolean lockTouchEvents = false;
+
+
+    private void requestDisallowInterceptTouchEventForAllParents(View view, boolean disallowIntercept) {
+        ViewParent parent = view.getParent();
+        if (parent instanceof View) {
+            Log.e("requestDisallow", parent.toString());
+            parent.requestDisallowInterceptTouchEvent(disallowIntercept);
+            requestDisallowInterceptTouchEventForAllParents((View) parent, disallowIntercept);
+        }
+    }
 
     private void openStoryHandle(IASCore core, final ContentIdWithIndex contentIdWithIndex) {
         try {

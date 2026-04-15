@@ -6,6 +6,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.text.TextUtils;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.webkit.ConsoleMessage;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
@@ -119,13 +120,16 @@ public class IAMWebView extends IASWebView implements ContentViewInteractor, Obs
     @Override
     protected void init() {
         super.init();
-        setOnTouchListener(new OnSwipeTouchListener(getContext()) {
+        swipeTouchListener = new OnSwipeTouchListener(getContext()) {
             @Override
             public void onSwipeUp() {
                 swipeUp();
             }
-        });
+        };
+        setOnTouchListener(swipeTouchListener);
     }
+
+    OnSwipeTouchListener swipeTouchListener;
 
     private void logMethod(String payload) {
         if (slideViewModel == null) return;
@@ -354,5 +358,10 @@ public class IAMWebView extends IASWebView implements ContentViewInteractor, Obs
     @Override
     public void onUpdate(IAMReaderScrollState newValue) {
         passOverscroll(newValue.passOverscroll());
+        if (!newValue.verticalGestureEnabled()) {
+            setOnTouchListener(null);
+        } else {
+            setOnTouchListener(swipeTouchListener);
+        }
     }
 }

@@ -1,6 +1,7 @@
 package com.inappstory.sdk.stories.statistic;
 
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.core.IASCore;
@@ -10,6 +11,7 @@ import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.models.Response;
 import com.inappstory.sdk.stories.api.models.CachedSessionData;
 import com.inappstory.sdk.stories.api.models.CurrentV2StatisticState;
+import com.inappstory.sdk.stories.api.models.SlideLayerKey;
 import com.inappstory.sdk.stories.utils.LoopedExecutor;
 
 import java.util.ArrayList;
@@ -316,6 +318,7 @@ public class IASStatisticStoriesV2Impl implements IASStatisticStoriesV2 {
                                final Integer si,
                                final Integer st,
                                final String feedId) {
+
         sendCurrentState();
         if (cTimes == null) cTimes = new HashMap<>();
         Long tm = cTimes.get(i) != null ? cTimes.get(i) : 0L;
@@ -507,6 +510,59 @@ public class IASStatisticStoriesV2Impl implements IASStatisticStoriesV2 {
         }
     }
 
+    @Override
+    public void setScrollEvents(Map<SlideLayerKey, Float> scrollEvents) {
+        scrollValues.putAll(scrollEvents);
+    }
+
+    @Override
+    public Map<SlideLayerKey, Float> getScrollEvents() {
+        return new HashMap<>(scrollValues);
+    }
+
+    @Override
+    public void addScrollEvent(SlideLayerKey key, float value) {
+        Float cacheValue = scrollValues.get(key);
+        if (cacheValue == null) cacheValue = value;
+        else cacheValue = Math.max(cacheValue, value);
+        scrollValues.put(key, cacheValue);
+    }
+
+    @Override
+    public void sendSlideScrollEvents(String feedId) {
+        Map<SlideLayerKey, Float> localScrollValues = new HashMap<>(scrollValues);
+        scrollValues.clear();
+        for (SlideLayerKey key : localScrollValues.keySet()) {
+            Float value = localScrollValues.get(key);
+            if (value == null) value = 0f;
+            sendScrollEvent(
+                    key.cardId,
+                    key.slideIndex,
+                    key.layerIndex,
+                    value,
+                    feedId
+            );
+        }
+    }
+
+    private final Map<SlideLayerKey, Float> scrollValues = new HashMap<>();
+
+
+    private void sendScrollEvent(int i, int si, int li, float value, String feedId) {
+        StoryStatisticV2Task task = new StoryStatisticV2Task();
+        task.event = "w-scrollview-impression";
+        task.storyId = Integer.toString(i);
+        task.slideIndex = si;
+        task.layoutIndex = li;
+        task.feedId = feedId;
+        task.value = Float.toString(value);
+        generateBase(task);
+        addTask(
+                task,
+                true
+        );
+    }
+
     public void sendGameEvent(final String name, final String data,
                               final String feedId) {
         StoryStatisticV2Task task = JsonParser.fromJson(data, StoryStatisticV2Task.class);
@@ -542,6 +598,7 @@ public class IASStatisticStoriesV2Impl implements IASStatisticStoriesV2 {
                                     task.slideIndex,
                                     task.slideTotal,
                                     task.durationMs,
+                                    task.value,
                                     task.widgetId,
                                     task.widgetLabel,
                                     task.widgetValue,
