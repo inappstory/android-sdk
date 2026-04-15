@@ -145,6 +145,9 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
                 }
             }
         }
+        core.statistic().iamV1().sendSlideScrollEvents(
+                slideTimeState.iterationId()
+        );
         core.statistic().iamV1().sendCloseEvent(
                 iamId,
                 slideState.slideIndex(),
@@ -195,7 +198,7 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
                             scrollData.slideIndex,
                             scrollData.layerIndex
                     ),
-                    scrollData.scrollY
+                    scrollData.scrollPercent
             );
         }
     }

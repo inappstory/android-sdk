@@ -577,12 +577,14 @@ public class StoriesViewManager {
     public void onVerticalScrollChanged(OnVerticalScrollJSData verticalScrollData) {
         onChangePassOverscroll(verticalScrollData.scrollY);
         if (verticalScrollData.isScrollableLayer) {
-            SlideLayerKey key = new SlideLayerKey(
-                    verticalScrollData.cardId,
-                    verticalScrollData.slideIndex,
-                    verticalScrollData.layerIndex
+            core.statistic().storiesV2().addScrollEvent(
+                    new SlideLayerKey(
+                            verticalScrollData.cardId,
+                            verticalScrollData.slideIndex,
+                            verticalScrollData.layerIndex
+                    ),
+                    verticalScrollData.scrollPercent
             );
-            core.statistic().storiesV2().addScrollEvent(key, verticalScrollData.scrollPercent);
         }
     }
 
