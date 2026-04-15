@@ -40,6 +40,7 @@ import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.utils.StringsUtils;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
@@ -418,7 +419,8 @@ public class ReaderPageManager implements IReaderSlideViewModel {
         isPaused = false;
         if (withBackground) {
             if (cachedScrollEvents != null) {
-                core.statistic().storiesV2().setScrollEvents(cachedScrollEvents);
+                core.statistic().storiesV2().setScrollEvents(new HashMap<>(cachedScrollEvents));
+                cachedScrollEvents = null;
             }
             timerManager.resumeTimerAndRefreshStat();
         }

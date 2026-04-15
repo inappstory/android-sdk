@@ -47,6 +47,7 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -111,6 +112,10 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
             );
         else
             slideTimeState.resume();
+        if (cachedScrollEvents != null) {
+            core.statistic().iamV1().setScrollEvents(new HashMap<>(cachedScrollEvents));
+            cachedScrollEvents = null;
+        }
         core.statistic().iamV1().sendOpenEvent(
                 iamId,
                 slideState.slideIndex(),
@@ -119,6 +124,9 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
                 fromScratch
         );
     }
+
+
+    Map<SlideLayerKey, Float> cachedScrollEvents;
 
     @Override
     public void readerIsClosing() {
@@ -145,6 +153,8 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
                 }
             }
         }
+        cachedScrollEvents = core.statistic().iamV1().getScrollEvents();
+
         core.statistic().iamV1().sendSlideScrollEvents(
                 slideTimeState.iterationId()
         );

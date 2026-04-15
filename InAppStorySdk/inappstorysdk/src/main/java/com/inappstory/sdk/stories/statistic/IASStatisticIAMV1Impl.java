@@ -156,6 +156,16 @@ public class IASStatisticIAMV1Impl implements IASStatisticIAMV1 {
 
 
     @Override
+    public void setScrollEvents(Map<SlideLayerKey, Float> scrollEvents) {
+        scrollValues.putAll(scrollEvents);
+    }
+
+    @Override
+    public Map<SlideLayerKey, Float> getScrollEvents() {
+        return new HashMap<>(scrollValues);
+    }
+
+    @Override
     public void addScrollEvent(SlideLayerKey key, float value) {
         synchronized (scrollEventsLock) {
             Float cacheValue = scrollValues.get(key);
