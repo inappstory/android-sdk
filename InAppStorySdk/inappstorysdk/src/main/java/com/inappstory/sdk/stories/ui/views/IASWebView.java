@@ -181,26 +181,10 @@ public class IASWebView extends WebView implements NestedScrollingChild {
 
 
     @Override
-    public boolean onInterceptTouchEvent(MotionEvent ev) {
-        boolean result;
-        /*if (passOverscroll) {
-            result = false;
-        } else
-            result = super.onInterceptTouchEvent(ev);*/
-
-        final int action = ev.getAction();
-        Log.e("ScrollEvents", "WebView TouchEv onInterceptTouchEvent " + passOverscroll + " " + action);
-        //passOverscroll = false;
-        return super.onInterceptTouchEvent(ev);
-    }
-
-
-    @Override
     public boolean onTouchEvent(MotionEvent ev) {
         boolean returnValue = false;
         MotionEvent event = MotionEvent.obtain(ev);
         final int action = MotionEventCompat.getActionMasked(event);
-        Log.e("ScrollEvents", "WebView TouchEv onTouchEvent " + passOverscroll + " " + action);
         if (action == MotionEvent.ACTION_DOWN) {
             mNestedOffsetY = 0;
             if (parent != null)
@@ -282,7 +266,7 @@ public class IASWebView extends WebView implements NestedScrollingChild {
     public boolean dispatchNestedScroll(int dxConsumed, int dyConsumed, int dxUnconsumed, int dyUnconsumed,
 
                                         int[] offsetInWindow) {
-        return passOverscroll && mChildHelper.dispatchNestedScroll(
+        return unlockedUI && passOverscroll && mChildHelper.dispatchNestedScroll(
                 dxConsumed,
                 dyConsumed,
                 dxUnconsumed,
@@ -293,7 +277,7 @@ public class IASWebView extends WebView implements NestedScrollingChild {
 
     @Override
     public boolean dispatchNestedPreScroll(int dx, int dy, int[] consumed, int[] offsetInWindow) {
-        return passOverscroll && mChildHelper.dispatchNestedPreScroll(
+        return unlockedUI && passOverscroll && mChildHelper.dispatchNestedPreScroll(
                 dx,
                 dy,
                 consumed,
@@ -304,10 +288,10 @@ public class IASWebView extends WebView implements NestedScrollingChild {
     protected void contentInScrollProcess(boolean contentInScrollProcess) {}
 
     public boolean passOverscroll = true;
+    public boolean unlockedUI = true;
     private boolean contentNotInScrollProcess = false;
 
     public void passOverscroll(boolean passOverscroll) {
-        Log.e("passOverscroll", passOverscroll + "");
         this.passOverscroll = passOverscroll;
         if (parent != null)
             parent.useSwipeCallbacks &= passOverscroll;
@@ -319,10 +303,6 @@ public class IASWebView extends WebView implements NestedScrollingChild {
 
     @Override
     protected void onScrollChanged(int l, int t, int oldl, int oldt) {
-        /* if (t <= 0)
-            passOverscroll = true;*/
-        Log.e("ScrollEvents", "WebView onScrollChanged " + " " + l
-                + " " + oldl + " " + t + " " + oldt);
         super.onScrollChanged(l, t, oldl, oldt);
     }
 
