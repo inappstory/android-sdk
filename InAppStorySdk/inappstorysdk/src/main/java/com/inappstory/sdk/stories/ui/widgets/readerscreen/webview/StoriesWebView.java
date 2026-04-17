@@ -218,9 +218,10 @@ public class StoriesWebView extends IASWebView implements ContentViewInteractor 
 
     @Override
     public void swipeUp() {
-
-        loadUrl("javascript:window.story_slide_swipe_up()");
-        logMethod("story_slide_swipe_up");
+        if (passSwipeUpCallback) {
+            loadUrl("javascript:window.story_slide_swipe_up()");
+            logMethod("story_slide_swipe_up");
+        }
     }
 
 

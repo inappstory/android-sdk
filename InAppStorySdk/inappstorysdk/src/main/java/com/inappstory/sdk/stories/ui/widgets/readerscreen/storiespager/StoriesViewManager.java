@@ -5,6 +5,7 @@ import android.media.AudioManager;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Vibrator;
+import android.util.Log;
 import android.view.View;
 
 import androidx.annotation.NonNull;
@@ -576,7 +577,7 @@ public class StoriesViewManager {
     public void onVerticalScrollChanged(OnVerticalScrollJSData verticalScrollData) {
         onChangePassOverscroll(verticalScrollData.scrollY,
                 !verticalScrollData.isScrollableLayer ||
-                verticalScrollData.scrollPercent > 99.f
+                verticalScrollData.scrollPercent > 99.9f
         );
         if (verticalScrollData.isScrollableLayer) {
             core.statistic().storiesV2().addScrollEvent(

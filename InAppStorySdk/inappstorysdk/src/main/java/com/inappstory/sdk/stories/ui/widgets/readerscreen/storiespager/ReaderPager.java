@@ -60,6 +60,7 @@ public class ReaderPager extends BothSideViewPager {
     }
 
 
+
     public void contentInScrollProcess(boolean contentInScrollProcess) {
         this.contentInScrollProcess = contentInScrollProcess;
     }
