@@ -247,9 +247,9 @@ public class DraggableElasticLayout extends FrameLayout {
     @Override
     public void onStopNestedScroll(View child) {
         if (totalDisabledDrag > 400) {
-            swipeUpCallback();
+            if (useSwipeCallbacks)
+                swipeUpCallback();
         } else if (!disableClose && totalDisabledDrag < -400) {
-            Log.e("swCallbacks", "swipeDownCallback");
             swipeDownCallback();
         }
         if (Math.abs(totalDrag) >= dragDismissDistance && !disabled && verticalGesturesEnabled) {

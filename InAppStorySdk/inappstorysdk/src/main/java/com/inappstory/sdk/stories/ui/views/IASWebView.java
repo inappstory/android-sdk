@@ -48,12 +48,10 @@ public class IASWebView extends WebView implements NestedScrollingChild {
 
     DraggableElasticLayout parent;
 
-
     DraggableElasticLayout.DraggableElasticDragCallback callback = new DraggableElasticLayout.DraggableElasticDragCallback() {
         @Override
         public void onDrag(float elasticOffset, float elasticOffsetPixels, float rawOffset, float rawOffsetPixels) {
             swiped = elasticOffsetPixels > 0f;
-            Log.e("DraggableCallback", "" + swiped);
             //super.onDrag(elasticOffset, elasticOffsetPixels, rawOffset, rawOffsetPixels);
         }
     };
@@ -188,7 +186,7 @@ public class IASWebView extends WebView implements NestedScrollingChild {
         if (action == MotionEvent.ACTION_DOWN) {
             mNestedOffsetY = 0;
             if (parent != null)
-                parent.useSwipeCallbacks = passOverscroll;
+                parent.useSwipeCallbacks = passSwipeUpCallback;
             contentNotInScrollProcess = passOverscroll;
             contentInScrollProcess(!contentNotInScrollProcess);
         }
@@ -266,7 +264,7 @@ public class IASWebView extends WebView implements NestedScrollingChild {
     public boolean dispatchNestedScroll(int dxConsumed, int dyConsumed, int dxUnconsumed, int dyUnconsumed,
 
                                         int[] offsetInWindow) {
-        return unlockedUI && passOverscroll && mChildHelper.dispatchNestedScroll(
+        return unlockedUI && (passOverscroll || passSwipeUpCallback && dyUnconsumed > 0) && mChildHelper.dispatchNestedScroll(
                 dxConsumed,
                 dyConsumed,
                 dxUnconsumed,
@@ -277,7 +275,7 @@ public class IASWebView extends WebView implements NestedScrollingChild {
 
     @Override
     public boolean dispatchNestedPreScroll(int dx, int dy, int[] consumed, int[] offsetInWindow) {
-        return unlockedUI && passOverscroll && mChildHelper.dispatchNestedPreScroll(
+        return unlockedUI && (passOverscroll || passSwipeUpCallback && dy > 0) && mChildHelper.dispatchNestedPreScroll(
                 dx,
                 dy,
                 consumed,
@@ -285,16 +283,20 @@ public class IASWebView extends WebView implements NestedScrollingChild {
         );
     }
 
-    protected void contentInScrollProcess(boolean contentInScrollProcess) {}
+    protected void contentInScrollProcess(boolean contentInScrollProcess) {
+    }
 
     public boolean passOverscroll = true;
+    public boolean passSwipeUpCallback = true;
     public boolean unlockedUI = true;
     private boolean contentNotInScrollProcess = false;
 
-    public void passOverscroll(boolean passOverscroll) {
+    public void passOverscroll(boolean passOverscroll, boolean passSwipeUpCallback) {
+        Log.e("passOverscroll", passOverscroll + " " + passSwipeUpCallback);
         this.passOverscroll = passOverscroll;
+        this.passSwipeUpCallback = passSwipeUpCallback;
         if (parent != null)
-            parent.useSwipeCallbacks &= passOverscroll;
+            parent.useSwipeCallbacks &= passSwipeUpCallback;
         contentNotInScrollProcess &= passOverscroll;
         contentInScrollProcess(!contentNotInScrollProcess);
     }

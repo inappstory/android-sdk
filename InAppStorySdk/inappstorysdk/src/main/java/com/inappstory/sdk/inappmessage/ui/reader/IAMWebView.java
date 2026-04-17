@@ -177,7 +177,7 @@ public class IAMWebView extends IASWebView implements ContentViewInteractor, Obs
 
     @Override
     public void startSlide(IASCore core) {
-        passOverscroll(true);
+        passOverscroll(true, true);
         loadUrl("javascript:(function(){" +
                 "if ('story_slide_start' in window) " +
                 "{" +
@@ -357,8 +357,10 @@ public class IAMWebView extends IASWebView implements ContentViewInteractor, Obs
 
     @Override
     public void onUpdate(IAMReaderScrollState newValue) {
-        passOverscroll(newValue.passOverscroll());
+        passOverscroll(newValue.passOverscroll(), newValue.passSwipeUpCallback());
+        Log.e("SWTListener", newValue.verticalGestureEnabled() + "");
         if (!newValue.verticalGestureEnabled()) {
+
             setOnTouchListener(null);
         } else {
             setOnTouchListener(swipeTouchListener);

@@ -1,6 +1,5 @@
 package com.inappstory.sdk.inappmessage.domain.reader;
 
-import android.util.Log;
 
 public class IAMReaderScrollState {
     public boolean verticalGestureEnabled() {
@@ -26,15 +25,20 @@ public class IAMReaderScrollState {
         return currentOffsetY <= 0;
     }
 
-    public IAMReaderScrollState(float currentOffsetY) {
-        Log.e("passOverscroll", "" + currentOffsetY);
+    public boolean passSwipeUpCallback() {
+        return passSwipeUpCallback;
+    }
+
+    public IAMReaderScrollState(float currentOffsetY, boolean passSwipeUpCallback) {
         this.currentOffsetY = currentOffsetY;
+        this.passSwipeUpCallback = passSwipeUpCallback;
     }
 
     private final float currentOffsetY;
+    private final boolean passSwipeUpCallback;
 
     public IAMReaderScrollState copy() {
-        return new IAMReaderScrollState(currentOffsetY)
+        return new IAMReaderScrollState(currentOffsetY, passSwipeUpCallback)
                 .verticalGestureEnabled(verticalGestureEnabled);
     }
 }

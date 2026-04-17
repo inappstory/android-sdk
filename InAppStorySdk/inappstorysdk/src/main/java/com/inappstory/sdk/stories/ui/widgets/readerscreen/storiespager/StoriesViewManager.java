@@ -564,18 +564,20 @@ public class StoriesViewManager {
 
     private final Map<SlideLayerKey, Float> scrollValues = new HashMap<>();
 
-    private void onChangePassOverscroll(float newY) {
+    private void onChangePassOverscroll(float newY, boolean passSwipeUpCallback) {
         if (storiesView instanceof StoriesWebView) {
-            if (newY == 0f) {
-                ((StoriesWebView) storiesView).passOverscroll(true);
-            } else {
-                ((StoriesWebView) storiesView).passOverscroll(false);
-            }
+            ((StoriesWebView) storiesView).passOverscroll(
+                    newY == 0f,
+                    passSwipeUpCallback
+            );
         }
     }
 
     public void onVerticalScrollChanged(OnVerticalScrollJSData verticalScrollData) {
-        onChangePassOverscroll(verticalScrollData.scrollY);
+        onChangePassOverscroll(verticalScrollData.scrollY,
+                !verticalScrollData.isScrollableLayer ||
+                verticalScrollData.scrollPercent > 99.f
+        );
         if (verticalScrollData.isScrollableLayer) {
             core.statistic().storiesV2().addScrollEvent(
                     new SlideLayerKey(

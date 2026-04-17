@@ -58,7 +58,7 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
     private final Observable<IAMReaderSlideState> slideStateObservable =
             new Observable<>(new IAMReaderSlideState());
     private final Observable<IAMReaderScrollState> scrollStateObservable =
-            new Observable<>(new IAMReaderScrollState(0f));
+            new Observable<>(new IAMReaderScrollState(0f, true));
 
     private final IAMReaderSlideStatState slideTimeState = new IAMReaderSlideStatState();
 
@@ -200,7 +200,8 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
 
     @Override
     public void onVerticalScrollChange(OnVerticalScrollJSData scrollData) {
-        scrollStateObservable.updateValue(new IAMReaderScrollState(scrollData.scrollY));
+        scrollStateObservable.updateValue(new IAMReaderScrollState(scrollData.scrollY,
+                !scrollData.isScrollableLayer || scrollData.scrollPercent > 99.9f));
         if (scrollData.isScrollableLayer) {
             core.statistic().iamV1().addScrollEvent(
                     new SlideLayerKey(

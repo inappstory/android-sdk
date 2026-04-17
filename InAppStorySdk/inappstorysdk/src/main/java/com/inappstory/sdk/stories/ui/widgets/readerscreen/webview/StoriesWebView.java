@@ -331,7 +331,7 @@ public class StoriesWebView extends IASWebView implements ContentViewInteractor 
     boolean notFirstLoading = false;
 
     public void loadWebData(String firstData, final String replaceData) {
-        passOverscroll(true);
+        passOverscroll(true, true);
         contentInScrollProcess(false);
         currentPage = replaceData;
         if (!notFirstLoading || replaceData.isEmpty()) {
