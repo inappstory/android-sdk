@@ -65,6 +65,11 @@ public class InAppMessageByIdUseCase {
                                             public Type getType() {
                                                 return InAppMessage.class;
                                             }
+
+                                            @Override
+                                            public void onError(int code, String message) {
+                                                callback.error();
+                                            }
                                         },
                                         requestLocalParameters
                                 );

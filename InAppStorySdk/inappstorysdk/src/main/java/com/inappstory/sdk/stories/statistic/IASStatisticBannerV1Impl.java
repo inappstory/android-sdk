@@ -27,7 +27,7 @@ public class IASStatisticBannerV1Impl implements IASStatisticBannerV1 {
 
     public IASStatisticBannerV1Impl(IASCore core) {
         this.core = core;
-        loopedExecutor.init(queueTasksRunnable);
+        loopedExecutor.task(queueTasksRunnable);
     }
 
     private final IASCore core;

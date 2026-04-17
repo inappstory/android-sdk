@@ -30,6 +30,7 @@ import com.inappstory.sdk.stories.api.models.UpdateTimelineData;
 import com.inappstory.sdk.stories.cache.ContentIdAndType;
 import com.inappstory.sdk.banners.BannerData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickAction;
+import com.inappstory.sdk.stories.utils.LoopedExecutor;
 import com.inappstory.sdk.stories.utils.Observable;
 import com.inappstory.sdk.stories.utils.Observer;
 import com.inappstory.sdk.stories.utils.SingleTimeEvent;
@@ -58,9 +59,6 @@ public class BannerViewModel implements IBannerViewModel {
 
     private final IASCore core;
 
-
-    private ScheduledFuture scheduledFuture;
-    private final ScheduledTPEManager executorService = new ScheduledTPEManager();
 
     public void iterationId(String iterationId) {
         this.iterationId = iterationId;
@@ -545,7 +543,10 @@ public class BannerViewModel implements IBannerViewModel {
         public void run() {
             boolean cancel = false;
             synchronized (timerLock) {
-                if (paused) return;
+                if (paused) {
+                    loopedExecutor.freeExecutor();
+                    return;
+                }
                 cancel = lastStartTimer >= 0 &&
                         timerDuration > 0 &&
                         System.currentTimeMillis() - lastStartTimer >= timerDuration;
@@ -559,6 +560,8 @@ public class BannerViewModel implements IBannerViewModel {
                 cancelTask();
                 autoSlideEnd();
             }
+
+            loopedExecutor.freeExecutor();
         }
     }
 
@@ -573,12 +576,11 @@ public class BannerViewModel implements IBannerViewModel {
         );
     }
 
+
     private void cancelTask() {
-        if (scheduledFuture != null)
-            scheduledFuture.cancel(false);
-        scheduledFuture = null;
-        executorService.shutdown();
+        loopedExecutor.cancelTask();
     }
+
 
     private void startTimer(long maxTimerDuration, long timerDuration) {
         if (maxTimerDuration == 0) return;
@@ -588,13 +590,12 @@ public class BannerViewModel implements IBannerViewModel {
             pauseShift = 0;
             this.timerDuration = timerDuration;
         }
-        scheduledFuture = executorService.scheduleAtFixedRate(
-                timerTask,
-                1L,
-                50L,
-                TimeUnit.MILLISECONDS
-        );
+        loopedExecutor.task(timerTask);
     }
+
+    LoopedExecutor loopedExecutor = new LoopedExecutor(1L, 50L);
+
+
 
     @Override
     public void bannerIsShown() {
@@ -685,6 +686,9 @@ public class BannerViewModel implements IBannerViewModel {
                         .bannerPlace(bannerPlace)
                         .loadState(BannerLoadStates.EMPTY)
         );
+
+        loopedExecutor.cancelTask();
+        loopedExecutor.shutdown();
     }
 
     @Override

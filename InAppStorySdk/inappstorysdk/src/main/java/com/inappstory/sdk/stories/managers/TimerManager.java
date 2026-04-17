@@ -11,6 +11,7 @@ import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.statistic.GetStatisticV1Callback;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPageManager;
+import com.inappstory.sdk.stories.utils.LoopedExecutor;
 import com.inappstory.sdk.utils.ScheduledTPEManager;
 
 import java.util.concurrent.ScheduledExecutorService;
@@ -28,16 +29,12 @@ public class TimerManager {
 
     private long timerDuration;
 
-    ScheduledFuture scheduledFuture;
-
     public long startPauseTime;
 
 
     public long pauseTime = 0;
 
     ReaderPageManager pageManager;
-
-    private ScheduledTPEManager executorService = new ScheduledTPEManager();
 
     public void setPageManager(ReaderPageManager pageManager) {
         this.pageManager = pageManager;
@@ -56,14 +53,12 @@ public class TimerManager {
                     pageManager.nextSlideAuto();
                 cancelTask();
             }
+            loopedExecutor.freeExecutor();
         }
     };
 
     private void cancelTask() {
-        if (scheduledFuture != null)
-            scheduledFuture.cancel(false);
-        scheduledFuture = null;
-        executorService.shutdown();
+        loopedExecutor.cancelTask();
     }
 
 
@@ -86,14 +81,10 @@ public class TimerManager {
         }
         timerStartTimestamp = System.currentTimeMillis();
         this.timerDuration = timerDuration;
-        scheduledFuture = executorService.scheduleAtFixedRate(
-                timerTask,
-                1L,
-                50L,
-                TimeUnit.MILLISECONDS
-        );
-
+        loopedExecutor.task(timerTask);
     }
+
+    private final LoopedExecutor loopedExecutor = new LoopedExecutor(1L, 50L);
 
 
     long currentDuration;

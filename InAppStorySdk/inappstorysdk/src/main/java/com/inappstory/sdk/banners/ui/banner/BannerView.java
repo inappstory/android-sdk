@@ -521,7 +521,7 @@ public class BannerView extends FrameLayout implements Observer<BannerState> {
                     if (newValue.content() != null &&
                             !newValue.content().isEmpty()) {
                         if (bannerWebView != null) {
-                            if (bannerViewModel.bannerIsActive()) {
+                            if (bannerViewModel != null && bannerViewModel.bannerIsActive()) {
                                 bannerWebView.post(
                                         new Runnable() {
                                             @Override

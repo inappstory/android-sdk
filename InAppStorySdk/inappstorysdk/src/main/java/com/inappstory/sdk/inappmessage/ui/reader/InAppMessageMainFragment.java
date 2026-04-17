@@ -6,6 +6,7 @@ import static com.inappstory.sdk.inappmessage.ui.widgets.IAMContentContainer.CON
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -55,20 +56,20 @@ public class InAppMessageMainFragment extends Fragment implements Observer<IAMRe
 
     public void setController(InAppMessageViewController controller) {
         this.controller = controller;
-        controller.subscribeView(this);
     }
 
     @Override
     public void onDestroyView() {
+        IIAMReaderViewModel viewModel = readerViewModel;
         if (contentContainer != null) {
             contentContainer.uiContainerCallback(null);
         }
-        if (controller != null) {
-            controller.unsubscribeView(this);
-        }
-        if (readerViewModel != null) {
-            readerViewModel.removeSubscriber(InAppMessageMainFragment.this);
-            readerViewModel.clear();
+        if (viewModel != null) {
+            if (viewModel.controller() != null)
+                viewModel.controller().unsubscribeView(this);
+            viewModel.onCloseAction();
+            viewModel.removeSubscriber(InAppMessageMainFragment.this);
+            viewModel.clear();
         } else {
             InAppStoryManager.useCore(new UseIASCoreCallback() {
                 @Override
@@ -86,24 +87,7 @@ public class InAppMessageMainFragment extends Fragment implements Observer<IAMRe
             }
         });
         super.onDestroyView();
-        try {
-            if (onCloseAction != null) onCloseAction.onClose();
-        } catch (Exception e) {
-
-        }
     }
-
-    public void setOnOpenAction(InAppMessageOpenAction onOpenAction) {
-        this.onOpenAction = onOpenAction;
-    }
-
-    public void setOnCloseAction(InAppMessageCloseAction onCloseAction) {
-        this.onCloseAction = onCloseAction;
-    }
-
-    private InAppMessageCloseAction onCloseAction;
-    private InAppMessageOpenAction onOpenAction;
-
 
     @Nullable
     @Override
@@ -117,6 +101,10 @@ public class InAppMessageMainFragment extends Fragment implements Observer<IAMRe
             public void use(@NonNull IASCore core) {
                 readerViewModel = core.screensManager().iamReaderViewModel();
                 readerViewModel.addSubscriber(InAppMessageMainFragment.this);
+                if (readerViewModel.controller() != null)
+                    readerViewModel.controller().subscribeView(
+                            InAppMessageMainFragment.this
+                    );
                 IAMReaderState state = readerViewModel.getCurrentState();
                 contentIsPreloaded = state.contentIsPreloaded;
                 appearance = state.appearance;
@@ -312,8 +300,7 @@ public class InAppMessageMainFragment extends Fragment implements Observer<IAMRe
                 hideContainer();
                 break;
             case OPENED:
-                if (onOpenAction != null)
-                    onOpenAction.onOpen();
+                if (readerViewModel != null) readerViewModel.onOpenAction();
                 break;
         }
     }

@@ -85,6 +85,11 @@ public class InAppMessagesUseCase {
                                     }
 
                                     @Override
+                                    public void errorDefault(String message) {
+                                        loadError(loadCallback);
+                                    }
+
+                                    @Override
                                     public Type getType() {
                                         return InAppMessageFeed.class;
                                     }

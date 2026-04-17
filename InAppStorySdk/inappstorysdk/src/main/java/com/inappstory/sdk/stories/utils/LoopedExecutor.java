@@ -1,46 +1,66 @@
 package com.inappstory.sdk.stories.utils;
 
-import com.inappstory.sdk.utils.ScheduledTPEManager;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
 public class LoopedExecutor {
 
     public LoopedExecutor(long startDelay, long period) {
         this.startDelay = startDelay;
         this.period = period;
+        launch();
     }
 
-    private long startDelay;
-    private long period;
+    private final long startDelay;
+    private final long period;
+    private boolean interrupted;
+    Runnable runnable = null;
 
-    public void init(final Runnable runnable) {
-        freeExecutor();
-        if (executorThread.isShutdown()) {
-            executorThread =
-                    Executors.newSingleThreadExecutor();
+    public void task(final Runnable runnable) {
+        synchronized (taskLaunchLock) {
+            this.runnable = runnable;
         }
-        statisticScheduledThread.scheduleAtFixedRate(new Runnable() {
-            int count = 0;
+    }
+
+    public void cancelTask() {
+        synchronized (taskLaunchLock) {
+            runnable = null;
+            taskLaunched = false;
+        }
+    }
+
+    private void launch() {
+        if (managerThread.isShutdown())
+            managerThread = Executors.newSingleThreadExecutor();
+        if (executorThread.isShutdown())
+            executorThread = Executors.newSingleThreadExecutor();
+        managerThread.submit(new Runnable() {
             @Override
             public void run() {
-                count++;
-                if (count == 100) {
-                    shutdown();
-                    init(runnable);
-                } else {
-                    synchronized (taskLaunchLock) {
-                        if (taskLaunched) return;
-                        taskLaunched = true;
+                try {
+                    Thread.sleep(startDelay);
+                    while (true) {
+                        synchronized (taskLaunchLock) {
+                            if (!taskLaunched && runnable != null) {
+                                executorThread.submit(runnable);
+                            }
+                            if (interrupted) {
+                                break;
+                            }
+                        }
+                        Thread.sleep(period);
+                        synchronized (taskLaunchLock) {
+                            if (interrupted) {
+                                break;
+                            }
+                        }
                     }
-                    executorThread.submit(runnable);
+                } catch (InterruptedException e) {
+
                 }
             }
-        }, startDelay, period, TimeUnit.MILLISECONDS);
+        });
     }
 
     private final Object taskLaunchLock = new Object();
@@ -53,14 +73,14 @@ public class LoopedExecutor {
     }
 
     public void shutdown() {
-        executorThread.shutdown();
-        statisticScheduledThread.shutdown();
+        synchronized (taskLaunchLock) {
+            interrupted = true;
+            runnable = null;
+            executorThread.shutdown();
+            managerThread.shutdown();
+        }
     }
 
-
-    private ScheduledTPEManager statisticScheduledThread =
-            new ScheduledTPEManager();
-
-
     private ExecutorService executorThread = Executors.newSingleThreadExecutor();
+    private ExecutorService managerThread = Executors.newSingleThreadExecutor();
 }
