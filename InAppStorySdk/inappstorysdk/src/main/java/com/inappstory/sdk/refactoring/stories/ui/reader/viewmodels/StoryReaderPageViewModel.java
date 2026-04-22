@@ -30,6 +30,7 @@ import com.inappstory.sdk.refactoring.core.utils.stedata.ContentId;
 import com.inappstory.sdk.refactoring.core.utils.stedata.ContentIdWithIndex;
 import com.inappstory.sdk.refactoring.stories.data.local.StoryDTO;
 import com.inappstory.sdk.refactoring.stories.ui.reader.singletimeevents.JsSendApiRequestResponse;
+import com.inappstory.sdk.refactoring.stories.ui.reader.singletimeevents.LoadSlide;
 import com.inappstory.sdk.refactoring.stories.ui.reader.singletimeevents.StartSlide;
 import com.inappstory.sdk.refactoring.stories.ui.reader.singletimeevents.StoriesSTEDataType;
 import com.inappstory.sdk.refactoring.stories.ui.reader.states.StoryReaderButtonsState;
@@ -435,6 +436,12 @@ public class StoryReaderPageViewModel implements IReaderContentDownloaderSubscri
     public void slideLoadSuccess(int index) {
         StoryReaderPageState pageState = storyReaderPageState();
         if (pageState.slideIndex() != index) return;
+        singleTimeEvents.updateValue(new STETypeAndData(
+                StoriesSTEDataType.LOAD_SLIDE,
+                new LoadSlide()
+                        .slideContent(pageState.story().slideByIndex(index))
+                        .layout(pageState.story().layout())
+        ));
     }
 
     private void sendStoryDataToServer(String storyId, String data) {
