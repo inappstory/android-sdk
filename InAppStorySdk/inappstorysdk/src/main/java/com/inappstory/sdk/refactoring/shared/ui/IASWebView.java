@@ -43,4 +43,27 @@ public class IASWebView extends WebView {
         getSettings().setJavaScriptEnabled(true);
         resumeTimers();
     }
+
+    protected String injectUnselectableStyle(String html) {
+        return html.replace("<head>",
+                "<head><style>*{" +
+                        "-webkit-touch-callout: none;" +
+                        "-webkit-user-select: none;" +
+                        "-khtml-user-select: none;" +
+                        "-moz-user-select: none;" +
+                        "-ms-user-select: none;" +
+                        "user-select: none;" +
+                        "} </style>");
+    }
+
+
+    protected String setDir(String html, Context context) {
+        try {
+            int dir = context.getResources().getConfiguration().getLayoutDirection();
+            String dirString = (dir == View.LAYOUT_DIRECTION_RTL) ? "rtl" : "ltr";
+            return html.replace("{{%dir}}", dirString);
+        } catch (Exception e) {
+            return html;
+        }
+    }
 }

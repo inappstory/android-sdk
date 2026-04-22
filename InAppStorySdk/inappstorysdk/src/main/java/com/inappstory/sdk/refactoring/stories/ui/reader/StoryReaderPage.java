@@ -10,6 +10,7 @@ import androidx.annotation.Nullable;
 
 import com.inappstory.sdk.refactoring.core.utils.observers.Observer;
 import com.inappstory.sdk.refactoring.core.utils.observers.STETypeAndData;
+import com.inappstory.sdk.refactoring.stories.ui.reader.singletimeevents.LoadSlide;
 import com.inappstory.sdk.refactoring.stories.ui.reader.singletimeevents.StoriesSTEDataType;
 import com.inappstory.sdk.refactoring.stories.ui.reader.viewmodels.StoryReaderPageViewModel;
 import com.inappstory.sdk.stories.ui.widgets.TouchFrameLayout;
@@ -62,6 +63,8 @@ public class StoryReaderPage extends FrameLayout implements Observer<Boolean> {
                     content.setClientVariables(viewModel.options());
                     break;
                 case LOAD_SLIDE:
+                    LoadSlide loadSlideData = (LoadSlide) newValue.data();
+                    content.layoutAndSlide(loadSlideData.layout(), loadSlideData.slide());
                     break;
                 case UPDATE_TIMELINE:
                     break;

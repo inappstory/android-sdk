@@ -8,8 +8,7 @@ public interface IStoriesContentView {
     void cartUpdatedResultSuccess(String successCB, String requestId, String cardStr);
     void cartUpdatedResultError(String errorCB, String requestId, String reason);
     void clearSlide(int index);
-    void loadSlide(String content);
-    void replaceSlide(String newContent);
+    void layoutAndSlide(String layout, String slide);
     void startSlide(boolean soundOn);
     void restartSlide(boolean soundOn);
     void pauseSlide();

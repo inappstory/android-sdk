@@ -7,19 +7,19 @@ public class LoadSlide implements ISTEData {
         return layout;
     }
 
-    public String slideContent() {
-        return slideContent;
+    public String slide() {
+        return slide;
     }
 
-    private String slideContent;
+    private String slide;
     private String layout;
 
-    public LoadSlide slideContent(String result) {
-        this.slideContent = slideContent;
+    public LoadSlide slide(String slide) {
+        this.slide = slide;
         return this;
     }
 
-    public LoadSlide layout(String cb) {
+    public LoadSlide layout(String layout) {
         this.layout = layout;
         return this;
     }

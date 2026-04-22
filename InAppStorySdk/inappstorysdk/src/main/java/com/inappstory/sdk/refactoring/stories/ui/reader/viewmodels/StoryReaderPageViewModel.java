@@ -28,6 +28,7 @@ import com.inappstory.sdk.refactoring.core.utils.observers.STETypeAndData;
 import com.inappstory.sdk.refactoring.core.utils.observers.SingleTimeEvent;
 import com.inappstory.sdk.refactoring.core.utils.stedata.ContentId;
 import com.inappstory.sdk.refactoring.core.utils.stedata.ContentIdWithIndex;
+import com.inappstory.sdk.refactoring.shared.utils.WebPageModifier;
 import com.inappstory.sdk.refactoring.stories.data.local.StoryDTO;
 import com.inappstory.sdk.refactoring.stories.ui.reader.singletimeevents.JsSendApiRequestResponse;
 import com.inappstory.sdk.refactoring.stories.ui.reader.singletimeevents.LoadSlide;
@@ -436,11 +437,14 @@ public class StoryReaderPageViewModel implements IReaderContentDownloaderSubscri
     public void slideLoadSuccess(int index) {
         StoryReaderPageState pageState = storyReaderPageState();
         if (pageState.slideIndex() != index) return;
+        core.contentLoader().addVODResources(pageState.story(), index);
+        WebPageModifier modifier = new WebPageModifier(core);
+        String[] layoutAndSlide = modifier.modifyForStory(pageState.story(), index);
         singleTimeEvents.updateValue(new STETypeAndData(
                 StoriesSTEDataType.LOAD_SLIDE,
                 new LoadSlide()
-                        .slideContent(pageState.story().slideByIndex(index))
-                        .layout(pageState.story().layout())
+                        .slide(layoutAndSlide[1])
+                        .layout(layoutAndSlide[0])
         ));
     }
 

@@ -5,6 +5,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
+import android.webkit.ValueCallback;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -128,18 +129,49 @@ public class StoryReaderPageContent extends IASWebView implements IStoriesConten
     }
 
     @Override
-    public void loadSlide(String content) {
-        loadDataWithBaseURL(
-                "file:///data/",
-                content,
-                "text/html; charset=utf-8",
-                "UTF-8",
-                null
-        );
+    public void layoutAndSlide(String layout, String slide) {
+        if (firstLoading) {
+            firstLoading = false;
+            String content = setDir(
+                    injectUnselectableStyle(
+                            layout
+                                    .replace("//_ratio = 0.66666666666,", "")
+                                    .replace("{{%content}}", slide)
+                    ),
+                    getContext()
+            );
+            loadSlide(content);
+        } else {
+            replaceSlide(oldEscape(slide));
+        }
     }
 
-    @Override
-    public void replaceSlide(String newContent) {
+    private String oldEscape(String raw) {
+        String escaped = raw
+                .replaceAll("\"", "\\\\\"")
+                .replaceAll("\n", " ")
+                .replaceAll("\r", " ");
+        return escaped;
+    }
+
+    private void loadSlide(String content) {
+        post(new Runnable() {
+            @Override
+            public void run() {
+                loadDataWithBaseURL(
+                        "file:///data/",
+                        content,
+                        "text/html; charset=utf-8",
+                        "UTF-8",
+                        null
+                );
+            }
+        });
+    }
+
+    private boolean firstLoading = true;
+
+    private void replaceSlide(String newContent) {
         evaluateJavascript(
                 "(function(){show_slide(\"" + newContent + "\");})()",
                 null
@@ -147,7 +179,7 @@ public class StoryReaderPageContent extends IASWebView implements IStoriesConten
     }
 
     @Override
-    public void startSlide(boolean soundOn) {
+    public void startSlide(final boolean soundOn) {
         String funAfterCheck =
                 soundOn ?
                         "story_slide_start('{\"muted\": false}');" :
@@ -203,8 +235,18 @@ public class StoryReaderPageContent extends IASWebView implements IStoriesConten
     }
 
     @Override
+    public void evaluateJavascript(@NonNull String script, @Nullable ValueCallback<String> resultCallback) {
+        post(new Runnable() {
+            @Override
+            public void run() {
+                StoryReaderPageContent.super.evaluateJavascript(script, resultCallback);
+            }
+        });
+    }
+
+    @Override
     public void loadUrl(final String url) {
-        new Handler(Looper.getMainLooper()).post(new Runnable() {
+        post(new Runnable() {
             @Override
             public void run() {
                 StoryReaderPageContent.super.loadUrl(url);
