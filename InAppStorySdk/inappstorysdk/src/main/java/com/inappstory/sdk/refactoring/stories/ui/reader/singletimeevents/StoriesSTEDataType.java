@@ -14,7 +14,7 @@ public enum StoriesSTEDataType implements ISTEDataType {
     FREEZE_UI,
     UNFREEZE_UI,
     RENDER_READY,
-    NAVIGATE,
+    LOAD_SLIDE,
     UPDATE_TIMELINE,
     START_SLIDE,
     RESTART_SLIDE,

@@ -89,6 +89,7 @@ public class StoryReaderPageViewModel implements IReaderContentDownloaderSubscri
         core.storySlidesDownloadManager().removeSubscriber(this);
     }
 
+
     public StoryReaderPageViewModel(
             IASCore core,
             StoryReaderViewModel readerViewModel,
@@ -252,6 +253,15 @@ public class StoryReaderPageViewModel implements IReaderContentDownloaderSubscri
                 readerImmutableState.sourceType(),
                 readerImmutableState.contentType()
         );
+    }
+
+    public String options() {
+        Map<String, String> extraOptions = readerViewModel.readerImmutableState().options();
+        try {
+            return JsonParser.stringMapToEscapedJsonString(extraOptions);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     public void openGame(Context context, String gameInstanceId) {

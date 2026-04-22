@@ -59,8 +59,9 @@ public class StoryReaderPage extends FrameLayout implements Observer<Boolean> {
                 case UNFREEZE_UI:
                     break;
                 case RENDER_READY:
+                    content.setClientVariables(viewModel.options());
                     break;
-                case NAVIGATE:
+                case LOAD_SLIDE:
                     break;
                 case UPDATE_TIMELINE:
                     break;

@@ -4,7 +4,9 @@ import com.inappstory.sdk.network.models.RequestLocalParameters;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class StoryReaderImmutableState {
 
@@ -28,6 +30,10 @@ public class StoryReaderImmutableState {
         return storiesIds;
     }
 
+    public Map<String, String> options() {
+        return options;
+    }
+
     public RequestLocalParameters sessionParameters() {
         return requestLocalParameters;
     }
@@ -39,6 +45,7 @@ public class StoryReaderImmutableState {
     private final SourceType sourceType;
     private final String feed;
     private final List<String> storiesIds;
+    private final Map<String, String> options;
 
 
     public StoryReaderImmutableState(
@@ -47,9 +54,11 @@ public class StoryReaderImmutableState {
             List<String> storiesIds,
             ContentType contentType,
             SourceType sourceType,
+            Map<String, String> options,
             String feed
     ) {
         this.readerUniqueId = readerUniqueId;
+        this.options = new HashMap<>(options);
         this.requestLocalParameters = requestLocalParameters;
         this.contentType = contentType;
         this.sourceType = sourceType;
