@@ -1,6 +1,7 @@
 package com.inappstory.sdk.refactoring.stories.ui.reader.viewmodels;
 
 import android.content.Context;
+import android.graphics.Rect;
 import android.webkit.JavascriptInterface;
 
 import androidx.annotation.NonNull;
@@ -9,6 +10,7 @@ import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.core.CancellationTokenImpl;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASCallbackType;
+import com.inappstory.sdk.core.api.IASDataSettings;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.api.impl.IASSingleStoryImpl;
@@ -183,7 +185,7 @@ public class StoryReaderPageViewModel implements IReaderContentDownloaderSubscri
     }
 
     public void soundClick() {
-
+        core.settingsAPI().switchSoundOn();
     }
 
     public void shareClick() {
@@ -191,7 +193,39 @@ public class StoryReaderPageViewModel implements IReaderContentDownloaderSubscri
     }
 
     private void navigate(int coordinate, boolean forbidden) {
-
+        StoryReaderImmutableState immutableState = readerViewModel.readerImmutableState();
+        Rect frame = immutableState.readerFrame();
+        StoryReaderPageState pageState = storyReaderPageState();
+        IStatData statData = pageState.story();
+        if (statData == null) statData = pageState.storyListItem();
+        if (statData == null) return;
+        int rightLine = (int) (frame.left + frame.width() * 0.3f);
+        if (coordinate > rightLine && !forbidden) {
+            if (pageState.slideIndex() < statData.slidesCount() - 1) {
+                changeSlide(pageState.slideIndex() + 1);
+            } else {
+                readerViewModel.openNextPage(ShowStory.ACTION_TAP);
+            }
+        } else if (coordinate <= rightLine) {
+            if (pageState.slideIndex() > 0) {
+                changeSlide(pageState.slideIndex() - 1);
+            } else {
+                if (pageState.pageIndex() == 0) {
+                    if (currentSlideIsLoaded)
+                        singleTimeEvents.updateValue(
+                                new STETypeAndData(StoriesSTEDataType.RESTART_SLIDE,
+                                        new StartSlide()
+                                                .soundOn(
+                                                        ((IASDataSettingsHolder) core.settingsAPI())
+                                                                .isSoundOn()
+                                                )
+                                )
+                        );
+                } else {
+                    readerViewModel.openPreviousPage(ShowStory.ACTION_TAP);
+                }
+            }
+        }
     }
 
     private void handleClickPayload(String payload) {

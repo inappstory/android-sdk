@@ -1,5 +1,8 @@
 package com.inappstory.sdk.refactoring.stories.ui.reader.states;
 
+import android.graphics.Point;
+import android.graphics.Rect;
+
 import com.inappstory.sdk.network.models.RequestLocalParameters;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
@@ -30,6 +33,10 @@ public class StoryReaderImmutableState {
         return storiesIds;
     }
 
+    public Rect readerFrame() {
+        return readerFrame;
+    }
+
     public Map<String, String> options() {
         return options;
     }
@@ -37,6 +44,7 @@ public class StoryReaderImmutableState {
     public RequestLocalParameters sessionParameters() {
         return requestLocalParameters;
     }
+
 
     private final RequestLocalParameters requestLocalParameters;
 
@@ -46,6 +54,7 @@ public class StoryReaderImmutableState {
     private final String feed;
     private final List<String> storiesIds;
     private final Map<String, String> options;
+    private final Rect readerFrame;
 
 
     public StoryReaderImmutableState(
@@ -55,12 +64,14 @@ public class StoryReaderImmutableState {
             ContentType contentType,
             SourceType sourceType,
             Map<String, String> options,
+            Rect readerFrame,
             String feed
     ) {
         this.readerUniqueId = readerUniqueId;
         this.options = new HashMap<>(options);
         this.requestLocalParameters = requestLocalParameters;
         this.contentType = contentType;
+        this.readerFrame = readerFrame;
         this.sourceType = sourceType;
         this.feed = feed;
         this.storiesIds = storiesIds;

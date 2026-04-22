@@ -7,6 +7,7 @@ import com.inappstory.sdk.refactoring.stories.ui.list.states.StoryListItemCoordi
 import com.inappstory.sdk.refactoring.stories.ui.reader.states.StoryReaderImmutableState;
 import com.inappstory.sdk.refactoring.stories.ui.reader.states.StoryReaderOpenState;
 import com.inappstory.sdk.refactoring.stories.ui.reader.states.StoryReaderState;
+import com.inappstory.sdk.stories.outerevents.ShowStory;
 
 public class StoryReaderViewModel {
     private final IASCore core;
@@ -36,6 +37,10 @@ public class StoryReaderViewModel {
         storyReaderStateObservable.updateValue(new StoryReaderState());
         this.readerImmutableState = null;
     }
+
+    public void openNextPage(int action) {}
+
+    public void openPreviousPage(int action) {}
 
     public boolean openReader(
             StoryReaderImmutableState immutableState,
