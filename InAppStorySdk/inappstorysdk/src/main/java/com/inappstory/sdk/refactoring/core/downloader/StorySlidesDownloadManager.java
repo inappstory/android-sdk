@@ -13,9 +13,11 @@ import com.inappstory.sdk.stories.utils.LoopedExecutor;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 public class StorySlidesDownloadManager {
 
@@ -25,80 +27,13 @@ public class StorySlidesDownloadManager {
     private final SlideTaskDownloadStack secondPriorityTaskKeys = new SlideTaskDownloadStack();
     private final SlideTaskDownloadStack commonPriorityTaskKeys = new SlideTaskDownloadStack();
     private SlideTaskKey currentLoadKey = null;
-
     private final Object slideTaskKeysLock = new Object();
     private final List<SlideTaskKey> loadedSlides = new ArrayList<>();
     private final Map<SlideTaskKey, SlideTask> tasks = new HashMap<>();
     private final Object subLock = new Object();
     private final Map<SlideTaskKey, DownloadContentPriority> downloadPriorities = new HashMap<>();
-
-
     List<IReaderContentDownloaderSubscriber> subscribers = new ArrayList<>();
-
-
-    public void removeFromCache(
-            IReaderContent readerContent,
-            ContentType type
-    ) {
-        List<SlideTaskKey> keys = new ArrayList<>();
-        for (int i = 0; i < readerContent.slidesCount(); i++) {
-            keys.add(
-                    new SlideTaskKey(
-                            new ContentIdAndType(
-                                    readerContent.id(),
-                                    type
-                            ),
-                            i
-                    )
-            );
-        }
-        synchronized (slideTaskKeysLock) {
-            for (SlideTaskKey key : keys) {
-                loadedSlides.remove(key);
-            }
-        }
-    }
-
-
-    public void addSubscriber(IReaderContentDownloaderSubscriber subscriber) {
-        synchronized (subLock) {
-            subscribers.add(subscriber);
-        }
-    }
-
-    public void removeSubscriber(IReaderContentDownloaderSubscriber subscriber) {
-        synchronized (subLock) {
-            subscribers.remove(subscriber);
-        }
-    }
-
-    private List<IReaderContentDownloaderSubscriber> getSubscribersByStoryId(ContentIdAndType id) {
-        List<IReaderContentDownloaderSubscriber> subscribersById = new ArrayList<>();
-        synchronized (subLock) {
-            for (IReaderContentDownloaderSubscriber subscriber : subscribers) {
-                if (Objects.equals(subscriber.contentIdAndType(), id)) {
-                    subscribersById.add(subscriber);
-                }
-            }
-        }
-        return subscribersById;
-    }
-
-
-    public StorySlidesDownloadManager(IASCore core) {
-        this.core = core;
-    }
-
-    public void clear() {
-        synchronized (slideTaskKeysLock) {
-            loadedSlides.clear();
-            firstPriorityTaskKeys.clear();
-            secondPriorityTaskKeys.clear();
-            commonPriorityTaskKeys.clear();
-            currentLoadKey = null;
-        }
-    }
-
+    private final LoopedExecutor loopedExecutor = new LoopedExecutor(100, 100);
 
     private final Runnable invokeQueueTask = new Runnable() {
         @Override
@@ -150,6 +85,72 @@ public class StorySlidesDownloadManager {
         }
     };
 
+    public StorySlidesDownloadManager(IASCore core) {
+        this.core = core;
+        init();
+    }
+
+    void init() {
+        loopedExecutor.task(invokeQueueTask);
+    }
+
+    public void removeFromCache(
+            IReaderContent readerContent,
+            ContentType type
+    ) {
+        List<SlideTaskKey> keys = new ArrayList<>();
+        for (int i = 0; i < readerContent.slidesCount(); i++) {
+            keys.add(
+                    new SlideTaskKey(
+                            new ContentIdAndType(
+                                    readerContent.id(),
+                                    type
+                            ),
+                            i
+                    )
+            );
+        }
+        synchronized (slideTaskKeysLock) {
+            for (SlideTaskKey key : keys) {
+                loadedSlides.remove(key);
+            }
+        }
+    }
+
+    public void addSubscriber(IReaderContentDownloaderSubscriber subscriber) {
+        synchronized (subLock) {
+            subscribers.add(subscriber);
+        }
+    }
+
+    public void removeSubscriber(IReaderContentDownloaderSubscriber subscriber) {
+        synchronized (subLock) {
+            subscribers.remove(subscriber);
+        }
+    }
+
+    private List<IReaderContentDownloaderSubscriber> getSubscribersByStoryId(ContentIdAndType id) {
+        List<IReaderContentDownloaderSubscriber> subscribersById = new ArrayList<>();
+        synchronized (subLock) {
+            for (IReaderContentDownloaderSubscriber subscriber : subscribers) {
+                if (Objects.equals(subscriber.contentIdAndType(), id)) {
+                    subscribersById.add(subscriber);
+                }
+            }
+        }
+        return subscribersById;
+    }
+
+    public void clear() {
+        synchronized (slideTaskKeysLock) {
+            loadedSlides.clear();
+            firstPriorityTaskKeys.clear();
+            secondPriorityTaskKeys.clear();
+            commonPriorityTaskKeys.clear();
+            currentLoadKey = null;
+        }
+    }
+
     public void checkBundleResources(
             final IReaderContentDownloaderSubscriber subscriber,
             final int slideIndex
@@ -192,11 +193,6 @@ public class StorySlidesDownloadManager {
     }
 
 
-    private final LoopedExecutor loopedExecutor = new LoopedExecutor(100, 100);
-
-    void init() {
-        loopedExecutor.init(invokeQueueTask);
-    }
 
     public void renewStoryPriorities(
             ContentIdAndType mainId,
@@ -212,6 +208,7 @@ public class StorySlidesDownloadManager {
                         ),
                         i
                 );
+                if (loadedSlides.contains(key)) continue;
                 if (i == mainIndex || i == mainIndex + 1) {
                     downloadPriorities.put(
                             key,
@@ -225,6 +222,20 @@ public class StorySlidesDownloadManager {
                 }
             }
         }
+    }
+
+    public boolean slideIsLoaded(
+            ContentIdAndType id,
+            int index
+    ) {
+        SlideTaskKey key =  new SlideTaskKey(
+                new ContentIdAndType(
+                        id.contentId,
+                        id.contentType
+                ),
+                index
+        );
+        return loadedSlides.contains(key);
     }
 
     public void renewAllPriorities(
@@ -253,6 +264,7 @@ public class StorySlidesDownloadManager {
                         ),
                         i
                 );
+                if (loadedSlides.contains(key)) continue;
                 if (i == mainIndex || i == mainIndex + 1) {
                     downloadPriorities.put(
                             key,
@@ -275,6 +287,8 @@ public class StorySlidesDownloadManager {
                                 ),
                                 i
                         );
+
+                        if (loadedSlides.contains(key)) continue;
                         downloadPriorities.put(
                                 key,
                                 DownloadContentPriority.SECONDARY);
@@ -292,11 +306,20 @@ public class StorySlidesDownloadManager {
                                 ),
                                 i
                         );
+
+                        if (loadedSlides.contains(key)) continue;
                         downloadPriorities.put(
                                 key,
                                 DownloadContentPriority.SECONDARY);
                         putKeyToPriority(key, DownloadContentPriority.SECONDARY, false);
                     }
+                }
+            }
+            Set<SlideTaskKey> downloadKeys = downloadPriorities.keySet();
+            Set<SlideTaskKey> taskKeys = new HashSet<>(tasks.keySet());
+            for (SlideTaskKey taskKey: taskKeys) {
+                if (!downloadKeys.contains(taskKey)) {
+                    tasks.remove(taskKey);
                 }
             }
         }
@@ -306,33 +329,15 @@ public class StorySlidesDownloadManager {
             IReaderContent content,
             ContentType type
     ) {
-        int maxCount = content.actualSlidesCount();
+        int slidesCount = content.actualSlidesCount();
         synchronized (slideTaskKeysLock) {
-            for (int i = 0; i <)
-        }
-        if (priority == DownloadContentPriority.SECONDARY)
-            maxCount = Math.min(maxCount, 2);
-        synchronized (slideTaskKeysLock) {
-
-            for (int i = maxCount - 1; i >= 0; i--) {
-                SlideTaskKey key = new SlideTaskKey(
-                        new ContentIdAndType(
-                                content.id(),
-                                type
-                        ),
-                        i
-                );
-                if (Objects.equals(currentLoadKey, key)) continue;
-                if (!tasks.containsKey(key)) {
-                    tasks.put(
-                            key,
-                            new GenerateSlideTask(core, content, i).generate()
-                    );
+            for (Map.Entry<SlideTaskKey, DownloadContentPriority> priorityEntry : downloadPriorities.entrySet()) {
+                SlideTaskKey key = priorityEntry.getKey();
+                if (key.contentIdAndType.contentType != type) continue;
+                if (key.contentIdAndType.contentId != content.id()) continue;
+                if (key.index < slidesCount && key.index > 0) {
+                    tasks.put(key, new GenerateSlideTask(core, content, key.index).generate());
                 }
-                if (priority != DownloadContentPriority.PRIMARY || (index == i || i == index - 1 || i == index + 1))
-                    putKeyToPriority(key, priority);
-                else
-                    putKeyToPriority(key, DownloadContentPriority.COMMON);
             }
         }
     }

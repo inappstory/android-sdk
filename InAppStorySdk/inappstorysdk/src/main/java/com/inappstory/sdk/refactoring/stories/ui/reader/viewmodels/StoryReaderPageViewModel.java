@@ -28,6 +28,7 @@ import com.inappstory.sdk.refactoring.core.utils.observers.STETypeAndData;
 import com.inappstory.sdk.refactoring.core.utils.observers.SingleTimeEvent;
 import com.inappstory.sdk.refactoring.core.utils.stedata.ContentId;
 import com.inappstory.sdk.refactoring.core.utils.stedata.ContentIdWithIndex;
+import com.inappstory.sdk.refactoring.stories.data.local.StoryDTO;
 import com.inappstory.sdk.refactoring.stories.ui.reader.singletimeevents.JsSendApiRequestResponse;
 import com.inappstory.sdk.refactoring.stories.ui.reader.singletimeevents.StartSlide;
 import com.inappstory.sdk.refactoring.stories.ui.reader.singletimeevents.StoriesSTEDataType;
@@ -60,7 +61,6 @@ public class StoryReaderPageViewModel implements IReaderContentDownloaderSubscri
     private final StoryReaderPageTimelineManager timelineManager =
             new StoryReaderPageTimelineManager(this);
     private final StoryReaderPageTimerManager timerManager;
-
 
     private final Observable<StoryReaderPageLoaderState> storyReaderPageLoaderStateObservable =
             new Observable<>(new StoryReaderPageLoaderState());
@@ -417,12 +417,14 @@ public class StoryReaderPageViewModel implements IReaderContentDownloaderSubscri
 
     @Override
     public void contentLoadSuccess(IReaderContent content) {
+        storyReaderPageStateObservable.updateValue(storyReaderPageState().copy().story((StoryDTO) content));
         core.storySlidesDownloadManager().addTasks(content, contentIdAndType().contentType);
     }
 
     @Override
     public void slideLoadSuccess(int index) {
-
+        StoryReaderPageState pageState = storyReaderPageState();
+        if (pageState.slideIndex() != index) return;
     }
 
     private void sendStoryDataToServer(String storyId, String data) {
@@ -516,8 +518,23 @@ public class StoryReaderPageViewModel implements IReaderContentDownloaderSubscri
         if (pageState.slideIndex() != index) {
             int corIndex = correctIndex(index, pageState);
             if (corIndex >= 0)
-                storyReaderPageStateObservable.updateValue(pageState.copy().slideIndex(corIndex));
+                changeSlide(index);
         }
+    }
+
+    private void changeSlide(int index) {
+        StoryReaderPageState pageState = storyReaderPageState();
+        IStatData storyStatData = pageState.story();
+        if (storyStatData == null) storyStatData = pageState.storyListItem();
+        storyReaderPageStateObservable.updateValue(pageState.copy().slideIndex(index));
+        ContentIdAndType contentIdAndType = contentIdAndType();
+        core.storySlidesDownloadManager().renewStoryPriorities(
+                contentIdAndType,
+                index,
+                storyStatData.slidesCount()
+        );
+        if (core.storySlidesDownloadManager().slideIsLoaded(contentIdAndType, index))
+            slideLoadSuccess(index);
     }
 
     @JavascriptInterface

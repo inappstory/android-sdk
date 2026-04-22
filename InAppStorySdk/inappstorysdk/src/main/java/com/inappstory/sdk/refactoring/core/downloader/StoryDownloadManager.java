@@ -24,6 +24,7 @@ public class StoryDownloadManager {
 
     public StoryDownloadManager(IASCore core) {
         this.core = core;
+        init();
     }
 
     public void clear() {
@@ -139,7 +140,7 @@ public class StoryDownloadManager {
     private final LoopedExecutor loopedExecutor = new LoopedExecutor(100, 100);
 
     void init() {
-        loopedExecutor.init(invokeQueueTask);
+        loopedExecutor.task(invokeQueueTask);
     }
 
     private List<IReaderContentDownloaderSubscriber> addToQueueOrInvokeCallback(ContentIdAndType id) {
