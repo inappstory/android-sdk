@@ -10,9 +10,13 @@ import androidx.annotation.Nullable;
 
 import com.inappstory.sdk.refactoring.core.utils.observers.Observer;
 import com.inappstory.sdk.refactoring.core.utils.observers.STETypeAndData;
+import com.inappstory.sdk.refactoring.core.utils.stedata.ContentIdWithIndex;
+import com.inappstory.sdk.refactoring.stories.ui.reader.singletimeevents.JsSendApiRequestResponse;
 import com.inappstory.sdk.refactoring.stories.ui.reader.singletimeevents.LoadSlide;
+import com.inappstory.sdk.refactoring.stories.ui.reader.singletimeevents.StartSlide;
 import com.inappstory.sdk.refactoring.stories.ui.reader.singletimeevents.StoriesSTEDataType;
 import com.inappstory.sdk.refactoring.stories.ui.reader.viewmodels.StoryReaderPageViewModel;
+import com.inappstory.sdk.stories.api.models.ContentId;
 import com.inappstory.sdk.stories.ui.widgets.TouchFrameLayout;
 
 import java.util.Objects;
@@ -41,19 +45,24 @@ public class StoryReaderPage extends FrameLayout implements Observer<Boolean> {
             switch (type) {
                 case CALL_TO_ACTION:
                     break;
-                case SLIDE_IN_CACHE:
-                    break;
-                case JS_SEND_API_REQUEST:
-                    break;
                 case JS_SEND_API_RESPONSE:
+                    JsSendApiRequestResponse apiRequestResponse = (JsSendApiRequestResponse) newValue.data();
+                    content.loadJsApiResponse(apiRequestResponse.result(), apiRequestResponse.cb());
                     break;
                 case OPEN_STORY:
-                    break;
-                case CLOSE_READER:
+                    ContentIdWithIndex idWithIndex = (ContentIdWithIndex) newValue.data();
+                    viewModel.openAnotherStory(
+                            getContext(),
+                            idWithIndex.id(),
+                            idWithIndex.index()
+                    );
                     break;
                 case OPEN_GAME:
+                    ContentId gameId = (ContentId) newValue.data();
+                    viewModel.openGame(getContext(), gameId.id());
                     break;
                 case AUTO_SLIDE_END:
+                    content.autoSlideEnd();
                     break;
                 case FREEZE_UI:
                     break;
@@ -66,17 +75,22 @@ public class StoryReaderPage extends FrameLayout implements Observer<Boolean> {
                     LoadSlide loadSlideData = (LoadSlide) newValue.data();
                     content.layoutAndSlide(loadSlideData.layout(), loadSlideData.slide());
                     break;
-                case UPDATE_TIMELINE:
-                    break;
                 case START_SLIDE:
+                    StartSlide startSlideData = (StartSlide) newValue.data();
+                    content.startSlide(startSlideData.soundOn());
                     break;
                 case RESTART_SLIDE:
+                    StartSlide restartSlideData = (StartSlide) newValue.data();
+                    content.restartSlide(restartSlideData.soundOn());
                     break;
                 case PAUSE_SLIDE:
+                    content.pauseSlide();
                     break;
                 case RESUME_SLIDE:
+                    content.resumeSlide();
                     break;
                 case STOP_SLIDE:
+                    content.stopSlide();
                     break;
             }
         }
