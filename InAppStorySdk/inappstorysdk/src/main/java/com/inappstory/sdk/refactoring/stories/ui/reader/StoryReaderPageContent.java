@@ -255,8 +255,8 @@ public class StoryReaderPageContent extends IASWebView implements IStoriesConten
     }
 
     @Override
-    public void stopSlide(boolean newPage) {
-        String funAfterCheck = newPage ?
+    public void stopSlide(boolean prepareForRestart) {
+        String funAfterCheck = prepareForRestart ?
                 "story_slide_stop('{\"prepareForRestart\": true}'); " :
                 "story_slide_stop('{\"prepareForRestart\": false}'); ";
         loadUrl(

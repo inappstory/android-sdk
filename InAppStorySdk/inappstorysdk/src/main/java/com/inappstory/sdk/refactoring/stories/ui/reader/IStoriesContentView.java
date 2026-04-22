@@ -13,7 +13,7 @@ public interface IStoriesContentView {
     void restartSlide(boolean soundOn);
     void pauseSlide();
     void resumeSlide();
-    void stopSlide(boolean newPage);
+    void stopSlide(boolean prepareForRestart);
     void autoSlideEnd();
     void swipeUp();
     void loadJsApiResponse(String result, String cb);

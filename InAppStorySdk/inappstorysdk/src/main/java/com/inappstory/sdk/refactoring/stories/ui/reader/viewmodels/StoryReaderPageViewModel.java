@@ -199,7 +199,12 @@ public class StoryReaderPageViewModel implements IReaderContentDownloaderSubscri
     }
 
     public void nextSlideAuto() {
-
+        pauseTimers();
+        singleTimeEvents.updateValue(
+                new STETypeAndData(StoriesSTEDataType.AUTO_SLIDE_END,
+                        null
+                )
+        );
     }
 
 

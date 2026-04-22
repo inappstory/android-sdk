@@ -14,6 +14,7 @@ import com.inappstory.sdk.refactoring.core.utils.stedata.ContentIdWithIndex;
 import com.inappstory.sdk.refactoring.stories.ui.reader.singletimeevents.JsSendApiRequestResponse;
 import com.inappstory.sdk.refactoring.stories.ui.reader.singletimeevents.LoadSlide;
 import com.inappstory.sdk.refactoring.stories.ui.reader.singletimeevents.StartSlide;
+import com.inappstory.sdk.refactoring.stories.ui.reader.singletimeevents.StopSlide;
 import com.inappstory.sdk.refactoring.stories.ui.reader.singletimeevents.StoriesSTEDataType;
 import com.inappstory.sdk.refactoring.stories.ui.reader.viewmodels.StoryReaderPageViewModel;
 import com.inappstory.sdk.stories.api.models.ContentId;
@@ -62,6 +63,7 @@ public class StoryReaderPage extends FrameLayout implements Observer<Boolean> {
                     viewModel.openGame(getContext(), gameId.id());
                     break;
                 case AUTO_SLIDE_END:
+                    content.stopSlide(false);
                     content.autoSlideEnd();
                     break;
                 case FREEZE_UI:
@@ -90,7 +92,8 @@ public class StoryReaderPage extends FrameLayout implements Observer<Boolean> {
                     content.resumeSlide();
                     break;
                 case STOP_SLIDE:
-                    content.stopSlide();
+                    StopSlide stopSlide = (StopSlide) newValue.data();
+                    content.stopSlide(stopSlide.prepareForRestart());
                     break;
             }
         }
