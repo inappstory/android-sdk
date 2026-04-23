@@ -1,8 +1,6 @@
-package com.inappstory.sdk.refactoring.stories.ui.reader;
+package com.inappstory.sdk.refactoring.stories.ui.reader.views;
 
 import android.content.Context;
-import android.os.Handler;
-import android.os.Looper;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.webkit.ValueCallback;
@@ -12,6 +10,7 @@ import androidx.annotation.Nullable;
 import androidx.core.view.ViewCompat;
 
 import com.inappstory.sdk.refactoring.shared.ui.IASWebView;
+import com.inappstory.sdk.refactoring.stories.ui.contracts.IStoriesContentView;
 import com.inappstory.sdk.refactoring.stories.ui.reader.viewmodels.StoryReaderPageViewModel;
 import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.utils.StringsUtils;

@@ -1,4 +1,4 @@
-package com.inappstory.sdk.refactoring.stories.ui.reader;
+package com.inappstory.sdk.refactoring.stories.ui.reader.views;
 
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 

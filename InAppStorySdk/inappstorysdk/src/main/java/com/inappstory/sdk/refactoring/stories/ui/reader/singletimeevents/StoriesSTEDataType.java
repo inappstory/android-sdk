@@ -18,6 +18,7 @@ public enum StoriesSTEDataType implements ISTEDataType {
     UPDATE_TIMELINE,
     START_SLIDE,
     RESTART_SLIDE,
+    SET_SOUND_STATUS,
     PAUSE_SLIDE,
     RESUME_SLIDE,
     STOP_SLIDE

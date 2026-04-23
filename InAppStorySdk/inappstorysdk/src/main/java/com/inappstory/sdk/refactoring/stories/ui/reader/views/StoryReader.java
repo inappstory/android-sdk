@@ -1,4 +1,4 @@
-package com.inappstory.sdk.refactoring.stories.ui.reader;
+package com.inappstory.sdk.refactoring.stories.ui.reader.views;
 
 import android.content.Context;
 import android.util.AttributeSet;
@@ -20,6 +20,7 @@ public class StoryReader extends FrameLayout implements Observer<StoryReaderStat
     private ContainerProvider shareContainer;
     private ContainerProvider goodsContainer;
     private ContainerProvider reviewContainer;
+    private StoryReaderPager pager;
     private StoryReaderState currentValue = null;
 
     public void shareContainer(ContainerProvider shareContainer) {
@@ -40,16 +41,23 @@ public class StoryReader extends FrameLayout implements Observer<StoryReaderStat
 
     private StoryReaderViewModel viewModel;
 
+    private void init(@NonNull Context context) {
+
+    }
+
     public StoryReader(@NonNull Context context) {
         super(context);
+        init(context);
     }
 
     public StoryReader(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
+        init(context);
     }
 
     public StoryReader(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
+        init(context);
     }
 
     @Override
@@ -107,10 +115,17 @@ public class StoryReader extends FrameLayout implements Observer<StoryReaderStat
         }
     }
 
+    private void pageSelected(int newPage) {
+
+    }
+
     @Override
     public void onUpdate(StoryReaderState newValue) {
         if (newValue.openState() != currentValue.openState()) {
             updateOpenState(newValue.openState());
+        }
+        if (currentValue.currentPage() != newValue.currentPage()) {
+            pageSelected(newValue.currentPage());
         }
         updateShareViewIfNecessary(
                 currentValue.shareDataState(),

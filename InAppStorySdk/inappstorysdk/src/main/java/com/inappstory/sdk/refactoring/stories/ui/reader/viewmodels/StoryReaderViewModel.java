@@ -1,12 +1,14 @@
 package com.inappstory.sdk.refactoring.stories.ui.reader.viewmodels;
 
 import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.exceptions.NotImplementedMethodException;
 import com.inappstory.sdk.refactoring.core.utils.observers.Observable;
 import com.inappstory.sdk.refactoring.core.utils.observers.Observer;
 import com.inappstory.sdk.refactoring.stories.ui.list.states.StoryListItemCoordinates;
 import com.inappstory.sdk.refactoring.stories.ui.reader.states.StoryReaderImmutableState;
 import com.inappstory.sdk.refactoring.stories.ui.reader.states.StoryReaderOpenState;
 import com.inappstory.sdk.refactoring.stories.ui.reader.states.StoryReaderState;
+import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 
 public class StoryReaderViewModel {
@@ -38,9 +40,29 @@ public class StoryReaderViewModel {
         this.readerImmutableState = null;
     }
 
-    public void openNextPage(int action) {}
+    int latestShowStoryAction = ShowStory.ACTION_OPEN;
 
-    public void openPreviousPage(int action) {}
+    public void openNextPage(int action) {
+        StoryReaderState currentState = storyReaderStateObservable.getValue();
+        int page = currentState.currentPage();
+        if (page >= readerImmutableState.storiesIds().size() - 1) {
+            //TODO close story reader
+            throw new NotImplementedMethodException();
+        } else {
+            latestShowStoryAction = action;
+            storyReaderStateObservable.updateValue(currentState.currentPage(page + 1));
+        }
+
+    }
+
+    public void openPreviousPage(int action) {
+        StoryReaderState currentState = storyReaderStateObservable.getValue();
+        int page = currentState.currentPage();
+        if (page > 0) {
+            latestShowStoryAction = action;
+            storyReaderStateObservable.updateValue(currentState.currentPage(page - 1));
+        }
+    }
 
     public boolean openReader(
             StoryReaderImmutableState immutableState,

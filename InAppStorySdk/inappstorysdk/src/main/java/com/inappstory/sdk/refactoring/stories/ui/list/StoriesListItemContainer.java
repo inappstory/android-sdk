@@ -18,7 +18,7 @@ import com.inappstory.sdk.refactoring.core.utils.observers.Observer;
 import com.inappstory.sdk.refactoring.stories.ui.list.states.StoriesListItemCoverState;
 import com.inappstory.sdk.refactoring.stories.ui.list.states.StoriesListItemState;
 import com.inappstory.sdk.refactoring.stories.ui.list.viewmodels.StoriesListItemViewModel;
-import com.inappstory.sdk.refactoring.stories.ui.views.IStoriesListItem;
+import com.inappstory.sdk.refactoring.stories.ui.contracts.IStoriesListItem;
 
 import java.util.Objects;
 import java.util.UUID;

@@ -11,14 +11,13 @@ import android.view.View;
 
 import androidx.appcompat.widget.AppCompatImageView;
 import androidx.appcompat.widget.AppCompatTextView;
-import androidx.recyclerview.widget.RecyclerView;
 
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.ui.widgets.roundedlayout.RoundedCornerLayout;
 import com.inappstory.sdk.memcache.IGetBitmap;
-import com.inappstory.sdk.refactoring.stories.ui.views.IStoriesListDefaultItemPresenter;
-import com.inappstory.sdk.refactoring.stories.ui.views.IStoriesListItem;
+import com.inappstory.sdk.refactoring.stories.ui.contracts.IStoriesListDefaultItemPresenter;
+import com.inappstory.sdk.refactoring.stories.ui.contracts.IStoriesListItem;
 import com.inappstory.sdk.stories.ui.video.VideoPlayer;
 import com.inappstory.sdk.stories.ui.widgets.StoryListItemBorder;
 import com.inappstory.sdk.stories.utils.Sizes;

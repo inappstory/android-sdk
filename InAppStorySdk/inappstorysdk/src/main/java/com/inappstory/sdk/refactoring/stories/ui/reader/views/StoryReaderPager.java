@@ -1,4 +1,4 @@
-package com.inappstory.sdk.refactoring.stories.ui.reader;
+package com.inappstory.sdk.refactoring.stories.ui.reader.views;
 
 import android.content.Context;
 import android.util.AttributeSet;

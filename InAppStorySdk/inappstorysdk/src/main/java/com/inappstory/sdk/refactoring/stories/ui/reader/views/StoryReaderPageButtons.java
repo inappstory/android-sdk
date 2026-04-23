@@ -1,4 +1,4 @@
-package com.inappstory.sdk.refactoring.stories.ui.reader;
+package com.inappstory.sdk.refactoring.stories.ui.reader.views;
 
 import android.content.Context;
 import android.util.AttributeSet;
@@ -86,11 +86,36 @@ public class StoryReaderPageButtons extends LinearLayout implements Observer<Sto
         favorite = favoriteInterface.createIconView(context, sizeF);
         sound = soundInterface.createIconView(context, sizeF);
         share = shareInterface.createIconView(context, sizeF);
-        like.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-        dislike.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-        favorite.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-        sound.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-        share.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        like.setLayoutParams(
+                new FrameLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT
+                )
+        );
+        dislike.setLayoutParams(
+                new FrameLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT
+                )
+        );
+        favorite.setLayoutParams(
+                new FrameLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT
+                )
+        );
+        sound.setLayoutParams(
+                new FrameLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT
+                )
+        );
+        share.setLayoutParams(
+                new FrameLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT
+                )
+        );
         likeLayout.addView(like);
         dislikeLayout.addView(dislike);
         shareLayout.addView(share);
@@ -228,23 +253,23 @@ public class StoryReaderPageButtons extends LinearLayout implements Observer<Sto
 
     @Override
     public void onUpdate(StoryReaderButtonsState newValue) {
-        if (!newValue.likeState().equals(likeState)) {
+        if (newValue.likeState() != null && !newValue.likeState().equals(likeState)) {
             likeState = newValue.likeState();
             updateButtonState(likeLayout, like, likeInterface, likeState);
         }
-        if (!newValue.likeState().equals(dislikeState)) {
+        if (newValue.dislikeState() != null && !newValue.dislikeState().equals(dislikeState)) {
             dislikeState = newValue.dislikeState();
             updateButtonState(dislikeLayout, dislike, dislikeInterface, dislikeState);
         }
-        if (!newValue.favoriteState().equals(favoriteState)) {
+        if (newValue.favoriteState() != null && !newValue.favoriteState().equals(favoriteState)) {
             favoriteState = newValue.favoriteState();
             updateButtonState(favoriteLayout, favorite, favoriteInterface, favoriteState);
         }
-        if (!newValue.shareState().equals(shareState)) {
+        if (newValue.shareState() != null && !newValue.shareState().equals(shareState)) {
             shareState = newValue.shareState();
             updateButtonState(shareLayout, share, shareInterface, shareState);
         }
-        if (!newValue.soundState().equals(soundState)) {
+        if (newValue.soundState() != null && !newValue.soundState().equals(soundState)) {
             soundState = newValue.soundState();
             updateButtonState(soundLayout, sound, soundInterface, soundState);
         }

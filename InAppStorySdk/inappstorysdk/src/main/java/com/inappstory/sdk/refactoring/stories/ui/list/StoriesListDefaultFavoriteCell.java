@@ -13,7 +13,7 @@ import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.ui.widgets.roundedlayout.RoundedCornerLayout;
 import com.inappstory.sdk.memcache.IGetBitmap;
-import com.inappstory.sdk.refactoring.stories.ui.views.IGetFavoriteListItem;
+import com.inappstory.sdk.refactoring.stories.ui.contracts.IGetFavoriteListItem;
 import com.inappstory.sdk.stories.ui.list.IStoriesListDefaultFavoriteItemPresenter;
 import com.inappstory.sdk.stories.ui.list.StoriesListDefaultFavoriteItemPresenter;
 

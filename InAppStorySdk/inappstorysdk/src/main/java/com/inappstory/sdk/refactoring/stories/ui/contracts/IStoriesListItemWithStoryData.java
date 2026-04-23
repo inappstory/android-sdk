@@ -1,4 +1,4 @@
-package com.inappstory.sdk.refactoring.stories.ui.views;
+package com.inappstory.sdk.refactoring.stories.ui.contracts;
 
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 

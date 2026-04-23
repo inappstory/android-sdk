@@ -1,4 +1,4 @@
-package com.inappstory.sdk.refactoring.stories.ui.reader;
+package com.inappstory.sdk.refactoring.stories.ui.contracts;
 
 
 public interface IStoriesContentView {

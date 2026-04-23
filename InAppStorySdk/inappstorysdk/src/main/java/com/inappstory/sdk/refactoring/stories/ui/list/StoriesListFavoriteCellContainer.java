@@ -8,19 +8,12 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.R;
-import com.inappstory.sdk.core.utils.ColorUtils;
 import com.inappstory.sdk.refactoring.core.utils.observers.Observer;
-import com.inappstory.sdk.refactoring.stories.data.local.StoryCoverDTO;
 import com.inappstory.sdk.refactoring.stories.ui.list.states.StoriesListFavoriteCellItemState;
 import com.inappstory.sdk.refactoring.stories.ui.list.states.StoriesListFavoriteCellState;
-import com.inappstory.sdk.refactoring.stories.ui.list.states.StoriesListItemCoverState;
-import com.inappstory.sdk.refactoring.stories.ui.list.states.StoriesListItemState;
 import com.inappstory.sdk.refactoring.stories.ui.list.viewmodels.StoriesListFavoriteCellViewModel;
-import com.inappstory.sdk.refactoring.stories.ui.list.viewmodels.StoriesListItemViewModel;
-import com.inappstory.sdk.refactoring.stories.ui.views.IGetFavoriteListItem;
-import com.inappstory.sdk.refactoring.stories.ui.views.IStoriesListItem;
+import com.inappstory.sdk.refactoring.stories.ui.contracts.IGetFavoriteListItem;
 
 import java.util.ArrayList;
 import java.util.List;

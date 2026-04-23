@@ -28,12 +28,15 @@ import com.inappstory.sdk.refactoring.core.utils.observers.Observable;
 import com.inappstory.sdk.refactoring.core.utils.observers.Observer;
 import com.inappstory.sdk.refactoring.core.utils.observers.STETypeAndData;
 import com.inappstory.sdk.refactoring.core.utils.observers.SingleTimeEvent;
+import com.inappstory.sdk.refactoring.core.utils.results.Error;
+import com.inappstory.sdk.refactoring.core.utils.results.ResultCallback;
 import com.inappstory.sdk.refactoring.core.utils.stedata.ContentId;
 import com.inappstory.sdk.refactoring.core.utils.stedata.ContentIdWithIndex;
 import com.inappstory.sdk.refactoring.shared.utils.WebPageModifier;
 import com.inappstory.sdk.refactoring.stories.data.local.StoryDTO;
 import com.inappstory.sdk.refactoring.stories.ui.reader.singletimeevents.JsSendApiRequestResponse;
 import com.inappstory.sdk.refactoring.stories.ui.reader.singletimeevents.LoadSlide;
+import com.inappstory.sdk.refactoring.stories.ui.reader.singletimeevents.SetSoundStatus;
 import com.inappstory.sdk.refactoring.stories.ui.reader.singletimeevents.StartSlide;
 import com.inappstory.sdk.refactoring.stories.ui.reader.singletimeevents.StoriesSTEDataType;
 import com.inappstory.sdk.refactoring.stories.ui.reader.states.StoryReaderButtonsState;
@@ -42,6 +45,9 @@ import com.inappstory.sdk.refactoring.stories.ui.reader.states.StoryReaderPageLo
 import com.inappstory.sdk.refactoring.stories.ui.reader.states.StoryReaderPageLoaderType;
 import com.inappstory.sdk.refactoring.stories.ui.reader.states.StoryReaderPageState;
 import com.inappstory.sdk.refactoring.stories.ui.reader.states.StoryReaderPageTimelineState;
+import com.inappstory.sdk.refactoring.stories.usecases.DislikeStory;
+import com.inappstory.sdk.refactoring.stories.usecases.FavoriteStory;
+import com.inappstory.sdk.refactoring.stories.usecases.LikeStory;
 import com.inappstory.sdk.stories.api.models.StoryLoadedData;
 import com.inappstory.sdk.stories.api.models.UpdateTimelineData;
 import com.inappstory.sdk.stories.cache.ContentIdAndType;
@@ -65,6 +71,8 @@ public class StoryReaderPageViewModel implements IReaderContentDownloaderSubscri
     private final StoryReaderPageTimelineManager timelineManager =
             new StoryReaderPageTimelineManager(this);
     private final StoryReaderPageTimerManager timerManager;
+    private int storyLikeStatus = 0;
+    private boolean storyFavoriteStatus = false;
 
     private final Observable<StoryReaderPageLoaderState> storyReaderPageLoaderStateObservable =
             new Observable<>(new StoryReaderPageLoaderState());
@@ -109,7 +117,13 @@ public class StoryReaderPageViewModel implements IReaderContentDownloaderSubscri
                         new StoryReaderPageState(
                                 storyId,
                                 pageIndex,
-                                readerViewModel.readerImmutableState().contentType()
+                                readerViewModel
+                                        .readerImmutableState()
+                                        .contentType()
+                        ).storyListItem(
+                                core
+                                        .storyRepository()
+                                        .getLocalStoryListItem(storyId)
                         )
                 );
         core.storyDownloadManager().addSubscriber(this);
@@ -169,23 +183,213 @@ public class StoryReaderPageViewModel implements IReaderContentDownloaderSubscri
     }
 
     public void clickOnRefresh() {
-
+        StoryReaderPageState pageState = storyReaderPageState();
+        if (pageState.story() != null) {
+            ContentIdAndType contentIdAndType = new ContentIdAndType(
+                    Integer.parseInt(pageState.storyId()),
+                    pageState.contentType()
+            );
+            core.storySlidesDownloadManager().removeFromCache(
+                    pageState.story(),
+                    pageState.contentType()
+            );
+            core.storyDownloadManager().removeFromCache(
+                    contentIdAndType
+            );
+            core.storyDownloadManager().addStories(contentIdAndType);
+        }
     }
 
     public void likeClick() {
+        StoryReaderPageState pageState = storyReaderPageState();
+        StoryReaderButtonsState buttonsState = storyReaderPageButtonsStateObservable.getValue();
+        storyReaderPageButtonsStateObservable.updateValue(
+                buttonsState
+                        .copy()
+                        .likeState(
+                                buttonsState
+                                        .likeState()
+                                        .copy()
+                                        .enabled(false)
+                        )
+                        .dislikeState(
+                                buttonsState
+                                        .dislikeState()
+                                        .copy()
+                                        .enabled(false)
+                        )
+        );
+        new LikeStory(
+                core.storyRepository(),
+                core.sessionRepository(),
+                pageState.storyId(),
+                storyLikeStatus != 1
+        ).invoke(new ResultCallback<Boolean>() {
+            @Override
+            public void success(Boolean result) {
+                if (result == null) return;
+                storyReaderPageButtonsStateObservable.updateValue(
+                        buttonsState.copy()
+                                .likeState(
+                                        buttonsState
+                                                .likeState()
+                                                .copy()
+                                                .enabled(true)
+                                                .active(result)
+                                )
+                                .dislikeState(
+                                        buttonsState
+                                                .likeState()
+                                                .copy()
+                                                .enabled(true)
+                                                .active(result)
+                                )
+                );
+                storyLikeStatus = result ? 1 : 0;
+            }
 
+            @Override
+            public void error(Error<Boolean> result) {
+                storyReaderPageButtonsStateObservable.updateValue(
+                        buttonsState
+                                .copy()
+                                .likeState(
+                                        buttonsState
+                                                .likeState()
+                                                .copy()
+                                                .enabled(true)
+                                )
+                                .dislikeState(
+                                        buttonsState
+                                                .dislikeState()
+                                                .copy()
+                                                .enabled(true)
+                                )
+                );
+            }
+        });
     }
 
     public void dislikeClick() {
+        StoryReaderPageState pageState = storyReaderPageState();
+        StoryReaderButtonsState buttonsState = storyReaderPageButtonsStateObservable.getValue();
+        storyReaderPageButtonsStateObservable.updateValue(
+                buttonsState
+                        .copy()
+                        .likeState(
+                                buttonsState
+                                        .likeState()
+                                        .copy()
+                                        .enabled(false)
+                        )
+                        .dislikeState(
+                                buttonsState
+                                        .dislikeState()
+                                        .copy()
+                                        .enabled(false)
+                        )
+        );
+        new DislikeStory(
+                core.storyRepository(),
+                core.sessionRepository(),
+                pageState.storyId(),
+                storyLikeStatus != -1
+        ).invoke(new ResultCallback<Boolean>() {
+            @Override
+            public void success(Boolean result) {
+                if (result == null) return;
+                storyReaderPageButtonsStateObservable.updateValue(
+                        buttonsState.copy()
+                                .likeState(
+                                        buttonsState
+                                                .likeState()
+                                                .copy()
+                                                .enabled(true)
+                                                .active(result)
+                                )
+                                .dislikeState(
+                                        buttonsState
+                                                .likeState()
+                                                .copy()
+                                                .enabled(true)
+                                                .active(result)
+                                )
+                );
+                storyLikeStatus = result ? -1 : 0;
+            }
 
+            @Override
+            public void error(Error<Boolean> result) {
+                storyReaderPageButtonsStateObservable.updateValue(
+                        buttonsState
+                                .copy()
+                                .likeState(
+                                        buttonsState
+                                                .likeState()
+                                                .copy()
+                                                .enabled(true)
+                                )
+                                .dislikeState(
+                                        buttonsState
+                                                .dislikeState()
+                                                .copy()
+                                                .enabled(true)
+                                )
+                );
+            }
+        });
     }
 
     public void favoriteClick() {
+        StoryReaderPageState pageState = storyReaderPageState();
+        StoryReaderButtonsState buttonsState = storyReaderPageButtonsStateObservable.getValue();
+        storyReaderPageButtonsStateObservable.updateValue(
+                buttonsState.copy().favoriteState(
+                        buttonsState.soundState().copy().enabled(false)
+                ));
+        new FavoriteStory(
+                core.storyRepository(),
+                core.sessionRepository(),
+                pageState.storyId(),
+                !storyFavoriteStatus
+        ).invoke(new ResultCallback<Boolean>() {
+            @Override
+            public void success(Boolean result) {
+                if (result == null) return;
+                storyReaderPageButtonsStateObservable.updateValue(
+                        buttonsState.copy().favoriteState(
+                                buttonsState.soundState().copy().enabled(true)
+                                        .active(result)
+                        ));
+                storyFavoriteStatus = result;
+            }
 
+            @Override
+            public void error(Error<Boolean> result) {
+                storyReaderPageButtonsStateObservable.updateValue(
+                        buttonsState.copy().favoriteState(
+                                buttonsState.soundState().copy().enabled(true)
+                        ));
+            }
+        });
     }
 
     public void soundClick() {
         core.settingsAPI().switchSoundOn();
+        StoryReaderButtonsState buttonsState = storyReaderPageButtonsStateObservable.getValue();
+        storyReaderPageButtonsStateObservable.updateValue(buttonsState.copy().soundState(
+                buttonsState.soundState().copy().active(((IASDataSettingsHolder) core.settingsAPI())
+                        .isSoundOn())
+        ));
+        singleTimeEvents.updateValue(
+                new STETypeAndData(StoriesSTEDataType.SET_SOUND_STATUS,
+                        new SetSoundStatus()
+                                .soundOn(
+                                        ((IASDataSettingsHolder) core.settingsAPI())
+                                                .isSoundOn()
+                                )
+                )
+        );
     }
 
     public void shareClick() {
@@ -468,7 +672,9 @@ public class StoryReaderPageViewModel implements IReaderContentDownloaderSubscri
 
     @Override
     public void contentLoadSuccess(IReaderContent content) {
-        storyReaderPageStateObservable.updateValue(storyReaderPageState().copy().story((StoryDTO) content));
+        storyReaderPageStateObservable.updateValue(storyReaderPageState().copy().story(
+                (StoryDTO) content)
+        );
         core.storySlidesDownloadManager().addTasks(content, contentIdAndType().contentType);
     }
 

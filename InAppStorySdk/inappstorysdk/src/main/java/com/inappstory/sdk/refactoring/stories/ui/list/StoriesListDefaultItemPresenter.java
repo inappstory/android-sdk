@@ -6,7 +6,7 @@ import com.inappstory.sdk.memcache.GetBitmapFromCacheWithFilePath;
 import com.inappstory.sdk.memcache.IGetBitmap;
 import com.inappstory.sdk.memcache.IGetBitmapFromMemoryCache;
 import com.inappstory.sdk.memcache.IGetBitmapFromMemoryCacheError;
-import com.inappstory.sdk.refactoring.stories.ui.views.IStoriesListDefaultItemPresenter;
+import com.inappstory.sdk.refactoring.stories.ui.contracts.IStoriesListDefaultItemPresenter;
 
 public class StoriesListDefaultItemPresenter implements IStoriesListDefaultItemPresenter {
     @Override

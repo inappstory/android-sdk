@@ -1,4 +1,4 @@
-package com.inappstory.sdk.refactoring.stories.ui.reader;
+package com.inappstory.sdk.refactoring.stories.ui.reader.views;
 
 import android.content.Context;
 import android.util.AttributeSet;
@@ -13,6 +13,7 @@ import com.inappstory.sdk.refactoring.core.utils.observers.STETypeAndData;
 import com.inappstory.sdk.refactoring.core.utils.stedata.ContentIdWithIndex;
 import com.inappstory.sdk.refactoring.stories.ui.reader.singletimeevents.JsSendApiRequestResponse;
 import com.inappstory.sdk.refactoring.stories.ui.reader.singletimeevents.LoadSlide;
+import com.inappstory.sdk.refactoring.stories.ui.reader.singletimeevents.SetSoundStatus;
 import com.inappstory.sdk.refactoring.stories.ui.reader.singletimeevents.StartSlide;
 import com.inappstory.sdk.refactoring.stories.ui.reader.singletimeevents.StopSlide;
 import com.inappstory.sdk.refactoring.stories.ui.reader.singletimeevents.StoriesSTEDataType;
@@ -80,6 +81,10 @@ public class StoryReaderPage extends FrameLayout implements Observer<Boolean> {
                 case START_SLIDE:
                     StartSlide startSlideData = (StartSlide) newValue.data();
                     content.startSlide(startSlideData.soundOn());
+                    break;
+                case SET_SOUND_STATUS:
+                    SetSoundStatus updatedSoundStatus = (SetSoundStatus) newValue.data();
+                    content.changeSoundStatus(updatedSoundStatus.soundOn());
                     break;
                 case RESTART_SLIDE:
                     StartSlide restartSlideData = (StartSlide) newValue.data();

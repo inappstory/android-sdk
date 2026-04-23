@@ -2,7 +2,6 @@ package com.inappstory.sdk.refactoring.stories.ui.list;
 
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,8 +17,8 @@ import com.inappstory.sdk.refactoring.stories.ui.list.states.StoriesListState;
 import com.inappstory.sdk.refactoring.stories.ui.list.viewmodels.StoriesListItemViewModel;
 import com.inappstory.sdk.refactoring.stories.ui.list.viewmodels.StoriesListItemViewModelCreator;
 import com.inappstory.sdk.refactoring.stories.ui.list.viewmodels.BaseStoriesListViewModel;
-import com.inappstory.sdk.refactoring.stories.ui.views.IGetFavoriteListItem;
-import com.inappstory.sdk.refactoring.stories.ui.views.IStoriesListItem;
+import com.inappstory.sdk.refactoring.stories.ui.contracts.IGetFavoriteListItem;
+import com.inappstory.sdk.refactoring.stories.ui.contracts.IStoriesListItem;
 import com.inappstory.sdk.stories.utils.Sizes;
 
 import java.util.ArrayList;

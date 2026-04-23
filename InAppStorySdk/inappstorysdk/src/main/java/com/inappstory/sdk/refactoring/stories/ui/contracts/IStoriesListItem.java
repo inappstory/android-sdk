@@ -1,4 +1,4 @@
-package com.inappstory.sdk.refactoring.stories.ui.views;
+package com.inappstory.sdk.refactoring.stories.ui.contracts;
 
 import android.view.View;
 
