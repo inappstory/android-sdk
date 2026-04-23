@@ -147,7 +147,7 @@ public class LaunchStoryScreenAppearance implements SerializableWithKey {
             csLocations.add(0f);
             csLocations.add(1f);
             csTimerGradient = new StoriesGradientObject()
-                    .csGradientHeight(150)
+                    .csGradientHeight(200)
                     .csColors(csColors)
                     .csLocations(csLocations);
         }
@@ -161,7 +161,7 @@ public class LaunchStoryScreenAppearance implements SerializableWithKey {
             csLocations.add(0f);
             csLocations.add(1f);
             csFullscreenBottomGradient = new StoriesGradientObject()
-                    .csGradientHeight(150)
+                    .csGradientHeight(200)
                     .csColors(csColors)
                     .csLocations(csLocations);
         }
