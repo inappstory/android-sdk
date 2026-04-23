@@ -240,6 +240,7 @@ public class AppearanceManager {
     private boolean csIsDraggable = true;
 
     private StoriesGradientObject csTimerGradient;
+    private StoriesGradientObject csFullscreenBottomGradient;
     private UGCListItemSimpleAppearance csUGCListItemSimpleAppearance
             = new UGCListItemSimpleAppearance();
     private int csReaderRadius = -1;
@@ -354,9 +355,17 @@ public class AppearanceManager {
         this.csTimerGradient = csTimerGradient;
         return AppearanceManager.this;
     }
+    public AppearanceManager csFullscreenBottomGradient(StoriesGradientObject csFullscreenBottomGradient) {
+        this.csFullscreenBottomGradient = csFullscreenBottomGradient;
+        return AppearanceManager.this;
+    }
 
     public StoriesGradientObject csTimerGradient() {
         return csTimerGradient;
+    }
+
+    public StoriesGradientObject csFullscreenBottomGradient() {
+        return csFullscreenBottomGradient;
     }
 
     /**

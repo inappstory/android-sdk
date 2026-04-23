@@ -20,6 +20,7 @@ import android.view.inputmethod.InputMethodManager;
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.view.WindowCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
@@ -80,7 +81,7 @@ public class StoriesActivity extends IASActivity implements BaseStoryScreen, Sho
                     ((IOpenStoriesReader) core
                             .screensManager()
                             .getOpenReader(ScreenType.STORY))
-                            .onRestoreStatusBar(StoriesActivity.this);
+                            .onRestoreScreen(StoriesActivity.this);
                     core
                             .screensManager()
                             .getGameScreenHolder()
@@ -162,7 +163,7 @@ public class StoriesActivity extends IASActivity implements BaseStoryScreen, Sho
                 ((IOpenStoriesReader) core
                         .screensManager()
                         .getOpenReader(ScreenType.STORY))
-                        .onHideStatusBar(StoriesActivity.this);
+                        .onShowInFullscreen(StoriesActivity.this);
             }
         });
 
@@ -522,7 +523,7 @@ public class StoriesActivity extends IASActivity implements BaseStoryScreen, Sho
         ((IOpenStoriesReader) core
                 .screensManager()
                 .getOpenReader(ScreenType.STORY))
-                .onHideStatusBar(StoriesActivity.this);
+                .onShowInFullscreen(StoriesActivity.this);
         InAppStoryService.getInstance().getListReaderConnector().readerIsOpened();
         type = launchData.type();
         draggableFrame.post(new Runnable() {
@@ -838,7 +839,7 @@ public class StoriesActivity extends IASActivity implements BaseStoryScreen, Sho
                     ((IOpenStoriesReader) core
                             .screensManager()
                             .getOpenReader(ScreenType.STORY))
-                            .onRestoreStatusBar(StoriesActivity.this);
+                            .onRestoreScreen(StoriesActivity.this);
                     if (launchData != null) {
                         core.statistic().storiesV1(
                                 launchData.sessionId(),

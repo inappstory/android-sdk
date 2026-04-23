@@ -10,6 +10,19 @@ import android.view.View;
 public class StatusBarController {
     public static int systemUiFlags = -1;
 
+    public static void showFullscreen(Activity context) {
+        if (context == null) return;
+        View decorView = context.getWindow().getDecorView();
+        // Hide Status Bar.
+        systemUiFlags = decorView.getSystemUiVisibility();
+        int uiOptions = View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
+                View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY |
+                View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
+                View.SYSTEM_UI_FLAG_FULLSCREEN |
+                View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
+        decorView.setSystemUiVisibility(uiOptions);
+    }
+
     public static void hideStatusBar(Activity context, boolean withSb) {
         if (context == null) return;
         View decorView = context.getWindow().getDecorView();
@@ -22,6 +35,10 @@ public class StatusBarController {
     }
 
     public static void showStatusBar(Activity context) {
+        restore(context);
+    }
+
+    public static void restore(Activity context) {
         if (context == null) return;
         View decorView = context.getWindow().getDecorView();
         // Show Status Bar.

@@ -2,6 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="horizontal"
     android:layout_width="match_parent"
+    android:id="@+id/background"
     android:background="#000000"
     android:layout_height="60dp">
     <com.inappstory.sdk.stories.ui.widgets.TouchFrameLayout

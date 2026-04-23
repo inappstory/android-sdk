@@ -158,6 +158,11 @@ public class ButtonsPanel extends LinearLayout {
         if (shareLayout != null) shareLayout.setScaleX(mirrored ? -1 : 1);
     }
 
+    @Override
+    public void setBackgroundColor(int color) {
+        findViewById(R.id.background).setBackgroundColor(color);
+    }
+
     public void init(Context context) {
         inflate(getContext(), R.layout.cs_buttons_panel_layout, this);
         likeLayout = findViewById(R.id.likeButton);
