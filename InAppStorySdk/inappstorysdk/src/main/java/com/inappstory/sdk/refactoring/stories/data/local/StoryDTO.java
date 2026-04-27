@@ -2,11 +2,17 @@ package com.inappstory.sdk.refactoring.stories.data.local;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.LoggerTags;
-import com.inappstory.sdk.core.data.IReaderContent;
 import com.inappstory.sdk.core.data.IReaderContentSlide;
 import com.inappstory.sdk.core.data.IResource;
 import com.inappstory.sdk.core.network.content.models.Image;
 import com.inappstory.sdk.core.network.content.models.StorySlide;
+import com.inappstory.sdk.refactoring.shared.data.contracts.IOpenedStatus;
+import com.inappstory.sdk.refactoring.shared.data.contracts.IReaderCloseEnabler;
+import com.inappstory.sdk.refactoring.shared.data.contracts.IReaderSwipeUpEnabler;
+import com.inappstory.sdk.refactoring.shared.data.contracts.ISlidesContent;
+import com.inappstory.sdk.refactoring.shared.data.contracts.IStatData;
+import com.inappstory.sdk.refactoring.shared.data.contracts.IStatusContent;
+import com.inappstory.sdk.refactoring.stories.data.contracts.IStoryReaderItem;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -14,7 +20,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-public class StoryDTO implements IReaderContent {
+public class StoryDTO implements
+        IStoryReaderItem {
 
     public int id;
     public String title;
@@ -30,7 +37,7 @@ public class StoryDTO implements IReaderContent {
     public int slidesCount;
     public boolean favorite;
     public String deeplink;
-    public boolean isOpened;
+    public boolean opened;
     public boolean disableClose;
     public Boolean hasLike;
     public Boolean hasAudio;
@@ -56,7 +63,7 @@ public class StoryDTO implements IReaderContent {
             int slidesCount,
             boolean favorite,
             String deeplink,
-            boolean isOpened,
+            boolean opened,
             boolean disableClose,
             Boolean hasLike,
             Boolean hasAudio,
@@ -79,7 +86,7 @@ public class StoryDTO implements IReaderContent {
         this.slidesCount = slidesCount;
         this.favorite = favorite;
         this.deeplink = deeplink;
-        this.isOpened = isOpened;
+        this.opened = opened;
         this.disableClose = disableClose;
         this.hasLike = hasLike;
         this.hasAudio = hasAudio;
@@ -137,19 +144,13 @@ public class StoryDTO implements IReaderContent {
     }
 
     @Override
-    public boolean isOpened() {
-        return isOpened;
+    public boolean opened() {
+        return opened;
     }
 
     @Override
-    public void setOpened(boolean isOpened) {
-        this.isOpened = isOpened;
-    }
-
-
-    @Override
-    public boolean hasAudio() {
-        return hasAudio != null ? hasAudio : false;
+    public void opened(boolean opened) {
+        this.opened = opened;
     }
 
     @Override
@@ -162,23 +163,29 @@ public class StoryDTO implements IReaderContent {
         return disableClose;
     }
 
-
-    @Override
-    public int id() {
-        return id;
-    }
-
     @Override
     public String statTitle() {
         return statTitle;
     }
 
     @Override
-    public int slidesCount() {
-        return slidesCount;
+    public boolean hasAudio() {
+        return hasAudio != null ? hasAudio : false;
     }
 
+
     @Override
+    public int id() {
+        return id;
+    }
+
+
+    @Override
+    public int slidesCount() {
+        if (slides != null) return slides.size();
+        return 0;
+    }
+
     public Map<String, Object> ugcPayload() {
         return ugcPayload;
     }
@@ -224,21 +231,10 @@ public class StoryDTO implements IReaderContent {
     }
 
     @Override
-    public int actualSlidesCount() {
-        if (slides != null) return slides.size();
-        return 0;
-    }
-
-    @Override
     public String slideEventPayload(int slideIndex) {
         IReaderContentSlide slide = slide(slideIndex);
         if (slide == null) return null;
         return slide.slidePayload();
-    }
-
-    @Override
-    public boolean checkIfEmpty() {
-        return (layout == null || slides == null || slides.isEmpty());
     }
 
     private IReaderContentSlide slide(int index) {
@@ -275,7 +271,7 @@ public class StoryDTO implements IReaderContent {
         return id == storyDTO.id &&
                 slidesCount == storyDTO.slidesCount &&
                 favorite == storyDTO.favorite &&
-                isOpened == storyDTO.isOpened &&
+                opened == storyDTO.opened &&
                 disableClose == storyDTO.disableClose &&
                 Objects.equals(title, storyDTO.title) &&
                 Objects.equals(titleColor, storyDTO.titleColor) &&
@@ -311,7 +307,7 @@ public class StoryDTO implements IReaderContent {
                 slidesCount,
                 favorite,
                 deeplink,
-                isOpened,
+                opened,
                 disableClose,
                 hasLike,
                 hasAudio,

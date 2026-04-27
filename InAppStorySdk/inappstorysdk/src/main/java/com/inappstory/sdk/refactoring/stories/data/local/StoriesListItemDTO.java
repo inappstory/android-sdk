@@ -1,14 +1,14 @@
 package com.inappstory.sdk.refactoring.stories.data.local;
 
-import com.inappstory.sdk.core.data.IListItemContent;
 import com.inappstory.sdk.core.network.content.models.Image;
+import com.inappstory.sdk.refactoring.stories.data.contracts.IStoryListItem;
 import com.inappstory.sdk.stories.api.models.GameInstance;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class StoriesListItemDTO implements IListItemContent {
+public class StoriesListItemDTO implements IStoryListItem {
     public StoriesListItemDTO(
             int id,
             String title,
@@ -25,7 +25,7 @@ public class StoriesListItemDTO implements IListItemContent {
             Boolean hideInReader,
             String deeplink,
             GameInstance gameInstance,
-            boolean isOpened,
+            boolean opened,
             boolean disableClose,
             Boolean hasLike,
             Boolean hasAudio,
@@ -47,7 +47,7 @@ public class StoriesListItemDTO implements IListItemContent {
         this.hideInReader = hideInReader;
         this.deeplink = deeplink;
         this.gameInstance = gameInstance;
-        this.isOpened = isOpened;
+        this.opened = opened;
         this.disableClose = disableClose;
         this.hasLike = hasLike;
         this.hasAudio = hasAudio;
@@ -70,7 +70,7 @@ public class StoriesListItemDTO implements IListItemContent {
     private Boolean hideInReader;
     private String deeplink;
     private GameInstance gameInstance;
-    private boolean isOpened;
+    private boolean opened;
     private boolean disableClose;
     private Boolean hasLike;
     private Boolean hasAudio;
@@ -113,13 +113,13 @@ public class StoriesListItemDTO implements IListItemContent {
     }
 
     @Override
-    public boolean isOpened() {
-        return isOpened;
+    public boolean opened() {
+        return opened;
     }
 
     @Override
-    public void setOpened(boolean isOpened) {
-        this.isOpened = isOpened;
+    public void opened(boolean opened) {
+        this.opened = opened;
     }
 
     @Override
