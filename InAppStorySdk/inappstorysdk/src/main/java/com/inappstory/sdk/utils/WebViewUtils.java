@@ -12,13 +12,10 @@ import com.inappstory.sdk.core.IASCore;
 public class WebViewUtils {
     public static boolean isWebViewEnabled(IASCore core) {
         try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                PackageInfo packageInfo = WebViewCompat.getCurrentWebViewPackage(core.appContext());
-                return packageInfo != null;
-            } else {
+            PackageInfo packageInfo = WebViewCompat.getCurrentWebViewPackage(core.appContext());
+            if (packageInfo == null)
                 CookieManager.getInstance();
-                return true;
-            }
+            return true;
         } catch (Exception e) {
             return false;
         }

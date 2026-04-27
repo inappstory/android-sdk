@@ -195,6 +195,7 @@ public class IASSingleStoryImpl implements IASSingleStory {
         LaunchStoryScreenData launchData = new LaunchStoryScreenData()
                 .sessionId(sessionId)
                 .storiesIds(new ArrayList<>(stIds))
+                .startFromFullscreenStory(story.fullscreen())
                 .firstAction(readerAction)
                 .sourceType(readerSource)
                 .slideIndex(slide)

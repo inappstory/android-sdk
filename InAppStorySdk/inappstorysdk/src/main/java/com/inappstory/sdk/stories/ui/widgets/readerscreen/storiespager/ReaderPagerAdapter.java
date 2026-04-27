@@ -65,18 +65,6 @@ public class ReaderPagerAdapter extends FragmentStatePagerAdapter {
     }
 
 
-    public int getItemId(int position) {
-        if (position < storiesIds.size())
-            return storiesIds.get(position);
-        return -1;
-    }
-
-
-    private HashMap<Integer, ReaderPageFragment> fragMap =
-            new HashMap<>();
-
-
-    Serializable timerGradient;
 
     @NonNull
     @Override

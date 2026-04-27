@@ -25,7 +25,6 @@
         <activity
             android:name="com.inappstory.sdk.stories.ui.reader.StoriesActivity"
             android:hardwareAccelerated="true"
-            android:screenOrientation="portrait"
             android:theme="@style/NewTransparent"
             tools:ignore="LockedOrientationActivity" />
         <activity

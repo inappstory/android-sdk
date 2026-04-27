@@ -239,10 +239,12 @@ public class InAppStoryAPISubscribersManager {
             List<Integer> readerStories = new ArrayList<>();
             int j = 0;
             int correctedIndex = 0;
+            boolean startFromFullscreenStory = stories.get(0).fullscreen();
             for (IListItemContent story : stories) {
                 if (!story.hideInReader()) {
                     if (currentStoryCover.id() == story.id()) {
                         correctedIndex = j;
+                        startFromFullscreenStory = story.fullscreen();
                     }
                     readerStories.add(story.id());
                     j++;
@@ -252,6 +254,7 @@ public class InAppStoryAPISubscribersManager {
                     .listUniqueId(uniqueKey)
                     .feed(requestData.feed)
                     .sessionId(sessionId)
+                    .startFromFullscreenStory(startFromFullscreenStory)
                     .storiesIds(new ArrayList<>(readerStories))
                     .listIndex(correctedIndex)
                     .firstAction(ShowStory.ACTION_OPEN)

@@ -238,6 +238,7 @@ public class IASOnboardingsImpl implements IASOnboardings {
                 .storiesIds(new ArrayList<>(storiesIds))
                 .firstAction(ShowStory.ACTION_OPEN)
                 .sourceType(SourceType.ONBOARDING)
+                .startFromFullscreenStory(stories.get(0).fullscreen())
                 .slideIndex(0)
                 .type(ContentType.STORY)
                 .cancellationTokenUID(cancellationToken.getUniqueId());

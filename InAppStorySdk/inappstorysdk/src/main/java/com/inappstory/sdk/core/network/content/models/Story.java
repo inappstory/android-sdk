@@ -144,6 +144,11 @@ public class Story implements Parcelable, IStory, IContentWithTimeline {
     }
 
     @Override
+    public boolean fullscreen() {
+        return id % 2 == 0;
+    }
+
+    @Override
     public void setOpened(boolean isOpened) {
         this.isOpened = isOpened;
     }

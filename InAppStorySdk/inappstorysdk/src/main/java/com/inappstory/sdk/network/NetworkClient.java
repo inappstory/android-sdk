@@ -180,6 +180,7 @@ public class NetworkClient {
                 callback.onFailure(response);
             }
         } catch (Exception e) {
+            e.printStackTrace();
             response = new Response.Builder().code(-4).errorBody(e.getMessage()).build();
             response.logId = requestId;
             if (callback != null) {

@@ -1,6 +1,8 @@
 package com.inappstory.sdk.stories.ui.reader;
 
 
+import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
+import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 import static com.inappstory.sdk.AppearanceManager.BOTTOM_END;
 import static com.inappstory.sdk.AppearanceManager.BOTTOM_LEFT;
 import static com.inappstory.sdk.AppearanceManager.BOTTOM_RIGHT;
@@ -24,6 +26,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowInsets;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
@@ -63,14 +66,14 @@ public class StoriesLoaderFragment extends Fragment {
         if (story == null) return;
         storyId = story.id();
         ButtonsPanel buttonsPanel = view.findViewById(R.id.ias_buttons_panel);
-        View aboveButtonsPanel = view.findViewById(R.id.ias_above_buttons_panel);
         View closeButton = view.findViewById(R.id.ias_close_button);
         int mirrorScale = 1 - 2 * mirrored;
         closeButton.setScaleX(mirrorScale);
         if (story.disableClose())
             closeButton.setVisibility(View.GONE);
-        if (buttonsPanel != null && aboveButtonsPanel != null) {
-            buttonsPanel.setButtonsVisibility(appearanceSettings,
+        if (buttonsPanel != null) {
+            buttonsPanel.setButtonsVisibility(
+                    appearanceSettings,
                     story.hasLike(),
                     story.hasFavorite(),
                     story.hasShare(),
@@ -78,7 +81,6 @@ public class StoriesLoaderFragment extends Fragment {
                     Sizes.isTablet(view.getContext())
             );
             buttonsPanel.setButtonsStatus(story.like(), story.favorite() ? 1 : 0);
-            aboveButtonsPanel.setVisibility(buttonsPanel.getVisibility());
         }
         StoryTimeline timeline = view.findViewById(R.id.ias_timeline);
         if (timeline != null) {
@@ -110,54 +112,68 @@ public class StoriesLoaderFragment extends Fragment {
     }
 
 
+    private boolean isFullscreenStory() {
+        Bundle arguments = getArguments();
+        if (arguments == null) return false;
+        return arguments.getBoolean("isFullscreenStory", false);
+    }
+
     private void setOffsets(View view) {
-        View blackTop = view.findViewById(R.id.ias_black_top);
-        View blackBottom = view.findViewById(R.id.ias_black_bottom);
-        Activity fragmentActivity = getActivity();
-        if (fragmentActivity == null) return;
-        if (!Sizes.isTablet(fragmentActivity)) {
-            if (blackTop != null) {
-                Point screenSize;
-                Rect readerContainer = getArguments().getParcelable("readerContainer");
-                int phoneHeight = Sizes.getFullPhoneHeight(fragmentActivity);
-                int width = Sizes.getFullPhoneWidth(fragmentActivity);
-                int windowHeight = Sizes.getScreenSize(fragmentActivity).y;
-                int topInsetOffset = 0;
-                int bottomInsetOffset = 0;
-                if (Build.VERSION.SDK_INT >= 23) {
-                    if (fragmentActivity.getWindow() != null) {
-                        WindowInsets windowInsets = fragmentActivity.getWindow().getDecorView().getRootWindowInsets();
-                        if (windowInsets != null) {
-                            topInsetOffset = Math.max(0, windowInsets.getStableInsetTop());
-                            bottomInsetOffset = Math.max(0, windowInsets.getStableInsetBottom());
-                        }
+        View topOffset = view.findViewById(R.id.ias_black_top);
+        View bottomOffset = view.findViewById(R.id.ias_black_bottom);
+        Context context = view.getContext();
+        if (!Sizes.isTablet(context)) {
+            int topInsetOffset = 0;
+            int bottomInsetOffset = 0;
+            Rect readerContainer = getArguments().getParcelable("readerContainer");
+            int phoneHeight = Sizes.getFullPhoneHeight(context);
+            if (Build.VERSION.SDK_INT >= 23) {
+                if (context instanceof Activity && ((Activity) context).getWindow() != null) {
+                    WindowInsets windowInsets = ((Activity) context).getWindow().getDecorView().getRootWindowInsets();
+                    if (windowInsets != null) {
+                        topInsetOffset = Math.max(0, windowInsets.getStableInsetTop());
+                        bottomInsetOffset = Math.max(0, windowInsets.getStableInsetBottom());
                     }
                 }
-
-
+            }
+            LinearLayout.LayoutParams topLP = (LinearLayout.LayoutParams) topOffset.getLayoutParams();
+            LinearLayout.LayoutParams bottomLp = (LinearLayout.LayoutParams) bottomOffset.getLayoutParams();
+            if (isFullscreenStory()) {
+                bottomLp.height = bottomInsetOffset;
+                topLP.height = topInsetOffset;
+            } else {
+                Point screenSize;
+                int width = Sizes.getFullPhoneWidth(context);
+                int skipTop = 0;
+                int skipBottom = 0;
                 if (readerContainer != null) {
                     screenSize = new Point(
                             Math.min(readerContainer.width(), width),
-                            Math.min(readerContainer.height(), phoneHeight - topInsetOffset - bottomInsetOffset)
+                            Math.min(readerContainer.height(), phoneHeight)
                     );
+                    skipBottom = phoneHeight - readerContainer.bottom;
+                    skipTop = readerContainer.top;
+                    topInsetOffset = Math.max(0, topInsetOffset - Math.max(skipTop, 0));
+                    bottomInsetOffset = Math.max(0, bottomInsetOffset - Math.max(skipBottom, 0));
                 } else {
                     screenSize = new Point(
                             width,
-                            phoneHeight - topInsetOffset - bottomInsetOffset
+                            phoneHeight
                     );
                 }
-                if (phoneHeight - Math.min(topInsetOffset, bottomInsetOffset) < windowHeight) {
-                    LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) blackBottom.getLayoutParams();
-                    lp.height = bottomInsetOffset;
-                    blackBottom.requestLayout();
-                }
-                int maxRatioHeight = (int) (screenSize.x * 2f);
-                int restHeight = Math.max(0, screenSize.y - maxRatioHeight) + topInsetOffset;
-                LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) blackTop.getLayoutParams();
-                lp.height = restHeight;
-                blackTop.requestLayout();
+                int maxStoryRatioHeight = (int) (screenSize.x * 16f / 9f);
+                int bottomHeight = bottomInsetOffset;
+                int topHeight = Math.max(topInsetOffset, phoneHeight - bottomHeight - getPanelHeight(context) - maxStoryRatioHeight);
+                bottomLp.height = bottomHeight;
+                topLP.height = topHeight;
             }
+            bottomOffset.requestLayout();
+            topOffset.requestLayout();
         }
+    }
+
+    private int getPanelHeight(Context context) {
+        return Sizes.dpToPxExt(60, context);
     }
 
     void bindViews(View view) {
@@ -231,6 +247,74 @@ public class StoriesLoaderFragment extends Fragment {
         }
     }
 
+    View createPageView(boolean fullscreen) {
+        View topOffset;
+        View bottomOffset;
+        Context context = getContext();
+        InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
+        if (inAppStoryManager == null) return null;
+        IListItemContent story = inAppStoryManager.iasCore().contentHolder().listsContent()
+                .getByIdAndType(
+                        launchData.storiesIds().get(launchData.listIndex()),
+                        launchData.type()
+                );
+        if (story == null) return null;
+        if (context == null) return null;
+        FrameLayout res = new FrameLayout(context);
+        res.setLayoutParams(new ViewGroup.LayoutParams(MATCH_PARENT,
+                MATCH_PARENT));
+        if (!Sizes.isTablet(getContext()) && appearanceSettings.csReaderBackgroundColor() != Color.BLACK) {
+            res.setBackgroundColor(Color.BLACK);
+        }
+        topOffset = new View(context);
+        topOffset.setId(R.id.ias_black_top);
+        topOffset.setLayoutParams(new LinearLayout.LayoutParams(MATCH_PARENT, 0));
+
+
+        bottomOffset = new View(context);
+        bottomOffset.setId(R.id.ias_black_bottom);
+        bottomOffset.setLayoutParams(new LinearLayout.LayoutParams(MATCH_PARENT, 0));
+
+        LinearLayout linearLayout = new LinearLayout(context);
+        linearLayout.setOrientation(LinearLayout.VERTICAL);
+        linearLayout.setLayoutParams(new FrameLayout.LayoutParams(MATCH_PARENT,
+                MATCH_PARENT));
+        ButtonsPanel buttonsPanel = createButtonsPanel(context, fullscreen);
+
+        linearLayout.addView(topOffset);
+        linearLayout.setElevation(10);
+        if (fullscreen) {
+            linearLayout.addView(createTimelineContainer(context, true));
+            View emptySpace = new View(context);
+            emptySpace.setLayoutParams(new LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT, 1f));
+            linearLayout.addView(emptySpace);
+        } else {
+            CardView main = new CardView(context);
+            main.setLayoutParams(new LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT, 1f));
+            ((CardView) main).setCardBackgroundColor(Color.TRANSPARENT);
+            ((CardView) main).setRadius(Sizes.dpToPxExt(appearanceSettings.csReaderRadius(), context));
+            main.setElevation(0);
+
+            FrameLayout content = new FrameLayout(context);
+            content.setLayoutParams(new CardView.LayoutParams(MATCH_PARENT,
+                    MATCH_PARENT));
+            content.addView(createTimelineContainer(context, false));
+            main.addView(content);
+            linearLayout.addView(main);
+        }
+        linearLayout.addView(buttonsPanel);
+        linearLayout.addView(bottomOffset);
+        res.addView(linearLayout);
+
+        View emptyView = new View(context);
+        emptyView.setElevation(11);
+        emptyView.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT));
+        emptyView.setClickable(true);
+        res.addView(emptyView);
+        return res;
+    }
+
     View createFragmentView(ViewGroup root) {
         Context context = getContext();
 
@@ -298,9 +382,9 @@ public class StoriesLoaderFragment extends Fragment {
         RelativeLayout cardContent = new RelativeLayout(context);
         cardContent.setLayoutParams(new CardView.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
                 CardView.LayoutParams.MATCH_PARENT));
-        cardContent.addView(createTimelineContainer(context, mirrored));
+        cardContent.addView(createTimelineContainer(context, false));
         main.addView(cardContent);
-        ButtonsPanel buttonsPanel = createButtonsPanel(context);
+        ButtonsPanel buttonsPanel = createButtonsPanel(context, false);
         buttonsPanel.mirror(mirrored == 1);
         content.addView(buttonsPanel);
         content.addView(aboveButtonsPanel);
@@ -320,14 +404,23 @@ public class StoriesLoaderFragment extends Fragment {
         return screen;
     }
 
-    private RelativeLayout createTimelineContainer(Context context, int mirrored) {
+    private RelativeLayout createTimelineContainer(Context context, boolean fullscreen) {
         RelativeLayout timelineContainer = new RelativeLayout(context);
-        RelativeLayout.LayoutParams tclp = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,
-                RelativeLayout.LayoutParams.WRAP_CONTENT);
+        ViewGroup.LayoutParams resLp;
         int offset = Sizes.dpToPxExt(Math.max(0, appearanceSettings.csReaderRadius() - 16), getContext()) / 2;
+        if (fullscreen) {
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(MATCH_PARENT,
+                    WRAP_CONTENT);
+            lp.setMargins(offset, Sizes.dpToPxExt(8, getContext()) + offset, offset, 0);
+            resLp = lp;
+        } else {
+            FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(MATCH_PARENT,
+                    WRAP_CONTENT);
+            lp.setMargins(offset, Sizes.dpToPxExt(8, getContext()) + offset, offset, 0);
+            resLp = lp;
+        }
+        timelineContainer.setLayoutParams(resLp);
         int maxSize = Sizes.dpToPxExt(30, getContext());
-        tclp.setMargins(offset, Sizes.dpToPxExt(8, getContext()) + offset, offset, 0);
-        timelineContainer.setLayoutParams(tclp);
         timelineContainer.setId(R.id.ias_timeline_container);
         timelineContainer.setMinimumHeight(maxSize);
         timelineContainer.setElevation(20);
@@ -373,7 +466,7 @@ public class StoriesLoaderFragment extends Fragment {
         return timelineContainer;
     }
 
-    private ButtonsPanel createButtonsPanel(Context context) {
+    private ButtonsPanel createButtonsPanel(Context context, boolean fullscreen) {
         ButtonsPanel buttonsPanel = new ButtonsPanel(context, storyId);
         RelativeLayout.LayoutParams buttonsPanelParams = new RelativeLayout.LayoutParams(
                 RelativeLayout.LayoutParams.MATCH_PARENT, Sizes.dpToPxExt(60, context)
@@ -382,7 +475,7 @@ public class StoriesLoaderFragment extends Fragment {
         //     buttonsPanel.setVisibility(View.GONE);
         buttonsPanel.setId(R.id.ias_buttons_panel);
         buttonsPanel.setOrientation(LinearLayout.HORIZONTAL);
-        buttonsPanel.setBackgroundColor(Color.BLACK);
+        buttonsPanel.setBackgroundColor(fullscreen ? Color.TRANSPARENT : Color.BLACK);
         buttonsPanel.setLayoutParams(buttonsPanelParams);
         //buttonsPanel.setIcons(appearanceSettings);
         return buttonsPanel;
@@ -405,12 +498,12 @@ public class StoriesLoaderFragment extends Fragment {
                 LaunchStoryScreenData.SERIALIZABLE_KEY
         );
         View view = new View(getContext());
+        final int mirrored = container != null ? container.getLayoutDirection() : 0;
         try {
-            view = createFragmentView(container);
+            view = createPageView(isFullscreenStory());
         } catch (Exception e) {
             InAppStoryManager.handleException(e);
         }
-        final int mirrored = container != null ? container.getLayoutDirection() : 0;
         view.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
             @Override
             public void onViewAttachedToWindow(View v) {

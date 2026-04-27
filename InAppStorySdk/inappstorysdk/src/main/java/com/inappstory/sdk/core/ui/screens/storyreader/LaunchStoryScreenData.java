@@ -81,6 +81,10 @@ public class LaunchStoryScreenData implements SerializableWithKey {
         return type;
     }
 
+    public boolean startFromFullscreenStory() {
+        return startFromFullscreenStory;
+    }
+
 
     public LaunchStoryScreenData listUniqueId(String listUniqueId) {
         this.listUniqueId = listUniqueId;
@@ -141,6 +145,7 @@ public class LaunchStoryScreenData implements SerializableWithKey {
     private SourceType sourceType;
     private int firstAction;
     private Integer slideIndex = 0;
+    private boolean startFromFullscreenStory = false;
     private String feed = null;
     private ContentType type;
     private boolean shownOnlyNewStories = false;
@@ -152,6 +157,11 @@ public class LaunchStoryScreenData implements SerializableWithKey {
 
     public LaunchStoryScreenData cancellationTokenUID(String cancellationTokenUID) {
         this.cancellationTokenUID = cancellationTokenUID;
+        return this;
+    }
+
+    public LaunchStoryScreenData startFromFullscreenStory(boolean startFromFullscreenStory) {
+        this.startFromFullscreenStory = startFromFullscreenStory;
         return this;
     }
 

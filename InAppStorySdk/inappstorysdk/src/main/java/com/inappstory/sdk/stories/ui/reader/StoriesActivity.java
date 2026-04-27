@@ -35,6 +35,7 @@ import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.IASStatisticStoriesV1;
 import com.inappstory.sdk.core.api.UseIASCallback;
+import com.inappstory.sdk.core.data.IListItemContent;
 import com.inappstory.sdk.core.data.IReaderContent;
 import com.inappstory.sdk.core.ui.screens.IASActivity;
 import com.inappstory.sdk.core.ui.screens.ScreenType;
@@ -449,6 +450,17 @@ public class StoriesActivity extends IASActivity implements BaseStoryScreen, Sho
             return;
         }
         IASCore core = inAppStoryManager.iasCore();
+        final IListItemContent story = core.contentHolder().listsContent()
+                .getByIdAndType(
+                        launchData.storiesIds().get(
+                                launchData.listIndex()
+                        ),
+                        launchData.type()
+                );
+        if (story == null) {
+            forceFinish();
+            return;
+        }
         String cancellationTokenUID = launchData.cancellationTokenUID();
         if (cancellationTokenUID != null) {
             CancellationTokenWithStatus token = core.cancellationTokenPool().getTokenByUID(cancellationTokenUID);
@@ -539,7 +551,7 @@ public class StoriesActivity extends IASActivity implements BaseStoryScreen, Sho
                 draggableFrame.getGlobalVisibleRect(readerContainer);
                 if (android.os.Build.VERSION.SDK_INT != Build.VERSION_CODES.O) {
                     if (storiesContentFragment == null) {
-                        setLoaderFragment(readerContainer);
+                        setLoaderFragment(readerContainer, story);
                         startAnim(savedInstanceState1, readerContainer);
                     } else {
                         setStoriesFragment();
@@ -563,12 +575,13 @@ public class StoriesActivity extends IASActivity implements BaseStoryScreen, Sho
     }
 
 
-    private void setLoaderFragment(Rect readerContainer) {
+    private void setLoaderFragment(Rect readerContainer, IListItemContent listItemContent) {
         try {
             FragmentManager fragmentManager = getSupportFragmentManager();
             StoriesLoaderFragment storiesLoaderFragment = new StoriesLoaderFragment();
             Bundle bundle = new Bundle();
             bundle.putParcelable("readerContainer", readerContainer);
+            bundle.putBoolean("isFullscreenStory", listItemContent.fullscreen());
             setAppearanceSettings(bundle);
             storiesLoaderFragment.setArguments(bundle);
             FragmentTransaction t = fragmentManager.beginTransaction()
