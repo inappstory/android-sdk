@@ -37,6 +37,7 @@ import com.inappstory.sdk.refactoring.session.repositories.ISessionRepository;
 import com.inappstory.sdk.refactoring.stories.repositories.IStoryChangesSubscribersHolder;
 import com.inappstory.sdk.refactoring.stories.repositories.IStoryRepository;
 import com.inappstory.sdk.refactoring.stories.ui.list.viewmodels.StoriesListViewModelsHolder;
+import com.inappstory.sdk.refactoring.stories.ui.reader.viewmodels.StoryReaderViewModel;
 import com.inappstory.sdk.stories.exceptions.ExceptionManager;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
@@ -85,7 +86,7 @@ public interface IASCore {
     CancellationTokenPool cancellationTokenPool();
 
     IStoryChangesSubscribersHolder storyChangesSubscribers();
-    StoriesListViewModelsHolder storiesListViewModels();
+   // StoryReaderViewModel storiesListViewModels();
     IStoryRepository storyRepository();
     ISessionRepository sessionRepository();
     StoryDownloadManager storyDownloadManager();

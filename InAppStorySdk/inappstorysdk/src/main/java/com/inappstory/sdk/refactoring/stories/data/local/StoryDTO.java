@@ -191,6 +191,11 @@ public class StoryDTO implements
     }
 
     @Override
+    public boolean fullscreen() {
+        return true;
+    }
+
+    @Override
     public String layout() {
         return layout;
     }

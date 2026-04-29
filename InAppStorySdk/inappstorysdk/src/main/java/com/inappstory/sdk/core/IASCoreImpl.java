@@ -56,6 +56,8 @@ import com.inappstory.sdk.domain.IWidgetsViewModels;
 import com.inappstory.sdk.domain.WidgetsViewModels;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.models.RequestLocalParameters;
+import com.inappstory.sdk.refactoring.core.downloader.StoryDownloadManager;
+import com.inappstory.sdk.refactoring.core.downloader.StorySlidesDownloadManager;
 import com.inappstory.sdk.refactoring.session.INewSessionSubscriber;
 import com.inappstory.sdk.refactoring.session.data.local.SessionDTO;
 import com.inappstory.sdk.refactoring.session.repositories.ISessionRepository;
@@ -116,9 +118,10 @@ public class IASCoreImpl implements IASCore, INewSessionSubscriber {
     private final ContextConnectionCheck connectionCheck;
     private final IStoryRepository storyRepository;
     private final ISessionRepository sessionRepository;
-    private final StoriesListViewModelsHolder storiesListViewModelsHolder;
     private final IStoryChangesSubscribersHolder storyChangesSubscribersHolder;
     private final ISessionSubscribersHolder sessionSubscribersHolder;
+    private final StoryDownloadManager storyDownloadManager;
+    private final StorySlidesDownloadManager storySlidesDownloadManager;
 
     public IASCoreImpl(Context context) {
         this.context = context;
@@ -156,10 +159,11 @@ public class IASCoreImpl implements IASCore, INewSessionSubscriber {
         limitsHolder = new IASLimitsHolderImpl();
         projectSettings = new IASProjectSettingsImpl(this);
         storyChangesSubscribersHolder = new StoryChangesSubscribersHolder();
-        storiesListViewModelsHolder = new StoriesListViewModelsHolder(this);
         sessionSubscribersHolder = new SessionSubscribersHolder();
         sessionSubscribersHolder.addNewSessionSubscriber(this);
         sessionRepository = new SessionRepository(this, sessionSubscribersHolder);
+        storyDownloadManager = new StoryDownloadManager(this);
+        storySlidesDownloadManager = new StorySlidesDownloadManager(this);
         storyRepository = new StoryRepository(
                 new StoryLocalDataSource(),
                 null,
@@ -367,11 +371,6 @@ public class IASCoreImpl implements IASCore, INewSessionSubscriber {
     }
 
     @Override
-    public StoriesListViewModelsHolder storiesListViewModels() {
-        return storiesListViewModelsHolder;
-    }
-
-    @Override
     public IStoryRepository storyRepository() {
         return storyRepository;
     }
@@ -379,6 +378,16 @@ public class IASCoreImpl implements IASCore, INewSessionSubscriber {
     @Override
     public ISessionRepository sessionRepository() {
         return sessionRepository;
+    }
+
+    @Override
+    public StoryDownloadManager storyDownloadManager() {
+        return storyDownloadManager;
+    }
+
+    @Override
+    public StorySlidesDownloadManager storySlidesDownloadManager() {
+        return storySlidesDownloadManager;
     }
 
     @Override

@@ -117,7 +117,7 @@ public class StoriesContentFragment extends Fragment
                 readerManager.pauseCurrent(false);
             }
         }
-        storiesViewPager.pageScrolled(positionOffset);
+        storiesViewPager.pageScrolled(positionOffset != 0f);
     }
 
     public void removeStoryFromFavorite(int id) {

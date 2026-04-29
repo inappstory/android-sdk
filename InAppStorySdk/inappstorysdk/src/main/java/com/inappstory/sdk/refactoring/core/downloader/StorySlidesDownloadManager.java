@@ -7,6 +7,7 @@ import com.inappstory.sdk.game.cache.SessionAssetsIsReadyCallback;
 import com.inappstory.sdk.refactoring.core.utils.results.Error;
 import com.inappstory.sdk.refactoring.core.utils.results.Result;
 import com.inappstory.sdk.refactoring.core.utils.results.Success;
+import com.inappstory.sdk.refactoring.shared.data.contracts.ISlidesContent;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.cache.ContentIdAndType;
 import com.inappstory.sdk.stories.utils.LoopedExecutor;
@@ -95,7 +96,7 @@ public class StorySlidesDownloadManager {
     }
 
     public void removeFromCache(
-            IReaderContent readerContent,
+            ISlidesContent readerContent,
             ContentType type
     ) {
         List<SlideTaskKey> keys = new ArrayList<>();
@@ -326,10 +327,10 @@ public class StorySlidesDownloadManager {
     }
 
     public void addTasks(
-            IReaderContent content,
+            ISlidesContent content,
             ContentType type
     ) {
-        int slidesCount = content.actualSlidesCount();
+        int slidesCount = content.slidesCount();
         synchronized (slideTaskKeysLock) {
             for (Map.Entry<SlideTaskKey, DownloadContentPriority> priorityEntry : downloadPriorities.entrySet()) {
                 SlideTaskKey key = priorityEntry.getKey();

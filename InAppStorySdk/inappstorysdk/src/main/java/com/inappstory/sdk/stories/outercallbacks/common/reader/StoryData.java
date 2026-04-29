@@ -2,6 +2,7 @@ package com.inappstory.sdk.stories.outercallbacks.common.reader;
 
 import com.inappstory.sdk.core.data.IStatData;
 import com.inappstory.sdk.network.annotations.models.Ignore;
+import com.inappstory.sdk.refactoring.stories.data.contracts.IStoryItem;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.utils.StringsUtils;
 
@@ -36,6 +37,19 @@ public class StoryData extends ContentData {
      */
     @Deprecated
     public int slidesCount;
+
+
+
+    public StoryData(IStoryItem story, String feed, SourceType sourceType) {
+        this(
+                story.id(),
+                ContentType.STORY,
+                StringsUtils.getNonNull(story.statTitle()),
+                story.slidesCount(),
+                feed,
+                sourceType
+        );
+    }
 
     public StoryData(IStatData story, String feed, SourceType sourceType) {
         this(
@@ -91,6 +105,19 @@ public class StoryData extends ContentData {
                 ", contentType='" + contentType().name() + '\'' +
                 ", slidesCount=" + slidesCount() +
                 '}';
+    }
+
+    public static StoryData getStoryData(
+            IStoryItem story,
+            String feed,
+            SourceType sourceType,
+            ContentType contentType
+    ) {
+        if (contentType == ContentType.STORY) {
+            return new StoryData(story, feed, sourceType);
+        } else {
+            return new UgcStoryData(story, sourceType);
+        }
     }
 
     public static StoryData getStoryData(

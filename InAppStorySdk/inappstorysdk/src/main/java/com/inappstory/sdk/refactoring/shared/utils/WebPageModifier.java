@@ -8,6 +8,8 @@ import com.inappstory.sdk.core.data.IReaderContent;
 import com.inappstory.sdk.core.data.IResource;
 import com.inappstory.sdk.core.network.content.models.SessionAsset;
 import com.inappstory.sdk.game.cache.UseCaseCallback;
+import com.inappstory.sdk.refactoring.shared.data.contracts.ISlidesContent;
+import com.inappstory.sdk.refactoring.stories.data.contracts.IStoryReaderItem;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderType;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
 import com.inappstory.sdk.stories.cache.usecases.SessionAssetLocalUseCase;
@@ -26,7 +28,7 @@ public class WebPageModifier {
         this.core = core;
     }
 
-    public String[] modifyForStory(IReaderContent story, int index) {
+    public String[] modifyForStory(IStoryReaderItem story, int index) {
         WebPageModifier modifier = new WebPageModifier(core);
         String slide = story.slideByIndex(index);
         String layout = story.layout();

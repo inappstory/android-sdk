@@ -8,11 +8,16 @@ import com.inappstory.sdk.refactoring.stories.ui.list.states.StoryListItemCoordi
 import com.inappstory.sdk.refactoring.stories.ui.reader.states.StoryReaderImmutableState;
 import com.inappstory.sdk.refactoring.stories.ui.reader.states.StoryReaderOpenState;
 import com.inappstory.sdk.refactoring.stories.ui.reader.states.StoryReaderState;
+import com.inappstory.sdk.refactoring.stories.ui.reader.views.SwipeDirection;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 
 public class StoryReaderViewModel {
     private final IASCore core;
+
+    public IASCore core() {
+        return core;
+    }
 
     public StoryReaderImmutableState readerImmutableState() {
         return readerImmutableState;
@@ -52,7 +57,34 @@ public class StoryReaderViewModel {
             latestShowStoryAction = action;
             storyReaderStateObservable.updateValue(currentState.currentPage(page + 1));
         }
+    }
 
+    public void closeReader(boolean forceClose, int action) {
+        updateOpenState(
+                forceClose ?
+                StoryReaderOpenState.FORCE_CLOSING :
+                StoryReaderOpenState.CLOSING
+        );
+    }
+
+    public void handleBackPress() {
+        StoryReaderState currentState = storyReaderStateObservable.getValue();
+        if (currentState.shareDataState() != null) {
+
+        } else if (currentState.goodsV1WidgetState() != null) {
+
+        } else if (currentState.reviewDialogState() != null) {
+
+        } else {
+            tryToCloseReader(CloseStory.CLICK);
+        }
+    }
+
+    private void tryToCloseReader(int action) {}
+
+    public void updateOpenState(StoryReaderOpenState openState) {
+        StoryReaderState currentState = storyReaderStateObservable.getValue();
+        storyReaderStateObservable.updateValue(currentState.copy().openState(openState));
     }
 
     public void openPreviousPage(int action) {
@@ -73,6 +105,7 @@ public class StoryReaderViewModel {
         if (state.openState() == StoryReaderOpenState.CLOSED) {
             storyReaderStateObservable.updateValue(
                     new StoryReaderState()
+                            .openState(StoryReaderOpenState.OPENING)
                             .currentCoordinates(startedCoordinates)
             );
             return true;
@@ -156,6 +189,9 @@ public class StoryReaderViewModel {
 
     public void navigateToIndex(int index, int action) {
 
+    }
+
+    public void swipe(int pageIndex, SwipeDirection direction) {
     }
 
     public StoryReaderViewModel(IASCore core) {

@@ -1,6 +1,7 @@
 package com.inappstory.sdk.stories.outercallbacks.common.reader;
 
 import com.inappstory.sdk.core.data.IStatData;
+import com.inappstory.sdk.refactoring.stories.data.contracts.IStoryItem;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.utils.StringsUtils;
 
@@ -22,6 +23,19 @@ public class UgcStoryData extends StoryData {
 
     public UgcStoryData(
             IStatData story,
+            SourceType sourceType
+    ) {
+        this(
+                story.id(),
+                StringsUtils.getNonNull(story.statTitle()),
+                story.slidesCount(),
+                story.ugcPayload(),
+                sourceType
+        );
+    }
+
+    public UgcStoryData(
+            IStoryItem story,
             SourceType sourceType
     ) {
         this(

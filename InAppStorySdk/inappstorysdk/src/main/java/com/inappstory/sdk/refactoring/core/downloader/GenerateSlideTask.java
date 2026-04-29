@@ -5,6 +5,7 @@ import android.util.Pair;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.data.IReaderContent;
+import com.inappstory.sdk.refactoring.shared.data.contracts.ISlidesContent;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderType;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
 
@@ -15,11 +16,11 @@ import java.util.Map;
 
 public class GenerateSlideTask {
     private final IASCore core;
-    private final IReaderContent readerContent;
+    private final ISlidesContent readerContent;
     private final int index;
 
 
-    public GenerateSlideTask(IASCore core, IReaderContent readerContent, int index) {
+    public GenerateSlideTask(IASCore core, ISlidesContent readerContent, int index) {
         this.core = core;
         this.readerContent = readerContent;
         this.index = index;

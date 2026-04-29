@@ -1,21 +1,18 @@
 package com.inappstory.sdk.refactoring.stories.ui.reader.states;
 
-import com.inappstory.sdk.refactoring.stories.data.local.StoriesListItemDTO;
-import com.inappstory.sdk.refactoring.stories.data.local.StoryDTO;
+import com.inappstory.sdk.refactoring.stories.data.contracts.IStoryItem;
+import com.inappstory.sdk.refactoring.stories.data.contracts.IStoryListItem;
+import com.inappstory.sdk.refactoring.stories.data.contracts.IStoryReaderItem;
 import com.inappstory.sdk.stories.api.models.ContentType;
 
-import java.util.List;
 
 public class StoryReaderPageState {
     private final String storyId;
     private final ContentType contentType;
-    private StoryDTO storyDTO;
-    private StoriesListItemDTO storiesListItemDTO;
+    private IStoryReaderItem storyDTO;
+    private IStoryListItem storiesListItemDTO;
     private int slideIndex;
     private final int pageIndex;
-    private boolean currentSlideIsLoaded;
-    private List<Integer> cachedSlides;
-
 
     public StoryReaderPageState(String storyId, int pageIndex, ContentType contentType) {
         this.storyId = storyId;
@@ -35,12 +32,12 @@ public class StoryReaderPageState {
         return contentType;
     }
 
-    public StoriesListItemDTO storyListItem() {
-        return storiesListItemDTO;
+    public IStoryReaderItem story() {
+        return storyDTO;
     }
 
-    public StoryDTO story() {
-        return storyDTO;
+    public IStoryItem storyItem() {
+        return storyDTO != null ? storyDTO : storiesListItemDTO;
     }
 
     public int pageIndex() {
@@ -52,12 +49,12 @@ public class StoryReaderPageState {
         return this;
     }
 
-    public StoryReaderPageState storyListItem(StoriesListItemDTO storiesListItemDTO) {
+    public StoryReaderPageState storyListItem(IStoryListItem storiesListItemDTO) {
         this.storiesListItemDTO = storiesListItemDTO;
         return this;
     }
 
-    public StoryReaderPageState story(StoryDTO storyDTO) {
+    public StoryReaderPageState story(IStoryReaderItem storyDTO) {
         this.storyDTO = storyDTO;
         return this;
     }

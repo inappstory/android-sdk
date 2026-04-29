@@ -108,7 +108,7 @@ public class StoriesListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
             if (storiesIds != null && position >= 0 && position < storiesIds.size()) {
                 final String storyId = storiesIds.get(position);
                 ((StoriesListItemContainer) holder).attachView(
-                        core.storiesListViewModels().getOrCreateStoriesListItemViewModel(
+                        core.widgetViewModels().storiesListViewModels().getOrCreateStoriesListItemViewModel(
                                 storyId,
                                 new StoriesListItemViewModelCreator() {
                                     @Override
@@ -127,7 +127,7 @@ public class StoriesListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 
         } else if (holder instanceof StoriesListFavoriteCellContainer) {
             ((StoriesListFavoriteCellContainer) holder).attachView(
-                    core.storiesListViewModels().getOrCreateFavoriteCellViewModel(),
+                    core.widgetViewModels().storiesListViewModels().getOrCreateFavoriteCellViewModel(),
                     storiesListFavoriteCellCreator
             );
         }

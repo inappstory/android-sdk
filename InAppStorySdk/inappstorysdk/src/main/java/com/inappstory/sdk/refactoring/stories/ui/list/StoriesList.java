@@ -175,7 +175,7 @@ public class StoriesList extends RecyclerView implements Observer<Boolean> {
                         new StoriesListAdapter(
                                 core,
                                 appearanceManager,
-                                core.storiesListViewModels().getOrCreateStoriesListViewModel(
+                                core.widgetViewModels().storiesListViewModels().getOrCreateStoriesListViewModel(
                                         key,
                                         new StoriesListViewModelCreator() {
                                             @Override

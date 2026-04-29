@@ -207,4 +207,9 @@ public class StoriesListItemDTO implements IStoryListItem {
     public Map<String, Object> ugcPayload() {
         return ugcPayload;
     }
+
+    @Override
+    public boolean fullscreen() {
+        return true;
+    }
 }

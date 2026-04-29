@@ -47,7 +47,6 @@ public class ReaderPager extends BothSideViewPager {
 
     private float pressedX;
     private float pressedY;
-    boolean startMove;
 
     public static PageTransformer cubeTransformer = new CubeTransformer();
     public static PageTransformer depthTransformer = new DepthTransformer();
@@ -58,9 +57,6 @@ public class ReaderPager extends BothSideViewPager {
         this.swipeVerticalEnabled = swipeVerticalEnabled;
     }
 
-    public void setTransformAnimation(int transformAnimation) {
-        this.transformAnimation = transformAnimation;
-    }
 
     private int transformAnimation;
 
@@ -93,14 +89,9 @@ public class ReaderPager extends BothSideViewPager {
         }
     }
 
-    public void pageScrolled(float positionOffset) {
-        if (positionOffset == 0f) {
-            cubeAnimation = false;
-            requestDisallowInterceptTouchEvent(false);
-        } else {
-            cubeAnimation = true;
-            requestDisallowInterceptTouchEvent(true);
-        }
+    public void pageScrolled(boolean pageChangeInProgress) {
+        cubeAnimation = pageChangeInProgress;
+        requestDisallowInterceptTouchEvent(pageChangeInProgress);
     }
 
     public boolean cubeAnimation = false;

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:background="@android:color/transparent"
+    android:layout_height="match_parent">
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:id="@+id/ias_stories_reader_animated_container"
+        android:visibility="invisible"
+        android:layout_height="match_parent">
+
+        <View
+            android:id="@+id/ias_stories_reader_background"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@android:color/transparent" />
+
+        <com.inappstory.sdk.core.ui.widgets.elasticview.DraggableElasticLayout
+            android:id="@+id/ias_stories_reader_draggable_frame"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@android:color/transparent"
+            android:fitsSystemWindows="false"
+            app:dragDismissDistance="250dp"
+            app:dragDismissEnableBottomDrag="true"
+            app:dragDismissScale="0.90">
+
+            <androidx.core.widget.NestedScrollView
+                android:id="@+id/ias_stories_reader_scroll_container"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:fillViewport="true">
+                <com.inappstory.sdk.refactoring.stories.ui.reader.views.StoryReaderPager
+                    android:id="@+id/ias_stories_reader_pager"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+
+            </androidx.core.widget.NestedScrollView>
+        </com.inappstory.sdk.core.ui.widgets.elasticview.DraggableElasticLayout>
+
+        <View
+            android:id="@+id/ias_stories_reader_block_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone" />
+
+        <FrameLayout
+            android:id="@+id/ias_stories_reader_review_container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <FrameLayout
+            android:id="@+id/ias_stories_reader_extra_container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </FrameLayout>
+</FrameLayout>

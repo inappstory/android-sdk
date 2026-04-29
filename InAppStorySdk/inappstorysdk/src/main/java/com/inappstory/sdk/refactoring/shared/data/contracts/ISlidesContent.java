@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 public interface ISlidesContent {
+    int id();
     String layout();
     String slideByIndex(int index);
     List<IResource> vodResources(int index);

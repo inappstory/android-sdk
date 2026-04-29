@@ -3,7 +3,9 @@ package com.inappstory.sdk.refactoring.stories.ui.reader.views;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -20,6 +22,7 @@ import com.inappstory.sdk.refactoring.stories.ui.reader.singletimeevents.Stories
 import com.inappstory.sdk.refactoring.stories.ui.reader.viewmodels.StoryReaderPageViewModel;
 import com.inappstory.sdk.stories.api.models.ContentId;
 import com.inappstory.sdk.stories.ui.widgets.TouchFrameLayout;
+import com.inappstory.sdk.stories.utils.Sizes;
 
 import java.util.Objects;
 
@@ -114,23 +117,38 @@ public class StoryReaderPage extends FrameLayout implements Observer<Boolean> {
         super.onDetachedFromWindow();
         if (!vmIsAttached) return;
         vmIsAttached = false;
-        viewModel.removeCloseSubscriber(this);
-        viewModel.removeButtonsStateSubscriber(buttons);
-        viewModel.removeLoaderStateSubscriber(loader);
-        viewModel.removeTimelineStateSubscriber(timeline);
-        viewModel.singleTimeEvents().unsubscribe(singleTimeEvents);
+        if (viewModel != null) {
+            viewModel.removeCloseSubscriber(this);
+            viewModel.removeButtonsStateSubscriber(buttons);
+            viewModel.removeLoaderStateSubscriber(loader);
+            viewModel.removeTimelineStateSubscriber(timeline);
+            viewModel.singleTimeEvents().unsubscribe(singleTimeEvents);
+        }
         content.viewModel(null);
+    }
+
+    public void destroyView() {
+        if (viewModel != null)
+            viewModel.destroy();
+    }
+
+    public void pause() {
+    }
+
+    public void resume() {
     }
 
     private void attachViewModelToViews() {
         if (vmIsAttached) return;
         vmIsAttached = true;
-        content.viewModel(viewModel);
-        buttons.viewModel(viewModel);
-        loader.viewModel(viewModel);
-        viewModel.addTimelineStateSubscriber(timeline);
-        viewModel.addCloseSubscriber(this);
-        viewModel.singleTimeEvents().subscribe(singleTimeEvents);
+        if (viewModel != null) {
+            content.viewModel(viewModel);
+            buttons.viewModel(viewModel);
+            loader.viewModel(viewModel);
+            viewModel.addTimelineStateSubscriber(timeline);
+            viewModel.addCloseSubscriber(this);
+            viewModel.singleTimeEvents().subscribe(singleTimeEvents);
+        }
     }
 
     public void setOffsets(int top, int bottom) {
@@ -141,6 +159,18 @@ public class StoryReaderPage extends FrameLayout implements Observer<Boolean> {
         super(context);
         init(context);
     }
+
+
+    public StoryReaderPage(
+            @NonNull Context context,
+            StoryReaderPageAppearance pageAppearance
+    ) {
+        super(context);
+        this.pageAppearance = pageAppearance;
+        init(context);
+    }
+
+    private StoryReaderPageAppearance pageAppearance;
 
     public StoryReaderPage(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
@@ -159,6 +189,78 @@ public class StoryReaderPage extends FrameLayout implements Observer<Boolean> {
         timeline = new StoryReaderPageTimeline(context);
         topOffsetView = new View(context);
         bottomOffsetView = new View(context);
+    }
+
+    public void measureViews() {
+        if (viewModel == null || pageAppearance == null) return;
+        boolean isFullscreen = viewModel.storyReaderPageState().storyItem().fullscreen();
+        createFullscreenPage();
+    }
+
+    private void createFullscreenPage() {
+        content.setLayoutParams(
+                new FrameLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT
+                )
+        );
+        addView(content);
+
+        LinearLayout linearLayout = new LinearLayout(getContext());
+        linearLayout.setOrientation(LinearLayout.VERTICAL);
+        linearLayout.setLayoutParams(
+                new FrameLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT
+                )
+        );
+        View space = new View(getContext());
+        space.setLayoutParams(
+                new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        1f
+                )
+        );
+        topOffsetView.setLayoutParams(
+                new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        Math.max(
+                                0,
+                                pageAppearance.screenPosition.safeAreaTop -
+                                        pageAppearance.screenPosition.readerContainerTop
+                        )
+                )
+        );
+        bottomOffsetView.setLayoutParams(
+                new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        Math.max(
+                                0,
+                                pageAppearance.screenPosition.safeAreaBottom -
+                                        (pageAppearance.screenPosition.screenHeight -
+                                                pageAppearance.screenPosition.readerContainerBottom)
+                        )
+                )
+        );
+        timeline.setLayoutParams(
+                new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        Sizes.dpToPxExt(3, getContext())
+                )
+        );
+        buttons.setLayoutParams(
+                new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        Sizes.dpToPxExt(60, getContext())
+                )
+        );
+        linearLayout.addView(topOffsetView);
+        linearLayout.addView(timeline);
+        linearLayout.addView(space);
+        linearLayout.addView(buttons);
+        linearLayout.addView(bottomOffsetView);
+        addView(linearLayout);
     }
 
     @Override

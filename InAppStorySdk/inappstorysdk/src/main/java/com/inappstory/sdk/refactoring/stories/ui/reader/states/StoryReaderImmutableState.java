@@ -1,6 +1,5 @@
 package com.inappstory.sdk.refactoring.stories.ui.reader.states;
 
-import android.graphics.Point;
 import android.graphics.Rect;
 
 import com.inappstory.sdk.network.models.RequestLocalParameters;

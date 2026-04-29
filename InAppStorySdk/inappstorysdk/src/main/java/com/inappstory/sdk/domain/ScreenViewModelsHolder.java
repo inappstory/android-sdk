@@ -3,6 +3,7 @@ package com.inappstory.sdk.domain;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderViewModel;
 import com.inappstory.sdk.inappmessage.domain.reader.IIAMReaderViewModel;
+import com.inappstory.sdk.refactoring.stories.ui.reader.viewmodels.StoryReaderViewModel;
 
 import java.util.HashMap;
 import java.util.List;
@@ -11,11 +12,11 @@ import java.util.Map;
 public class ScreenViewModelsHolder implements IScreenViewModelsHolder {
     private final IASCore core;
     private IIAMReaderViewModel iamReaderViewModel;
+    private StoryReaderViewModel storyReaderViewModel;
     private final Map<Integer, IIAMReaderViewModel> iamReaderViewModels;
 
     public ScreenViewModelsHolder(IASCore core) {
         this.core = core;
-       // this.iamReaderViewModel = new IAMReaderViewModel(core);
         this.iamReaderViewModels = new HashMap<>();
     }
 
@@ -23,6 +24,12 @@ public class ScreenViewModelsHolder implements IScreenViewModelsHolder {
     public IIAMReaderViewModel iamReaderViewModel() {
         if (iamReaderViewModel == null) iamReaderViewModel = new IAMReaderViewModel(core);
         return iamReaderViewModel;
+    }
+
+    @Override
+    public StoryReaderViewModel storyReaderViewModel() {
+        if (storyReaderViewModel == null) storyReaderViewModel = new StoryReaderViewModel(core);
+        return storyReaderViewModel;
     }
 
     @Override

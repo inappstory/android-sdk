@@ -15,6 +15,7 @@ import com.inappstory.sdk.game.cache.GameCacheManager;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.core.data.IResource;
 import com.inappstory.sdk.core.data.IReaderContent;
+import com.inappstory.sdk.refactoring.shared.data.contracts.ISlidesContent;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.cache.FilesDownloader;
 import com.inappstory.sdk.stories.cache.FilesDownloadManager;
@@ -178,6 +179,27 @@ public class IASContentLoaderImpl implements IASContentLoader {
 
     @Override
     public void addVODResources(IReaderContent readerContent, int slideIndex) {
+        List<IResource> resources = new ArrayList<>();
+        resources.addAll(readerContent.vodResources(slideIndex));
+        for (IResource object : resources) {
+            if (filesDownloadManager.getVodCacheJournal().getItem(object.getFileName()) == null) {
+                filesDownloadManager.getVodCacheJournal().putItem(new VODCacheJournalItem(
+                        "",
+                        object.getFileName(),
+                        "",
+                        "",
+                        new ArrayList<VODCacheItemPart>(),
+                        "",
+                        0,
+                        object.getUrl(),
+                        System.currentTimeMillis()
+                ));
+            }
+        }
+    }
+
+    @Override
+    public void addVODResources(ISlidesContent readerContent, int slideIndex) {
         List<IResource> resources = new ArrayList<>();
         resources.addAll(readerContent.vodResources(slideIndex));
         for (IResource object : resources) {

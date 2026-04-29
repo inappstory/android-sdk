@@ -10,12 +10,10 @@ import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.core.CancellationTokenImpl;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASCallbackType;
-import com.inappstory.sdk.core.api.IASDataSettings;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.api.impl.IASSingleStoryImpl;
 import com.inappstory.sdk.core.data.IReaderContent;
-import com.inappstory.sdk.core.data.IStatData;
 import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenData;
 import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenStrategy;
 import com.inappstory.sdk.network.JsonParser;
@@ -32,7 +30,10 @@ import com.inappstory.sdk.refactoring.core.utils.results.Error;
 import com.inappstory.sdk.refactoring.core.utils.results.ResultCallback;
 import com.inappstory.sdk.refactoring.core.utils.stedata.ContentId;
 import com.inappstory.sdk.refactoring.core.utils.stedata.ContentIdWithIndex;
+import com.inappstory.sdk.refactoring.shared.data.contracts.ISlidesContent;
 import com.inappstory.sdk.refactoring.shared.utils.WebPageModifier;
+import com.inappstory.sdk.refactoring.stories.data.contracts.IStoryItem;
+import com.inappstory.sdk.refactoring.stories.data.contracts.IStoryReaderItem;
 import com.inappstory.sdk.refactoring.stories.data.local.StoryDTO;
 import com.inappstory.sdk.refactoring.stories.ui.reader.singletimeevents.JsSendApiRequestResponse;
 import com.inappstory.sdk.refactoring.stories.ui.reader.singletimeevents.LoadSlide;
@@ -103,12 +104,11 @@ public class StoryReaderPageViewModel implements IReaderContentDownloaderSubscri
 
 
     public StoryReaderPageViewModel(
-            IASCore core,
             StoryReaderViewModel readerViewModel,
             String storyId,
             int pageIndex
     ) {
-        this.core = core;
+        this.core = readerViewModel.core();
         this.readerViewModel = readerViewModel;
         timerManager = new StoryReaderPageTimerManager(core, this);
 
@@ -400,8 +400,7 @@ public class StoryReaderPageViewModel implements IReaderContentDownloaderSubscri
         StoryReaderImmutableState immutableState = readerViewModel.readerImmutableState();
         Rect frame = immutableState.readerFrame();
         StoryReaderPageState pageState = storyReaderPageState();
-        IStatData statData = pageState.story();
-        if (statData == null) statData = pageState.storyListItem();
+        IStoryItem statData = pageState.storyItem();
         if (statData == null) return;
         int rightLine = (int) (frame.left + frame.width() * 0.3f);
         if (coordinate > rightLine && !forbidden) {
@@ -447,8 +446,7 @@ public class StoryReaderPageViewModel implements IReaderContentDownloaderSubscri
 
 
     private int correctIndex(int index, StoryReaderPageState pageState) {
-        IStatData storyStatData = pageState.story();
-        if (storyStatData == null) storyStatData = pageState.storyListItem();
+        IStoryItem storyStatData = pageState.storyItem();
         if (storyStatData == null) return -1;
         if (index < 0) return -1;
         if (index >= storyStatData.slidesCount()) return -1;
@@ -477,7 +475,7 @@ public class StoryReaderPageViewModel implements IReaderContentDownloaderSubscri
     private SlideData getSlideData(StoryReaderPageState pageState) {
         if (pageState.story() == null) return null;
         int index = pageState.slideIndex();
-        IReaderContent story = pageState.story();
+        IStoryReaderItem story = pageState.story();
         StoryData storyData = getStoryData(pageState);
         if (storyData == null) return null;
         return new SlideData(
@@ -488,8 +486,7 @@ public class StoryReaderPageViewModel implements IReaderContentDownloaderSubscri
     }
 
     private StoryData getStoryData(StoryReaderPageState pageState) {
-        IStatData storyStatData = pageState.story();
-        if (storyStatData == null) storyStatData = pageState.storyListItem();
+        IStoryItem storyStatData = pageState.storyItem();
         if (storyStatData == null) return null;
         StoryReaderImmutableState readerImmutableState = readerViewModel.readerImmutableState();
         return StoryData.getStoryData(
@@ -671,7 +668,7 @@ public class StoryReaderPageViewModel implements IReaderContentDownloaderSubscri
     }
 
     @Override
-    public void contentLoadSuccess(IReaderContent content) {
+    public void contentLoadSuccess(ISlidesContent content) {
         storyReaderPageStateObservable.updateValue(storyReaderPageState().copy().story(
                 (StoryDTO) content)
         );
@@ -790,8 +787,8 @@ public class StoryReaderPageViewModel implements IReaderContentDownloaderSubscri
 
     private void changeSlide(int index) {
         StoryReaderPageState pageState = storyReaderPageState();
-        IStatData storyStatData = pageState.story();
-        if (storyStatData == null) storyStatData = pageState.storyListItem();
+        IStoryItem storyStatData = pageState.storyItem();
+        if (storyStatData == null) return;
         storyReaderPageStateObservable.updateValue(pageState.copy().slideIndex(index));
         ContentIdAndType contentIdAndType = contentIdAndType();
         core.storySlidesDownloadManager().renewStoryPriorities(
