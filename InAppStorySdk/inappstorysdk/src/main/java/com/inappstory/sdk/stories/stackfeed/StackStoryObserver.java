@@ -370,7 +370,7 @@ public class StackStoryObserver implements IStackFeedActions {
                     .listUniqueId(listId)
                     .feed(feed)
                     .sessionId(sessionId)
-                    .storiesIds(new ArrayList<>(readerStories))
+               //     .storiesIds(new ArrayList<>(readerStories))
                     .listIndex(openIndex)
                     .shownOnlyNewStories(showOnlyNewStories)
                     .firstAction(ShowStory.ACTION_OPEN)

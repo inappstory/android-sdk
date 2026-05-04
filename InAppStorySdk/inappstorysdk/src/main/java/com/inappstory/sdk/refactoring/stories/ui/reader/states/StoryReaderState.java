@@ -20,7 +20,7 @@ public class StoryReaderState {
 
     private StoryListItemCoordinates currentCoordinates = null;
 
-    private StoryReaderOpenState openState = StoryReaderOpenState.CLOSED;
+    private StoryReaderOpenState openState = StoryReaderOpenState.IDLE;
 
     private int currentPage = 0;
     private ReviewDialogState reviewDialogState = null;

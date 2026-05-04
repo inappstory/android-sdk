@@ -356,12 +356,12 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
                 .listUniqueId(listID)
                 .feed(feed)
                 .sessionId(sessionId)
-                .storiesIds(new ArrayList<>(tempStories))
+              //  .storiesIds(new ArrayList<>(tempStories))
                 .listIndex(tempStories.indexOf(storiesIds.get(index)))
                 .firstAction(ShowStory.ACTION_OPEN)
                 .sourceType(isFavoriteList ? SourceType.FAVORITE : SourceType.LIST)
-                .type(ContentType.STORY)
-                .initCoordinates(coordinates);
+                .type(ContentType.STORY);
+                //.initCoordinates(coordinates);
         boolean nonAnonymous = !((IASDataSettingsHolder)core.settingsAPI()).anonymous();
         core.screensManager().openScreen(
                 context,

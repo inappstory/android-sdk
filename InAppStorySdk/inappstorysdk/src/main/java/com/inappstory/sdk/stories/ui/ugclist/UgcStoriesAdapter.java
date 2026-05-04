@@ -300,12 +300,12 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
                 LaunchStoryScreenData launchData = new LaunchStoryScreenData()
                         .listUniqueId(listID)
                         .sessionId(sessionId)
-                        .storiesIds(new ArrayList<>(tempStories))
+                 //       .storiesIds(new ArrayList<>(tempStories))
                         .listIndex(tempStories.indexOf(storiesIds.get(index)))
                         .firstAction(ShowStory.ACTION_OPEN)
                         .sourceType(SourceType.LIST)
-                        .type(ContentType.UGC)
-                        .initCoordinates(coordinates);
+                        .type(ContentType.UGC);
+                       // .initCoordinates(coordinates);
                 boolean nonAnonymous = !((IASDataSettingsHolder) core.settingsAPI()).anonymous();
                 core.screensManager().openScreen(
                         context,

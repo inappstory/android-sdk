@@ -1,6 +1,7 @@
 package com.inappstory.sdk.refactoring.stories.ui.reader.views;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.webkit.ValueCallback;
@@ -21,6 +22,7 @@ public class StoryReaderPageContent extends IASWebView implements IStoriesConten
 
     public void viewModel(StoryReaderPageViewModel viewModel) {
         this.viewModel = viewModel;
+        addJavascriptInterface(viewModel, "Android");
     }
 
     public void touchIsLocked(boolean touchIsLocked) {
@@ -57,6 +59,7 @@ public class StoryReaderPageContent extends IASWebView implements IStoriesConten
             @NonNull Context context
     ) {
         super(context);
+        initPage();
     }
 
     public StoryReaderPageContent(
@@ -64,6 +67,7 @@ public class StoryReaderPageContent extends IASWebView implements IStoriesConten
             @Nullable AttributeSet attrs
     ) {
         super(context, attrs);
+        initPage();
     }
 
     public StoryReaderPageContent(
@@ -72,6 +76,11 @@ public class StoryReaderPageContent extends IASWebView implements IStoriesConten
             int defStyleAttr
     ) {
         super(context, attrs, defStyleAttr);
+        initPage();
+    }
+
+    private void initPage() {
+        setBackgroundColor(Color.BLACK);
     }
 
     @Override

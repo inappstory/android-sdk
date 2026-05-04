@@ -158,6 +158,28 @@ public class StoriesList extends RecyclerView implements Observer<Boolean> {
         updateAdapter();
     }
 
+    BaseStoriesListViewModel viewModel;
+
+    private void updateViewModelFeedParameters() {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                IASDataSettingsHolder settingsHolder = (IASDataSettingsHolder) core.settingsAPI();
+                List<String> nonSortedTags = new ArrayList<>(settingsHolder.tags());
+                Collections.sort(nonSortedTags);
+                String key = (uniqueID != null && !uniqueID.isEmpty()) ? uniqueID :
+                        StringsUtils.md5(feed + TextUtils.join(",", nonSortedTags));
+                if (viewModel != null) {
+                    viewModel.updateFeedParameters(new StoriesFeedParameters(
+                            feed,
+                            nonSortedTags,
+                            settingsHolder.options()
+                    ));
+                }
+            }
+        });
+    }
+
     private void updateAdapter() {
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
@@ -171,23 +193,25 @@ public class StoriesList extends RecyclerView implements Observer<Boolean> {
                 if (getAdapter() != null) {
                     ((StoriesListAdapter) getAdapter()).destroy();
                 }
+                viewModel =
+                        core.widgetViewModels().storiesListViewModels().getOrCreateStoriesListViewModel(
+                                key,
+                                new StoriesListViewModelCreator() {
+                                    @Override
+                                    public BaseStoriesListViewModel create() {
+                                        return new StoriesFeedListViewModel(
+                                                core
+                                        );
+                                    }
+                                }
+                        );
+                viewModel.updateSessionParameters(core.storyRepository().getCurrentRequestLocalParameters());
+                updateViewModelFeedParameters();
                 setAdapter(
                         new StoriesListAdapter(
                                 core,
                                 appearanceManager,
-                                core.widgetViewModels().storiesListViewModels().getOrCreateStoriesListViewModel(
-                                        key,
-                                        new StoriesListViewModelCreator() {
-                                            @Override
-                                            public BaseStoriesListViewModel create() {
-                                                return new StoriesFeedListViewModel(core,
-                                                        new StoriesFeedParameters(
-                                                                feed,
-                                                                nonSortedTags,
-                                                                settingsHolder.options()));
-                                            }
-                                        }
-                                ),
+                                viewModel,
                                 null,
                                 null
                         )
@@ -204,6 +228,7 @@ public class StoriesList extends RecyclerView implements Observer<Boolean> {
 
     public void loadStories() {
         Adapter adapter = getAdapter();
+        updateViewModelFeedParameters();
         if (adapter instanceof StoriesListAdapter)
             ((StoriesListAdapter) adapter).loadStories();
     }

@@ -12,13 +12,19 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.inappstory.sdk.AppearanceManager;
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.utils.ColorUtils;
 import com.inappstory.sdk.refactoring.core.utils.observers.Observer;
 import com.inappstory.sdk.refactoring.stories.ui.list.states.StoriesListItemCoverState;
 import com.inappstory.sdk.refactoring.stories.ui.list.states.StoriesListItemState;
+import com.inappstory.sdk.refactoring.stories.ui.list.states.StoryListItemCoordinates;
 import com.inappstory.sdk.refactoring.stories.ui.list.viewmodels.StoriesListItemViewModel;
 import com.inappstory.sdk.refactoring.stories.ui.contracts.IStoriesListItem;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.StoryItemCoordinates;
+import com.inappstory.sdk.stories.utils.Sizes;
 
 import java.util.Objects;
 import java.util.UUID;
@@ -44,6 +50,21 @@ public class StoriesListItemContainer
             IStoriesListItem storiesListItem
     ) {
         super(itemView);
+        itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                int[] location = new int[2];
+                v.getLocationOnScreen(location);
+                int x = location[0];
+                int y = location[1];
+                final StoryListItemCoordinates coordinates = new StoryListItemCoordinates(
+                        x + v.getWidth() / 2 - Sizes.dpToPxExt(8, itemView.getContext()),
+                        y + v.getHeight() / 2
+                );
+                if (listItemViewModel != null)
+                    listItemViewModel.clickOnStory(v.getContext(), appearanceManager, coordinates);
+            }
+        });
         this.storiesListItem = storiesListItem;
         this.parent = parent;
     }
@@ -216,6 +237,7 @@ public class StoriesListItemContainer
     @Override
     public void onUpdate(StoriesListItemState newValue) {
         if (Objects.equals(newValue, currentState)) return;
+        Log.e("StoriesListItemState", newValue.toString());
         StoriesListItemState current = currentState != null ? currentState.copy() : null;
         currentState = newValue;
         if (newValue == null) {

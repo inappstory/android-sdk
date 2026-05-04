@@ -15,11 +15,11 @@ import com.inappstory.sdk.stories.ui.widgets.viewpagertransforms.CubeTransformer
 import com.inappstory.sdk.stories.ui.widgets.viewpagertransforms.DepthTransformer;
 
 public class StoryReaderPager extends BothSideViewPager {
-    public StoryReaderPager(@NonNull Context context) {
+    public StoryReaderPager(Context context) {
         super(context);
     }
 
-    public StoryReaderPager(@NonNull Context context, @Nullable AttributeSet attrs) {
+    public StoryReaderPager(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
 

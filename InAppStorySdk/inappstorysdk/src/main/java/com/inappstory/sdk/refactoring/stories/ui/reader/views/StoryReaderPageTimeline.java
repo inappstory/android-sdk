@@ -58,7 +58,6 @@ public class StoryReaderPageTimeline extends View
     @Override
     public void onUpdate(StoryReaderPageTimelineState newValue) {
         this.state = newValue;
-
         final int localVisibility = !(
                 (state.slidesCount() == 1 && state.timerDuration() == 0) ||
                         state.isHidden()

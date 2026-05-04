@@ -1,5 +1,6 @@
 package com.inappstory.sdk.refactoring.stories.repositories;
 
+import com.inappstory.sdk.network.models.RequestLocalParameters;
 import com.inappstory.sdk.refactoring.core.utils.results.ResultCallback;
 import com.inappstory.sdk.refactoring.stories.data.local.StoryCoverDTO;
 import com.inappstory.sdk.refactoring.stories.data.local.StoryDTO;
@@ -12,6 +13,8 @@ import java.util.List;
 
 public interface IStoryRepository {
     void updateApiDataSource(IStoryAPIDataSource storyAPIDataSource);
+
+    RequestLocalParameters getCurrentRequestLocalParameters();
 
     void getStoriesFeed(
             StoriesFeedParameters feedParameters,

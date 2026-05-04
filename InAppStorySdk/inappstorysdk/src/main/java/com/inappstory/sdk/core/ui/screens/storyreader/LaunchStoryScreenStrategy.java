@@ -12,10 +12,15 @@ import com.inappstory.sdk.core.ui.screens.holder.IScreensHolder;
 import com.inappstory.sdk.core.ui.screens.launcher.ILaunchScreenCallback;
 import com.inappstory.sdk.core.ui.screens.launcher.LaunchScreenStrategy;
 import com.inappstory.sdk.core.ui.screens.ScreenType;
+import com.inappstory.sdk.refactoring.stories.ui.reader.states.StoryReaderImmutableState;
+import com.inappstory.sdk.refactoring.stories.ui.reader.states.StoryReaderOpenState;
+import com.inappstory.sdk.refactoring.stories.ui.reader.viewmodels.StoryReaderViewModel;
+import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenReader;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenStoriesReader;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 
@@ -53,7 +58,44 @@ public class LaunchStoryScreenStrategy implements LaunchScreenStrategy {
     }
 
     @Override
-    public void launch(
+    public void launch(Context context, IOpenReader openReader, IScreensHolder screensHolders) {
+        Bundle bundle = new Bundle();
+     /*   bundle.putSerializable(
+                launchStoryScreenData.getSerializableKey(),
+                launchStoryScreenData
+        );*/
+        bundle.putSerializable(
+                readerAppearanceSettings.getSerializableKey(),
+                readerAppearanceSettings
+        );
+        StoryReaderViewModel readerViewModel = core.screensManager().storyReaderViewModel();
+        readerViewModel.openReader(
+                new StoryReaderImmutableState(
+                        launchStoryScreenData.requestLocalParameters(),
+                        launchStoryScreenData.getReaderUniqueId(),
+                        launchStoryScreenData.storiesIdsS(),
+                        ContentType.STORY,
+                        launchStoryScreenData.sourceType(),
+                        launchStoryScreenData.options(),
+                        null,
+                        launchStoryScreenData.feed()
+                        // launchStoryScreenData
+
+                ),
+                launchStoryScreenData.getInitCoordinates()
+        );
+        readerViewModel.initStartState(
+                launchStoryScreenData.listIndex(),
+                launchStoryScreenData.slideIndex()
+        );
+        readerViewModel.initAppearanceSettings(readerAppearanceSettings);
+        ((IOpenStoriesReader) openReader).onOpen(
+                context,
+                bundle
+        );
+    }
+
+    public void launchOld(
             final Context context,
             final IOpenReader openReader,
             final IScreensHolder screensHolder
@@ -84,7 +126,7 @@ public class LaunchStoryScreenStrategy implements LaunchScreenStrategy {
             cantBeOpened = true;
             message = "No reader settings.";
         }
-        if (((IASDataSettingsHolder)core.settingsAPI()).sessionIdOrEmpty().isEmpty()) {
+        if (((IASDataSettingsHolder) core.settingsAPI()).sessionIdOrEmpty().isEmpty()) {
             cantBeOpened = true;
             message = "User not authorized";
         }

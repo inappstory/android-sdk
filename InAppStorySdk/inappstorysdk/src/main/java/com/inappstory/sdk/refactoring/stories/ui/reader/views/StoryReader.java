@@ -1,17 +1,26 @@
 package com.inappstory.sdk.refactoring.stories.ui.reader.views;
 
 import android.content.Context;
+import android.graphics.Color;
+import android.graphics.Point;
+import android.os.Handler;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.viewpager.widget.ViewPager;
 
+import com.inappstory.sdk.AppearanceManager;
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.ui.widgets.elasticview.DraggableElasticLayout;
 import com.inappstory.sdk.refactoring.core.utils.observers.Observer;
 import com.inappstory.sdk.refactoring.shared.ui.ContainerProvider;
+import com.inappstory.sdk.refactoring.stories.ui.list.states.StoryListItemCoordinates;
 import com.inappstory.sdk.refactoring.stories.ui.reader.screens.BaseStoryReaderContainer;
 import com.inappstory.sdk.refactoring.stories.ui.reader.states.GoodsV1WidgetState;
 import com.inappstory.sdk.refactoring.stories.ui.reader.states.ReviewDialogState;
@@ -19,13 +28,22 @@ import com.inappstory.sdk.refactoring.stories.ui.reader.states.ShareDataState;
 import com.inappstory.sdk.refactoring.stories.ui.reader.states.StoryReaderOpenState;
 import com.inappstory.sdk.refactoring.stories.ui.reader.states.StoryReaderState;
 import com.inappstory.sdk.refactoring.stories.ui.reader.viewmodels.StoryReaderViewModel;
+import com.inappstory.sdk.stories.ui.reader.StoriesGradientObject;
+import com.inappstory.sdk.stories.ui.reader.animations.DisabledReaderAnimation;
+import com.inappstory.sdk.stories.ui.reader.animations.FadeReaderAnimation;
+import com.inappstory.sdk.stories.ui.reader.animations.HandlerAnimatorListenerAdapter;
+import com.inappstory.sdk.stories.ui.reader.animations.PopupReaderAnimation;
+import com.inappstory.sdk.stories.ui.reader.animations.ReaderAnimation;
+import com.inappstory.sdk.stories.ui.reader.animations.ZoomReaderCenterAnimation;
+import com.inappstory.sdk.stories.ui.reader.animations.ZoomReaderFromCellAnimation;
+import com.inappstory.sdk.stories.utils.Sizes;
 
-public class StoryReader extends FrameLayout implements Observer<StoryReaderState> {
+public class StoryReader extends FrameLayout implements Observer<StoryReaderState>, ViewPager.OnPageChangeListener {
     private ContainerProvider shareContainer;
     private ContainerProvider goodsContainer;
     private ContainerProvider reviewContainer;
     private StoryReaderPager pager;
-    private StoryReaderState currentValue = null;
+    private StoryReaderState currentValue = new StoryReaderState();
     DraggableElasticLayout elasticLayout;
     BaseStoryReaderContainer hostContainer;
 
@@ -52,11 +70,13 @@ public class StoryReader extends FrameLayout implements Observer<StoryReaderStat
     public void viewModel(StoryReaderViewModel viewModel) {
         this.viewModel = viewModel;
         viewModel.addSubscriber(this);
+        pager.viewModel(viewModel);
     }
 
     public void unsubscribe() {
         if (viewModel != null) {
             viewModel.removeSubscriber(this);
+            viewModel.updateOpenState(StoryReaderOpenState.IDLE);
         }
     }
 
@@ -75,7 +95,8 @@ public class StoryReader extends FrameLayout implements Observer<StoryReaderStat
     private void init(@NonNull Context context) {
         inflate(context, R.layout.cs_story_reader, this);
         pager = findViewById(R.id.ias_stories_reader_pager);
-        elasticLayout = findViewById(R.id.ias_stories_reader_scroll_container);
+        pager.addOnPageChangeListener(this);
+        elasticLayout = findViewById(R.id.ias_stories_reader_draggable_frame);
         reviewContainer = new ContainerProvider()
                 .layout(findViewById(R.id.ias_stories_reader_review_container));
         FrameLayout extraContainer = findViewById(R.id.ias_stories_reader_extra_container);
@@ -145,6 +166,86 @@ public class StoryReader extends FrameLayout implements Observer<StoryReaderStat
         if (page != null) page.resume();
     }
 
+
+    private ReaderAnimation getStartAnimation() {
+        if (viewModel == null || viewModel.appearanceSettings == null)
+            return new DisabledReaderAnimation().setAnimations(true);
+        Point screenSize = Sizes.getScreenSize(getContext());
+        switch (viewModel.appearanceSettings.csStoryReaderPresentationStyle()) {
+            case AppearanceManager.DISABLE:
+                return new DisabledReaderAnimation().setAnimations(true);
+            case AppearanceManager.FADE:
+                return new FadeReaderAnimation(animatedContainer).setAnimations(true);
+            case AppearanceManager.POPUP:
+                return new PopupReaderAnimation(animatedContainer, screenSize.y, 0f).setAnimations(true);
+            default:
+                final StoryListItemCoordinates[] coordinates = {null};
+                InAppStoryManager.useCore(new UseIASCoreCallback() {
+                    @Override
+                    public void use(@NonNull IASCore core) {
+                        coordinates[0] = viewModel.readerState().currentCoordinates();
+                    }
+                });
+                float pivotX = -screenSize.x / 2f;
+                float pivotY = -screenSize.y / 2f;
+                if (coordinates[0] != null) {
+                    pivotX += coordinates[0].x();
+                    pivotY += coordinates[0].y();
+                    return new ZoomReaderFromCellAnimation(animatedContainer,
+                            pivotX,
+                            pivotY
+                    ).setAnimations(true);
+                } else {
+                    return new ZoomReaderCenterAnimation(animatedContainer,
+                            -pivotX,
+                            -pivotY
+                    ).setAnimations(true);
+                }
+        }
+    }
+
+    private ReaderAnimation getFinishAnimation() {
+        if (viewModel == null || viewModel.appearanceSettings == null)
+            return new DisabledReaderAnimation().setAnimations(true);
+        Point screenSize = Sizes.getScreenSize(getContext());
+        switch (viewModel.appearanceSettings.csStoryReaderPresentationStyle()) {
+            case AppearanceManager.DISABLE:
+                return new DisabledReaderAnimation().setAnimations(false);
+            case AppearanceManager.FADE:
+                return new FadeReaderAnimation(animatedContainer).setAnimations(false);
+            case AppearanceManager.POPUP:
+                return new PopupReaderAnimation(
+                        animatedContainer,
+                        elasticLayout.getY(),
+                        screenSize.y
+                ).setAnimations(false);
+            default:
+                final StoryListItemCoordinates[] coordinates = {null};
+                InAppStoryManager.useCore(new UseIASCoreCallback() {
+                    @Override
+                    public void use(@NonNull IASCore core) {
+                        coordinates[0] = viewModel.readerState().currentCoordinates();
+                    }
+                });
+                float pivotX = -screenSize.x / 2f;
+                float pivotY = -screenSize.y / 2f;
+                if (coordinates[0] != null) {
+                    pivotX += coordinates[0].x();
+                    pivotY += coordinates[0].y();
+                    return new ZoomReaderFromCellAnimation(animatedContainer,
+                            pivotX,
+                            pivotY
+                    ).setAnimations(false);
+                } else {
+                    return new ZoomReaderCenterAnimation(animatedContainer,
+                            -pivotX,
+                            -pivotY
+                    ).setAnimations(false);
+                }
+
+        }
+    }
+
     public void updateOpenState(StoryReaderOpenState newState) {
         switch (newState) {
             case CLOSED:
@@ -152,12 +253,58 @@ public class StoryReader extends FrameLayout implements Observer<StoryReaderStat
                     hostContainer.close();
                 break;
             case OPENING:
+                getStartAnimation().setListener(new HandlerAnimatorListenerAdapter() {
+                    @Override
+                    public void onAnimationStart() {
+                        postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+
+                                animatedContainer.setVisibility(VISIBLE);
+                            }
+                        }, 50);
+                        super.onAnimationStart();
+                    }
+
+                    @Override
+                    public void onAnimationEnd() {
+                        super.onAnimationEnd();
+                        updateOpenState(StoryReaderOpenState.OPENED);
+                    }
+                }).start();
                 break;
             case OPENED:
+                pager.transformAnimation(AppearanceManager.ANIMATION_CUBE);
+                pager.setAdapter(
+                        new StoryReaderPagerAdapter(
+                                viewModel,
+                                new StoryReaderPageAppearance(
+                                        true,
+                                        true,
+                                        true,
+                                        true,
+                                        true,
+                                        0,
+                                        Color.BLACK,
+                                        true,
+                                        new StoriesGradientObject(),
+                                        new ScreenPosition()
+                                )
+                        )
+                );
+                onPageSelected(0);
                 break;
             case CLOSING:
+                getFinishAnimation().setListener(new HandlerAnimatorListenerAdapter() {
+                    @Override
+                    public void onAnimationEnd() {
+                        super.onAnimationEnd();
+                        updateOpenState(StoryReaderOpenState.CLOSED);
+                    }
+                }).start();
                 break;
             case FORCE_CLOSING:
+                updateOpenState(StoryReaderOpenState.CLOSED);
                 break;
         }
     }
@@ -201,24 +348,49 @@ public class StoryReader extends FrameLayout implements Observer<StoryReaderStat
 
     @Override
     public void onUpdate(StoryReaderState newValue) {
-        if (newValue.openState() != currentValue.openState()) {
-            updateOpenState(newValue.openState());
-        }
-        if (currentValue.currentPage() != newValue.currentPage()) {
-            pageSelected(newValue.currentPage());
-        }
-        updateShareViewIfNecessary(
-                currentValue.shareDataState(),
-                newValue.shareDataState()
-        );
-        updateReviewViewIfNecessary(
-                currentValue.reviewDialogState(),
-                newValue.reviewDialogState()
-        );
-        updateGoodsV1ViewIfNecessary(
-                currentValue.goodsV1WidgetState(),
-                newValue.goodsV1WidgetState()
-        );
+        final StoryReaderState oldState = currentValue;
+        post(new Runnable() {
+            @Override
+            public void run() {
+                if (newValue.openState() != oldState.openState()) {
+                    updateOpenState(newValue.openState());
+                }
+                if (oldState.currentPage() != newValue.currentPage()) {
+                    pageSelected(newValue.currentPage());
+                }
+                updateShareViewIfNecessary(
+                        oldState.shareDataState(),
+                        newValue.shareDataState()
+                );
+                updateReviewViewIfNecessary(
+                        oldState.reviewDialogState(),
+                        newValue.reviewDialogState()
+                );
+                updateGoodsV1ViewIfNecessary(
+                        oldState.goodsV1WidgetState(),
+                        newValue.goodsV1WidgetState()
+                );
+            }
+        });
+
         currentValue = newValue;
+    }
+
+    @Override
+    public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+        if (viewModel != null)
+            viewModel.pagerPageScrolled(position, positionOffset);
+    }
+
+    @Override
+    public void onPageSelected(int position) {
+        if (viewModel != null)
+            viewModel.pagerPageSelected(position);
+    }
+
+    @Override
+    public void onPageScrollStateChanged(int state) {
+        if (viewModel != null)
+            viewModel.pagerPageScrollStateChanged(state);
     }
 }

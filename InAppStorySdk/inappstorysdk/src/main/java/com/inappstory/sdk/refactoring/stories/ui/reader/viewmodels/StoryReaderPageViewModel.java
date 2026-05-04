@@ -2,6 +2,7 @@ package com.inappstory.sdk.refactoring.stories.ui.reader.viewmodels;
 
 import android.content.Context;
 import android.graphics.Rect;
+import android.util.Log;
 import android.webkit.JavascriptInterface;
 
 import androidx.annotation.NonNull;
@@ -669,9 +670,11 @@ public class StoryReaderPageViewModel implements IReaderContentDownloaderSubscri
 
     @Override
     public void contentLoadSuccess(ISlidesContent content) {
+        Log.e("contentLoadSuccess", content.id() + "");
         storyReaderPageStateObservable.updateValue(storyReaderPageState().copy().story(
                 (StoryDTO) content)
         );
+        changeSlide(storyReaderPageStateObservable.getValue().slideIndex());
         core.storySlidesDownloadManager().addTasks(content, contentIdAndType().contentType);
     }
 

@@ -1,15 +1,24 @@
 package com.inappstory.sdk.refactoring.stories.ui.reader.views;
 
+import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
+
 import android.content.Context;
+import android.graphics.Color;
 import android.util.AttributeSet;
+import android.util.SizeF;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.inappstory.sdk.AppearanceManager;
+import com.inappstory.sdk.R;
+import com.inappstory.sdk.core.ui.widgets.customicons.CustomIconWithoutStates;
 import com.inappstory.sdk.refactoring.core.utils.observers.Observer;
 import com.inappstory.sdk.refactoring.core.utils.observers.STETypeAndData;
 import com.inappstory.sdk.refactoring.core.utils.stedata.ContentIdWithIndex;
@@ -21,7 +30,9 @@ import com.inappstory.sdk.refactoring.stories.ui.reader.singletimeevents.StopSli
 import com.inappstory.sdk.refactoring.stories.ui.reader.singletimeevents.StoriesSTEDataType;
 import com.inappstory.sdk.refactoring.stories.ui.reader.viewmodels.StoryReaderPageViewModel;
 import com.inappstory.sdk.stories.api.models.ContentId;
+import com.inappstory.sdk.stories.ui.views.IASWebViewClient;
 import com.inappstory.sdk.stories.ui.widgets.TouchFrameLayout;
+import com.inappstory.sdk.stories.ui.widgets.readerscreen.progresstimeline.StoryTimeline;
 import com.inappstory.sdk.stories.utils.Sizes;
 
 import java.util.Objects;
@@ -189,6 +200,8 @@ public class StoryReaderPage extends FrameLayout implements Observer<Boolean> {
         timeline = new StoryReaderPageTimeline(context);
         topOffsetView = new View(context);
         bottomOffsetView = new View(context);
+        content.setWebViewClient(new IASWebViewClient());
+        closeButton = new TouchFrameLayout(context);
     }
 
     public void measureViews() {
@@ -256,11 +269,75 @@ public class StoryReaderPage extends FrameLayout implements Observer<Boolean> {
                 )
         );
         linearLayout.addView(topOffsetView);
+
+
+        final CustomIconWithoutStates customCloseIconInterface = AppearanceManager.
+                getCommonInstance().
+                csCustomIcons().
+                closeIcon();
+        int maxSize = Sizes.dpToPxExt(30, getContext());
+        final View customCloseView = customCloseIconInterface.createIconView(
+                getContext(),
+                new SizeF(maxSize, maxSize)
+        );
+
+        closeButton.setLayoutParams(new RelativeLayout.LayoutParams(
+                maxSize,
+                maxSize)
+        );
+        closeButton.setTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                customCloseIconInterface.touchEvent(customCloseView, event);
+                return false;
+            }
+        });
+        closeButton.addView(customCloseView);
+
+        customCloseView.setClickable(false);
+
         linearLayout.addView(timeline);
         linearLayout.addView(space);
         linearLayout.addView(buttons);
         linearLayout.addView(bottomOffsetView);
         addView(linearLayout);
+    }
+
+
+    private RelativeLayout createTimelineContainer(Context context) {
+        RelativeLayout timelineContainer = new RelativeLayout(context);
+        RelativeLayout.LayoutParams tclp = new RelativeLayout.LayoutParams(MATCH_PARENT,
+                RelativeLayout.LayoutParams.WRAP_CONTENT);
+        int offset = 0;// Sizes.dpToPxExt(Math.max(0, appearanceSettings.csReaderRadius() - 16), getContext()) / 2;
+        tclp.setMargins(offset, Sizes.dpToPxExt(8, getContext()) + offset, offset, 0);
+        timelineContainer.setLayoutParams(tclp);
+        timelineContainer.setId(R.id.ias_timeline_container);
+        timelineContainer.setMinimumHeight(Sizes.dpToPxExt(30, getContext()));
+        timelineContainer.setElevation(20);
+        timeline.setLayoutParams(new RelativeLayout.LayoutParams(MATCH_PARENT,
+                Sizes.dpToPxExt(3, getContext())));
+        final CustomIconWithoutStates customCloseIconInterface = AppearanceManager.
+                getCommonInstance().
+                csCustomIcons().
+                closeIcon();
+        int maxSize = Sizes.dpToPxExt(30, getContext());
+        final View customCloseView = customCloseIconInterface.createIconView(context, new SizeF(maxSize, maxSize));
+        closeButton.setLayoutParams(new RelativeLayout.LayoutParams(
+                maxSize,
+                maxSize)
+        );
+        closeButton.setTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                customCloseIconInterface.touchEvent(customCloseView, event);
+                return false;
+            }
+        });
+        closeButton.addView(customCloseView);
+        customCloseView.setClickable(false);
+        timelineContainer.addView(timeline);
+        timelineContainer.addView(closeButton);
+        return timelineContainer;
     }
 
     @Override

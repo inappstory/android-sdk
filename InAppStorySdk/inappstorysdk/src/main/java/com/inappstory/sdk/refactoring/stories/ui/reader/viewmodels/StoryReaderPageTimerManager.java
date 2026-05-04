@@ -7,6 +7,7 @@ import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASStatisticStoriesV1;
 import com.inappstory.sdk.core.data.IReaderContent;
+import com.inappstory.sdk.refactoring.shared.data.contracts.ISlidesContent;
 import com.inappstory.sdk.refactoring.stories.data.local.StoryDTO;
 import com.inappstory.sdk.refactoring.stories.ui.reader.states.StoryReaderImmutableState;
 import com.inappstory.sdk.stories.statistic.GetStatisticV1Callback;
@@ -150,7 +151,7 @@ public class StoryReaderPageTimerManager {
         InAppStoryService.useInstance(new UseServiceInstanceCallback() {
             @Override
             public void use(@NonNull InAppStoryService service) throws Exception {
-                IReaderContent story = storyDTO;
+                ISlidesContent story = storyDTO;
                 if (story != null) {
                     core.statistic().storiesV2().addFakeEvents(
                             story.id(),

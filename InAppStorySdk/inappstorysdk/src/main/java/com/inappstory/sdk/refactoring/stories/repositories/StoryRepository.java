@@ -1,6 +1,7 @@
 package com.inappstory.sdk.refactoring.stories.repositories;
 
 import com.inappstory.sdk.core.api.IASStatisticProfiling;
+import com.inappstory.sdk.network.models.RequestLocalParameters;
 import com.inappstory.sdk.refactoring.core.utils.results.Error;
 import com.inappstory.sdk.refactoring.core.utils.results.NoSessionError;
 import com.inappstory.sdk.refactoring.core.utils.results.Result;
@@ -51,6 +52,13 @@ public class StoryRepository implements IStoryRepository {
     }
 
     @Override
+    public RequestLocalParameters getCurrentRequestLocalParameters() {
+        if (storyAPIDataSource != null)
+            return storyAPIDataSource.getCurrentRequestLocalParameters();
+        return null;
+    }
+
+    @Override
     public void getStoriesFeed(
             StoriesFeedParameters feedParameters,
             boolean useLocal,
@@ -69,6 +77,7 @@ public class StoryRepository implements IStoryRepository {
                         String storyId = Integer.toString(story.id);
                         if (feedDTO.storiesIds.contains(storyId)) continue;
                         feedDTO.storiesIds.add(storyId);
+                        feedDTO.hideInReader.put(storyId, story.hideInReader);
                         StoriesListItemDTO storiesListItemDTO = new NStoryToStoryListItemDTOMapper().convert(story);
                         if (storyLocalDataSource.addOrUpdateStoryListItem(storiesListItemDTO)) {
                             updatedListItems.add(storiesListItemDTO);
@@ -192,6 +201,7 @@ public class StoryRepository implements IStoryRepository {
                         String storyId = Integer.toString(story.id);
                         if (feedDTO.storiesIds.contains(storyId)) continue;
                         feedDTO.storiesIds.add(storyId);
+                        feedDTO.hideInReader.put(storyId, story.hideInReader);
                         StoriesListItemDTO storiesListItemDTO = new NStoryToStoryListItemDTOMapper().convert(story);
                         if (storyLocalDataSource.addOrUpdateStoryListItem(storiesListItemDTO)) {
                             updatedListItems.add(storiesListItemDTO);

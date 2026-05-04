@@ -1,9 +1,14 @@
 package com.inappstory.sdk.network.models;
 
+import com.inappstory.sdk.stories.outercallbacks.common.objects.SerializableWithKey;
+
+import java.io.Serializable;
 import java.util.Locale;
 import java.util.Objects;
 
-public class RequestLocalParameters {
+public class RequestLocalParameters implements SerializableWithKey {
+    public static String SERIALIZABLE_KEY = "requestLocalParameters";
+
     public RequestLocalParameters() {
 
     }
@@ -85,5 +90,10 @@ public class RequestLocalParameters {
                 ", send stat='" + sendStatistic + '\'' +
                 ", locale='" + locale + '\'' +
                 '}';
+    }
+
+    @Override
+    public String getSerializableKey() {
+        return SERIALIZABLE_KEY;
     }
 }

@@ -33,7 +33,7 @@ public class IASStatisticProfilingImpl implements IASStatisticProfiling {
 
     public IASStatisticProfilingImpl(IASCore core) {
         this.core = core;
-        loopedExecutor.init(queueTasksRunnable);
+        loopedExecutor.task(queueTasksRunnable);
     }
 
 

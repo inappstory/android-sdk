@@ -30,6 +30,12 @@
             android:theme="@style/StoriesSDKAppTheme.Transparent"
             tools:ignore="LockedOrientationActivity" />
         <activity
+            android:name=".refactoring.stories.ui.reader.screens.StoryReaderActivity"
+            android:hardwareAccelerated="true"
+            android:screenOrientation="portrait"
+            android:theme="@style/StoriesSDKAppTheme.Transparent"
+            tools:ignore="LockedOrientationActivity" />
+        <activity
             android:name="com.inappstory.sdk.stories.ui.reader.StoriesTabletActivity"
             android:hardwareAccelerated="true"
             android:theme="@style/StoriesSDKAppTheme.Transparent"

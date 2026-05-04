@@ -1,5 +1,6 @@
 package com.inappstory.sdk.refactoring.stories.repositories.datasources;
 
+import com.inappstory.sdk.network.models.RequestLocalParameters;
 import com.inappstory.sdk.refactoring.core.utils.results.ResultCallback;
 import com.inappstory.sdk.refactoring.stories.data.network.NFeed;
 import com.inappstory.sdk.refactoring.stories.data.network.NStory;
@@ -55,4 +56,6 @@ public interface IStoryAPIDataSource {
             boolean once,
             ResultCallback<NStory> storyResultCallback
     );
+
+    RequestLocalParameters getCurrentRequestLocalParameters();
 }

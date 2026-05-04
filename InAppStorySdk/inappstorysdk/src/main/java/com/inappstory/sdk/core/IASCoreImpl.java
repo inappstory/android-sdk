@@ -371,6 +371,11 @@ public class IASCoreImpl implements IASCore, INewSessionSubscriber {
     }
 
     @Override
+    public ISessionSubscribersHolder sessionSubscribersHolder() {
+        return sessionSubscribersHolder;
+    }
+
+    @Override
     public IStoryRepository storyRepository() {
         return storyRepository;
     }

@@ -251,7 +251,7 @@ public class InAppStoryAPISubscribersManager {
                     .listUniqueId(uniqueKey)
                     .feed(requestData.feed)
                     .sessionId(sessionId)
-                    .storiesIds(new ArrayList<>(readerStories))
+                  //  .storiesIds(new ArrayList<>(readerStories))
                     .listIndex(correctedIndex)
                     .firstAction(ShowStory.ACTION_OPEN)
                     .sourceType(SourceType.LIST)

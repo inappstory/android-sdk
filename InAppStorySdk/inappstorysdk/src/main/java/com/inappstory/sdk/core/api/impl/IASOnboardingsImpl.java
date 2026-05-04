@@ -235,7 +235,7 @@ public class IASOnboardingsImpl implements IASOnboardings {
         LaunchStoryScreenData launchData = new LaunchStoryScreenData()
                 .feed(feed)
                 .sessionId(sessionId)
-                .storiesIds(new ArrayList<>(storiesIds))
+                //.storiesIds(new ArrayList<>(storiesIds))
                 .firstAction(ShowStory.ACTION_OPEN)
                 .sourceType(SourceType.ONBOARDING)
                 .slideIndex(0)

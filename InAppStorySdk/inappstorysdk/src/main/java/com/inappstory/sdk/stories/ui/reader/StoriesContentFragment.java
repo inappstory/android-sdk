@@ -532,9 +532,7 @@ public class StoriesContentFragment extends Fragment
                     readerManager.setStoriesIds(currentIds);
                     readerManager.firstStoryId = currentIds.get(ind);
 
-                    readerManager.startedSlideInd =
-                            launchData.slideIndex() != null ?
-                                    launchData.slideIndex() : 0;
+                    readerManager.startedSlideInd = launchData.slideIndex();
 
                     closeOnSwipe = appearanceSettings.csCloseOnSwipe();
                     closeOnOverscroll = appearanceSettings.csCloseOnOverscroll();

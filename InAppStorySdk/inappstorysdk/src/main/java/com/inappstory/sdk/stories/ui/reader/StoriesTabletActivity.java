@@ -223,7 +223,7 @@ public class StoriesTabletActivity extends IASActivity implements BaseStoryScree
                 InAppStoryManager.useCore(new UseIASCoreCallback() {
                     @Override
                     public void use(@NonNull IASCore core) {
-                        coordinates[0] = launchData.getInitCoordinates();
+                        coordinates[0] = null;//launchData.getInitCoordinates();
                     }
                 });
                 float pivotX = -screenSize.x / 2f;

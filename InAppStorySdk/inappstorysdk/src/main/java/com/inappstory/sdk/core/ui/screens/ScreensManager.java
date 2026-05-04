@@ -21,6 +21,7 @@ import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderState;
 import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderUIStates;
 import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderViewModel;
 import com.inappstory.sdk.inappmessage.domain.reader.IIAMReaderViewModel;
+import com.inappstory.sdk.refactoring.stories.ui.reader.viewmodels.StoryReaderViewModel;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenGameReader;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenInAppMessageReader;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenReader;
@@ -126,6 +127,11 @@ public class ScreensManager implements IScreensLauncher,
     @Override
     public IIAMReaderViewModel iamReaderViewModel() {
         return screenViewModelsHolder.iamReaderViewModel();
+    }
+
+    @Override
+    public StoryReaderViewModel storyReaderViewModel() {
+        return screenViewModelsHolder.storyReaderViewModel();
     }
 
     @Override

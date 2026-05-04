@@ -32,6 +32,8 @@ public class StoryAPIDataSource implements IStoryAPIDataSource {
         this.requestLocalParameters = requestLocalParameters;
     }
 
+
+
     @Override
     public void getStoriesFeed(StoriesFeedParameters feedParameters, ResultCallback<NFeed> storyFeedResultCallback) {
         final LoadNFeedCallback feedCallback = new LoadNFeedCallback() {
@@ -455,5 +457,10 @@ public class StoryAPIDataSource implements IStoryAPIDataSource {
                 }
         );
 
+    }
+
+    @Override
+    public RequestLocalParameters getCurrentRequestLocalParameters() {
+        return requestLocalParameters;
     }
 }

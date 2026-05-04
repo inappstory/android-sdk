@@ -23,6 +23,7 @@ public class StoriesListItemState {
     private boolean hasVideoUrl;
     private boolean hasAudio;
     private boolean isOpened;
+    private int listIndex;
     private StoriesListItemClickType clickType = StoriesListItemClickType.STORY;
     private String clickTypePayload;
 
@@ -72,6 +73,15 @@ public class StoriesListItemState {
         return id;
     }
 
+    public int listIndex() {
+        return listIndex;
+    }
+
+    public StoriesListItemState listIndex(int listIndex) {
+        this.listIndex = listIndex;
+        return this;
+    }
+
     public String title() {
         return title;
     }
@@ -96,11 +106,11 @@ public class StoriesListItemState {
         return clickTypePayload;
     }
 
-
     public StoriesListItemState copy() {
         StoriesListItemState state = new StoriesListItemState()
                 .coverState(this.coverState)
-                .isOpened(this.isOpened);
+                .isOpened(this.isOpened)
+                .listIndex(listIndex);
         state.id = this.id;
         state.title = this.title;
         state.titleColor = this.titleColor;

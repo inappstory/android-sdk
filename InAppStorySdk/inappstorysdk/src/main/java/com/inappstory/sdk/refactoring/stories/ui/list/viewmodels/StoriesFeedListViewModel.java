@@ -2,6 +2,7 @@ package com.inappstory.sdk.refactoring.stories.ui.list.viewmodels;
 
 
 import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.network.models.RequestLocalParameters;
 import com.inappstory.sdk.refactoring.core.utils.results.Error;
 import com.inappstory.sdk.refactoring.core.utils.results.ResultCallback;
 import com.inappstory.sdk.refactoring.stories.data.local.StoryCoverDTO;
@@ -16,12 +17,12 @@ import java.util.List;
 
 public final class StoriesFeedListViewModel extends BaseStoriesListViewModel {
     private final IASCore core;
-    private final StoriesFeedParameters feedParameters;
 
-    public StoriesFeedListViewModel(IASCore core, StoriesFeedParameters feedParameters) {
-        super(core, feedParameters, false);
+    public StoriesFeedListViewModel(
+            IASCore core
+    ) {
+        super(core, false);
         this.core = core;
-        this.feedParameters = feedParameters;
     }
 
     private void loadFeed() {
@@ -39,7 +40,9 @@ public final class StoriesFeedListViewModel extends BaseStoriesListViewModel {
                         else
                             state = state.copy();
                         storiesListStateObservable.updateValue(
-                                state.storiesIds(result.storiesIds())
+                                state
+                                        .storiesIds(result.storiesIds())
+                                        .hideInReader(result.hideInReader())
                         );
                         if (result.hasFavorite()) {
                             loadCovers();

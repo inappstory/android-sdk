@@ -21,7 +21,7 @@ public class StoryReaderPageTimelineManager {
     private boolean isActive;
 
     private final Observable<StoryReaderPageTimelineState> storyReaderPageTimelineStateObservable =
-            new Observable<>(null);
+            new Observable<>(new StoryReaderPageTimelineState());
 
     public void addTimelineStateSubscriber(Observer<StoryReaderPageTimelineState> observer) {
         storyReaderPageTimelineStateObservable.subscribeAndGetValue(observer);

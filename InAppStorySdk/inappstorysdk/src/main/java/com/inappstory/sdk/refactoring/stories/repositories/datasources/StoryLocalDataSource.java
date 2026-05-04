@@ -161,7 +161,11 @@ public class StoryLocalDataSource implements IStoryLocalDataSource {
 
     @Override
     public Result<StoryDTO> getStoryById(@NonNull String storyId) {
-        return null;
+        synchronized (contentLock) {
+            StoryDTO storyDTO = this.stories.get(storyId);
+            if (storyDTO == null) return new Error<>("No local item with id: " + storyId);
+            else return new Success<>(storyDTO);
+        }
     }
 
     @Override

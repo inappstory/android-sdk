@@ -9,13 +9,15 @@ import com.inappstory.sdk.refactoring.stories.ui.list.states.StoriesListState;
 import com.inappstory.sdk.refactoring.stories.usecases.GetFavoriteStories;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public final class StoriesFavoriteListViewModel extends BaseStoriesListViewModel
         implements IStoriesFavoriteFeedChangeSubscriber {
 
     public StoriesFavoriteListViewModel(IASCore core) {
-        super(core, null, true);
+        super(core,  true);
         core.storyChangesSubscribers().addFavoriteFeedChangeSubscriber(this);
     }
 
@@ -30,6 +32,8 @@ public final class StoriesFavoriteListViewModel extends BaseStoriesListViewModel
         StoriesListState listState = storiesListStateObservable.getValue();
         if (listState != null) {
             List<String> ids = listState.storiesIds();
+            Map<String, Boolean> hir = new HashMap<>(listState.hideInReader());
+            hir.remove(storyId);
             if (ids == null) ids = new ArrayList<>();
             if (add) {
                 if (ids.contains(storyId)) return;
@@ -41,6 +45,7 @@ public final class StoriesFavoriteListViewModel extends BaseStoriesListViewModel
             storiesListStateObservable.updateValue(
                     new StoriesListState()
                             .storiesIds(ids)
+                            .hideInReader(hir)
                             .hasFavorite(false)
             );
         }
@@ -59,11 +64,17 @@ public final class StoriesFavoriteListViewModel extends BaseStoriesListViewModel
                                     @Override
                                     public void success(List<StoriesListItemDTO> result) {
                                         List<String> ids = new ArrayList<>();
+                                        Map<String, Boolean> hir = new HashMap<>();
                                         for (StoriesListItemDTO listItemDTO : result) {
                                             ids.add(Integer.toString(listItemDTO.id()));
+                                            hir.put(
+                                                    Integer.toString(listItemDTO.id()),
+                                                    listItemDTO.hideInReader()
+                                            );
                                         }
                                         storiesListStateObservable.updateValue(
                                                 new StoriesListState()
+                                                        .hideInReader(hir)
                                                         .storiesIds(ids)
                                                         .hasFavorite(false)
                                         );

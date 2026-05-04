@@ -34,6 +34,8 @@ import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.refactoring.core.downloader.StoryDownloadManager;
 import com.inappstory.sdk.refactoring.core.downloader.StorySlidesDownloadManager;
 import com.inappstory.sdk.refactoring.session.repositories.ISessionRepository;
+import com.inappstory.sdk.refactoring.session.repositories.ISessionSubscribersHolder;
+import com.inappstory.sdk.refactoring.session.repositories.SessionSubscribersHolder;
 import com.inappstory.sdk.refactoring.stories.repositories.IStoryChangesSubscribersHolder;
 import com.inappstory.sdk.refactoring.stories.repositories.IStoryRepository;
 import com.inappstory.sdk.refactoring.stories.ui.list.viewmodels.StoriesListViewModelsHolder;
@@ -86,6 +88,7 @@ public interface IASCore {
     CancellationTokenPool cancellationTokenPool();
 
     IStoryChangesSubscribersHolder storyChangesSubscribers();
+    ISessionSubscribersHolder sessionSubscribersHolder();
    // StoryReaderViewModel storiesListViewModels();
     IStoryRepository storyRepository();
     ISessionRepository sessionRepository();

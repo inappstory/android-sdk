@@ -1,6 +1,16 @@
 package com.inappstory.sdk.refactoring.stories.ui.list.viewmodels;
 
+import android.content.Context;
+import android.util.Log;
+
+import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.api.IASDataSettingsHolder;
+import com.inappstory.sdk.core.data.IListItemContent;
+import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenAppearance;
+import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenData;
+import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenStrategy;
+import com.inappstory.sdk.network.models.RequestLocalParameters;
 import com.inappstory.sdk.refactoring.core.utils.observers.Observable;
 import com.inappstory.sdk.refactoring.core.utils.observers.Observer;
 import com.inappstory.sdk.refactoring.stories.IStoriesListItemChangeSubscriber;
@@ -8,27 +18,92 @@ import com.inappstory.sdk.refactoring.stories.data.local.StoriesListItemDTO;
 import com.inappstory.sdk.refactoring.stories.ui.list.states.StoriesListItemClickType;
 import com.inappstory.sdk.refactoring.stories.ui.list.states.StoriesListItemCoverState;
 import com.inappstory.sdk.refactoring.stories.ui.list.states.StoriesListItemState;
+import com.inappstory.sdk.refactoring.stories.ui.list.states.StoriesListState;
+import com.inappstory.sdk.refactoring.stories.ui.list.states.StoryListItemCoordinates;
+import com.inappstory.sdk.refactoring.stories.usecases.StoriesFeedParameters;
+import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.cache.usecases.IGetStoryCoverCallback;
 import com.inappstory.sdk.stories.cache.usecases.StoryCoverUseCase;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
+import com.inappstory.sdk.stories.outerevents.ShowStory;
+
+import java.util.ArrayList;
 
 public class StoriesListItemViewModel implements IStoriesListItemChangeSubscriber {
     private final Observable<StoriesListItemState> storiesListItemStateObservable =
             new Observable<>(null);
 
     private StoriesListItemDTO listItemDTO;
+    private BaseStoriesListViewModel storiesListViewModel;
 
     private final IASCore core;
     private final String storyId;
 
     public StoriesListItemViewModel(
             IASCore core,
-            String storyId
+            String storyId,
+            BaseStoriesListViewModel storiesListViewModel
     ) {
         this.core = core;
         this.storyId = storyId;
+        this.storiesListViewModel = storiesListViewModel;
         onChange(core.storyRepository().getLocalStoryListItem(storyId));
         core.storyChangesSubscribers().addStoryChangeSubscriber(this);
 
+    }
+
+    public void clickOnStory(
+            Context context,
+            AppearanceManager manager,
+            StoryListItemCoordinates coordinates
+    ) {
+        StoriesListItemState state = storiesListItemStateObservable.getValue();
+        StoriesListState listState = storiesListViewModel.storiesListStateObservable.getValue();
+
+        ArrayList<String> tempStories = new ArrayList<>();
+        for (String storyId : listState.storiesIds()) {
+            Boolean hidden = listState.hideInReader().get(storyId);
+            if (Boolean.FALSE.equals(hidden)) {
+                tempStories.add(storyId);
+            }
+
+        }
+        StoriesFeedParameters feedParameters = storiesListViewModel.feedParameters;
+        RequestLocalParameters requestLocalParameters = storiesListViewModel.requestLocalParameters;
+        LaunchStoryScreenData launchData = new LaunchStoryScreenData()
+                .listUniqueId(feedParameters.feed())
+                .feed(feedParameters.feed())
+                .requestLocalParameters(requestLocalParameters)
+                .options(feedParameters.options())
+                .sessionId(requestLocalParameters.sessionId())
+                .storiesIds(new ArrayList<>(tempStories))
+                .listIndex(tempStories.indexOf(storyId))
+                .firstAction(ShowStory.ACTION_OPEN)
+                .sourceType(
+                        storiesListViewModel instanceof StoriesFavoriteListViewModel
+                                ? SourceType.FAVORITE : SourceType.LIST
+                )
+                .type(ContentType.STORY)
+                .initCoordinates(coordinates);
+        boolean nonAnonymous = !((IASDataSettingsHolder) core.settingsAPI()).anonymous();
+        switch (state.clickType()) {
+            case STORY:
+                core.screensManager().openScreen(
+                        context,
+                        new LaunchStoryScreenStrategy(core, false).
+                                launchStoryScreenData(launchData).
+                                readerAppearanceSettings(
+                                        new LaunchStoryScreenAppearance(
+                                                AppearanceManager.checkOrCreateAppearanceManager(manager),
+                                                context,
+                                                nonAnonymous
+                                        )
+                                )
+                );
+                break;
+            default:
+                break;
+        }
     }
 
     public void addSubscriber(Observer<StoriesListItemState> observer) {
@@ -141,6 +216,7 @@ public class StoriesListItemViewModel implements IStoriesListItemChangeSubscribe
     @Override
     public void onChange(StoriesListItemDTO dto) {
         if (dto == null) return;
+        Log.e("StoriesListItemDTO", dto.toString());
         listItemDTO = dto;
         StoriesListItemClickType clickType = StoriesListItemClickType.STORY;
         String payload = Integer.toString(dto.id());
@@ -154,17 +230,24 @@ public class StoriesListItemViewModel implements IStoriesListItemChangeSubscribe
             clickType = StoriesListItemClickType.UNKNOWN;
             payload = null;
         }
+        StoriesListItemState currentValue = storiesListItemStateObservable.getValue();
+        StoriesListItemState newValue = new StoriesListItemState(
+                dto.id(),
+                dto.title(),
+                dto.titleColor(),
+                dto.opened(),
+                dto.videoCover() != null && !dto.videoCover().isEmpty(),
+                dto.hasAudio(),
+                clickType,
+                payload
+        );
+        if (currentValue != null) {
+            newValue.coverState(currentValue.coverState());
+            newValue.isOpened(currentValue.isOpened());
+            newValue.listIndex(currentValue.listIndex());
+        }
         storiesListItemStateObservable.updateValue(
-                new StoriesListItemState(
-                        dto.id(),
-                        dto.title(),
-                        dto.titleColor(),
-                        dto.isOpened(),
-                        dto.videoCover() != null && !dto.videoCover().isEmpty(),
-                        dto.hasAudio(),
-                        clickType,
-                        payload
-                )
+                newValue
         );
     }
 

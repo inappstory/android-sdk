@@ -209,6 +209,33 @@ public class StoriesListItemDTO implements IStoryListItem {
     }
 
     @Override
+    public String toString() {
+        return "StoriesListItemDTO{" +
+                "id=" + id +
+                ", title='" + title + '\'' +
+                ", titleColor='" + titleColor + '\'' +
+                ", statTitle='" + statTitle + '\'' +
+                ", videoUrl=" + videoUrl +
+                ", ugcPayload=" + ugcPayload +
+                ", backgroundColor='" + backgroundColor + '\'' +
+                ", image=" + image +
+                ", hasSwipeUp=" + hasSwipeUp +
+                ", like=" + like +
+                ", slidesCount=" + slidesCount +
+                ", favorite=" + favorite +
+                ", hideInReader=" + hideInReader +
+                ", deeplink='" + deeplink + '\'' +
+                ", gameInstance=" + gameInstance +
+                ", opened=" + opened +
+                ", disableClose=" + disableClose +
+                ", hasLike=" + hasLike +
+                ", hasAudio=" + hasAudio +
+                ", hasFavorite=" + hasFavorite +
+                ", hasShare=" + hasShare +
+                '}';
+    }
+
+    @Override
     public boolean fullscreen() {
         return true;
     }

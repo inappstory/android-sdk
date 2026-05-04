@@ -270,12 +270,10 @@ public class StorySlidesDownloadManager {
                     downloadPriorities.put(
                             key,
                             DownloadContentPriority.PRIMARY);
-                    putKeyToPriority(key, DownloadContentPriority.PRIMARY, false);
                 } else {
                     downloadPriorities.put(
                             key,
                             DownloadContentPriority.COMMON);
-                    putKeyToPriority(key, DownloadContentPriority.COMMON, false);
                 }
             }
             if (prevId != null) {
@@ -293,7 +291,6 @@ public class StorySlidesDownloadManager {
                         downloadPriorities.put(
                                 key,
                                 DownloadContentPriority.SECONDARY);
-                        putKeyToPriority(key, DownloadContentPriority.SECONDARY, false);
                     }
                 }
             }
@@ -312,7 +309,6 @@ public class StorySlidesDownloadManager {
                         downloadPriorities.put(
                                 key,
                                 DownloadContentPriority.SECONDARY);
-                        putKeyToPriority(key, DownloadContentPriority.SECONDARY, false);
                     }
                 }
             }
@@ -336,8 +332,9 @@ public class StorySlidesDownloadManager {
                 SlideTaskKey key = priorityEntry.getKey();
                 if (key.contentIdAndType.contentType != type) continue;
                 if (key.contentIdAndType.contentId != content.id()) continue;
-                if (key.index < slidesCount && key.index > 0) {
+                if (key.index < slidesCount && key.index >= 0) {
                     tasks.put(key, new GenerateSlideTask(core, content, key.index).generate());
+                    putKeyToPriority(key, priorityEntry.getValue(), false);
                 }
             }
         }

@@ -1,7 +1,9 @@
 package com.inappstory.sdk.refactoring.stories.ui.reader.screens;
 
 import android.app.Activity;
+import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.WindowManager;
 
 import androidx.activity.OnBackPressedCallback;
@@ -21,7 +23,7 @@ public class StoryReaderActivity extends IASActivity implements BaseStoryReaderC
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.cs_story_reader_activity);
-        if (android.os.Build.VERSION.SDK_INT >= 33) {
+        if (Build.VERSION.SDK_INT >= 33) {
             OnBackPressedCallback callback = new OnBackPressedCallback(true) {
                 @Override
                 public void handleOnBackPressed() {

@@ -1,11 +1,16 @@
 package com.inappstory.sdk.core.ui.screens.storyreader;
 
+import com.inappstory.sdk.network.models.RequestLocalParameters;
+import com.inappstory.sdk.refactoring.stories.ui.list.states.StoryListItemCoordinates;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.SerializableWithKey;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoryItemCoordinates;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -49,8 +54,16 @@ public class LaunchStoryScreenData implements SerializableWithKey {
         return listUniqueId;
     }
 
-    public List<Integer> storiesIds() {
+    public List<String> storiesIdsS() {
         return storiesIds;
+    }
+
+    public List<Integer> storiesIds() {
+        List<Integer> iStoriesIds = new ArrayList<>();
+        for (String id : storiesIds) {
+            iStoriesIds.add(Integer.parseInt(id));
+        }
+        return iStoriesIds;
     }
 
     public int listIndex() {
@@ -65,8 +78,8 @@ public class LaunchStoryScreenData implements SerializableWithKey {
         return firstAction;
     }
 
-    public Integer slideIndex() {
-        return slideIndex;
+    public int slideIndex() {
+        return slideIndex != null ? slideIndex : 0;
     }
 
     public String feed() {
@@ -92,7 +105,7 @@ public class LaunchStoryScreenData implements SerializableWithKey {
         return this;
     }
 
-    public LaunchStoryScreenData storiesIds(List<Integer> storiesIds) {
+    public LaunchStoryScreenData storiesIds(List<String> storiesIds) {
         this.storiesIds = storiesIds;
         return this;
     }
@@ -132,11 +145,32 @@ public class LaunchStoryScreenData implements SerializableWithKey {
         return this;
     }
 
+    public LaunchStoryScreenData requestLocalParameters(RequestLocalParameters requestLocalParameters) {
+        this.requestLocalParameters = requestLocalParameters;
+        return this;
+    }
 
-    private StoryItemCoordinates initCoordinates = null;
+    public LaunchStoryScreenData options(Map<String, String> options) {
+        if (options != null)
+            this.options = new HashMap<>(options);
+        return this;
+    }
+
+    public RequestLocalParameters requestLocalParameters() {
+        return requestLocalParameters;
+    }
+
+    public Map<String, String> options() {
+        return options != null ? options : new HashMap<>();
+    }
+
+
+    private StoryListItemCoordinates initCoordinates = null;
     private String listUniqueId = null;
     private String sessionId;
-    private List<Integer> storiesIds;
+    private Map<String, String> options;
+    private RequestLocalParameters requestLocalParameters;
+    private List<String> storiesIds;
     private int listIndex = 0;
     private SourceType sourceType;
     private int firstAction;
@@ -157,7 +191,7 @@ public class LaunchStoryScreenData implements SerializableWithKey {
 
     private String cancellationTokenUID = null;
 
-    public LaunchStoryScreenData initCoordinates(StoryItemCoordinates initCoordinates) {
+    public LaunchStoryScreenData initCoordinates(StoryListItemCoordinates initCoordinates) {
         this.initCoordinates = initCoordinates;
         return this;
     }
@@ -173,7 +207,7 @@ public class LaunchStoryScreenData implements SerializableWithKey {
         return shownOnlyNewStories;
     }
 
-    public StoryItemCoordinates getInitCoordinates() {
+    public StoryListItemCoordinates getInitCoordinates() {
         return initCoordinates;
     }
 

@@ -6,6 +6,7 @@ import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.core.ui.screens.ScreenType;
 import com.inappstory.sdk.core.ui.screens.holder.IScreensHolder;
+import com.inappstory.sdk.refactoring.stories.ui.reader.screens.DefaultOpenStoriesReaderR;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.DefaultOpenGameReader;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.DefaultOpenInAppMessageReader;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.DefaultOpenStoriesReader;
@@ -26,7 +27,7 @@ public class ScreensLauncher implements IScreensLauncher {
         this.openGameReader = openGameReader;
     }
 
-    private IOpenStoriesReader openStoriesReader = new DefaultOpenStoriesReader();
+    private IOpenStoriesReader openStoriesReader = new DefaultOpenStoriesReaderR();
 
     public void setOpenStoriesReader(@NonNull IOpenStoriesReader openStoriesReader) {
         this.openStoriesReader = openStoriesReader;

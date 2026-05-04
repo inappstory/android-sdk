@@ -41,7 +41,7 @@ public class SlidesDownloader {
     private final LoopedExecutor loopedExecutor = new LoopedExecutor(10, 20);
 
     public void init() {
-        loopedExecutor.init(queueLoadSlideRunnable);
+        loopedExecutor.task(queueLoadSlideRunnable);
     }
 
     public void destroy() {

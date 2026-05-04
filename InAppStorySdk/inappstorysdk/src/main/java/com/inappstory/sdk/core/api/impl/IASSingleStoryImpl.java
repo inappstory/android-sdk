@@ -194,7 +194,7 @@ public class IASSingleStoryImpl implements IASSingleStory {
         stIds.add(story.id);
         LaunchStoryScreenData launchData = new LaunchStoryScreenData()
                 .sessionId(sessionId)
-                .storiesIds(new ArrayList<>(stIds))
+             //   .storiesIds(new ArrayList<>(stIds))
                 .firstAction(readerAction)
                 .sourceType(readerSource)
                 .slideIndex(slide)

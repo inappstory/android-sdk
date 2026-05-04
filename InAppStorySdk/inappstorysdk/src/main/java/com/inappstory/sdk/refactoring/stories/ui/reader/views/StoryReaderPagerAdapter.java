@@ -39,9 +39,9 @@ public class StoryReaderPagerAdapter extends PagerAdapter {
                         readerViewModel,
                         readerViewModel.readerImmutableState().storiesIds().get(position),
                         position
-
                 )
         );
+        page.measureViews();
         container.addView(page);
         return page;
     }

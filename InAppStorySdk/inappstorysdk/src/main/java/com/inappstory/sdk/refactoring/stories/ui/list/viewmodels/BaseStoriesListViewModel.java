@@ -3,10 +3,14 @@ package com.inappstory.sdk.refactoring.stories.ui.list.viewmodels;
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.IASStatisticStoriesV1;
 import com.inappstory.sdk.network.models.RequestLocalParameters;
 import com.inappstory.sdk.refactoring.core.utils.observers.Observable;
 import com.inappstory.sdk.refactoring.core.utils.observers.Observer;
+import com.inappstory.sdk.refactoring.session.INewSessionSubscriber;
+import com.inappstory.sdk.refactoring.session.data.local.SessionDTO;
+import com.inappstory.sdk.refactoring.stories.repositories.datasources.StoryAPIDataSource;
 import com.inappstory.sdk.refactoring.stories.ui.list.states.StoriesListState;
 import com.inappstory.sdk.refactoring.stories.usecases.StoriesFeedParameters;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
@@ -17,9 +21,23 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public abstract class BaseStoriesListViewModel {
+public abstract class BaseStoriesListViewModel implements INewSessionSubscriber {
     protected final IASCore core;
-    protected final StoriesFeedParameters feedParameters;
+    protected StoriesFeedParameters feedParameters;
+
+    public RequestLocalParameters sessionParameters() {
+        return requestLocalParameters;
+    }
+
+    public void updateSessionParameters(RequestLocalParameters requestLocalParameters) {
+        this.requestLocalParameters = requestLocalParameters;
+    }
+
+    public void updateFeedParameters(StoriesFeedParameters feedParameters) {
+        this.feedParameters = feedParameters;
+    }
+
+    protected RequestLocalParameters requestLocalParameters;
     protected final boolean isFavorite;
     protected final ExecutorService scope = Executors.newSingleThreadExecutor();
 
@@ -32,10 +50,13 @@ public abstract class BaseStoriesListViewModel {
 
     public abstract void loadStories();
 
-    public BaseStoriesListViewModel(IASCore core, StoriesFeedParameters feedParameters, boolean isFavorite) {
+    public BaseStoriesListViewModel(
+            IASCore core,
+            boolean isFavorite
+    ) {
         this.core = core;
         this.isFavorite = isFavorite;
-        this.feedParameters = feedParameters;
+        core.sessionSubscribersHolder().addNewSessionSubscriber(this);
     }
 
     public void sendIndexes(List<Integer> indexes) {
@@ -77,5 +98,15 @@ public abstract class BaseStoriesListViewModel {
 
     public void removeSubscriber(Observer<StoriesListState> observer) {
         this.storiesListStateObservable.unsubscribe(observer);
+    }
+
+    @Override
+    public void onNewSession(SessionDTO sessionDTO) {
+        IASDataSettingsHolder dataSettingsHolder = (IASDataSettingsHolder) core.settingsAPI();
+        requestLocalParameters = new RequestLocalParameters()
+                .sessionId(sessionDTO.sessionId())
+                .locale(dataSettingsHolder.lang())
+                .userId(dataSettingsHolder.userId())
+                .anonymous(dataSettingsHolder.anonymous());
     }
 }

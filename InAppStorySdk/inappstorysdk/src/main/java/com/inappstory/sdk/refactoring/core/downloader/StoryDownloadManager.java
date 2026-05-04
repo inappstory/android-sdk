@@ -1,5 +1,7 @@
 package com.inappstory.sdk.refactoring.core.downloader;
 
+import android.util.Log;
+
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.refactoring.core.utils.results.Error;
 import com.inappstory.sdk.refactoring.core.utils.results.ResultCallback;
@@ -71,6 +73,7 @@ public class StoryDownloadManager {
         List<IReaderContentDownloaderSubscriber> triggerSubs = new ArrayList<>();
         synchronized (downloadLock) {
             for (int i = secondaryIds.length - 1; i >= 0; i--) {
+                if (secondaryIds[i] == null) continue;
                 if (!Objects.equals(currentDownloadId, secondaryIds[i]))
                     triggerSubs.addAll(addToQueueOrInvokeCallback(secondaryIds[i]));
             }
@@ -97,6 +100,8 @@ public class StoryDownloadManager {
                 if (currentDownloadId == null) {
                     loopedExecutor.freeExecutor();
                     return;
+                } else {
+                    Log.e("currentDownloadId", "" + currentDownloadId);
                 }
             }
             ContentIdAndType finalId = id;

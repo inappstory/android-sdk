@@ -115,7 +115,8 @@ public class StoriesListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
                                     public StoriesListItemViewModel create() {
                                         return new StoriesListItemViewModel(
                                                 core,
-                                                storyId
+                                                storyId,
+                                                viewModel
                                         );
                                     }
                                 }
