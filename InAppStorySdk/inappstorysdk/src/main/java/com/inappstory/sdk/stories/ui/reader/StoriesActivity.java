@@ -168,15 +168,15 @@ public class StoriesActivity extends IASActivity implements BaseStoryScreen, Sho
     }
 
     public void startAnim(final Bundle savedInstanceState, final Rect readerContainer) {
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
-                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+        blockView.setVisibility(View.VISIBLE);
         try {
             isAnimation = true;
             setStartAnimations()
                     .setListener(new HandlerAnimatorListenerAdapter() {
                         @Override
                         public void onAnimationEnd() {
-                            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+                            blockView.setVisibility(View.GONE);
+                          //  getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
                             isAnimation = false;
                             createStoriesFragment(savedInstanceState, readerContainer);
                             setStoriesFragment();
@@ -685,8 +685,8 @@ public class StoriesActivity extends IASActivity implements BaseStoryScreen, Sho
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
-                getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
-                        WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+          /*      getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+                        WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);*/
                 blockView.setVisibility(View.VISIBLE);
                 finishAfterTransition();
             }
@@ -779,8 +779,8 @@ public class StoriesActivity extends IASActivity implements BaseStoryScreen, Sho
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
-                getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
-                        WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+             /*   getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+                        WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);*/
                 if (blockView != null)
                     blockView.setVisibility(View.VISIBLE);
                 finishWithoutAnimation();
