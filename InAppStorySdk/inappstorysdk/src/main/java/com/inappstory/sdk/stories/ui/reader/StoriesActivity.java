@@ -128,6 +128,7 @@ public class StoriesActivity extends IASActivity implements BaseStoryScreen, Sho
 
     @Override
     public void finish() {
+        Log.e("IAS_SDK_Activity", "finish " + animateFirst);
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
@@ -434,6 +435,8 @@ public class StoriesActivity extends IASActivity implements BaseStoryScreen, Sho
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         }
         super.onCreate(savedInstanceState1);
+
+        Log.e("IAS_SDK_Activity", "onCreate");
         setContentView(R.layout.cs_mainscreen_stories_draggable);
         InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
         launchData = (LaunchStoryScreenData) getIntent().
@@ -568,6 +571,7 @@ public class StoriesActivity extends IASActivity implements BaseStoryScreen, Sho
 
     private void setLoaderFragment(Rect readerContainer) {
         try {
+            Log.e("IAS_SDK_Activity", "setLoaderFragment");
             FragmentManager fragmentManager = getSupportFragmentManager();
             StoriesLoaderFragment storiesLoaderFragment = new StoriesLoaderFragment();
             Bundle bundle = new Bundle();
@@ -588,6 +592,7 @@ public class StoriesActivity extends IASActivity implements BaseStoryScreen, Sho
 
 
     private void setStoriesFragment() {
+        Log.e("IAS_SDK_Activity", "setStoriesFragment");
         if (storiesContentFragment != null) {
             try {
                 FragmentManager fragmentManager = getSupportFragmentManager();
@@ -644,6 +649,7 @@ public class StoriesActivity extends IASActivity implements BaseStoryScreen, Sho
     @Override
     public void onBackPressed() {
 
+        Log.e("IAS_SDK_Activity", "onBackPressed");
         if (!backPressEnabled && storiesContentFragment != null) {
             ReaderPageManager page = storiesContentFragment.getCurrentPage();
             if (page != null) {

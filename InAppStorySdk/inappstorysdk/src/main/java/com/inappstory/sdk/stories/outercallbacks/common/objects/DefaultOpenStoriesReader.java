@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Window;
 
 import androidx.fragment.app.FragmentActivity;
@@ -70,8 +71,10 @@ public class DefaultOpenStoriesReader implements IOpenStoriesReader {
                 intent2.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             }
             intent2.putExtras(bundle);
+            Log.e("IAS_SDK_Activity", "DefaultOpenStoriesReader");
             context.startActivity(intent2);
             if (context instanceof Activity) {
+                Log.e("IAS_SDK_Activity", "overridePendingTransition");
                 ((Activity) context).overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
             }
         }
