@@ -184,6 +184,7 @@ public class StoriesActivity extends IASActivity implements BaseStoryScreen, Sho
                     })
                     .start();
         } catch (Exception e) {
+            e.printStackTrace();
             finishWithoutAnimation();
         }
     }
@@ -289,6 +290,7 @@ public class StoriesActivity extends IASActivity implements BaseStoryScreen, Sho
                 }
             });
         } catch (Exception e) {
+            InAppStoryManager.handleException(e);
             finishWithoutAnimation();
         }
 
@@ -575,14 +577,13 @@ public class StoriesActivity extends IASActivity implements BaseStoryScreen, Sho
             t.commit();
         } catch (IllegalStateException e) {
             InAppStoryManager.handleException(e);
+            e.printStackTrace();
             finishWithoutAnimation();
         }
     }
 
 
     private void setStoriesFragment() {
-
-
         if (storiesContentFragment != null) {
             try {
                 FragmentManager fragmentManager = getSupportFragmentManager();
@@ -592,6 +593,7 @@ public class StoriesActivity extends IASActivity implements BaseStoryScreen, Sho
                 t.commit();
             } catch (IllegalStateException e) {
                 InAppStoryManager.handleException(e);
+                e.printStackTrace();
                 finishWithoutAnimation();
             }
         } else {
@@ -624,6 +626,7 @@ public class StoriesActivity extends IASActivity implements BaseStoryScreen, Sho
             bundle.putSerializable(appearanceSettings.getSerializableKey(), appearanceSettings);
             bundle.putSerializable(launchData.getSerializableKey(), launchData);
         } catch (Exception e) {
+            e.printStackTrace();
             forceFinish();
         }
     }
