@@ -7,6 +7,7 @@ import android.graphics.Paint;
 import android.graphics.RectF;
 import android.os.Looper;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 
 import com.inappstory.sdk.core.utils.ColorUtils;
@@ -58,10 +59,11 @@ public class StoryReaderPageTimeline extends View
     @Override
     public void onUpdate(StoryReaderPageTimelineState newValue) {
         this.state = newValue;
-        final int localVisibility = !(
+        final int localVisibility = !(state.slidesCount() == 0 ||
                 (state.slidesCount() == 1 && state.timerDuration() == 0) ||
                         state.isHidden()
         ) ? VISIBLE : INVISIBLE;
+        Log.e("UpdateTimelineState", state.toString());
         if (Looper.myLooper() == Looper.getMainLooper()) {
             setVisibility(localVisibility);
         } else {

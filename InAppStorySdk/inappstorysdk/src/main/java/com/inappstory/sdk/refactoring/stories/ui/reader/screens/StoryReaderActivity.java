@@ -1,9 +1,7 @@
 package com.inappstory.sdk.refactoring.stories.ui.reader.screens;
 
-import android.app.Activity;
 import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.WindowManager;
 
 import androidx.activity.OnBackPressedCallback;

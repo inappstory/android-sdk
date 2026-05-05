@@ -78,6 +78,19 @@ public class StoryReaderPageTimelineState {
         return foregroundColor;
     }
 
+    @Override
+    public String toString() {
+        return "StoryReaderPageTimelineState{" +
+                "slidesCount=" + slidesCount +
+                ", currentIndex=" + currentIndex +
+                ", timerDuration=" + timerDuration +
+                ", currentProgress=" + currentProgress +
+                ", isHidden=" + isHidden +
+                ", foregroundColor='" + foregroundColor + '\'' +
+                ", backgroundColor='" + backgroundColor + '\'' +
+                '}';
+    }
+
     public StoryReaderPageTimelineState copy() {
         return new StoryReaderPageTimelineState()
                 .foregroundColor(foregroundColor)

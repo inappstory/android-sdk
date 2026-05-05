@@ -2,7 +2,8 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="horizontal"
     android:layout_width="match_parent"
-    android:background="#000000"
+    android:background="#00000000"
+    android:id="@+id/panelBackground"
     android:layout_height="60dp">
     <com.inappstory.sdk.stories.ui.widgets.TouchFrameLayout
         android:id="@+id/likeButton"

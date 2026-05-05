@@ -17,6 +17,7 @@ import com.inappstory.sdk.core.api.impl.IASSingleStoryImpl;
 import com.inappstory.sdk.core.data.IReaderContent;
 import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenData;
 import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenStrategy;
+import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenAppearance;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.network.jsapiclient.JsApiClient;
@@ -35,6 +36,7 @@ import com.inappstory.sdk.refactoring.shared.data.contracts.ISlidesContent;
 import com.inappstory.sdk.refactoring.shared.utils.WebPageModifier;
 import com.inappstory.sdk.refactoring.stories.data.contracts.IStoryItem;
 import com.inappstory.sdk.refactoring.stories.data.contracts.IStoryReaderItem;
+import com.inappstory.sdk.refactoring.stories.data.local.StoriesListItemDTO;
 import com.inappstory.sdk.refactoring.stories.data.local.StoryDTO;
 import com.inappstory.sdk.refactoring.stories.ui.reader.singletimeevents.JsSendApiRequestResponse;
 import com.inappstory.sdk.refactoring.stories.ui.reader.singletimeevents.LoadSlide;
@@ -77,6 +79,12 @@ public class StoryReaderPageViewModel implements IReaderContentDownloaderSubscri
     private int storyLikeStatus = 0;
     private boolean storyFavoriteStatus = false;
 
+
+    public LaunchStoryScreenAppearance readerAppearanceSettings() {
+        if (readerViewModel == null) return null;
+        return readerViewModel.appearanceSettings;
+    }
+
     private final Observable<StoryReaderPageLoaderState> storyReaderPageLoaderStateObservable =
             new Observable<>(new StoryReaderPageLoaderState());
 
@@ -114,20 +122,23 @@ public class StoryReaderPageViewModel implements IReaderContentDownloaderSubscri
         this.readerViewModel = readerViewModel;
         timerManager = new StoryReaderPageTimerManager(core, this);
         int lastIndex = readerViewModel.pageSlideIndexes.get(pageIndex);
+        StoryReaderPageState state = new StoryReaderPageState(
+                storyId,
+                pageIndex,
+                readerViewModel
+                        .readerImmutableState()
+                        .contentType()
+        ).storyListItem(
+                core
+                        .storyRepository()
+                        .getLocalStoryListItem(storyId)
+        ).slideIndex(lastIndex);
         storyReaderPageStateObservable =
                 new Observable<>(
-                        new StoryReaderPageState(
-                                storyId,
-                                pageIndex,
-                                readerViewModel
-                                        .readerImmutableState()
-                                        .contentType()
-                        ).storyListItem(
-                                core
-                                        .storyRepository()
-                                        .getLocalStoryListItem(storyId)
-                        ).slideIndex(lastIndex)
+                        state
                 );
+        if (state.storyItem() != null)
+            timelineManager.setSlidesCount(state.storyItem().slidesCount(), true);
         core.storyDownloadManager().addSubscriber(this);
         core.storySlidesDownloadManager().addSubscriber(this);
         if (core.storySlidesDownloadManager().slideIsLoaded(contentIdAndType(), lastIndex)) {
