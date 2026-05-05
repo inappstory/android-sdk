@@ -12,6 +12,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
@@ -184,6 +185,7 @@ public class StoriesActivity extends IASActivity implements BaseStoryScreen, Sho
                     })
                     .start();
         } catch (Exception e) {
+            Log.e("IAS_SDK_Activity", "finishWithoutAnimation startAnim ex");
             e.printStackTrace();
             finishWithoutAnimation();
         }
@@ -290,6 +292,7 @@ public class StoriesActivity extends IASActivity implements BaseStoryScreen, Sho
                 }
             });
         } catch (Exception e) {
+            Log.e("IAS_SDK_Activity", "finishWithoutAnimation closeAnim ex");
             InAppStoryManager.handleException(e);
             finishWithoutAnimation();
         }
@@ -576,6 +579,7 @@ public class StoriesActivity extends IASActivity implements BaseStoryScreen, Sho
             t.addToBackStack("TEST");
             t.commit();
         } catch (IllegalStateException e) {
+            Log.e("IAS_SDK_Activity", "finishWithoutAnimation setLoaderFragment ex");
             InAppStoryManager.handleException(e);
             e.printStackTrace();
             finishWithoutAnimation();
@@ -592,11 +596,13 @@ public class StoriesActivity extends IASActivity implements BaseStoryScreen, Sho
                 t.addToBackStack("STORIES_FRAGMENT");
                 t.commit();
             } catch (IllegalStateException e) {
+                Log.e("IAS_SDK_Activity", "finishWithoutAnimation setStoriesFragment ex");
                 InAppStoryManager.handleException(e);
                 e.printStackTrace();
                 finishWithoutAnimation();
             }
         } else {
+            Log.e("IAS_SDK_Activity", "finishWithoutAnimation setStoriesFragment null");
             finishWithoutAnimation();
         }
 
@@ -755,7 +761,11 @@ public class StoriesActivity extends IASActivity implements BaseStoryScreen, Sho
     @Override
     public void forceFinish() {
         InAppStoryService service = InAppStoryService.getInstance();
-
+        StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
+        Log.e("IAS_SDK_Activity", "forceFinish");
+        for (StackTraceElement stackTraceElement: stackTraceElements) {
+            Log.e("IAS_SDK_Activity", stackTraceElement.toString());
+        }
         final IReaderContent[] story = {null};
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
@@ -786,6 +796,7 @@ public class StoriesActivity extends IASActivity implements BaseStoryScreen, Sho
                         WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);*/
                 if (blockView != null)
                     blockView.setVisibility(View.VISIBLE);
+
                 finishWithoutAnimation();
             }
         });
