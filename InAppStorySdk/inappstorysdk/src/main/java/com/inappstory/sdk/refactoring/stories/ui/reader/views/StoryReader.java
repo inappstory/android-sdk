@@ -384,8 +384,19 @@ public class StoryReader extends FrameLayout implements Observer<StoryReaderStat
 
     @Override
     public void onPageSelected(int position) {
-        if (viewModel != null)
-            viewModel.pagerPageSelected(position);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Thread.sleep(150);
+                } catch (InterruptedException ignored) {
+
+                }
+                if (viewModel != null)
+                    viewModel.pagerPageSelected(position);
+            }
+        }).start();
+
     }
 
     @Override

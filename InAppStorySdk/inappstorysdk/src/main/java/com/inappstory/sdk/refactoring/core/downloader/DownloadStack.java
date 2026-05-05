@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DownloadStack<T> {
-    private final List<T> ids = new ArrayList<>();
+    protected final List<T> ids = new ArrayList<>();
 
     public boolean contains(T id) {
         return ids.contains(id);

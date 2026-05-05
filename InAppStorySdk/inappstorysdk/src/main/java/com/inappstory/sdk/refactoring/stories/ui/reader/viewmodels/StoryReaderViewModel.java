@@ -1,5 +1,7 @@
 package com.inappstory.sdk.refactoring.stories.ui.reader.viewmodels;
 
+import android.util.Log;
+
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.exceptions.NotImplementedMethodException;
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenAppearance;
@@ -42,6 +44,7 @@ public class StoryReaderViewModel {
         int prevCount = 0;
         int prevIndex = 0;
         if (newIndex > 0) {
+
             IStoryItem storyListItemPrev = storyRepository.getLocalStoryListItem(ids.get(newIndex - 1));
             if (storyListItemPrev != null) {
                 prevId = new ContentIdAndType(
@@ -101,7 +104,7 @@ public class StoryReaderViewModel {
     private final Observable<StoryReaderState> storyReaderStateObservable =
             new Observable<>(new StoryReaderState());
 
-    private final List<Integer> pageSlideIndexes = new ArrayList<>();
+    final List<Integer> pageSlideIndexes = new ArrayList<>();
 
     public StoryReaderState readerState() {
         return storyReaderStateObservable.getValue();

@@ -40,6 +40,7 @@ import com.inappstory.sdk.refactoring.stories.ui.reader.singletimeevents.JsSendA
 import com.inappstory.sdk.refactoring.stories.ui.reader.singletimeevents.LoadSlide;
 import com.inappstory.sdk.refactoring.stories.ui.reader.singletimeevents.SetSoundStatus;
 import com.inappstory.sdk.refactoring.stories.ui.reader.singletimeevents.StartSlide;
+import com.inappstory.sdk.refactoring.stories.ui.reader.singletimeevents.StopSlide;
 import com.inappstory.sdk.refactoring.stories.ui.reader.singletimeevents.StoriesSTEDataType;
 import com.inappstory.sdk.refactoring.stories.ui.reader.states.StoryReaderButtonsState;
 import com.inappstory.sdk.refactoring.stories.ui.reader.states.StoryReaderImmutableState;
@@ -112,7 +113,7 @@ public class StoryReaderPageViewModel implements IReaderContentDownloaderSubscri
         this.core = readerViewModel.core();
         this.readerViewModel = readerViewModel;
         timerManager = new StoryReaderPageTimerManager(core, this);
-
+        int lastIndex = readerViewModel.pageSlideIndexes.get(pageIndex);
         storyReaderPageStateObservable =
                 new Observable<>(
                         new StoryReaderPageState(
@@ -125,10 +126,13 @@ public class StoryReaderPageViewModel implements IReaderContentDownloaderSubscri
                                 core
                                         .storyRepository()
                                         .getLocalStoryListItem(storyId)
-                        )
+                        ).slideIndex(lastIndex)
                 );
         core.storyDownloadManager().addSubscriber(this);
         core.storySlidesDownloadManager().addSubscriber(this);
+        if (core.storySlidesDownloadManager().slideIsLoaded(contentIdAndType(), lastIndex)) {
+            slideLoadSuccess(lastIndex);
+        }
     }
 
     public void addLoaderStateSubscriber(Observer<StoryReaderPageLoaderState> observer) {
@@ -615,10 +619,14 @@ public class StoryReaderPageViewModel implements IReaderContentDownloaderSubscri
     }
 
     public void stopSlide() {
+
+        StoryReaderPageState pageState = storyReaderPageState();
+        int currentIndex = pageState.slideIndex();
+        int lastIndex = readerViewModel.pageSlideIndexes.get(pageState.pageIndex());
         singleTimeEvents.updateValue(
                 new STETypeAndData(
                         StoriesSTEDataType.STOP_SLIDE,
-                        null
+                        new StopSlide().prepareForRestart(currentIndex == lastIndex)
                 )
         );
     }
@@ -670,7 +678,7 @@ public class StoryReaderPageViewModel implements IReaderContentDownloaderSubscri
 
     @Override
     public void contentLoadSuccess(ISlidesContent content) {
-        Log.e("contentLoadSuccess", content.id() + "");
+        Log.e("load_IDS", "contentLoadSuccess " + content.id());
         storyReaderPageStateObservable.updateValue(storyReaderPageState().copy().story(
                 (StoryDTO) content)
         );
@@ -681,6 +689,7 @@ public class StoryReaderPageViewModel implements IReaderContentDownloaderSubscri
     @Override
     public void slideLoadSuccess(int index) {
         StoryReaderPageState pageState = storyReaderPageState();
+        Log.e("contentLoadSuccess", "slideLoadSuccess " + pageState.storyId() + " slideIndex:" + index);
         if (pageState.slideIndex() != index) return;
         core.contentLoader().addVODResources(pageState.story(), index);
         WebPageModifier modifier = new WebPageModifier(core);
@@ -799,8 +808,7 @@ public class StoryReaderPageViewModel implements IReaderContentDownloaderSubscri
                 index,
                 storyStatData.slidesCount()
         );
-        if (core.storySlidesDownloadManager().slideIsLoaded(contentIdAndType, index))
-            slideLoadSuccess(index);
+
     }
 
     @JavascriptInterface

@@ -3,6 +3,7 @@ package com.inappstory.sdk.refactoring.core.downloader;
 import android.util.Log;
 
 import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.data.IReaderContent;
 import com.inappstory.sdk.refactoring.core.utils.results.Error;
 import com.inappstory.sdk.refactoring.core.utils.results.ResultCallback;
 import com.inappstory.sdk.refactoring.stories.data.local.StoryDTO;
@@ -61,10 +62,16 @@ public class StoryDownloadManager {
         synchronized (subLock) {
             subscribers.add(subscriber);
         }
+        StoryDTO readerContent = cachedContent.get(subscriber.contentIdAndType());
+        Log.e("load_IDS", "addSubscriber " + subscriber.contentIdAndType() + " " + readerContent);
+        if (readerContent != null) {
+            subscriber.contentLoadSuccess(readerContent);
+        }
     }
 
     public void removeSubscriber(IReaderContentDownloaderSubscriber subscriber) {
         synchronized (subLock) {
+            Log.e("load_IDS", "removeSubscriber " + subscriber.contentIdAndType());
             subscribers.remove(subscriber);
         }
     }
@@ -112,12 +119,15 @@ public class StoryDownloadManager {
             ).invoke(new ResultCallback<StoryDTO>() {
                 @Override
                 public void success(StoryDTO result) {
+
+                    Log.e("load_IDS", result.id() + "");
                     List<IReaderContentDownloaderSubscriber> triggerSubs;
                     loopedExecutor.freeExecutor();
                     synchronized (downloadLock) {
-                        if (currentDownloadId != finalId) return;
+                        if (!Objects.equals(currentDownloadId, finalId)) return;
                         cachedContent.put(finalId, result);
                         triggerSubs = new ArrayList<>(getSubscribersByStoryId(finalId));
+                        Log.e("load_IDS", result.id() + " cachedContent " + triggerSubs.size());
                         currentDownloadId = null;
                     }
                     for (IReaderContentDownloaderSubscriber subscriber : triggerSubs) {
