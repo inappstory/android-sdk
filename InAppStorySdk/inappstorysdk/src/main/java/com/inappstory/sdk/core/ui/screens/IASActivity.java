@@ -52,4 +52,15 @@ public class IASActivity extends AppCompatActivity {
             Log.e("IAS_SDK_Activity", stackTraceElement.toString());
         }
     }
+
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
+        Log.e("IAS_SDK_Activity", "onDestroy");
+        for (StackTraceElement stackTraceElement: stackTraceElements) {
+            Log.e("IAS_SDK_Activity", stackTraceElement.toString());
+        }
+    }
 }

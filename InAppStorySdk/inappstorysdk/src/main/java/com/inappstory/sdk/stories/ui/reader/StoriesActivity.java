@@ -846,7 +846,6 @@ public class StoriesActivity extends IASActivity implements BaseStoryScreen, Sho
 
     @Override
     public void onDestroy() {
-        Log.e("IAS_SDK_Activity", "onDestroy");
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
