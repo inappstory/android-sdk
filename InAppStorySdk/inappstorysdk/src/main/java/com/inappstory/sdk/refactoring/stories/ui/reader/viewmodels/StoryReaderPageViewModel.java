@@ -141,9 +141,6 @@ public class StoryReaderPageViewModel implements IReaderContentDownloaderSubscri
             timelineManager.setSlidesCount(state.storyItem().slidesCount(), true);
         core.storyDownloadManager().addSubscriber(this);
         core.storySlidesDownloadManager().addSubscriber(this);
-        if (core.storySlidesDownloadManager().slideIsLoaded(contentIdAndType(), lastIndex)) {
-            slideLoadSuccess(lastIndex);
-        }
     }
 
     public void addLoaderStateSubscriber(Observer<StoryReaderPageLoaderState> observer) {
@@ -700,8 +697,8 @@ public class StoryReaderPageViewModel implements IReaderContentDownloaderSubscri
     @Override
     public void slideLoadSuccess(int index) {
         StoryReaderPageState pageState = storyReaderPageState();
-        Log.e("contentLoadSuccess", "slideLoadSuccess " + pageState.storyId() + " slideIndex:" + index);
         if (pageState.slideIndex() != index) return;
+        Log.e("contentLoadSuccess", "slideLoadSuccess " + pageState.storyId() + " slideIndex:" + index + " " + this);
         core.contentLoader().addVODResources(pageState.story(), index);
         WebPageModifier modifier = new WebPageModifier(core);
         String[] layoutAndSlide = modifier.modifyForStory(pageState.story(), index);

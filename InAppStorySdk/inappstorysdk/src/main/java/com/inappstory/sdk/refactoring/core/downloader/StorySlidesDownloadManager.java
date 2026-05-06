@@ -33,7 +33,7 @@ public class StorySlidesDownloadManager {
     private final Map<SlideTaskKey, SlideTask> tasks = new HashMap<>();
     private final Object subLock = new Object();
     private final Map<SlideTaskKey, DownloadContentPriority> downloadPriorities = new HashMap<>();
-    List<IReaderContentDownloaderSubscriber> subscribers = new ArrayList<>();
+    Set<IReaderContentDownloaderSubscriber> subscribers = new HashSet<>();
     private final LoopedExecutor loopedExecutor = new LoopedExecutor(100, 100);
 
     private final Runnable invokeQueueTask = new Runnable() {
@@ -194,22 +194,25 @@ public class StorySlidesDownloadManager {
     }
 
 
-
     public void renewStoryPriorities(
             ContentIdAndType mainId,
             int mainIndex,
             int mainCount
     ) {
+        List<SlideTaskKey> notifyKeys = new ArrayList<>();
         synchronized (slideTaskKeysLock) {
             for (int i = mainCount - 1; i >= 0; i--) {
-                SlideTaskKey key =  new SlideTaskKey(
+                SlideTaskKey key = new SlideTaskKey(
                         new ContentIdAndType(
                                 mainId.contentId,
                                 mainId.contentType
                         ),
                         i
                 );
-                if (loadedSlides.contains(key)) continue;
+                if (loadedSlides.contains(key)) {
+                    notifyKeys.add(key);
+                    continue;
+                }
                 if (i == mainIndex || i == mainIndex + 1) {
                     downloadPriorities.put(
                             key,
@@ -223,13 +226,21 @@ public class StorySlidesDownloadManager {
                 }
             }
         }
+        for (SlideTaskKey taskKey : notifyKeys) {
+            List<IReaderContentDownloaderSubscriber> subscribersById = getSubscribersByStoryId(
+                    taskKey.contentIdAndType
+            );
+            for (IReaderContentDownloaderSubscriber subscriber : subscribersById) {
+                checkBundleResources(subscriber, taskKey.index);
+            }
+        }
     }
 
     public boolean slideIsLoaded(
             ContentIdAndType id,
             int index
     ) {
-        SlideTaskKey key =  new SlideTaskKey(
+        SlideTaskKey key = new SlideTaskKey(
                 new ContentIdAndType(
                         id.contentId,
                         id.contentType
@@ -252,20 +263,24 @@ public class StorySlidesDownloadManager {
             int nextIndex,
             int nextCount
     ) {
+        List<SlideTaskKey> notifyKeys = new ArrayList<>();
         synchronized (slideTaskKeysLock) {
             downloadPriorities.clear();
             firstPriorityTaskKeys.clear();
             secondPriorityTaskKeys.clear();
             commonPriorityTaskKeys.clear();
             for (int i = mainCount - 1; i >= 0; i--) {
-                SlideTaskKey key =  new SlideTaskKey(
+                SlideTaskKey key = new SlideTaskKey(
                         new ContentIdAndType(
                                 mainId.contentId,
                                 mainId.contentType
                         ),
                         i
                 );
-                if (loadedSlides.contains(key)) continue;
+                if (loadedSlides.contains(key)) {
+                    notifyKeys.add(key);
+                    continue;
+                }
                 if (i == mainIndex || i == mainIndex + 1) {
                     downloadPriorities.put(
                             key,
@@ -279,7 +294,7 @@ public class StorySlidesDownloadManager {
             if (prevId != null) {
                 for (int i = prevCount - 1; i >= 0; i--) {
                     if (i == prevIndex || i == prevIndex + 1) {
-                        SlideTaskKey key =  new SlideTaskKey(
+                        SlideTaskKey key = new SlideTaskKey(
                                 new ContentIdAndType(
                                         prevId.contentId,
                                         prevId.contentType
@@ -287,7 +302,10 @@ public class StorySlidesDownloadManager {
                                 i
                         );
 
-                        if (loadedSlides.contains(key)) continue;
+                        if (loadedSlides.contains(key)) {
+                            notifyKeys.add(key);
+                            continue;
+                        }
                         downloadPriorities.put(
                                 key,
                                 DownloadContentPriority.SECONDARY);
@@ -297,15 +315,17 @@ public class StorySlidesDownloadManager {
             if (nextId != null) {
                 for (int i = nextCount - 1; i >= 0; i--) {
                     if (i == nextIndex || i == nextIndex + 1) {
-                        SlideTaskKey key =  new SlideTaskKey(
+                        SlideTaskKey key = new SlideTaskKey(
                                 new ContentIdAndType(
                                         nextId.contentId,
                                         nextId.contentType
                                 ),
                                 i
                         );
-
-                        if (loadedSlides.contains(key)) continue;
+                        if (loadedSlides.contains(key)) {
+                            notifyKeys.add(key);
+                            continue;
+                        }
                         downloadPriorities.put(
                                 key,
                                 DownloadContentPriority.SECONDARY);
@@ -314,9 +334,17 @@ public class StorySlidesDownloadManager {
             }
             Set<SlideTaskKey> downloadKeys = downloadPriorities.keySet();
             Set<SlideTaskKey> taskKeys = new HashSet<>(tasks.keySet());
-            for (SlideTaskKey taskKey: taskKeys) {
+            for (SlideTaskKey taskKey : taskKeys) {
                 if (!downloadKeys.contains(taskKey)) {
                     tasks.remove(taskKey);
+                }
+            }
+            for (SlideTaskKey taskKey : notifyKeys) {
+                List<IReaderContentDownloaderSubscriber> subscribersById = getSubscribersByStoryId(
+                        taskKey.contentIdAndType
+                );
+                for (IReaderContentDownloaderSubscriber subscriber : subscribersById) {
+                    checkBundleResources(subscriber, taskKey.index);
                 }
             }
         }

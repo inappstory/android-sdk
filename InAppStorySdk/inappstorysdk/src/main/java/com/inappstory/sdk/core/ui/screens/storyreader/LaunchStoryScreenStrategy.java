@@ -77,7 +77,6 @@ public class LaunchStoryScreenStrategy implements LaunchScreenStrategy {
                         ContentType.STORY,
                         launchStoryScreenData.sourceType(),
                         launchStoryScreenData.options(),
-                        null,
                         launchStoryScreenData.feed()
                         // launchStoryScreenData
 

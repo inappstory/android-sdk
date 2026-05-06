@@ -53,8 +53,11 @@ public class StoryReaderImmutableState {
     private final String feed;
     private final List<String> storiesIds;
     private final Map<String, String> options;
-    private final Rect readerFrame;
+    private Rect readerFrame;
 
+    public void readerFrame(Rect readerFrame) {
+        this.readerFrame = readerFrame;
+    }
 
     public StoryReaderImmutableState(
             RequestLocalParameters requestLocalParameters,
@@ -63,7 +66,6 @@ public class StoryReaderImmutableState {
             ContentType contentType,
             SourceType sourceType,
             Map<String, String> options,
-            Rect readerFrame,
             String feed
     ) {
         this.readerUniqueId = readerUniqueId;

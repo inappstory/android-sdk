@@ -14,6 +14,7 @@ import static com.inappstory.sdk.AppearanceManager.TOP_START;
 import android.content.Context;
 import android.graphics.Color;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.util.SizeF;
 import android.view.MotionEvent;
 import android.view.View;
@@ -142,11 +143,13 @@ public class StoryReaderPage extends FrameLayout implements Observer<Boolean> {
             viewModel.removeLoaderStateSubscriber(loader);
             viewModel.removeTimelineStateSubscriber(timeline);
             viewModel.singleTimeEvents().unsubscribe(singleTimeEvents);
+            viewModel.destroy();
         }
         content.viewModel(null);
     }
 
     public void destroyView() {
+        Log.e("destroyReader", "destroyView " + viewModel);
         if (viewModel != null)
             viewModel.destroy();
     }

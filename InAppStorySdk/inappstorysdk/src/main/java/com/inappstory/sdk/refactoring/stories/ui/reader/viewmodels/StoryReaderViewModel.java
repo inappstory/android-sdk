@@ -20,7 +20,9 @@ import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class StoryReaderViewModel {
     private final IASCore core;
@@ -29,7 +31,41 @@ public class StoryReaderViewModel {
         return core;
     }
 
+    private final Map<String, StoryReaderPageViewModel> pageViewModels = new HashMap<>();
+
+    public StoryReaderPageViewModel getOrCreatePageViewModel(String storyId) {
+        StoryReaderPageViewModel pageViewModel = pageViewModels.get(storyId);
+        if (pageViewModel == null) {
+            pageViewModel = new StoryReaderPageViewModel(
+                    this,
+                    storyId,
+                    readerImmutableState().storiesIds().indexOf(storyId)
+            );
+            pageViewModels.put(storyId, pageViewModel);
+        }
+        return pageViewModel;
+    }
+
+    public void destroyPage(int position) {
+        String key = readerImmutableState().storiesIds().get(position);
+        StoryReaderPageViewModel pageViewModel =
+                pageViewModels.get(key);
+        if (pageViewModel != null) pageViewModel.destroy();
+        pageViewModels.remove(key);
+    }
+
+    public void destroyPages() {
+        for (StoryReaderPageViewModel pageViewModel :
+                pageViewModels.values()) {
+            if (pageViewModel != null) pageViewModel.destroy();
+        }
+        pageViewModels.clear();
+    }
+
+
     public void pagerPageSelected(int newIndex) {
+        if (newIndex == readerState().currentPage()) return;
+        storyReaderStateObservable.updateValue(readerState().copy().currentPage(newIndex));
         List<String> ids = readerImmutableState.storiesIds();
         ContentType contentType = readerImmutableState.contentType();
         IStoryRepository storyRepository = core

@@ -27,6 +27,16 @@ public class StoryReaderPager extends BothSideViewPager {
         this.readerViewModel = readerViewModel;
     }
 
+    @Override
+    public void setCurrentItem(int position) {
+        super.setCurrentItem(position);
+    }
+
+    @Override
+    public void setCurrentItem(int position, boolean smoothScroll) {
+        super.setCurrentItem(position, smoothScroll);
+    }
+
     private StoryReaderViewModel readerViewModel;
 
     public void transformAnimation(int animation) {

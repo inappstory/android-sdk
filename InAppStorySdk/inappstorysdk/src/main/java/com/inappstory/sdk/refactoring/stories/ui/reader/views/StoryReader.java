@@ -3,6 +3,7 @@ package com.inappstory.sdk.refactoring.stories.ui.reader.views;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Point;
+import android.graphics.Rect;
 import android.os.Handler;
 import android.util.AttributeSet;
 import android.view.View;
@@ -51,6 +52,7 @@ public class StoryReader extends FrameLayout implements Observer<StoryReaderStat
     View readerBackground;
     View animatedContainer;
 
+
     public void shareContainer(ContainerProvider shareContainer) {
         this.shareContainer = shareContainer;
     }
@@ -69,12 +71,21 @@ public class StoryReader extends FrameLayout implements Observer<StoryReaderStat
 
     public void viewModel(StoryReaderViewModel viewModel) {
         this.viewModel = viewModel;
+        post(new Runnable() {
+            @Override
+            public void run() {
+                final Rect readerContainer = new Rect();
+                getGlobalVisibleRect(readerContainer);
+                viewModel.readerImmutableState().readerFrame(readerContainer);
+            }
+        });
         viewModel.addSubscriber(this);
         pager.viewModel(viewModel);
     }
 
     public void unsubscribe() {
         if (viewModel != null) {
+            viewModel.destroyPages();
             viewModel.removeSubscriber(this);
             viewModel.updateOpenState(StoryReaderOpenState.IDLE);
         }
@@ -95,7 +106,6 @@ public class StoryReader extends FrameLayout implements Observer<StoryReaderStat
     private void init(@NonNull Context context) {
         inflate(context, R.layout.cs_story_reader, this);
         pager = findViewById(R.id.ias_stories_reader_pager);
-        pager.addOnPageChangeListener(this);
         elasticLayout = findViewById(R.id.ias_stories_reader_draggable_frame);
         reviewContainer = new ContainerProvider()
                 .layout(findViewById(R.id.ias_stories_reader_review_container));
@@ -292,7 +302,16 @@ public class StoryReader extends FrameLayout implements Observer<StoryReaderStat
                                 )
                         )
                 );
-                onPageSelected(0);
+                try {
+                    pager.removeOnPageChangeListener(this);
+                } catch (Exception e) {
+
+                }
+                pager.addOnPageChangeListener(this);
+                if (viewModel != null) {
+                    pager.setCurrentItem(viewModel.readerState().currentPage());
+                    viewModel.pagerPageSelected(viewModel.readerState().currentPage());
+                }
                 break;
             case CLOSING:
                 getFinishAnimation().setListener(new HandlerAnimatorListenerAdapter() {
@@ -356,7 +375,8 @@ public class StoryReader extends FrameLayout implements Observer<StoryReaderStat
                     updateOpenState(newValue.openState());
                 }
                 if (oldState.currentPage() != newValue.currentPage()) {
-                    pageSelected(newValue.currentPage());
+                    if (pager.getAdapter() != null)
+                        pager.setCurrentItem(newValue.currentPage());
                 }
                 updateShareViewIfNecessary(
                         oldState.shareDataState(),

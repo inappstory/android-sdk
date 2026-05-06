@@ -1,5 +1,6 @@
 package com.inappstory.sdk.refactoring.stories.ui.reader.views;
 
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -8,6 +9,10 @@ import androidx.viewpager.widget.PagerAdapter;
 
 import com.inappstory.sdk.refactoring.stories.ui.reader.viewmodels.StoryReaderPageViewModel;
 import com.inappstory.sdk.refactoring.stories.ui.reader.viewmodels.StoryReaderViewModel;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 
 public class StoryReaderPagerAdapter extends PagerAdapter {
@@ -35,10 +40,8 @@ public class StoryReaderPagerAdapter extends PagerAdapter {
         );
         page.setTag(getTagByPosition(position));
         page.viewModel(
-                new StoryReaderPageViewModel(
-                        readerViewModel,
-                        readerViewModel.readerImmutableState().storiesIds().get(position),
-                        position
+                readerViewModel.getOrCreatePageViewModel(
+                        readerViewModel.readerImmutableState().storiesIds().get(position)
                 )
         );
         page.measureViews();
@@ -47,9 +50,14 @@ public class StoryReaderPagerAdapter extends PagerAdapter {
     }
 
     @Override
+    protected void finalize() throws Throwable {
+        super.finalize();
+    }
+
+    @Override
     public void destroyItem(@NonNull ViewGroup container, int position, @NonNull Object object) {
+        readerViewModel.destroyPage(position);
         if (object instanceof StoryReaderPage) {
-            ((StoryReaderPage) object).destroyView();
             container.removeView((StoryReaderPage) object);
         }
     }
