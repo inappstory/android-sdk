@@ -25,6 +25,7 @@ public class DefaultOpenStoriesReader implements IOpenStoriesReader {
             Context context,
             Bundle bundle
     ) {
+        Log.e("IAS_SDK_Activity", "DefaultOpenStoriesReader onOpen");
         if (context == null) return;
         if (context instanceof Activity) {
             Window window = ((Activity) context).getWindow();
@@ -67,11 +68,12 @@ public class DefaultOpenStoriesReader implements IOpenStoriesReader {
             }*/
         } else {
             Intent intent2 = new Intent(context, StoriesActivity.class);
+            Log.e("IAS_SDK_Activity", "DefaultOpenStoriesReader Phone");
             if (!(context instanceof Activity)) {
+                Log.e("IAS_SDK_Activity", "DefaultOpenStoriesReader Phone New task");
                 intent2.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             }
             intent2.putExtras(bundle);
-            Log.e("IAS_SDK_Activity", "DefaultOpenStoriesReader");
             context.startActivity(intent2);
             if (context instanceof Activity) {
                 Log.e("IAS_SDK_Activity", "overridePendingTransition");
