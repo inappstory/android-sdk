@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.os.Build;
+import android.util.Log;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -40,5 +41,15 @@ public class IASActivity extends AppCompatActivity {
             super.attachBaseContext(newBase);
         }
 
+    }
+
+    @Override
+    public void finish() {
+        super.finish();
+        StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
+        Log.e("IAS_SDK_Activity", "finish");
+        for (StackTraceElement stackTraceElement: stackTraceElements) {
+            Log.e("IAS_SDK_Activity", stackTraceElement.toString());
+        }
     }
 }

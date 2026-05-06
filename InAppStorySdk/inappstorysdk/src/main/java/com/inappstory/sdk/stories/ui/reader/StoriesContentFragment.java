@@ -570,6 +570,7 @@ public class StoriesContentFragment extends Fragment
                     launchData.clearSingleTimeParameters();
                     created = true;
                 } catch (Exception e) {
+                    Log.e("IAS_SDK_Activity", "StoriesContentFragment onViewCreated ex");
                     forceFinish();
                 }
 
