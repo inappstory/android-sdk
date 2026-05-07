@@ -99,6 +99,7 @@ public class StoryReaderPage extends FrameLayout implements Observer<Boolean> {
                     break;
                 case LOAD_SLIDE:
                     LoadSlide loadSlideData = (LoadSlide) newValue.data();
+                    viewModel.clearTemporaryLayoutAndSlide();
                     content.layoutAndSlide(loadSlideData.layout(), loadSlideData.slide());
                     break;
                 case START_SLIDE:
@@ -170,6 +171,7 @@ public class StoryReaderPage extends FrameLayout implements Observer<Boolean> {
             viewModel.addTimelineStateSubscriber(timeline);
             viewModel.addCloseSubscriber(this);
             viewModel.singleTimeEvents().subscribe(singleTimeEvents);
+            viewModel.checkForTemporaryData();
         }
     }
 

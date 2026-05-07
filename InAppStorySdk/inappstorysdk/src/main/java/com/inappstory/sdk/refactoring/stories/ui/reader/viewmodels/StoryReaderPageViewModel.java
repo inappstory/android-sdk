@@ -14,7 +14,6 @@ import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.api.impl.IASSingleStoryImpl;
-import com.inappstory.sdk.core.data.IReaderContent;
 import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenData;
 import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenStrategy;
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenAppearance;
@@ -36,7 +35,6 @@ import com.inappstory.sdk.refactoring.shared.data.contracts.ISlidesContent;
 import com.inappstory.sdk.refactoring.shared.utils.WebPageModifier;
 import com.inappstory.sdk.refactoring.stories.data.contracts.IStoryItem;
 import com.inappstory.sdk.refactoring.stories.data.contracts.IStoryReaderItem;
-import com.inappstory.sdk.refactoring.stories.data.local.StoriesListItemDTO;
 import com.inappstory.sdk.refactoring.stories.data.local.StoryDTO;
 import com.inappstory.sdk.refactoring.stories.ui.reader.singletimeevents.JsSendApiRequestResponse;
 import com.inappstory.sdk.refactoring.stories.ui.reader.singletimeevents.LoadSlide;
@@ -67,8 +65,10 @@ import com.inappstory.sdk.utils.ClipboardUtils;
 import com.inappstory.sdk.utils.StringsUtils;
 
 import java.lang.reflect.Type;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 public class StoryReaderPageViewModel implements IReaderContentDownloaderSubscriber {
     private final IASCore core;
@@ -78,6 +78,7 @@ public class StoryReaderPageViewModel implements IReaderContentDownloaderSubscri
     private final StoryReaderPageTimerManager timerManager;
     private int storyLikeStatus = 0;
     private boolean storyFavoriteStatus = false;
+    private final Set<Integer> loadedSlides = new HashSet<>();
 
 
     public LaunchStoryScreenAppearance readerAppearanceSettings() {
@@ -139,8 +140,8 @@ public class StoryReaderPageViewModel implements IReaderContentDownloaderSubscri
                 );
         if (state.storyItem() != null)
             timelineManager.setSlidesCount(state.storyItem().slidesCount(), true);
-        core.storyDownloadManager().addSubscriber(this);
         core.storySlidesDownloadManager().addSubscriber(this);
+        core.storyDownloadManager().addSubscriber(this);
     }
 
     public void addLoaderStateSubscriber(Observer<StoryReaderPageLoaderState> observer) {
@@ -420,6 +421,7 @@ public class StoryReaderPageViewModel implements IReaderContentDownloaderSubscri
             if (pageState.slideIndex() < statData.slidesCount() - 1) {
                 changeSlide(pageState.slideIndex() + 1);
             } else {
+                stopSlide();
                 readerViewModel.openNextPage(ShowStory.ACTION_TAP);
             }
         } else if (coordinate <= rightLine) {
@@ -438,6 +440,7 @@ public class StoryReaderPageViewModel implements IReaderContentDownloaderSubscri
                                 )
                         );
                 } else {
+                    stopSlide();
                     readerViewModel.openPreviousPage(ShowStory.ACTION_TAP);
                 }
             }
@@ -627,7 +630,7 @@ public class StoryReaderPageViewModel implements IReaderContentDownloaderSubscri
     }
 
     public void stopSlide() {
-
+        pauseTimers();
         StoryReaderPageState pageState = storyReaderPageState();
         int currentIndex = pageState.slideIndex();
         int lastIndex = readerViewModel.pageSlideIndexes.get(pageState.pageIndex());
@@ -690,24 +693,33 @@ public class StoryReaderPageViewModel implements IReaderContentDownloaderSubscri
         storyReaderPageStateObservable.updateValue(storyReaderPageState().copy().story(
                 (StoryDTO) content)
         );
-        changeSlide(storyReaderPageStateObservable.getValue().slideIndex());
+        // changeSlide(storyReaderPageStateObservable.getValue().slideIndex());
         core.storySlidesDownloadManager().addTasks(content, contentIdAndType().contentType);
     }
 
     @Override
     public void slideLoadSuccess(int index) {
+        //  if (loadedSlides.contains(index)) return;
+        //  loadedSlides.add(index);
         StoryReaderPageState pageState = storyReaderPageState();
         if (pageState.slideIndex() != index) return;
         Log.e("contentLoadSuccess", "slideLoadSuccess " + pageState.storyId() + " slideIndex:" + index + " " + this);
         core.contentLoader().addVODResources(pageState.story(), index);
         WebPageModifier modifier = new WebPageModifier(core);
         String[] layoutAndSlide = modifier.modifyForStory(pageState.story(), index);
+        temporaryLayoutAndSlide = layoutAndSlide;
         singleTimeEvents.updateValue(new STETypeAndData(
                 StoriesSTEDataType.LOAD_SLIDE,
                 new LoadSlide()
                         .slide(layoutAndSlide[1])
                         .layout(layoutAndSlide[0])
         ));
+    }
+
+    String[] temporaryLayoutAndSlide = null;
+
+    public void clearTemporaryLayoutAndSlide() {
+        temporaryLayoutAndSlide = null;
     }
 
     private void sendStoryDataToServer(String storyId, String data) {
@@ -806,6 +818,7 @@ public class StoryReaderPageViewModel implements IReaderContentDownloaderSubscri
     }
 
     private void changeSlide(int index) {
+        stopSlide();
         StoryReaderPageState pageState = storyReaderPageState();
         IStoryItem storyStatData = pageState.storyItem();
         if (storyStatData == null) return;
@@ -890,7 +903,7 @@ public class StoryReaderPageViewModel implements IReaderContentDownloaderSubscri
             StoryReaderPageState pageState = storyReaderPageState();
             int corIndex = correctIndex(pageState.slideIndex() + 1, pageState);
             if (corIndex >= 0)
-                storyReaderPageStateObservable.updateValue(pageState.copy().slideIndex(corIndex));
+                changeSlide(corIndex);
         }
     }
 
@@ -899,7 +912,7 @@ public class StoryReaderPageViewModel implements IReaderContentDownloaderSubscri
         StoryReaderPageState pageState = storyReaderPageState();
         int corIndex = correctIndex(pageState.slideIndex() + 1, pageState);
         if (corIndex >= 0)
-            storyReaderPageStateObservable.updateValue(pageState.copy().slideIndex(corIndex));
+            changeSlide(corIndex);
     }
 
     @JavascriptInterface
@@ -1087,5 +1100,18 @@ public class StoryReaderPageViewModel implements IReaderContentDownloaderSubscri
         readerViewModel.swipeUpIsAllowed(pageState.story().hasSwipeUp());
         readerViewModel.closeIsAllowed(!pageState.story().disableClose());
         core.statistic().profiling().setReady(pageState.storyId() + "_" + pageState.slideIndex());
+    }
+
+    public void checkForTemporaryData() {
+        String[] res = temporaryLayoutAndSlide;
+        temporaryLayoutAndSlide = null;
+        if (res != null) {
+            singleTimeEvents.updateValue(new STETypeAndData(
+                    StoriesSTEDataType.LOAD_SLIDE,
+                    new LoadSlide()
+                            .slide(res[1])
+                            .layout(res[0])
+            ));
+        }
     }
 }

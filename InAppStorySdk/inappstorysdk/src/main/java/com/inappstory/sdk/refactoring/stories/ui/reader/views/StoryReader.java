@@ -309,8 +309,8 @@ public class StoryReader extends FrameLayout implements Observer<StoryReaderStat
                 }
                 pager.addOnPageChangeListener(this);
                 if (viewModel != null) {
-                    pager.setCurrentItem(viewModel.readerState().currentPage());
-                    viewModel.pagerPageSelected(viewModel.readerState().currentPage());
+                    pager.setCurrentItem(viewModel.readerState().currentPredictedPage());
+                    viewModel.pagerPageSelected(viewModel.readerState().currentPredictedPage());
                 }
                 break;
             case CLOSING:
@@ -374,9 +374,9 @@ public class StoryReader extends FrameLayout implements Observer<StoryReaderStat
                 if (newValue.openState() != oldState.openState()) {
                     updateOpenState(newValue.openState());
                 }
-                if (oldState.currentPage() != newValue.currentPage()) {
+                if (oldState.currentPage() != newValue.currentPredictedPage()) {
                     if (pager.getAdapter() != null)
-                        pager.setCurrentItem(newValue.currentPage());
+                        pager.setCurrentItem(newValue.currentPredictedPage());
                 }
                 updateShareViewIfNecessary(
                         oldState.shareDataState(),

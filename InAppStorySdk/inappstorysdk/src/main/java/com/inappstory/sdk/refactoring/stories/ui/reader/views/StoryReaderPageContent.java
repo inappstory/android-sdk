@@ -136,8 +136,14 @@ public class StoryReaderPageContent extends IASWebView implements IStoriesConten
         evaluateJavascript("(function(){clear_slide(" + index + ");})()", null);
     }
 
+    private int latestSlideHash = 0;
+
     @Override
     public void layoutAndSlide(String layout, String slide) {
+        if (slide == null) return;
+        if (latestSlideHash == slide.hashCode())
+            return;
+        latestSlideHash = slide.hashCode();
         if (firstLoading) {
             firstLoading = false;
             String content = setDir(

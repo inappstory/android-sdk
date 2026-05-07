@@ -355,15 +355,31 @@ public class StorySlidesDownloadManager {
             ContentType type
     ) {
         int slidesCount = content.slidesCount();
+        List<SlideTaskKey> notifyKeys = new ArrayList<>();
         synchronized (slideTaskKeysLock) {
+            for (int i = 0; i < slidesCount; i++) {
+                SlideTaskKey slideTaskKey = new SlideTaskKey(new ContentIdAndType(content.id(), type), i);
+                if (loadedSlides.contains(slideTaskKey)) {
+                    notifyKeys.add(slideTaskKey);
+                }
+            }
             for (Map.Entry<SlideTaskKey, DownloadContentPriority> priorityEntry : downloadPriorities.entrySet()) {
                 SlideTaskKey key = priorityEntry.getKey();
                 if (key.contentIdAndType.contentType != type) continue;
                 if (key.contentIdAndType.contentId != content.id()) continue;
                 if (key.index < slidesCount && key.index >= 0) {
+
                     tasks.put(key, new GenerateSlideTask(core, content, key.index).generate());
                     putKeyToPriority(key, priorityEntry.getValue(), false);
                 }
+            }
+        }
+        for (SlideTaskKey taskKey : notifyKeys) {
+            List<IReaderContentDownloaderSubscriber> subscribersById = getSubscribersByStoryId(
+                    taskKey.contentIdAndType
+            );
+            for (IReaderContentDownloaderSubscriber subscriber : subscribersById) {
+                checkBundleResources(subscriber, taskKey.index);
             }
         }
     }

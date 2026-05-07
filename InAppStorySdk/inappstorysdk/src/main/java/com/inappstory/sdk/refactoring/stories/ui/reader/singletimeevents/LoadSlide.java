@@ -1,6 +1,8 @@
 package com.inappstory.sdk.refactoring.stories.ui.reader.singletimeevents;
 
+
 import com.inappstory.sdk.refactoring.core.utils.observers.ISTEData;
+
 
 public class LoadSlide implements ISTEData {
     public String layout() {

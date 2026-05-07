@@ -22,6 +22,7 @@ public class StoryReaderState {
 
     private StoryReaderOpenState openState = StoryReaderOpenState.IDLE;
 
+    private int currentPredictedPage = 0;
     private int currentPage = 0;
     private ReviewDialogState reviewDialogState = null;
     private ShareDataState shareDataState = null;
@@ -74,6 +75,12 @@ public class StoryReaderState {
 
     public StoryReaderState currentPage(int currentPage) {
         this.currentPage = currentPage;
+        this.currentPredictedPage = currentPage;
+        return this;
+    }
+
+    public StoryReaderState currentPredictedPage(int currentPredictedPage) {
+        this.currentPredictedPage = currentPredictedPage;
         return this;
     }
 
@@ -132,6 +139,10 @@ public class StoryReaderState {
         return currentPage;
     }
 
+    public int currentPredictedPage() {
+        return currentPredictedPage;
+    }
+
     public ReviewDialogState reviewDialogState() {
         return reviewDialogState;
     }
@@ -151,6 +162,7 @@ public class StoryReaderState {
                 .goodsV1WidgetState(goodsV1WidgetState)
                 .shareDataState(shareDataState)
                 .currentPage(currentPage)
+                .currentPredictedPage(currentPredictedPage)
                 .backPressEnabled(backPressEnabled)
                 .swipeUpAllowed(swipeUpAllowed)
                 .closeAllowed(closeAllowed)
