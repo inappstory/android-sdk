@@ -4,6 +4,8 @@ import android.content.Context;
 
 import androidx.annotation.NonNull;
 
+import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.LoggerTags;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.ui.screens.gamereader.GameScreenHolder;
 import com.inappstory.sdk.core.ui.screens.holder.IScreenHolder;
@@ -115,6 +117,10 @@ public class ScreensManager implements IScreensLauncher,
 
     @Override
     public void setOpenStoriesReader(@NonNull IOpenStoriesReader openStoriesReader) {
+
+        InAppStoryManager.showELog(
+                LoggerTags.IAS_DEBUG_TAG, "setOpenStoriesReader " + openStoriesReader
+        );
         launcher.setOpenStoriesReader(openStoriesReader);
     }
 

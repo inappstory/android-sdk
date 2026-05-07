@@ -27,11 +27,13 @@ import android.view.WindowInsets;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.cardview.widget.CardView;
 import androidx.fragment.app.Fragment;
 
 import com.inappstory.sdk.AppearanceManager;
+import com.inappstory.sdk.LoggerTags;
 import com.inappstory.sdk.core.ui.widgets.customicons.CustomIconWithoutStates;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.R;
@@ -405,16 +407,34 @@ public class StoriesLoaderFragment extends Fragment {
                 LaunchStoryScreenData.SERIALIZABLE_KEY
         );
         View view = new View(getContext());
+        InAppStoryManager.showELog(
+                LoggerTags.IAS_DEBUG_TAG,
+                "StoriesLoaderFragment onCreateView"
+        );
         try {
             view = createFragmentView(container);
         } catch (Exception e) {
+            InAppStoryManager.showELog(
+                    LoggerTags.IAS_DEBUG_TAG,
+                    "StoriesLoaderFragment onCreateView ex"
+            );
+            e.printStackTrace();
             InAppStoryManager.handleException(e);
         }
+
         final int mirrored = container != null ? container.getLayoutDirection() : 0;
         view.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
             @Override
             public void onViewAttachedToWindow(View v) {
+                InAppStoryManager.showELog(
+                        LoggerTags.IAS_DEBUG_TAG,
+                        "StoriesLoaderFragment onViewAttachedToWindow"
+                );
                 if (v.isAttachedToWindow()) {
+                    InAppStoryManager.showELog(
+                            LoggerTags.IAS_DEBUG_TAG,
+                            "StoriesLoaderFragment view is attached"
+                    );
                     bindViews(v);
                     setViews(v, mirrored);
                 }
@@ -428,5 +448,12 @@ public class StoriesLoaderFragment extends Fragment {
         return view;
     }
 
-
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        InAppStoryManager.showELog(
+                LoggerTags.IAS_DEBUG_TAG,
+                "StoriesLoaderFragment onViewCreated"
+        );
+    }
 }

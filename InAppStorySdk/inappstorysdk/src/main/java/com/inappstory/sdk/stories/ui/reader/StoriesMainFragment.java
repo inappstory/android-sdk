@@ -25,6 +25,7 @@ import androidx.fragment.app.FragmentTransaction;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.LoggerTags;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
@@ -207,10 +208,15 @@ public abstract class StoriesMainFragment extends Fragment implements
     @Override
     public void onPause() {
         super.onPause();
+        InAppStoryManager.showELog(
+                LoggerTags.IAS_DEBUG_TAG,
+                "StoriesMainFragment onPause"
+        );
         unsubscribeClicks();
     }
 
     private ReaderAnimation setStartAnimations() {
+
         Point screenSize = Sizes.getScreenSize(getContext());
         switch (appearanceSettings.csStoryReaderPresentationStyle()) {
             case AppearanceManager.DISABLE:
@@ -302,12 +308,22 @@ public abstract class StoriesMainFragment extends Fragment implements
                     .setListener(new HandlerAnimatorListenerAdapter() {
                         @Override
                         public void onAnimationProgress(float progress) {
+
                             super.onAnimationProgress(progress);
+                            InAppStoryManager.showELog(
+                                    LoggerTags.IAS_DEBUG_TAG,
+                                    "StoriesMainFragment open onAnimationProgress " + progress
+                            );
                             openAnimationProgress(progress);
                         }
 
                         @Override
                         public void onAnimationStart() {
+
+                            InAppStoryManager.showELog(
+                                    LoggerTags.IAS_DEBUG_TAG,
+                                    "StoriesMainFragment open onAnimationStart"
+                            );
                             super.onAnimationStart();
                             openAnimationStart();
                         }
@@ -316,6 +332,9 @@ public abstract class StoriesMainFragment extends Fragment implements
                         public void onAnimationEnd() {
                             window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
                             isAnimation = false;
+                            InAppStoryManager.showELog(
+                                    LoggerTags.IAS_DEBUG_TAG, "StoriesMainFragment open onAnimationEnd"
+                            );
                             createStoriesFragment(savedInstanceState, readerContainer);
                         }
                     })
@@ -328,6 +347,10 @@ public abstract class StoriesMainFragment extends Fragment implements
     @Override
     public void onResume() {
         super.onResume();
+        InAppStoryManager.showELog(
+                LoggerTags.IAS_DEBUG_TAG,
+                "StoriesMainFragment onResume"
+        );
         subscribeClicks();
     }
 
@@ -380,6 +403,10 @@ public abstract class StoriesMainFragment extends Fragment implements
     @Override
     public void onViewCreated(@NonNull View view, @Nullable final Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        InAppStoryManager.showELog(
+                LoggerTags.IAS_DEBUG_TAG,
+                "StoriesMainFragment onViewCreated"
+        );
         if (getActivity() == null) {
             forceFinish();
             return;
@@ -644,7 +671,10 @@ public abstract class StoriesMainFragment extends Fragment implements
 
     @Override
     public void onDestroyView() {
-
+        InAppStoryManager.showELog(
+                LoggerTags.IAS_DEBUG_TAG,
+                "StoriesMainFragment onDestroyView"
+        );
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {

@@ -2,6 +2,7 @@ package com.inappstory.sdk;
 
 public class LoggerTags {
     public final static String IAS_ERROR_TAG = "IAS_SDK_Error";
+    public final static String IAS_DEBUG_TAG = "IAS_SDK_Debug";
     public final static String IAS_WARN_TAG = "IAS_SDK_Warn";
     public final static String IAS_STORY_JS = "IAS_SDK_GetJS_Story";
     public final static String IAS_STORY_JS_CALL = "IAS_SDK_CallJS_Story";

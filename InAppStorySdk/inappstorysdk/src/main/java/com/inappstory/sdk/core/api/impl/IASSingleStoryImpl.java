@@ -3,6 +3,8 @@ package com.inappstory.sdk.core.api.impl;
 import android.content.Context;
 
 import com.inappstory.sdk.AppearanceManager;
+import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.LoggerTags;
 import com.inappstory.sdk.core.CancellationTokenWithStatus;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASCallbackType;
@@ -107,6 +109,9 @@ public class IASSingleStoryImpl implements IASSingleStory {
             final int readerAction
     ) {
         if (((IASDataSettingsHolder) core.settingsAPI()).noCorrectUserIdOrDevice()) return;
+        InAppStoryManager.showELog(
+                LoggerTags.IAS_DEBUG_TAG, "ShowSingle " + storyId + " " + context
+        );
         new StoryByStringIdUseCase(core).get(
                 storyId,
                 new GetStoryByIdCallback() {

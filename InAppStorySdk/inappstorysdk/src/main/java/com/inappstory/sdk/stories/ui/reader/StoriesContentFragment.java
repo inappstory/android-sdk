@@ -22,6 +22,7 @@ import androidx.fragment.app.Fragment;
 import androidx.viewpager.widget.ViewPager;
 
 import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.LoggerTags;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
@@ -368,6 +369,10 @@ public class StoriesContentFragment extends Fragment
         });
         if (readerManager != null) readerManager.unsubscribeFromAssets();
         super.onDestroyView();
+        InAppStoryManager.showELog(
+                LoggerTags.IAS_DEBUG_TAG,
+                "StoriesContentFragment onDestroyView"
+        );
     }
 
     public void pause() {
@@ -404,6 +409,10 @@ public class StoriesContentFragment extends Fragment
             pause();
         paused = true;
         super.onPause();
+        InAppStoryManager.showELog(
+                LoggerTags.IAS_DEBUG_TAG,
+                "StoriesContentFragment onPause"
+        );
     }
 
     @Override
@@ -498,6 +507,10 @@ public class StoriesContentFragment extends Fragment
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        InAppStoryManager.showELog(
+                LoggerTags.IAS_DEBUG_TAG,
+                "StoriesContentFragment onViewCreated start"
+        );
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
@@ -569,8 +582,16 @@ public class StoriesContentFragment extends Fragment
                     }
                     launchData.clearSingleTimeParameters();
                     created = true;
+                    InAppStoryManager.showELog(
+                            LoggerTags.IAS_DEBUG_TAG,
+                            "StoriesContentFragment onViewCreated end"
+                    );
                 } catch (Exception e) {
-                    Log.e("IAS_SDK_Activity", "StoriesContentFragment onViewCreated ex");
+                    InAppStoryManager.showELog(
+                            LoggerTags.IAS_DEBUG_TAG,
+                            "StoriesContentFragment onViewCreated ex"
+                    );
+                    e.printStackTrace();
                     forceFinish();
                 }
 
@@ -578,6 +599,10 @@ public class StoriesContentFragment extends Fragment
 
             @Override
             public void error() {
+                InAppStoryManager.showELog(
+                        LoggerTags.IAS_DEBUG_TAG,
+                        "StoriesContentFragment onViewCreated error"
+                );
                 forceFinish();
             }
         });
@@ -644,6 +669,10 @@ public class StoriesContentFragment extends Fragment
             resume();
         paused = false;
         super.onResume();
+        InAppStoryManager.showELog(
+                LoggerTags.IAS_DEBUG_TAG,
+                "StoriesContentFragment onResume"
+        );
     }
 
 
@@ -653,6 +682,10 @@ public class StoriesContentFragment extends Fragment
         if (readerManager != null) {
             readerManager.pauseCurrent(false);
         }
+        InAppStoryManager.showELog(
+                LoggerTags.IAS_DEBUG_TAG,
+                "StoriesContentFragment onDestroy"
+        );
     }
 
     private int getCurIndexById(int id) {

@@ -109,6 +109,10 @@ public class IASOnboardingsImpl implements IASOnboardings {
         } else {
             localTags = settingsHolder.tags();
         }
+
+        InAppStoryManager.showELog(
+                LoggerTags.IAS_DEBUG_TAG, "ShowOnboardings " + context
+        );
         core.sessionManager().useOrOpenSession(new OpenSessionCallback() {
             @Override
             public void onSuccess(final RequestLocalParameters requestLocalParameters) {

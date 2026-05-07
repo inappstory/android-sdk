@@ -5,6 +5,8 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 
+import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.LoggerTags;
 import com.inappstory.sdk.core.CancellationTokenWithStatus;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
@@ -84,7 +86,7 @@ public class LaunchStoryScreenStrategy implements LaunchScreenStrategy {
             cantBeOpened = true;
             message = "No reader settings.";
         }
-        if (((IASDataSettingsHolder)core.settingsAPI()).sessionIdOrEmpty().isEmpty()) {
+        if (((IASDataSettingsHolder) core.settingsAPI()).sessionIdOrEmpty().isEmpty()) {
             cantBeOpened = true;
             message = "User not authorized";
         }
@@ -112,6 +114,9 @@ public class LaunchStoryScreenStrategy implements LaunchScreenStrategy {
                         readerAppearanceSettings
                 );
                 currentScreenHolder.endLaunchProcess();
+                InAppStoryManager.showELog(
+                        LoggerTags.IAS_DEBUG_TAG, "LaunchStoryReader " + context + " " + openReader
+                );
                 ((IOpenStoriesReader) openReader).onOpen(
                         context,
                         bundle
