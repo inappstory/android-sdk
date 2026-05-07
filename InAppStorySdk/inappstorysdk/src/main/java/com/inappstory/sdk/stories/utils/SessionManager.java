@@ -225,10 +225,8 @@ public class SessionManager {
             if (newUid != null) {
                 for (int i = 0; i < callbacks.size(); i++) {
                     if (callbacks.get(i) instanceof OpenSessionCallbackWithUID) {
-                        if (((OpenSessionCallbackWithUID) callbacks.get(i)).
-                                getUID().
-                                equals(newUid)
-                        ) {
+                        if (Objects.equals(newUid, ((OpenSessionCallbackWithUID) callbacks.get(i)).
+                                getUID())) {
                             callbacks.set(i, callback);
                             return;
                         }
