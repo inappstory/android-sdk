@@ -33,6 +33,11 @@ public interface IStoryLocalDataSource {
             int likeValue
     );
 
+    boolean favoriteStory(
+            @NonNull String storyId,
+            boolean favValue
+    );
+
     void removeAllFavorites();
 
     Result<StoryDTO> getStoryById(@NonNull String storySlugOrId);

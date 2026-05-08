@@ -34,6 +34,7 @@ import com.inappstory.sdk.refactoring.core.utils.stedata.ContentIdWithIndex;
 import com.inappstory.sdk.refactoring.shared.data.contracts.ISlidesContent;
 import com.inappstory.sdk.refactoring.shared.utils.WebPageModifier;
 import com.inappstory.sdk.refactoring.stories.data.contracts.IStoryItem;
+import com.inappstory.sdk.refactoring.stories.data.contracts.IStoryListItem;
 import com.inappstory.sdk.refactoring.stories.data.contracts.IStoryReaderItem;
 import com.inappstory.sdk.refactoring.stories.data.local.StoryDTO;
 import com.inappstory.sdk.refactoring.stories.ui.reader.singletimeevents.JsSendApiRequestResponse;
@@ -42,6 +43,7 @@ import com.inappstory.sdk.refactoring.stories.ui.reader.singletimeevents.SetSoun
 import com.inappstory.sdk.refactoring.stories.ui.reader.singletimeevents.StartSlide;
 import com.inappstory.sdk.refactoring.stories.ui.reader.singletimeevents.StopSlide;
 import com.inappstory.sdk.refactoring.stories.ui.reader.singletimeevents.StoriesSTEDataType;
+import com.inappstory.sdk.refactoring.stories.ui.reader.states.StoryReaderButtonState;
 import com.inappstory.sdk.refactoring.stories.ui.reader.states.StoryReaderButtonsState;
 import com.inappstory.sdk.refactoring.stories.ui.reader.states.StoryReaderImmutableState;
 import com.inappstory.sdk.refactoring.stories.ui.reader.states.StoryReaderPageLoaderState;
@@ -123,6 +125,9 @@ public class StoryReaderPageViewModel implements IReaderContentDownloaderSubscri
         this.readerViewModel = readerViewModel;
         timerManager = new StoryReaderPageTimerManager(core, this);
         int lastIndex = readerViewModel.pageSlideIndexes.get(pageIndex);
+        IStoryListItem storyListItem = core
+                .storyRepository()
+                .getLocalStoryListItem(storyId);
         StoryReaderPageState state = new StoryReaderPageState(
                 storyId,
                 pageIndex,
@@ -130,10 +135,12 @@ public class StoryReaderPageViewModel implements IReaderContentDownloaderSubscri
                         .readerImmutableState()
                         .contentType()
         ).storyListItem(
-                core
-                        .storyRepository()
-                        .getLocalStoryListItem(storyId)
+                storyListItem
         ).slideIndex(lastIndex);
+
+        if (storyListItem != null) {
+            updateButtonsByDataModel(storyListItem);
+        }
         storyReaderPageStateObservable =
                 new Observable<>(
                         state
@@ -142,6 +149,59 @@ public class StoryReaderPageViewModel implements IReaderContentDownloaderSubscri
             timelineManager.setSlidesCount(state.storyItem().slidesCount(), true);
         core.storySlidesDownloadManager().addSubscriber(this);
         core.storyDownloadManager().addSubscriber(this);
+    }
+
+    private void updateButtonsByDataModel(IStoryItem storyItem) {
+        storyFavoriteStatus = storyItem.favorite();
+        storyLikeStatus = storyItem.like();
+        storyReaderPageButtonsStateObservable.updateValue(
+                new StoryReaderButtonsState()
+                        .soundState(
+                                new StoryReaderButtonState()
+                                        .visible(storyItem.hasAudio())
+                                        .enabled(true)
+                                        .active(
+                                                ((IASDataSettingsHolder) core.settingsAPI())
+                                                        .isSoundOn()
+                                        )
+                        )
+                        .likeState(
+                                new StoryReaderButtonState()
+                                        .visible(
+                                                readerViewModel.appearanceSettings.csHasLike() &&
+                                                        storyItem.hasLike()
+                                        )
+                                        .enabled(true)
+                                        .active(storyItem.like() == 1)
+                        )
+                        .dislikeState(
+                                new StoryReaderButtonState()
+                                        .visible(
+                                                readerViewModel.appearanceSettings.csHasLike() &&
+                                                        storyItem.hasLike()
+                                        )
+                                        .enabled(true)
+                                        .active(storyItem.like() == -1)
+                        )
+                        .favoriteState(
+                                new StoryReaderButtonState()
+                                        .visible(
+                                                readerViewModel.appearanceSettings.csHasFavorite() &&
+                                                        storyItem.hasFavorite()
+                                        )
+                                        .enabled(true)
+                                        .active(storyItem.favorite())
+                        )
+                        .shareState(
+                                new StoryReaderButtonState()
+                                        .visible(
+                                                readerViewModel.appearanceSettings.csHasShare() &&
+                                                        storyItem.hasShare()
+                                        )
+                                        .enabled(true)
+                                        .active(true)
+                        )
+        );
     }
 
     public void addLoaderStateSubscriber(Observer<StoryReaderPageLoaderState> observer) {
@@ -256,7 +316,7 @@ public class StoryReaderPageViewModel implements IReaderContentDownloaderSubscri
                                                 .likeState()
                                                 .copy()
                                                 .enabled(true)
-                                                .active(result)
+                                                .active(false)
                                 )
                 );
                 storyLikeStatus = result ? 1 : 0;
@@ -319,7 +379,7 @@ public class StoryReaderPageViewModel implements IReaderContentDownloaderSubscri
                                                 .likeState()
                                                 .copy()
                                                 .enabled(true)
-                                                .active(result)
+                                                .active(false)
                                 )
                                 .dislikeState(
                                         buttonsState
@@ -358,9 +418,14 @@ public class StoryReaderPageViewModel implements IReaderContentDownloaderSubscri
         StoryReaderPageState pageState = storyReaderPageState();
         StoryReaderButtonsState buttonsState = storyReaderPageButtonsStateObservable.getValue();
         storyReaderPageButtonsStateObservable.updateValue(
-                buttonsState.copy().favoriteState(
-                        buttonsState.soundState().copy().enabled(false)
-                ));
+                buttonsState.copy()
+                        .favoriteState(
+                                buttonsState
+                                        .favoriteState()
+                                        .copy()
+                                        .enabled(false)
+                        )
+        );
         new FavoriteStory(
                 core.storyRepository(),
                 core.sessionRepository(),
@@ -372,7 +437,10 @@ public class StoryReaderPageViewModel implements IReaderContentDownloaderSubscri
                 if (result == null) return;
                 storyReaderPageButtonsStateObservable.updateValue(
                         buttonsState.copy().favoriteState(
-                                buttonsState.soundState().copy().enabled(true)
+                                buttonsState
+                                        .favoriteState()
+                                        .copy()
+                                        .enabled(true)
                                         .active(result)
                         ));
                 storyFavoriteStatus = result;
@@ -382,7 +450,10 @@ public class StoryReaderPageViewModel implements IReaderContentDownloaderSubscri
             public void error(Error<Boolean> result) {
                 storyReaderPageButtonsStateObservable.updateValue(
                         buttonsState.copy().favoriteState(
-                                buttonsState.soundState().copy().enabled(true)
+                                buttonsState
+                                        .favoriteState()
+                                        .copy()
+                                        .enabled(true)
                         ));
             }
         });
@@ -392,8 +463,12 @@ public class StoryReaderPageViewModel implements IReaderContentDownloaderSubscri
         core.settingsAPI().switchSoundOn();
         StoryReaderButtonsState buttonsState = storyReaderPageButtonsStateObservable.getValue();
         storyReaderPageButtonsStateObservable.updateValue(buttonsState.copy().soundState(
-                buttonsState.soundState().copy().active(((IASDataSettingsHolder) core.settingsAPI())
-                        .isSoundOn())
+                buttonsState
+                        .soundState()
+                        .copy()
+                        .active(
+                                ((IASDataSettingsHolder) core.settingsAPI()).isSoundOn()
+                        )
         ));
         singleTimeEvents.updateValue(
                 new STETypeAndData(StoriesSTEDataType.SET_SOUND_STATUS,
@@ -693,6 +768,7 @@ public class StoryReaderPageViewModel implements IReaderContentDownloaderSubscri
         storyReaderPageStateObservable.updateValue(storyReaderPageState().copy().story(
                 (StoryDTO) content)
         );
+        updateButtonsByDataModel((StoryDTO) content);
         // changeSlide(storyReaderPageStateObservable.getValue().slideIndex());
         core.storySlidesDownloadManager().addTasks(content, contentIdAndType().contentType);
     }

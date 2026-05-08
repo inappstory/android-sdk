@@ -63,7 +63,7 @@ public class StoryReaderPageTimeline extends View
                 (state.slidesCount() == 1 && state.timerDuration() == 0) ||
                         state.isHidden()
         ) ? VISIBLE : INVISIBLE;
-        Log.e("UpdateTimelineState", state.toString());
+       // Log.e("UpdateTimelineState", state.toString());
         if (Looper.myLooper() == Looper.getMainLooper()) {
             setVisibility(localVisibility);
         } else {

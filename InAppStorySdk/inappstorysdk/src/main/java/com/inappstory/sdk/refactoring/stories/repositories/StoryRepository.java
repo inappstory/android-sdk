@@ -283,6 +283,7 @@ public class StoryRepository implements IStoryRepository {
         storyAPIDataSource.favoriteStory(storyId, favorite, new ResultCallback<Boolean>() {
             @Override
             public void success(Boolean res) {
+                storyLocalDataSource.favoriteStory(storyId, res);
                 changesSubscribersHolder.notifyFavoriteFeedChanges(storyId, favorite);
                 if (favorite) {
                     Result<StoriesListItemDTO> itemResult = storyLocalDataSource.getStoryListItemById(storyId);
@@ -296,6 +297,7 @@ public class StoryRepository implements IStoryRepository {
                                     storyLocalDataSource.getFavoriteCovers()
                             );
                         }
+
                     }
                 } else {
                     if (storyLocalDataSource.removeStoryCover(storyId)) {
@@ -304,6 +306,7 @@ public class StoryRepository implements IStoryRepository {
                         );
                     }
                 }
+                favoriteResultCallback.success(favorite);
             }
 
             @Override

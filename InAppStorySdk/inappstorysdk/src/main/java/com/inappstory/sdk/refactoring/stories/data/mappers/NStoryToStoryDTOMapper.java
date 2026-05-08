@@ -20,7 +20,7 @@ public class NStoryToStoryDTOMapper implements Mapper<NStory, StoryDTO> {
                 obj.slides,
                 obj.like,
                 obj.slidesCount,
-                obj.hasFavorite,
+                obj.favorite,
                 obj.deeplink,
                 obj.isOpened,
                 obj.disableClose,

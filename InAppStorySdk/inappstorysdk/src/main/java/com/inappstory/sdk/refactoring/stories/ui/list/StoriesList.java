@@ -75,9 +75,16 @@ public class StoriesList extends RecyclerView implements Observer<Boolean> {
 
     private final Object lock = new Object();
 
+    private void setAdapterAppearanceManager(AppearanceManager appearanceManager) {
+        this.appearanceManager = appearanceManager;
+        Adapter adapter = getAdapter();
+        if (adapter instanceof StoriesListAdapter) {
+            ((StoriesListAdapter) adapter).appearanceManager = appearanceManager;
+        }
+    }
 
     public void setAppearanceManager(AppearanceManager appearanceManager) {
-        this.appearanceManager = appearanceManager;
+        setAdapterAppearanceManager(appearanceManager);
         if (layoutManager == defaultLayoutManager && appearanceManager.csColumnCount() != null) {
             setLayoutManager(new GridLayoutManager(getContext(), appearanceManager.csColumnCount()) {
                 @Override

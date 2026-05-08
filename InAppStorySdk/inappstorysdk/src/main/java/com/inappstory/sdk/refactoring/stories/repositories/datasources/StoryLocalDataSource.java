@@ -153,6 +153,27 @@ public class StoryLocalDataSource implements IStoryLocalDataSource {
     }
 
     @Override
+    public boolean favoriteStory(@NonNull String storyId, boolean favValue) {
+        synchronized (contentLock) {
+            for (StoriesListItemDTO listItemDTO : storyListItems.values()) {
+                if (storyId.equals(Integer.toString(listItemDTO.id())) &&
+                        listItemDTO.favorite() != favValue) {
+                    listItemDTO.favorite(favValue);
+                    break;
+                }
+            }
+            for (StoryDTO storyDTO: stories.values()) {
+                if (storyId.equals(Integer.toString(storyDTO.id())) &&
+                        storyDTO.favorite() != favValue) {
+                    storyDTO.favorite(favValue);
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    @Override
     public void removeAllFavorites() {
         synchronized (contentLock) {
             favoriteCovers.clear();

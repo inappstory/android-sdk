@@ -239,16 +239,21 @@ public class StoryReaderPageButtons extends LinearLayout implements Observer<Sto
             ICustomIcon buttonInterface,
             StoryReaderButtonState state
     ) {
-        if (!state.visible()) {
-            buttonLayout.setVisibility(GONE);
-        } else {
-            buttonLayout.setVisibility(VISIBLE);
-            buttonLayout.setClickable(state.enabled());
-            buttonInterface.updateState(
-                    buttonView,
-                    new CustomIconState(state.active(), state.enabled())
-            );
-        }
+        buttonView.post(new Runnable() {
+            @Override
+            public void run() {
+                if (!state.visible()) {
+                    buttonLayout.setVisibility(GONE);
+                } else {
+                    buttonLayout.setVisibility(VISIBLE);
+                    buttonLayout.setClickable(state.enabled());
+                    buttonInterface.updateState(
+                            buttonView,
+                            new CustomIconState(state.active(), state.enabled())
+                    );
+                }
+            }
+        });
     }
 
     @Override

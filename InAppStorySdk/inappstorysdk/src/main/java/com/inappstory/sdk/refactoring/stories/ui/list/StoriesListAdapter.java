@@ -30,7 +30,7 @@ public class StoriesListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
     StoriesListState storiesListState = new StoriesListState();
     BaseStoriesListViewModel viewModel;
     private final IASCore core;
-    private final AppearanceManager appearanceManager;
+    public AppearanceManager appearanceManager;
     private IStoriesListItem storiesListItemCreator;
     private IGetFavoriteListItem storiesListFavoriteCellCreator;
     private List<String> storiesIds = new ArrayList<>();
