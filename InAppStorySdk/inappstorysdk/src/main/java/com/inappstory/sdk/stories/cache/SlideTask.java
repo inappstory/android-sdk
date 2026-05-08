@@ -23,6 +23,7 @@ public class SlideTask {
     List<IResource> staticResources = new ArrayList<>();
     List<UrlWithAlter> urlsWithAlter = new ArrayList<>();
     List<IResource> vodResources = new ArrayList<>();
+    List<String> assetKeys = null;
     boolean forced = false;
     int loadType = 0; //-1 - error, 0 - not loaded, 1 - loading, 2 - loaded
 
@@ -34,11 +35,13 @@ public class SlideTask {
     public SlideTask(
             List<IResource> staticResources,
             List<IResource> vodResources,
-            List<UrlWithAlter> urlsWithAlter
+            List<UrlWithAlter> urlsWithAlter,
+            List<String> assetKeys
     ) {
         this.staticResources = staticResources;
         this.urlsWithAlter = urlsWithAlter;
         this.vodResources = vodResources;
+        this.assetKeys = assetKeys;
     }
 
     @Override

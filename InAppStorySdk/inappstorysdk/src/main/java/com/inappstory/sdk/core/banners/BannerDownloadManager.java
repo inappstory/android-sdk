@@ -1,6 +1,5 @@
 package com.inappstory.sdk.core.banners;
 
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 
@@ -10,12 +9,9 @@ import com.inappstory.sdk.core.data.IReaderContent;
 import com.inappstory.sdk.core.ui.screens.IReaderSlideViewModel;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.cache.ContentIdAndType;
-import com.inappstory.sdk.stories.cache.SlideTaskKey;
 import com.inappstory.sdk.stories.cache.SlidesDownloader;
 
-import java.io.IOException;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 public class BannerDownloadManager {
@@ -48,19 +44,6 @@ public class BannerDownloadManager {
 
     public boolean allSlidesLoaded(IReaderContent readerContent) {
         return slidesDownloader.allSlidesLoaded(readerContent, ContentType.BANNER);
-    }
-
-    public boolean checkBundleResources(
-            final IReaderSlideViewModel pageViewModel,
-            boolean sync
-    ) {
-        if (sync) return allBundlesLoaded();
-        slidesDownloader.checkBundleResources(pageViewModel, 0);
-        return true;
-    }
-
-    public boolean allBundlesLoaded() {
-        return core.assetsHolder().assetsIsDownloaded();
     }
 
     private void addSlides(
@@ -155,16 +138,6 @@ public class BannerDownloadManager {
         }
 
     }
-
-    public boolean allContentIsLoaded() {
-        List<IReaderContent> readerContentList =
-                core.contentHolder().readerContent().getByType(ContentType.BANNER);
-        for (IReaderContent readerContent : readerContentList) {
-            if (!loadedBanners.contains(readerContent.id())) return false;
-        }
-        return true;
-    }
-
     public void clearSlidesDownloader() {
         slidesDownloader.cleanTasks();
         slidesDownloader.clearSubscribers();
@@ -176,23 +149,6 @@ public class BannerDownloadManager {
 
     public void removeSubscriber(IReaderSlideViewModel pageViewModel) {
         slidesDownloader.removeSubscriber(pageViewModel);
-    }
-
-    public void clearSubscribers() {
-        slidesDownloader.clearSubscribers();
-    }
-
-    public int isSlideLoaded(int id, int index, ContentType type) {
-        try {
-            return slidesDownloader.isSlideLoaded(
-                    new SlideTaskKey(
-                            new ContentIdAndType(id, type),
-                            index
-                    )
-            );
-        } catch (IOException e) {
-            return 0;
-        }
     }
 
     public void clearLocalData() {

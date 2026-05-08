@@ -9,6 +9,7 @@ public interface IReaderContent extends IStatData, IContentWithStatus {
     List<IResource> vodResources(int index);
     List<IResource> staticResources(int index);
     List<String> placeholdersNames(int index);
+    List<String> assetKeys();
     Map<String, String> placeholdersMap(int index);
     int actualSlidesCount();
     String slideEventPayload(int slideIndex);

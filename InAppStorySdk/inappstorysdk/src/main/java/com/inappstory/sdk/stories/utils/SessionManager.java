@@ -10,7 +10,6 @@ import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 
@@ -191,7 +190,7 @@ public class SessionManager {
                 manager.restartSchedule();
             }
         });
-        core.assetsHolder().setAssets(response.sessionAssets);
+        core.assetsHolder().setAssets(response.sessionAssets, response.contentLayout);
         core.assetsHolder().downloadAssets();
     }
 
@@ -215,7 +214,7 @@ public class SessionManager {
             SessionRequestFields.imagePlaceholders
     });
     private final String SESSION_EXPAND = TextUtils.join(",", new String[]{
-            SessionRequestFields.sessionAssets
+            SessionRequestFields.sessionAssets, SessionRequestFields.layout
     });
 
     private void replaceOrAddCallback(OpenSessionCallback callback) {
@@ -319,6 +318,12 @@ public class SessionManager {
                                 new NetworkCallback<SessionResponse>() {
                                     @Override
                                     public void onSuccess(SessionResponse response) {
+                                        if (response == null ||
+                                                response.contentLayout == null ||
+                                                response.contentLayout.isEmpty()) {
+                                            errorDefault("Session data is invalid");
+                                            return;
+                                        }
                                         UniqueSessionParameters currentSessionParameters = dataSettingsHolder.sessionParameters();
                                         String currentSession = dataSettingsHolder.sessionIdOrEmpty();
                                         if (reOpenSessionIfSettingsWereChanged(initialSessionParameters)) {

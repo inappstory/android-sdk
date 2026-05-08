@@ -88,17 +88,8 @@ public class InAppMessageDownloadManager {
         );
     }
 
-    public boolean checkBundleResources(
-            final IReaderSlideViewModel pageViewModel,
-            boolean sync
-    ) {
-        if (sync) return allBundlesLoaded();
-        slidesDownloader.checkBundleResources(pageViewModel, 0);
-        return true;
-    }
-
-    public boolean allBundlesLoaded() {
-        return core.assetsHolder().assetsIsDownloaded();
+    public boolean concreteBundlesLoaded(List<String> assetKeys) {
+        return core.assetsHolder().assetsIsDownloaded(assetKeys);
     }
 
     private void addSlides(@NonNull final IReaderContent readerContent, final InAppMessageLoadCallback callback) {

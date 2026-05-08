@@ -425,7 +425,7 @@ public class StoriesViewManager {
     }
 
     private void slideInCache(final IReaderContent story, final int index) {
-        if (core.assetsHolder().assetsIsDownloaded()) {
+        if (core.assetsHolder().assetsIsDownloaded(story.assetKeys())) {
             innerLoad(story);
             pageManager.slideLoadSuccess(index, true);
         } else {

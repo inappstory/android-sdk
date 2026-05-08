@@ -59,7 +59,8 @@ public class GenerateSlideTaskUseCase {
         return new SlideTask(
                 readerContent.staticResources(index),
                 readerContent.vodResources(index),
-                urlWithAlters
+                urlWithAlters,
+                readerContent.assetKeys()
         );
     }
 }

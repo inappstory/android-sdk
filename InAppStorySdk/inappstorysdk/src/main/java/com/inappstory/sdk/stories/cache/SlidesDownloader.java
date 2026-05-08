@@ -318,7 +318,7 @@ public class SlidesDownloader {
                             maxPriority.add(0, slideTaskKey);
                         }
                     } else if (slideTask.loadType == 2 && slideTask.forced) {
-                        slideLoaded(slideTaskKey);
+                        slideLoaded(slideTaskKey, slideTask.assetKeys);
                     }
 
                 }
@@ -451,7 +451,7 @@ public class SlidesDownloader {
             synchronized (slideTasksLock) {
                 slideTask.loadType = 2;
             }
-            slideLoaded(slideTaskKey);
+            slideLoaded(slideTaskKey, slideTask.assetKeys);
             loopedExecutor.freeExecutor();
         } catch (Throwable t) {
             loadSlideError(slideTaskKey);
@@ -501,9 +501,10 @@ public class SlidesDownloader {
 
     public void checkBundleResources(
             final IReaderSlideViewModel pageViewModel,
-            final int slideIndex
+            final int slideIndex,
+            final List<String> assetKeys
     ) {
-        if (core.assetsHolder().assetsIsDownloaded()) {
+        if (core.assetsHolder().assetsIsDownloaded(assetKeys)) {
             pageViewModel.slideLoadSuccess(slideIndex);
         } else {
             IASAssetsHolder assetsHolder = core.assetsHolder();
@@ -522,6 +523,11 @@ public class SlidesDownloader {
                 public void error() {
                     pageViewModel.slideLoadError(slideIndex);
                 }
+
+                @Override
+                public List<String> usedAssets() {
+                    return assetKeys;
+                }
             });
             assetsHolder.downloadAssets();
         }
@@ -533,7 +539,7 @@ public class SlidesDownloader {
     private final Object pageViewModelsLock = new Object();
     List<IReaderSlideViewModel> pageViewModels = new ArrayList<>();
 
-    private void slideLoaded(final SlideTaskKey key) {
+    private void slideLoaded(final SlideTaskKey key, List<String> assetKeys) {
         ContentIdAndType contentIdAndType = key.contentIdAndType;
         List<IReaderSlideViewModel> checkedPageViewModels = new ArrayList<>();
         synchronized (pageViewModelsLock) {
@@ -544,7 +550,7 @@ public class SlidesDownloader {
             }
         }
         for (IReaderSlideViewModel pageViewModel : checkedPageViewModels) {
-            checkBundleResources(pageViewModel, key.index);
+            checkBundleResources(pageViewModel, key.index, assetKeys);
         }
     }
 

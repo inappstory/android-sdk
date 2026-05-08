@@ -685,6 +685,11 @@ public class ReaderManager {
         public void error() {
 
         }
+
+        @Override
+        public List<String> usedAssets() {
+            return null;
+        }
     };
 
     public void subscribeToAssets() {

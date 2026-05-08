@@ -51,6 +51,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 
@@ -773,7 +774,25 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
             readerViewModel.updateCurrentLoadState(IAMReaderLoadStates.ASSETS_FAILED);
             readerViewModel.updateCurrentLoaderState(IAMReaderLoaderStates.FAILED);
         }
+
+        @Override
+        public List<String> usedAssets() {
+            return iamUsedAssets();
+        }
     };
+
+    private List<String> iamUsedAssets() {
+        IAMReaderState state = readerViewModel.getCurrentState();
+        IReaderContent readerContent =
+                core.contentHolder().readerContent().getByIdAndType(
+                        state.iamId,
+                        ContentType.IN_APP_MESSAGE
+                );
+        if (readerContent == null) return null;
+        Set<String> resAssets = new HashSet<>(core.assetsHolder().layoutAssets());
+        resAssets.addAll(readerContent.assetKeys());
+        return new ArrayList<>(resAssets);
+    }
 
     @Override
     public void reloadContent() {
@@ -790,7 +809,7 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
         int loadStatus = downloadManager.isSlidesLoaded(state.iamId);
         if (loadStatus == -1) {
             downloadManager.removeInAppMessageTask(state.iamId);
-        } else if (core.assetsHolder().assetsIsDownloaded()) {
+        } else if (core.assetsHolder().assetsIsDownloaded(iamUsedAssets())) {
             IReaderContent readerContent =
                     core.contentHolder().readerContent().getByIdAndType(
                             state.iamId,
@@ -845,7 +864,7 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
             downloadManager.addSubscriber(this);
             if (downloadManager.concreteSlidesLoaded(readerContent, new HashSet<>(
                     Collections.singletonList(0)
-            )) && core.assetsHolder().assetsIsDownloaded()) {
+            )) && core.assetsHolder().assetsIsDownloaded(iamUsedAssets())) {
                 readerViewModel.updateCurrentLoadState(IAMReaderLoadStates.ASSETS_LOADED);
             } else {
                 try {

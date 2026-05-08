@@ -1,6 +1,8 @@
 package com.inappstory.sdk.stories.cache.usecases;
 
 
+import android.util.Pair;
+
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.game.cache.SimpleUseCaseError;
 import com.inappstory.sdk.game.cache.UseCaseCallback;
@@ -18,11 +20,11 @@ import java.util.Objects;
 
 public class SessionAssetUseCase extends GetCacheFileUseCase<Void> {
     private final SessionAsset cacheObject;
-    private final UseCaseCallback<File> useCaseCallback;
+    private final UseCaseCallback<Pair<SessionAsset, File>> useCaseCallback;
 
     public SessionAssetUseCase(
             IASCore core,
-            UseCaseCallback<File> useCaseCallback,
+            UseCaseCallback<Pair<SessionAsset, File>> useCaseCallback,
             SessionAsset cacheObject
     ) {
         super(core);
@@ -65,7 +67,7 @@ public class SessionAssetUseCase extends GetCacheFileUseCase<Void> {
                     } catch (IOException e) {
 
                     }
-                    useCaseCallback.onSuccess(fileState.file);
+                    useCaseCallback.onSuccess(new Pair<>(cacheObject, fileState.file));
                 }
 
                 @Override
@@ -115,7 +117,7 @@ public class SessionAssetUseCase extends GetCacheFileUseCase<Void> {
             if (file != null) {
                 downloadLog.generateResponseLog(true, filePath);
                 downloadLog.sendRequestResponseLog();
-                useCaseCallback.onSuccess(file);
+                useCaseCallback.onSuccess(new Pair<>(cacheObject, file));
 
                 return true;
             } else {

@@ -1,6 +1,7 @@
 package com.inappstory.sdk.core.network.content.models;
 
 
+import com.inappstory.sdk.network.annotations.models.Required;
 import com.inappstory.sdk.network.annotations.models.SerializedName;
 import com.inappstory.sdk.stories.api.models.SessionRequestFields;
 
@@ -12,6 +13,7 @@ import java.util.List;
 
 public class SessionResponse {
 
+    @Required
     @SerializedName(SessionRequestFields.session)
     public Session session;
 
@@ -25,6 +27,10 @@ public class SessionResponse {
     public float previewAspectRatio;
     @SerializedName(SessionRequestFields.sessionAssets)
     public List<SessionAsset> sessionAssets;
+
+    @Required
+    @SerializedName(SessionRequestFields.layout)
+    public String contentLayout;
 
     @SerializedName(SessionRequestFields.isAllowProfiling)
     public boolean isAllowProfiling;

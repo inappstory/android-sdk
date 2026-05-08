@@ -40,7 +40,9 @@ import com.inappstory.sdk.utils.StringsUtils;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class IASContentPreloadImpl implements IASContentPreload {
     private final IASCore core;
@@ -59,7 +61,7 @@ public class IASContentPreloadImpl implements IASContentPreload {
                         new Handler(Looper.getMainLooper()).post(new Runnable() {
                             @Override
                             public void run() {
-                               // Log.d("IAS_Game_Preloading", "Game " + result.id() + " is loaded");
+                                // Log.d("IAS_Game_Preloading", "Game " + result.id() + " is loaded");
                             }
                         });
                     }
@@ -115,27 +117,31 @@ public class IASContentPreloadImpl implements IASContentPreload {
                 .get(new InAppMessageFeedCallback() {
                     @Override
                     public void success(final List<IReaderContent> content) {
-                        IASAssetsHolder assetsHolder = core.assetsHolder();
-                        if (assetsHolder.assetsIsDownloaded()) {
-                            downloadInAppMessagesContent(content, callback);
-                        } else {
-                            assetsHolder.checkOrAddAssetsIsReadyCallback(new SessionAssetsIsReadyCallback() {
-                                @Override
-                                public void isReady() {
-                                    downloadInAppMessagesContent(content, callback);
+                        core.assetsHolder().checkOrAddAssetsIsReadyCallback(new SessionAssetsIsReadyCallback() {
+                            @Override
+                            public void isReady() {
+                                downloadInAppMessagesContent(content, callback);
+                            }
+
+                            @Override
+                            public void assetsIsLoading() {
+
+                            }
+
+                            @Override
+                            public void error() {
+
+                            }
+
+                            @Override
+                            public List<String> usedAssets() {
+                                Set<String> resAssets = new HashSet<>(core.assetsHolder().layoutAssets());
+                                for (IReaderContent readerContent : content) {
+                                    resAssets.addAll(readerContent.assetKeys());
                                 }
-
-                                @Override
-                                public void assetsIsLoading() {
-
-                                }
-
-                                @Override
-                                public void error() {
-
-                                }
-                            });
-                        }
+                                return new ArrayList<>(resAssets);
+                            }
+                        });
                     }
 
                     @Override

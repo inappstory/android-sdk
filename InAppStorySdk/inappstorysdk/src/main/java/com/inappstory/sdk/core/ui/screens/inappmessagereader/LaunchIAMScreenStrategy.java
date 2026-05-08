@@ -265,7 +265,7 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
                                         readerContent,
                                         preloadedIndexes
                                 ) &&
-                                        downloadManager.allBundlesLoaded();
+                                        downloadManager.concreteBundlesLoaded(readerContent.assetKeys());
                         if (localSettings.showOnlyIfLoaded()) {
                             if (contentIsPreloaded) {
                                 loadScreen.success(readerContent, true);
@@ -295,7 +295,7 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
                                                             downloadManager.concreteSlidesLoaded(
                                                                     content,
                                                                     preloadedIndexes
-                                                            ) && downloadManager.allBundlesLoaded();
+                                                            ) && downloadManager.concreteBundlesLoaded(content.assetKeys());
                                                     loadScreen.success(
                                                             (IInAppMessage) content,
                                                             contentIsPreloaded
@@ -336,7 +336,7 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
                                                                                 readerContent,
                                                                                 preloadedIndexes
                                                                         ) &&
-                                                                                downloadManager.allBundlesLoaded();
+                                                                                downloadManager.concreteBundlesLoaded(readerContent.assetKeys());
                                                                 loadScreen.success(readerContent,
                                                                         contentIsPreloaded
                                                                 );

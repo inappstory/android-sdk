@@ -1,6 +1,6 @@
 package com.inappstory.sdk.core.api.impl;
 
-import android.util.Log;
+import android.util.Pair;
 
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASAssetsHolder;
@@ -14,7 +14,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.Callable;
+import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -27,6 +27,7 @@ public class IASAssetsHolderImpl implements IASAssetsHolder {
     private ExecutorService downloader = Executors.newFixedThreadPool(5);
     private final ExecutorService mainLoaderThread = Executors.newSingleThreadExecutor();
     private final List<SessionAsset> sessionAssets = new ArrayList<>();
+
 
     public IASAssetsHolderImpl(IASCore core) {
         this.core = core;
@@ -41,20 +42,49 @@ public class IASAssetsHolderImpl implements IASAssetsHolder {
         return assets;
     }
 
+    @Override
+    public List<SessionAsset> jsAssets() {
+        List<SessionAsset> assets = new ArrayList<>();
+        synchronized (assetsLock) {
+            for (SessionAsset sessionAsset : sessionAssets) {
+                if (Objects.equals(sessionAsset.format, IASAssetsHolder.JS_FORMAT)) {
+                    assets.add(sessionAsset);
+                }
+            }
+        }
+        return assets;
+    }
+
+    @Override
+    public List<SessionAsset> cssAssets() {
+        List<SessionAsset> assets = new ArrayList<>();
+        synchronized (assetsLock) {
+            for (SessionAsset sessionAsset : sessionAssets) {
+                if (Objects.equals(sessionAsset.format, IASAssetsHolder.CSS_FORMAT)) {
+                    assets.add(sessionAsset);
+                }
+            }
+        }
+        return assets;
+    }
+
+    @Override
+    public List<String> layoutAssets() {
+        synchronized (assetsLock) {
+            return layoutAssetUrls;
+        }
+    }
+
     private void loadAssets() {
         List<SessionAsset> assets = new ArrayList<>();
         synchronized (assetsLock) {
             assets.addAll(sessionAssets);
-        }
-        if (assets.isEmpty()) return;
-        synchronized (assetsLock) {
+            if (assets.isEmpty()) return;
             if (assetsIsDownloaded) return;
             if (assetsDownloadError) return;
             if (assetsIsLoading) return;
             assetsIsLoading = true;
         }
-        List<Callable<Object>> assetTasks = new ArrayList<>(assets.size());
-
         final boolean[] assetsStatus = {true};
         Collection<Future<?>> futures = new ArrayList<>();
         for (final SessionAsset asset : assets) {
@@ -62,7 +92,7 @@ public class IASAssetsHolderImpl implements IASAssetsHolder {
                 @Override
                 public void run() {
                     new SessionAssetUseCase(core,
-                            new UseCaseCallback<File>() {
+                            new UseCaseCallback<Pair<SessionAsset, File>>() {
                                 @Override
                                 public void onError(UseCaseError error) {
                                     synchronized (assetsLock) {
@@ -71,8 +101,13 @@ public class IASAssetsHolderImpl implements IASAssetsHolder {
                                 }
 
                                 @Override
-                                public void onSuccess(File result) {
-
+                                public void onSuccess(Pair<SessionAsset, File> result) {
+                                    String key = result.first.url;
+                                    synchronized (assetsLock) {
+                                        if (!cachedAssetKeys.contains(key)) {
+                                            cachedAssetKeys.add(key);
+                                        }
+                                    }
                                 }
                             },
                             asset
@@ -152,15 +187,28 @@ public class IASAssetsHolderImpl implements IASAssetsHolder {
     }
 
     @Override
-    public void setAssets(List<SessionAsset> assets) {
+    public void setAssets(List<SessionAsset> assets, String contentLayout) {
+        List<SessionAsset> orderedAssets = new ArrayList<>();
         synchronized (assetsLock) {
+            layoutAssetUrls.clear();
+            for (SessionAsset sessionAsset : assets) {
+                if (contentLayout.contains(sessionAsset.replaceKey)) {
+                    if (!layoutAssetUrls.contains(sessionAsset.url))
+                        layoutAssetUrls.add(sessionAsset.url);
+                    orderedAssets.add(0, sessionAsset);
+                } else {
+                    orderedAssets.add(sessionAsset);
+                }
+            }
             sessionAssets.clear();
-            sessionAssets.addAll(assets);
+            sessionAssets.addAll(orderedAssets);
         }
     }
 
     private final Object assetsLock = new Object();
     private boolean assetsIsDownloaded = false;
+    private final List<String> cachedAssetKeys = new ArrayList<>();
+    private final List<String> layoutAssetUrls = new ArrayList<>();
     private boolean assetsDownloadError = false;
     private boolean assetsIsLoading = false;
 
@@ -168,6 +216,18 @@ public class IASAssetsHolderImpl implements IASAssetsHolder {
     public boolean assetsIsDownloaded() {
         synchronized (assetsLock) {
             return assetsIsDownloaded;
+        }
+    }
+
+    @Override
+    public boolean assetsIsDownloaded(List<String> assetKeys) {
+        synchronized (assetsLock) {
+            if (assetsIsDownloaded) return true;
+            if (assetKeys == null) return false;
+            for (String assetKey : assetKeys) {
+                if (!cachedAssetKeys.contains(assetKey)) return false;
+            }
+            return true;
         }
     }
 
@@ -183,10 +243,12 @@ public class IASAssetsHolderImpl implements IASAssetsHolder {
 
     @Override
     public void checkOrAddAssetsIsReadyCallback(SessionAssetsIsReadyCallback callback) {
+        if (assetsIsDownloaded(callback.usedAssets())) {
+            callback.isReady();
+            return;
+        }
         synchronized (assetsLock) {
-            if (assetsIsDownloaded) {
-                callback.isReady();
-            } else if (assetsDownloadError) {
+            if (assetsDownloadError) {
                 callback.error();
             } else {
                 if (assetsIsLoading) {
