@@ -22,6 +22,7 @@ import com.inappstory.sdk.utils.StringsUtils;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by Paperrose on 08.07.2018.
@@ -47,6 +48,10 @@ public class Story implements Parcelable, IStory, IContentWithTimeline {
 
     @SerializedName("payload")
     public HashMap<String, Object> ugcPayload;
+
+
+    @SerializedName("layoutTemplateVariables")
+    public Map<String, String> layoutTemplateVariables;
 
     @SerializedName("background_color")
     public String backgroundColor;
@@ -309,6 +314,12 @@ public class Story implements Parcelable, IStory, IContentWithTimeline {
     @Override
     public String layout() {
         return layout;
+    }
+
+    @Override
+    public Map<String, String> layoutTemplateVariables() {
+        if (layoutTemplateVariables == null) layoutTemplateVariables = new HashMap<>();
+        return layoutTemplateVariables;
     }
 
     @Override

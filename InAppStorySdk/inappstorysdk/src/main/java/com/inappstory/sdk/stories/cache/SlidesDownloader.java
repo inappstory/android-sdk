@@ -502,7 +502,7 @@ public class SlidesDownloader {
     public void checkBundleResources(
             final IReaderSlideViewModel pageViewModel,
             final int slideIndex,
-            final List<String> assetKeys
+            final Set<String> assetKeys
     ) {
         if (core.assetsHolder().assetsIsDownloaded(assetKeys)) {
             pageViewModel.slideLoadSuccess(slideIndex);
@@ -525,7 +525,7 @@ public class SlidesDownloader {
                 }
 
                 @Override
-                public List<String> usedAssets() {
+                public Set<String> usedAssets() {
                     return assetKeys;
                 }
             });
@@ -539,7 +539,7 @@ public class SlidesDownloader {
     private final Object pageViewModelsLock = new Object();
     List<IReaderSlideViewModel> pageViewModels = new ArrayList<>();
 
-    private void slideLoaded(final SlideTaskKey key, List<String> assetKeys) {
+    private void slideLoaded(final SlideTaskKey key, Set<String> assetKeys) {
         ContentIdAndType contentIdAndType = key.contentIdAndType;
         List<IReaderSlideViewModel> checkedPageViewModels = new ArrayList<>();
         synchronized (pageViewModelsLock) {

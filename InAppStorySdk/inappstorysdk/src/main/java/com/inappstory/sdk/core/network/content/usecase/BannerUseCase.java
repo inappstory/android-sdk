@@ -93,7 +93,7 @@ public class BannerUseCase {
                                         core.network().getApi().getBannerById(
                                                 bannerId,
                                                 null,
-                                                "slides,layout",
+                                                "slides,layoutTemplateVariables",
                                                 sessionParameters.userId(),
                                                 sessionParameters.sessionId(),
                                                 sessionParameters.locale()

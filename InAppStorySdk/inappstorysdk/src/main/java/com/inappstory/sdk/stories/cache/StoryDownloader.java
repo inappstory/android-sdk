@@ -366,7 +366,7 @@ class StoryDownloader {
                         1,
                         null,
                         "id, background_color, image",
-                        "slides",
+                        null,
                         requestLocalParameters.userId(),
                         requestLocalParameters.sessionId(),
                         requestLocalParameters.locale()

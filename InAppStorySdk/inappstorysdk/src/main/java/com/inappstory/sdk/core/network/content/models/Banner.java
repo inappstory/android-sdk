@@ -10,6 +10,7 @@ import com.inappstory.sdk.core.exceptions.NotImplementedMethodException;
 import com.inappstory.sdk.network.annotations.models.Required;
 import com.inappstory.sdk.network.annotations.models.SerializedName;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -45,6 +46,9 @@ public class Banner implements IBanner {
     @SerializedName("appearance")
     public Map<String, Object> appearance;
 
+    @SerializedName("layoutTemplateVariables")
+    public Map<String, String> layoutTemplateVariables;
+
     @Override
     public String layout() {
         return layout;
@@ -77,6 +81,12 @@ public class Banner implements IBanner {
     @Override
     public List<String> placeholdersNames(int index) {
         return slide(0).placeholdersNames();
+    }
+
+    @Override
+    public Map<String, String> layoutTemplateVariables() {
+        if (layoutTemplateVariables == null) layoutTemplateVariables = new HashMap<>();
+        return layoutTemplateVariables;
     }
 
     @Override

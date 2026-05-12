@@ -16,6 +16,7 @@ import com.inappstory.sdk.inappmessage.ui.appearance.impl.InAppMessageUndefinedS
 import com.inappstory.sdk.network.annotations.models.Required;
 import com.inappstory.sdk.network.annotations.models.SerializedName;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -72,6 +73,9 @@ public class InAppMessage implements IInAppMessage {
         return layout;
     }
 
+    @SerializedName("layoutTemplateVariables")
+    public Map<String, String> layoutTemplateVariables;
+
     private IReaderContentSlide slide(int index) {
         if (slides == null || index < 0 || slides.size() < index)
             throw new RuntimeException("Slide index out of bounds: " + index + " from " + slides.size());
@@ -97,6 +101,12 @@ public class InAppMessage implements IInAppMessage {
     @Override
     public List<String> placeholdersNames(int index) {
         return slide(index).placeholdersNames();
+    }
+
+    @Override
+    public Map<String, String> layoutTemplateVariables() {
+        if (layoutTemplateVariables == null) layoutTemplateVariables = new HashMap<>();
+        return layoutTemplateVariables;
     }
 
     @Override

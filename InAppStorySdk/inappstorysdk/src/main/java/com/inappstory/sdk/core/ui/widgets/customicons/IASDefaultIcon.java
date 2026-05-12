@@ -6,6 +6,7 @@ import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.AppCompatImageView;
+import androidx.core.content.res.ResourcesCompat;
 
 import com.inappstory.sdk.ICustomIconState;
 import com.inappstory.sdk.R;
@@ -17,7 +18,16 @@ public class IASDefaultIcon extends FrameLayout {
     }
 
     public IASDefaultIcon setIconId(int iconId) {
-        image.setImageDrawable(getResources().getDrawable(iconId));
+        Context context = getContext();
+        if (context != null) {
+            image.setImageDrawable(
+                    ResourcesCompat.getDrawable(
+                            context.getResources(),
+                            iconId,
+                            context.getTheme()
+                    )
+            );
+        }
         return this;
     }
 

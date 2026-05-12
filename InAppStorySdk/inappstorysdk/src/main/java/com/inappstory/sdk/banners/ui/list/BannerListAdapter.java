@@ -28,7 +28,6 @@ public class BannerListAdapter extends RecyclerView.Adapter<BannerViewHolder> {
     private final IASCore core;
     private final String bannerPlace;
     private final String uniqueId;
-    private final float itemWidth;
     private final float bannerRadius;
     private final String iterationId;
     private final ICustomBannerPlaceholder bannerPlaceholderCreator;
@@ -42,12 +41,10 @@ public class BannerListAdapter extends RecyclerView.Adapter<BannerViewHolder> {
             IBannerPlaceLoadCallback listLoadCallback,
             ICustomBannerPlaceholder bannerPlaceholderCreator,
             String iterationId,
-            float itemWidth,
             float bannerRadius
     ) {
         this.banners = new ArrayList<>(banners);
         this.listLoadCallback = listLoadCallback;
-        this.itemWidth = itemWidth;
         this.uniqueId = uniqueId;
         this.bannerPlaceholderCreator = bannerPlaceholderCreator;
         this.iterationId = iterationId;

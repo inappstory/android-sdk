@@ -8,6 +8,7 @@ import android.widget.RelativeLayout;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.AppCompatImageView;
+import androidx.core.content.res.ResourcesCompat;
 
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.R;
@@ -59,7 +60,14 @@ public class UGCListItem extends BaseStoryListItem {
                     R.drawable.ic_new_ugc);
             int iconMargin = getNonNullValue(ugcListItemAppearance.csIconMargin(),
                     Sizes.dpToPxExt(16, itemView.getContext()));
-            image.setImageDrawable(itemView.getContext().getResources().getDrawable(iconId));
+
+            image.setImageDrawable(
+                    ResourcesCompat.getDrawable(
+                            itemView.getContext().getResources(),
+                            iconId,
+                            itemView.getContext().getTheme()
+                    )
+            );
             imageLp.setMargins(iconMargin, iconMargin, iconMargin, iconMargin);
             background.setBackgroundColor(backgroundColor);
             if (ugcListItemAppearance.csIconColor() != null) {

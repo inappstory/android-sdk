@@ -927,6 +927,7 @@ public class InAppStoryManager implements IASBackPressHandler {
     ) {
         if (core == null) return;
         ForceCloseReaderCallback callback = new ForceCloseReaderCallback() {
+            @SuppressLint("HardwareIds")
             @Override
             public void onComplete() {
                 core.projectSettingsAPI()

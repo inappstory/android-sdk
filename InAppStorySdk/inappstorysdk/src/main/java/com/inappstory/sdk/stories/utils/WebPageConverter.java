@@ -13,6 +13,7 @@ import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
+import com.inappstory.sdk.core.api.impl.IASSettingsImpl;
 import com.inappstory.sdk.game.cache.UseCaseCallback;
 import com.inappstory.sdk.core.data.IResource;
 import com.inappstory.sdk.core.data.IReaderContent;
@@ -170,10 +171,25 @@ public class WebPageConverter {
 
         if (InAppStoryManager.getInstance() == null) return null;
         IASCore core = InAppStoryManager.getInstance().iasCore();
-        String newLayout = readerContent.layout();
+        String newLayout = generateLayout(core, readerContent);
         newLayout = replaceLayoutAssets(core, newLayout);
         Pair<String, String> replaced = replacePlaceholders(core, "", newLayout);
         return replaced.second;
+    }
+
+    private String generateLayout(IASCore core, IReaderContent readerContent) {
+        final IASDataSettingsHolder dataSettingsHolder = (IASDataSettingsHolder) core.settingsAPI();
+        String contentLayout = ((IASSettingsImpl) dataSettingsHolder).sessionData().contentLayout;
+        if (contentLayout == null || contentLayout.isEmpty()) return "";
+        for (Map.Entry<String, String> entry : readerContent.layoutTemplateVariables().entrySet()) {
+            if (entry.getKey() == null) continue;
+            String entryValue = entry.getValue();
+            contentLayout = contentLayout.replace(
+                    entry.getKey(),
+                    entryValue != null ? entryValue : ""
+            );
+        }
+        return contentLayout;
     }
 
     public String replaceSlide(
@@ -202,7 +218,7 @@ public class WebPageConverter {
             @Override
             public void use(@NonNull IASCore core) {
                 String localData = innerWebData;
-                String newLayout = readerContent.layout();
+                String newLayout = generateLayout(core, readerContent);
                 localData = replaceStaticResources(core, localData, readerContent, index, false);
                 core.contentLoader().addVODResources(readerContent, index);
                 localData = replaceImagePlaceholders(core, localData, readerContent, index, false);

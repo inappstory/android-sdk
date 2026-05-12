@@ -600,6 +600,13 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
         }
         if (core.statistic().iamV1().softDisabled()) return;
         if (sendToServer) {
+            IInAppMessage readerContent =
+                    (IInAppMessage) core.contentHolder().readerContent().getByIdAndType(
+                            readerState.iamId,
+                            ContentType.IN_APP_MESSAGE
+                    );
+            if (readerContent != null)
+                readerContent.layoutTemplateVariables().put("{{%serverData}}", data);
             core.network().enqueue(
                     core.network().getApi().sendIAMUserData(
                             Integer.toString(readerState.iamId),
@@ -776,12 +783,12 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
         }
 
         @Override
-        public List<String> usedAssets() {
+        public Set<String> usedAssets() {
             return iamUsedAssets();
         }
     };
 
-    private List<String> iamUsedAssets() {
+    private Set<String> iamUsedAssets() {
         IAMReaderState state = readerViewModel.getCurrentState();
         IReaderContent readerContent =
                 core.contentHolder().readerContent().getByIdAndType(
@@ -789,9 +796,7 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
                         ContentType.IN_APP_MESSAGE
                 );
         if (readerContent == null) return null;
-        Set<String> resAssets = new HashSet<>(core.assetsHolder().layoutAssets());
-        resAssets.addAll(readerContent.assetKeys());
-        return new ArrayList<>(resAssets);
+        return core.assetUrlsExtractor().extract(readerContent);
     }
 
     @Override

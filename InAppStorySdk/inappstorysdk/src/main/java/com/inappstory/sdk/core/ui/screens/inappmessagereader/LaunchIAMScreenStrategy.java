@@ -265,7 +265,9 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
                                         readerContent,
                                         preloadedIndexes
                                 ) &&
-                                        downloadManager.concreteBundlesLoaded(readerContent.assetKeys());
+                                        downloadManager.concreteBundlesLoaded(
+                                                readerContent
+                                        );
                         if (localSettings.showOnlyIfLoaded()) {
                             if (contentIsPreloaded) {
                                 loadScreen.success(readerContent, true);
@@ -295,7 +297,9 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
                                                             downloadManager.concreteSlidesLoaded(
                                                                     content,
                                                                     preloadedIndexes
-                                                            ) && downloadManager.concreteBundlesLoaded(content.assetKeys());
+                                                            ) && downloadManager.concreteBundlesLoaded(
+                                                                    content
+                                                            );
                                                     loadScreen.success(
                                                             (IInAppMessage) content,
                                                             contentIsPreloaded
@@ -336,7 +340,7 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
                                                                                 readerContent,
                                                                                 preloadedIndexes
                                                                         ) &&
-                                                                                downloadManager.concreteBundlesLoaded(readerContent.assetKeys());
+                                                                                downloadManager.concreteBundlesLoaded(readerContent);
                                                                 loadScreen.success(readerContent,
                                                                         contentIsPreloaded
                                                                 );

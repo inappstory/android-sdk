@@ -121,7 +121,7 @@ public class InAppMessagesUseCase {
                                                         settingsHolder.options()
                                                 ),
                                                 null,
-                                                "messages.slides",
+                                                "messages.slides,messages.layoutTemplateVariables",
                                                 sessionParameters.userId(),
                                                 sessionParameters.sessionId(),
                                                 sessionParameters.locale()

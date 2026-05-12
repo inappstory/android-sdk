@@ -134,12 +134,12 @@ public class IASContentPreloadImpl implements IASContentPreload {
                             }
 
                             @Override
-                            public List<String> usedAssets() {
-                                Set<String> resAssets = new HashSet<>(core.assetsHolder().layoutAssets());
+                            public Set<String> usedAssets() {
+                                Set<String> resAssets = new HashSet<>();
                                 for (IReaderContent readerContent : content) {
-                                    resAssets.addAll(readerContent.assetKeys());
+                                    resAssets.addAll(core.assetUrlsExtractor().extract(readerContent));
                                 }
-                                return new ArrayList<>(resAssets);
+                                return resAssets;
                             }
                         });
                     }

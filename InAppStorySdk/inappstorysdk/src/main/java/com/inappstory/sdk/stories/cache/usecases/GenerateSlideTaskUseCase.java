@@ -60,7 +60,7 @@ public class GenerateSlideTaskUseCase {
                 readerContent.staticResources(index),
                 readerContent.vodResources(index),
                 urlWithAlters,
-                readerContent.assetKeys()
+                core.assetUrlsExtractor().extract(readerContent)
         );
     }
 }

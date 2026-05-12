@@ -196,8 +196,8 @@ public class BannerViewModel implements IBannerViewModel {
                         ContentType.BANNER
                 );
         if (readerContent == null) return;
-        payload = readerContent.slideEventPayload(0);
-        String slideContent = readerContent.slideByIndex(0);
+        payload = readerContent.slideEventPayload(index);
+        String slideContent = readerContent.slideByIndex(index);
         if (slideContent == null) return;
         WebPageConvertCallback callback = new WebPageConvertCallback() {
             @Override
@@ -519,6 +519,13 @@ public class BannerViewModel implements IBannerViewModel {
         }
         if (core.statistic().iamV1().softDisabled()) return;
         if (sendToServer) {
+            IReaderContent readerContent =
+                    core.contentHolder().readerContent().getByIdAndType(
+                            bannerId,
+                            ContentType.BANNER
+                    );
+            if (readerContent != null)
+                readerContent.layoutTemplateVariables().put("{{%serverData}}", data);
             core.network().enqueue(
                     core.network().getApi().sendBannerUserData(
                             Integer.toString(bannerState.bannerId()),

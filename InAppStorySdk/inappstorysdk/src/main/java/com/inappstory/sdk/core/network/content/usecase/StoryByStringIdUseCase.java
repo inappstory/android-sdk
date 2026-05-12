@@ -25,7 +25,7 @@ public class StoryByStringIdUseCase {
         this.core = core;
     }
 
-    private final String EXPAND_STRING = "slides,layout";
+    private final String EXPAND_STRING = "slides,layoutTemplateVariables";
 
 
     public void get(

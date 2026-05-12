@@ -50,6 +50,7 @@ import com.inappstory.sdk.core.dataholders.IContentHolder;
 import com.inappstory.sdk.core.dataholders.IStoriesListVMHolder;
 import com.inappstory.sdk.core.dataholders.StoriesListVMHolder;
 import com.inappstory.sdk.core.ui.screens.ScreensManager;
+import com.inappstory.sdk.core.utils.AssetUrlsExtractor;
 import com.inappstory.sdk.domain.IWidgetsViewModels;
 import com.inappstory.sdk.domain.WidgetsViewModels;
 import com.inappstory.sdk.network.NetworkClient;
@@ -97,6 +98,7 @@ public class IASCoreImpl implements IASCore {
     private final IASAssetsHolder assetsHolder;
     private final IASLimitsHolder limitsHolder;
     private final CancellationTokenPool cancellationTokenPool;
+    private final AssetUrlsExtractor assetUrlsExtractor;
 
     public IASCoreImpl(Context context) {
         this.context = context;
@@ -132,6 +134,7 @@ public class IASCoreImpl implements IASCore {
         assetsHolder = new IASAssetsHolderImpl(this);
         limitsHolder = new IASLimitsHolderImpl();
         projectSettings = new IASProjectSettingsImpl(this);
+        assetUrlsExtractor = new AssetUrlsExtractor(this);
         Thread.setDefaultUncaughtExceptionHandler(new IASExceptionHandler(this));
         externalUtilsAPI.init();
     }
@@ -325,5 +328,10 @@ public class IASCoreImpl implements IASCore {
     @Override
     public String buildHash() {
         return BuildConfig.GIT_HASH;
+    }
+
+    @Override
+    public AssetUrlsExtractor assetUrlsExtractor() {
+        return assetUrlsExtractor;
     }
 }

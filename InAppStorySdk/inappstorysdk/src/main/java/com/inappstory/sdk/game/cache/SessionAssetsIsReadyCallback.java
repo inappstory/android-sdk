@@ -1,10 +1,10 @@
 package com.inappstory.sdk.game.cache;
 
-import java.util.List;
+import java.util.Set;
 
 public interface SessionAssetsIsReadyCallback {
     void isReady();
     void assetsIsLoading();
     void error();
-    List<String> usedAssets();
+    Set<String> usedAssets();
 }

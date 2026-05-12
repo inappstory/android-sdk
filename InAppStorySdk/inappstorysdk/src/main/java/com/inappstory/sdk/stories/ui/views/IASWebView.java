@@ -1,5 +1,6 @@
 package com.inappstory.sdk.stories.ui.views;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Build;
 import android.util.AttributeSet;
@@ -88,6 +89,7 @@ public class IASWebView extends WebView implements NestedScrollingChild {
         super.onDetachedFromWindow();
     }
 
+    @SuppressLint("SetJavaScriptEnabled")
     protected void init() {
         mChildHelper = new NestedScrollingChildHelper(this);
         setNestedScrollingEnabled(true);

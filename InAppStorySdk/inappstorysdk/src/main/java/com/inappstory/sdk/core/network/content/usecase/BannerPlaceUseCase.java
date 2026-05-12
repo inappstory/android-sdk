@@ -122,7 +122,7 @@ public class BannerPlaceUseCase {
                                                 placeId,
                                                 1,
                                                 null,
-                                                "banners.slides,banners.layout",
+                                                "banners.slides,banners.layoutTemplateVariables",
                                                 new TargetingBodyObject(
                                                         !localTags.isEmpty() ? localTags : null,
                                                         settingsHolder.options()

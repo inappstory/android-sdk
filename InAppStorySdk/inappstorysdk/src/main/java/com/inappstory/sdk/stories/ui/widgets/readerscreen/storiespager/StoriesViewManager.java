@@ -388,7 +388,6 @@ public class StoriesViewManager {
     }
 
     boolean commonWaitError = false;
-    boolean startLoad = false;
 
     public void startCommonShowRefresh(int index) {
         clearShowRefreshCommon();
@@ -425,7 +424,9 @@ public class StoriesViewManager {
     }
 
     private void slideInCache(final IReaderContent story, final int index) {
-        if (core.assetsHolder().assetsIsDownloaded(story.assetKeys())) {
+        if (core.assetsHolder().assetsIsDownloaded(
+                core.assetUrlsExtractor().extract(story))
+        ) {
             innerLoad(story);
             pageManager.slideLoadSuccess(index, true);
         } else {
@@ -467,36 +468,14 @@ public class StoriesViewManager {
             }
         };
         ((StoriesWebView) storiesView).setLayerType(View.LAYER_TYPE_HARDWARE, null);
-        if (innerWebData.contains("<video")) {
-            isVideo = true;
-        } else {
-            isVideo = false;
-        }
-
         converter.replaceDataAndLoad(innerWebData, story, index, callback);
     }
 
     WebPageConverter converter = new WebPageConverter();
 
-
-    boolean isVideo = false;
-
-
     public void setStoriesView(ContentViewInteractor storiesWebView) {
         this.storiesView = storiesWebView;
         storiesWebView.checkIfClientIsSet();
-    }
-
-
-    public LoadProgressBar getProgressBar() {
-        return progressBar;
-    }
-
-
-    private LoadProgressBar progressBar;
-
-    public void setProgressBar(LoadProgressBar progressBar) {
-        this.progressBar = progressBar;
     }
 
     ContentViewInteractor storiesView;
@@ -796,6 +775,13 @@ public class StoriesViewManager {
         if (core.statistic().storiesV1().softDisabled()) return;
 
         if (sendToServer) {
+
+            IReaderContent readerContent = core
+                    .contentHolder()
+                    .readerContent()
+                    .getByIdAndType(storyId, pageManager.getViewContentType());
+            if (readerContent != null)
+                readerContent.layoutTemplateVariables().put("{{%serverData}}", data);
             core.network().enqueue(
                     core.network().getApi().sendStoryData(
                             Integer.toString(storyId),

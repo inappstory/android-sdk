@@ -23,6 +23,7 @@ import android.widget.RelativeLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.cardview.widget.CardView;
+import androidx.core.content.res.ResourcesCompat;
 
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
@@ -86,7 +87,7 @@ public class BannerView extends FrameLayout implements Observer<BannerState> {
         bannerWebView.slideViewModel(bannerViewModel);
         BannerState state = bannerViewModel.getCurrentBannerState();
         bannerId = state.bannerId();
-       // Log.e("UpdateBannerState", state.toString());
+        // Log.e("UpdateBannerState", state.toString());
         onUpdate(state);
         bannerWebView.checkIfClientIsSet();
     }
@@ -250,9 +251,13 @@ public class BannerView extends FrameLayout implements Observer<BannerState> {
         refresh.setElevation(18);
         ((ImageView) refresh).setScaleType(ImageView.ScaleType.FIT_XY);
         refresh.setVisibility(View.GONE);
-        ((ImageView) refresh).setImageDrawable(context.getResources().getDrawable(
-                AppearanceManager.getCommonInstance().csRefreshIcon()
-        ));
+        ((ImageView) refresh).setImageDrawable(
+                ResourcesCompat.getDrawable(
+                        context.getResources(),
+                        AppearanceManager.getCommonInstance().csRefreshIcon(),
+                        context.getTheme()
+                )
+        );
         refresh.setLayoutParams(refreshLp);
         return refresh;
     }
@@ -306,7 +311,7 @@ public class BannerView extends FrameLayout implements Observer<BannerState> {
                             break;
                         case UNFREEZE_UI:
                             lockTouchEvents = false;
-                           // requestDisallowInterceptTouchEventForAllParents(BannerView.this, false);
+                            // requestDisallowInterceptTouchEventForAllParents(BannerView.this, false);
                             getParent().requestDisallowInterceptTouchEvent(false);
                             break;
                     }

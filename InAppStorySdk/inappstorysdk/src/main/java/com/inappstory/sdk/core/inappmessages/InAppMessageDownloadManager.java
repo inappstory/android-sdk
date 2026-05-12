@@ -88,8 +88,10 @@ public class InAppMessageDownloadManager {
         );
     }
 
-    public boolean concreteBundlesLoaded(List<String> assetKeys) {
-        return core.assetsHolder().assetsIsDownloaded(assetKeys);
+    public boolean concreteBundlesLoaded(IReaderContent readerContent) {
+        return core.assetsHolder().assetsIsDownloaded(
+                core.assetUrlsExtractor().extract(readerContent)
+        );
     }
 
     private void addSlides(@NonNull final IReaderContent readerContent, final InAppMessageLoadCallback callback) {

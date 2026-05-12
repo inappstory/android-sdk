@@ -12,6 +12,7 @@ public class CachedSessionData {
     public String tags;
     public List<StoryPlaceholder> placeholders;
     public String sessionId;
+    public String contentLayout;
     public String testKey;
     public String token;
     public boolean anonymous;

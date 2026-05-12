@@ -39,6 +39,7 @@ import android.widget.RelativeLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.cardview.widget.CardView;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
 
 import com.inappstory.sdk.AppearanceManager;
@@ -641,19 +642,20 @@ public class ReaderPageFragment extends Fragment {
             final int[] colorsArray = new int[timerGradient.csColors.size()];
             final float[] locationsArray = new float[timerGradient.csColors.size()];
 
-            if (colors == null ||
-                    colors.isEmpty()) {
+            if (colors.isEmpty()) {
                 return;
             }
             if (colors.size() != locations.size()) return;
             int i = 0;
             for (Integer color : colors) {
-                colorsArray[i] = color.intValue();
+                if (color == null) return;
+                colorsArray[i] = color;
                 i++;
             }
             i = 0;
             for (Float location : locations) {
-                locationsArray[i] = location.floatValue();
+                if (location == null) return;
+                locationsArray[i] = location;
                 i++;
             }
             if (timerGradient.csGradientHeight > 0) {
@@ -674,7 +676,14 @@ public class ReaderPageFragment extends Fragment {
             paint.setShaderFactory(shaderFactory);
             gradientView.setBackground(paint);
         } else {
-            gradientView.setBackground(getResources().getDrawable(R.drawable.story_gradient));
+
+            gradientView.setBackground(
+                    ResourcesCompat.getDrawable(
+                            context.getResources(),
+                            R.drawable.story_gradient,
+                            context.getTheme()
+                    )
+            );
         }
 
         gradientView.setLayoutParams(lp);

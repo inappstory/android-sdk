@@ -45,6 +45,7 @@ import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class ReaderManager {
 
@@ -687,7 +688,7 @@ public class ReaderManager {
         }
 
         @Override
-        public List<String> usedAssets() {
+        public Set<String> usedAssets() {
             return null;
         }
     };

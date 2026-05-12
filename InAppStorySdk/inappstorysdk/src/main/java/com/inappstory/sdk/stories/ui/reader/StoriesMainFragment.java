@@ -608,8 +608,11 @@ public abstract class StoriesMainFragment extends Fragment implements
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         if (orientationChangeIsLocked()) {
-            oldOrientation = getActivity().getRequestedOrientation();
-            getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+            if (context instanceof Activity) {
+                oldOrientation = ((Activity)context).getRequestedOrientation();
+                ((Activity)context).setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+            }
+
         }
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override

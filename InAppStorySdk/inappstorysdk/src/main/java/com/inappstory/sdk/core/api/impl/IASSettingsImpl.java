@@ -191,12 +191,12 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
             final boolean anonymous
     ) {
         final String sessionId = sessionId();
-        sessionData(null);
-        core.storiesListVMHolder().clear();
-        core.storyListCache().clearLocalOpensKey();
         core.screensManager().forceCloseAllReaders(new ForceCloseReaderCallback() {
             @Override
             public void onComplete() {
+                sessionData(null);
+                core.storiesListVMHolder().clear();
+                core.storyListCache().clearLocalOpensKey();
                 if (sessionId != null && !sessionId.isEmpty()) {
                     core.contentHolder().favoriteItems().clearByType(ContentType.STORY);
                     core.contentHolder().favoriteItems().clearByType(ContentType.UGC);

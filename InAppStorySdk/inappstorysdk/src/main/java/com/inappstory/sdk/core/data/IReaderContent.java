@@ -2,14 +2,15 @@ package com.inappstory.sdk.core.data;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public interface IReaderContent extends IStatData, IContentWithStatus {
     String layout();
+    Map<String, String> layoutTemplateVariables();
     String slideByIndex(int index);
     List<IResource> vodResources(int index);
     List<IResource> staticResources(int index);
     List<String> placeholdersNames(int index);
-    List<String> assetKeys();
     Map<String, String> placeholdersMap(int index);
     int actualSlidesCount();
     String slideEventPayload(int slideIndex);

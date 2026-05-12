@@ -4,6 +4,7 @@ import com.inappstory.sdk.core.data.IResource;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class SlideTask {
     int priority = 0;
@@ -23,7 +24,7 @@ public class SlideTask {
     List<IResource> staticResources = new ArrayList<>();
     List<UrlWithAlter> urlsWithAlter = new ArrayList<>();
     List<IResource> vodResources = new ArrayList<>();
-    List<String> assetKeys = null;
+    Set<String> assetKeys = null;
     boolean forced = false;
     int loadType = 0; //-1 - error, 0 - not loaded, 1 - loading, 2 - loaded
 
@@ -36,7 +37,7 @@ public class SlideTask {
             List<IResource> staticResources,
             List<IResource> vodResources,
             List<UrlWithAlter> urlsWithAlter,
-            List<String> assetKeys
+            Set<String> assetKeys
     ) {
         this.staticResources = staticResources;
         this.urlsWithAlter = urlsWithAlter;

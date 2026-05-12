@@ -13,8 +13,10 @@ import com.inappstory.sdk.stories.cache.usecases.SessionAssetUseCase;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -71,7 +73,7 @@ public class IASAssetsHolderImpl implements IASAssetsHolder {
     @Override
     public List<String> layoutAssets() {
         synchronized (assetsLock) {
-            return layoutAssetUrls;
+            return new ArrayList<>(layoutAssetUrls);
         }
     }
 
@@ -102,10 +104,10 @@ public class IASAssetsHolderImpl implements IASAssetsHolder {
 
                                 @Override
                                 public void onSuccess(Pair<SessionAsset, File> result) {
-                                    String key = result.first.url;
+                                    String url = result.first.url;
                                     synchronized (assetsLock) {
-                                        if (!cachedAssetKeys.contains(key)) {
-                                            cachedAssetKeys.add(key);
+                                        if (!cachedAssetUrls.contains(url)) {
+                                            cachedAssetUrls.add(url);
                                         }
                                     }
                                 }
@@ -193,8 +195,7 @@ public class IASAssetsHolderImpl implements IASAssetsHolder {
             layoutAssetUrls.clear();
             for (SessionAsset sessionAsset : assets) {
                 if (contentLayout.contains(sessionAsset.replaceKey)) {
-                    if (!layoutAssetUrls.contains(sessionAsset.url))
-                        layoutAssetUrls.add(sessionAsset.url);
+                    layoutAssetUrls.add(sessionAsset.url);
                     orderedAssets.add(0, sessionAsset);
                 } else {
                     orderedAssets.add(sessionAsset);
@@ -207,8 +208,8 @@ public class IASAssetsHolderImpl implements IASAssetsHolder {
 
     private final Object assetsLock = new Object();
     private boolean assetsIsDownloaded = false;
-    private final List<String> cachedAssetKeys = new ArrayList<>();
-    private final List<String> layoutAssetUrls = new ArrayList<>();
+    private final List<String> cachedAssetUrls = new ArrayList<>();
+    private final Set<String> layoutAssetUrls = new HashSet<>();
     private boolean assetsDownloadError = false;
     private boolean assetsIsLoading = false;
 
@@ -220,12 +221,14 @@ public class IASAssetsHolderImpl implements IASAssetsHolder {
     }
 
     @Override
-    public boolean assetsIsDownloaded(List<String> assetKeys) {
+    public boolean assetsIsDownloaded(Set<String> assetUrls) {
         synchronized (assetsLock) {
             if (assetsIsDownloaded) return true;
-            if (assetKeys == null) return false;
-            for (String assetKey : assetKeys) {
-                if (!cachedAssetKeys.contains(assetKey)) return false;
+            if (assetUrls == null) return false;
+            Set<String> allCheckUrls = new HashSet<>(layoutAssetUrls);
+            allCheckUrls.addAll(assetUrls);
+            for (String assetUrl : allCheckUrls) {
+                if (!cachedAssetUrls.contains(assetUrl)) return false;
             }
             return true;
         }
@@ -270,6 +273,7 @@ public class IASAssetsHolderImpl implements IASAssetsHolder {
     public void clear() {
         synchronized (assetsLock) {
             callbacks.clear();
+           // cachedAssetUrls.clear();
             assetsIsDownloaded = false;
             assetsIsLoading = false;
             assetsDownloadError = false;

@@ -372,12 +372,6 @@ public class BannerList extends RecyclerView implements Observer<BannerListState
         //TODO clear list
     }
 
-    private int getItemWidth() {
-        int cc = customBannerListAppearance.columnCount();
-        return (getWidth() -
-                (cc - 1) * Sizes.dpToPxExt(customBannerListAppearance.bannersGap(),
-                        getContext())) / cc;
-    }
 
     @Override
     public void onUpdate(BannerListState newValue) {
@@ -430,7 +424,6 @@ public class BannerList extends RecyclerView implements Observer<BannerListState
                                     }
                                 },
                                 newValue.iterationId(),
-                                getItemWidth(),
                                 Sizes.dpToPxExt(
                                         16,
                                         getContext()
