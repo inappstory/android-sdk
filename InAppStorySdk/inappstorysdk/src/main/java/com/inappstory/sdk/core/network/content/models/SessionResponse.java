@@ -32,6 +32,9 @@ public class SessionResponse {
     @SerializedName(SessionRequestFields.layout)
     public String contentLayout;
 
+    @SerializedName(SessionRequestFields.isGameReaderDefaultFullscreen)
+    public boolean isGameReaderDefaultFullscreen;
+
     @SerializedName(SessionRequestFields.isAllowProfiling)
     public boolean isAllowProfiling;
     @SerializedName(SessionRequestFields.isAllowStatV1)

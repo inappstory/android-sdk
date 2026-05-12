@@ -59,6 +59,7 @@ import com.inappstory.iasutilsconnector.filepicker.OnFilesChooseCallback;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.BuildConfig;
 import com.inappstory.sdk.LoggerTags;
+import com.inappstory.sdk.core.api.impl.IASSettingsImpl;
 import com.inappstory.sdk.core.ui.widgets.customicons.CustomIconWithoutStates;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.R;
@@ -519,6 +520,12 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
+                final IASDataSettingsHolder dataSettingsHolder =
+                        (IASDataSettingsHolder) core.settingsAPI();
+                CachedSessionData sessionData = ((IASSettingsImpl) dataSettingsHolder).
+                        sessionData();
+                if (sessionData != null)
+                    forceFullscreen = sessionData.isGameReaderDefaultFullscreen;
                 manager = new GameManager(
                         GameReaderContentFragment.this,
                         InAppStoryManager.getInstance().iasCore(),

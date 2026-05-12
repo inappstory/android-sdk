@@ -339,6 +339,7 @@ public class SessionManager {
                                         cachedSessionData.isAllowUGC = response.isAllowUgc;
                                         cachedSessionData.sessionId = response.session.id;
                                         cachedSessionData.contentLayout = response.contentLayout;
+                                        cachedSessionData.isGameReaderDefaultFullscreen = response.isGameReaderDefaultFullscreen;
                                         cachedSessionData.anonymous = initialSessionParameters.anonymous();
                                         cachedSessionData.testKey = core.projectSettingsAPI().testKey();
                                         cachedSessionData.token = core.projectSettingsAPI().apiKey();
