@@ -83,7 +83,13 @@ public class TimerManager {
     long currentDuration;
 
     public void startSlideTimer(long newDuration, long currentTime) {
+        if (newDuration > 0 && newDuration - currentTime <= 0) {
+            if (pageManager != null)
+                pageManager.nextSlideAuto();
+            return;
+        }
         startTimer(newDuration - currentTime, newDuration);
+
     }
 
     public void pauseSlideTimer() {
