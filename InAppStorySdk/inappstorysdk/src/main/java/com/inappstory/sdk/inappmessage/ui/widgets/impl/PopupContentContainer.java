@@ -7,6 +7,7 @@ import android.graphics.Point;
 import android.graphics.Rect;
 import android.os.Build;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.util.Pair;
 import android.util.SizeF;
 import android.view.Gravity;
@@ -95,7 +96,6 @@ public class PopupContentContainer extends IAMContentContainer<InAppMessagePopup
         closeButton.setLayoutParams(closeButtonLayoutParams);
         closeButton.requestLayout();
     }
-
 
 
     public void showWithAnimation() {
@@ -269,8 +269,10 @@ public class PopupContentContainer extends IAMContentContainer<InAppMessagePopup
         if (appearance.contentRatio() < 5f && appearance.contentRatio() > 0.01f) {
             contentRatio = appearance.contentRatio();
         }
+        Log.e("IAM_Debug", "externalContainerRect: " + externalContainerRect.toString());
         float availableWidth = externalContainerRect.width() - 2 * horizontalPadding;
         Point screenSize = Sizes.getScreenSize(getContext());
+        Log.e("IAM_Debug", "screenSize: " + screenSize);
         if (Sizes.isTablet(getContext())) {
             availableWidth = Math.min(availableWidth, Sizes.dpToPxExt(340, getContext()));
         } else {
@@ -294,6 +296,8 @@ public class PopupContentContainer extends IAMContentContainer<InAppMessagePopup
             height = Math.round(availableHeight);
             layoutParams.width = Math.round(availableHeight * contentRatio);
         }
+        Log.e("IAM_Debug", "params: " + availableWidth + " " +
+                availableHeight + " " + height +  " " + screenContentRatio + " " + contentRatio);
         layoutParams.height = height;
         roundedCornerLayout.setRadius(
                 Sizes.dpToPxExt(appearance.cornerRadius(), getContext())
@@ -309,6 +313,8 @@ public class PopupContentContainer extends IAMContentContainer<InAppMessagePopup
     protected Pair<Integer, Integer> countSafeArea(int containerHeight) {
         Rect mainLayoutRect = new Rect();
         mainLayout.getGlobalVisibleRect(mainLayoutRect);
+        Log.e("IAM_Debug", "countSafeArea: " + containerHeight + " " + mainLayoutRect);
+
         int topOffset = Math.max(mainLayoutRect.top, 0);
         int bottomOffset = Math.max(mainLayoutRect.bottom, 0);
         Context context = getContext();
@@ -329,6 +335,7 @@ public class PopupContentContainer extends IAMContentContainer<InAppMessagePopup
                 }
             }
         }
+        Log.e("IAM_Debug", "insets: " + topInsetOffset + " " + bottomInsetOffset);
         return new Pair<>(
                 Math.max(0, topInsetOffset - topOffset),
                 Math.max(0, bottomInsetOffset - (phoneHeight - bottomOffset))
@@ -415,6 +422,5 @@ public class PopupContentContainer extends IAMContentContainer<InAppMessagePopup
         roundedCornerLayout.addView(relativeLayout);
         mainLayout.addView(closeButton);
         addView(mainLayout);
-        if (appearance != null) appearance(appearance);
     }
 }

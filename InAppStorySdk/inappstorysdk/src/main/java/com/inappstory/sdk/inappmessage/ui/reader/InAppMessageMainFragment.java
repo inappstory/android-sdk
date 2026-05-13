@@ -144,9 +144,7 @@ public class InAppMessageMainFragment extends Fragment implements Observer<IAMRe
         }
         contentContainer = v.findViewById(CONTAINER_ID);
         contentContainer.setVisibility(View.INVISIBLE);
-        if (appearance != null) {
-            contentContainer.appearance(appearance);
-        }
+
         contentContainer.uiContainerCallback(containerCallback);
         return v;
     }
@@ -202,6 +200,9 @@ public class InAppMessageMainFragment extends Fragment implements Observer<IAMRe
             @Nullable Bundle savedInstanceState
     ) {
         super.onViewCreated(view, savedInstanceState);
+        if (appearance != null) {
+            contentContainer.appearance(appearance);
+        }
         if (readerViewModel == null) return;
         if (controller != null) {
             controller.subscribeView(this);

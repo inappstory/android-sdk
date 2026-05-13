@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -331,6 +332,7 @@ public class IAMContentFragment extends Fragment implements Observer<IAMReaderSl
             Context context = requireContext();
             Map<String, Object> configMap = new HashMap<>();
             Pair<Integer, Integer> safeArea = value.safeArea();
+            Log.e("IAM_Debug", "slidesConfig: " + safeArea.toString());
             configMap.put("safeAreaInsetTop", Sizes.pxToDpExt(safeArea.first, context));
             configMap.put("safeAreaInsetBottom", Sizes.pxToDpExt(safeArea.second, context));
             return JsonParser.mapToJsonString(configMap);
