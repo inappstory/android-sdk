@@ -13,7 +13,7 @@ import java.util.List;
 
 public class SessionResponse {
 
-    @Required
+    //@Required
     @SerializedName(SessionRequestFields.session)
     public Session session;
 
@@ -28,7 +28,6 @@ public class SessionResponse {
     @SerializedName(SessionRequestFields.sessionAssets)
     public List<SessionAsset> sessionAssets;
 
-    @Required
     @SerializedName(SessionRequestFields.layout)
     public String contentLayout;
 

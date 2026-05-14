@@ -1,5 +1,7 @@
 package com.inappstory.sdk.core.banners;
 
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.banners.BannerPlacePreloadCallback;
@@ -212,6 +214,7 @@ public class BannerViewModel implements IBannerViewModel {
             }
         };
         WebPageConverter converter = new WebPageConverter();
+        Log.e("LoadContentPage", "update banner layout " + readerContent.id());
         converter.replaceDataAndLoad(slideContent, readerContent, index, callback);
     }
 

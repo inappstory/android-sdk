@@ -1,5 +1,7 @@
 package com.inappstory.sdk.core.api.impl;
 
+import android.text.TextUtils;
+import android.util.Log;
 import android.util.Pair;
 
 import com.inappstory.sdk.core.IASCore;
@@ -93,6 +95,7 @@ public class IASAssetsHolderImpl implements IASAssetsHolder {
             futures.add(downloader.submit(new Runnable() {
                 @Override
                 public void run() {
+                    Log.e("LoadContentPage", "asset download start " + asset.url);
                     new SessionAssetUseCase(core,
                             new UseCaseCallback<Pair<SessionAsset, File>>() {
                                 @Override
@@ -107,6 +110,7 @@ public class IASAssetsHolderImpl implements IASAssetsHolder {
                                     String url = result.first.url;
                                     synchronized (assetsLock) {
                                         if (!cachedAssetUrls.contains(url)) {
+                                            Log.e("LoadContentPage", "asset downloaded " + url);
                                             cachedAssetUrls.add(url);
                                         }
                                     }
@@ -191,6 +195,8 @@ public class IASAssetsHolderImpl implements IASAssetsHolder {
     @Override
     public void setAssets(List<SessionAsset> assets, String contentLayout) {
         List<SessionAsset> orderedAssets = new ArrayList<>();
+
+        Log.e("LoadContentPage", "non ordered assets: [" + TextUtils.join(",", assets) + "]");
         synchronized (assetsLock) {
             layoutAssetUrls.clear();
             for (SessionAsset sessionAsset : assets) {
@@ -201,6 +207,8 @@ public class IASAssetsHolderImpl implements IASAssetsHolder {
                     orderedAssets.add(sessionAsset);
                 }
             }
+            Log.e("LoadContentPage", "ordered assets: [" + TextUtils.join(",", orderedAssets) + "]");
+            Log.e("LoadContentPage", "layout assets urls: [" + TextUtils.join(",", layoutAssetUrls) + "]");
             sessionAssets.clear();
             sessionAssets.addAll(orderedAssets);
         }
@@ -223,13 +231,25 @@ public class IASAssetsHolderImpl implements IASAssetsHolder {
     @Override
     public boolean assetsIsDownloaded(Set<String> assetUrls) {
         synchronized (assetsLock) {
-            if (assetsIsDownloaded) return true;
-            if (assetUrls == null) return false;
-            Set<String> allCheckUrls = new HashSet<>(layoutAssetUrls);
-            allCheckUrls.addAll(assetUrls);
-            for (String assetUrl : allCheckUrls) {
-                if (!cachedAssetUrls.contains(assetUrl)) return false;
+            if (assetsIsDownloaded) {
+                Log.e("LoadContentPage", "assets url all cached");
+                return true;
             }
+            if (assetUrls == null) {
+                Log.e("LoadContentPage", "assets url content list is null");
+                return false;
+            }
+            Set<String> allCheckUrls = new HashSet<>(layoutAssetUrls);
+
+            Log.e("LoadContentPage", "layout assets urls: [" + TextUtils.join(",", layoutAssetUrls) + "]");
+            allCheckUrls.addAll(assetUrls);
+            Log.e("LoadContentPage", "content assets urls: [" + TextUtils.join(",", assetUrls) + "]");
+            for (String assetUrl : allCheckUrls) {
+                if (!cachedAssetUrls.contains(assetUrl))
+                    Log.e("LoadContentPage", "non cached url: " + assetUrl);
+                return false;
+            }
+            Log.e("LoadContentPage", "assets url content list and layout cached");
             return true;
         }
     }
@@ -273,7 +293,7 @@ public class IASAssetsHolderImpl implements IASAssetsHolder {
     public void clear() {
         synchronized (assetsLock) {
             callbacks.clear();
-           // cachedAssetUrls.clear();
+            // cachedAssetUrls.clear();
             assetsIsDownloaded = false;
             assetsIsLoading = false;
             assetsDownloadError = false;

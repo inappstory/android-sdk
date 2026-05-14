@@ -89,6 +89,7 @@ public class InAppMessageDownloadManager {
     }
 
     public boolean concreteBundlesLoaded(IReaderContent readerContent) {
+        Log.e("LoadContentPage", "check assets url IAM " + readerContent.id());
         return core.assetsHolder().assetsIsDownloaded(
                 core.assetUrlsExtractor().extract(readerContent)
         );

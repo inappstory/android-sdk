@@ -126,7 +126,11 @@ public class InAppMessage implements IInAppMessage {
 
     @Override
     public boolean checkIfEmpty() {
-        return (layout == null || slides == null || slides.isEmpty());
+        return (slides == null ||
+                slides.isEmpty() ||
+                layoutTemplateVariables == null ||
+                layoutTemplateVariables.isEmpty()
+        );
     }
 
     @Override

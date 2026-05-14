@@ -320,7 +320,7 @@ public class SessionManager {
                                     public void onSuccess(SessionResponse response) {
                                         if (response == null ||
                                                 response.contentLayout == null ||
-                                                response.contentLayout.isEmpty()) {
+                                                response.contentLayout.isEmpty() || response.session == null) {
                                             errorDefault("Session data is invalid");
                                             return;
                                         }

@@ -2,8 +2,11 @@ package com.inappstory.sdk.stories.utils;
 
 
 import android.os.Build;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.Html;
 import android.text.Spanned;
+import android.util.Log;
 import android.util.Pair;
 
 import androidx.annotation.NonNull;
@@ -178,6 +181,7 @@ public class WebPageConverter {
     }
 
     private String generateLayout(IASCore core, IReaderContent readerContent) {
+        Log.e("LoadContentPage", "generateLayout " + readerContent.id());
         final IASDataSettingsHolder dataSettingsHolder = (IASDataSettingsHolder) core.settingsAPI();
         String contentLayout = ((IASSettingsImpl) dataSettingsHolder).sessionData().contentLayout;
         if (contentLayout == null || contentLayout.isEmpty()) return "";
@@ -214,7 +218,8 @@ public class WebPageConverter {
             final int index,
             final WebPageConvertCallback callback
     ) {
-        InAppStoryManager.useCore(new UseIASCoreCallback() {
+        Log.e("LoadContentPage", Thread.currentThread().getName());
+        InAppStoryManager.useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
                 String localData = innerWebData;

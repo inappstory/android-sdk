@@ -106,7 +106,10 @@ public class Banner implements IBanner {
 
     @Override
     public boolean checkIfEmpty() {
-        return (layout == null || slides == null || slides.isEmpty());
+        return (slides == null ||
+                slides.isEmpty() ||
+                layoutTemplateVariables == null ||
+                layoutTemplateVariables.isEmpty());
     }
 
     @Override
