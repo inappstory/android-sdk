@@ -144,7 +144,6 @@ public class InAppMessageMainFragment extends Fragment implements Observer<IAMRe
         }
         contentContainer = v.findViewById(CONTAINER_ID);
         contentContainer.setVisibility(View.INVISIBLE);
-
         contentContainer.uiContainerCallback(containerCallback);
         return v;
     }
@@ -203,7 +202,13 @@ public class InAppMessageMainFragment extends Fragment implements Observer<IAMRe
         if (appearance != null) {
             contentContainer.appearance(appearance);
         }
+
         if (readerViewModel == null) return;
+        if (view.getParent() instanceof View) {
+            Log.e("IAM_Debug", "IAM MainFragment onViewCreated parent " +
+                    ((View)view.getParent()).getWidth() + " " + ((View)view.getParent()).getHeight()
+            );
+        }
         if (controller != null) {
             controller.subscribeView(this);
         }
@@ -250,6 +255,7 @@ public class InAppMessageMainFragment extends Fragment implements Observer<IAMRe
             }
         });
     }
+
 
     @Override
     public void onUpdate(final IAMReaderState newValue) {
@@ -376,6 +382,12 @@ public class InAppMessageMainFragment extends Fragment implements Observer<IAMRe
     public void onResume() {
         //resumeScreen();
         super.onResume();
+        if (getView() != null) {
+            Log.e("IAM_Debug", "IAM MainFragment onResume " +
+                    getView().getWidth() + " " + getView().getHeight()
+            );
+        }
+
     }
 
     @Override

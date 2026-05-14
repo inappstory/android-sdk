@@ -81,6 +81,7 @@ public class IAMContentLayout extends FrameLayout implements Observer<IAMReaderS
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
+
         if (initialized) {
             readerSlideViewModel.addSubscriber(
                     IAMContentLayout.this

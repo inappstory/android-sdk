@@ -6,6 +6,7 @@ import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.util.Pair;
 import android.view.View;
 import android.view.ViewGroup;
@@ -105,6 +106,11 @@ public class InAppMessageMainView extends FrameLayout implements Observer<IAMRea
         InAppStoryManager manager = InAppStoryManager.getInstance();
         if (readerViewModel == null || manager == null) return;
 
+        if (getParent() instanceof View) {
+            Log.e("IAM_Debug", "IAM ContentLayout parent " +
+                    ((View)getParent()).getWidth() + " " + ((View)getParent()).getHeight()
+            );
+        }
         if (initialized) {
             IASCore core = manager.iasCore();
             core.screensManager()

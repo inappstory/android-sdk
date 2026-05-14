@@ -62,6 +62,15 @@ public class PopupContentContainer extends IAMContentContainer<InAppMessagePopup
     }
 
     @Override
+    protected void onAttachedToWindow() {
+        Log.e("IAM_Debug",
+                "content container is attached: " +
+                        getWidth() + " " + getHeight()
+        );
+        super.onAttachedToWindow();
+    }
+
+    @Override
     public void appearance(InAppMessagePopupAppearance appearance) {
         super.appearance(appearance);
         if (content == null) return;
@@ -180,6 +189,10 @@ public class PopupContentContainer extends IAMContentContainer<InAppMessagePopup
 
     private void showAnimationEnd() {
         if (callback != null) callback.onShown();
+        Log.e("IAM_Debug",
+                "content container is shown: " +
+                        getWidth() + " " + getHeight()
+        );
     }
 
     private void closeAnimationEnd() {
@@ -297,7 +310,7 @@ public class PopupContentContainer extends IAMContentContainer<InAppMessagePopup
             layoutParams.width = Math.round(availableHeight * contentRatio);
         }
         Log.e("IAM_Debug", "params: " + availableWidth + " " +
-                availableHeight + " " + height +  " " + screenContentRatio + " " + contentRatio);
+                availableHeight + " " + height + " " + screenContentRatio + " " + contentRatio);
         layoutParams.height = height;
         roundedCornerLayout.setRadius(
                 Sizes.dpToPxExt(appearance.cornerRadius(), getContext())
@@ -366,7 +379,7 @@ public class PopupContentContainer extends IAMContentContainer<InAppMessagePopup
         mainLayout.setLayoutParams(layoutParams);
         RelativeLayout relativeLayout = new RelativeLayout(context);
         relativeLayout.setLayoutParams(
-                new RelativeLayout.LayoutParams(
+                new FrameLayout.LayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT,
                         ViewGroup.LayoutParams.MATCH_PARENT
                 )
