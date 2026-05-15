@@ -204,11 +204,7 @@ public class InAppMessageMainFragment extends Fragment implements Observer<IAMRe
         }
 
         if (readerViewModel == null) return;
-        if (view.getParent() instanceof View) {
-            Log.e("IAM_Debug", "IAM MainFragment onViewCreated parent " +
-                    ((View)view.getParent()).getWidth() + " " + ((View)view.getParent()).getHeight()
-            );
-        }
+
         if (controller != null) {
             controller.subscribeView(this);
         }
@@ -376,18 +372,6 @@ public class InAppMessageMainFragment extends Fragment implements Observer<IAMRe
     public void onPause() {
         //pauseScreen();
         super.onPause();
-    }
-
-    @Override
-    public void onResume() {
-        //resumeScreen();
-        super.onResume();
-        if (getView() != null) {
-            Log.e("IAM_Debug", "IAM MainFragment onResume " +
-                    getView().getWidth() + " " + getView().getHeight()
-            );
-        }
-
     }
 
     @Override

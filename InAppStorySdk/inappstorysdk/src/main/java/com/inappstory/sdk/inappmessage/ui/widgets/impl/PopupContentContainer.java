@@ -61,14 +61,6 @@ public class PopupContentContainer extends IAMContentContainer<InAppMessagePopup
         super(context, attrs, defStyleAttr);
     }
 
-    @Override
-    protected void onAttachedToWindow() {
-        Log.e("IAM_Debug",
-                "content container is attached: " +
-                        getWidth() + " " + getHeight()
-        );
-        super.onAttachedToWindow();
-    }
 
     @Override
     public void appearance(InAppMessagePopupAppearance appearance) {
@@ -189,10 +181,6 @@ public class PopupContentContainer extends IAMContentContainer<InAppMessagePopup
 
     private void showAnimationEnd() {
         if (callback != null) callback.onShown();
-        Log.e("IAM_Debug",
-                "content container is shown: " +
-                        getWidth() + " " + getHeight()
-        );
     }
 
     private void closeAnimationEnd() {
@@ -282,10 +270,9 @@ public class PopupContentContainer extends IAMContentContainer<InAppMessagePopup
         if (appearance.contentRatio() < 5f && appearance.contentRatio() > 0.01f) {
             contentRatio = appearance.contentRatio();
         }
-        Log.e("IAM_Debug", "externalContainerRect: " + externalContainerRect.toString());
+     //   Log.e("IAM_Debug", "externalContainerRect: " + externalContainerRect.toString());
         float availableWidth = externalContainerRect.width() - 2 * horizontalPadding;
         Point screenSize = Sizes.getScreenSize(getContext());
-        Log.e("IAM_Debug", "screenSize: " + screenSize);
         if (Sizes.isTablet(getContext())) {
             availableWidth = Math.min(availableWidth, Sizes.dpToPxExt(340, getContext()));
         } else {
@@ -309,8 +296,8 @@ public class PopupContentContainer extends IAMContentContainer<InAppMessagePopup
             height = Math.round(availableHeight);
             layoutParams.width = Math.round(availableHeight * contentRatio);
         }
-        Log.e("IAM_Debug", "params: " + availableWidth + " " +
-                availableHeight + " " + height + " " + screenContentRatio + " " + contentRatio);
+        /*Log.e("IAM_Debug", "params: " + availableWidth + " " +
+                availableHeight + " " + height + " " + screenContentRatio + " " + contentRatio);*/
         layoutParams.height = height;
         roundedCornerLayout.setRadius(
                 Sizes.dpToPxExt(appearance.cornerRadius(), getContext())
@@ -326,7 +313,6 @@ public class PopupContentContainer extends IAMContentContainer<InAppMessagePopup
     protected Pair<Integer, Integer> countSafeArea(int containerHeight) {
         Rect mainLayoutRect = new Rect();
         mainLayout.getGlobalVisibleRect(mainLayoutRect);
-        Log.e("IAM_Debug", "countSafeArea: " + containerHeight + " " + mainLayoutRect);
 
         int topOffset = Math.max(mainLayoutRect.top, 0);
         int bottomOffset = Math.max(mainLayoutRect.bottom, 0);
@@ -348,7 +334,6 @@ public class PopupContentContainer extends IAMContentContainer<InAppMessagePopup
                 }
             }
         }
-        Log.e("IAM_Debug", "insets: " + topInsetOffset + " " + bottomInsetOffset);
         return new Pair<>(
                 Math.max(0, topInsetOffset - topOffset),
                 Math.max(0, bottomInsetOffset - (phoneHeight - bottomOffset))

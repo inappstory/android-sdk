@@ -215,20 +215,16 @@ public abstract class IAMContentContainer<T extends InAppMessageAppearance> exte
         if (appearance != null) {
             this.closeEnabled = !appearance.disableClose();
         }
-        getGlobalVisibleRect(externalContainerRect);
-        Log.e("IAM_Debug", "ex0 " + externalContainerRect.toString());
         postDelayed(new Runnable() {
             @Override
             public void run() {
                 getGlobalVisibleRect(externalContainerRect);
-                Log.e("IAM_Debug", "ex1 " + externalContainerRect.toString());
                 int height = visibleRectIsCalculated();
                 postDelayed(new Runnable() {
                     @Override
                     public void run() {
                         Pair<Integer, Integer> safeArea = countSafeArea(height);
                         if (callback != null) {
-                            Log.e("IAM_Debug", safeArea.toString());
                             callback.countSafeArea(safeArea);
                         }
                         content.setVisibility(VISIBLE);

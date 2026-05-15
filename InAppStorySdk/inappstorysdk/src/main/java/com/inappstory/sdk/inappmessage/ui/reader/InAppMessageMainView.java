@@ -106,11 +106,6 @@ public class InAppMessageMainView extends FrameLayout implements Observer<IAMRea
         InAppStoryManager manager = InAppStoryManager.getInstance();
         if (readerViewModel == null || manager == null) return;
 
-        if (getParent() instanceof View) {
-            Log.e("IAM_Debug", "IAM ContentLayout parent " +
-                    ((View)getParent()).getWidth() + " " + ((View)getParent()).getHeight()
-            );
-        }
         if (initialized) {
             IASCore core = manager.iasCore();
             core.screensManager()
