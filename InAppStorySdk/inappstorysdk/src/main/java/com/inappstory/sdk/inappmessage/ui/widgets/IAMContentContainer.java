@@ -218,6 +218,30 @@ public abstract class IAMContentContainer<T extends InAppMessageAppearance> exte
         postDelayed(new Runnable() {
             @Override
             public void run() {
+                Rect testRect = new Rect();
+                getGlobalVisibleRect(testRect);
+                Log.e("IAM_Debug", "TestRect0: " + testRect);
+                postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        getGlobalVisibleRect(testRect);
+                        Log.e("IAM_Debug", "TestRect1: " + testRect);
+                        postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                getGlobalVisibleRect(testRect);
+                                Log.e("IAM_Debug", "TestRect2: " + testRect);
+                                postDelayed(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        getGlobalVisibleRect(testRect);
+                                        Log.e("IAM_Debug", "TestRect3: " + testRect);
+                                    }
+                                }, 350);
+                            }
+                        }, 50);
+                    }
+                }, 50);
                 getGlobalVisibleRect(externalContainerRect);
                 int height = visibleRectIsCalculated();
                 postDelayed(new Runnable() {
