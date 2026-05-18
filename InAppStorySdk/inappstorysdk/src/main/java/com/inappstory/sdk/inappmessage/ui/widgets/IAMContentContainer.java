@@ -216,17 +216,22 @@ public abstract class IAMContentContainer<T extends InAppMessageAppearance> exte
             this.closeEnabled = !appearance.disableClose();
         }
 
-        post(new Runnable() {
+        postDelayed(new Runnable() {
             @Override
             public void run() {
                 getGlobalVisibleRect(externalContainerRect);
                 int height = visibleRectIsCalculated();
-                if (callback != null) {
-                    callback.countSafeArea(countSafeArea(height));
-                }
-                content.setVisibility(VISIBLE);
+                postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (callback != null) {
+                            callback.countSafeArea(countSafeArea(height));
+                        }
+                        content.setVisibility(VISIBLE);
+                    }
+                }, 50);
             }
-        });
+        }, 50);
     }
 
     protected T appearance;
