@@ -28,6 +28,7 @@ public class NStoryToStoryDTOMapper implements Mapper<NStory, StoryDTO> {
                 obj.hasAudio,
                 obj.hasFavorite,
                 obj.hasShare,
+                obj.timelineIsHidden,
                 obj.layout
         );
     }

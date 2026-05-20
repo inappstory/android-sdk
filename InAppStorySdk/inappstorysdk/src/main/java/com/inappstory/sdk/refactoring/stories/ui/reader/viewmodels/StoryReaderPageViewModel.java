@@ -83,11 +83,6 @@ public class StoryReaderPageViewModel implements IReaderContentDownloaderSubscri
     private final Set<Integer> loadedSlides = new HashSet<>();
 
 
-    public LaunchStoryScreenAppearance readerAppearanceSettings() {
-        if (readerViewModel == null) return null;
-        return readerViewModel.appearanceSettings;
-    }
-
     private final Observable<StoryReaderPageLoaderState> storyReaderPageLoaderStateObservable =
             new Observable<>(new StoryReaderPageLoaderState());
 
@@ -145,8 +140,11 @@ public class StoryReaderPageViewModel implements IReaderContentDownloaderSubscri
                 new Observable<>(
                         state
                 );
-        if (state.storyItem() != null)
-            timelineManager.setSlidesCount(state.storyItem().slidesCount(), true);
+        if (storyListItem != null) {
+            timelineManager.setContentWithTimeline(storyListItem);
+            timelineManager.setSlidesCount(storyListItem.slidesCount(), true);
+            timelineManager.setCurrentIndex(lastIndex);
+        }
         core.storySlidesDownloadManager().addSubscriber(this);
         core.storyDownloadManager().addSubscriber(this);
     }

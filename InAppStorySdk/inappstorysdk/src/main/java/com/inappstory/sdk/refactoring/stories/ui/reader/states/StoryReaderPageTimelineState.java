@@ -1,5 +1,6 @@
 package com.inappstory.sdk.refactoring.stories.ui.reader.states;
 
+
 public class StoryReaderPageTimelineState {
 
     private int slidesCount;

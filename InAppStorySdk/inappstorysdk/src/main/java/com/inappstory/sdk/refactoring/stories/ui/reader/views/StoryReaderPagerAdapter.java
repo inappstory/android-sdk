@@ -1,18 +1,12 @@
 package com.inappstory.sdk.refactoring.stories.ui.reader.views;
 
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.viewpager.widget.PagerAdapter;
 
-import com.inappstory.sdk.refactoring.stories.ui.reader.viewmodels.StoryReaderPageViewModel;
 import com.inappstory.sdk.refactoring.stories.ui.reader.viewmodels.StoryReaderViewModel;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 
 public class StoryReaderPagerAdapter extends PagerAdapter {

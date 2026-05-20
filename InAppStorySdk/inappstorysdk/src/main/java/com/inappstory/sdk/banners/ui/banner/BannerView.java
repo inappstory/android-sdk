@@ -79,7 +79,7 @@ public class BannerView extends FrameLayout implements Observer<BannerState> {
         bannerWebView.slideViewModel(bannerViewModel);
         BannerState state = bannerViewModel.getCurrentBannerState();
         bannerId = state.bannerId();
-        Log.e("UpdateBannerState", state.toString());
+     //   Log.e("UpdateBannerState", state.toString());
         onUpdate(state);
         bannerWebView.checkIfClientIsSet();
     }
@@ -126,7 +126,7 @@ public class BannerView extends FrameLayout implements Observer<BannerState> {
         bannerWebView.setHost(this);
         loaderContainer.addView(createLoader(context));
         loaderContainer.addView(createRefresh(context));
-        Log.e("BannerPagerAdapter", "initView");
+      //  Log.e("BannerPagerAdapter", "initView");
         bannerWebView.setBackgroundColor(Color.argb(1, 255, 255, 255));
     }
 
@@ -434,7 +434,7 @@ public class BannerView extends FrameLayout implements Observer<BannerState> {
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
-        Log.e("AttachDetach", "ViewIsAttached " + uniqueId);
+       // Log.e("AttachDetach", "ViewIsAttached " + uniqueId);
         if (bannerViewModel != null) {
             bannerViewModel.addSubscriber(this);
         }
@@ -463,7 +463,7 @@ public class BannerView extends FrameLayout implements Observer<BannerState> {
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
-        Log.e("AttachDetach", "ViewIsDetached " + uniqueId);
+    //    Log.e("AttachDetach", "ViewIsDetached " + uniqueId);
         if (bannerViewModel != null) {
             //   bannerViewModel.clearJsStatus();
             bannerViewModel.removeSubscriber(this);
@@ -507,19 +507,15 @@ public class BannerView extends FrameLayout implements Observer<BannerState> {
                     //  showRefresh();
                     break;
                 case LOADED:
-                    Log.e("UpdateBannerState", "Loaded Event " + newValue.bannerId());
+               //     Log.e("UpdateBannerState", "Loaded Event " + newValue.bannerId());
                     if (newValue.content() != null &&
                             !newValue.content().isEmpty()) {
                         if (bannerWebView != null) {
                             if (bannerViewModel.bannerIsActive()) {
-                                if (newValue.bannerId() == 33) {
-                                    Log.e("LoadBannerContent", "Check " + newValue);
-                                }
                                 bannerWebView.post(
                                         new Runnable() {
                                             @Override
                                             public void run() {
-                                                Log.e("LoadBannerContent", "Load " + newValue.bannerId());
 
                                                 bannerWebView.loadSlide(newValue.content());
                                             }
@@ -530,7 +526,6 @@ public class BannerView extends FrameLayout implements Observer<BannerState> {
                                         new Runnable() {
                                             @Override
                                             public void run() {
-                                                Log.e("LoadBannerContent", "Load " + newValue.bannerId());
                                                 bannerWebView.loadSlide(newValue.content());
                                             }
                                         }, 130
@@ -548,7 +543,6 @@ public class BannerView extends FrameLayout implements Observer<BannerState> {
                         new Runnable() {
                             @Override
                             public void run() {
-                                Log.e("LoadBannerContent", "SetClientVariables " + newValue.bannerId());
                                 bannerWebView.setClientVariables();
                             }
                         }

@@ -41,7 +41,7 @@
                         android:layout_width="match_parent"
                         android:visibility="visible"
                         android:layout_height="match_parent" />
-                    <com.inappstory.sdk.refactoring.stories.ui.reader.views.StoryReaderPage
+                    <com.inappstory.sdk.refactoring.stories.ui.reader.views.StoryReaderFakePage
                         android:id="@+id/ias_stories_reader_fake_page"
                         android:layout_width="match_parent"
                         android:visibility="gone"

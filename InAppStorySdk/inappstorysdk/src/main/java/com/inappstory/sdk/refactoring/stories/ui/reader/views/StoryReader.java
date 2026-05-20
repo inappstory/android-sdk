@@ -5,6 +5,7 @@ import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.os.Handler;
+import android.os.Looper;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -21,6 +22,7 @@ import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.ui.widgets.elasticview.DraggableElasticLayout;
 import com.inappstory.sdk.refactoring.core.utils.observers.Observer;
 import com.inappstory.sdk.refactoring.shared.ui.ContainerProvider;
+import com.inappstory.sdk.refactoring.stories.data.contracts.IStoryListItem;
 import com.inappstory.sdk.refactoring.stories.ui.list.states.StoryListItemCoordinates;
 import com.inappstory.sdk.refactoring.stories.ui.reader.screens.BaseStoryReaderContainer;
 import com.inappstory.sdk.refactoring.stories.ui.reader.states.GoodsV1WidgetState;
@@ -44,6 +46,7 @@ public class StoryReader extends FrameLayout implements Observer<StoryReaderStat
     private ContainerProvider goodsContainer;
     private ContainerProvider reviewContainer;
     private StoryReaderPager pager;
+    private StoryReaderFakePage fakePage;
     private StoryReaderState currentValue = new StoryReaderState();
     DraggableElasticLayout elasticLayout;
     BaseStoryReaderContainer hostContainer;
@@ -71,6 +74,29 @@ public class StoryReader extends FrameLayout implements Observer<StoryReaderStat
 
     public void viewModel(StoryReaderViewModel viewModel) {
         this.viewModel = viewModel;
+        int lastIndex = viewModel.pageSlideIndexes.get(viewModel.readerState().currentPage());
+        IStoryListItem storyListItem = viewModel.core()
+                .storyRepository()
+                .getLocalStoryListItem(
+                        viewModel.readerImmutableState().storiesIds().get(
+                                viewModel.readerState().currentPage()
+                        )
+                );
+        fakePage.setPageState(
+                new StoryReaderPageAppearance(
+                        viewModel.appearanceSettings.csHasLike(),
+                        viewModel.appearanceSettings.csHasFavorite(),
+                        viewModel.appearanceSettings.csHasShare(),
+                        viewModel.appearanceSettings.csCloseOnSwipe(),
+                        viewModel.appearanceSettings.csCloseOnSwipe(),
+                        viewModel.appearanceSettings.csClosePosition(),
+                        viewModel.appearanceSettings.csReaderBackgroundColor(),
+                        viewModel.appearanceSettings.csTimerGradientEnable(),
+                        viewModel.appearanceSettings.csTimerGradient(),
+                        new ScreenPosition()
+                ),
+                storyListItem,
+                lastIndex);
         post(new Runnable() {
             @Override
             public void run() {
@@ -106,6 +132,7 @@ public class StoryReader extends FrameLayout implements Observer<StoryReaderStat
     private void init(@NonNull Context context) {
         inflate(context, R.layout.cs_story_reader, this);
         pager = findViewById(R.id.ias_stories_reader_pager);
+        fakePage = findViewById(R.id.ias_stories_reader_fake_page);
         elasticLayout = findViewById(R.id.ias_stories_reader_draggable_frame);
         reviewContainer = new ContainerProvider()
                 .layout(findViewById(R.id.ias_stories_reader_review_container));
@@ -279,25 +306,32 @@ public class StoryReader extends FrameLayout implements Observer<StoryReaderStat
                     @Override
                     public void onAnimationEnd() {
                         super.onAnimationEnd();
-                        updateOpenState(StoryReaderOpenState.OPENED);
+                        postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                updateOpenState(StoryReaderOpenState.OPENED);
+                            }
+                        }, 50);
+
                     }
                 }).start();
                 break;
             case OPENED:
                 pager.transformAnimation(AppearanceManager.ANIMATION_CUBE);
+
                 pager.setAdapter(
                         new StoryReaderPagerAdapter(
                                 viewModel,
                                 new StoryReaderPageAppearance(
-                                        true,
-                                        true,
-                                        true,
-                                        true,
-                                        true,
-                                        0,
-                                        Color.BLACK,
-                                        true,
-                                        new StoriesGradientObject(),
+                                        viewModel.appearanceSettings.csHasLike(),
+                                        viewModel.appearanceSettings.csHasFavorite(),
+                                        viewModel.appearanceSettings.csHasShare(),
+                                        viewModel.appearanceSettings.csCloseOnSwipe(),
+                                        viewModel.appearanceSettings.csCloseOnSwipe(),
+                                        viewModel.appearanceSettings.csClosePosition(),
+                                        viewModel.appearanceSettings.csReaderBackgroundColor(),
+                                        viewModel.appearanceSettings.csTimerGradientEnable(),
+                                        viewModel.appearanceSettings.csTimerGradient(),
                                         new ScreenPosition()
                                 )
                         )
@@ -312,6 +346,12 @@ public class StoryReader extends FrameLayout implements Observer<StoryReaderStat
                     pager.setCurrentItem(viewModel.readerState().currentPredictedPage());
                     viewModel.pagerPageSelected(viewModel.readerState().currentPredictedPage());
                 }
+                new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        fakePage.setVisibility(GONE);
+                    }
+                }, 100);
                 break;
             case CLOSING:
                 getFinishAnimation().setListener(new HandlerAnimatorListenerAdapter() {

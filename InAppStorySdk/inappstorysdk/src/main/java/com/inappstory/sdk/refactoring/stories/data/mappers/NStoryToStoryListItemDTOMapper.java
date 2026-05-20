@@ -1,12 +1,24 @@
 package com.inappstory.sdk.refactoring.stories.data.mappers;
 
+import com.inappstory.sdk.core.network.content.models.StorySlide;
 import com.inappstory.sdk.refactoring.core.utils.usecases.Mapper;
 import com.inappstory.sdk.refactoring.stories.data.local.StoriesListItemDTO;
 import com.inappstory.sdk.refactoring.stories.data.network.NStory;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class NStoryToStoryListItemDTOMapper implements Mapper<NStory, StoriesListItemDTO> {
     @Override
     public StoriesListItemDTO convert(NStory obj) {
+        List<String> timelineBackgroundColor = new ArrayList<>();
+        List<String> timelineForegroundColor = new ArrayList<>();
+        List<Integer> slidesDuration = new ArrayList<>();
+        for (StorySlide slide: obj.slides) {
+            timelineBackgroundColor.add(slide.timelineBackgroundColor());
+            timelineForegroundColor.add(slide.timelineBackgroundColor());
+            slidesDuration.add(slide.duration);
+        }
         return new StoriesListItemDTO(
                 obj.id,
                 obj.title,
@@ -28,7 +40,11 @@ public class NStoryToStoryListItemDTOMapper implements Mapper<NStory, StoriesLis
                 obj.hasLike,
                 obj.hasAudio,
                 obj.hasFavorite,
-                obj.hasShare
+                obj.hasShare,
+                obj.timelineIsHidden,
+                timelineBackgroundColor,
+                timelineForegroundColor,
+                slidesDuration
         );
     }
 

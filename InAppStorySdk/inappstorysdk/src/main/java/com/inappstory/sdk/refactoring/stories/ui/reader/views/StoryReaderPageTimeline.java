@@ -61,9 +61,9 @@ public class StoryReaderPageTimeline extends View
         this.state = newValue;
         final int localVisibility = !(state.slidesCount() == 0 ||
                 (state.slidesCount() == 1 && state.timerDuration() == 0) ||
-                        state.isHidden()
+                state.isHidden()
         ) ? VISIBLE : INVISIBLE;
-       // Log.e("UpdateTimelineState", state.toString());
+        //Log.e("UpdateTimelineState", "Update " + state.toString());
         if (Looper.myLooper() == Looper.getMainLooper()) {
             setVisibility(localVisibility);
         } else {
@@ -83,6 +83,8 @@ public class StoryReaderPageTimeline extends View
     @Override
     protected void onDraw(Canvas canvas) {
         StoryReaderPageTimelineState currentState = state;
+        if (currentState.timerDuration() > 0)
+            Log.e("UpdateTimelineState", "Draw " + currentState.toString());
         if (parameters == null || currentState == null || getWidth() == 0) {
             super.onDraw(canvas);
         } else {

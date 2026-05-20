@@ -339,13 +339,14 @@ public class StorySlidesDownloadManager {
                     tasks.remove(taskKey);
                 }
             }
-            for (SlideTaskKey taskKey : notifyKeys) {
-                List<IReaderContentDownloaderSubscriber> subscribersById = getSubscribersByStoryId(
-                        taskKey.contentIdAndType
-                );
-                for (IReaderContentDownloaderSubscriber subscriber : subscribersById) {
-                    checkBundleResources(subscriber, taskKey.index);
-                }
+
+        }
+        for (SlideTaskKey taskKey : notifyKeys) {
+            List<IReaderContentDownloaderSubscriber> subscribersById = getSubscribersByStoryId(
+                    taskKey.contentIdAndType
+            );
+            for (IReaderContentDownloaderSubscriber subscriber : subscribersById) {
+                checkBundleResources(subscriber, taskKey.index);
             }
         }
     }

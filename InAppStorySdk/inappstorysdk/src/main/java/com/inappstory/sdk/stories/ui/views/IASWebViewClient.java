@@ -191,16 +191,16 @@ public class IASWebViewClient extends WebViewClient {
     @Override
     public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
         try {
-            Log.e("shouldInterceptRequest", request.getUrl().toString());
+          //  Log.e("shouldInterceptRequest", request.getUrl().toString());
             WebResourceResponse response = parseVODRequest(request);
             if (response == null)
                 response = getChangedResponse(request.getUrl().toString(), view.getContext());
             if (response != null) {
-                Log.e("shouldInterceptRequest", request.getUrl().toString() + " success");
+         //       Log.e("shouldInterceptRequest", request.getUrl().toString() + " success");
                 return response;
             } else {
 
-                Log.e("shouldInterceptRequest", request.getUrl().toString() + " error");
+          //      Log.e("shouldInterceptRequest", request.getUrl().toString() + " error");
             }
         } catch (Exception e) {
 

@@ -4,8 +4,6 @@ import com.inappstory.sdk.core.data.IContentWithTimeline;
 import com.inappstory.sdk.refactoring.core.utils.observers.Observable;
 import com.inappstory.sdk.refactoring.core.utils.observers.Observer;
 import com.inappstory.sdk.refactoring.stories.ui.reader.states.StoryReaderPageTimelineState;
-import com.inappstory.sdk.stories.ui.widgets.readerscreen.progresstimeline.StoryTimeline;
-import com.inappstory.sdk.stories.ui.widgets.readerscreen.progresstimeline.StoryTimelineState;
 import com.inappstory.sdk.utils.ScheduledTPEManager;
 
 import java.util.concurrent.ScheduledFuture;

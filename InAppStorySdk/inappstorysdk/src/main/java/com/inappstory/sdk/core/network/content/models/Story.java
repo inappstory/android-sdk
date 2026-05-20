@@ -394,6 +394,13 @@ public class Story implements Parcelable, IStory, IContentWithTimeline {
     }
 
     @Override
+    public int slideDuration(int slideIndex) {
+        IReaderContentSlide slide = slide(slideIndex);
+        if (slide == null) return 0;
+        return slide.duration();
+    }
+
+    @Override
     public String timelineBackgroundColor(int slideIndex) {
         IReaderContentSlide slide = slide(slideIndex);
         if (slide == null) return DEFAULT_TIMELINE_BACKGROUND_COLOR;

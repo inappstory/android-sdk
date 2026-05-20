@@ -1,7 +1,6 @@
 package com.inappstory.sdk.refactoring.stories.ui.reader.viewmodels;
 
 
-import android.util.Log;
 
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.exceptions.NotImplementedMethodException;
@@ -14,7 +13,6 @@ import com.inappstory.sdk.refactoring.stories.ui.list.states.StoryListItemCoordi
 import com.inappstory.sdk.refactoring.stories.ui.reader.states.StoryReaderImmutableState;
 import com.inappstory.sdk.refactoring.stories.ui.reader.states.StoryReaderOpenState;
 import com.inappstory.sdk.refactoring.stories.ui.reader.states.StoryReaderState;
-import com.inappstory.sdk.refactoring.stories.ui.reader.views.StoryReaderPage;
 import com.inappstory.sdk.refactoring.stories.ui.reader.views.SwipeDirection;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.cache.ContentIdAndType;
@@ -159,7 +157,7 @@ public class StoryReaderViewModel {
     private final Observable<StoryReaderState> storyReaderStateObservable =
             new Observable<>(new StoryReaderState());
 
-    final List<Integer> pageSlideIndexes = new ArrayList<>();
+    public final List<Integer> pageSlideIndexes = new ArrayList<>();
 
     public StoryReaderState readerState() {
         return storyReaderStateObservable.getValue();

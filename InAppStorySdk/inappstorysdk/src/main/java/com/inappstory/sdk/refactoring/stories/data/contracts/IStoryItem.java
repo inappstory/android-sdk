@@ -1,5 +1,6 @@
 package com.inappstory.sdk.refactoring.stories.data.contracts;
 
+import com.inappstory.sdk.core.data.IContentWithTimeline;
 import com.inappstory.sdk.refactoring.shared.data.contracts.IOpenedStatus;
 import com.inappstory.sdk.refactoring.shared.data.contracts.IReaderCloseEnabler;
 import com.inappstory.sdk.refactoring.shared.data.contracts.IReaderSwipeUpEnabler;
@@ -13,7 +14,8 @@ public interface IStoryItem extends
         IStatusContent,
         IOpenedStatus,
         IReaderSwipeUpEnabler,
-        IReaderCloseEnabler {
+        IReaderCloseEnabler,
+        IContentWithTimeline {
     Map<String, Object> ugcPayload();
     boolean fullscreen();
 }

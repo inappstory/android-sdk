@@ -30,7 +30,11 @@ public class StoriesListItemDTO implements IStoryListItem {
             Boolean hasLike,
             Boolean hasAudio,
             Boolean hasFavorite,
-            Boolean hasShare
+            Boolean hasShare,
+            boolean timelineIsHidden,
+            List<String> timelineBackgroundColor,
+            List<String> timelineForegroundColor,
+            List<Integer> slidesDuration
     ) {
         this.id = id;
         this.title = title;
@@ -53,6 +57,10 @@ public class StoriesListItemDTO implements IStoryListItem {
         this.hasAudio = hasAudio;
         this.hasFavorite = hasFavorite;
         this.hasShare = hasShare;
+        this.timelineIsHidden = timelineIsHidden;
+        this.timelineBackgroundColor = timelineBackgroundColor;
+        this.timelineForegroundColor = timelineForegroundColor;
+        this.slidesDuration = slidesDuration;
     }
 
     private int id;
@@ -76,6 +84,10 @@ public class StoriesListItemDTO implements IStoryListItem {
     private Boolean hasAudio;
     private Boolean hasFavorite;
     private Boolean hasShare;
+    private boolean timelineIsHidden;
+    private List<String> timelineBackgroundColor;
+    private List<String> timelineForegroundColor;
+    private List<Integer> slidesDuration;
 
     @Override
     public boolean hasFavorite() {
@@ -238,5 +250,25 @@ public class StoriesListItemDTO implements IStoryListItem {
     @Override
     public boolean fullscreen() {
         return true;
+    }
+
+    @Override
+    public int slideDuration(int slideIndex) {
+        return 0;
+    }
+
+    @Override
+    public boolean timelineIsHidden() {
+        return timelineIsHidden;
+    }
+
+    @Override
+    public String timelineBackgroundColor(int slideIndex) {
+        return timelineBackgroundColor.get(slideIndex);
+    }
+
+    @Override
+    public String timelineForegroundColor(int slideIndex) {
+        return timelineForegroundColor.get(slideIndex);
     }
 }

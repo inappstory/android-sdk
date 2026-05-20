@@ -44,6 +44,7 @@ public class StoryDTO implements
     public Boolean hasFavorite;
     public Boolean hasShare;
     public String layout;
+    public boolean timelineIsHidden;
 
     public StoryDTO() {
     }
@@ -69,6 +70,7 @@ public class StoryDTO implements
             Boolean hasAudio,
             Boolean hasFavorite,
             Boolean hasShare,
+            boolean timelineIsHidden,
             String layout
     ) {
         this.id = id;
@@ -93,6 +95,7 @@ public class StoryDTO implements
         this.hasFavorite = hasFavorite;
         this.hasShare = hasShare;
         this.layout = layout;
+        this.timelineIsHidden = timelineIsHidden;
     }
 
     public String imageCoverByQuality(int quality) {
@@ -322,4 +325,23 @@ public class StoryDTO implements
         );
     }
 
+    @Override
+    public boolean timelineIsHidden() {
+        return timelineIsHidden;
+    }
+
+    @Override
+    public int slideDuration(int slideIndex) {
+        return slides.get(slideIndex).duration();
+    }
+
+    @Override
+    public String timelineBackgroundColor(int slideIndex) {
+        return slides.get(slideIndex).timelineBackgroundColor();
+    }
+
+    @Override
+    public String timelineForegroundColor(int slideIndex) {
+        return slides.get(slideIndex).timelineForegroundColor();
+    }
 }
