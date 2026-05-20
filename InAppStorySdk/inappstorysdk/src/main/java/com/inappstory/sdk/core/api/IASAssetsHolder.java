@@ -12,12 +12,9 @@ public interface IASAssetsHolder {
 
 
     List<SessionAsset> assets();
-    List<SessionAsset> jsAssets();
-    List<SessionAsset> cssAssets();
-    List<String> layoutAssets();
     void downloadAssets();
     void reloadAssets(SessionAssetsIsReadyCallback callback);
-    void setAssets(List<SessionAsset> assets, String contentLayout);
+    void setAssets(List<SessionAsset> assets);
     boolean assetsIsDownloaded();
     boolean assetsIsDownloaded(Set<String> contentAssetKeys);
     void addAssetsIsReadyCallback(SessionAssetsIsReadyCallback callback);

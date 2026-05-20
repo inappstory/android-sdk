@@ -28,6 +28,13 @@ public class SessionAsset {
     public String format;
     @SerializedName("mimeType")
     public String mimeType;
+    @SerializedName("purpose")
+    public String purpose;
+
+    public boolean isMainAsset() {
+        return purpose != null &&
+                (purpose.equals("common") || purpose.equals("font") || purpose.equals("animation") || purpose.equals("cardApi"));
+    }
 
     @Override
     public boolean equals(Object o) {
@@ -41,12 +48,13 @@ public class SessionAsset {
                 Objects.equals(replaceKey, that.replaceKey) &&
                 Objects.equals(filename, that.filename) &&
                 Objects.equals(format, that.format) &&
+                Objects.equals(purpose, that.purpose) &&
                 Objects.equals(mimeType, that.mimeType);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(url, size, sha1, type, replaceKey, filename, format, mimeType);
+        return Objects.hash(url, size, sha1, type, replaceKey, filename, format, purpose, mimeType);
     }
 
     @Override

@@ -190,7 +190,7 @@ public class SessionManager {
                 manager.restartSchedule();
             }
         });
-        core.assetsHolder().setAssets(response.sessionAssets, response.contentLayout);
+        core.assetsHolder().setAssets(response.sessionAssets);
         core.assetsHolder().downloadAssets();
     }
 

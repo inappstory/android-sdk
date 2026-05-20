@@ -46,39 +46,6 @@ public class IASAssetsHolderImpl implements IASAssetsHolder {
         return assets;
     }
 
-    @Override
-    public List<SessionAsset> jsAssets() {
-        List<SessionAsset> assets = new ArrayList<>();
-        synchronized (assetsLock) {
-            for (SessionAsset sessionAsset : sessionAssets) {
-                if (Objects.equals(sessionAsset.format, IASAssetsHolder.JS_FORMAT)) {
-                    assets.add(sessionAsset);
-                }
-            }
-        }
-        return assets;
-    }
-
-    @Override
-    public List<SessionAsset> cssAssets() {
-        List<SessionAsset> assets = new ArrayList<>();
-        synchronized (assetsLock) {
-            for (SessionAsset sessionAsset : sessionAssets) {
-                if (Objects.equals(sessionAsset.format, IASAssetsHolder.CSS_FORMAT)) {
-                    assets.add(sessionAsset);
-                }
-            }
-        }
-        return assets;
-    }
-
-    @Override
-    public List<String> layoutAssets() {
-        synchronized (assetsLock) {
-            return new ArrayList<>(layoutAssetUrls);
-        }
-    }
-
     private void loadAssets() {
         List<SessionAsset> assets = new ArrayList<>();
         synchronized (assetsLock) {
@@ -193,22 +160,18 @@ public class IASAssetsHolderImpl implements IASAssetsHolder {
     }
 
     @Override
-    public void setAssets(List<SessionAsset> assets, String contentLayout) {
+    public void setAssets(List<SessionAsset> assets) {
         List<SessionAsset> orderedAssets = new ArrayList<>();
-
-        Log.e("LoadContentPage", "non ordered assets: [" + TextUtils.join(",", assets) + "]");
         synchronized (assetsLock) {
             layoutAssetUrls.clear();
             for (SessionAsset sessionAsset : assets) {
-                if (contentLayout.contains(sessionAsset.replaceKey)) {
+                if (sessionAsset.isMainAsset()) {
                     layoutAssetUrls.add(sessionAsset.url);
                     orderedAssets.add(0, sessionAsset);
                 } else {
                     orderedAssets.add(sessionAsset);
                 }
             }
-            Log.e("LoadContentPage", "ordered assets: [" + TextUtils.join(",", orderedAssets) + "]");
-            Log.e("LoadContentPage", "layout assets urls: [" + TextUtils.join(",", layoutAssetUrls) + "]");
             sessionAssets.clear();
             sessionAssets.addAll(orderedAssets);
         }
@@ -232,24 +195,17 @@ public class IASAssetsHolderImpl implements IASAssetsHolder {
     public boolean assetsIsDownloaded(Set<String> assetUrls) {
         synchronized (assetsLock) {
             if (assetsIsDownloaded) {
-                Log.e("LoadContentPage", "assets url all cached");
                 return true;
             }
             if (assetUrls == null) {
-                Log.e("LoadContentPage", "assets url content list is null");
                 return false;
             }
             Set<String> allCheckUrls = new HashSet<>(layoutAssetUrls);
-
-            Log.e("LoadContentPage", "layout assets urls: [" + TextUtils.join(",", layoutAssetUrls) + "]");
             allCheckUrls.addAll(assetUrls);
-            Log.e("LoadContentPage", "content assets urls: [" + TextUtils.join(",", assetUrls) + "]");
             for (String assetUrl : allCheckUrls) {
                 if (!cachedAssetUrls.contains(assetUrl))
-                    Log.e("LoadContentPage", "non cached url: " + assetUrl);
-                return false;
+                    return false;
             }
-            Log.e("LoadContentPage", "assets url content list and layout cached");
             return true;
         }
     }
