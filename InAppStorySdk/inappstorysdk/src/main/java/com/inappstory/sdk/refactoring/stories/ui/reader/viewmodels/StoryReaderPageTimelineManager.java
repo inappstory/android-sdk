@@ -96,8 +96,8 @@ public class StoryReaderPageTimelineManager {
                             .currentProgress(progress)
                             .isHidden(contentWithTimeline.timelineIsHidden())
                             .timerDuration(timerDuration)
-                            .foregroundColor(contentWithTimeline.timelineForegroundColor(currentIndex))
-                            .backgroundColor(contentWithTimeline.timelineForegroundColor(currentIndex))
+                            .foregroundColor(contentWithTimeline.timelineBackgroundColor(currentIndex))
+                            .backgroundColor(contentWithTimeline.timelineBackgroundColor(currentIndex))
             );
         } else {
             storyReaderPageTimelineStateObservable.updateValue(
@@ -114,7 +114,7 @@ public class StoryReaderPageTimelineManager {
         @Override
         public void run() {
             float currentTime = (timerStart + System.currentTimeMillis() - timerStartTimestamp);
-            if (!isActive || timerDuration > 0 && currentTime >= timerDuration) {
+            if (!isActive || timerDuration == 0 || timerDuration > 0 && currentTime >= timerDuration) {
                 cancelTask();
             } else {
                 setProgress(currentTime / timerDuration);

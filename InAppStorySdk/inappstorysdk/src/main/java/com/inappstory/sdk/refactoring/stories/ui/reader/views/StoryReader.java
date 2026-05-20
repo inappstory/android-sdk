@@ -351,7 +351,7 @@ public class StoryReader extends FrameLayout implements Observer<StoryReaderStat
                     public void run() {
                         fakePage.setVisibility(GONE);
                     }
-                }, 100);
+                }, 300);
                 break;
             case CLOSING:
                 getFinishAnimation().setListener(new HandlerAnimatorListenerAdapter() {

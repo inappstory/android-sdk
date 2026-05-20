@@ -16,7 +16,7 @@ public class NStoryToStoryListItemDTOMapper implements Mapper<NStory, StoriesLis
         List<Integer> slidesDuration = new ArrayList<>();
         for (StorySlide slide: obj.slides) {
             timelineBackgroundColor.add(slide.timelineBackgroundColor());
-            timelineForegroundColor.add(slide.timelineBackgroundColor());
+            timelineForegroundColor.add(slide.timelineForegroundColor());
             slidesDuration.add(slide.duration);
         }
         return new StoriesListItemDTO(

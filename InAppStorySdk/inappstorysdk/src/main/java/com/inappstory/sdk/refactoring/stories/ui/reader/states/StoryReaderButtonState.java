@@ -55,4 +55,13 @@ public class StoryReaderButtonState {
     public int hashCode() {
         return Objects.hash(enabled, active, visible);
     }
+
+    @Override
+    public String toString() {
+        return "StoryReaderButtonState{" +
+                "enabled=" + enabled +
+                ", active=" + active +
+                ", visible=" + visible +
+                '}';
+    }
 }

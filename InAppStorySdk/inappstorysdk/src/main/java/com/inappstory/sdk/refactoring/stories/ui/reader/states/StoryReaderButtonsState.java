@@ -1,6 +1,17 @@
 package com.inappstory.sdk.refactoring.stories.ui.reader.states;
 
 public class StoryReaderButtonsState {
+    @Override
+    public String toString() {
+        return "StoryReaderButtonsState{" +
+                "likeState=" + likeState +
+                ", dislikeState=" + dislikeState +
+                ", favoriteState=" + favoriteState +
+                ", shareState=" + shareState +
+                ", soundState=" + soundState +
+                '}';
+    }
+
     public StoryReaderButtonsState likeState(StoryReaderButtonState likeState) {
         this.likeState = likeState;
         return this;

@@ -2,6 +2,7 @@ package com.inappstory.sdk.refactoring.stories.ui.reader.views;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.util.SizeF;
 import android.view.MotionEvent;
 import android.view.View;
@@ -258,6 +259,8 @@ public class StoryReaderPageButtons extends LinearLayout implements Observer<Sto
 
     @Override
     public void onUpdate(StoryReaderButtonsState newValue) {
+        if (newValue == null) return;
+        Log.e("ButtonsState", newValue.toString());
         if (newValue.likeState() != null && !newValue.likeState().equals(likeState)) {
             likeState = newValue.likeState();
             updateButtonState(likeLayout, like, likeInterface, likeState);
