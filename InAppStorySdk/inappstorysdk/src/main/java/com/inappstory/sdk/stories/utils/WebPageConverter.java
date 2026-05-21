@@ -182,8 +182,7 @@ public class WebPageConverter {
 
     private String generateLayout(IASCore core, IReaderContent readerContent) {
         Log.e("LoadContentPage", "generateLayout " + readerContent.id());
-        final IASDataSettingsHolder dataSettingsHolder = (IASDataSettingsHolder) core.settingsAPI();
-        String contentLayout = ((IASSettingsImpl) dataSettingsHolder).sessionData().contentLayout;
+        String contentLayout = core.layoutHolder().layout();
         if (contentLayout == null || contentLayout.isEmpty()) return "";
         for (Map.Entry<String, String> entry : readerContent.layoutTemplateVariables().entrySet()) {
             if (entry.getKey() == null) continue;

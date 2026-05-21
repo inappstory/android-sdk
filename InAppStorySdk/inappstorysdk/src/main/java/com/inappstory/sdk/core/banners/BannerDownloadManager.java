@@ -43,7 +43,8 @@ public class BannerDownloadManager {
     }
 
     public boolean allSlidesLoaded(IReaderContent readerContent) {
-        return slidesDownloader.allSlidesLoaded(readerContent, ContentType.BANNER);
+        return core.layoutHolder().layoutIsDownloaded() &&
+                slidesDownloader.allSlidesLoaded(readerContent, ContentType.BANNER);
     }
 
     private void addSlides(
@@ -138,6 +139,7 @@ public class BannerDownloadManager {
         }
 
     }
+
     public void clearSlidesDownloader() {
         slidesDownloader.cleanTasks();
         slidesDownloader.clearSubscribers();

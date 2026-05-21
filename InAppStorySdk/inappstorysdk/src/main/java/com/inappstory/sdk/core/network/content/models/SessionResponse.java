@@ -28,9 +28,6 @@ public class SessionResponse {
     @SerializedName(SessionRequestFields.sessionAssets)
     public List<SessionAsset> sessionAssets;
 
-    @SerializedName(SessionRequestFields.layout)
-    public String contentLayout;
-
     @SerializedName(SessionRequestFields.isGameReaderDefaultFullscreen)
     public boolean isGameReaderDefaultFullscreen;
 

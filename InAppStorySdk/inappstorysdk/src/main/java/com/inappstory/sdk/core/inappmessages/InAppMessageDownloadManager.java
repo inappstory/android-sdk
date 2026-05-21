@@ -92,7 +92,7 @@ public class InAppMessageDownloadManager {
         Log.e("LoadContentPage", "check assets url IAM " + readerContent.id());
         return core.assetsHolder().assetsIsDownloaded(
                 core.assetUrlsExtractor().extract(readerContent)
-        );
+        ) && core.layoutHolder().layoutIsDownloaded();
     }
 
     private void addSlides(@NonNull final IReaderContent readerContent, final InAppMessageLoadCallback callback) {

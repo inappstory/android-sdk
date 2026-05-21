@@ -154,6 +154,13 @@ public interface ApiInterface {
             @Path("id") String id,
             @Field("data") String data);
 
+    @GET("v2/layout")
+    Request getLayout(
+            @ReplaceHeader(HeadersKeys.USER_ID) String xUserId,
+            @ReplaceHeader(HeadersKeys.AUTH_SESSION_ID) String xSessionId,
+            @ReplaceHeader(HeadersKeys.ACCEPT_LANGUAGE) String lang
+    );
+
     @GET("v2/story")
     Request getStories(
             @Query("test") String test,
@@ -251,8 +258,6 @@ public interface ApiInterface {
     );
 
 
-
-
     @GET("stat/{event_name}")
     @ExcludeHeaders({
             HeadersKeys.ACCEPT,
@@ -292,7 +297,6 @@ public interface ApiInterface {
             @Path("id") String id,
             @Field("data") String data,
             @Query("session_id") String sessionId);
-
 
 
     @POST("v2/story-like/{id}")

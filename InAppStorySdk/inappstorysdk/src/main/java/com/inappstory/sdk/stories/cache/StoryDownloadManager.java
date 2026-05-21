@@ -71,8 +71,6 @@ public class StoryDownloadManager {
         if (cleanStories) {
             core.contentHolder().readerContent().clearByType(ContentType.STORY);
             core.contentHolder().readerContent().clearByType(ContentType.UGC);
-            //  core.contentHolder().listsContent().clearByType(ContentType.STORY);
-            //   core.contentHolder().listsContent().clearByType(ContentType.UGC);
         }
         storyDownloader.cleanTasks();
         slidesDownloader.cleanTasks();

@@ -14,6 +14,7 @@ import com.inappstory.sdk.core.api.IASExternalUtilsAPI;
 import com.inappstory.sdk.core.api.IASFavorites;
 import com.inappstory.sdk.core.api.IASGames;
 import com.inappstory.sdk.core.api.IASInAppMessage;
+import com.inappstory.sdk.core.api.IASLayoutHolder;
 import com.inappstory.sdk.core.api.IASLimitsHolder;
 import com.inappstory.sdk.core.api.IASLogs;
 import com.inappstory.sdk.core.api.IASManager;
@@ -35,6 +36,7 @@ import com.inappstory.sdk.core.api.impl.IASExternalUtilsAPIImpl;
 import com.inappstory.sdk.core.api.impl.IASFavoritesImpl;
 import com.inappstory.sdk.core.api.impl.IASGamesImpl;
 import com.inappstory.sdk.core.api.impl.IASInAppMessageImpl;
+import com.inappstory.sdk.core.api.impl.IASLayoutHolderImpl;
 import com.inappstory.sdk.core.api.impl.IASLimitsHolderImpl;
 import com.inappstory.sdk.core.api.impl.IASLogsImpl;
 import com.inappstory.sdk.core.api.impl.IASManagerImpl;
@@ -99,6 +101,7 @@ public class IASCoreImpl implements IASCore {
     private final IASLimitsHolder limitsHolder;
     private final CancellationTokenPool cancellationTokenPool;
     private final AssetUrlsExtractor assetUrlsExtractor;
+    private final IASLayoutHolder layoutHolder;
 
     public IASCoreImpl(Context context) {
         this.context = context;
@@ -135,6 +138,7 @@ public class IASCoreImpl implements IASCore {
         limitsHolder = new IASLimitsHolderImpl();
         projectSettings = new IASProjectSettingsImpl(this);
         assetUrlsExtractor = new AssetUrlsExtractor(this);
+        layoutHolder = new IASLayoutHolderImpl(this);
         Thread.setDefaultUncaughtExceptionHandler(new IASExceptionHandler(this));
         externalUtilsAPI.init();
     }
@@ -318,6 +322,11 @@ public class IASCoreImpl implements IASCore {
     @Override
     public IASAssetsHolder assetsHolder() {
         return assetsHolder;
+    }
+
+    @Override
+    public IASLayoutHolder layoutHolder() {
+        return layoutHolder;
     }
 
     @Override

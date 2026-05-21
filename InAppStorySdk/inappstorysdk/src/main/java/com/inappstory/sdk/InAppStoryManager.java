@@ -1012,7 +1012,6 @@ public class InAppStoryManager implements IASBackPressHandler {
                         core.contentHolder().favoriteItems().clearByType(ContentType.UGC);
                         core.contentLoader().storyDownloadManager().refreshLocals(ContentType.STORY);
                         core.contentLoader().storyDownloadManager().refreshLocals(ContentType.UGC);
-                        core.contentLoader().storyDownloadManager().cleanTasks(false);
                         core.contentHolder().readerContent().clearByType(ContentType.IN_APP_MESSAGE);
                         core.contentHolder().readerContent().clearByType(ContentType.STORY);
                         core.contentLoader().inAppMessageDownloadManager().clearLocalData();

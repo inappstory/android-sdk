@@ -426,7 +426,7 @@ public class StoriesViewManager {
     private void slideInCache(final IReaderContent story, final int index) {
         Log.e("LoadContentPage", "check assets url for story/slide " + story.id() + " " + index);
         if (core.assetsHolder().assetsIsDownloaded(
-                core.assetUrlsExtractor().extract(story))
+                core.assetUrlsExtractor().extract(story)) && core.layoutHolder().layoutIsDownloaded()
         ) {
             innerLoad(story);
             pageManager.slideLoadSuccess(index, true);
@@ -558,7 +558,7 @@ public class StoriesViewManager {
     public void onVerticalScrollChanged(OnVerticalScrollJSData verticalScrollData) {
         onChangePassOverscroll(verticalScrollData.scrollY,
                 !verticalScrollData.isScrollableLayer ||
-                verticalScrollData.scrollPercent > 99.9f
+                        verticalScrollData.scrollPercent > 99.9f
         );
         if (verticalScrollData.isScrollableLayer) {
             core.statistic().storiesV2().addScrollEvent(

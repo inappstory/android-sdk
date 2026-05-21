@@ -145,6 +145,7 @@ public class IASContentLoaderImpl implements IASContentLoader {
 
         }
         core.assetsHolder().clear();
+        core.layoutHolder().clear();
     }
 
     @Override

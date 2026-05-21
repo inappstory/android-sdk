@@ -13,6 +13,7 @@ import com.inappstory.sdk.core.api.IASExternalUtilsAPI;
 import com.inappstory.sdk.core.api.IASFavorites;
 import com.inappstory.sdk.core.api.IASGames;
 import com.inappstory.sdk.core.api.IASInAppMessage;
+import com.inappstory.sdk.core.api.IASLayoutHolder;
 import com.inappstory.sdk.core.api.IASLimitsHolder;
 import com.inappstory.sdk.core.api.IASLogs;
 import com.inappstory.sdk.core.api.IASManager;
@@ -75,6 +76,7 @@ public interface IASCore {
     SharedPreferencesAPI sharedPreferencesAPI();
     InAppStoryService inAppStoryService();
     IASAssetsHolder assetsHolder();
+    IASLayoutHolder layoutHolder();
     CancellationTokenPool cancellationTokenPool();
     String buildHash();
     AssetUrlsExtractor assetUrlsExtractor();

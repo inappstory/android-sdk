@@ -1,4 +1,4 @@
-package com.inappstory.sdk.game.cache;
+package com.inappstory.sdk.stories.cache;
 
 import java.util.Set;
 

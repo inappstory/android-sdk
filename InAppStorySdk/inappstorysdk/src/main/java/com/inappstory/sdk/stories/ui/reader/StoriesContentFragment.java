@@ -366,7 +366,6 @@ public class StoriesContentFragment extends Fragment
                 );
             }
         });
-        if (readerManager != null) readerManager.unsubscribeFromAssets();
         super.onDestroyView();
     }
 
@@ -526,7 +525,6 @@ public class StoriesContentFragment extends Fragment
                     );
 
                     storiesViewPager.setHost(StoriesContentFragment.this);
-                    readerManager.subscribeToAssets();
                     readerManager.setHost(StoriesContentFragment.this);
                     readerManager.setStoriesIds(currentIds);
                     readerManager.firstStoryId = currentIds.get(ind);

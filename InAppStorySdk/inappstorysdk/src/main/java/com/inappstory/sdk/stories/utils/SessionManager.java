@@ -214,7 +214,7 @@ public class SessionManager {
             SessionRequestFields.imagePlaceholders
     });
     private final String SESSION_EXPAND = TextUtils.join(",", new String[]{
-            SessionRequestFields.sessionAssets, SessionRequestFields.layout
+            SessionRequestFields.sessionAssets
     });
 
     private void replaceOrAddCallback(OpenSessionCallback callback) {
@@ -318,13 +318,6 @@ public class SessionManager {
                                 new NetworkCallback<SessionResponse>() {
                                     @Override
                                     public void onSuccess(SessionResponse response) {
-                                        if (response == null ||
-                                                response.contentLayout == null ||
-                                                response.contentLayout.isEmpty() || response.session == null) {
-                                            errorDefault("Session data is invalid");
-                                            return;
-                                        }
-                                        UniqueSessionParameters currentSessionParameters = dataSettingsHolder.sessionParameters();
                                         String currentSession = dataSettingsHolder.sessionIdOrEmpty();
                                         if (reOpenSessionIfSettingsWereChanged(initialSessionParameters)) {
                                             return;
@@ -338,7 +331,6 @@ public class SessionManager {
                                         cachedSessionData.previewAspectRatio = response.getPreviewAspectRatio();
                                         cachedSessionData.isAllowUGC = response.isAllowUgc;
                                         cachedSessionData.sessionId = response.session.id;
-                                        cachedSessionData.contentLayout = response.contentLayout;
                                         cachedSessionData.isGameReaderDefaultFullscreen = response.isGameReaderDefaultFullscreen;
                                         cachedSessionData.anonymous = initialSessionParameters.anonymous();
                                         cachedSessionData.testKey = core.projectSettingsAPI().testKey();

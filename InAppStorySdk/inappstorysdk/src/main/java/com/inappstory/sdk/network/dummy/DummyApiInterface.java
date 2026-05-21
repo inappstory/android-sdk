@@ -193,6 +193,11 @@ public class DummyApiInterface implements ApiInterface {
     }
 
     @Override
+    public Request getLayout(String xUserId, String xSessionId, String lang) {
+        return new DummyRequest();
+    }
+
+    @Override
     public Request getStories(String test,
                               Integer favorite,
                               String tags,

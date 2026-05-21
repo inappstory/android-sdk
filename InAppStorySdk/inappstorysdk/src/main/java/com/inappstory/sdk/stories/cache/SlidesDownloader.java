@@ -5,12 +5,12 @@ import androidx.annotation.NonNull;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASAssetsHolder;
 import com.inappstory.sdk.core.api.IASCallbackType;
+import com.inappstory.sdk.core.api.IASLayoutHolder;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.data.IListItemContent;
 import com.inappstory.sdk.core.dataholders.IListsContentHolder;
 import com.inappstory.sdk.core.dataholders.IReaderContentHolder;
 import com.inappstory.sdk.core.ui.screens.IReaderSlideViewModel;
-import com.inappstory.sdk.game.cache.SessionAssetsIsReadyCallback;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.core.data.IResource;
 import com.inappstory.sdk.core.data.IReaderContent;
@@ -498,20 +498,44 @@ public class SlidesDownloader {
         return true;
     }
 
+    public void checkLayout(
+            final IReaderSlideViewModel pageViewModel,
+            final int slideIndex
+    ) {
+        IASLayoutHolder layoutHolder = core.layoutHolder();
+        layoutHolder.checkOrAddLayoutIsReadyCallback(new LayoutIsReadyCallback() {
+            @Override
+            public void isReady() {
+                core.layoutHolder().removeLayoutIsReadyCallback(this);
+                pageViewModel.slideLoadSuccess(slideIndex);
+            }
+
+            @Override
+            public void layoutIsLoading() {
+
+            }
+
+            @Override
+            public void error() {
+                core.layoutHolder().removeLayoutIsReadyCallback(this);
+                pageViewModel.slideLoadError(slideIndex);
+            }
+        });
+    }
 
     public void checkBundleResources(
             final IReaderSlideViewModel pageViewModel,
             final int slideIndex,
             final Set<String> assetKeys
     ) {
-        if (core.assetsHolder().assetsIsDownloaded(assetKeys)) {
-            pageViewModel.slideLoadSuccess(slideIndex);
+        IASAssetsHolder assetsHolder = core.assetsHolder();
+        if (assetsHolder.assetsIsDownloaded(assetKeys)) {
+            checkLayout(pageViewModel, slideIndex);
         } else {
-            IASAssetsHolder assetsHolder = core.assetsHolder();
             assetsHolder.addAssetsIsReadyCallback(new SessionAssetsIsReadyCallback() {
                 @Override
                 public void isReady() {
-                    pageViewModel.slideLoadSuccess(slideIndex);
+                    checkLayout(pageViewModel, slideIndex);
                 }
 
                 @Override

@@ -14,7 +14,8 @@ import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.data.IInAppMessage;
 import com.inappstory.sdk.core.data.IReaderContent;
 import com.inappstory.sdk.core.inappmessages.InAppMessageDownloadManager;
-import com.inappstory.sdk.game.cache.SessionAssetsIsReadyCallback;
+import com.inappstory.sdk.stories.cache.LayoutIsReadyCallback;
+import com.inappstory.sdk.stories.cache.SessionAssetsIsReadyCallback;
 import com.inappstory.sdk.inappmessage.InAppMessageSlideData;
 import com.inappstory.sdk.inappmessage.InAppMessageWidgetCallback;
 import com.inappstory.sdk.inappmessage.ShowInAppMessageSlideCallback;
@@ -41,11 +42,9 @@ import com.inappstory.sdk.stories.utils.SingleTimeEvent;
 import com.inappstory.sdk.stories.utils.WebPageConverter;
 import com.inappstory.sdk.utils.ClipboardUtils;
 import com.inappstory.sdk.utils.StringsUtils;
-import com.inappstory.sdk.utils.UrlEncoder;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -759,11 +758,36 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
         @Override
         public void isReady() {
             core.assetsHolder().removeAssetsIsReadyCallback(assetsIsReadyCallback);
-            IAMReaderState state = readerViewModel.getCurrentState();
-            if (state == null || state.iamId == null) return;
-            readerViewModel.updateCurrentLoadState(IAMReaderLoadStates.ASSETS_LOADED);
-            InAppMessageDownloadManager downloadManager = core.contentLoader().inAppMessageDownloadManager();
-            downloadManager.addInAppMessageTask(state.iamId, null);
+            core.layoutHolder().checkOrAddLayoutIsReadyCallback(
+                    new LayoutIsReadyCallback() {
+                        @Override
+                        public void isReady() {
+                            core.layoutHolder().removeLayoutIsReadyCallback(this);
+                            IAMReaderState state = readerViewModel.getCurrentState();
+                            if (state == null || state.iamId == null) return;
+                            readerViewModel.updateCurrentLoadState(IAMReaderLoadStates.ASSETS_LOADED);
+                            InAppMessageDownloadManager downloadManager = core.contentLoader().inAppMessageDownloadManager();
+                            downloadManager.addInAppMessageTask(state.iamId, null);
+                        }
+
+                        @Override
+                        public void layoutIsLoading() {
+                            readerViewModel.updateCurrentLoadState(IAMReaderLoadStates.ASSETS_LOADING);
+                            readerViewModel.updateCurrentLoaderState(IAMReaderLoaderStates.LOADING);
+                        }
+
+                        @Override
+                        public void error() {
+                            try {
+                                handler.removeCallbacks(contentFailedByTimeout);
+                            } catch (Exception e) {
+                            }
+                            core.layoutHolder().removeLayoutIsReadyCallback(this);
+                            readerViewModel.updateCurrentLoadState(IAMReaderLoadStates.ASSETS_FAILED);
+                            readerViewModel.updateCurrentLoaderState(IAMReaderLoaderStates.FAILED);
+                        }
+                    }
+            );
         }
 
         @Override
@@ -816,23 +840,38 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
         if (loadStatus == -1) {
             downloadManager.removeInAppMessageTask(state.iamId);
         } else if (core.assetsHolder().assetsIsDownloaded(iamUsedAssets())) {
-            IReaderContent readerContent =
-                    core.contentHolder().readerContent().getByIdAndType(
-                            state.iamId,
-                            ContentType.IN_APP_MESSAGE
-                    );
-            if (downloadManager.concreteSlidesLoaded(
-                    readerContent,
-                    new HashSet<>(
-                            Collections.singletonList(0)
-                    )
-            )) {
-                readerViewModel.updateCurrentLoaderState(IAMReaderLoaderStates.LOADED);
-                try {
-                    handler.removeCallbacks(contentFailedByTimeout);
-                } catch (Exception e) {
+            core.layoutHolder().checkOrAddLayoutIsReadyCallback(new LayoutIsReadyCallback() {
+                @Override
+                public void isReady() {
+                    core.layoutHolder().removeLayoutIsReadyCallback(this);
                 }
-            }
+
+                @Override
+                public void layoutIsLoading() {
+                    IReaderContent readerContent =
+                            core.contentHolder().readerContent().getByIdAndType(
+                                    state.iamId,
+                                    ContentType.IN_APP_MESSAGE
+                            );
+                    if (downloadManager.concreteSlidesLoaded(
+                            readerContent,
+                            new HashSet<>(
+                                    Collections.singletonList(0)
+                            )
+                    )) {
+                        readerViewModel.updateCurrentLoaderState(IAMReaderLoaderStates.LOADED);
+                        try {
+                            handler.removeCallbacks(contentFailedByTimeout);
+                        } catch (Exception e) {
+                        }
+                    }
+                }
+
+                @Override
+                public void error() {
+                    core.layoutHolder().removeLayoutIsReadyCallback(this);
+                }
+            });
         }
         core.assetsHolder().reloadAssets(assetsIsReadyCallback);
 
@@ -871,7 +910,8 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
             Log.e("LoadContentPage", "check assets url for IAM " + state.iamId);
             if (downloadManager.concreteSlidesLoaded(readerContent, new HashSet<>(
                     Collections.singletonList(0)
-            )) && core.assetsHolder().assetsIsDownloaded(iamUsedAssets())) {
+            )) && core.assetsHolder().assetsIsDownloaded(iamUsedAssets()) &&
+                    core.layoutHolder().layoutIsDownloaded()) {
                 readerViewModel.updateCurrentLoadState(IAMReaderLoadStates.ASSETS_LOADED);
             } else {
                 try {

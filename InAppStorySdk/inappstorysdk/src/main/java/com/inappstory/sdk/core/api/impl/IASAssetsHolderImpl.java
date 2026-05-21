@@ -1,13 +1,12 @@
 package com.inappstory.sdk.core.api.impl;
 
-import android.text.TextUtils;
 import android.util.Log;
 import android.util.Pair;
 
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASAssetsHolder;
 import com.inappstory.sdk.core.network.content.models.SessionAsset;
-import com.inappstory.sdk.game.cache.SessionAssetsIsReadyCallback;
+import com.inappstory.sdk.stories.cache.SessionAssetsIsReadyCallback;
 import com.inappstory.sdk.game.cache.UseCaseCallback;
 import com.inappstory.sdk.game.cache.UseCaseError;
 import com.inappstory.sdk.stories.cache.usecases.SessionAssetUseCase;
@@ -17,7 +16,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -183,13 +181,6 @@ public class IASAssetsHolderImpl implements IASAssetsHolder {
     private final Set<String> layoutAssetUrls = new HashSet<>();
     private boolean assetsDownloadError = false;
     private boolean assetsIsLoading = false;
-
-    @Override
-    public boolean assetsIsDownloaded() {
-        synchronized (assetsLock) {
-            return assetsIsDownloaded;
-        }
-    }
 
     @Override
     public boolean assetsIsDownloaded(Set<String> assetUrls) {

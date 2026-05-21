@@ -27,7 +27,7 @@ import com.inappstory.sdk.core.ui.screens.ShareProcessHandler;
 import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryScreen;
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenAppearance;
 import com.inappstory.sdk.core.utils.CallbackTypesConverter;
-import com.inappstory.sdk.game.cache.SessionAssetsIsReadyCallback;
+import com.inappstory.sdk.stories.cache.SessionAssetsIsReadyCallback;
 import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.stories.api.models.ContentIdWithIndex;
 import com.inappstory.sdk.stories.api.models.ContentType;
@@ -670,36 +670,6 @@ public class ReaderManager {
     }
 
     private final HashSet<ReaderPageManager> subscribers = new HashSet<>();
-
-    private final SessionAssetsIsReadyCallback assetsIsReadyCallback = new SessionAssetsIsReadyCallback() {
-        @Override
-        public void isReady() {
-
-        }
-
-        @Override
-        public void assetsIsLoading() {
-
-        }
-
-        @Override
-        public void error() {
-
-        }
-
-        @Override
-        public Set<String> usedAssets() {
-            return null;
-        }
-    };
-
-    public void subscribeToAssets() {
-        core.assetsHolder().addAssetsIsReadyCallback(assetsIsReadyCallback);
-    }
-
-    public void unsubscribeFromAssets() {
-        core.assetsHolder().removeAssetsIsReadyCallback(assetsIsReadyCallback);
-    }
 
     public void addSubscriber(ReaderPageManager manager) {
         synchronized (subscribers) {

@@ -198,11 +198,12 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
                 core.storiesListVMHolder().clear();
                 core.storyListCache().clearLocalOpensKey();
                 if (sessionId != null && !sessionId.isEmpty()) {
+                    //core.layoutHolder().clear();
                     core.contentHolder().favoriteItems().clearByType(ContentType.STORY);
                     core.contentHolder().favoriteItems().clearByType(ContentType.UGC);
                     core.contentLoader().storyDownloadManager().refreshLocals(ContentType.STORY);
                     core.contentLoader().storyDownloadManager().refreshLocals(ContentType.UGC);
-                    core.contentLoader().storyDownloadManager().cleanTasks(false);
+                    core.contentLoader().storyDownloadManager().cleanTasks(true);
                     core.contentHolder().readerContent().clearByType(ContentType.IN_APP_MESSAGE);
                     core.contentHolder().readerContent().clearByType(ContentType.STORY);
                     core.contentLoader().inAppMessageDownloadManager().clearLocalData();
