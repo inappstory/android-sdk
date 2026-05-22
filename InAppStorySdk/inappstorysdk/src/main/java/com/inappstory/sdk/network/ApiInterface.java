@@ -193,6 +193,7 @@ public interface ApiInterface {
             @Query("test") String test,
             @Query("limit") Integer limit,
             @Body TargetingBodyObject filterObject,
+            @Query("fields") String fields,
             @Query("expand") String expand,
             @ReplaceHeader(HeadersKeys.USER_ID) String xUserId,
             @ReplaceHeader(HeadersKeys.AUTH_SESSION_ID) String xSessionId,

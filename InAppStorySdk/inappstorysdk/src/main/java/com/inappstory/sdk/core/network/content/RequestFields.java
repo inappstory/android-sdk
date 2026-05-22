@@ -16,10 +16,10 @@ public class RequestFields {
     public static final String STORY_FIELDS = null;
     public static final String STORY_EXPAND = "slides,layout_template_variables";
 
-    public static final String LIST_STORY_FIELDS = null;
+    public static final String LIST_STORY_FIELDS = "hide_timeline,share_functional,favorite_functional,has_audio,like_functional,disable_close,is_opened,game_instance,deeplink,hide_in_reader,favorite,slides_count,like,has_swipe_up,image,background_color,payload,video_cover,stat_title,title_color,title,id,slides.index,slides.timeline,slides.duration";;
     public static final String LIST_STORY_EXPAND = "slides";
 
-    public static final String FEED_STORY_FIELDS = null;
+    public static final String FEED_STORY_FIELDS = "hasFavorite,cover,stories.hide_timeline,stories.share_functional,stories.favorite_functional,stories.has_audio,stories.like_functional,stories.disable_close,stories.is_opened,stories.game_instance,stories.deeplink,stories.hide_in_reader,stories.favorite,stories.slides_count,stories.like,stories.has_swipe_up,stories.image,stories.background_color,stories.payload,stories.video_cover,stories.stat_title,stories.title_color,stories.title,stories.id,stories.slides.index,stories.slides.timeline,stories.slides.duration";
     public static final String FEED_STORY_EXPAND = "stories.slides";
 
     public static final String STORY_COVER_FIELDS = "id, background_color, image";

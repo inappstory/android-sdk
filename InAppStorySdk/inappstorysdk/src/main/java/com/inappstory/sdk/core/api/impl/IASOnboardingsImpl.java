@@ -121,6 +121,7 @@ public class IASOnboardingsImpl implements IASOnboardings {
                                 core.projectSettingsAPI().testKey(),
                                 limit,
                                 new TargetingBodyObject(!localTags.isEmpty() ? localTags : null, settingsHolder.options()),
+                                RequestFields.FEED_STORY_FIELDS,
                                 RequestFields.FEED_STORY_EXPAND,
                                 requestLocalParameters.userId(),
                                 requestLocalParameters.sessionId(),

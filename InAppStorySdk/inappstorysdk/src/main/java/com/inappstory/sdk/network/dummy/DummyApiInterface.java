@@ -230,6 +230,7 @@ public class DummyApiInterface implements ApiInterface {
             String feed,
             String test, Integer limit,
             TargetingBodyObject target,
+            String fields,
             String expand,
             String xUserId,
             String xSessionId,

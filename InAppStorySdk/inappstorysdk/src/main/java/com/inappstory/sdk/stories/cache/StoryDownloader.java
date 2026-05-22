@@ -476,8 +476,8 @@ class StoryDownloader {
                                                         settingsHolder.tags().isEmpty() ? null : settingsHolder.tags(),
                                                         settingsHolder.options()
                                                 ),
-                                                null,
-                                                "stories.slides",
+                                                RequestFields.FEED_STORY_FIELDS,
+                                                RequestFields.FEED_STORY_EXPAND,
                                                 requestLocalParameters.userId(),
                                                 requestLocalParameters.sessionId(),
                                                 requestLocalParameters.locale()

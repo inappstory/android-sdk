@@ -105,7 +105,7 @@ public class IASStackFeedImpl implements IASStackFeed {
                                         !localTags.isEmpty() ? localTags : null,
                                         settingsHolder.options()
                                 ),
-                                null,
+                                RequestFields.FEED_STORY_FIELDS,
                                 RequestFields.FEED_STORY_EXPAND,
                                 requestLocalParameters.userId(),
                                 requestLocalParameters.sessionId(),
