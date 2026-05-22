@@ -3,14 +3,11 @@ package com.inappstory.sdk.core.api.impl;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.IASLayoutHolder;
-import com.inappstory.sdk.core.network.content.models.LayoutResponse;
-import com.inappstory.sdk.core.utils.ConnectionCheck;
-import com.inappstory.sdk.core.utils.ConnectionCheckCallback;
-import com.inappstory.sdk.network.callbacks.NetworkCallback;
-import com.inappstory.sdk.stories.api.models.CachedSessionData;
+import com.inappstory.sdk.game.cache.UseCaseCallback;
+import com.inappstory.sdk.game.cache.UseCaseError;
 import com.inappstory.sdk.stories.cache.LayoutIsReadyCallback;
+import com.inappstory.sdk.stories.cache.usecases.LayoutUseCase;
 
-import java.lang.reflect.Type;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
@@ -62,41 +59,28 @@ public class IASLayoutHolderImpl implements IASLayoutHolder {
         mainLoaderThread.execute(new Runnable() {
             @Override
             public void run() {
-                new ConnectionCheck().check(
-                        core.appContext(),
-                        new ConnectionCheckCallback(core) {
+                new LayoutUseCase(
+                        core,
+                        new UseCaseCallback<String>() {
                             @Override
-                            public void success() {
-                                IASDataSettingsHolder settingsHolder = (IASDataSettingsHolder) core.settingsAPI();
-                                CachedSessionData sessionData = settingsHolder.sessionData();
-                                NetworkCallback<LayoutResponse> layoutCallback = new NetworkCallback<LayoutResponse>() {
-                                    @Override
-                                    public void onSuccess(LayoutResponse response) {
-                                        IASLayoutHolderImpl.this.layout = response.layout;
-                                        invokeIsReadyCallbacks();
-                                    }
-
-                                    @Override
-                                    public Type getType() {
-                                        return LayoutResponse.class;
-                                    }
-
-                                    @Override
-                                    public void errorDefault(String message) {
-                                        invokeErrorCallbacks();
-                                    }
-                                };
-                                core.network().enqueue(
-                                        core.network().getApi().getLayout(
-                                                sessionData.userId,
-                                                sessionData.sessionId,
-                                                sessionData.locale
-                                        ),
-                                        layoutCallback
-                                );
+                            public void onError(UseCaseError error) {
+                                synchronized (layoutDownloadLock) {
+                                    layoutIsLoading = false;
+                                }
+                                invokeErrorCallbacks();
                             }
-                        }
-                );
+
+                            @Override
+                            public void onSuccess(String result) {
+                                synchronized (layoutDownloadLock) {
+                                    layoutIsLoading = false;
+                                    IASLayoutHolderImpl.this.layout = result;
+                                }
+                                invokeIsReadyCallbacks();
+                            }
+                        },
+                        ((IASDataSettingsHolder) core.settingsAPI()).sessionData().layoutTimestamp
+                ).getFile();
             }
         });
     }
@@ -109,21 +93,64 @@ public class IASLayoutHolderImpl implements IASLayoutHolder {
     }
 
     @Override
-    public void checkOrAddLayoutIsReadyCallback(LayoutIsReadyCallback callback) {
-        String tempLayout;
+    public void loadLocalLayout() {
         boolean isReady = false;
+        boolean isLoading = false;
+        synchronized (layoutDownloadLock) {
+            if (layout != null) {
+                isReady = true;
+            } else {
+                if (layoutIsLoading) {
+                    isLoading = true;
+                }
+            }
+        }
+        if (!(isLoading || isReady)) {
+            mainLoaderThread.execute(new Runnable() {
+                @Override
+                public void run() {
+                    new LayoutUseCase(
+                            core,
+                            new UseCaseCallback<String>() {
+                                @Override
+                                public void onError(UseCaseError error) {
+
+                                }
+
+                                @Override
+                                public void onSuccess(String result) {
+                                    synchronized (layoutDownloadLock) {
+                                        IASLayoutHolderImpl.this.layout = result;
+                                    }
+                                }
+                            },
+                            ((IASDataSettingsHolder) core.settingsAPI()).sessionData().layoutTimestamp
+                    ).getLocalFile();
+                }
+            });
+        }
+
+    }
+
+    @Override
+    public void checkOrAddLayoutIsReadyCallback(LayoutIsReadyCallback callback) {
+        boolean isReady = false;
+        boolean isLoading = false;
         synchronized (layoutDownloadLock) {
             if (layout != null) {
                 isReady = true;
             } else {
                 callbacks.add(callback);
                 if (layoutIsLoading) {
-                    callback.layoutIsLoading();
-                    return;
+                    isLoading = true;
                 } else {
                     layoutIsLoading = true;
                 }
             }
+        }
+        if (isLoading) {
+            callback.layoutIsLoading();
+            return;
         }
         if (isReady) {
             callback.isReady();

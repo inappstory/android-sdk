@@ -6,6 +6,7 @@ public interface IASLayoutHolder {
 
     String layout();
     boolean layoutIsDownloaded();
+    void loadLocalLayout();
     void checkOrAddLayoutIsReadyCallback(LayoutIsReadyCallback callback);
     void removeLayoutIsReadyCallback(LayoutIsReadyCallback callback);
     void clear();

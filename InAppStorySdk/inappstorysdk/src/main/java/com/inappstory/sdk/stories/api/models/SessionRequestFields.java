@@ -5,6 +5,7 @@ public class SessionRequestFields {
     public static final String previewAspectRatio = "preview_aspect_ratio";
     public static final String sessionAssets = "cache";
     public static final String layout = "layout";
+    public static final String layoutUpdatedAt = "layout_updated_at";
     public static final String isAllowProfiling = "is_allow_profiling";
     public static final String isGameReaderDefaultFullscreen = "is_game_reader_default_fullscreen";
     public static final String isAllowStatV1 = "is_allow_statistic_v1";

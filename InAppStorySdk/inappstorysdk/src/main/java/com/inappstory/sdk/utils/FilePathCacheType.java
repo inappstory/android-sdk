@@ -2,6 +2,7 @@ package com.inappstory.sdk.utils;
 
 public enum FilePathCacheType {
     STORY_RESOURCE,
+    LAYOUT,
     ARCHIVE,
     CUSTOM_FILE,
     GAME_FOLDER,

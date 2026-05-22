@@ -27,6 +27,8 @@ public class SessionResponse {
     public float previewAspectRatio;
     @SerializedName(SessionRequestFields.sessionAssets)
     public List<SessionAsset> sessionAssets;
+    @SerializedName(SessionRequestFields.layoutUpdatedAt)
+    public int layoutUpdatedAt;
 
     @SerializedName(SessionRequestFields.isGameReaderDefaultFullscreen)
     public boolean isGameReaderDefaultFullscreen;

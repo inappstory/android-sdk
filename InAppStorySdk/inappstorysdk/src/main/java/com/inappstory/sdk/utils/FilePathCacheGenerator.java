@@ -21,6 +21,15 @@ public class FilePathCacheGenerator {
     public String generate() {
         IASContentLoader contentLoader = core.contentLoader();
         switch (cacheType) {
+            case LAYOUT:
+                return contentLoader
+                        .getInfiniteCache().getCacheDir()
+                        .getAbsolutePath() + File.separator +
+                        "v2" +
+                        File.separator +
+                        "layout" +
+                        File.separator +
+                        StringsUtils.md5(url);
             case STORY_RESOURCE:
                 return contentLoader
                         .getCommonCache()

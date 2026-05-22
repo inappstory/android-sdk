@@ -211,7 +211,8 @@ public class SessionManager {
             SessionRequestFields.isAllowUgc,
             SessionRequestFields.placeholders,
             SessionRequestFields.preloadGame,
-            SessionRequestFields.imagePlaceholders
+            SessionRequestFields.imagePlaceholders,
+            SessionRequestFields.layoutUpdatedAt
     });
     private final String SESSION_EXPAND = TextUtils.join(",", new String[]{
             SessionRequestFields.sessionAssets
@@ -224,10 +225,8 @@ public class SessionManager {
             if (newUid != null) {
                 for (int i = 0; i < callbacks.size(); i++) {
                     if (callbacks.get(i) instanceof OpenSessionCallbackWithUID) {
-                        if (((OpenSessionCallbackWithUID) callbacks.get(i)).
-                                getUID().
-                                equals(newUid)
-                        ) {
+                        if (Objects.equals(newUid, ((OpenSessionCallbackWithUID) callbacks.get(i)).
+                                getUID())) {
                             callbacks.set(i, callback);
                             return;
                         }
@@ -331,6 +330,7 @@ public class SessionManager {
                                         cachedSessionData.previewAspectRatio = response.getPreviewAspectRatio();
                                         cachedSessionData.isAllowUGC = response.isAllowUgc;
                                         cachedSessionData.sessionId = response.session.id;
+                                        cachedSessionData.layoutTimestamp = Integer.toString(response.layoutUpdatedAt);
                                         cachedSessionData.isGameReaderDefaultFullscreen = response.isGameReaderDefaultFullscreen;
                                         cachedSessionData.anonymous = initialSessionParameters.anonymous();
                                         cachedSessionData.testKey = core.projectSettingsAPI().testKey();
@@ -344,6 +344,7 @@ public class SessionManager {
                                             core.contentPreload().restartGamePreloader();
                                         saveSession(response);
                                         openStatisticSuccess(response);
+                                        core.layoutHolder().loadLocalLayout();
                                         core.inAppStoryService()
                                                 .getListReaderConnector().sessionIsOpened(currentSession);
 
