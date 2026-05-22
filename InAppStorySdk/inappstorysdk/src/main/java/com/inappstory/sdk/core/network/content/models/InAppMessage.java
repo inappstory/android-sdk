@@ -32,9 +32,6 @@ public class InAppMessage implements IInAppMessage {
     @SerializedName("has_limit")
     public boolean hasLimit;
 
-    @SerializedName("layout")
-    public String layout;
-
     @SerializedName("frequency_limit")
     public Long frequencyLimit;
 
@@ -70,10 +67,10 @@ public class InAppMessage implements IInAppMessage {
 
     @Override
     public String layout() {
-        return layout;
+        return null;
     }
 
-    @SerializedName("layoutTemplateVariables")
+    @SerializedName("layout_template_variables")
     public Map<String, String> layoutTemplateVariables;
 
     private IReaderContentSlide slide(int index) {

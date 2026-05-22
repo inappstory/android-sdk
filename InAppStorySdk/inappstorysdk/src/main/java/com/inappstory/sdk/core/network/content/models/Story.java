@@ -50,7 +50,7 @@ public class Story implements Parcelable, IStory, IContentWithTimeline {
     public HashMap<String, Object> ugcPayload;
 
 
-    @SerializedName("layoutTemplateVariables")
+    @SerializedName("layout_template_variables")
     public Map<String, String> layoutTemplateVariables;
 
     @SerializedName("background_color")

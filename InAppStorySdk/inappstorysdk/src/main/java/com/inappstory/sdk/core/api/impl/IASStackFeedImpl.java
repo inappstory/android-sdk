@@ -11,6 +11,7 @@ import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.IASStackFeed;
 import com.inappstory.sdk.core.data.IListItemContent;
+import com.inappstory.sdk.core.network.content.RequestFields;
 import com.inappstory.sdk.network.models.RequestLocalParameters;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.core.network.content.models.Feed;
@@ -105,7 +106,7 @@ public class IASStackFeedImpl implements IASStackFeed {
                                         settingsHolder.options()
                                 ),
                                 null,
-                                "stories.slides",
+                                RequestFields.FEED_STORY_EXPAND,
                                 requestLocalParameters.userId(),
                                 requestLocalParameters.sessionId(),
                                 requestLocalParameters.locale()

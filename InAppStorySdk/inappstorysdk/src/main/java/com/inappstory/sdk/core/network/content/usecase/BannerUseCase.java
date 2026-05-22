@@ -6,6 +6,7 @@ import com.inappstory.sdk.core.banners.BannerPlaceUseCaseCallback;
 import com.inappstory.sdk.core.banners.BannerShownTime;
 import com.inappstory.sdk.core.data.IBanner;
 import com.inappstory.sdk.core.data.IShownTime;
+import com.inappstory.sdk.core.network.content.RequestFields;
 import com.inappstory.sdk.core.network.content.models.Banner;
 import com.inappstory.sdk.core.network.content.models.BannerPlaceModel;
 import com.inappstory.sdk.core.utils.ConnectionCheck;
@@ -92,8 +93,8 @@ public class BannerUseCase {
                                 core.network().enqueue(
                                         core.network().getApi().getBannerById(
                                                 bannerId,
-                                                null,
-                                                "slides,layoutTemplateVariables",
+                                                RequestFields.BANNER_FIELDS,
+                                                RequestFields.BANNER_EXPAND,
                                                 sessionParameters.userId(),
                                                 sessionParameters.sessionId(),
                                                 sessionParameters.locale()

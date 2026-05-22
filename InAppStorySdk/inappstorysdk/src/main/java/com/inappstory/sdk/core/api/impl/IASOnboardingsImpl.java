@@ -18,6 +18,7 @@ import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.IASOnboardings;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.data.IListItemContent;
+import com.inappstory.sdk.core.network.content.RequestFields;
 import com.inappstory.sdk.core.ui.screens.ScreenType;
 import com.inappstory.sdk.core.ui.screens.launcher.ILaunchScreenCallback;
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenAppearance;
@@ -120,7 +121,7 @@ public class IASOnboardingsImpl implements IASOnboardings {
                                 core.projectSettingsAPI().testKey(),
                                 limit,
                                 new TargetingBodyObject(!localTags.isEmpty() ? localTags : null, settingsHolder.options()),
-                                "stories.slides",
+                                RequestFields.FEED_STORY_EXPAND,
                                 requestLocalParameters.userId(),
                                 requestLocalParameters.sessionId(),
                                 requestLocalParameters.locale()

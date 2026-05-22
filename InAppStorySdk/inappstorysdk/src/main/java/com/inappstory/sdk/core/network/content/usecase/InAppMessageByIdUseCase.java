@@ -2,6 +2,7 @@ package com.inappstory.sdk.core.network.content.usecase;
 
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.inappmessages.InAppMessageByIdCallback;
+import com.inappstory.sdk.core.network.content.RequestFields;
 import com.inappstory.sdk.core.network.content.models.InAppMessage;
 import com.inappstory.sdk.core.utils.ConnectionCheck;
 import com.inappstory.sdk.core.utils.ConnectionCheckCallback;
@@ -36,8 +37,8 @@ public class InAppMessageByIdUseCase {
                                         networkClient.getApi().getInAppMessage(
                                                 Integer.toString(id),
                                                 1,
-                                                null,
-                                                "slides,layoutTemplateVariables",
+                                                RequestFields.IAM_FIELDS,
+                                                RequestFields.IAM_EXPAND,
                                                 requestLocalParameters.userId(),
                                                 requestLocalParameters.sessionId(),
                                                 requestLocalParameters.locale()
@@ -51,14 +52,6 @@ public class InAppMessageByIdUseCase {
                                                         ContentType.IN_APP_MESSAGE
                                                 );
                                                 callback.success(response);
-                                               /* if (
-                                                        core.screensManager().isPhone() ||
-                                                        response.screenType().equals(IAMUiContainerType.POPUP)
-                                                ) {
-
-                                                } else {
-                                                    callback.error();
-                                                }*/
                                             }
 
                                             @Override

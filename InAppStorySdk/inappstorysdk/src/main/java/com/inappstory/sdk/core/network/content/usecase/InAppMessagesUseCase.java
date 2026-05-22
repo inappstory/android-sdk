@@ -6,6 +6,7 @@ import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.data.IInAppMessage;
 import com.inappstory.sdk.core.inappmessages.InAppMessageFeedCallback;
+import com.inappstory.sdk.core.network.content.RequestFields;
 import com.inappstory.sdk.core.utils.ConnectionCheck;
 import com.inappstory.sdk.core.utils.ConnectionCheckCallback;
 import com.inappstory.sdk.core.network.content.models.InAppMessageFeed;
@@ -120,8 +121,8 @@ public class InAppMessagesUseCase {
                                                         !localTags.isEmpty() ? localTags : null,
                                                         settingsHolder.options()
                                                 ),
-                                                null,
-                                                "messages.slides,messages.layoutTemplateVariables",
+                                                RequestFields.LIST_IAM_FIELDS,
+                                                RequestFields.LIST_IAM_EXPAND,
                                                 sessionParameters.userId(),
                                                 sessionParameters.sessionId(),
                                                 sessionParameters.locale()

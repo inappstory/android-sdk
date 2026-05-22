@@ -1,7 +1,6 @@
 package com.inappstory.sdk.stories.cache.usecases;
 
 
-
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.network.content.models.LayoutResponse;
@@ -35,7 +34,9 @@ public class LayoutUseCase extends GetCacheFileUseCase<Void> {
     ) {
         super(core);
         this.useCaseCallback = useCaseCallback;
-        this.uniqueKey = StringsUtils.md5("ias_content_layout");
+        this.uniqueKey = StringsUtils.md5(
+                "ias_content_layout_" + core.projectSettingsAPI().apiKey()
+        );
         this.timestamp = timestamp;
         this.filePath = new FilePathCacheGenerator(
                 timestamp,

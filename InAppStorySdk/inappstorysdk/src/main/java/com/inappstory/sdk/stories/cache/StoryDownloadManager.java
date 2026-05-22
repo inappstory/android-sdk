@@ -40,8 +40,6 @@ public class StoryDownloadManager {
         //   core.contentHolder().listsContent().clearByType(ContentType.UGC);
     }
 
-    static final String EXPAND_STRING = "slides,layoutTemplateVariables";
-
     public boolean changePriority(ContentIdWithIndex storyId,
                                   List<ContentIdWithIndex> adjacent,
                                   ContentType type) {

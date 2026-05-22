@@ -1,8 +1,5 @@
 package com.inappstory.sdk.stories.cache;
 
-import static com.inappstory.sdk.stories.cache.StoryDownloadManager.EXPAND_STRING;
-
-
 import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
@@ -13,6 +10,7 @@ import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.data.IListItemContent;
 import com.inappstory.sdk.core.data.IReaderContent;
+import com.inappstory.sdk.core.network.content.RequestFields;
 import com.inappstory.sdk.core.utils.ConnectionCheck;
 import com.inappstory.sdk.core.utils.ConnectionCheckCallback;
 import com.inappstory.sdk.network.JsonParser;
@@ -329,7 +327,7 @@ class StoryDownloader {
                         core.network().getApi().getUgcStoryById(
                                 Integer.toString(key.contentId),
                                 1,
-                                EXPAND_STRING
+                                RequestFields.STORY_EXPAND
                         )
                 );
             } else {
@@ -340,7 +338,7 @@ class StoryDownloader {
                                 core.projectSettingsAPI().testKey(),
                                 0,
                                 1,
-                                EXPAND_STRING,
+                                RequestFields.STORY_EXPAND,
                                 null,
                                 null,
                                 null
@@ -365,8 +363,8 @@ class StoryDownloader {
                         core.projectSettingsAPI().testKey(),
                         1,
                         null,
-                        "id, background_color, image",
-                        null,
+                        RequestFields.STORY_COVER_FIELDS,
+                        RequestFields.STORY_COVER_EXPAND,
                         requestLocalParameters.userId(),
                         requestLocalParameters.sessionId(),
                         requestLocalParameters.locale()
@@ -573,8 +571,8 @@ class StoryDownloader {
                                         isFavorite ? null :
                                                 TextUtils.join(",",
                                                         ((IASDataSettingsHolder) core.settingsAPI()).tags()),
-                                        null,
-                                        "slides",
+                                        RequestFields.LIST_STORY_FIELDS,
+                                        RequestFields.LIST_STORY_EXPAND,
                                         requestLocalParameters.userId(),
                                         requestLocalParameters.sessionId(),
                                         requestLocalParameters.locale()

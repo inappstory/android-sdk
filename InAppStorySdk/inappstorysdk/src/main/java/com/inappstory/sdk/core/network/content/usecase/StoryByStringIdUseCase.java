@@ -6,6 +6,7 @@ import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.data.IListItemContent;
+import com.inappstory.sdk.core.network.content.RequestFields;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.network.models.RequestLocalParameters;
 import com.inappstory.sdk.stories.api.models.ContentType;
@@ -24,8 +25,6 @@ public class StoryByStringIdUseCase {
     public StoryByStringIdUseCase(IASCore core) {
         this.core = core;
     }
-
-    private final String EXPAND_STRING = "slides,layoutTemplateVariables";
 
 
     public void get(
@@ -47,7 +46,7 @@ public class StoryByStringIdUseCase {
                                         core.projectSettingsAPI().testKey(),
                                         showOnce ? 1 : 0,
                                         1,
-                                        EXPAND_STRING,
+                                        RequestFields.STORY_EXPAND,
                                         requestLocalParameters.userId(),
                                         requestLocalParameters.sessionId(),
                                         requestLocalParameters.locale()

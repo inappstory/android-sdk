@@ -46,7 +46,7 @@ public class Banner implements IBanner {
     @SerializedName("appearance")
     public Map<String, Object> appearance;
 
-    @SerializedName("layoutTemplateVariables")
+    @SerializedName("layout_template_variables")
     public Map<String, String> layoutTemplateVariables;
 
     @Override
