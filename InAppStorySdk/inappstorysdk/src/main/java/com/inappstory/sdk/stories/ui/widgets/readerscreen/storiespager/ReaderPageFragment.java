@@ -53,6 +53,7 @@ import com.inappstory.sdk.core.data.IReaderContent;
 import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryScreen;
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenAppearance;
 import com.inappstory.sdk.core.network.content.models.Story;
+import com.inappstory.sdk.game.reader.SafeAreaInsets;
 import com.inappstory.sdk.stories.managers.TimerManager;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.ui.reader.ReaderManager;
@@ -230,6 +231,8 @@ public class ReaderPageFragment extends Fragment {
         hideLoaderContainer();
     }
 
+    private SafeAreaInsets insets = new SafeAreaInsets();
+
     private void setOffsets(View view) {
         Context context = view.getContext();
         if (!Sizes.isTablet(context)) {
@@ -251,6 +254,9 @@ public class ReaderPageFragment extends Fragment {
             if (isFullscreenStory()) {
                 bottomLp.height = bottomInsetOffset;
                 topLP.height = topInsetOffset;
+                if (storiesView != null) {
+                    storiesView.setInsets(topInsetOffset, bottomInsetOffset + getPanelHeight(context));
+                }
             } else {
                 Point screenSize;
                 int width = Sizes.getFullPhoneWidth(context);

@@ -60,6 +60,9 @@ public class Story implements Parcelable, IStory, IContentWithTimeline {
     @SerializedName("slides")
     public List<StorySlide> slides;
 
+    @SerializedName("is_full_screen")
+    public boolean isFullscreen;
+
     @SerializedName("like")
     public Integer like;
 
@@ -145,7 +148,7 @@ public class Story implements Parcelable, IStory, IContentWithTimeline {
 
     @Override
     public boolean fullscreen() {
-        return id % 2 == 0;
+        return isFullscreen;
     }
 
     @Override

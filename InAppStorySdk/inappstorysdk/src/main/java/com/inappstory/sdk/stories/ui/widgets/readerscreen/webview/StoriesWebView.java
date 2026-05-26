@@ -10,6 +10,7 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
+import android.view.View;
 import android.view.ViewParent;
 import android.webkit.ConsoleMessage;
 import android.webkit.WebChromeClient;
@@ -25,6 +26,7 @@ import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.ui.screens.IReaderSlideViewModel;
+import com.inappstory.sdk.game.reader.SafeAreaInsets;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.ui.views.IASWebView;
 import com.inappstory.sdk.stories.ui.views.IASWebViewClient;
@@ -45,6 +47,14 @@ public class StoriesWebView extends IASWebView implements ContentViewInteractor 
     private boolean clientIsSet = false;
 
     GestureDetector gestureDetector;
+
+    private final SafeAreaInsets insets = new SafeAreaInsets();
+
+    public void setInsets(int top, int bottom) {
+        insets.top = top;
+        insets.bottom = bottom;
+    }
+
 
     @Override
     public void setClientVariables() {
@@ -331,15 +341,24 @@ public class StoriesWebView extends IASWebView implements ContentViewInteractor 
 
     boolean notFirstLoading = false;
 
+    public String setSafeArea(String html) {
+        try {
+            String safeAreaString = JsonParser.getJson(insets);
+            return html.replace("{{%safeAreaInsets}}", safeAreaString);
+        } catch (Exception e) {
+            return html;
+        }
+    }
+
     public void loadWebData(String firstData, final String replaceData) {
         passOverscroll(true, true);
         contentInScrollProcess(false);
         currentPage = replaceData;
         if (!notFirstLoading || replaceData.isEmpty()) {
             notFirstLoading = true;
-            final String modifiedPageAndLayout = setDir(injectUnselectableStyle(firstData),
+            final String modifiedPageAndLayout = setSafeArea(setDir(injectUnselectableStyle(firstData),
                     context != null ? context : getContext()
-            );
+            ));
             new Handler(Looper.getMainLooper()).post(new Runnable() {
                 @Override
                 public void run() {
