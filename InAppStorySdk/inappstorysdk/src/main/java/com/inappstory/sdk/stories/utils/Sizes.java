@@ -30,6 +30,18 @@ public class Sizes {
         return result;
     }
 
+    public static int getNavBarHeight(Context context) {
+        if (context == null) return 60;
+        int result = 0;
+        int resourceId = context.getResources().getIdentifier("navigation_bar_height", "dimen", "android");
+        if (resourceId > 0) {
+            result = context.getResources().getDimensionPixelSize(resourceId);
+        } else {
+            result = (int) Math.ceil((Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ? 24 : 25) * context.getResources().getDisplayMetrics().density);
+        }
+        return result;
+    }
+
 
     private static float getPixelScaleFactorExt(Context context) {
         if (context == null)
@@ -66,6 +78,14 @@ public class Sizes {
         wm.getDefaultDisplay().getMetrics(metrics);
         wm.getDefaultDisplay().getRealMetrics(metrics);
         return metrics.widthPixels;
+    }
+
+    public static Point getFullPhoneSize(Context context) {
+        DisplayMetrics metrics = new DisplayMetrics();
+        WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+        wm.getDefaultDisplay().getMetrics(metrics);
+        wm.getDefaultDisplay().getRealMetrics(metrics);
+        return new Point(metrics.widthPixels, metrics.heightPixels);
     }
 
     public static int dpFloatToPxExt(float dp, Context context) {

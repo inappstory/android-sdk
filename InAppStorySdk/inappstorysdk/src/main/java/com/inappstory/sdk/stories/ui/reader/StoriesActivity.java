@@ -406,7 +406,7 @@ public class StoriesActivity extends IASActivity implements BaseStoryScreen, Sho
 
     @Override
     public Point getContainerSize() {
-        return Sizes.getScreenSize(this);
+        return Sizes.getFullPhoneSize(this);
     }
 
     @Override

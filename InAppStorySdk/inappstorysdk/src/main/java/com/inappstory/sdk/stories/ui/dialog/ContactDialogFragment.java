@@ -8,6 +8,7 @@ import static com.inappstory.sdk.stories.ui.widgets.TextMultiInput.TEXT;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Point;
@@ -142,27 +143,33 @@ public class ContactDialogFragment extends Fragment implements IASBackPressHandl
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (dialogContainerSize == null) {
-            if (Sizes.isTablet(getContext())) {
+        final Activity activity = getActivity();
+        if (activity != null && dialogContainerSize == null) {
+            if (Sizes.isTablet(activity)) {
                 dialogContainerSize = new Point(
-                        Sizes.dpToPxExt(340, getContext()),
-                        Sizes.dpToPxExt(640, getContext())
+                        Sizes.dpToPxExt(340, activity),
+                        Sizes.dpToPxExt(640, activity)
                 );
             } else {
-                dialogContainerSize = Sizes.getScreenSize(getContext());
+                dialogContainerSize = Sizes.getFullPhoneSize(activity);
             }
         }
         globalLayoutListener = new ViewTreeObserver.OnGlobalLayoutListener() {
             private boolean alreadyOpen;
             private final Rect rect = new Rect();
-            private Runnable checkRunnable = new Runnable() {
+            private final Rect rect2 = new Rect();
+            private final Rect rect3 = new Rect();
+            private final Runnable checkRunnable = new Runnable() {
                 @Override
                 public void run() {
-                    if (getActivity() != null) {
-                        getActivity().getWindow().getDecorView().getWindowVisibleDisplayFrame(rect);
-                        int size = dialogContainerSize.y - rect.height();
+                    if (activity != null) {
+                        activity.getWindow().getDecorView().getWindowVisibleDisplayFrame(rect);
+                        //   activity.getWindow().getDecorView().getGlobalVisibleRect(rect2);
+                        //    activity.getWindow().getDecorView().getLocalVisibleRect(rect3);
+                        int size = Math.max(dialogContainerSize.y - rect.height() - Sizes.getStatusBarHeight(activity) - Sizes.getNavBarHeight(activity), 0);
 
-                        boolean isShown = size >= Sizes.dpToPxExt(defaultKeyboardHeightDP, getActivity());
+                        boolean isShown = size >=
+                                Sizes.dpToPxExt(defaultKeyboardHeightDP, activity);
                         if (isShown == alreadyOpen) {
                             return;
                         }
@@ -186,7 +193,7 @@ public class ContactDialogFragment extends Fragment implements IASBackPressHandl
                     }
                 }
             };
-            private Handler keyboardHandler = new Handler(Looper.getMainLooper());
+            private final Handler keyboardHandler = new Handler(Looper.getMainLooper());
 
             @Override
             public void onGlobalLayout() {
