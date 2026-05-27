@@ -356,10 +356,12 @@ public class StackStoryObserver implements IStackFeedActions {
             List<Integer> readerStories = new ArrayList<>();
             int j = 0;
             int openIndex = 0;
+            boolean startFromFullscreenStory = stories.get(0).fullscreen();
             for (Story story : stories) {
                 if (showOnlyNewStories && story.isOpened()) continue;
                 if (!story.hideInReader()) {
                     if (currentStory == story) {
+                        startFromFullscreenStory = story.fullscreen();
                         openIndex = j;
                     }
                     readerStories.add(story.id);
@@ -371,6 +373,7 @@ public class StackStoryObserver implements IStackFeedActions {
                     .feed(feed)
                     .sessionId(sessionId)
                     .storiesIds(new ArrayList<>(readerStories))
+                    .startFromFullscreenStory(startFromFullscreenStory)
                     .listIndex(openIndex)
                     .shownOnlyNewStories(showOnlyNewStories)
                     .firstAction(ShowStory.ACTION_OPEN)

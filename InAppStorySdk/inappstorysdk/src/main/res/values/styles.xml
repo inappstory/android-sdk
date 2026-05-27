@@ -10,6 +10,18 @@
         <item name="android:forceDarkAllowed" tools:targetApi="q">false</item>
     </style>
 
+    <style name="NewTransparent" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowTranslucentNavigation">true</item>
+        <item name="android:windowTranslucentStatus">true</item>
+        <item name="android:windowDisablePreview">true</item>
+        <item name="android:forceDarkAllowed" tools:targetApi="q">false</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:backgroundDimEnabled">false</item>
+    </style>
+
     <declare-styleable name="StoriesSDKAppTheme.BlurringView">
         <attr name="cblurRadius" format="integer"/>
         <attr name="cdownsampleFactor" format="integer"/>

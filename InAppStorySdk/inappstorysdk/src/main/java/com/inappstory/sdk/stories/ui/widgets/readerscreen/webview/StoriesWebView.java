@@ -25,6 +25,7 @@ import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.ui.screens.IReaderSlideViewModel;
+import com.inappstory.sdk.game.reader.SafeAreaInsets;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.ui.views.IASWebView;
 import com.inappstory.sdk.stories.ui.views.IASWebViewClient;
@@ -45,6 +46,22 @@ public class StoriesWebView extends IASWebView implements ContentViewInteractor 
     private boolean clientIsSet = false;
 
     GestureDetector gestureDetector;
+
+    private final SafeAreaInsets insets = new SafeAreaInsets();
+
+    public void setInsets(int top, int bottom) {
+        insets.top = top;
+        insets.bottom = bottom;
+    }
+
+    public String setSafeArea(String html) {
+        try {
+            String safeAreaString = JsonParser.getJson(insets);
+            return html.replace("{{%safeAreaInsets}}", safeAreaString);
+        } catch (Exception e) {
+            return html;
+        }
+    }
 
     @Override
     public void setClientVariables() {
@@ -337,8 +354,11 @@ public class StoriesWebView extends IASWebView implements ContentViewInteractor 
         currentPage = replaceData;
         if (!notFirstLoading || replaceData.isEmpty()) {
             notFirstLoading = true;
-            final String modifiedPageAndLayout = setDir(injectUnselectableStyle(firstData),
-                    context != null ? context : getContext()
+            final String modifiedPageAndLayout = setSafeArea(
+                    setDir(
+                            injectUnselectableStyle(firstData),
+                            context != null ? context : getContext()
+                    )
             );
             new Handler(Looper.getMainLooper()).post(new Runnable() {
                 @Override

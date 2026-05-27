@@ -64,6 +64,11 @@ public class ButtonsPanel extends LinearLayout {
         init(context);
     }
 
+    @Override
+    public void setBackgroundColor(int color) {
+        findViewById(R.id.background).setBackgroundColor(color);
+    }
+
     public void unlockShareButton() {
         if (shareLayout != null) {
             shareLayout.post(new Runnable() {

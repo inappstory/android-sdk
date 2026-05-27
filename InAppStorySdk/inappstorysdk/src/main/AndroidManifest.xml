@@ -26,7 +26,7 @@
         <activity
             android:name="com.inappstory.sdk.stories.ui.reader.StoriesActivity"
             android:hardwareAccelerated="true"
-            android:theme="@style/StoriesSDKAppTheme.Transparent"
+            android:theme="@style/NewTransparent"
             tools:ignore="LockedOrientationActivity" />
         <activity
             android:name="com.inappstory.sdk.stories.ui.reader.StoriesTabletActivity"

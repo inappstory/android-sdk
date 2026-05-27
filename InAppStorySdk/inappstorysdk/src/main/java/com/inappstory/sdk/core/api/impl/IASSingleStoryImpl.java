@@ -196,6 +196,7 @@ public class IASSingleStoryImpl implements IASSingleStory {
                 .sessionId(sessionId)
                 .storiesIds(new ArrayList<>(stIds))
                 .firstAction(readerAction)
+                .startFromFullscreenStory(story.fullscreen())
                 .sourceType(readerSource)
                 .slideIndex(slide)
                 .type(type)
