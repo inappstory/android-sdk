@@ -32,6 +32,7 @@ import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.IASStatisticStoriesV1;
 import com.inappstory.sdk.core.api.UseIASCallback;
+import com.inappstory.sdk.core.data.IListItemContent;
 import com.inappstory.sdk.core.data.IReaderContent;
 import com.inappstory.sdk.core.ui.screens.ScreenType;
 import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryScreen;
@@ -380,20 +381,24 @@ public abstract class StoriesMainFragment extends Fragment implements
     @Override
     public void onViewCreated(@NonNull View view, @Nullable final Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        if (getActivity() == null) {
+        InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
+        if (inAppStoryManager == null || getActivity() == null) {
             forceFinish();
             return;
         }
-        InAppStoryManager.useCore(new UseIASCoreCallback() {
-            @Override
-            public void use(@NonNull IASCore core) {
 
-                ((IOpenStoriesReader) core
-                        .screensManager()
-                        .getOpenReader(ScreenType.STORY))
-                        .onHideStatusBar(getActivity());
-            }
-        });
+        IASCore core = inAppStoryManager.iasCore();
+        final IListItemContent story = core.contentHolder().listsContent()
+                .getByIdAndType(
+                        launchData.storiesIds().get(
+                                launchData.listIndex()
+                        ),
+                        launchData.type()
+                );
+        if (story == null) {
+            forceFinish();
+            return;
+        }
         fader = new DraggableElasticLayout.DraggableElasticFader(getActivity()) {
             @Override
             public void onDrag(float elasticOffset, float elasticOffsetPixels, float rawOffset, float rawOffsetPixels) {
@@ -482,7 +487,7 @@ public abstract class StoriesMainFragment extends Fragment implements
 
                     @Override
                     public void error() {
-                        setLoaderFragment(savedInstanceState, readerContainer);
+                        setLoaderFragment(savedInstanceState, readerContainer, story);
                         try {
                             startAnim(savedInstanceState, readerContainer);
                         } catch (Exception e) {
@@ -609,8 +614,8 @@ public abstract class StoriesMainFragment extends Fragment implements
         super.onAttach(context);
         if (orientationChangeIsLocked()) {
             if (context instanceof Activity) {
-                oldOrientation = ((Activity)context).getRequestedOrientation();
-                ((Activity)context).setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+                oldOrientation = ((Activity) context).getRequestedOrientation();
+                ((Activity) context).setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
             }
 
         }
@@ -867,7 +872,7 @@ public abstract class StoriesMainFragment extends Fragment implements
     LaunchStoryScreenData launchData;
 
 
-    private void setLoaderFragment(Bundle savedInstanceState, Rect readerContainer) {
+    private void setLoaderFragment(Bundle savedInstanceState, Rect readerContainer, IListItemContent listItemContent) {
         if (savedInstanceState != null) return;
         try {
             FragmentManager fragmentManager = getChildFragmentManager();
@@ -875,6 +880,7 @@ public abstract class StoriesMainFragment extends Fragment implements
             Bundle args = new Bundle();
             args.putAll(getArguments());
             args.putParcelable("readerContainer", readerContainer);
+            args.putBoolean("isFullscreenStory", listItemContent.fullscreen());
             storiesLoaderFragment.setArguments(args);
             FragmentTransaction t = fragmentManager.beginTransaction()
                     .replace(R.id.stories_fragments_layout, storiesLoaderFragment, "STORIES_LOADER_FRAGMENT");

@@ -252,6 +252,14 @@ public class ReaderPageFragment extends Fragment {
             }
             LinearLayout.LayoutParams topLP = (LinearLayout.LayoutParams) topOffset.getLayoutParams();
             LinearLayout.LayoutParams bottomLp = (LinearLayout.LayoutParams) bottomOffset.getLayoutParams();
+
+            if (readerContainer != null) {
+                int skipBottom = phoneHeight - readerContainer.bottom;
+                int skipTop = readerContainer.top;
+                topInsetOffset = Math.max(0, topInsetOffset - Math.max(skipTop, 0));
+                bottomInsetOffset = Math.max(0, bottomInsetOffset - Math.max(skipBottom, 0));
+            }
+
             if (isFullscreenStory()) {
                 bottomLp.height = bottomInsetOffset;
                 topLP.height = topInsetOffset;
@@ -261,17 +269,11 @@ public class ReaderPageFragment extends Fragment {
             } else {
                 Point screenSize;
                 int width = Sizes.getFullPhoneWidth(context);
-                int skipTop = 0;
-                int skipBottom = 0;
                 if (readerContainer != null) {
                     screenSize = new Point(
                             Math.min(readerContainer.width(), width),
                             Math.min(readerContainer.height(), phoneHeight)
                     );
-                    skipBottom = phoneHeight - readerContainer.bottom;
-                    skipTop = readerContainer.top;
-                    topInsetOffset = Math.max(0, topInsetOffset - Math.max(skipTop, 0));
-                    bottomInsetOffset = Math.max(0, bottomInsetOffset - Math.max(skipBottom, 0));
                 } else {
                     screenSize = new Point(
                             width,
@@ -279,9 +281,9 @@ public class ReaderPageFragment extends Fragment {
                     );
                 }
                 int maxStoryRatioHeight = (int) (screenSize.x * 16f / 9f);
-                int bottomHeight = bottomInsetOffset;
-                int topHeight = Math.max(topInsetOffset, phoneHeight - bottomHeight - getPanelHeight(context) - maxStoryRatioHeight);
-                bottomLp.height = bottomHeight;
+                int topHeight = Math.max(topInsetOffset, screenSize.y - bottomInsetOffset - getPanelHeight(context) - maxStoryRatioHeight);
+                topHeight = Math.max(topHeight, 1);
+                bottomLp.height = bottomInsetOffset;
                 topLP.height = topHeight;
             }
             bottomOffset.requestLayout();
