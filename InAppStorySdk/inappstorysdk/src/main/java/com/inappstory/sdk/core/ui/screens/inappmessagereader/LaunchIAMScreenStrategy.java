@@ -361,7 +361,7 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
 
                                             @Override
                                             public void isEmpty() {
-                                                launchScreenError("InAppMessage feed is empty");
+                                                launchScreenError("InAppMessage event is empty");
                                             }
 
                                             @Override

@@ -141,6 +141,11 @@ public class InAppMessagesUseCase {
                                 openSessionCallback
                         );
                     }
+
+                    @Override
+                    protected void error() {
+                        loadCallback.error();
+                    }
                 }
         );
     }
