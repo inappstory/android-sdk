@@ -121,7 +121,8 @@ public class ReaderPageManager implements IReaderSlideViewModel {
     }
 
     public void unlockShareButton() {
-        buttonsPanelManager.unlockShareButton();
+        if (buttonsPanelManager != null)
+            buttonsPanelManager.unlockShareButton();
     }
 
     public void swipeVerticalGestureEnabled(boolean enabled) {

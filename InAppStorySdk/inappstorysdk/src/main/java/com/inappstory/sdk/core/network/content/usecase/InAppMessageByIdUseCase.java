@@ -26,6 +26,7 @@ public class InAppMessageByIdUseCase {
         new ConnectionCheck().check(
                 core.appContext(),
                 new ConnectionCheckCallback(core) {
+
                     @Override
                     public void success() {
                         core.sessionManager().useOrOpenSession(new OpenSessionCallback() {

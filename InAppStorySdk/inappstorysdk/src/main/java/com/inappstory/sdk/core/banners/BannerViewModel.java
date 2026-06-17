@@ -404,8 +404,13 @@ public class BannerViewModel implements IBannerViewModel {
         long shift = 0;
         long lastTimer = 0;
         synchronized (timerLock) {
-            if (lastStartTimer == -1) return;
-            lastTimer = lastStartTimer;
+            if (lastStartTimer == -1) {
+                if (infiniteTimer == -1)
+                    return;
+                lastTimer = infiniteTimer;
+            } else {
+                lastTimer = lastStartTimer;
+            }
             shift = pauseShift;
         }
         if (data != null) {
@@ -581,9 +586,14 @@ public class BannerViewModel implements IBannerViewModel {
         loopedExecutor.cancelTask();
     }
 
+    private long infiniteTimer = -1;
 
     private void startTimer(long maxTimerDuration, long timerDuration) {
-        if (maxTimerDuration == 0) return;
+        infiniteTimer = -1;
+        if (maxTimerDuration == 0) {
+            infiniteTimer = System.currentTimeMillis();
+            return;
+        }
         synchronized (timerLock) {
             paused = false;
             lastStartTimer = System.currentTimeMillis();

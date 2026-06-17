@@ -51,6 +51,12 @@ public class InAppMessagesUseCase {
         new ConnectionCheck().check(
                 core.appContext(),
                 new ConnectionCheckCallback(core) {
+
+                    @Override
+                    protected void error() {
+                        loadCallback.error();
+                    }
+
                     @Override
                     public void success() {
                         OpenSessionCallback openSessionCallback = new OpenSessionCallback() {
