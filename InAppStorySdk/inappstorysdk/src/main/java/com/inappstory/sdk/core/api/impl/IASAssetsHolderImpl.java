@@ -240,7 +240,7 @@ public class IASAssetsHolderImpl implements IASAssetsHolder {
     public void clear() {
         synchronized (assetsLock) {
             callbacks.clear();
-            // cachedAssetUrls.clear();
+            cachedAssetUrls.clear();
             assetsIsDownloaded = false;
             assetsIsLoading = false;
             assetsDownloadError = false;
