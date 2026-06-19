@@ -6,6 +6,7 @@ import androidx.fragment.app.FragmentManager;
 
 import com.inappstory.sdk.core.CancellationTokenWithStatus;
 import com.inappstory.sdk.inappmessage.InAppMessageContainerProvider;
+import com.inappstory.sdk.inappmessage.InAppMessageFilterSettings;
 import com.inappstory.sdk.inappmessage.InAppMessageLoadCallback;
 import com.inappstory.sdk.inappmessage.InAppMessageOpenSettings;
 import com.inappstory.sdk.inappmessage.InAppMessagePreloadSettings;
@@ -17,6 +18,8 @@ public interface IASInAppMessage {
             InAppMessagePreloadSettings preloadSettings,
             InAppMessageLoadCallback callback
     );
+
+    boolean hasLoadedInAppMessage(InAppMessageFilterSettings filterSettings);
 
     void show(
             CancellationTokenWithStatus cancellationToken,
