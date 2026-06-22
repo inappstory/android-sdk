@@ -201,10 +201,15 @@ public class InAppStoryManager implements IASBackPressHandler {
     @SuppressLint(DEBUG_API)
     public static IAS_QA_Log iasQaLog;
 
+    private static IASLogger fileLogger = null;
+
     @SuppressLint(DEBUG_API)
     public static void showELog(String tag, String message) {
         IASLogger currentLogger = logger != null ? logger : defaultLogger;
         if (currentLogger != null) currentLogger.showELog(tag, message);
+        IASLogger fLogger = fileLogger;
+        if (fLogger != null)
+            fLogger.showDLog(tag, message);
     }
 
     private static final IASLogger defaultLogger = new IASLogger() {
@@ -221,7 +226,11 @@ public class InAppStoryManager implements IASBackPressHandler {
 
     @SuppressLint(DEBUG_API)
     public static void showDLog(String tag, String message) {
-        if (logger != null) logger.showDLog(tag, message);
+        IASLogger currentLogger = logger != null ? logger : defaultLogger;
+        if (currentLogger != null) currentLogger.showDLog(tag, message);
+        IASLogger fLogger = fileLogger;
+        if (fLogger != null)
+            fLogger.showDLog(tag, message);
     }
 
     @SuppressLint(DEBUG_API)

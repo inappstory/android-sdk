@@ -4,6 +4,7 @@ import android.content.Context;
 
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.BuildConfig;
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.core.api.IASAssetsHolder;
 import com.inappstory.sdk.core.api.IASBanners;
@@ -102,6 +103,7 @@ public class IASCoreImpl implements IASCore {
     private final CancellationTokenPool cancellationTokenPool;
     private final AssetUrlsExtractor assetUrlsExtractor;
     private final IASLayoutHolder layoutHolder;
+    private final InAppStoryManager.IASLogger fileLogger;
 
     public IASCoreImpl(Context context) {
         this.context = context;
@@ -141,6 +143,7 @@ public class IASCoreImpl implements IASCore {
         layoutHolder = new IASLayoutHolderImpl(this);
         Thread.setDefaultUncaughtExceptionHandler(new IASExceptionHandler(this));
         externalUtilsAPI.init();
+        fileLogger = null;
     }
 
 
@@ -342,5 +345,10 @@ public class IASCoreImpl implements IASCore {
     @Override
     public AssetUrlsExtractor assetUrlsExtractor() {
         return assetUrlsExtractor;
+    }
+
+    @Override
+    public InAppStoryManager.IASLogger fileLogger() {
+        return fileLogger;
     }
 }

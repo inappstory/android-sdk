@@ -3,6 +3,7 @@ package com.inappstory.sdk.core;
 import android.content.Context;
 
 import com.inappstory.sdk.AppearanceManager;
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.core.api.IASAssetsHolder;
 import com.inappstory.sdk.core.api.IASBanners;
@@ -80,4 +81,5 @@ public interface IASCore {
     CancellationTokenPool cancellationTokenPool();
     String buildHash();
     AssetUrlsExtractor assetUrlsExtractor();
+    InAppStoryManager.IASLogger fileLogger();
 }
