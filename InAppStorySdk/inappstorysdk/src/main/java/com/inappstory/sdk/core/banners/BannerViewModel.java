@@ -214,7 +214,6 @@ public class BannerViewModel implements IBannerViewModel {
             }
         };
         WebPageConverter converter = new WebPageConverter();
-        Log.e("LoadContentPage", "update banner layout " + readerContent.id());
         converter.replaceDataAndLoad(slideContent, readerContent, index, callback);
     }
 

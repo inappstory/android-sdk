@@ -204,7 +204,6 @@ public class IASStatisticIAMV1Impl implements IASStatisticIAMV1 {
             float value,
             String iterationId
     ) {
-        Log.e("sendIAMScrollEvent", disabled + " " + iamId + " " + slideIndex + " " + layerIndex + " " + value);
         if (disabled) return;
         String eventId = UUID.randomUUID().toString();
         IAMStatisticV1Task task = new IAMStatisticV1Task();

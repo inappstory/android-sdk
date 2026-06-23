@@ -75,7 +75,6 @@ public class IASAssetsHolderImpl implements IASAssetsHolder {
                                     String url = result.first.url;
                                     synchronized (assetsLock) {
                                         if (!cachedAssetUrls.contains(url)) {
-                                            Log.e("LoadContentPage", "asset downloaded " + url);
                                             cachedAssetUrls.add(url);
                                         }
                                     }

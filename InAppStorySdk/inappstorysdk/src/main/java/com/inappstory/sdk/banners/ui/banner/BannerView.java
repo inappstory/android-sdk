@@ -324,14 +324,6 @@ public class BannerView extends FrameLayout implements Observer<BannerState> {
     private boolean lockTouchEvents = false;
 
 
-    private void requestDisallowInterceptTouchEventForAllParents(View view, boolean disallowIntercept) {
-        ViewParent parent = view.getParent();
-        if (parent instanceof View) {
-            Log.e("requestDisallow", parent.toString());
-            parent.requestDisallowInterceptTouchEvent(disallowIntercept);
-            requestDisallowInterceptTouchEventForAllParents((View) parent, disallowIntercept);
-        }
-    }
 
     private void openStoryHandle(IASCore core, final ContentIdWithIndex contentIdWithIndex) {
         try {

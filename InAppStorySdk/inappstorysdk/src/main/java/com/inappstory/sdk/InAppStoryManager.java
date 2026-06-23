@@ -31,6 +31,7 @@ import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.IASStatisticStoriesV1;
 import com.inappstory.sdk.banners.BannerPlaceLoadSettings;
 import com.inappstory.sdk.core.data.models.InAppStoryUserSettings;
+import com.inappstory.sdk.core.logcache.LogManager;
 import com.inappstory.sdk.goods.outercallbacks.ProductCartInteractionCallback;
 import com.inappstory.sdk.inappmessage.CloseInAppMessageCallback;
 import com.inappstory.sdk.inappmessage.InAppMessageContainerProvider;
@@ -201,15 +202,20 @@ public class InAppStoryManager implements IASBackPressHandler {
     @SuppressLint(DEBUG_API)
     public static IAS_QA_Log iasQaLog;
 
-    private static IASLogger fileLogger = null;
+    private static LogManager fileLogger = null;
 
     @SuppressLint(DEBUG_API)
     public static void showELog(String tag, String message) {
         IASLogger currentLogger = logger != null ? logger : defaultLogger;
         if (currentLogger != null) currentLogger.showELog(tag, message);
-        IASLogger fLogger = fileLogger;
-        if (fLogger != null)
-            fLogger.showDLog(tag, message);
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                LogManager fLogger = core.fileLogger();
+                fLogger.saveLog(tag, message);
+            }
+        });
+
     }
 
     private static final IASLogger defaultLogger = new IASLogger() {
@@ -228,9 +234,13 @@ public class InAppStoryManager implements IASBackPressHandler {
     public static void showDLog(String tag, String message) {
         IASLogger currentLogger = logger != null ? logger : defaultLogger;
         if (currentLogger != null) currentLogger.showDLog(tag, message);
-        IASLogger fLogger = fileLogger;
-        if (fLogger != null)
-            fLogger.showDLog(tag, message);
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                LogManager fLogger = core.fileLogger();
+                fLogger.saveLog(tag, message);
+            }
+        });
     }
 
     @SuppressLint(DEBUG_API)

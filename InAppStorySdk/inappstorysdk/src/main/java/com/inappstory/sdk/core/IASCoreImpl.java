@@ -52,6 +52,8 @@ import com.inappstory.sdk.core.dataholders.ContentHolder;
 import com.inappstory.sdk.core.dataholders.IContentHolder;
 import com.inappstory.sdk.core.dataholders.IStoriesListVMHolder;
 import com.inappstory.sdk.core.dataholders.StoriesListVMHolder;
+import com.inappstory.sdk.core.logcache.LogManager;
+import com.inappstory.sdk.core.logcache.LogManagerImpl;
 import com.inappstory.sdk.core.ui.screens.ScreensManager;
 import com.inappstory.sdk.core.utils.AssetUrlsExtractor;
 import com.inappstory.sdk.domain.IWidgetsViewModels;
@@ -103,7 +105,7 @@ public class IASCoreImpl implements IASCore {
     private final CancellationTokenPool cancellationTokenPool;
     private final AssetUrlsExtractor assetUrlsExtractor;
     private final IASLayoutHolder layoutHolder;
-    private final InAppStoryManager.IASLogger fileLogger;
+    private final LogManager fileLogger;
 
     public IASCoreImpl(Context context) {
         this.context = context;
@@ -143,7 +145,7 @@ public class IASCoreImpl implements IASCore {
         layoutHolder = new IASLayoutHolderImpl(this);
         Thread.setDefaultUncaughtExceptionHandler(new IASExceptionHandler(this));
         externalUtilsAPI.init();
-        fileLogger = null;
+        fileLogger = new LogManagerImpl(this, System.currentTimeMillis() + "");
     }
 
 
@@ -348,7 +350,7 @@ public class IASCoreImpl implements IASCore {
     }
 
     @Override
-    public InAppStoryManager.IASLogger fileLogger() {
+    public LogManager fileLogger() {
         return fileLogger;
     }
 }

@@ -29,6 +29,7 @@ import com.inappstory.sdk.core.api.IASStoryList;
 import com.inappstory.sdk.core.api.IASStoriesOpenedCache;
 import com.inappstory.sdk.core.dataholders.IContentHolder;
 import com.inappstory.sdk.core.dataholders.IStoriesListVMHolder;
+import com.inappstory.sdk.core.logcache.LogManager;
 import com.inappstory.sdk.core.ui.screens.ScreensManager;
 import com.inappstory.sdk.core.utils.AssetUrlsExtractor;
 import com.inappstory.sdk.domain.IWidgetsViewModels;
@@ -81,5 +82,5 @@ public interface IASCore {
     CancellationTokenPool cancellationTokenPool();
     String buildHash();
     AssetUrlsExtractor assetUrlsExtractor();
-    InAppStoryManager.IASLogger fileLogger();
+    LogManager fileLogger();
 }

@@ -541,7 +541,6 @@ public class StoriesWebView extends IASWebView implements ContentViewInteractor 
 
     @Override
     protected void contentInScrollProcess(boolean contentInScrollProcess) {
-        Log.e("contentInScrollProcess", "" + contentInScrollProcess);
         if (manager != null)
             manager.contentInScrollProcess(contentInScrollProcess);
     }

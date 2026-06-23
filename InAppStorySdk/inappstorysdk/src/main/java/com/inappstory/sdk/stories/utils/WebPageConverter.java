@@ -181,7 +181,6 @@ public class WebPageConverter {
     }
 
     private String generateLayout(IASCore core, IReaderContent readerContent) {
-        Log.e("LoadContentPage", "generateLayout " + readerContent.id());
         String contentLayout = core.layoutHolder().layout();
         if (contentLayout == null || contentLayout.isEmpty()) return "";
         for (Map.Entry<String, String> entry : readerContent.layoutTemplateVariables().entrySet()) {
@@ -217,7 +216,6 @@ public class WebPageConverter {
             final int index,
             final WebPageConvertCallback callback
     ) {
-        Log.e("LoadContentPage", Thread.currentThread().getName());
         InAppStoryManager.useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {

@@ -177,7 +177,6 @@ public class DraggableElasticLayout extends FrameLayout {
 
     @Override
     public void onNestedPreScroll(View target, int dx, int dy, int[] consumed) {
-        Log.e("ScrollEvents", "Elastic onNestedPreScroll " + " " + dy + " " + consumedToString(consumed));
         if (draggingDown && dy > 0) {
             if (disabled || !verticalGesturesEnabled) {
                 disabledDragScale(dy);
