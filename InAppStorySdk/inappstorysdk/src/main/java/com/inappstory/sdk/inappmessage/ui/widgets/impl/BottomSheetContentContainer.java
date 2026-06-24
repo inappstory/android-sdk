@@ -169,8 +169,14 @@ public final class BottomSheetContentContainer extends IAMContentContainer<InApp
                 layoutParams
         );
         roundedCornerLayout.requestLayout();
+        if (waitState)
+            bottomSheetBehavior.setState(STATE_EXPANDED);
+        else
+            waitState = true;
         return height;
     }
+
+    boolean waitState = false;
 
     @Override
     protected Pair<Integer, Integer> countSafeArea(int containerHeight) {
@@ -257,7 +263,10 @@ public final class BottomSheetContentContainer extends IAMContentContainer<InApp
     @Override
     public void showWithAnimation() {
         setVisibility(VISIBLE);
-        bottomSheetBehavior.setState(STATE_EXPANDED);
+        if (waitState)
+            bottomSheetBehavior.setState(STATE_EXPANDED);
+        else
+            waitState = true;
     }
 
     @Override
