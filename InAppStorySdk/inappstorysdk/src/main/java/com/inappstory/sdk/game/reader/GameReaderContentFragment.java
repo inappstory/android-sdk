@@ -1412,8 +1412,8 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
             view.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
                 @Override
                 public void onGlobalLayout() {
-                    setOffsets(isFullscreen, new Pair<>(startedTop, startedBottom));
                     view.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                    setOffsets(isFullscreen, new Pair<>(startedTop, startedBottom));
                 }
             });
         }
