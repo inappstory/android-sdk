@@ -1,5 +1,6 @@
 package com.inappstory.sdk.game.reader;
 
+import android.app.Activity;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,10 +18,12 @@ import com.inappstory.sdk.R;
 import com.inappstory.sdk.UseManagerInstanceCallback;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
+import com.inappstory.sdk.core.ui.screens.ScreenType;
 import com.inappstory.sdk.core.ui.screens.holder.GetScreenCallback;
 import com.inappstory.sdk.core.ui.screens.gamereader.BaseGameScreen;
 import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryScreen;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.GameReaderLaunchData;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenGameReader;
 import com.inappstory.sdk.stories.ui.utils.FragmentAction;
 import com.inappstory.sdk.stories.utils.IASBackPressHandler;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
@@ -82,6 +85,14 @@ public class GameMainFragment extends Fragment
 
     @Override
     public void onDestroy() {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                ((IOpenGameReader) core.screensManager()
+                        .getOpenReader(ScreenType.GAME))
+                        .onRestoreScreen(getContext());
+            }
+        });
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
