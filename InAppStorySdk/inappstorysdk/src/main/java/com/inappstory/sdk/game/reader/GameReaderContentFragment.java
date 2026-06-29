@@ -1407,12 +1407,12 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
     }
 
     private void checkInsets() {
-        final View view = getView();
-        if (view != null) {
-            view.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+        if (webView != null) {
+            final ViewTreeObserver viewTreeObserver = webView.getViewTreeObserver();
+            viewTreeObserver.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
                 @Override
                 public void onGlobalLayout() {
-                    view.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                    webView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
                     setOffsets(isFullscreen, new Pair<>(startedTop, startedBottom));
                 }
             });
