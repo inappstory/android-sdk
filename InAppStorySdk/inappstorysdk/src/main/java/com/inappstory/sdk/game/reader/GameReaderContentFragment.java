@@ -1407,16 +1407,22 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
     }
 
     private void checkInsets() {
-        if (webView != null) {
+        webView.post(new Runnable() {
+            @Override
+            public void run() {
+                setOffsets(isFullscreen, new Pair<>(startedTop, startedBottom));
+            }
+        });
+      /*  if (webView != null) {
             final ViewTreeObserver viewTreeObserver = webView.getViewTreeObserver();
             viewTreeObserver.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
                 @Override
                 public void onGlobalLayout() {
                     webView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-                    setOffsets(isFullscreen, new Pair<>(startedTop, startedBottom));
+
                 }
             });
-        }
+        }*/
     }
 
 
@@ -1631,8 +1637,10 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                     Sizes.dpToPxExt(16, getContext());
         }
         closeButton.requestLayout();
-        closeButton.setVisibility(View.VISIBLE);
-        loader.setVisibility(View.VISIBLE);
+        if (showClose) {
+            closeButton.setVisibility(View.VISIBLE);
+            loader.setVisibility(View.VISIBLE);
+        }
     }
 
     void loadJsApiResponse(String gameResponse, String cb) {
