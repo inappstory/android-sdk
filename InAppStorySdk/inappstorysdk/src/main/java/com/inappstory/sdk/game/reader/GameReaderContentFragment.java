@@ -520,6 +520,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
+
                 final IASDataSettingsHolder dataSettingsHolder =
                         (IASDataSettingsHolder) core.settingsAPI();
                 CachedSessionData sessionData = ((IASSettingsImpl) dataSettingsHolder).
@@ -1407,12 +1408,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
     }
 
     private void checkInsets() {
-        webView.post(new Runnable() {
-            @Override
-            public void run() {
-                setOffsets(isFullscreen, new Pair<>(startedTop, startedBottom));
-            }
-        });
+        setOffsets(isFullscreen, new Pair<>(startedTop, startedBottom));
       /*  if (webView != null) {
             final ViewTreeObserver viewTreeObserver = webView.getViewTreeObserver();
             viewTreeObserver.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
@@ -1549,6 +1545,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         final CustomIconWithoutStates closeIconInterface = AppearanceManager.getCommonInstance().csCustomIcons().closeIcon();
         final View closeView = closeIconInterface.createIconView(context, new SizeF(maxCloseSize, maxCloseSize));
         closeView.setClickable(false);
+        closeButton.setVisibility(View.GONE);
         closeButton.addView(closeView);
         closeButton.setTouchListener(new View.OnTouchListener() {
             @Override
@@ -1637,10 +1634,16 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                     Sizes.dpToPxExt(16, getContext());
         }
         closeButton.requestLayout();
-        if (showClose) {
-            closeButton.setVisibility(View.VISIBLE);
-            loader.setVisibility(View.VISIBLE);
-        }
+        closeButton.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (showClose) {
+                    closeButton.setVisibility(View.VISIBLE);
+                    loader.setVisibility(View.VISIBLE);
+                }
+            }
+        }, 200);
+
     }
 
     void loadJsApiResponse(String gameResponse, String cb) {
