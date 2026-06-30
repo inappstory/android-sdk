@@ -51,9 +51,12 @@ class StoryDownloader {
     }
 
 
-    private final LoopedExecutor loopedExecutor = new LoopedExecutor(100, 100);
+    private final LoopedExecutor loopedExecutor = new LoopedExecutor(100, 100, getClass().getName());
+    boolean initialized = false;
 
     void init() {
+        if (initialized) return;
+        initialized = true;
         loopedExecutor.task(queueStoryReadRunnable);
     }
 

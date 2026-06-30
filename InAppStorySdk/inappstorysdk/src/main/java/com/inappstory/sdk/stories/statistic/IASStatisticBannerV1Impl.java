@@ -14,7 +14,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 public class IASStatisticBannerV1Impl implements IASStatisticBannerV1 {
-    private final LoopedExecutor loopedExecutor = new LoopedExecutor(100, 100);
+    private final LoopedExecutor loopedExecutor = new LoopedExecutor(100, 100, getClass().getName());
 
     private final ExecutorService netExecutor = Executors.newFixedThreadPool(1);
     private final ExecutorService runnableExecutor = Executors.newFixedThreadPool(1);
@@ -24,6 +24,14 @@ public class IASStatisticBannerV1Impl implements IASStatisticBannerV1 {
 
     public IASStatisticBannerV1Impl(IASCore core) {
         this.core = core;
+
+    }
+
+    private boolean looperInitialized = false;
+
+    private void initLooper() {
+        if (looperInitialized) return;
+        looperInitialized = true;
         loopedExecutor.task(queueTasksRunnable);
     }
 
@@ -62,6 +70,7 @@ public class IASStatisticBannerV1Impl implements IASStatisticBannerV1 {
 
 
     private void addTask(BannerStatisticV1Task task) {
+        initLooper();
         synchronized (statisticTasksLock) {
             tasks.add(task);
         }

@@ -37,10 +37,14 @@ import java.util.concurrent.Executors;
 
 public class SlidesDownloader {
 
-    private final LoopedExecutor loopedExecutor = new LoopedExecutor(10, 20);
+    private final LoopedExecutor loopedExecutor = new LoopedExecutor(10, 20, getClass().getName());
     private final ExecutorService loadSlideExecutor = Executors.newSingleThreadExecutor();
 
+    private boolean initialized = false;
+
     public void init() {
+        if (initialized) return;
+        initialized = true;
         loopedExecutor.task(queueLoadSlideRunnable);
     }
 

@@ -1,6 +1,8 @@
 package com.inappstory.sdk.stories.utils;
 
 
+import android.util.Log;
+
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -12,6 +14,15 @@ public class LoopedExecutor {
         launch();
     }
 
+
+    public LoopedExecutor(long startDelay, long period, String name) {
+        this.startDelay = startDelay;
+        this.period = period;
+        this.name = name;
+        launch();
+    }
+
+    private String name = "";
     private final long startDelay;
     private final long period;
     private boolean interrupted;
@@ -43,7 +54,10 @@ public class LoopedExecutor {
                     while (true) {
                         synchronized (taskLaunchLock) {
                             if (!taskLaunched && runnable != null) {
-                                executorThread.submit(runnable);
+                                taskLaunched = true;
+                                runnable.run();
+                               // Log.e("submitTask", name + "_LoopedExecutor");
+                               // executorThread.submit(runnable);
                             }
                             if (interrupted) {
                                 break;

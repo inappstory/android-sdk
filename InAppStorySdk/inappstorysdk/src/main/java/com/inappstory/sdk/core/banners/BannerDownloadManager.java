@@ -26,7 +26,6 @@ public class BannerDownloadManager {
                 core,
                 null
         );
-        this.slidesDownloader.init();
     }
 
     public void addBannerTask(
@@ -52,6 +51,7 @@ public class BannerDownloadManager {
             final BannerPlacePreloadCallback callback,
             final boolean isFirst
     ) {
+        this.slidesDownloader.init();
         if (allSlidesLoaded(readerContent)) {
             contentIsLoaded(readerContent, callback, isFirst);
         }

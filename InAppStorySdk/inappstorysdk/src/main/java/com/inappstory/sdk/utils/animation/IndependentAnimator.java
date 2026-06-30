@@ -25,7 +25,7 @@ public class IndependentAnimator {
     ) {
         startTime = System.currentTimeMillis();
         listener.onStart();
-        final LoopedExecutor loopedExecutor = new LoopedExecutor(0, 16);
+        final LoopedExecutor loopedExecutor = new LoopedExecutor(0, 16, getClass().getName());
         Runnable animationRunnable = new Runnable() {
             @Override
             public void run() {

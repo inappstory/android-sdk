@@ -43,12 +43,14 @@ public class StoryDownloadManager {
     public boolean changePriority(ContentIdWithIndex storyId,
                                   List<ContentIdWithIndex> adjacent,
                                   ContentType type) {
+        initDownloader();
         if (slidesDownloader != null)
             return slidesDownloader.changePriority(storyId, adjacent, type);
         return false;
     }
 
     public void changePriorityForSingle(ContentIdWithIndex storyId, ContentType type) {
+        initDownloader();
         if (slidesDownloader != null)
             slidesDownloader.changePriorityForSingle(storyId, type);
 
@@ -193,11 +195,16 @@ public class StoryDownloadManager {
                 }
         );
 
+    }
+
+    private void initDownloader() {
+
         storyDownloader.init();
         slidesDownloader.init();
     }
 
     public void addStoryTask(ContentIdWithIndex storyId, ArrayList<ContentIdWithIndex> addIds, ContentType type) {
+        initDownloader();
         try {
             storyDownloader.addStoryTask(storyId, addIds, type);
         } catch (Exception e) {
@@ -217,6 +224,7 @@ public class StoryDownloadManager {
     private final SlidesDownloader slidesDownloader;
 
     public void addCompletedStoryTask(IReaderContent story, ContentType type) {
+        initDownloader();
         if (storyDownloader != null) {
             storyDownloader.addCompletedStoryTask(story.id(), type);
             storyLoaded(story, type);

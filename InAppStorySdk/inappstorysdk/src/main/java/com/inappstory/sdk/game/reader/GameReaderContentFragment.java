@@ -517,6 +517,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
@@ -760,6 +761,12 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         if (getContext() == null) return;
         try {
             webView = new IASWebView(getContext());
+            webView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                @Override
+                public void onGlobalLayout() {
+                    webView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                }
+            });
             gameWebViewContainer.addView(webView);
         } catch (Exception e) {
             forceFinish();

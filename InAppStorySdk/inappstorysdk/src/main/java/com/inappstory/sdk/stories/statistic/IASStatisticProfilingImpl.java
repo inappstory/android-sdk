@@ -33,9 +33,16 @@ public class IASStatisticProfilingImpl implements IASStatisticProfiling {
 
     public IASStatisticProfilingImpl(IASCore core) {
         this.core = core;
-        loopedExecutor.task(queueTasksRunnable);
     }
 
+
+    private boolean looperInitialized = false;
+
+    private void initLooper() {
+        if (looperInitialized) return;
+        looperInitialized = true;
+        loopedExecutor.task(queueTasksRunnable);
+    }
 
     private final ExecutorService runnableExecutor = Executors.newFixedThreadPool(1);
 
@@ -47,6 +54,7 @@ public class IASStatisticProfilingImpl implements IASStatisticProfiling {
         task.name = name;
         task.startTime = System.currentTimeMillis();
         task.isAllowToForceSend = !disabled;
+        initLooper();
         synchronized (tasksLock) {
             for (ProfilingTask hasTask : tasks) {
                 if (hasTask.uniqueHash.equals(hash)) {
@@ -71,6 +79,7 @@ public class IASStatisticProfilingImpl implements IASStatisticProfiling {
         task.uniqueHash = hash;
         task.name = name;
         task.startTime = System.currentTimeMillis();
+        initLooper();
         synchronized (tasksLock) {
             tasks.add(task);
         }
@@ -120,7 +129,7 @@ public class IASStatisticProfilingImpl implements IASStatisticProfiling {
         }
     }
 
-    LoopedExecutor loopedExecutor = new LoopedExecutor(100, 100);
+    LoopedExecutor loopedExecutor = new LoopedExecutor(100, 100, getClass().getName());
 
     private final Runnable queueTasksRunnable = new Runnable() {
         @Override

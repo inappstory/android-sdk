@@ -428,6 +428,7 @@ public class StoriesList extends RecyclerView {
     Runnable checkVisibilityRunnable = new Runnable() {
         @Override
         public void run() {
+            if (adapter == null || adapter.getItemCount() == 0) return;
             getVisibleItems();
             sendIndexes();
         }

@@ -45,7 +45,7 @@ public class StoryTimelineManager {
         loopedExecutor.task(timerTask);
     }
 
-    LoopedExecutor loopedExecutor = new LoopedExecutor(1L, 17L);
+    LoopedExecutor loopedExecutor = new LoopedExecutor(1L, 17L, getClass().getName());
 
     public void stopTimer() {
         cancelTask();

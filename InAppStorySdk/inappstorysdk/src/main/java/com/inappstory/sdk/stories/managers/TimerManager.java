@@ -77,7 +77,7 @@ public class TimerManager {
         loopedExecutor.task(timerTask);
     }
 
-    private final LoopedExecutor loopedExecutor = new LoopedExecutor(1L, 50L);
+    private final LoopedExecutor loopedExecutor = new LoopedExecutor(1L, 50L, getClass().getName());
 
 
     long currentDuration;
