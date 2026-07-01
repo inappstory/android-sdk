@@ -308,7 +308,7 @@ public class SlidesDownloader {
                 for (int slideIndex = 0; slideIndex < slidesCountToCache; slideIndex++) {
                     SlideTaskKey slideTaskKey = new SlideTaskKey(contentIdAndType, slideIndex);
                     SlideTask slideTask = slideTasks.get(slideTaskKey);
-                    if (slideTask == null) {
+                    if (slideTask == null || slideTask.loadType == 0) {
                         slideTasks.put(
                                 slideTaskKey,
                                 (new GenerateSlideTaskUseCase(core, readerContent, slideIndex))

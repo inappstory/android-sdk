@@ -230,6 +230,7 @@ public final class BottomSheetContentContainer extends IAMContentContainer<InApp
         content.setBackground(appearance.backgroundDrawable());
         generateLoader(backgroundColor);
         generateRefresh();
+        loaderContainer.setClickable(false);
         roundedCornerLayout.addView(loaderContainer);
         roundedCornerLayout.addView(refreshContainer);
         if (appearance.lineAppearance().height() == 0) {
