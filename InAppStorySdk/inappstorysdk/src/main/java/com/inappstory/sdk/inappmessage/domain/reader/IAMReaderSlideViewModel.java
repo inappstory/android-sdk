@@ -88,6 +88,8 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
     @Override
     public void removeSubscriber(Observer<IAMReaderSlideState> observer) {
         this.slideStateObservable.unsubscribe(observer);
+        InAppMessageDownloadManager downloadManager = core.contentLoader().inAppMessageDownloadManager();
+        downloadManager.removeSubscriber(this);
     }
 
 
