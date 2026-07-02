@@ -321,6 +321,8 @@ public class SlidesDownloader {
                             }
                             maxPriority.add(0, slideTaskKey);
                         }
+                    } else if (slideTask.loadType == -1) {
+                        loadSlideError(slideTaskKey);
                     } else if (slideTask.loadType == 2 && slideTask.forced) {
                         slideLoaded(slideTaskKey, slideTask.assetKeys);
                     }
