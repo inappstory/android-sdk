@@ -94,13 +94,14 @@ public final class BottomSheetContentContainer extends IAMContentContainer<InApp
         roundedCornerLayout.addView(content);
         bottomSheetLine = new BottomSheetLine(context);
         bottomSheetLineContainer = new FrameLayout(context);
-        bottomSheetLineContainer.setOnClickListener(new OnClickListener() {
+        bottomSheetLineContainer.setClickable(false);
+       /* bottomSheetLineContainer.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (closeEnabled)
                     closeWithAnimation();
             }
-        });
+        });*/
         roundedCornerLayout.addView(bottomSheetLineContainer);
         bottomSheetLineContainer.addView(bottomSheetLine);
         bottomSheetBehavior = BottomSheetBehavior.from(roundedCornerLayout);
@@ -226,6 +227,7 @@ public final class BottomSheetContentContainer extends IAMContentContainer<InApp
         content.setBackground(appearance.backgroundDrawable());
         generateLoader(backgroundColor);
         generateRefresh();
+        loaderContainer.setClickable(false);
         roundedCornerLayout.addView(loaderContainer);
         roundedCornerLayout.addView(refreshContainer);
         if (appearance.lineAppearance().height() == 0) {
