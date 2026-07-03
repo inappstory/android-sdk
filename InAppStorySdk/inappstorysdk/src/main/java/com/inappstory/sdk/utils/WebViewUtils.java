@@ -24,6 +24,27 @@ public class WebViewUtils {
         }
     }
 
+    public static boolean isHuaweiWebView(IASCore core) {
+        try {
+            String versionName;
+            PackageInfo packageInfo;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                packageInfo = WebViewCompat.getCurrentWebViewPackage(core.appContext());
+            } else {
+                PackageManager pm = core.appContext().getPackageManager();
+                try {
+                    packageInfo = pm.getPackageInfo("com.huawei.webview", 0);
+                } catch (PackageManager.NameNotFoundException e) {
+                    return false;
+                }
+            }
+            if (packageInfo == null) return false;
+            return packageInfo.packageName.equals("com.huawei.webview");
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
     public static int getWebViewVersion(IASCore core) {
         try {
             //if (1 == 1) return 0;

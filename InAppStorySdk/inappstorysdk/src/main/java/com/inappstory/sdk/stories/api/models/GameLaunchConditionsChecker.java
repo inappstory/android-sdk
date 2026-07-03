@@ -40,6 +40,7 @@ public class GameLaunchConditionsChecker {
     private boolean checkWebViewCondition(
             GameLCMinWebViewVersion webViewVersion
     ) {
-        return WebViewUtils.getWebViewVersion(core) > webViewVersion.minVersion;
+        return WebViewUtils.isHuaweiWebView(core) ||
+                WebViewUtils.getWebViewVersion(core) > webViewVersion.minVersion;
     }
 }
