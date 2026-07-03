@@ -44,6 +44,6 @@ public class GameLaunchConditionsChecker {
     ) {
         PackageInfo pi = WebViewUtils.getCheckableWebViewPI(core);
         return pi == null ||
-                WebViewUtils.getWebViewVersion(pi) > webViewVersion.minVersion;
+                WebViewUtils.getWebViewVersion(pi) >= webViewVersion.minVersion;
     }
 }
