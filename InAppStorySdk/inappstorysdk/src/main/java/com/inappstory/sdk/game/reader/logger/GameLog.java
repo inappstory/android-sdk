@@ -8,6 +8,7 @@ public class GameLog {
     public GameLog(
             String gameInstanceId,
             String logSession,
+            String webViewPackage,
             int webViewVersion,
             Long timestamp,
             int launchTryNumber,
@@ -15,6 +16,7 @@ public class GameLog {
     ) {
         this.gameInstanceId = gameInstanceId;
         this.timestamp = timestamp;
+        this.webViewPackage = webViewPackage;
         this.logSession = logSession;
         this.webViewVersion = Integer.toString(webViewVersion);
         this.gameLoaded = gameLoaded;
@@ -55,6 +57,10 @@ public class GameLog {
         return type;
     }
 
+    String webViewPackage() {
+        return webViewPackage;
+    }
+
     Long timestamp() {
         return timestamp;
     }
@@ -77,6 +83,7 @@ public class GameLog {
 
     public String gameInstanceId;
     public String type;
+    public String webViewPackage;
     public Long timestamp;
 
     public int launchTryNumber() {

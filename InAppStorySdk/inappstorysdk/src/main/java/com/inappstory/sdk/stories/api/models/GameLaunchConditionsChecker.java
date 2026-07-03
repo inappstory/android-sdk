@@ -1,5 +1,7 @@
 package com.inappstory.sdk.stories.api.models;
 
+import android.content.pm.PackageInfo;
+
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.stories.api.interfaces.ConditionsResult;
 import com.inappstory.sdk.stories.api.interfaces.GLCError;
@@ -40,7 +42,8 @@ public class GameLaunchConditionsChecker {
     private boolean checkWebViewCondition(
             GameLCMinWebViewVersion webViewVersion
     ) {
-        return WebViewUtils.isHuaweiWebView(core) ||
-                WebViewUtils.getWebViewVersion(core) > webViewVersion.minVersion;
+        PackageInfo pi = WebViewUtils.getCheckableWebViewPI(core);
+        return pi == null ||
+                WebViewUtils.getWebViewVersion(pi) > webViewVersion.minVersion;
     }
 }
