@@ -5,6 +5,7 @@ import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.IASLayoutHolder;
 import com.inappstory.sdk.game.cache.UseCaseCallback;
 import com.inappstory.sdk.game.cache.UseCaseError;
+import com.inappstory.sdk.stories.api.models.CachedSessionData;
 import com.inappstory.sdk.stories.cache.LayoutIsReadyCallback;
 import com.inappstory.sdk.stories.cache.usecases.LayoutUseCase;
 
@@ -106,28 +107,30 @@ public class IASLayoutHolderImpl implements IASLayoutHolder {
             }
         }
         if (!(isLoading || isReady)) {
-            mainLoaderThread.execute(new Runnable() {
-                @Override
-                public void run() {
-                    new LayoutUseCase(
-                            core,
-                            new UseCaseCallback<String>() {
-                                @Override
-                                public void onError(UseCaseError error) {
+            final CachedSessionData cachedSessionData = ((IASDataSettingsHolder) core.settingsAPI()).sessionData();
+            if (cachedSessionData != null)
+                mainLoaderThread.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        new LayoutUseCase(
+                                core,
+                                new UseCaseCallback<String>() {
+                                    @Override
+                                    public void onError(UseCaseError error) {
 
-                                }
-
-                                @Override
-                                public void onSuccess(String result) {
-                                    synchronized (layoutDownloadLock) {
-                                        IASLayoutHolderImpl.this.layout = result;
                                     }
-                                }
-                            },
-                            ((IASDataSettingsHolder) core.settingsAPI()).sessionData().layoutTimestamp
-                    ).getLocalFile();
-                }
-            });
+
+                                    @Override
+                                    public void onSuccess(String result) {
+                                        synchronized (layoutDownloadLock) {
+                                            IASLayoutHolderImpl.this.layout = result;
+                                        }
+                                    }
+                                },
+                                cachedSessionData.layoutTimestamp
+                        ).getLocalFile();
+                    }
+                });
         }
 
     }
