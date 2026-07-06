@@ -102,6 +102,7 @@ public class GameLogSender implements IGameLogSender {
                         log.launchTryNumber(),
                         log.timestamp(),
                         log.message(),
+                        log.webViewPackage(),
                         log.webViewVersion(),
                         log.stacktrace(),
                         log.logSession(),

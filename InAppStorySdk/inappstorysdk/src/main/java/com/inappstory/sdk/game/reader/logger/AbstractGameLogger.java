@@ -1,5 +1,6 @@
 package com.inappstory.sdk.game.reader.logger;
 
+import android.content.pm.PackageInfo;
 import android.os.Handler;
 import android.text.TextUtils;
 import android.util.Log;
@@ -123,10 +124,19 @@ public abstract class AbstractGameLogger {
     }
 
     protected final GameLog createBaseLog() {
+        PackageInfo pi = WebViewUtils.getCheckableWebViewPI(core);
+        if (pi == null) pi = WebViewUtils.getUncheckableWebViewPI(core);
+        int ver = 0;
+        String packageName = "Unknown";
+        if (pi != null) {
+            packageName = pi.packageName;
+            ver = WebViewUtils.getWebViewVersion(pi);
+        }
         return new GameLog(
                 gameInstanceId,
                 ((IASDataSettingsHolder) core.settingsAPI()).sessionIdOrEmpty(),
-                WebViewUtils.getWebViewVersion(core),
+                packageName,
+                ver,
                 System.currentTimeMillis() / 1000,
                 launchTryNumber,
                 gameLoaded
