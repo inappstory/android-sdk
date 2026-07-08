@@ -39,7 +39,11 @@ public class SlidesDownloader {
     private final LoopedExecutor loopedExecutor = new LoopedExecutor(10, 20);
 
 
+    private boolean initialized = false;
+
     public void init() {
+        if (initialized) return;
+        initialized = true;
         loopedExecutor.task(queueLoadSlideRunnable);
     }
 

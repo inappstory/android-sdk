@@ -80,6 +80,8 @@ public class IASStatisticStoriesV2Impl implements IASStatisticStoriesV2 {
     private void addTask(StoryStatisticV2Task task, boolean force) {
         if (disabled) return;
         if (!force && softDisabled) return;
+
+        initLooper();
         synchronized (statisticTasksLock) {
             tasks.add(task);
             saveTasksSP();
@@ -177,9 +179,12 @@ public class IASStatisticStoriesV2Impl implements IASStatisticStoriesV2 {
                     } else {
                         tasks = new ArrayList<>();
                     }
+
                     if (fakeTasksJson != null) {
                         tasks.addAll(JsonParser.listFromJson(fakeTasksJson, StoryStatisticV2Task.class));
                     }
+                    if (!tasks.isEmpty())
+                        initLooper();
                     for (StoryStatisticV2Task task : tasks) {
                         task.isFake = false;
                     }
@@ -188,6 +193,14 @@ public class IASStatisticStoriesV2Impl implements IASStatisticStoriesV2 {
                 }
             }
         });
+        loopedExecutor.task(queueTasksRunnable);
+    }
+
+    private boolean looperInitialized = false;
+
+    private void initLooper() {
+        if (looperInitialized) return;
+        looperInitialized = true;
         loopedExecutor.task(queueTasksRunnable);
     }
 

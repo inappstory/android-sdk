@@ -24,6 +24,13 @@ public class IASStatisticIAMV1Impl implements IASStatisticIAMV1 {
 
     public IASStatisticIAMV1Impl(IASCore core) {
         this.core = core;
+    }
+
+    private boolean looperInitialized = false;
+
+    private void initLooper() {
+        if (looperInitialized) return;
+        looperInitialized = true;
         loopedExecutor.task(queueTasksRunnable);
     }
 
@@ -61,6 +68,8 @@ public class IASStatisticIAMV1Impl implements IASStatisticIAMV1 {
 
 
     private void addTask(IAMStatisticV1Task task) {
+
+        initLooper();
         synchronized (statisticTasksLock) {
             tasks.add(task);
         }

@@ -43,7 +43,8 @@ public class LoopedExecutor {
                     while (true) {
                         synchronized (taskLaunchLock) {
                             if (!taskLaunched && runnable != null) {
-                                executorThread.submit(runnable);
+                                taskLaunched = true;
+                                runnable.run();
                             }
                             if (interrupted) {
                                 break;

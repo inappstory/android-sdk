@@ -33,8 +33,8 @@ public class GameLogSender implements IGameLogSender {
     ) {
         this.core = core;
         this.saver = saver;
-        submitRunnable();
     }
+    private boolean submitted = false;
 
 
     private final Runnable statisticUpdateRunnable = new Runnable() {
@@ -44,7 +44,9 @@ public class GameLogSender implements IGameLogSender {
         }
     };
 
-    private void submitRunnable() {
+    public void submitRunnable() {
+        if (submitted) return;
+        submitted = true;
         long statisticUpdateInterval = 1000;
         statisticScheduledThread.scheduleAtFixedRate(
                 statisticUpdateRunnable,
@@ -137,6 +139,7 @@ public class GameLogSender implements IGameLogSender {
 
     @Override
     public void start(boolean gameLaunched) {
+        submitRunnable();
         synchronized (lock) {
             this.gameLaunched = gameLaunched;
             paused = false;
