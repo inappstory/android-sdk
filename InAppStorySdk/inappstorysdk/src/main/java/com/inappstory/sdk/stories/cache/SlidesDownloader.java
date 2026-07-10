@@ -349,6 +349,7 @@ public class SlidesDownloader {
     }
 
     public void addSubscriber(IReaderSlideViewModel pageViewModel) {
+        Set<SlideTaskKey> delayedKeysLocal = new HashSet<>();
         synchronized (pageViewModelsLock) {
             for (IReaderSlideViewModel readerSlideViewModel : pageViewModels) {
                 if (pageViewModel.externalSubscriber() != null &&
@@ -356,7 +357,18 @@ public class SlidesDownloader {
                     return;
                 }
             }
+            for (SlideTaskKey key : delayedCheckKeys) {
+                if (key.contentIdAndType.equals(pageViewModel.contentIdAndType())) {
+                    delayedKeysLocal.add(key);
+                }
+            }
             pageViewModels.add(pageViewModel);
+            for (SlideTaskKey key : delayedKeysLocal) {
+                delayedCheckKeys.remove(key);
+            }
+        }
+        for (SlideTaskKey key : delayedKeysLocal) {
+            checkBundleResources(pageViewModel, key.index);
         }
     }
 
@@ -542,6 +554,9 @@ public class SlidesDownloader {
         ContentIdAndType contentIdAndType = key.contentIdAndType;
         List<IReaderSlideViewModel> checkedPageViewModels = new ArrayList<>();
         synchronized (pageViewModelsLock) {
+            if (pageViewModels.size() == 0) {
+                delayedCheckKeys.add(key);
+            }
             for (IReaderSlideViewModel pageViewModel : pageViewModels) {
                 if (pageViewModel.contentIdAndType().equals(contentIdAndType)) {
                     checkedPageViewModels.add(pageViewModel);
@@ -552,6 +567,8 @@ public class SlidesDownloader {
             checkBundleResources(pageViewModel, key.index);
         }
     }
+
+    private final Set<SlideTaskKey> delayedCheckKeys = new HashSet<>();
 
     private SlideTaskKey getMaxPriorityPageTaskKey() {
         synchronized (slideTasksLock) {
@@ -581,5 +598,5 @@ public class SlidesDownloader {
         }
     }
 
-    private HashMap<SlideTaskKey, SlideTask> slideTasks = new HashMap<>();
+    private final HashMap<SlideTaskKey, SlideTask> slideTasks = new HashMap<>();
 }
