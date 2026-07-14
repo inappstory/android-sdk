@@ -57,33 +57,39 @@ public class IASLayoutHolderImpl implements IASLayoutHolder {
     }
 
     private void downloadLayout() {
-        mainLoaderThread.execute(new Runnable() {
-            @Override
-            public void run() {
-                new LayoutUseCase(
-                        core,
-                        new UseCaseCallback<String>() {
-                            @Override
-                            public void onError(UseCaseError error) {
-                                synchronized (layoutDownloadLock) {
-                                    layoutIsLoading = false;
-                                }
-                                invokeErrorCallbacks();
-                            }
 
-                            @Override
-                            public void onSuccess(String result) {
-                                synchronized (layoutDownloadLock) {
-                                    layoutIsLoading = false;
-                                    IASLayoutHolderImpl.this.layout = result;
+        final CachedSessionData cachedSessionData = ((IASDataSettingsHolder) core.settingsAPI()).sessionData();
+        if (cachedSessionData != null) {
+            mainLoaderThread.execute(new Runnable() {
+                @Override
+                public void run() {
+                    new LayoutUseCase(
+                            core,
+                            new UseCaseCallback<String>() {
+                                @Override
+                                public void onError(UseCaseError error) {
+                                    synchronized (layoutDownloadLock) {
+                                        layoutIsLoading = false;
+                                    }
+                                    invokeErrorCallbacks();
                                 }
-                                invokeIsReadyCallbacks();
-                            }
-                        },
-                        ((IASDataSettingsHolder) core.settingsAPI()).sessionData().layoutTimestamp
-                ).getFile();
-            }
-        });
+
+                                @Override
+                                public void onSuccess(String result) {
+                                    synchronized (layoutDownloadLock) {
+                                        layoutIsLoading = false;
+                                        IASLayoutHolderImpl.this.layout = result;
+                                    }
+                                    invokeIsReadyCallbacks();
+                                }
+                            },
+                            cachedSessionData.layoutTimestamp
+                    ).getFile();
+                }
+            });
+        } else {
+            invokeErrorCallbacks();
+        }
     }
 
     @Override
