@@ -133,6 +133,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import java.util.Objects;
 
 public class GameReaderContentFragment extends Fragment implements OverlapFragmentObserver, IASBackPressHandler, IAcceleratorSubscriber {
     private IASWebView webView;
@@ -1318,15 +1319,9 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
 
     private void replaceConfigs(IASDataSettingsHolder dataSettingsHolder) {
         if (manager.gameConfig != null) {
-            if (manager.gameConfig.contains("{{%sdkVersion}}"))
-                manager.gameConfig = manager.gameConfig.replace("{{%sdkVersion}}", BuildConfig.VERSION_NAME);
-            if (manager.gameConfig.contains("{{%sdkConfig}}") || manager.gameConfig.contains("\"{{%sdkConfig}}\"")) {
+            if (manager.gameConfig.contains("\"{{%sdkConfig}}\"")) {
                 String replacedConfig = generateJsonConfig();
                 manager.gameConfig = manager.gameConfig.replace("\"{{%sdkConfig}}\"", replacedConfig);
-            } else if (manager.gameConfig.contains("{{%sdkPlaceholders}}") || manager.gameConfig.contains("\"{{%sdkPlaceholders}}\"")) {
-                String replacedPlaceholders = generateJsonPlaceholders(dataSettingsHolder);
-                manager.gameConfig = manager.gameConfig.replace("\"{{%sdkPlaceholders}}\"", replacedPlaceholders);
-                manager.gameConfig = manager.gameConfig.replace("{{%sdkPlaceholders}}", replacedPlaceholders);
             }
         }
     }
@@ -1351,19 +1346,15 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
             options.apiBaseUrl = core.network().getBaseUrl();
             options.deviceId = dataSettingsHolder.deviceId();
             if (sessionData != null && sessionData.userId != null)
-                options.userId = StringsUtils.getEscapedString(
-                        new UrlEncoder().encode(sessionData.userId)
-                );
+                options.userId = sessionData.userId;
             else
                 options.userId = "";
             options.lang = dataSettingsHolder.lang().toLanguageTag();
-            options.userAgent = StringsUtils.getEscapedString(
-                    core.network().userAgent()
-            );
+            options.userAgent = core.network().userAgent();
             options.sessionId = sessionData != null && sessionData.sessionId != null ? sessionData.sessionId : "";
             options.apiKey = core.projectSettingsAPI().apiKey();
             options.placeholders = generatePlaceholders(dataSettingsHolder);
-            options.userExtraOptions = JsonParser.stringMapToEscapedObjMap(
+            options.userExtraOptions = JsonParser.stringMapToObjMap(
                     dataSettingsHolder.options()
             );
         } else {
@@ -1373,9 +1364,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
             options.lang = Locale.getDefault().toLanguageTag();
             options.deviceId = "";
             options.apiBaseUrl = "";
-            options.userAgent = StringsUtils.getEscapedString(
-                    new UserAgent().generate(context)
-            );
+            options.userAgent = new UserAgent().generate(context);
             options.sessionId = "";
         }
         int orientation = context.getResources().getConfiguration().orientation;
@@ -1388,9 +1377,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
             e.printStackTrace();
         }
         options.appPackageId = appPackageName;
-        options.sdkVersion = StringsUtils.getEscapedString(
-                BuildConfig.VERSION_NAME
-        );
+        options.sdkVersion = BuildConfig.VERSION_NAME;
         SafeAreaInsets insets = new SafeAreaInsets();
         if (Build.VERSION.SDK_INT >= 28) {
             if (getActivity() != null) {
@@ -1408,9 +1395,10 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         if (gameId != null)
             options.gameInstanceId = gameId;
         try {
-            return JsonParser.getJson(options);
+            return JsonParser.stringifyToJsString(options);
         } catch (Exception e) {
-            return "";
+            // TODO write Exception to debug logger
+            return "{}";
         }
     }
 
@@ -1447,32 +1435,12 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         ArrayList<GameDataPlaceholder> gameDataPlaceholders = new ArrayList<GameDataPlaceholder>();
         for (Map.Entry<String, String> entry : textPlaceholders.entrySet()) {
             if (entry.getKey() != null && entry.getValue() != null)
-                gameDataPlaceholders.add(
-                        new GameDataPlaceholder(
-                                "text",
-                                StringsUtils.getEscapedString(
-                                        entry.getKey()
-                                ),
-                                StringsUtils.getEscapedString(
-                                        entry.getValue()
-                                )
-                        )
-                );
+                gameDataPlaceholders.add(new GameDataPlaceholder("text", entry.getKey(), entry.getValue()));
         }
         for (Map.Entry<String, ImagePlaceholderValue> entry : imagePlaceholders.entrySet()) {
             if (entry.getKey() != null && entry.getValue() != null
                     && entry.getValue().getType() == ImagePlaceholderType.URL)
-                gameDataPlaceholders.add(
-                        new GameDataPlaceholder(
-                                "image",
-                                StringsUtils.getEscapedString(
-                                        entry.getKey()
-                                ),
-                                StringsUtils.getEscapedString(
-                                        entry.getValue().getUrl()
-                                )
-                        )
-                );
+                gameDataPlaceholders.add(new GameDataPlaceholder("image", entry.getKey(), entry.getValue().getUrl()));
         }
         return gameDataPlaceholders;
     }

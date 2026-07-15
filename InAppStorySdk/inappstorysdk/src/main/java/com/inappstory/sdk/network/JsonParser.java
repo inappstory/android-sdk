@@ -133,6 +133,19 @@ public class JsonParser {
         return new JSONObject(map).toString();
     }
 
+    public static Map<String, Object> stringMapToObjMap(Map<String, String> map) {
+        Map<String, Object> objMap = new HashMap<>();
+        if (map != null) {
+            for (String key : map.keySet()) {
+                String val = map.get(key);
+                if (key != null && val != null) {
+                    objMap.put(key, val);
+                }
+            }
+        }
+        return objMap;
+    }
+
     public static Map<String, Object> stringMapToEscapedObjMap(Map<String, String> map) {
         Map<String, Object> objMap = new HashMap<>();
         if (map != null) {
@@ -327,6 +340,18 @@ public class JsonParser {
         } else {
             return ((JSONObject) getJsonObject(instance)).toString();
         }
+    }
+
+    /**
+     * Return the string with characters escaped for safe embedding in a JavaScript string literal. ("")
+     * @param instance Object
+     * @return String
+     */
+    public static String stringifyToJsString(Object instance) throws Exception {
+        String json = JsonParser.getJson(instance);
+        /// https://tc39.es/ecma262/multipage/structured-data.html#sec-json.parse
+        /// String values are wrapped in QUOTATION MARK (") code units. The code units " and \ are escaped with \ prefixes. Control characters code units are replaced with escape sequences \\uHHHH, or with the shorter forms, \b (BACKSPACE), \f (FORM FEED), \n (LINE FEED), \r (CARRIAGE RETURN), \t (CHARACTER TABULATION).
+        return JSONObject.quote(json);
     }
 
     private static Object getJsonObject(Object instance) throws Exception {
