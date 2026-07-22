@@ -105,6 +105,7 @@ public final class NetworkHandler implements InvocationHandler {
                     try {
                         bodyRaw += JsonParser.getJson(args[i]);
                     } catch (Exception e) {
+                        e.printStackTrace();
                         InAppStoryManager.handleException(e);
                     }
                 } else if (annotation instanceof ReplaceHeader) {
@@ -140,6 +141,7 @@ public final class NetworkHandler implements InvocationHandler {
                     .body(body).build();
             return request;
         } catch (Exception e) {
+            e.printStackTrace();
             InAppStoryManager.handleException(e);
             return null;
         }
