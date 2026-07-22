@@ -105,7 +105,7 @@ public final class NetworkHandler implements InvocationHandler {
                     try {
                         bodyRaw += JsonParser.getJson(args[i]);
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        InAppStoryManager.handleException(e);
                     }
                 } else if (annotation instanceof ReplaceHeader) {
                     replacedHeaders.add(new Pair<>(((ReplaceHeader) annotation).value(), args[i].toString()));
