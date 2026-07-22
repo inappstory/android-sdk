@@ -140,6 +140,7 @@ public final class NetworkHandler implements InvocationHandler {
                     .body(body).build();
             return request;
         } catch (Exception e) {
+            InAppStoryManager.handleException(e);
             return null;
         }
     }
