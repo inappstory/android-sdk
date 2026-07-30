@@ -4,7 +4,8 @@ public enum ExternalPlatforms {
     NONE("InAppStorySDK"),
     FLUTTER_SDK("InAppStoryFlutterSDK"),
     REACT_NATIVE_SDK("InAppStoryReactNativeSDK"),
-    KMP_SDK("InAppStoryKMPSDK");
+    KMP_SDK("InAppStoryKMPSDK"),
+    COMPOSE_SDK("InAppStoryComposeSDK");
 
     private final String prefix;
 
