@@ -152,8 +152,13 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
                     inAppMessageOpenSettings.id(),
                     ContentType.IN_APP_MESSAGE
             );
+
             if (inAppMessage != null) {
-                getLocalInAppMessage.get(inAppMessage);
+                if (inAppMessage.inAppMessageAppearance() instanceof InAppMessageUndefinedAppearance)
+                    getLocalInAppMessage.error(null);
+                else {
+                    getLocalInAppMessage.get(inAppMessage);
+                }
             } else {
                 getLocalInAppMessage.error(null);
             }

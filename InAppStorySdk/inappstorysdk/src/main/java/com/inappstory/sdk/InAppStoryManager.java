@@ -1056,7 +1056,6 @@ public class InAppStoryManager implements IASBackPressHandler {
         useCore(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull IASCore core) {
-
                 core.settingsAPI().setLang(lang, true);
             }
         });

@@ -3,8 +3,8 @@ package com.inappstory.sdk.inappmessage.domain.reader;
 import android.util.Pair;
 
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageAppearance;
-import com.inappstory.sdk.inappmessage.ui.appearance.impl.InAppMessageBottomSheetSettings;
 import com.inappstory.sdk.inappmessage.InAppMessageData;
+import com.inappstory.sdk.inappmessage.ui.appearance.impl.InAppMessageUndefinedSettings;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 
 public class IAMReaderState {
@@ -12,7 +12,7 @@ public class IAMReaderState {
     public IAMReaderLoadStates loadState = IAMReaderLoadStates.EMPTY;
     public IAMReaderLoaderStates loaderState = IAMReaderLoaderStates.EMPTY;
     public boolean canBeClosed = false;
-    public InAppMessageAppearance appearance = new InAppMessageBottomSheetSettings();
+    public InAppMessageAppearance appearance = new InAppMessageUndefinedSettings();
     public boolean showOnlyIfLoaded = false;
     public boolean contentIsPreloaded = false;
     public Integer iamId = null;
