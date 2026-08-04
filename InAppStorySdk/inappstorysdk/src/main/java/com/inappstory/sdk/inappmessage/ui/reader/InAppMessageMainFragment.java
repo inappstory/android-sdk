@@ -210,7 +210,10 @@ public class InAppMessageMainFragment extends Fragment implements Observer<IAMRe
             @Nullable Bundle savedInstanceState
     ) {
         super.onViewCreated(view, savedInstanceState);
-        if (readerViewModel == null) return;
+        if (readerViewModel == null || appearance == null || appearance instanceof InAppMessageUndefinedAppearance) {
+            forceFinish();
+            return;
+        }
         if (controller != null) {
             controller.subscribeView(this);
         }

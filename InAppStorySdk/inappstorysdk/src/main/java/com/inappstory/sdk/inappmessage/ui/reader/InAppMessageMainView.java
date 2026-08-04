@@ -32,6 +32,7 @@ import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageBottomSheetAppe
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageFullscreenAppearance;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessagePopupAppearance;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageToastAppearance;
+import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageUndefinedAppearance;
 import com.inappstory.sdk.inappmessage.ui.appearance.impl.InAppMessageUndefinedSettings;
 import com.inappstory.sdk.inappmessage.ui.widgets.IAMContainerCallback;
 import com.inappstory.sdk.inappmessage.ui.widgets.IAMContentContainer;
@@ -103,8 +104,12 @@ public class InAppMessageMainView extends FrameLayout implements Observer<IAMRea
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
         InAppStoryManager manager = InAppStoryManager.getInstance();
-        if (readerViewModel == null || manager == null) return;
-
+        if (readerViewModel == null || manager == null ||
+                appearance == null ||
+                appearance instanceof InAppMessageUndefinedAppearance) {
+            forceFinish();
+            return;
+        }
         if (initialized) {
             IASCore core = manager.iasCore();
             core.screensManager()
@@ -174,7 +179,7 @@ public class InAppMessageMainView extends FrameLayout implements Observer<IAMRea
         inflate(context, layoutId, this);
         contentContainer = findViewById(CONTAINER_ID);
         contentContainer.setVisibility(View.INVISIBLE);
-        if (appearance != null) {
+        if (appearance != null && !(appearance instanceof InAppMessageUndefinedAppearance)) {
             contentContainer.appearance(appearance);
         }
         contentContainer.uiContainerCallback(containerCallback);
