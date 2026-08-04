@@ -312,7 +312,8 @@ public class SessionManager {
                                         appBuild,
                                         initialSessionParameters.anonymous(),
                                         initialSessionParameters.userId(),
-                                        initialSessionParameters.userSign()
+                                        initialSessionParameters.userSign(),
+                                        initialSessionParameters.userId()
                                 ),
                                 new NetworkCallback<SessionResponse>() {
                                     @Override

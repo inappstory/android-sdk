@@ -309,7 +309,8 @@ public class DummyApiInterface implements ApiInterface {
             String appBuild,
             boolean anonymous,
             String userId,
-            String userSign
+            String userSign,
+            String xUserId
     ) {
         return new DummyRequest();
     }

@@ -356,7 +356,8 @@ public interface ApiInterface {
             @Field("app_build") String appBuild,
             @Field("anonymous") boolean anonymous,
             @Field("user_id") String userId,
-            @Field("user_sign") String userSign
+            @Field("user_sign") String userSign,
+            @ReplaceHeader(HeadersKeys.USER_ID) String xUserId
     );
 
     @POST("v2/session/update")
