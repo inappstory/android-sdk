@@ -314,6 +314,7 @@ public class SessionManager {
                                         initialSessionParameters.userId(),
                                         initialSessionParameters.userSign(),
                                         initialSessionParameters.userId()
+                                        //
                                 ),
                                 new NetworkCallback<SessionResponse>() {
                                     @Override
