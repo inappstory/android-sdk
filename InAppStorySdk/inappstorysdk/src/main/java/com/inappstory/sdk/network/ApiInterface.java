@@ -7,6 +7,7 @@ import com.inappstory.sdk.network.annotations.api.ExcludeHeaders;
 import com.inappstory.sdk.network.annotations.api.Field;
 import com.inappstory.sdk.network.annotations.api.FormUrlEncoded;
 import com.inappstory.sdk.network.annotations.api.GET;
+import com.inappstory.sdk.network.annotations.api.MultipartData;
 import com.inappstory.sdk.network.annotations.api.POST;
 import com.inappstory.sdk.network.annotations.api.PUT;
 import com.inappstory.sdk.network.annotations.api.Path;
@@ -14,6 +15,7 @@ import com.inappstory.sdk.network.annotations.api.Query;
 import com.inappstory.sdk.network.annotations.api.QueryObject;
 import com.inappstory.sdk.network.annotations.api.QueryVars;
 import com.inappstory.sdk.network.annotations.api.ReplaceHeader;
+import com.inappstory.sdk.network.fileupload.FilePart;
 import com.inappstory.sdk.network.models.Request;
 import com.inappstory.sdk.network.utils.headers.HeadersKeys;
 import com.inappstory.sdk.stories.api.models.TargetingBodyObject;
@@ -357,6 +359,7 @@ public interface ApiInterface {
             @Field("anonymous") boolean anonymous,
             @Field("user_id") String userId,
             @Field("user_sign") String userSign,
+            @Field("debug_session_key") String debugSessionKey,
             @ReplaceHeader(HeadersKeys.USER_ID) String xUserId
     );
 
@@ -365,6 +368,12 @@ public interface ApiInterface {
             @Body StatisticSendObject request,
             @ReplaceHeader(HeadersKeys.USER_ID) String xUserId,
             @ReplaceHeader(HeadersKeys.ACCEPT_LANGUAGE) String lang
+    );
+
+    @POST("v2/debug-log/{debug_session_key}")
+    Request debugLog(
+            @Path("debug_session_key") String debugSessionKey,
+            @MultipartData FilePart filePart
     );
 
     @POST("v2/session/close")

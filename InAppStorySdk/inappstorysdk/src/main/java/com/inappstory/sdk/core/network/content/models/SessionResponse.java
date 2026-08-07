@@ -41,6 +41,8 @@ public class SessionResponse {
     public Boolean isAllowStatV2;
     @SerializedName(SessionRequestFields.isAllowCrash)
     public Boolean isAllowCrash;
+    @SerializedName(SessionRequestFields.debugSessionKey)
+    public String debugSessionKey;
 
     public float getPreviewAspectRatio() {
         if (previewAspectRatio > 0) return previewAspectRatio;

@@ -5,6 +5,7 @@ import com.inappstory.sdk.network.annotations.api.Body;
 import com.inappstory.sdk.network.annotations.api.POST;
 import com.inappstory.sdk.network.annotations.api.Query;
 import com.inappstory.sdk.network.annotations.api.ReplaceHeader;
+import com.inappstory.sdk.network.fileupload.FilePart;
 import com.inappstory.sdk.network.models.Request;
 import com.inappstory.sdk.network.utils.headers.HeadersKeys;
 import com.inappstory.sdk.stories.api.models.TargetingBodyObject;
@@ -310,8 +311,14 @@ public class DummyApiInterface implements ApiInterface {
             boolean anonymous,
             String userId,
             String userSign,
+            String debugSessionKey,
             String xUserId
     ) {
+        return new DummyRequest();
+    }
+
+    @Override
+    public Request debugLog(String debugSessionKey, FilePart filePart) {
         return new DummyRequest();
     }
 

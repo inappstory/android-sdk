@@ -23,7 +23,9 @@ import com.inappstory.sdk.core.data.models.UniqueSessionParameters;
 import com.inappstory.sdk.core.utils.ConnectionCheck;
 import com.inappstory.sdk.core.utils.ConnectionCheckCallback;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
+import com.inappstory.sdk.network.fileupload.FilePart;
 import com.inappstory.sdk.network.models.RequestLocalParameters;
+import com.inappstory.sdk.network.models.Response;
 import com.inappstory.sdk.stories.api.models.CachedSessionData;
 import com.inappstory.sdk.stories.api.models.SessionRequestFields;
 import com.inappstory.sdk.core.network.content.models.SessionResponse;
@@ -37,9 +39,13 @@ import com.inappstory.sdk.utils.ISessionHolder;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class SessionManager {
     private final IASCore core;
@@ -208,6 +214,7 @@ public class SessionManager {
             SessionRequestFields.isAllowStatV1,
             SessionRequestFields.isAllowStatV2,
             SessionRequestFields.isAllowCrash,
+            SessionRequestFields.debugSessionKey,
             SessionRequestFields.isAllowUgc,
             SessionRequestFields.placeholders,
             SessionRequestFields.preloadGame,
@@ -285,6 +292,7 @@ public class SessionManager {
         final String appVersion = (pInfo != null ? pInfo.versionName : "");
         final String appBuild = (pInfo != null ? Integer.toString(pInfo.versionCode) : "");
 
+        final String oldDebugKey = core.sharedPreferencesAPI().getString(SESSION_DEBUG_KEY);
         new ConnectionCheck().check(
                 context,
                 new ConnectionCheckCallback(core) {
@@ -313,8 +321,8 @@ public class SessionManager {
                                         initialSessionParameters.anonymous(),
                                         initialSessionParameters.userId(),
                                         initialSessionParameters.userSign(),
+                                        oldDebugKey,
                                         initialSessionParameters.userId()
-                                        //
                                 ),
                                 new NetworkCallback<SessionResponse>() {
                                     @Override
@@ -345,6 +353,14 @@ public class SessionManager {
                                         if (response.preloadGame)
                                             core.contentPreload().restartGamePreloader();
                                         saveSession(response);
+                                        if (response.debugSessionKey != null) {
+                                            String debugKeyToSend = oldDebugKey != null ? oldDebugKey : response.debugSessionKey;
+                                            sendDebugLog(debugKeyToSend);
+                                            core.sharedPreferencesAPI().saveString(
+                                                    SESSION_DEBUG_KEY,
+                                                    response.debugSessionKey
+                                            );
+                                        }
                                         openStatisticSuccess(response);
                                         core.layoutHolder().loadLocalLayout();
                                         core.inAppStoryService()
@@ -405,6 +421,47 @@ public class SessionManager {
         );
 
     }
+
+    private final String SESSION_DEBUG_KEY = "SESSION_DEBUG_KEY";
+
+    private void sendDebugLog(String debugKey) {
+        final List<FilePart> fileParts = getFiles();
+
+        logExecutor.submit(new Runnable() {
+            @Override
+            public void run() {
+                for (FilePart filePart : fileParts) {
+                    Response response = core.network().execute(
+                            core.network().getApi().debugLog(debugKey, filePart));
+                    if (response.code < 300) {
+
+                    }
+                }
+            }
+        });
+
+    }
+
+    private final Set<String> usedLogFiles = new HashSet<>();
+
+    private @NonNull List<FilePart> getFiles() {
+        prepareLogFiles();
+        List<String> filePaths = new ArrayList<>();
+        List<FilePart> fileParts = new ArrayList<>();
+
+        for (String filePath : filePaths) {
+            if (usedLogFiles.contains(filePath)) continue;
+            usedLogFiles.add(filePath);
+            fileParts.add(new FilePart("file", filePath));
+        }
+        return fileParts;
+    }
+
+    private void prepareLogFiles() {
+
+    }
+
+    ExecutorService logExecutor = Executors.newSingleThreadExecutor();
 
     private boolean reOpenSessionIfSettingsWereChanged(UniqueSessionParameters initialSessionParameters) {
         final IASDataSettingsHolder dataSettingsHolder = (IASDataSettingsHolder) core.settingsAPI();

@@ -3,6 +3,8 @@ package com.inappstory.sdk.network.models;
 import android.util.Pair;
 
 import com.inappstory.sdk.network.constants.HttpMethods;
+import com.inappstory.sdk.network.fileupload.FilePart;
+import com.inappstory.sdk.network.fileupload.MultipartFileParts;
 import com.inappstory.sdk.network.utils.headers.Header;
 
 import java.util.ArrayList;
@@ -59,6 +61,10 @@ public class Request<T> {
         return isFormEncoded;
     }
 
+    public FilePart filePart() {
+        return filePart;
+    }
+
     private String url;
     private String method;
     private boolean isFormEncoded;
@@ -68,6 +74,7 @@ public class Request<T> {
     private String body;
     private String bodyRaw;
     private String bodyEncoded;
+    private FilePart filePart;
 
     protected Request(Builder builder) {
         this.url = builder.url;
@@ -79,6 +86,7 @@ public class Request<T> {
         this.bodyEncoded = builder.bodyEncoded;
         this.body = builder.body;
         this.isFormEncoded = builder.isFormEncoded;
+        this.filePart = builder.filePart;
     }
 
 
@@ -92,9 +100,15 @@ public class Request<T> {
         private String body;
         private String bodyRaw;
         private String bodyEncoded;
+        private FilePart filePart;
 
         public Builder headers(List<Header> headers) {
             this.headers = headers;
+            return this;
+        }
+
+        public Builder filePart(FilePart filePart) {
+            this.filePart = filePart;
             return this;
         }
 
