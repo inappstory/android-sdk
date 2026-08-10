@@ -23,7 +23,6 @@ import com.inappstory.sdk.network.annotations.api.QueryObject;
 import com.inappstory.sdk.network.annotations.api.QueryVars;
 import com.inappstory.sdk.network.annotations.api.ReplaceHeader;
 import com.inappstory.sdk.network.fileupload.FilePart;
-import com.inappstory.sdk.network.fileupload.MultipartFileParts;
 import com.inappstory.sdk.network.utils.ObjectToQuery;
 import com.inappstory.sdk.utils.UrlEncoder;
 import com.inappstory.sdk.network.utils.headers.AcceptEncodingHeader;

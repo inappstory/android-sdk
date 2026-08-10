@@ -4,7 +4,6 @@ import android.util.Pair;
 
 import com.inappstory.sdk.network.constants.HttpMethods;
 import com.inappstory.sdk.network.fileupload.FilePart;
-import com.inappstory.sdk.network.fileupload.MultipartFileParts;
 import com.inappstory.sdk.network.utils.headers.Header;
 
 import java.util.ArrayList;
