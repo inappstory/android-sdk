@@ -1,6 +1,6 @@
 package com.inappstory.sdk;
 
-import static com.inappstory.sdk.core.api.impl.IASSettingsImpl.TAG_LIMIT;
+import static com.inappstory.sdk.core.api.impl.IASSettingsImpl.TAG_LIMIT_COUNT;
 import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_10;
 import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_5;
 
@@ -806,8 +806,8 @@ public class InAppStoryManager implements IASBackPressHandler {
                 }
                 filteredList.add(tag);
             }
-            if (StringsUtils.getBytesLength(TextUtils.join(",", filteredList)) > TAG_LIMIT) {
-                errorStringId = R.string.ias_builder_tags_length_error;
+            if (filteredList.size() > TAG_LIMIT_COUNT) {
+                errorStringId = R.string.ias_builder_tags_count_error;
 
             }
         }

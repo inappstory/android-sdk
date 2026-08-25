@@ -45,6 +45,11 @@ public class GameJSInterface {
     }
 
     @JavascriptInterface
+    public void addToCache(String payload) {
+        manager.addToCache(payload);
+    }
+
+    @JavascriptInterface
     public void gameInstanceSetLocalData(String gameInstanceId, String data, boolean sendToServer) {
         manager.gameInstanceSetData(gameInstanceId, data, sendToServer);
     }

@@ -73,6 +73,10 @@ import com.inappstory.sdk.core.ui.screens.ShareProcessHandler;
 import com.inappstory.sdk.core.ui.screens.gamereader.BaseGameScreen;
 import com.inappstory.sdk.core.ui.screens.gamereader.GameReaderOverlapContainerDataForShare;
 import com.inappstory.sdk.game.cache.FilePathAndContent;
+import com.inappstory.sdk.game.cache.InGameResourceDownloadError;
+import com.inappstory.sdk.game.cache.InGameResourceDownloadResult;
+import com.inappstory.sdk.game.cache.InGameResourceDownloadResultObj;
+import com.inappstory.sdk.game.cache.InGameResourceDownloadSuccess;
 import com.inappstory.sdk.game.cache.SetGameLoggerCallback;
 import com.inappstory.sdk.game.cache.UIUseCaseError;
 import com.inappstory.sdk.game.cache.UseCaseCallback;
@@ -251,6 +255,28 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
     public void shareComplete(String id, boolean success) {
         if (webView != null)
             webView.loadUrl("javascript:(function(){share_complete(\"" + id + "\", " + success + ");})()");
+    }
+
+    public void addToCacheComplete(String cb, String id, InGameResourceDownloadResult result) {
+        InGameResourceDownloadResultObj inGameResourceDownloadResultObj = new InGameResourceDownloadResultObj();
+        inGameResourceDownloadResultObj.response = result instanceof InGameResourceDownloadSuccess;
+        if (result instanceof InGameResourceDownloadError) {
+            inGameResourceDownloadResultObj.reason = ((InGameResourceDownloadError)result).message();
+        }
+        try {
+            String strResult = JsonParser.getJson(inGameResourceDownloadResultObj);
+            if (webView != null)
+                webView.loadUrl("javascript:window." + cb + "('" + id + "', " +
+                        StringsUtils.escapeSingleQuotes(
+                                strResult
+                                        .replaceAll("\\\\n", "\\\\\n")
+                                        .replaceAll("\\\\r", "\\\\\r")
+                                        .replaceAll("\\\\t", "\\\\\t")
+                        ) + ")");
+        } catch (Exception e) {
+
+        }
+
     }
 
     void restartGame() {

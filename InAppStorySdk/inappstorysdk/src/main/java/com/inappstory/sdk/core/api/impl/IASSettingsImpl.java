@@ -60,6 +60,8 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
 
     public final static int TAG_LIMIT = 4000;
 
+    public final static int TAG_LIMIT_COUNT = 100;
+
     public IASSettingsImpl(IASCore core) {
         this.core = core;
     }
@@ -321,12 +323,12 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
                 newList.add(tag);
             }
         }
-        if (StringsUtils.getBytesLength(TextUtils.join(",", newList)) > TAG_LIMIT) {
+        if (newList.size() > TAG_LIMIT_COUNT) {
             InAppStoryManager.showELog(
                     LoggerTags.IAS_ERROR_TAG,
                     StringsUtils.getErrorStringFromContext(
                             core.appContext(),
-                            R.string.ias_setter_tags_length_error
+                            R.string.ias_setter_tags_count_error
                     )
             );
             return;
@@ -381,11 +383,10 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
                 hasNewTags = true;
             }
         }
-        String tagsString = TextUtils.join(",", mergedTags);
-        if (StringsUtils.getBytesLength(tagsString) > TAG_LIMIT) {
+        if (mergedTags.size() > TAG_LIMIT_COUNT) {
             StringsUtils.getErrorStringFromContext(
                     core.appContext(),
-                    R.string.ias_setter_tags_length_error
+                    R.string.ias_setter_tags_count_error
             );
             return;
         }
@@ -604,12 +605,12 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
                     }
                     filteredList.add(tag);
                 }
-                if (StringsUtils.getBytesLength(TextUtils.join(",", filteredList)) > TAG_LIMIT) {
+                if (filteredList.size() > TAG_LIMIT_COUNT) {
                     InAppStoryManager.showELog(
                             LoggerTags.IAS_ERROR_TAG,
                             StringsUtils.getErrorStringFromContext(
                                     core.appContext(),
-                                    R.string.ias_setter_tags_length_error
+                                    R.string.ias_setter_tags_count_error
                             )
                     );
                     return;
@@ -824,7 +825,7 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
     @Override
     public boolean noCorrectTags() {
         synchronized (settingsLock) {
-            return StringsUtils.getBytesLength(TextUtils.join(",", tags)) > TAG_LIMIT;
+            return tags.size() > TAG_LIMIT_COUNT;
         }
     }
 

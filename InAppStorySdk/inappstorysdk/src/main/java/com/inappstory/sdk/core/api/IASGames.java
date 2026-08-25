@@ -4,6 +4,7 @@ import android.content.Context;
 
 import androidx.annotation.NonNull;
 
+import com.inappstory.sdk.game.cache.InGameResourceDownloadManager;
 import com.inappstory.sdk.stories.outercallbacks.common.gamereader.GameReaderCallback;
 
 public interface IASGames {
@@ -12,6 +13,8 @@ public interface IASGames {
     void open(@NonNull Context context, String gameId);
 
     void callback(GameReaderCallback gameReaderCallback);
+
+    InGameResourceDownloadManager inGameResourceDownloadManager();
 
     void preloadGames();
 

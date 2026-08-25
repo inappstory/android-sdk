@@ -15,6 +15,9 @@ import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.api.impl.IASSingleStoryImpl;
 import com.inappstory.sdk.core.ui.screens.ShareProcessHandler;
+import com.inappstory.sdk.game.cache.InGameResourceDownloadCallback;
+import com.inappstory.sdk.game.cache.InGameResourceDownloadResult;
+import com.inappstory.sdk.game.cache.InGameResourceDownloadSuccess;
 import com.inappstory.sdk.game.reader.logger.AbstractGameLogger;
 import com.inappstory.sdk.game.reader.logger.GameLoggerLvl0;
 import com.inappstory.sdk.game.reader.logger.GameLoggerLvl1;
@@ -460,5 +463,16 @@ public class GameManager {
         );
         host.share(shareObj);
 
+    }
+
+    public void addToCache(String payload) {
+        GameAddToCachePayload atcPayload =
+                JsonParser.fromJson(payload, GameAddToCachePayload.class);
+        core.gamesAPI().inGameResourceDownloadManager().addNewTask(
+                path,
+                gameCenterId,
+                atcPayload.webResource,
+                result -> host.addToCacheComplete(atcPayload.cb, atcPayload.id, result)
+        );
     }
 }

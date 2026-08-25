@@ -1,11 +1,10 @@
 package com.inappstory.sdk.core.ui.screens.inappmessagereader;
 
-import static com.inappstory.sdk.core.api.impl.IASSettingsImpl.TAG_LIMIT;
+import static com.inappstory.sdk.core.api.impl.IASSettingsImpl.TAG_LIMIT_COUNT;
 
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
-import android.text.TextUtils;
 import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
@@ -234,17 +233,17 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
                 }
                 filteredList.add(tag);
             }
-            if (StringsUtils.getBytesLength(TextUtils.join(",", filteredList)) > TAG_LIMIT) {
+            if (filteredList.size() > TAG_LIMIT_COUNT) {
                 InAppStoryManager.showELog(
                         LoggerTags.IAS_ERROR_TAG,
                         StringsUtils.getErrorStringFromContext(
                                 core.appContext(),
-                                R.string.ias_setter_tags_length_error
+                                R.string.ias_setter_tags_count_error
                         )
                 );
                 launchScreenError(StringsUtils.getErrorStringFromContext(
                         core.appContext(),
-                        R.string.ias_setter_tags_length_error
+                        R.string.ias_setter_tags_count_error
                 ));
                 return;
             }

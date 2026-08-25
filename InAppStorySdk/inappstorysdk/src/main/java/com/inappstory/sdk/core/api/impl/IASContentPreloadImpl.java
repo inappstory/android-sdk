@@ -1,6 +1,6 @@
 package com.inappstory.sdk.core.api.impl;
 
-import static com.inappstory.sdk.core.api.impl.IASSettingsImpl.TAG_LIMIT;
+import static com.inappstory.sdk.core.api.impl.IASSettingsImpl.TAG_LIMIT_COUNT;
 
 import android.os.Handler;
 import android.os.Looper;
@@ -87,12 +87,12 @@ public class IASContentPreloadImpl implements IASContentPreload {
                     }
                     filteredTags.add(tag);
                 }
-                if (StringsUtils.getBytesLength(TextUtils.join(",", filteredTags)) > TAG_LIMIT) {
+                if (filteredTags.size() > TAG_LIMIT_COUNT) {
                     InAppStoryManager.showELog(
                             LoggerTags.IAS_ERROR_TAG,
                             StringsUtils.getErrorStringFromContext(
                                     core.appContext(),
-                                    R.string.ias_setter_tags_length_error
+                                    R.string.ias_setter_tags_count_error
                             )
                     );
                     if (callback != null)
