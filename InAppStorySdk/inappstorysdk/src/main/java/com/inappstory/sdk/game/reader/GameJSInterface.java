@@ -143,6 +143,7 @@ public class GameJSInterface {
 
     @JavascriptInterface
     public void gameComplete(String data) {
+       // manager.testMethod();
         manager.gameCompleted(data, null, null);
         logMethod(data);
     }
@@ -154,6 +155,7 @@ public class GameJSInterface {
 
     @JavascriptInterface
     public void gameComplete(String data, String eventData, String urlOrOptions) {
+        //manager.testMethod();
         manager.gameCompleted(data, urlOrOptions, eventData);
         logMethod("data:" + data + " | deeplink:" + urlOrOptions + " | eventData:" + eventData);
     }

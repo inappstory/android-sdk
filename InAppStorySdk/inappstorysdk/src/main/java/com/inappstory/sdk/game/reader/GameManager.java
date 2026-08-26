@@ -358,6 +358,10 @@ public class GameManager {
         host.updateUI();
     }
 
+    void testMethod() {
+        host.testMethod();
+    }
+
     void gameLoadFailed(String reason, boolean canTryReload) {
         if (statusHolder.hasGameLoadStatus()) return;
         statusHolder.setGameFailed();

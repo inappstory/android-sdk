@@ -73,6 +73,7 @@ import com.inappstory.sdk.core.ui.screens.ShareProcessHandler;
 import com.inappstory.sdk.core.ui.screens.gamereader.BaseGameScreen;
 import com.inappstory.sdk.core.ui.screens.gamereader.GameReaderOverlapContainerDataForShare;
 import com.inappstory.sdk.game.cache.FilePathAndContent;
+import com.inappstory.sdk.game.cache.InGameResourceCallbackObj;
 import com.inappstory.sdk.game.cache.InGameResourceDownloadError;
 import com.inappstory.sdk.game.cache.InGameResourceDownloadResult;
 import com.inappstory.sdk.game.cache.InGameResourceDownloadResultObj;
@@ -257,22 +258,61 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
             webView.loadUrl("javascript:(function(){share_complete(\"" + id + "\", " + success + ");})()");
     }
 
+    public void testMethod() {
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                if (webView != null)
+                    try {
+                        String script = "javascript:(function(){ " +
+                                "(async () => {" +
+                                "    try {" +
+                                "    await GameCenterApi.ResourceManager.getInstance().addToCache(GameCenterApi.ResourceManager.getInstance().resLists[0], {" +
+                                "            \"key\": \"victoryCardsres10\"," +
+                                "            \"url\": \"https://cs.test.inappstory.com/np/file/ib/uk/ms/xuxs0ay9lizzyphcnh3pho1yvg.jpg?k=KgAAAAAAAAACAQ\"," +
+                                "            \"size\": 60609," +
+                                "            \"sha1\": \"09192be86d860bd6e1cf1c40e1f3246c673c3f44\"" +
+                                "        });" +
+                                "        console.log(\"Done\");" +
+                                "    } catch (err) {" +
+                                "        console.error(err);" +
+                                "    }" +
+                                "})();" +
+                                " })()";
+                        webView.evaluateJavascript(script, null);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+            }
+        });
+    }
+
     public void addToCacheComplete(String cb, String id, InGameResourceDownloadResult result) {
         InGameResourceDownloadResultObj inGameResourceDownloadResultObj = new InGameResourceDownloadResultObj();
-        inGameResourceDownloadResultObj.response = result instanceof InGameResourceDownloadSuccess;
+        inGameResourceDownloadResultObj.result = result instanceof InGameResourceDownloadSuccess;
         if (result instanceof InGameResourceDownloadError) {
-            inGameResourceDownloadResultObj.reason = ((InGameResourceDownloadError)result).message();
+            inGameResourceDownloadResultObj.reason = ((InGameResourceDownloadError) result).message();
         }
+        InGameResourceCallbackObj resourceCallback = new InGameResourceCallbackObj();
+        resourceCallback.id = id;
+        resourceCallback.response = inGameResourceDownloadResultObj;
         try {
-            String strResult = JsonParser.getJson(inGameResourceDownloadResultObj);
-            if (webView != null)
-                webView.loadUrl("javascript:window." + cb + "('" + id + "', " +
-                        StringsUtils.escapeSingleQuotes(
-                                strResult
-                                        .replaceAll("\\\\n", "\\\\\n")
-                                        .replaceAll("\\\\r", "\\\\\r")
-                                        .replaceAll("\\\\t", "\\\\\t")
-                        ) + ")");
+            final String strResult = JsonParser.getJson(resourceCallback);
+            new Handler(Looper.getMainLooper()).post(new Runnable() {
+                @Override
+                public void run() {
+                    String loadUrl = "javascript:window." + cb + "('" +
+                            StringsUtils.escapeSingleQuotes(
+                                    strResult
+                                            .replaceAll("\\\\n", "\\\\\n")
+                                            .replaceAll("\\\\r", "\\\\\r")
+                                            .replaceAll("\\\\t", "\\\\\t")
+                            ) + "')";
+                    if (webView != null)
+                        webView.loadUrl(loadUrl);
+                }
+            });
+
         } catch (Exception e) {
 
         }

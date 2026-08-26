@@ -65,7 +65,7 @@ public class InGameResourceDownloadManager {
                             }
                         },
                         webResource
-                );
+                ).getFile();
             }
         });
 
