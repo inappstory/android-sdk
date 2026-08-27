@@ -84,7 +84,11 @@ public class LogSaverImpl implements LogSaver {
         File[] files = dir.listFiles();
         if (files != null) {
             for (File file : files) {
-                Log.e("LastModifiedDate", file.lastModified() + "");
+                String simpleFName = file.getName().replaceFirst("[.][^.]+$", "");
+                //Log.e("LastModifiedDate", () + "");
+                if (System.currentTimeMillis() - Long.parseLong(simpleFName) > 168*3600000) {
+                    file.delete();
+                }
             }
         }
     }
