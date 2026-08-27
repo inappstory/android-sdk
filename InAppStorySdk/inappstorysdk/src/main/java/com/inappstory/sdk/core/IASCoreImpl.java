@@ -16,7 +16,7 @@ import com.inappstory.sdk.core.api.IASGames;
 import com.inappstory.sdk.core.api.IASInAppMessage;
 import com.inappstory.sdk.core.api.IASLayoutHolder;
 import com.inappstory.sdk.core.api.IASLimitsHolder;
-import com.inappstory.sdk.core.api.IASLogs;
+import com.inappstory.sdk.core.api.IASGameLogs;
 import com.inappstory.sdk.core.api.IASManager;
 import com.inappstory.sdk.core.api.IASOnboardings;
 import com.inappstory.sdk.core.api.IASDataSettings;
@@ -38,7 +38,7 @@ import com.inappstory.sdk.core.api.impl.IASGamesImpl;
 import com.inappstory.sdk.core.api.impl.IASInAppMessageImpl;
 import com.inappstory.sdk.core.api.impl.IASLayoutHolderImpl;
 import com.inappstory.sdk.core.api.impl.IASLimitsHolderImpl;
-import com.inappstory.sdk.core.api.impl.IASLogsImpl;
+import com.inappstory.sdk.core.api.impl.IASGameLogsImpl;
 import com.inappstory.sdk.core.api.impl.IASManagerImpl;
 import com.inappstory.sdk.core.api.impl.IASOnboardingsImpl;
 import com.inappstory.sdk.core.api.impl.IASProjectSettingsImpl;
@@ -55,6 +55,8 @@ import com.inappstory.sdk.core.ui.screens.ScreensManager;
 import com.inappstory.sdk.core.utils.AssetUrlsExtractor;
 import com.inappstory.sdk.domain.IWidgetsViewModels;
 import com.inappstory.sdk.domain.WidgetsViewModels;
+import com.inappstory.sdk.logcache.LogSaver;
+import com.inappstory.sdk.logcache.LogSaverImpl;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.stories.exceptions.ExceptionManager;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
@@ -87,7 +89,7 @@ public class IASCoreImpl implements IASCore {
     private final IASContentPreload contentPreload;
     private final IASExternalUtilsAPI externalUtilsAPI;
     private final IASContentLoader contentLoader;
-    private final IASLogs iasLogs;
+    private final IASGameLogs iasGameLogs;
     private final IWidgetsViewModels widgetsViewModels;
     private final Context context;
     private final InAppStoryService inAppStoryService;
@@ -102,10 +104,12 @@ public class IASCoreImpl implements IASCore {
     private final CancellationTokenPool cancellationTokenPool;
     private final AssetUrlsExtractor assetUrlsExtractor;
     private final IASLayoutHolder layoutHolder;
+    private final LogSaver logSaver;
 
     public IASCoreImpl(Context context) {
         this.context = context;
         cancellationTokenPool = new CancellationTokenPool();
+        logSaver = new LogSaverImpl(this);
         widgetsViewModels = new WidgetsViewModels(this);
         exceptionManager = new ExceptionManager(this);
         contentHolder = new ContentHolder();
@@ -130,7 +134,7 @@ public class IASCoreImpl implements IASCore {
         vibrateUtils = new VibrateUtils(this);
         acceleratorUtils = new AcceleratorUtils(this);
         contentPreload = new IASContentPreloadImpl(this);
-        iasLogs = new IASLogsImpl(this);
+        iasGameLogs = new IASGameLogsImpl(this);
         inAppStoryService = new InAppStoryService(this);
         inAppMessages = new IASInAppMessageImpl(this);
         banners = new IASBannersImpl(this);
@@ -300,8 +304,8 @@ public class IASCoreImpl implements IASCore {
     }
 
     @Override
-    public IASLogs logs() {
-        return iasLogs;
+    public IASGameLogs gameLogs() {
+        return iasGameLogs;
     }
 
     @Override
@@ -342,5 +346,10 @@ public class IASCoreImpl implements IASCore {
     @Override
     public AssetUrlsExtractor assetUrlsExtractor() {
         return assetUrlsExtractor;
+    }
+
+    @Override
+    public LogSaver logSaver() {
+        return logSaver;
     }
 }

@@ -49,7 +49,7 @@ public class LogSaverImpl implements LogSaver {
 
 
     @Override
-    public void saveLog(String tag, String message) {
+    public void saveLog(String tag, String type, String message) {
         IASSettingsImpl settings = (IASSettingsImpl) core.settingsAPI();
         workThread.execute(new Runnable() {
             @Override
@@ -66,9 +66,12 @@ public class LogSaverImpl implements LogSaver {
                                     "\t\t" +
                                     sdf.format(new Date(ms)) +
                                     "\t\t" +
+                                    type +
+                                    "\t\t" +
                                     tag +
                                     "\t\t" +
                                     message
+                                    + "\n\n"
                     );
                     fOut.close();
                 } catch (IOException e) {
@@ -90,6 +93,7 @@ public class LogSaverImpl implements LogSaver {
     public void prepareFiles() {
         try {
             archiveOldFiles();
+            clearOldFiles();
         } catch (IOException e) {
         }
     }
@@ -127,8 +131,9 @@ public class LogSaverImpl implements LogSaver {
         if (!logFile.exists()) {
             logFile.createNewFile();
         } else if (logFile.length() > 5000000) {
-            archiveOldFiles();
             changeFileName();
+            archiveOldFiles();
+            clearOldFiles();
             return getOrCreateLogFile();
         }
         return logFile;

@@ -37,6 +37,7 @@ import com.inappstory.sdk.stories.statistic.GetStatisticV1Callback;
 import com.inappstory.sdk.ugc.extinterfaces.IOpenSessionCallback;
 import com.inappstory.sdk.utils.ISessionHolder;
 
+import java.io.File;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -44,6 +45,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -434,7 +436,7 @@ public class SessionManager {
                     Response response = core.network().execute(
                             core.network().getApi().debugLog(debugKey, filePart));
                     if (response.code < 300) {
-
+                        (new File(filePart.filePath())).delete();
                     }
                 }
             }
@@ -446,7 +448,7 @@ public class SessionManager {
 
     private @NonNull List<FilePart> getFiles() {
         prepareLogFiles();
-        List<String> filePaths = new ArrayList<>();
+        List<String> filePaths = core.logSaver().getFiles();
         List<FilePart> fileParts = new ArrayList<>();
 
         for (String filePath : filePaths) {
@@ -458,7 +460,7 @@ public class SessionManager {
     }
 
     private void prepareLogFiles() {
-
+        core.logSaver().prepareFiles();
     }
 
     ExecutorService logExecutor = Executors.newSingleThreadExecutor();

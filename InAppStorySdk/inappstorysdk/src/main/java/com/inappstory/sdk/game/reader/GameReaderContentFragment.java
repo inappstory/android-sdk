@@ -1120,8 +1120,8 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
 
     private void setFullScreenFromOptions(GameScreenOptions options) {
         isFullscreen = options != null && options.fullScreen;
-        if (forceFullscreen != null)
-            isFullscreen = forceFullscreen;
+        if (Objects.equals(forceFullscreen, true))
+            isFullscreen = true;
         if (isFullscreen) {
             InAppStoryManager.useCore(new UseIASCoreCallback() {
                 @Override

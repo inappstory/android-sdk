@@ -8,6 +8,7 @@ import com.inappstory.sdk.network.annotations.api.Field;
 import com.inappstory.sdk.network.annotations.api.FormUrlEncoded;
 import com.inappstory.sdk.network.annotations.api.GET;
 import com.inappstory.sdk.network.annotations.api.MultipartData;
+import com.inappstory.sdk.network.annotations.api.MultipartRequest;
 import com.inappstory.sdk.network.annotations.api.POST;
 import com.inappstory.sdk.network.annotations.api.PUT;
 import com.inappstory.sdk.network.annotations.api.Path;
@@ -371,6 +372,7 @@ public interface ApiInterface {
     );
 
     @POST("v2/debug-log/{debug_session_key}")
+    @MultipartRequest
     Request debugLog(
             @Path("debug_session_key") String debugSessionKey,
             @MultipartData FilePart filePart

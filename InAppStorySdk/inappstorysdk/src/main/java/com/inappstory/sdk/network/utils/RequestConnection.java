@@ -53,7 +53,7 @@ public class RequestConnection {
 
             PrintWriter printWriter = new PrintWriter(outStreamWriter, true);
             writeFile(request.filePart(), printWriter, writerLine, outStream, boundary);
-            printWriter.append("--$boundary--").append(writerLine);
+            printWriter.append("--" + boundary + "--").append(writerLine);
             printWriter.close();
             outStreamWriter.close();
             outStream.close();
@@ -100,6 +100,5 @@ public class RequestConnection {
         inputStream.close();
         writer.append(divider);
         writer.flush();
-
     }
 }

@@ -1,13 +1,13 @@
 package com.inappstory.sdk.core.api.impl;
 
 import com.inappstory.sdk.core.IASCore;
-import com.inappstory.sdk.core.api.IASLogs;
+import com.inappstory.sdk.core.api.IASGameLogs;
 import com.inappstory.sdk.game.reader.logger.GameLogSaver;
 import com.inappstory.sdk.game.reader.logger.GameLogSender;
 import com.inappstory.sdk.game.reader.logger.IGameLogSaver;
 import com.inappstory.sdk.game.reader.logger.IGameLogSender;
 
-public class IASLogsImpl implements IASLogs {
+public class IASGameLogsImpl implements IASGameLogs {
     private final IASCore core;
 
     @Override
@@ -24,7 +24,7 @@ public class IASLogsImpl implements IASLogs {
 
     IGameLogSaver logSaver;
 
-    public IASLogsImpl(IASCore core) {
+    public IASGameLogsImpl(IASCore core) {
         this.core = core;
         logSaver = new GameLogSaver(core);
         logSender = new GameLogSender(core, logSaver);

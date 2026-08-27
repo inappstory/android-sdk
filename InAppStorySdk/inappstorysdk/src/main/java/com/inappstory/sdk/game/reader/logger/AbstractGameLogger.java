@@ -3,18 +3,9 @@ package com.inappstory.sdk.game.reader.logger;
 import android.content.pm.PackageInfo;
 import android.os.Handler;
 import android.text.TextUtils;
-import android.util.Log;
 
-import androidx.annotation.NonNull;
-
-import com.inappstory.sdk.InAppStoryManager;
-import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.R;
-import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
-import com.inappstory.sdk.network.JsonParser;
-import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 import com.inappstory.sdk.utils.WebViewUtils;
 
 import java.util.ArrayList;
@@ -86,7 +77,7 @@ public abstract class AbstractGameLogger {
         new Handler().post(new Runnable() {
             @Override
             public void run() {
-                core.logs().logSaver().saveLog(log);
+                core.gameLogs().logSaver().saveLog(log);
             }
         });
     }
@@ -108,7 +99,7 @@ public abstract class AbstractGameLogger {
             executorService.submit(new Runnable() {
                 @Override
                 public void run() {
-                    core.logs().logSaver().saveLog(createBaseLog().type("debug").message(msg));
+                    core.gameLogs().logSaver().saveLog(createBaseLog().type("debug").message(msg));
                 }
             });
         }
@@ -116,11 +107,11 @@ public abstract class AbstractGameLogger {
 
 
     public final void stopQueue() {
-        core.logs().logSender().stop();
+        core.gameLogs().logSender().stop();
     }
 
     public final void startQueue(boolean gameLaunched) {
-        core.logs().logSender().start(gameLaunched);
+        core.gameLogs().logSender().start(gameLaunched);
     }
 
     protected final GameLog createBaseLog() {

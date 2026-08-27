@@ -15,7 +15,7 @@ import com.inappstory.sdk.core.api.IASGames;
 import com.inappstory.sdk.core.api.IASInAppMessage;
 import com.inappstory.sdk.core.api.IASLayoutHolder;
 import com.inappstory.sdk.core.api.IASLimitsHolder;
-import com.inappstory.sdk.core.api.IASLogs;
+import com.inappstory.sdk.core.api.IASGameLogs;
 import com.inappstory.sdk.core.api.IASManager;
 import com.inappstory.sdk.core.api.IASOnboardings;
 import com.inappstory.sdk.core.api.IASDataSettings;
@@ -31,6 +31,7 @@ import com.inappstory.sdk.core.dataholders.IStoriesListVMHolder;
 import com.inappstory.sdk.core.ui.screens.ScreensManager;
 import com.inappstory.sdk.core.utils.AssetUrlsExtractor;
 import com.inappstory.sdk.domain.IWidgetsViewModels;
+import com.inappstory.sdk.logcache.LogSaver;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.stories.exceptions.ExceptionManager;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
@@ -71,7 +72,7 @@ public interface IASCore {
     IASContentLoader contentLoader();
     IContentHolder contentHolder();
     NetworkClient network();
-    IASLogs logs();
+    IASGameLogs gameLogs();
     KeyValueStorage keyValueStorage();
     SharedPreferencesAPI sharedPreferencesAPI();
     InAppStoryService inAppStoryService();
@@ -80,4 +81,5 @@ public interface IASCore {
     CancellationTokenPool cancellationTokenPool();
     String buildHash();
     AssetUrlsExtractor assetUrlsExtractor();
+    LogSaver logSaver();
 }
