@@ -78,7 +78,7 @@ public class BannerWebView extends IASWebView implements ContentViewInteractor {
     IBannerViewModel slideViewModel;
 
     private void logMethod(String payload) {
-        if (slideViewModel == null) return;
+        if (slideViewModel == null || slideViewModel.contentIdAndType() == null) return;
         int contentIdWithIndex = slideViewModel.contentIdAndType().contentId;
         InAppStoryManager.showDLog(LoggerTags.IAS_BANNER_JS_CALL,
                 contentIdWithIndex + " " + 0 + " " + payload);
@@ -302,13 +302,15 @@ public class BannerWebView extends IASWebView implements ContentViewInteractor {
 
                 @Override
                 public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
-                    int id = slideViewModel.contentIdAndType().contentId;
-                    sendWebConsoleLog(
-                            consoleMessage,
-                            Integer.toString(id),
-                            2,
-                            0
-                    );
+                    if (slideViewModel.contentIdAndType() != null) {
+                        int id = slideViewModel.contentIdAndType().contentId;
+                        sendWebConsoleLog(
+                                consoleMessage,
+                                Integer.toString(id),
+                                2,
+                                0
+                        );
+                    }
                     InAppStoryManager.showDLog(
                             LoggerTags.IAS_BANNER_CONSOLE,
                             consoleMessage.messageLevel().name() + ": "

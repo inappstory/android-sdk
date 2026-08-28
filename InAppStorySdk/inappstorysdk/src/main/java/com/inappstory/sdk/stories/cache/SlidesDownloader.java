@@ -400,7 +400,7 @@ public class SlidesDownloader {
         }
         ContentIdAndType contentIdAndType = slideTaskKey.contentIdAndType;
         for (IReaderSlideViewModel pageViewModel : pageViewModelsCopy) {
-            if (pageViewModel.contentIdAndType().equals(contentIdAndType)) {
+            if (Objects.equals(pageViewModel.contentIdAndType(), contentIdAndType)) {
                 pageViewModel.slideLoadError(slideTaskKey.index);
             }
         }
@@ -579,7 +579,7 @@ public class SlidesDownloader {
         List<IReaderSlideViewModel> checkedPageViewModels = new ArrayList<>();
         synchronized (pageViewModelsLock) {
             for (IReaderSlideViewModel pageViewModel : pageViewModels) {
-                if (pageViewModel.contentIdAndType().equals(contentIdAndType)) {
+                if (Objects.equals(pageViewModel.contentIdAndType(), contentIdAndType)) {
                     checkedPageViewModels.add(pageViewModel);
                 }
             }

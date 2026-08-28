@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
 public class StoryDownloadManager {
     private final IASCore core;
@@ -119,7 +120,7 @@ public class StoryDownloadManager {
             return;
         }
         for (IReaderSlideViewModel pageViewModel : locals) {
-            if (pageViewModel.contentIdAndType().equals(contentIdAndType)) {
+            if (Objects.equals(pageViewModel.contentIdAndType(), contentIdAndType)) {
                 pageViewModel.contentLoadError();
                 return;
             }
@@ -132,11 +133,10 @@ public class StoryDownloadManager {
             locals.addAll(pageViewModels);
         }
         for (IReaderSlideViewModel pageViewModel : locals) {
-            if (
-                    pageViewModel.contentIdAndType().equals(
-                            new ContentIdAndType(story.id(), type)
-                    )
-            ) {
+            if (Objects.equals(
+                    pageViewModel.contentIdAndType(),
+                    new ContentIdAndType(story.id(), type)
+            )) {
                 pageViewModel.contentLoadSuccess(story);
                 return;
             }
@@ -199,8 +199,8 @@ public class StoryDownloadManager {
 
     private void initDownloader() {
 
-  //      storyDownloader.init();
- //       slidesDownloader.init();
+        //      storyDownloader.init();
+        //       slidesDownloader.init();
     }
 
     public void addStoryTask(ContentIdWithIndex storyId, ArrayList<ContentIdWithIndex> addIds, ContentType type) {
