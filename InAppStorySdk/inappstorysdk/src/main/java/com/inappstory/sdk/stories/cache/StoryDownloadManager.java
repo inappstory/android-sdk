@@ -199,8 +199,8 @@ public class StoryDownloadManager {
 
     private void initDownloader() {
 
-        storyDownloader.init();
-        slidesDownloader.init();
+  //      storyDownloader.init();
+ //       slidesDownloader.init();
     }
 
     public void addStoryTask(ContentIdWithIndex storyId, ArrayList<ContentIdWithIndex> addIds, ContentType type) {

@@ -51,7 +51,7 @@ public class BannerDownloadManager {
             final BannerPlacePreloadCallback callback,
             final boolean isFirst
     ) {
-        this.slidesDownloader.init();
+     //   this.slidesDownloader.init();
         if (allSlidesLoaded(readerContent)) {
             contentIsLoaded(readerContent, callback, isFirst);
         }

@@ -69,6 +69,7 @@ class StoryDownloader {
         synchronized (storyTasksLock) {
             storyTasks.put(new ContentIdAndType(storyId, type), new StoryTaskWithPriority(-1, 3));
         }
+        init();
     }
 
     void cleanTasks() {
@@ -178,6 +179,7 @@ class StoryDownloader {
             }
             changePriority(keyByStoryId, addIds, type);
         }
+        init();
     }
 
 
@@ -253,7 +255,7 @@ class StoryDownloader {
                 e.printStackTrace();
             }
             if (tKey == null) {
-                loopedExecutor.freeExecutor();
+                loopedExecutor.cancelTask();
                 return;
             }
             final ContentIdAndType key = tKey;

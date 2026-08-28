@@ -332,6 +332,7 @@ public class SlidesDownloader {
                 e.printStackTrace();
             }
         }
+        init();
     }
 
     public void addSlides(
@@ -425,11 +426,14 @@ public class SlidesDownloader {
 
             final SlideTaskKey key = getMaxPriorityPageTaskKey();
             if (key == null) {
-                loopedExecutor.freeExecutor();
+                loopedExecutor.cancelTask();
+                initialized = false;
                 return;
             }
             synchronized (slideTasksLock) {
-                if (locked) return;
+                if (locked) {
+                    return;
+                }
                 locked = true;
                 Objects.requireNonNull(slideTasks.get(key)).loadType = 1;
             }

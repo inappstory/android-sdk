@@ -96,7 +96,7 @@ public class InAppMessageDownloadManager {
 
     private void addSlides(@NonNull final IReaderContent readerContent, final InAppMessageLoadCallback callback) {
 
-        this.slidesDownloader.init();
+     //   this.slidesDownloader.init();
         if (allSlidesLoaded(readerContent)) {
             contentIsLoaded(readerContent, callback);
             return;

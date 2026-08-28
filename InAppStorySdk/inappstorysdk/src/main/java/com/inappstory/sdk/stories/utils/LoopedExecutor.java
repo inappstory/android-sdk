@@ -51,7 +51,6 @@ public class LoopedExecutor {
                 try {
                     Thread.sleep(startDelay);
                     while (true) {
-                        Log.e("loopedExecutor", name);
                         synchronized (taskLaunchLock) {
                             if (!taskLaunched && runnable != null) {
                                 Log.e("loopedExecutor", "launchTask " + name);

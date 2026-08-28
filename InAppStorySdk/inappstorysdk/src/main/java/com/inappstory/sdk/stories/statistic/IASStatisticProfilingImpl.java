@@ -44,7 +44,7 @@ public class IASStatisticProfilingImpl implements IASStatisticProfiling {
         loopedExecutor.task(queueTasksRunnable);
     }
 
-    private final ExecutorService runnableExecutor = Executors.newFixedThreadPool(1);
+    private final ExecutorService runnableExecutor = Executors.newSingleThreadExecutor();
 
     private final Object tasksLock = new Object();
 
@@ -54,7 +54,6 @@ public class IASStatisticProfilingImpl implements IASStatisticProfiling {
         task.name = name;
         task.startTime = System.currentTimeMillis();
         task.isAllowToForceSend = !disabled;
-        initLooper();
         synchronized (tasksLock) {
             for (ProfilingTask hasTask : tasks) {
                 if (hasTask.uniqueHash.equals(hash)) {
@@ -79,7 +78,6 @@ public class IASStatisticProfilingImpl implements IASStatisticProfiling {
         task.uniqueHash = hash;
         task.name = name;
         task.startTime = System.currentTimeMillis();
-        initLooper();
         synchronized (tasksLock) {
             tasks.add(task);
         }
@@ -97,7 +95,7 @@ public class IASStatisticProfilingImpl implements IASStatisticProfiling {
             }
             if (readyTask == null) return;
             tasks.remove(readyTask);
-            if (hash == null || hash.isEmpty()) return;
+            if (hash.isEmpty()) return;
             readyTask.endTime = System.currentTimeMillis();
             readyTask.isReady = true;
 
@@ -115,6 +113,7 @@ public class IASStatisticProfilingImpl implements IASStatisticProfiling {
                 });
             } else {
                 readyTasks.add(readyTask);
+                initLooper();
             }
         }
     }
@@ -139,15 +138,14 @@ public class IASStatisticProfilingImpl implements IASStatisticProfiling {
                 readyIsEmpty = readyTasks.size() == 0;
             }
             if (readyIsEmpty || disabled) {
-                loopedExecutor.freeExecutor();
+                loopedExecutor.cancelTask();
+                looperInitialized = false;
                 return;
             }
             ProfilingTask task;
             synchronized (tasksLock) {
-                task = readyTasks.get(0);
-                readyTasks.remove(0);
+                task = readyTasks.remove(0);
             }
-
             if (task != null) {
                 try {
                     sendTiming(task);
@@ -178,7 +176,7 @@ public class IASStatisticProfilingImpl implements IASStatisticProfiling {
     private void sendTiming(ProfilingTask task) throws Exception {
         Map<String, String> qParams = new HashMap<>();
         qParams.put("s", (task.sessionId != null && !task.sessionId.isEmpty()) ? task.sessionId :
-                ((IASDataSettingsHolder)core.settingsAPI()).sessionIdOrEmpty());
+                ((IASDataSettingsHolder) core.settingsAPI()).sessionIdOrEmpty());
         qParams.put("u", task.userId != null ? task.userId : "");
         String cc = getCC();
         qParams.put("ts", "" + System.currentTimeMillis() / 1000);
