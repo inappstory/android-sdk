@@ -47,6 +47,18 @@ public class VideoPlayer extends TextureView implements TextureView.SurfaceTextu
         setSurfaceTextureListener(this);
     }
 
+    @Override
+    public void setVisibility(int visibility) {
+        super.setVisibility(visibility);
+        if (mp != null) {
+            if (visibility == VISIBLE) {
+                mp.start();
+            } else {
+                mp.stop();
+            }
+        }
+    }
+
     public void loadVideoByUrl(String path) {
         if (this.url == null || !this.url.equals(path)) {
             file = null;
