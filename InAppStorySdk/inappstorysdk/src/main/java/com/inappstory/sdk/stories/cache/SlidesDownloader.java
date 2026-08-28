@@ -353,6 +353,7 @@ public class SlidesDownloader {
     public void addSubscriber(IReaderSlideViewModel pageViewModel) {
         synchronized (pageViewModelsLock) {
             for (IReaderSlideViewModel readerSlideViewModel : pageViewModels) {
+                if (readerSlideViewModel.contentIdAndType() == null) continue;
                 if (pageViewModel.externalSubscriber() != null &&
                         pageViewModel.externalSubscriber() == readerSlideViewModel.contentIdAndType().contentId) {
                     return;
