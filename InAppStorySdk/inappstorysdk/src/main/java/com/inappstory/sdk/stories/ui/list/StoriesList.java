@@ -9,6 +9,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
@@ -47,6 +48,7 @@ import com.inappstory.sdk.stories.outercallbacks.storieslist.ListScrollCallback;
 import com.inappstory.sdk.stories.statistic.GetStatisticV1Callback;
 import com.inappstory.sdk.stories.statistic.IASStatisticStoriesV2Impl;
 import com.inappstory.sdk.stories.ui.reader.ActiveStoryItem;
+import com.inappstory.sdk.stories.utils.LoopedExecutor;
 import com.inappstory.sdk.ugc.list.OnUGCItemClick;
 import com.inappstory.sdk.utils.ScheduledTPEManager;
 import com.inappstory.sdk.utils.StringsUtils;
@@ -229,7 +231,7 @@ public class StoriesList extends RecyclerView {
     @Override
     public void onDetachedFromWindow() {
         super.onDetachedFromWindow();
-        scheduledTimerCheckVisibility.cancel(false);
+        pauseStatCollect();
         InAppStoryService.useInstance(new UseServiceInstanceCallback() {
             @Override
             public void use(@NonNull InAppStoryService service) {
@@ -243,17 +245,12 @@ public class StoriesList extends RecyclerView {
         });
     }
 
-    private final ScheduledTPEManager executorService = new ScheduledTPEManager();
+    private LoopedExecutor executorService = null;
 
     @Override
     public void onAttachedToWindow() {
         super.onAttachedToWindow();
-        scheduledTimerCheckVisibility = executorService.scheduleAtFixedRate(
-                checkVisibilityRunnable,
-                1L,
-                300,
-                TimeUnit.MILLISECONDS
-        );
+        resumeStatCollect();
         manager.list = this;
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
@@ -425,12 +422,41 @@ public class StoriesList extends RecyclerView {
 
     }
 
+    public void pauseStatCollect() {
+        if (executorService != null) {
+            executorService.cancelTask();
+            executorService.shutdown();
+            executorService = null;
+        }
+    }
+
+    @Override
+    public void setVisibility(int visibility) {
+        super.setVisibility(visibility);
+        if (visibility != VISIBLE)
+            pauseStatCollect();
+        else
+            resumeStatCollect();
+    }
+
+    public void resumeStatCollect() {
+        if (executorService == null) {
+            executorService = new LoopedExecutor(1L, 300L, this.toString());
+            executorService.task(checkVisibilityRunnable);
+        }
+    }
+
     Runnable checkVisibilityRunnable = new Runnable() {
         @Override
         public void run() {
-            if (adapter == null || adapter.getItemCount() == 0) return;
+            Log.e("checkVisibilityRunnable", this.toString());
+            if (adapter == null || adapter.getItemCount() == 0) {
+                executorService.freeExecutor();
+                return;
+            }
             getVisibleItems();
             sendIndexes();
+            executorService.freeExecutor();
         }
     };
 
@@ -701,7 +727,7 @@ public class StoriesList extends RecyclerView {
                     core.statistic().storiesV1(
                             manager != null ?
                                     manager.currentSessionId :
-                                    ((IASDataSettingsHolder)core.settingsAPI()).sessionIdOrEmpty(),
+                                    ((IASDataSettingsHolder) core.settingsAPI()).sessionIdOrEmpty(),
                             new GetStatisticV1Callback() {
                                 @Override
                                 public void get(@NonNull IASStatisticStoriesV1 manager) {
@@ -852,7 +878,7 @@ public class StoriesList extends RecyclerView {
         return this.appearanceManager;
     }
 
-    ScheduledFuture scheduledTimerCheckVisibility;
+    ScheduledFuture scheduledTimerCheckVisibility = null;
 
     private void setOrRefreshAdapter(final List<Integer> storiesIds) {
         InAppStoryManager.useCore(new UseIASCoreCallback() {

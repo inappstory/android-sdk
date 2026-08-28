@@ -1,5 +1,7 @@
 package com.inappstory.sdk.stories.ui.widgets.readerscreen.progresstimeline;
 
+import android.util.Log;
+
 import com.inappstory.sdk.core.data.IContentWithTimeline;
 import com.inappstory.sdk.stories.utils.LoopedExecutor;
 
@@ -14,6 +16,10 @@ public class StoryTimelineManager {
         this.contentWithTimeline = contentWithTimeline;
     }
 
+    public void shutdown() {
+        loopedExecutor.shutdown();
+    }
+
     public void setCurrentIndex(int currentIndex) {
         this.currentIndex = currentIndex;
         setProgress(0);
@@ -25,21 +31,6 @@ public class StoryTimelineManager {
         this.currentIndex = currentIndex;
         this.timerStart = timerStart;
         this.timerDuration = timerDuration;
-        /*Runnable hostVisibility = new Runnable() {
-            @Override
-            public void run() {
-                if (slidesCount <= 1 && StoryTimelineManager.this.timerDuration == 0)
-                    host.setVisibility(View.INVISIBLE);
-                else
-                    host.setVisibility(View.VISIBLE);
-            }
-        };
-        if (Looper.myLooper() == Looper.getMainLooper()) {
-            hostVisibility.run();
-        } else {
-            host.post(hostVisibility);
-        }*/
-
         this.timerStartTimestamp = System.currentTimeMillis();
         this.isActive = true;
         loopedExecutor.task(timerTask);
@@ -123,6 +114,7 @@ public class StoryTimelineManager {
     Runnable timerTask = new Runnable() {
         @Override
         public void run() {
+            Log.e("TimerTask", this.toString());
             float currentTime = (timerStart + System.currentTimeMillis() - timerStartTimestamp);
             if (!isActive || timerDuration > 0 && currentTime >= timerDuration) {
                 cancelTask();

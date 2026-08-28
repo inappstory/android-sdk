@@ -52,7 +52,7 @@ public class GameLogSender implements IGameLogSender {
         );
     }
 
-    private final ScheduledTPEManager statisticScheduledThread =
+    private ScheduledTPEManager statisticScheduledThread =
             new ScheduledTPEManager();
 
     private void sendLogs() {
@@ -77,7 +77,6 @@ public class GameLogSender implements IGameLogSender {
     private void sendLogs(
             final List<GameLog> logs
     ) {
-        boolean isGameLaunched = false;
         if (logs.isEmpty()) {
             synchronized (lock) {
                 inProcess = false;
@@ -86,7 +85,6 @@ public class GameLogSender implements IGameLogSender {
         }
         synchronized (lock) {
             if (paused) return;
-            isGameLaunched = gameLaunched;
         }
         GameLog log = logs.get(0);
         final List<GameLog> nextLogs = new ArrayList<>();
@@ -131,6 +129,8 @@ public class GameLogSender implements IGameLogSender {
             paused = true;
             gameLaunched = false;
         }
+        statisticScheduledThread.shutdownNow();
+        statisticScheduledThread = new ScheduledTPEManager();
     }
 
     @Override

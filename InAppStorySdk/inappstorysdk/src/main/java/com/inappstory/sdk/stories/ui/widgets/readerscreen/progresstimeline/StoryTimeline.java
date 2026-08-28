@@ -75,6 +75,7 @@ public class StoryTimeline extends View {
         fillPaint.setColor(parameters.fillColor);
         backgroundPaint = new Paint();
         backgroundPaint.setColor(parameters.backgroundColor);
+        invalidate();
     }
 
     @MainThread
@@ -99,6 +100,7 @@ public class StoryTimeline extends View {
         int localBgColor = ColorUtils.parseColorRGBA(state.backgroundColor());
         backgroundPaint.setColor(localBgColor);
         fillPaint.setColor(localFgColor);
+        invalidate();
     }
 
     @Override
@@ -115,13 +117,7 @@ public class StoryTimeline extends View {
         } else {
             drawSegments(canvas);
         }
-        invalidate();
     }
-
-    private final AtomicInteger bgColor = new AtomicInteger(Color.parseColor(StorySlideTimeline.DEFAULT_TIMELINE_BACKGROUND_COLOR));
-    private final AtomicInteger fgColor = new AtomicInteger(Color.parseColor(StorySlideTimeline.DEFAULT_TIMELINE_FOREGROUND_COLOR));
-    private final AtomicBoolean bgColorChanged = new AtomicBoolean(false);
-    private final AtomicBoolean fgColorChanged = new AtomicBoolean(false);
 
     private void drawSegments(Canvas canvas) {
         float segmentWidth = (getWidth() - parameters.gapWidth * (state.slidesCount - 1)) / state.slidesCount;

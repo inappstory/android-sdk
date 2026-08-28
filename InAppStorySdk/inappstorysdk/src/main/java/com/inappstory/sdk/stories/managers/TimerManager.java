@@ -1,5 +1,7 @@
 package com.inappstory.sdk.stories.managers;
 
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.InAppStoryService;
@@ -24,6 +26,10 @@ public class TimerManager {
 
     public long startPauseTime;
 
+    public void shutdown() {
+        loopedExecutor.shutdown();
+    }
+
 
     public long pauseTime = 0;
 
@@ -41,6 +47,7 @@ public class TimerManager {
     Runnable timerTask = new Runnable() {
         @Override
         public void run() {
+            Log.e("TimerTask", this.toString());
             if (timerDuration > 0 && System.currentTimeMillis() - timerStartTimestamp >= timerDuration) {
                 if (pageManager != null)
                     pageManager.nextSlideAuto();

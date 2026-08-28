@@ -44,20 +44,19 @@ public class LoopedExecutor {
     private void launch() {
         if (managerThread.isShutdown())
             managerThread = Executors.newSingleThreadExecutor();
-        if (executorThread.isShutdown())
-            executorThread = Executors.newSingleThreadExecutor();
+        interrupted = false;
         managerThread.submit(new Runnable() {
             @Override
             public void run() {
                 try {
                     Thread.sleep(startDelay);
                     while (true) {
+                        Log.e("loopedExecutor", name);
                         synchronized (taskLaunchLock) {
                             if (!taskLaunched && runnable != null) {
+                                Log.e("loopedExecutor", "launchTask " + name);
                                 taskLaunched = true;
                                 runnable.run();
-                               // Log.e("submitTask", name + "_LoopedExecutor");
-                               // executorThread.submit(runnable);
                             }
                             if (interrupted) {
                                 break;
@@ -71,7 +70,7 @@ public class LoopedExecutor {
                         }
                     }
                 } catch (InterruptedException e) {
-
+                    e.printStackTrace();
                 }
             }
         });
@@ -90,11 +89,9 @@ public class LoopedExecutor {
         synchronized (taskLaunchLock) {
             interrupted = true;
             runnable = null;
-            executorThread.shutdown();
             managerThread.shutdown();
         }
     }
 
-    private ExecutorService executorThread = Executors.newSingleThreadExecutor();
     private ExecutorService managerThread = Executors.newSingleThreadExecutor();
 }
