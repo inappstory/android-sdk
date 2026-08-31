@@ -53,7 +53,6 @@ public class LoopedExecutor {
                     while (true) {
                         synchronized (taskLaunchLock) {
                             if (!taskLaunched && runnable != null) {
-                                Log.e("loopedExecutor", "launchTask " + name);
                                 taskLaunched = true;
                                 runnable.run();
                             }

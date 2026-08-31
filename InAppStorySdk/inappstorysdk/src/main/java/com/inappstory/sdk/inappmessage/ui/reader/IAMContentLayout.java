@@ -100,6 +100,7 @@ public class IAMContentLayout extends FrameLayout implements Observer<IAMReaderS
                 if (readerSlideViewModel != null) {
                     contentWebView.slideViewModel(readerSlideViewModel);
                     contentWebView.checkIfClientIsSet();
+                    readerSlideViewModel.readerIsOpened(true);
                     readerSlideViewModel.addSubscriber(
                             IAMContentLayout.this
                     );
@@ -129,6 +130,7 @@ public class IAMContentLayout extends FrameLayout implements Observer<IAMReaderS
 
     public void destroyView() {
         if (readerSlideViewModel != null) {
+            readerSlideViewModel.readerIsClosing();
             readerSlideViewModel.removeSubscriber(this);
             readerSlideViewModel.singleTimeEvents().unsubscribe(callToActionDataObserver);
         }
