@@ -24,13 +24,18 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 
 public class IASWebViewClient extends WebViewClient {
+    public Set<String> allowedPaths = new HashSet<>();
 
     private File getCachedFile(String key) {
         InAppStoryManager manager = InAppStoryManager.getInstance();
@@ -55,7 +60,9 @@ public class IASWebViewClient extends WebViewClient {
             filePath = Uri.parse(url).getPath();
         }
         if (filePath != null) {
-            if (filePath.startsWith(context.getFilesDir().getAbsolutePath() + "/ias/") ||
+            if (allowedPaths.contains(filePath))
+                file = new File(filePath);
+            else if (filePath.startsWith(context.getFilesDir().getAbsolutePath() + "/ias/") ||
                     filePath.startsWith(context.getCacheDir().getAbsolutePath() + "/ias/")) {
                 file = new File(filePath);
             } else

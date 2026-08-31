@@ -466,12 +466,29 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
 
     private void uploadFilesFromFilePicker(String cbName, String cbId, String[] filesWithTypes) {
         Map<String, Object> payloadMap = new HashMap<>();
+        for (String fileWithType : filesWithTypes) {
+            String filePath = null;
+            if (fileWithType.startsWith("http://file-assets")) {
+                filePath = Uri.parse(fileWithType
+                        .replace("http://file-assets", "file://")
+                ).getPath();
+            } else if (fileWithType.startsWith("file://")) {
+                filePath = Uri.parse(fileWithType).getPath();
+            }
+            if (webViewClient != null && filePath != null)
+                webViewClient.allowedPaths.add(filePath);
+        }
         payloadMap.put("id", cbId);
         payloadMap.put("response", filesWithTypes);
         String payload = JsonParser.mapToJsonString(payloadMap);
         String webString = "window." + cbName + "('" + StringsUtils.escapeSingleQuotes(payload) + "');";
-        if (webView != null)
-            webView.evaluateJavascript(webString, null);
+        Log.e("WebString", webString);
+        try {
+            if (webView != null)
+                webView.evaluateJavascript(webString, null);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     void share(InnerShareData shareObject) {
@@ -824,6 +841,8 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
 
     private final Object initLock = new Object();
 
+    private IASWebViewClient webViewClient = null;
+
     private void initWebView() {
         if (getContext() == null) return;
         try {
@@ -840,7 +859,8 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
             return;
         }
         final ContentData dataModel = getStoryDataModel();
-        webView.setWebViewClient(new IASWebViewClient());
+        webViewClient = new IASWebViewClient();
+        webView.setWebViewClient(webViewClient);
         webView.setWebChromeClient(new WebChromeClient() {
 
             @Override
@@ -1160,6 +1180,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
     @Override
     public void onDestroy() {
         super.onDestroy();
+        webViewClient = null;
     }
 
     private void downloadGame(boolean forceReloadArchive) {
