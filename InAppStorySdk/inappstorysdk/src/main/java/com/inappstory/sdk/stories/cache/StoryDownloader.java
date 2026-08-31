@@ -255,6 +255,7 @@ class StoryDownloader {
                 e.printStackTrace();
             }
             if (tKey == null) {
+                initialized = false;
                 loopedExecutor.cancelTask();
                 return;
             }

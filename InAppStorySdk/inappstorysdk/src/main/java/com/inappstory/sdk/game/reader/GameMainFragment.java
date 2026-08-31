@@ -13,6 +13,7 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
+import com.inappstory.iasutilsconnector.UtilModulesHolder;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
@@ -246,6 +247,11 @@ public class GameMainFragment extends Fragment
 
     @Override
     public boolean onBackPressed() {
+        InAppStoryManager manager = InAppStoryManager.getInstance();
+        if (manager != null) {
+            UtilModulesHolder utilModulesHolder = manager.iasCore().externalUtilsAPI().getUtilsAPI();
+            if (utilModulesHolder.getFilePicker().onBackPressed()) return true;
+        }
         return useContentFragment(
                 new FragmentAction<GameReaderContentFragment>() {
                     @Override
