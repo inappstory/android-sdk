@@ -128,13 +128,15 @@ public class BannerViewModel implements IBannerViewModel {
     }
 
     private String payload;
+    private Map<String, String> customAttributes;
 
     @Override
     public BannerData getCurrentBannerData() {
         return new BannerData(
                 bannerId,
                 bannerPlace,
-                payload
+                payload,
+                customAttributes
         );
     }
 
@@ -199,6 +201,7 @@ public class BannerViewModel implements IBannerViewModel {
                 );
         if (readerContent == null) return;
         payload = readerContent.slideEventPayload(index);
+        customAttributes = readerContent.customAttributes();
         String slideContent = readerContent.slideByIndex(index);
         if (slideContent == null) return;
         WebPageConvertCallback callback = new WebPageConvertCallback() {

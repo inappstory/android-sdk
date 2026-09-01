@@ -49,6 +49,10 @@ public class Banner implements IBanner {
     @SerializedName("layout_template_variables")
     public Map<String, String> layoutTemplateVariables;
 
+
+    @SerializedName("custom_attributes")
+    public Map<String, String> customAttributes;
+
     @Override
     public String layout() {
         return layout;
@@ -125,6 +129,12 @@ public class Banner implements IBanner {
     @Override
     public String statTitle() {
         throw new NotImplementedMethodException();
+    }
+
+
+    @Override
+    public Map<String, String> customAttributes() {
+        return customAttributes;
     }
 
     @Override

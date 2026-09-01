@@ -4,6 +4,9 @@ import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ContentData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class InAppMessageData extends ContentData {
     private int id;
     private String event;
@@ -11,17 +14,27 @@ public class InAppMessageData extends ContentData {
     private String title;
     private InAppMessageType messageType;
 
+
+    private final Map<String, String> customAttributes = new HashMap<>();
+
+    public Map<String, String> customAttributes() {
+        return customAttributes;
+    }
+
     public InAppMessageData(
             int id,
             String campaignName,
             String event,
             SourceType sourceType,
-            InAppMessageType messageType
+            InAppMessageType messageType,
+            Map<String, String> customAttributes
     ) {
         super(sourceType, ContentType.IN_APP_MESSAGE);
         this.id = id;
         this.title = campaignName;
         this.event = event;
+        if (customAttributes != null)
+            this.customAttributes.putAll(customAttributes);
         this.messageType = messageType;
     }
 
@@ -49,6 +62,7 @@ public class InAppMessageData extends ContentData {
                 ", event='" + event() + '\'' +
                 ", sourceType='" + sourceType().name() + '\'' +
                 ", messageType='" + messageType().name() + '\'' +
+                ", customAttributes =" + customAttributes() +
                 '}';
     }
 }

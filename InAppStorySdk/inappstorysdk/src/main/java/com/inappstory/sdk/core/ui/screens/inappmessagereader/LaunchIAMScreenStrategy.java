@@ -425,7 +425,9 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
                 inAppMessage.statTitle(),
                 inAppMessageOpenSettings.event(),
                 sourceType,
-                inAppMessage.messageType()
+                inAppMessage.messageType(),
+                inAppMessage.customAttributes()
+
         );
         final InAppMessageViewController iamViewController;
         boolean containerProvided = false;

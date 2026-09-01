@@ -115,7 +115,12 @@ public class BannerCarousel extends FrameLayout implements Observer<BannerCarous
                     bannerPlaceLoadCallback.bannerPlaceLoaded(0, new ArrayList<BannerData>(), WRAP_CONTENT);
                 } else {
                     for (IBanner banner : banners) {
-                        bannerData.add(new BannerData(banner.id(), placeId, banner.slideEventPayload(0)));
+                        bannerData.add(
+                                new BannerData(
+                                        banner,
+                                        placeId
+                                )
+                        );
                     }
                     bannerPlaceLoadCallback.bannerPlaceLoaded(
                             bannerData.size(),

@@ -1,8 +1,12 @@
 package com.inappstory.sdk.banners;
 
+import com.inappstory.sdk.core.data.IBanner;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ContentData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class BannerData extends ContentData {
     private int id;
@@ -15,15 +19,11 @@ public class BannerData extends ContentData {
         return payload;
     }
 
-    public BannerData(
-            int id,
-            String bannerPlace
-    ) {
-        super(SourceType.BANNERS, ContentType.BANNER);
-        this.id = id;
-        this.bannerPlace = bannerPlace;
-    }
+    private final Map<String, String> customAttributes = new HashMap<>();
 
+    public Map<String, String> customAttributes() {
+        return customAttributes;
+    }
 
     public BannerData(
             int id,
@@ -31,8 +31,28 @@ public class BannerData extends ContentData {
             String payload
     ) {
         super(SourceType.BANNERS, ContentType.BANNER);
+        this.id = id;
+        this.bannerPlace = bannerPlace;
+    }
+
+    public BannerData(IBanner banner, String bannerPlace) {
+        super(SourceType.BANNERS, ContentType.BANNER);
+        this.payload = banner.slideEventPayload(0);
+        this.id = banner.id();
+        if (banner.customAttributes() != null) this.customAttributes.putAll(banner.customAttributes());
+        this.bannerPlace = bannerPlace;
+    }
+
+    public BannerData(
+            int id,
+            String bannerPlace,
+            String payload,
+            Map<String, String> customAttributes
+    ) {
+        super(SourceType.BANNERS, ContentType.BANNER);
         this.payload = payload;
         this.id = id;
+        if (customAttributes != null) this.customAttributes.putAll(customAttributes);
         this.bannerPlace = bannerPlace;
     }
 
@@ -50,6 +70,7 @@ public class BannerData extends ContentData {
                 "id=" + id() +
                 ", title='" + bannerPlace() + '\'' +
                 ", payload='" + payload() + '\'' +
+                ", customAttributes =" + customAttributes() +
                 '}';
     }
 }

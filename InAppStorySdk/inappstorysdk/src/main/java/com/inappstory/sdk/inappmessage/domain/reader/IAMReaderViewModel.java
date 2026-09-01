@@ -53,7 +53,8 @@ public class IAMReaderViewModel implements IIAMReaderViewModel {
                                 inAppMessage.statTitle(),
                                 readerState.event,
                                 readerState.sourceType,
-                                inAppMessage.messageType()
+                                inAppMessage.messageType(),
+                                inAppMessage.customAttributes()
                         );
                     }
                 }

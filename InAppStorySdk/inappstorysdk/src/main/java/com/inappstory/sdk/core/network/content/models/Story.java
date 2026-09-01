@@ -50,6 +50,10 @@ public class Story implements Parcelable, IStory, IContentWithTimeline {
     public HashMap<String, Object> ugcPayload;
 
 
+    @SerializedName("custom_attributes")
+    public Map<String, String> customAttributes;
+
+
     @SerializedName("layout_template_variables")
     public Map<String, String> layoutTemplateVariables;
 
@@ -314,6 +318,11 @@ public class Story implements Parcelable, IStory, IContentWithTimeline {
     @Override
     public String statTitle() {
         return statTitle;
+    }
+
+    @Override
+    public Map<String, String> customAttributes() {
+        return customAttributes;
     }
 
     @Override

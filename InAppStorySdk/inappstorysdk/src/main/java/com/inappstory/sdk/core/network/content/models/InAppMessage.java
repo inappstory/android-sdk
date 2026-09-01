@@ -50,6 +50,10 @@ public class InAppMessage implements IInAppMessage {
     @SerializedName("campaign_name")
     public String campaignName;
 
+
+    @SerializedName("custom_attributes")
+    public Map<String, String> customAttributes;
+
     @SerializedName("has_swipe_up")
     public Boolean hasSwipeUp;
 
@@ -143,6 +147,11 @@ public class InAppMessage implements IInAppMessage {
     @Override
     public String statTitle() {
         return campaignName;
+    }
+
+    @Override
+    public Map<String, String> customAttributes() {
+        return customAttributes;
     }
 
     @Override
