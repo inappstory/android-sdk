@@ -15,10 +15,10 @@ public class InAppMessageData extends ContentData {
     private InAppMessageType messageType;
 
 
-    private final Map<String, String> customAttributes = new HashMap<>();
+    private final Map<String, String> extraFields = new HashMap<>();
 
-    public Map<String, String> customAttributes() {
-        return customAttributes;
+    public Map<String, String> extraFields() {
+        return extraFields;
     }
 
     public InAppMessageData(
@@ -27,14 +27,14 @@ public class InAppMessageData extends ContentData {
             String event,
             SourceType sourceType,
             InAppMessageType messageType,
-            Map<String, String> customAttributes
+            Map<String, String> extraFields
     ) {
         super(sourceType, ContentType.IN_APP_MESSAGE);
         this.id = id;
         this.title = campaignName;
         this.event = event;
-        if (customAttributes != null)
-            this.customAttributes.putAll(customAttributes);
+        if (extraFields != null)
+            this.extraFields.putAll(extraFields);
         this.messageType = messageType;
     }
 
@@ -62,7 +62,7 @@ public class InAppMessageData extends ContentData {
                 ", event='" + event() + '\'' +
                 ", sourceType='" + sourceType().name() + '\'' +
                 ", messageType='" + messageType().name() + '\'' +
-                ", customAttributes =" + customAttributes() +
+                ", extraFields =" + extraFields() +
                 '}';
     }
 }

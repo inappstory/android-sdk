@@ -19,10 +19,10 @@ public class BannerData extends ContentData {
         return payload;
     }
 
-    private final Map<String, String> customAttributes = new HashMap<>();
+    private final Map<String, String> extraFields = new HashMap<>();
 
-    public Map<String, String> customAttributes() {
-        return customAttributes;
+    public Map<String, String> extraFields() {
+        return extraFields;
     }
 
     public BannerData(
@@ -39,7 +39,7 @@ public class BannerData extends ContentData {
         super(SourceType.BANNERS, ContentType.BANNER);
         this.payload = banner.slideEventPayload(0);
         this.id = banner.id();
-        if (banner.customAttributes() != null) this.customAttributes.putAll(banner.customAttributes());
+        if (banner.customAttributes() != null) this.extraFields.putAll(banner.customAttributes());
         this.bannerPlace = bannerPlace;
     }
 
@@ -47,12 +47,12 @@ public class BannerData extends ContentData {
             int id,
             String bannerPlace,
             String payload,
-            Map<String, String> customAttributes
+            Map<String, String> extraFields
     ) {
         super(SourceType.BANNERS, ContentType.BANNER);
         this.payload = payload;
         this.id = id;
-        if (customAttributes != null) this.customAttributes.putAll(customAttributes);
+        if (extraFields != null) this.extraFields.putAll(extraFields);
         this.bannerPlace = bannerPlace;
     }
 
@@ -70,7 +70,7 @@ public class BannerData extends ContentData {
                 "id=" + id() +
                 ", title='" + bannerPlace() + '\'' +
                 ", payload='" + payload() + '\'' +
-                ", customAttributes =" + customAttributes() +
+                ", extraFields =" + extraFields() +
                 '}';
     }
 }
