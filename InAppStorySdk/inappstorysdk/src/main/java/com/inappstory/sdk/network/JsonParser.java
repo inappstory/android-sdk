@@ -3,6 +3,8 @@ package com.inappstory.sdk.network;
 import android.util.Pair;
 
 
+import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.LoggerTags;
 import com.inappstory.sdk.network.annotations.models.Ignore;
 import com.inappstory.sdk.network.annotations.models.Required;
 import com.inappstory.sdk.network.annotations.models.SerializedName;
@@ -41,81 +43,92 @@ public class JsonParser {
                 }
                 continue;
             }
-            if (field.getType().equals(Integer.TYPE) || field.getType().equals(Integer.class)) {
-                field.set(res, new Integer(jsonObject.getInt(name)));
-            } else if (field.getType().equals(Long.TYPE) || field.getType().equals(Long.class)) {
-                field.set(res, new Long(jsonObject.getLong(name)));
-            } else if (field.getType().equals(Character.TYPE) || field.getType().equals(Character.class)) {
-                field.set(res, new Character((char) jsonObject.getInt(name)));
-            } else if (field.getType().equals(Boolean.TYPE) || field.getType().equals(Boolean.class)) {
-                field.set(res, new Boolean(jsonObject.getBoolean(name)));
-            } else if (field.getType().equals(Byte.TYPE) || field.getType().equals(Byte.class)) {
-                field.set(res, new Byte((byte) jsonObject.getInt(name)));
-            } else if (field.getType().equals(Short.TYPE) || field.getType().equals(Short.class)) {
-                field.set(res, new Short((short) jsonObject.getInt(name)));
-            } else if (field.getType().equals(Float.TYPE) || field.getType().equals(Float.class)) {
-                field.set(res, new Float((float) jsonObject.getDouble(name)));
-            } else if (field.getType().equals(Double.TYPE) || field.getType().equals(Double.class)) {
-                field.set(res, new Double(jsonObject.getDouble(name)));
-            } else if (field.getType().equals(String.class)) {
-                field.set(res, jsonObject.getString(name));
-            } else if (field.getType().equals(List.class) || field.getType().equals(ArrayList.class)) {
-                ParameterizedType parameterizedType = (ParameterizedType) field.getGenericType();
-                Class ptype;
-                ArrayList<Object> arrayList = new ArrayList<>();
-                if (parameterizedType.getActualTypeArguments()[0] instanceof ParameterizedType) {
-                    ptype = (Class) ((ParameterizedType) parameterizedType.getActualTypeArguments()[0]).getActualTypeArguments()[0];
-                    JSONArray array = jsonObject.getJSONArray(name);
+            try {
+                if (field.getType().equals(Integer.TYPE) || field.getType().equals(Integer.class)) {
+                    field.set(res, new Integer(jsonObject.getInt(name)));
+                } else if (field.getType().equals(Long.TYPE) || field.getType().equals(Long.class)) {
+                    field.set(res, new Long(jsonObject.getLong(name)));
+                } else if (field.getType().equals(Character.TYPE) || field.getType().equals(Character.class)) {
+                    field.set(res, new Character((char) jsonObject.getInt(name)));
+                } else if (field.getType().equals(Boolean.TYPE) || field.getType().equals(Boolean.class)) {
+                    field.set(res, new Boolean(jsonObject.getBoolean(name)));
+                } else if (field.getType().equals(Byte.TYPE) || field.getType().equals(Byte.class)) {
+                    field.set(res, new Byte((byte) jsonObject.getInt(name)));
+                } else if (field.getType().equals(Short.TYPE) || field.getType().equals(Short.class)) {
+                    field.set(res, new Short((short) jsonObject.getInt(name)));
+                } else if (field.getType().equals(Float.TYPE) || field.getType().equals(Float.class)) {
+                    field.set(res, new Float((float) jsonObject.getDouble(name)));
+                } else if (field.getType().equals(Double.TYPE) || field.getType().equals(Double.class)) {
+                    field.set(res, new Double(jsonObject.getDouble(name)));
+                } else if (field.getType().equals(String.class)) {
+                    field.set(res, jsonObject.getString(name));
+                } else if (field.getType().equals(List.class) || field.getType().equals(ArrayList.class)) {
+                    ParameterizedType parameterizedType = (ParameterizedType) field.getGenericType();
+                    Class ptype;
+                    ArrayList<Object> arrayList = new ArrayList<>();
+                    if (parameterizedType.getActualTypeArguments()[0] instanceof ParameterizedType) {
+                        ptype = (Class) ((ParameterizedType) parameterizedType.getActualTypeArguments()[0]).getActualTypeArguments()[0];
+                        JSONArray array = jsonObject.getJSONArray(name);
 
-                    if (ptype.isPrimitive() || ptype.equals(Integer.class)
-                            || ptype.equals(Boolean.class) || ptype.equals(Character.class)
-                            || ptype.equals(Short.class) || ptype.equals(Long.class)
-                            || ptype.equals(Byte.class) || ptype.equals(Float.class)
-                            || ptype.equals(Double.class) || ptype.equals(String.class)) {
-                        for (int i = 0; i < array.length(); i++) {
-                            JSONArray innerArray = (JSONArray) array.get(i);
-                            ArrayList<Object> innerList = new ArrayList<>();
-                            for (int j = 0; j < innerArray.length(); j++) {
-                                innerList.add(innerArray.get(j));
+                        if (ptype.isPrimitive() || ptype.equals(Integer.class)
+                                || ptype.equals(Boolean.class) || ptype.equals(Character.class)
+                                || ptype.equals(Short.class) || ptype.equals(Long.class)
+                                || ptype.equals(Byte.class) || ptype.equals(Float.class)
+                                || ptype.equals(Double.class) || ptype.equals(String.class)) {
+                            for (int i = 0; i < array.length(); i++) {
+                                JSONArray innerArray = (JSONArray) array.get(i);
+                                ArrayList<Object> innerList = new ArrayList<>();
+                                for (int j = 0; j < innerArray.length(); j++) {
+                                    innerList.add(innerArray.get(j));
+                                }
+                                arrayList.add(innerList);
                             }
-                            arrayList.add(innerList);
+                        } else {
+                            for (int i = 0; i < array.length(); i++) {
+                                JSONArray innerArray = (JSONArray) array.get(i);
+                                ArrayList<Object> innerList = new ArrayList<>();
+                                for (int j = 0; j < innerArray.length(); j++) {
+                                    innerList.add(fromJson((JSONObject) array.get(i), ptype));
+                                }
+                                arrayList.add(innerList);
+                            }
                         }
                     } else {
-                        for (int i = 0; i < array.length(); i++) {
-                            JSONArray innerArray = (JSONArray) array.get(i);
-                            ArrayList<Object> innerList = new ArrayList<>();
-                            for (int j = 0; j < innerArray.length(); j++) {
-                                innerList.add(fromJson((JSONObject) array.get(i), ptype));
+                        ptype = (Class) parameterizedType.getActualTypeArguments()[0];
+
+                        JSONArray array = jsonObject.getJSONArray(name);
+                        if (ptype.isPrimitive() || ptype.equals(Integer.class)
+                                || ptype.equals(Boolean.class) || ptype.equals(Character.class)
+                                || ptype.equals(Short.class) || ptype.equals(Long.class)
+                                || ptype.equals(Byte.class) || ptype.equals(Float.class)
+                                || ptype.equals(Double.class) || ptype.equals(String.class)) {
+                            for (int i = 0; i < array.length(); i++) {
+                                arrayList.add(array.get(i));
                             }
-                            arrayList.add(innerList);
+                        } else {
+                            for (int i = 0; i < array.length(); i++) {
+                                if (array.get(i) instanceof JSONObject)
+                                    arrayList.add(fromJson((JSONObject) array.get(i), ptype));
+                            }
                         }
                     }
+                    field.set(res, arrayList);
+                } else if (field.getType().equals(Map.class) ||
+                        containsInterface(field.getType().getInterfaces(), Map.class)) {
+                    field.set(res, toObjectMap(jsonObject.getJSONObject(name)));
                 } else {
-                    ptype = (Class) parameterizedType.getActualTypeArguments()[0];
-
-                    JSONArray array = jsonObject.getJSONArray(name);
-                    if (ptype.isPrimitive() || ptype.equals(Integer.class)
-                            || ptype.equals(Boolean.class) || ptype.equals(Character.class)
-                            || ptype.equals(Short.class) || ptype.equals(Long.class)
-                            || ptype.equals(Byte.class) || ptype.equals(Float.class)
-                            || ptype.equals(Double.class) || ptype.equals(String.class)) {
-                        for (int i = 0; i < array.length(); i++) {
-                            arrayList.add(array.get(i));
-                        }
-                    } else {
-                        for (int i = 0; i < array.length(); i++) {
-                            if (array.get(i) instanceof JSONObject)
-                                arrayList.add(fromJson((JSONObject) array.get(i), ptype));
-                        }
-                    }
+                    field.set(res, fromJson(jsonObject.getJSONObject(name), (Class) field.getGenericType()));
                 }
-                field.set(res, arrayList);
-            } else if (field.getType().equals(Map.class) ||
-                    containsInterface(field.getType().getInterfaces(), Map.class)) {
-                field.set(res, toObjectMap(jsonObject.getJSONObject(name)));
-            } else {
-                field.set(res, fromJson(jsonObject.getJSONObject(name), (Class) field.getGenericType()));
+            } catch (Exception e) {
+                if (field.getAnnotation(Required.class) != null) {
+                    throw new JSONException("Required field " + field.getName() + " is empty or in wrong format");
+                } else {
+                    InAppStoryManager.showDLog(LoggerTags.IAS_WARN_TAG,
+                            "Required field " + field.getName() + " is empty or in wrong format"
+                    );
+                }
             }
+
         }
         return res;
     }
@@ -344,6 +357,7 @@ public class JsonParser {
 
     /**
      * Return the string with characters escaped for safe embedding in a JavaScript string literal. ("")
+     *
      * @param instance Object
      * @return String
      */
