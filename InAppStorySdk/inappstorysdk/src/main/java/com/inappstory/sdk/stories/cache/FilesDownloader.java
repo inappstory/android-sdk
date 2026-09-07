@@ -222,6 +222,7 @@ public class FilesDownloader {
                 state = new DownloadFileState(outputFile, sz, outputFile.length());
             }
         }
+        //
         urlConnection.disconnect();
         if (manager != null)
             manager.invokeFinishCallbacks(url, finishCallbackOutputFile, state);
