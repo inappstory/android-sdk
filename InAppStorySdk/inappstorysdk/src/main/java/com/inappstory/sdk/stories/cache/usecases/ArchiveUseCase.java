@@ -224,6 +224,8 @@ public class ArchiveUseCase extends GetCacheFileUseCase<Void> {
                     } else {
                         useCaseCallback.onError(new SimpleUseCaseError("File downloading was interrupted"));
                     }
+
+                    downloadLog.sendRequestResponseLog();
                 }
 
                 @Override

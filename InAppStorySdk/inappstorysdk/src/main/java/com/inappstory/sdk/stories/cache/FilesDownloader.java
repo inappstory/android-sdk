@@ -106,7 +106,7 @@ public class FilesDownloader {
         URL urlS = new URL(url);
         HttpURLConnection urlConnection = (HttpURLConnection) urlS.openConnection();
         urlConnection.setRequestProperty("Accept-Encoding", "br, gzip");
-        urlConnection.setConnectTimeout(300000);
+        urlConnection.setConnectTimeout(5000);
         urlConnection.setReadTimeout(300000);
         urlConnection.setRequestMethod("GET");
         urlConnection.setRequestProperty("User-Agent", core.network().userAgent());
@@ -174,6 +174,7 @@ public class FilesDownloader {
                     decompression
             );
             apiLogResponse.generateFile(status, res, headers);
+            urlConnection.disconnect();
             if (manager != null)
                 manager.invokeFinishCallbacks(url, finishCallbackOutputFile, null);
             return null;
@@ -199,6 +200,7 @@ public class FilesDownloader {
             while ((bufferLength = inputStream.read(buffer)) > 0) {
                 if (interruption != null && interruption.active) {
                     releaseStreamAndFile(fileOutputStream, lock);
+                    urlConnection.disconnect();
                     if (allowPartial)
                         state = new DownloadFileState(outputFile, sz, outputFile.length());
                     if (manager != null)
@@ -220,6 +222,10 @@ public class FilesDownloader {
                 state = new DownloadFileState(outputFile, sz, outputFile.length());
             }
         }
+
+        // https://developer.android.com/reference/java/net/HttpURLConnection
+        urlConnection.disconnect();
+
         if (manager != null)
             manager.invokeFinishCallbacks(url, finishCallbackOutputFile, state);
         return state;
