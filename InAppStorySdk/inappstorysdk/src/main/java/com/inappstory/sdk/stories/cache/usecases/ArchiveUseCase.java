@@ -212,6 +212,7 @@ public class ArchiveUseCase extends GetCacheFileUseCase<Void> {
                                 useCaseCallback.onSuccess(fileState.file);
                             }
                             core.statistic().profiling().setReady(hash);
+                            downloadLog.sendResponseLog();
                         }
                         CacheJournalItem cacheJournalItem = generateCacheItem();
                         cacheJournalItem.setDownloadedSize(fileState.downloadedSize);

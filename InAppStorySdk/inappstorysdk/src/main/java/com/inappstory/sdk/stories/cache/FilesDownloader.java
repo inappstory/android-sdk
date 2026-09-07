@@ -80,7 +80,7 @@ public class FilesDownloader {
     public DownloadFileState downloadFile(
             String url,
             File outputFile,
-            FileLoadProgressCallback callback,
+            FileLoadProgressCallback progressCallback,
             ApiLogResponse apiLogResponse,
             DownloadInterruption interruption,
             long downloadOffset,
@@ -106,7 +106,7 @@ public class FilesDownloader {
         URL urlS = new URL(url);
         HttpURLConnection urlConnection = (HttpURLConnection) urlS.openConnection();
         urlConnection.setRequestProperty("Accept-Encoding", "br, gzip");
-        urlConnection.setConnectTimeout(300000);
+        urlConnection.setConnectTimeout(5000);
         urlConnection.setReadTimeout(300000);
         urlConnection.setRequestMethod("GET");
         urlConnection.setRequestProperty("User-Agent", core.network().userAgent());
@@ -207,8 +207,8 @@ public class FilesDownloader {
                 } else {
                     fileOutputStream.write(buffer, 0, bufferLength);
                     cnt += bufferLength;
-                    if (callback != null)
-                        callback.onProgress(downloadOffset + cnt, sz);
+                    if (progressCallback != null)
+                        progressCallback.onProgress(downloadOffset + cnt, sz);
                 }
             }
             releaseStreamAndFile(fileOutputStream, lock);
