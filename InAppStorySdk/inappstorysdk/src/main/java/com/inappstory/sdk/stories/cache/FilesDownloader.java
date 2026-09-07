@@ -173,6 +173,7 @@ public class FilesDownloader {
                     urlConnection.getErrorStream(),
                     decompression
             );
+            urlConnection.disconnect();
             apiLogResponse.generateFile(status, res, headers);
             if (manager != null)
                 manager.invokeFinishCallbacks(url, finishCallbackOutputFile, null);
@@ -199,6 +200,7 @@ public class FilesDownloader {
             while ((bufferLength = inputStream.read(buffer)) > 0) {
                 if (interruption != null && interruption.active) {
                     releaseStreamAndFile(fileOutputStream, lock);
+                    urlConnection.disconnect();
                     if (allowPartial)
                         state = new DownloadFileState(outputFile, sz, outputFile.length());
                     if (manager != null)
@@ -220,6 +222,7 @@ public class FilesDownloader {
                 state = new DownloadFileState(outputFile, sz, outputFile.length());
             }
         }
+        urlConnection.disconnect();
         if (manager != null)
             manager.invokeFinishCallbacks(url, finishCallbackOutputFile, state);
         return state;
