@@ -16,6 +16,7 @@ import com.inappstory.sdk.inappmessage.InAppMessageWidgetCallback;
 import com.inappstory.sdk.inappmessage.ShowInAppMessageCallback;
 import com.inappstory.sdk.inappmessage.ShowInAppMessageSlideCallback;
 import com.inappstory.sdk.stories.callbacks.ExceptionCallback;
+import com.inappstory.sdk.stories.callbacks.SessionIsOpenedCallback;
 import com.inappstory.sdk.stories.callbacks.ShareCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.errors.ErrorCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.gamereader.GameReaderCallback;
@@ -51,6 +52,12 @@ public class IASCallbacksImpl implements IASCallbacks {
             case EXCEPTION:
                 if (exceptionCallback != null) {
                     useIASCallback.use(exceptionCallback);
+                    return;
+                }
+                break;
+            case SESSION_IS_OPENED:
+                if (sessionIsOpenedCallback != null) {
+                    useIASCallback.use(sessionIsOpenedCallback);
                     return;
                 }
                 break;
@@ -189,6 +196,9 @@ public class IASCallbacksImpl implements IASCallbacks {
     @Override
     public void setCallback(IASCallbackType type, IASCallback callback) {
         switch (type) {
+            case SESSION_IS_OPENED:
+                sessionIsOpenedCallback = (SessionIsOpenedCallback) callback;
+                return;
             case ERROR:
                 errorCallback = (ErrorCallback) callback;
                 return;
@@ -262,6 +272,7 @@ public class IASCallbacksImpl implements IASCallbacks {
 
 
     private ExceptionCallback exceptionCallback;
+    private SessionIsOpenedCallback sessionIsOpenedCallback;
     private ErrorCallback errorCallback;
     private GameReaderCallback gameReaderCallback;
     private OnboardingLoadCallback onboardingLoadCallback;

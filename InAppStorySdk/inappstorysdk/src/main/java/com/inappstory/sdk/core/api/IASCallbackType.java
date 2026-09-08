@@ -29,4 +29,6 @@ public enum IASCallbackType {
     BANNER_PLACE_RENDER_FIRST,
 
     PRODUCT_CART_INTERACTION,
+
+    SESSION_IS_OPENED
 }
