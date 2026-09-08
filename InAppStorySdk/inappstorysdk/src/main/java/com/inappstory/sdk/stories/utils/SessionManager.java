@@ -346,6 +346,7 @@ public class SessionManager {
                                                     }
                                                 }
                                         );
+                                        //
                                         CachedSessionData cachedSessionData = new CachedSessionData();
                                         cachedSessionData.userId = initialSessionParameters.userId();
                                         cachedSessionData.locale = initialSessionParameters.locale();
