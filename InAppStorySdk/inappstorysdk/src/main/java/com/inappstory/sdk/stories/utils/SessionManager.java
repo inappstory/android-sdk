@@ -14,6 +14,7 @@ import android.util.DisplayMetrics;
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.api.IASCallback;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.IASStatisticStoriesV1;
@@ -32,7 +33,9 @@ import com.inappstory.sdk.core.network.content.models.SessionResponse;
 import com.inappstory.sdk.stories.api.models.StatisticSendObject;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallbackWithUID;
+import com.inappstory.sdk.stories.callbacks.SessionIsOpenedCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.errors.ErrorCallback;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryWidgetCallback;
 import com.inappstory.sdk.stories.statistic.GetStatisticV1Callback;
 import com.inappstory.sdk.ugc.extinterfaces.IOpenSessionCallback;
 import com.inappstory.sdk.utils.ISessionHolder;
@@ -334,6 +337,15 @@ public class SessionManager {
                                             return;
                                         }
                                         core.statistic().profiling().setReady(sessionOpenUID);
+                                        core.callbacksAPI().useCallback(
+                                                IASCallbackType.SESSION_IS_OPENED,
+                                                new UseIASCallback<SessionIsOpenedCallback>() {
+                                                    @Override
+                                                    public void use(@NonNull SessionIsOpenedCallback callback) {
+                                                        callback.isOpened();
+                                                    }
+                                                }
+                                        );
                                         CachedSessionData cachedSessionData = new CachedSessionData();
                                         cachedSessionData.userId = initialSessionParameters.userId();
                                         cachedSessionData.locale = initialSessionParameters.locale();
