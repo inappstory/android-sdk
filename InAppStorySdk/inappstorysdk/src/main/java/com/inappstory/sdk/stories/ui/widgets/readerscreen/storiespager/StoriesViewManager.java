@@ -250,6 +250,7 @@ public class StoriesViewManager {
                 .contentHolder()
                 .readerContent()
                 .getByIdAndType(storyId, pageManager.getViewContentType());
+        if (story == null) return;
         innerLoad(story);
     }
 
