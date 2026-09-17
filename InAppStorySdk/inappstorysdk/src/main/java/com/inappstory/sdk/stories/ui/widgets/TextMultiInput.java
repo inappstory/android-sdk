@@ -24,6 +24,8 @@ import androidx.appcompat.widget.AppCompatEditText;
 import com.inappstory.sdk.stories.utils.PhoneFormats;
 import com.inappstory.sdk.stories.utils.Sizes;
 
+import java.util.ArrayList;
+
 public class TextMultiInput extends LinearLayout {
     public TextMultiInput(Context context) {
         super(context);
@@ -68,6 +70,17 @@ public class TextMultiInput extends LinearLayout {
         getMainText().setTextColor(textColor);
         if (inputType == PHONE) {
             getCountryCodeText().setTextColor(textColor);
+        }
+    }
+
+    public void addTextChangedListener(TextWatcher watcher) {
+        if (inputType == PHONE) {
+            if (getCountryCodeText() == null || getMainText() == null) return;
+            getCountryCodeText().addTextChangedListener(watcher);
+            getMainText().addTextChangedListener(watcher);
+        } else {
+            if (getMainText() == null) return;
+            getMainText().addTextChangedListener(watcher);
         }
     }
 

@@ -51,6 +51,8 @@ import com.inappstory.sdk.core.dataholders.ContentHolder;
 import com.inappstory.sdk.core.dataholders.IContentHolder;
 import com.inappstory.sdk.core.dataholders.IStoriesListVMHolder;
 import com.inappstory.sdk.core.dataholders.StoriesListVMHolder;
+import com.inappstory.sdk.core.inputdialog.DefaultShowInputDialog;
+import com.inappstory.sdk.core.inputdialog.IShowInputDialog;
 import com.inappstory.sdk.core.ui.screens.ScreensManager;
 import com.inappstory.sdk.core.utils.AssetUrlsExtractor;
 import com.inappstory.sdk.domain.IWidgetsViewModels;
@@ -105,6 +107,7 @@ public class IASCoreImpl implements IASCore {
     private final AssetUrlsExtractor assetUrlsExtractor;
     private final IASLayoutHolder layoutHolder;
     private final LogSaver logSaver;
+    private IShowInputDialog showInputDialog;
 
     public IASCoreImpl(Context context) {
         this.context = context;
@@ -142,11 +145,16 @@ public class IASCoreImpl implements IASCore {
         limitsHolder = new IASLimitsHolderImpl();
         projectSettings = new IASProjectSettingsImpl(this);
         assetUrlsExtractor = new AssetUrlsExtractor(this);
+        showInputDialog = new DefaultShowInputDialog();
         layoutHolder = new IASLayoutHolderImpl(this);
         Thread.setDefaultUncaughtExceptionHandler(new IASExceptionHandler(this));
         externalUtilsAPI.init();
     }
 
+    @Override
+    public IShowInputDialog showInputDialog() {
+        return showInputDialog;
+    }
 
     @Override
     public AppearanceManager commonAppearance() {

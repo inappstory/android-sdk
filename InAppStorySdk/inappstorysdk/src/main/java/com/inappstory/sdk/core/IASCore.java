@@ -28,6 +28,8 @@ import com.inappstory.sdk.core.api.IASStoryList;
 import com.inappstory.sdk.core.api.IASStoriesOpenedCache;
 import com.inappstory.sdk.core.dataholders.IContentHolder;
 import com.inappstory.sdk.core.dataholders.IStoriesListVMHolder;
+import com.inappstory.sdk.core.inputdialog.IInputDialogSubmit;
+import com.inappstory.sdk.core.inputdialog.IShowInputDialog;
 import com.inappstory.sdk.core.ui.screens.ScreensManager;
 import com.inappstory.sdk.core.utils.AssetUrlsExtractor;
 import com.inappstory.sdk.domain.IWidgetsViewModels;
@@ -80,6 +82,7 @@ public interface IASCore {
     IASLayoutHolder layoutHolder();
     CancellationTokenPool cancellationTokenPool();
     String buildHash();
+    IShowInputDialog showInputDialog();
     AssetUrlsExtractor assetUrlsExtractor();
     LogSaver logSaver();
 }
