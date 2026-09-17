@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.Editable;
@@ -16,7 +17,9 @@ import android.text.TextWatcher;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 
 import androidx.appcompat.app.AlertDialog;
 
@@ -48,26 +51,43 @@ public class DefaultShowInputDialog implements IShowInputDialog {
         }
 
 
-        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT);
         int verticalPadding = Sizes.dpToPxExt(8, context);
         int horizontalPadding = Sizes.dpToPxExt(24, context);
-        layoutParams.setMargins(horizontalPadding, verticalPadding, horizontalPadding, verticalPadding); //set margin
 
-        LinearLayout lp = new LinearLayout(context);
-        lp.setOrientation(LinearLayout.VERTICAL);
+        FrameLayout lp = new FrameLayout(context);
+        lp.setPadding(horizontalPadding, horizontalPadding, horizontalPadding, verticalPadding);
+        //lp.setOrientation(LinearLayout.VERTICAL);
         //textField.setPadding(Sizes.dpToPxExt(16, context));
-        lp.addView(textField, layoutParams);
-        View underline = new View(context);
+        GradientDrawable border = new GradientDrawable();
+        border.setColor(0xFFFFFFFF); //white background
+        border.setAlpha(125);
+        border.setCornerRadius(Sizes.dpToPxExt(4, context));
+        border.setStroke(Sizes.dpToPxExt(1, context), textColor); //black border with full opacity
+
+        GradientDrawable redBorder = new GradientDrawable();
+        redBorder.setCornerRadius(Sizes.dpToPxExt(4, context));
+        redBorder.setColor(0xFFFFFFFF); //white background
+        redBorder.setAlpha(125);
+        redBorder.setStroke(Sizes.dpToPxExt(1, context), Color.RED); //black border with full opacity
+        FrameLayout fr = new FrameLayout(context);
+        fr.setLayoutParams(layoutParams);
+        fr.setBackground(border);
+        FrameLayout.LayoutParams frLayoutParams = new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT);
+        fr.setPadding(horizontalPadding, verticalPadding, horizontalPadding, verticalPadding);
+        //frLayoutParams.setMargins(horizontalPadding, verticalPadding, horizontalPadding, verticalPadding); //set margin
+       /* View underline = new View(context);
         underline.setBackgroundColor(textColor);
-        LinearLayout.LayoutParams underlineUnfocusedLayoutParams = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT, Sizes.dpToPxExt(1, context));
-        LinearLayout.LayoutParams underlineFocusedLayoutParams = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT, Sizes.dpToPxExt(2, context));
+        RelativeLayout.LayoutParams underlineUnfocusedLayoutParams = new RelativeLayout.LayoutParams(
+                RelativeLayout.LayoutParams.MATCH_PARENT, Sizes.dpToPxExt(1, context));
+        RelativeLayout.LayoutParams underlineFocusedLayoutParams = new RelativeLayout.LayoutParams(
+                RelativeLayout.LayoutParams.MATCH_PARENT, Sizes.dpToPxExt(2, context));
         underlineUnfocusedLayoutParams.setMargins(horizontalPadding, 0, horizontalPadding, verticalPadding);
         underlineFocusedLayoutParams.setMargins(horizontalPadding, 0, horizontalPadding, verticalPadding);
         underline.setLayoutParams(underlineUnfocusedLayoutParams);
-        lp.addView(underline);
+        lp.addView(underline);*/
         textField.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -77,7 +97,7 @@ public class DefaultShowInputDialog implements IShowInputDialog {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 textField.setTextColor(textColor);
-                underline.setBackgroundColor(textColor);
+                fr.setBackground(border);
             }
 
             @Override
@@ -89,14 +109,17 @@ public class DefaultShowInputDialog implements IShowInputDialog {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
                 if (hasFocus) {
-                    underline.setLayoutParams(underlineFocusedLayoutParams);
+               //     underline.setLayoutParams(underlineFocusedLayoutParams);
                     showKeyboard(v);
                 } else {
-                    underline.setLayoutParams(underlineUnfocusedLayoutParams);
+               //     underline.setLayoutParams(underlineUnfocusedLayoutParams);
                     hideKeyboard(v);
                 }
             }
         });
+        textField.setLayoutParams(frLayoutParams);
+        fr.addView(textField);
+        lp.addView(fr);
         alertdialog.setView(lp);
         if (dialogData.submitButton != null && !dialogData.submitButton.isEmpty()) {
             alertdialog.setPositiveButton(dialogData.submitButton, (dialogInterface, i) -> {
@@ -141,7 +164,7 @@ public class DefaultShowInputDialog implements IShowInputDialog {
                 submitCallback.onSubmit(textField.getText());
             } else {
                 textField.setTextColor(Color.RED);
-                underline.setBackgroundColor(Color.RED);
+                fr.setBackground(redBorder);
             }
         });
 
