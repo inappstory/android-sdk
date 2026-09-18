@@ -126,6 +126,14 @@ public class BannerWebView extends IASWebView implements ContentViewInteractor {
         return c;
     }
 
+
+    public void sendInputResult(String id, String data) {
+        data = data.replaceAll("\n", "<br>");
+        String url = "javascript:story_send_text_input_result(\"" + id + "\", \"" + data + "\")";
+        loadUrl(url);
+        logMethod("sendInputResult " + id + " " + data);
+    }
+
     @Override
     public void loadSlide(String content) {
         if (slideViewModel == null) return;

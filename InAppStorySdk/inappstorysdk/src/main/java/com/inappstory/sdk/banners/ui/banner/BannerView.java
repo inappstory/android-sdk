@@ -9,10 +9,11 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.Gravity;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
@@ -37,15 +38,20 @@ import com.inappstory.sdk.core.api.impl.IASSingleStoryImpl;
 import com.inappstory.sdk.core.banners.BannerState;
 import com.inappstory.sdk.core.banners.IBannerPlaceLoadCallback;
 import com.inappstory.sdk.core.banners.IBannerViewModel;
+import com.inappstory.sdk.core.inputdialog.IInputDialogActions;
+import com.inappstory.sdk.core.inputdialog.InputDialogSource;
 import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenData;
 import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenStrategy;
 import com.inappstory.sdk.inappmessage.domain.stedata.CallToActionData;
 import com.inappstory.sdk.inappmessage.domain.stedata.JsSendApiRequestData;
 import com.inappstory.sdk.inappmessage.domain.stedata.STETypeAndData;
+import com.inappstory.sdk.inappmessage.domain.stedata.ShowInputData;
+import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.jsapiclient.JsApiClient;
 import com.inappstory.sdk.network.jsapiclient.JsApiResponseCallback;
 import com.inappstory.sdk.stories.api.models.ContentId;
 import com.inappstory.sdk.stories.api.models.ContentIdWithIndex;
+import com.inappstory.sdk.stories.api.models.dialogstructure.DialogStructure;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.CallToActionCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
@@ -62,12 +68,16 @@ public class BannerView extends FrameLayout implements Observer<BannerState> {
         init(context);
     }
 
-    public BannerView(@NonNull Context context, BannerInit bannerInit) {
+    public BannerView(
+            @NonNull Context context,
+            BannerInit bannerInit
+    ) {
         super(context);
         bannerInit.onInitResult((init(context)));
     }
 
     private IBannerViewModel bannerViewModel;
+
     private BannerWebView bannerWebView;
     private View backgroundView;
     private RelativeLayout loaderContainer;
@@ -314,6 +324,13 @@ public class BannerView extends FrameLayout implements Observer<BannerState> {
                             // requestDisallowInterceptTouchEventForAllParents(BannerView.this, false);
                             getParent().requestDisallowInterceptTouchEvent(false);
                             break;
+                        case SHOW_TEXT_INPUT:
+                            showTextInput(
+                                    core,
+                                    (ShowInputData) newValue.data()
+                            );
+                            break;
+
                     }
                 }
             });
@@ -353,6 +370,66 @@ public class BannerView extends FrameLayout implements Observer<BannerState> {
         }
 
     }
+
+    private void submitInput(final String id, final String message) {
+        try {
+            bannerWebView.sendInputResult(id, message);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void showTextInput(final IASCore core, final ShowInputData inputData) {
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                if (!isAttachedToWindow()) return;
+                Context context = getContext();
+
+                DialogStructure structure = JsonParser.fromJson(inputData.data(), DialogStructure.class);
+                core.showInputDialog().onShow(
+                        context,
+                        structure.toInputDialogData(),
+                        InputDialogSource.BANNER,
+                        new IInputDialogActions() {
+                            @Override
+                            public void onShow() {
+                                new Handler(Looper.getMainLooper()).post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        pauseBanner();
+                                    }
+                                });
+                            }
+
+                            @Override
+                            public void onSubmit(String message) {
+                                new Handler(Looper.getMainLooper()).post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        resumeBanner();
+                                        submitInput(inputData.id(), message);
+                                    }
+                                });
+                            }
+
+                            @Override
+                            public void onCancel() {
+                                new Handler(Looper.getMainLooper()).post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        resumeBanner();
+                                        submitInput(inputData.id(), "");
+                                    }
+                                });
+                            }
+                        }
+                );
+            }
+        });
+
+    }
+
 
     private void openGameHandle(IASCore core, final ContentId contentId) {
         try {

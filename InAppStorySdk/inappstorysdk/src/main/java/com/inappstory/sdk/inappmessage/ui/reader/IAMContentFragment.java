@@ -5,6 +5,8 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -23,10 +25,10 @@ import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.api.impl.IASSingleStoryImpl;
-import com.inappstory.sdk.core.banners.BannerState;
+import com.inappstory.sdk.core.inputdialog.IInputDialogActions;
+import com.inappstory.sdk.core.inputdialog.InputDialogSource;
 import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenData;
 import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenStrategy;
-import com.inappstory.sdk.core.utils.ColorUtils;
 import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderSlideState;
 import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderState;
 import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderUIStates;
@@ -34,16 +36,14 @@ import com.inappstory.sdk.inappmessage.domain.reader.IIAMReaderSlideViewModel;
 import com.inappstory.sdk.inappmessage.domain.reader.IIAMReaderViewModel;
 import com.inappstory.sdk.inappmessage.domain.stedata.JsSendApiRequestData;
 import com.inappstory.sdk.inappmessage.domain.stedata.STETypeAndData;
+import com.inappstory.sdk.inappmessage.domain.stedata.ShowInputData;
 import com.inappstory.sdk.inappmessage.domain.stedata.SlideInCacheData;
-import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageAppearance;
-import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageBottomSheetAppearance;
-import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageFullscreenAppearance;
-import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessagePopupAppearance;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.jsapiclient.JsApiClient;
 import com.inappstory.sdk.network.jsapiclient.JsApiResponseCallback;
 import com.inappstory.sdk.stories.api.models.ContentId;
 import com.inappstory.sdk.stories.api.models.ContentIdWithIndex;
+import com.inappstory.sdk.stories.api.models.dialogstructure.DialogStructure;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.CallToActionCallback;
 import com.inappstory.sdk.inappmessage.domain.stedata.CallToActionData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
@@ -181,6 +181,12 @@ public class IAMContentFragment extends Fragment implements Observer<IAMReaderSl
                                     (ContentId) newValue.data()
                             );
                             break;
+                        case SHOW_TEXT_INPUT:
+                            showTextInput(
+                                    core,
+                                    (ShowInputData) newValue.data()
+                            );
+                            break;
 
                     }
                 }
@@ -205,6 +211,65 @@ public class IAMContentFragment extends Fragment implements Observer<IAMReaderSl
         } catch (Exception e) {
 
         }
+
+    }
+
+    private void submitInput(final String id, final String message) {
+        try {
+            ((IAMWebView) contentWebView).sendInputResult(id, message);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void showTextInput(final IASCore core, final ShowInputData inputData) {
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                if (!isAdded()) return;
+                Context context = getContext();
+
+                DialogStructure structure = JsonParser.fromJson(inputData.data(), DialogStructure.class);
+                core.showInputDialog().onShow(
+                        context,
+                        structure.toInputDialogData(),
+                        InputDialogSource.IN_APP_MESSAGE,
+                        new IInputDialogActions() {
+                            @Override
+                            public void onShow() {
+                                new Handler(Looper.getMainLooper()).post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        pauseScreen();
+                                    }
+                                });
+                            }
+
+                            @Override
+                            public void onSubmit(String message) {
+                                new Handler(Looper.getMainLooper()).post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        resumeScreen();
+                                        submitInput(inputData.id(), message);
+                                    }
+                                });
+                            }
+
+                            @Override
+                            public void onCancel() {
+                                new Handler(Looper.getMainLooper()).post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        resumeScreen();
+                                        submitInput(inputData.id(), "");
+                                    }
+                                });
+                            }
+                        }
+                );
+            }
+        });
 
     }
 

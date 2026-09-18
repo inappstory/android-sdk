@@ -4,6 +4,7 @@ public enum STEDataType {
     CALL_TO_ACTION,
     SLIDE_IN_CACHE,
     JS_SEND_API_REQUEST,
+    SHOW_TEXT_INPUT,
     OPEN_STORY,
     OPEN_GAME,
     AUTO_SLIDE_END,

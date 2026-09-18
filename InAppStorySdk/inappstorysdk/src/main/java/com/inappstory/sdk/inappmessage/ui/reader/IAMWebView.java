@@ -71,6 +71,13 @@ public class IAMWebView extends IASWebView implements ContentViewInteractor, Obs
         logMethod("slideInCache " + slideStatus);
     }
 
+    public void sendInputResult(String id, String data) {
+        data = data.replaceAll("\n", "<br>");
+        String url = "javascript:story_send_text_input_result(\"" + id + "\", \"" + data + "\")";
+        loadUrl(url);
+        logMethod("sendInputResult " + id + " " + data);
+    }
+
     private String oldEscape(String raw) {
         String escaped = raw
                 .replaceAll("\"", "\\\\\"")

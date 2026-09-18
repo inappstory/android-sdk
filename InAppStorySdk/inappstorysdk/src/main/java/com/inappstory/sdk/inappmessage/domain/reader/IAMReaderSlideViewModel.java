@@ -14,6 +14,7 @@ import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.data.IInAppMessage;
 import com.inappstory.sdk.core.data.IReaderContent;
 import com.inappstory.sdk.core.inappmessages.InAppMessageDownloadManager;
+import com.inappstory.sdk.inappmessage.domain.stedata.ShowInputData;
 import com.inappstory.sdk.stories.cache.LayoutIsReadyCallback;
 import com.inappstory.sdk.stories.cache.SessionAssetsIsReadyCallback;
 import com.inappstory.sdk.inappmessage.InAppMessageSlideData;
@@ -453,7 +454,11 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
     }
 
     public void storyShowTextInput(String id, String data) {
-
+        singleTimeEvents.updateValue(
+                new STETypeAndData(STEDataType.SHOW_TEXT_INPUT,
+                        new ShowInputData().id(id).data(data)
+                )
+        );
     }
 
     public void storyStarted() {

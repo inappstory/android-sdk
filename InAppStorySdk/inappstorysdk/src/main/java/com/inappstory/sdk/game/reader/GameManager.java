@@ -2,6 +2,8 @@ package com.inappstory.sdk.game.reader;
 
 import android.content.Context;
 import android.media.AudioManager;
+import android.os.Handler;
+import android.os.Looper;
 import android.webkit.JavascriptInterface;
 
 import androidx.annotation.NonNull;
@@ -14,6 +16,8 @@ import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.api.impl.IASSingleStoryImpl;
+import com.inappstory.sdk.core.inputdialog.IInputDialogActions;
+import com.inappstory.sdk.core.inputdialog.InputDialogSource;
 import com.inappstory.sdk.core.ui.screens.ShareProcessHandler;
 import com.inappstory.sdk.game.cache.InGameResourceDownloadCallback;
 import com.inappstory.sdk.game.cache.InGameResourceDownloadResult;
@@ -34,6 +38,7 @@ import com.inappstory.sdk.share.IShareCompleteListener;
 import com.inappstory.sdk.stories.api.models.CachedSessionData;
 import com.inappstory.sdk.stories.api.models.UrlObject;
 import com.inappstory.sdk.stories.api.models.WebResource;
+import com.inappstory.sdk.stories.api.models.dialogstructure.DialogStructure;
 import com.inappstory.sdk.stories.outercallbacks.common.gamereader.GameReaderCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.CallToActionCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickAction;
@@ -479,4 +484,62 @@ public class GameManager {
                 result -> host.addToCacheComplete(atcPayload.cb, atcPayload.id, result)
         );
     }
+
+    public void storyShowTextInput(String id, String data) {
+        DialogStructure structure = JsonParser.fromJson(data, DialogStructure.class);
+        GameReaderContentFragment gameHost = host;
+        if (!gameHost.isAdded()) return;
+        core.showInputDialog().onShow(
+                gameHost.getContext(),
+                structure.toInputDialogData(),
+                InputDialogSource.GAME,
+                new IInputDialogActions() {
+                    @Override
+                    public void onShow() {
+                        new Handler(Looper.getMainLooper()).post(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (!gameHost.isAdded()) return;
+                                host.pauseGame();
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onSubmit(String message) {
+                        new Handler(Looper.getMainLooper()).post(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (!gameHost.isAdded()) return;
+                                gameHost.resumeGame();
+                                submitInput(id, message);
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onCancel() {
+                        new Handler(Looper.getMainLooper()).post(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (!gameHost.isAdded()) return;
+                                gameHost.resumeGame();
+                                submitInput(id, "");
+                            }
+                        });
+                    }
+                }
+        );
+    }
+
+
+    private void submitInput(final String id, final String message) {
+        try {
+            if (!host.isAdded()) return;
+            host.sendInputResult(id, message);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 }

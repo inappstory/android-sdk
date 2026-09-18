@@ -102,7 +102,6 @@ public class BannerPagerAdapter extends PagerAdapter implements Observer<BannerS
                 }
             }
         });
-
         bannerView.setLoadingPlaceholder(bannerPlaceholderCreator.onCreate(container.getContext()));
         bannerView.setBannerRadius(bannerRadius);
         String tag = "banner_" + position;

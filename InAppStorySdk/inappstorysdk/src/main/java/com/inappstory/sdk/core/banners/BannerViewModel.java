@@ -19,6 +19,7 @@ import com.inappstory.sdk.inappmessage.domain.stedata.CallToActionData;
 import com.inappstory.sdk.inappmessage.domain.stedata.JsSendApiRequestData;
 import com.inappstory.sdk.inappmessage.domain.stedata.STEDataType;
 import com.inappstory.sdk.inappmessage.domain.stedata.STETypeAndData;
+import com.inappstory.sdk.inappmessage.domain.stedata.ShowInputData;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.network.models.Response;
@@ -355,6 +356,15 @@ public class BannerViewModel implements IBannerViewModel {
         singleTimeEvents.updateValue(
                 new STETypeAndData(STEDataType.OPEN_STORY,
                         new ContentIdWithIndex(id, index)
+                )
+        );
+    }
+
+    @Override
+    public void storyShowTextInput(String id, String data) {
+        singleTimeEvents.updateValue(
+                new STETypeAndData(STEDataType.SHOW_TEXT_INPUT,
+                        new ShowInputData().id(id).data(data)
                 )
         );
     }

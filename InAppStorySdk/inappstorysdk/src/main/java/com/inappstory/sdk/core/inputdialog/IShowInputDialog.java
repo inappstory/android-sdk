@@ -8,6 +8,6 @@ public interface IShowInputDialog {
             Context context,
             InputDialogData dialogData,
             InputDialogSource source,
-            IInputDialogSubmit submitCallback
+            IInputDialogActions submitCallback
     );
 }

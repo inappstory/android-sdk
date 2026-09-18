@@ -1049,7 +1049,13 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         }
     }
 
-    private void resumeGame() {
+    public void sendInputResult(String id, String data) {
+        data = data.replaceAll("\n", "<br>");
+        String url = "javascript:story_send_text_input_result(\"" + id + "\", \"" + data + "\")";
+        webView.loadUrl(url);
+    }
+
+    public void resumeGame() {
         webView.loadUrl("javascript:(function() {" +
                 "if ('resumeUI' in window) " +
                 "{" +
@@ -1058,7 +1064,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                 "})()");
     }
 
-    private void pauseGame() {
+    public void pauseGame() {
         webView.loadUrl("javascript:(function() {" +
                 "if ('pauseUI' in window) " +
                 "{" +

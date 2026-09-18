@@ -9,5 +9,4 @@ public class MainV2 implements Serializable {
     public InputStructure input;
     public ButtonStructure button;
     public QuestionStructure question;
-
 }

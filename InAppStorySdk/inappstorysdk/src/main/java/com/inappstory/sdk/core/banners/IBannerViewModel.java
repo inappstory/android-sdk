@@ -54,6 +54,8 @@ public interface IBannerViewModel extends IReaderSlideViewModel {
 
     void showSingleStory(int id, int index);
 
+    void storyShowTextInput(String id, String data);
+
     void sendApiRequest(String data);
 
     void vibrate(int[] vibratePattern);

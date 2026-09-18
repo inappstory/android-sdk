@@ -42,6 +42,12 @@ public class BannerJavascriptInterface {
     }
 
     @JavascriptInterface
+    public void storyShowTextInput(String id, String data) {
+        slideViewModel.storyShowTextInput(id, data);
+    }
+
+
+    @JavascriptInterface
     public void sendApiRequest(String data) {
         slideViewModel.sendApiRequest(data);
     }

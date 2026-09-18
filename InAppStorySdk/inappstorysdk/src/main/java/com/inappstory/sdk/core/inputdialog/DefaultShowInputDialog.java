@@ -7,7 +7,6 @@ import static com.inappstory.sdk.stories.ui.widgets.TextMultiInput.TEXT;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Color;
-import android.graphics.PorterDuff;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Handler;
 import android.os.Looper;
@@ -18,8 +17,6 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.FrameLayout;
-import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 
 import androidx.appcompat.app.AlertDialog;
 
@@ -32,7 +29,7 @@ public class DefaultShowInputDialog implements IShowInputDialog {
             Context context,
             InputDialogData dialogData,
             InputDialogSource source,
-            IInputDialogSubmit submitCallback
+            IInputDialogActions actions
     ) {
         AlertDialog.Builder alertdialog = new AlertDialog.Builder(context);
         alertdialog.setTitle(dialogData.title);
@@ -109,10 +106,10 @@ public class DefaultShowInputDialog implements IShowInputDialog {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
                 if (hasFocus) {
-               //     underline.setLayoutParams(underlineFocusedLayoutParams);
+                    //     underline.setLayoutParams(underlineFocusedLayoutParams);
                     showKeyboard(v);
                 } else {
-               //     underline.setLayoutParams(underlineUnfocusedLayoutParams);
+                    //     underline.setLayoutParams(underlineUnfocusedLayoutParams);
                     hideKeyboard(v);
                 }
             }
@@ -137,10 +134,12 @@ public class DefaultShowInputDialog implements IShowInputDialog {
             });
         }
         AlertDialog alert = alertdialog.create();
+        final boolean[] submitted = {false};
         alert.setOnDismissListener(new DialogInterface.OnDismissListener() {
             @Override
             public void onDismiss(DialogInterface dialog) {
-                submitCallback.onDismiss();
+                if (!submitted[0])
+                    actions.onCancel();
             }
         });
         // alert.setCanceledOnTouchOutside(true);
@@ -156,19 +155,19 @@ public class DefaultShowInputDialog implements IShowInputDialog {
             }
         });
         alert.show();
+        actions.onShow();
         Button positiveAlertButton = alert.getButton(AlertDialog.BUTTON_POSITIVE);
 
         positiveAlertButton.setOnClickListener(v -> {
             if (validate(inttype, textField.getText(), textField.getMaskLength())) {
+                submitted[0] = true;
+                actions.onSubmit(textField.getText());
                 alert.dismiss();
-                submitCallback.onSubmit(textField.getText());
             } else {
                 textField.setTextColor(Color.RED);
                 fr.setBackground(redBorder);
             }
         });
-
-
 
 
     }
@@ -188,7 +187,6 @@ public class DefaultShowInputDialog implements IShowInputDialog {
             return true;
         }
     }
-
 
 
     private void showKeyboard(View view) {
