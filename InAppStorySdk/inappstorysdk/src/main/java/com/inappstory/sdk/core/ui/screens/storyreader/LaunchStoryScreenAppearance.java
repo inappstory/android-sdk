@@ -83,6 +83,10 @@ public class LaunchStoryScreenAppearance implements SerializableWithKey {
         return csTimerGradient;
     }
 
+    public StoriesGradientObject csFullscreenBottomGradient() {
+        return csFullscreenBottomGradient;
+    }
+
     public boolean csIsDraggable() {
         return csIsDraggable;
     }
@@ -102,6 +106,7 @@ public class LaunchStoryScreenAppearance implements SerializableWithKey {
     private final boolean csCloseOnSwipe;
     private final boolean csHasLike;
     private final boolean csHasFavorite;
+
     private final boolean csHasShare;
    // private final int csCloseIcon;
   //  private final int csRefreshIcon;
@@ -114,6 +119,7 @@ public class LaunchStoryScreenAppearance implements SerializableWithKey {
     private final boolean csTimerGradientEnable;
     private final int csReaderBackgroundColor;
     private final StoriesGradientObject csTimerGradient;
+    private final StoriesGradientObject csFullscreenBottomGradient;
     private final boolean csIsDraggable;
     private final int csNavBarColor;
 
@@ -139,6 +145,7 @@ public class LaunchStoryScreenAppearance implements SerializableWithKey {
                 csStoryReaderPresentationStyle()
         );
         appearanceManager.csTimerGradient(csTimerGradient());
+        appearanceManager.csFullscreenBottomGradient(csFullscreenBottomGradient());
         appearanceManager.csReaderRadius(csReaderRadius());
         appearanceManager.csReaderBackgroundColor(csReaderBackgroundColor());
         return appearanceManager;

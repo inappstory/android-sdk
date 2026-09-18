@@ -11,6 +11,6 @@ public interface IListItemContent extends IStatData, IContentWithStatus {
     boolean disableClose();
     String deeplink();
     String gameInstanceId();
-
+    boolean fullscreen();
     boolean hideInReader();
 }

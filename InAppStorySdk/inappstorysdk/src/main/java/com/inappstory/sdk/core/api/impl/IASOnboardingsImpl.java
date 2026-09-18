@@ -238,6 +238,7 @@ public class IASOnboardingsImpl implements IASOnboardings {
                 .feed(feed)
                 .sessionId(sessionId)
                 .storiesIds(new ArrayList<>(storiesIds))
+                .startFromFullscreenStory(stories.get(0).fullscreen())
                 .firstAction(ShowStory.ACTION_OPEN)
                 .sourceType(SourceType.ONBOARDING)
                 .slideIndex(0)

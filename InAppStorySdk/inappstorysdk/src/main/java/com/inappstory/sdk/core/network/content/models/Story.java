@@ -45,6 +45,8 @@ public class Story implements Parcelable, IStory, IContentWithTimeline {
     @SerializedName("video_cover")
     public List<Image> videoUrl;
 
+    @SerializedName("is_full_screen")
+    public boolean isFullscreen;
 
     @SerializedName("payload")
     public HashMap<String, Object> ugcPayload;
@@ -115,6 +117,12 @@ public class Story implements Parcelable, IStory, IContentWithTimeline {
 
     @SerializedName("layout")
     public String layout;
+
+    @Override
+    public boolean fullscreen() {
+        return isFullscreen;
+    }
+
 
     @Override
     public String title() {

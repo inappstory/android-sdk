@@ -92,11 +92,13 @@ public class DefaultOpenStoriesReader implements IOpenStoriesReader {
 
     @Override
     public void onShowInFullscreen(Context context) {
-
+        if (context instanceof Activity)
+            StatusBarController.showFullscreen((Activity) context);
     }
 
     @Override
     public void onRestoreScreen(Context context) {
-
+        if (context instanceof Activity)
+            StatusBarController.restore((Activity) context);
     }
 }
