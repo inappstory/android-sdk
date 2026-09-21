@@ -150,7 +150,7 @@ public class StoriesTabletActivity extends IASActivity implements BaseStoryScree
         } else {
             super.finish();
         }
-
+        overridePendingTransition(0, 0);
     }
 
     boolean animateFirst = true;

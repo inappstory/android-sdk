@@ -25,55 +25,20 @@ public class DefaultOpenStoriesReader implements IOpenStoriesReader {
             Bundle bundle
     ) {
         if (context == null) return;
-        if (context instanceof Activity) {
-            Window window = ((Activity) context).getWindow();
-            Integer themeId = ActivityUtils.getThemeResId((Activity) context);
-            bundle.putInt("themeId", themeId != null ? themeId : R.style.StoriesSDKAppTheme_Transparent);
-            bundle.putInt("parentSystemUIVisibility",
-                    window.getDecorView().getSystemUiVisibility()
-            );
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                bundle.putInt("parentLayoutInDisplayCutoutMode", window.getAttributes().layoutInDisplayCutoutMode);
-            }
-        }
-        if (Sizes.isTablet(context) && context instanceof FragmentActivity) {
-            Intent intent2 = new Intent(context, StoriesTabletActivity.class);
-            if (!(context instanceof Activity)) {
-                intent2.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            }
-            intent2.putExtras(bundle);
+        Intent intent2;
+        if (Sizes.isTablet(context)) {
+            intent2 = new Intent(context, StoriesTabletActivity.class);
             intent2.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
-            context.startActivity(intent2);
-         /*   if (context instanceof Activity) {
-                ((Activity) context).overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
-            }*/
-
-
-           /* final StoriesDialogFragment storiesDialogFragment = new StoriesDialogFragment();
-            storiesDialogFragment.setArguments(bundle);
-            try {
-                storiesDialogFragment.show(
-                        ((FragmentActivity) context).getSupportFragmentManager(),
-                        "DialogFragment");
-                InAppStoryManager.useCore(new UseIASCoreCallback() {
-                    @Override
-                    public void use(@NonNull IASCore core) {
-                        core.screensManager().getStoryScreenHolder().subscribeScreen(storiesDialogFragment);
-                    }
-                });
-            } catch (IllegalStateException ignored) {
-
-            }*/
         } else {
-            Intent intent2 = new Intent(context, StoriesActivity.class);
-            if (!(context instanceof Activity)) {
-                intent2.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            }
-            intent2.putExtras(bundle);
-            context.startActivity(intent2);
-            if (context instanceof Activity) {
-                ((Activity) context).overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
-            }
+            intent2 = new Intent(context, StoriesActivity.class);
+        }
+        if (!(context instanceof Activity)) {
+            intent2.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        }
+        intent2.putExtras(bundle);
+        context.startActivity(intent2);
+        if (Sizes.isTablet(context) && context instanceof Activity) {
+            ((Activity) context).overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
         }
     }
 
@@ -81,13 +46,13 @@ public class DefaultOpenStoriesReader implements IOpenStoriesReader {
     @Override
     public void onHideStatusBar(Context context) {
         if (context instanceof Activity)
-            StatusBarController.hideStatusBar((Activity) context, true);
+            StatusBarController.showFullscreen((Activity) context);
     }
 
     @Override
     public void onRestoreStatusBar(Context context) {
         if (context instanceof Activity)
-            StatusBarController.showStatusBar((Activity) context);
+            StatusBarController.restore((Activity) context);
     }
 
     @Override

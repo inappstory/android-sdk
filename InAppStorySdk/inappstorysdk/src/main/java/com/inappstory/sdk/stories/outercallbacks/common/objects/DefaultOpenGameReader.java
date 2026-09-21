@@ -28,37 +28,11 @@ public class DefaultOpenGameReader implements IOpenGameReader {
     ) {
         if (context == null) return;
         Intent intent2 = new Intent(context, GameActivity.class);
-        if (context instanceof Activity) {
-
-            Window window = ((Activity) context).getWindow();
-            Integer themeId = ActivityUtils.getThemeResId((Activity) context);
-            bundle.putInt("themeId",
-                    ((Activity) context).getIntent().getIntExtra(
-                            "themeId",
-                            themeId != null ? themeId : R.style.StoriesSDKAppTheme_GameActivity
-                    )
-            );
-            bundle.putInt("parentSystemUIVisibility",
-                    ((Activity) context).getIntent().getIntExtra(
-                            "parentSystemUIVisibility",
-                            window.getDecorView().getSystemUiVisibility()
-                    )
-            );
-            Pair<Integer, Integer> startedOffsets = getStartedOffsets(context);
-            bundle.putInt("startedTop", startedOffsets.first);
-            bundle.putInt("startedBottom", startedOffsets.second);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                bundle.putInt("parentLayoutInDisplayCutoutMode",
-                        ((Activity) context).getIntent().getIntExtra(
-                                "parentLayoutInDisplayCutoutMode",
-                                window.getAttributes().layoutInDisplayCutoutMode
-                        )
-                );
-            }
-        }
+        Pair<Integer, Integer> startedOffsets = getStartedOffsets(context);
+        bundle.putInt("startedTop", startedOffsets.first);
+        bundle.putInt("startedBottom", startedOffsets.second);
         intent2.putExtras(bundle);
         if (context instanceof Activity) {
-
             ((Activity) context).startActivity(intent2);
             ((Activity) context).overridePendingTransition(0, 0);
         } else {

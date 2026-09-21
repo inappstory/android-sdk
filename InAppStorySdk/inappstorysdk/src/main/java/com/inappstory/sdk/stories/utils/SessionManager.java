@@ -209,8 +209,30 @@ public class SessionManager {
         sessionIsSaved(response);
     }
 
+    private final String[] FEATURES_ARRAY = {
+            "animation",
+            "data",
+            "deeplink",
+            "placeholder",
+            "webp",
+            "resetTimers",
+            "gameReader",
+            "swipeUpItems",
+            "sendApi",
+            "imgPlaceholder",
+            "assets",
+            "vod",
+            "closeStoryApi",
+            "slideTimerEndApi",
+            "multislideIam",
+            "productCart",
+            "scrollview",
+            "textInputApi",
+            "fullScreenStory"
+    };
+
     private final String FEATURES =
-            "animation,data,deeplink,placeholder,webp,resetTimers,gameReader,swipeUpItems,sendApi,imgPlaceholder,assets,vod,closeStoryApi,slideTimerEndApi,multislideIam,productCart,scrollview";
+            TextUtils.join(",", FEATURES_ARRAY);
 
     private final String SESSION_FIELDS = TextUtils.join(",", new String[]{
             SessionRequestFields.session,

@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:id="@+id/gr_content_layout"
-    android:background="@android:color/black"
+    android:background="@color/black"
     android:clickable="true"
     tools:context=".game.reader.GameActivity">
 
@@ -17,6 +17,7 @@
     <LinearLayout
         android:id="@+id/gameContainer"
         android:layout_width="match_parent"
+        android:clickable="true"
         android:layout_height="match_parent"
         android:orientation="vertical">
 
@@ -109,5 +110,6 @@
         android:background="@null"
         android:elevation="10dp"
         android:visibility="gone" />
+
 </RelativeLayout>
 

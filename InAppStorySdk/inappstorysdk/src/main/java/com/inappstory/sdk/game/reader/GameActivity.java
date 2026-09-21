@@ -36,8 +36,6 @@ public class GameActivity extends IASActivity implements BaseGameScreen {
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
-        int theme = getIntent().getIntExtra("themeId", R.style.StoriesSDKAppTheme_GameActivity);
-        setTheme(theme);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.cs_game_reader_layout);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -83,10 +81,6 @@ public class GameActivity extends IASActivity implements BaseGameScreen {
                 WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
         double bright = ColorUtils.getColorBright(colorInt);
         windowInsetsController.setAppearanceLightStatusBars(bright > 40);
-        /*if ((getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_NO)
-            windowInsetsController.setAppearanceLightStatusBars(true);
-        else
-            windowInsetsController.setAppearanceLightStatusBars(false);*/
     }
 
 

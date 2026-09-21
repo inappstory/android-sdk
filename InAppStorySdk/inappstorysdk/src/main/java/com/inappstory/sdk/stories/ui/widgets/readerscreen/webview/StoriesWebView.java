@@ -304,12 +304,13 @@ public class StoriesWebView extends IASWebView implements ContentViewInteractor 
     private final SafeAreaInsets insets = new SafeAreaInsets();
 
     public void setInsets(int top, int bottom) {
-        insets.top = top;
-        insets.bottom = bottom;
+        insets.top = Sizes.pxToDpExt(top, context);
+        insets.bottom = Sizes.pxToDpExt(bottom, context);
     }
 
-    public String setSafeArea(String html) {
+    private String setSafeArea(String html) {
         try {
+
             String safeAreaString = JsonParser.getJson(insets);
             return html.replace("{{%safeAreaInsets}}", safeAreaString);
         } catch (Exception e) {
@@ -355,8 +356,11 @@ public class StoriesWebView extends IASWebView implements ContentViewInteractor 
         currentPage = replaceData;
         if (!notFirstLoading || replaceData.isEmpty()) {
             notFirstLoading = true;
-            final String modifiedPageAndLayout = setDir(injectUnselectableStyle(firstData),
-                    context != null ? context : getContext()
+            final String modifiedPageAndLayout = setSafeArea(
+                    setDir(
+                            injectUnselectableStyle(firstData),
+                            context != null ? context : getContext()
+                    )
             );
             new Handler(Looper.getMainLooper()).post(new Runnable() {
                 @Override

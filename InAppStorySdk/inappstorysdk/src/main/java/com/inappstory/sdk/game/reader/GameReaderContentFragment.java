@@ -1490,23 +1490,12 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         try {
             return JsonParser.stringifyToJsString(options);
         } catch (Exception e) {
-            // TODO write Exception to debug logger
             return "{}";
         }
     }
 
     private void checkInsets() {
         setOffsets(isFullscreen, new Pair<>(startedTop, startedBottom));
-      /*  if (webView != null) {
-            final ViewTreeObserver viewTreeObserver = webView.getViewTreeObserver();
-            viewTreeObserver.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-                @Override
-                public void onGlobalLayout() {
-                    webView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-
-                }
-            });
-        }*/
     }
 
 
@@ -1655,17 +1644,18 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                 int windowHeight = Sizes.getScreenSize(fragmentActivity).y;
 
                 int[] location = new int[2];
-                // int[] location2 = new int[2];
                 if (window != null) {
                     windowHeight = window.getHeight();
                     window.getLocationOnScreen(location);
-                    // window.getLocationInWindow(location2);
                 }
+
+                LinearLayout.LayoutParams topLp = (LinearLayout.LayoutParams) blackTop.getLayoutParams();
+                LinearLayout.LayoutParams bottomLp = (LinearLayout.LayoutParams) blackBottom.getLayoutParams();
+
+
 
 
                 if (!isFullscreen) {
-                    LinearLayout.LayoutParams topLp = (LinearLayout.LayoutParams) blackTop.getLayoutParams();
-                    LinearLayout.LayoutParams bottomLp = (LinearLayout.LayoutParams) blackBottom.getLayoutParams();
                     if (location[1] < topInsetOffset) {
                         topLp.height = topInsetOffset - location[1];
                         buttonLP.topMargin = topInsetOffset - location[1] + Sizes.dpToPxExt(16, getContext());
@@ -1678,15 +1668,17 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                     } else {
                         bottomLp.height = 0;
                     }
-                    blackTop.requestLayout();
-                    blackBottom.requestLayout();
                 } else {
+                    topLp.height = 0;
+                    bottomLp.height = 0;
                     if (location[1] < topInsetOffset) {
                         buttonLP.topMargin = topInsetOffset - location[1] + Sizes.dpToPxExt(16, getContext());
                     } else {
                         buttonLP.topMargin = Sizes.dpToPxExt(16, getContext());
                     }
                 }
+                blackTop.requestLayout();
+                blackBottom.requestLayout();
             }
         } else {
             View gameContainer = getView().findViewById(R.id.gameContainer);

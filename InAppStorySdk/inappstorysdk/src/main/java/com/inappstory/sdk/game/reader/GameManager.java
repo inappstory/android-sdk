@@ -500,7 +500,7 @@ public class GameManager {
                             @Override
                             public void run() {
                                 if (!gameHost.isAdded()) return;
-                                host.pauseGame();
+                               // host.pauseGame();
                             }
                         });
                     }
@@ -511,7 +511,7 @@ public class GameManager {
                             @Override
                             public void run() {
                                 if (!gameHost.isAdded()) return;
-                                gameHost.resumeGame();
+                               // gameHost.resumeGame();
                                 submitInput(id, message);
                             }
                         });
@@ -523,7 +523,7 @@ public class GameManager {
                             @Override
                             public void run() {
                                 if (!gameHost.isAdded()) return;
-                                gameHost.resumeGame();
+                             //   gameHost.resumeGame();
                                 submitInput(id, "");
                             }
                         });

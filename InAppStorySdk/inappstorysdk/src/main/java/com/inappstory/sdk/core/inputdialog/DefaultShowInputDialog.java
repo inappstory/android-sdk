@@ -32,11 +32,12 @@ public class DefaultShowInputDialog implements IShowInputDialog {
             IInputDialogActions actions
     ) {
         AlertDialog.Builder alertdialog = new AlertDialog.Builder(context);
-        alertdialog.setTitle(dialogData.title);
+        if (dialogData.title() != null && !dialogData.title().isEmpty())
+            alertdialog.setTitle(dialogData.title());
         final TextMultiInput textField = new TextMultiInput(context);
         final int inttype;
-        if (dialogData.type.equals("email")) inttype = MAIL;
-        else if (dialogData.type.equals("tel")) inttype = PHONE;
+        if (dialogData.type().equals(InputDialogDataType.MAIL)) inttype = MAIL;
+        else if (dialogData.type().equals(InputDialogDataType.PHONE)) inttype = PHONE;
         else inttype = TEXT;
         textField.init(inttype, 3);
         int textColor = textField.getMainText().getCurrentTextColor();
@@ -46,6 +47,8 @@ public class DefaultShowInputDialog implements IShowInputDialog {
         } else {
             textField.getMainText().setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
         }
+        if (dialogData.hint() != null && !dialogData.hint().isEmpty())
+            textField.setHint(dialogData.hint());
 
 
         FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(
@@ -118,12 +121,12 @@ public class DefaultShowInputDialog implements IShowInputDialog {
         fr.addView(textField);
         lp.addView(fr);
         alertdialog.setView(lp);
-        if (dialogData.submitButton != null && !dialogData.submitButton.isEmpty()) {
-            alertdialog.setPositiveButton(dialogData.submitButton, (dialogInterface, i) -> {
+        if (dialogData.submitButton() != null && !dialogData.submitButton().isEmpty()) {
+            alertdialog.setPositiveButton(dialogData.submitButton(), (dialogInterface, i) -> {
 
             });
         }
-        if (dialogData.negativeButton != null && !dialogData.negativeButton.isEmpty()) {
+      /*  if (dialogData.negativeButton != null && !dialogData.negativeButton.isEmpty()) {
             alertdialog.setNegativeButton(dialogData.negativeButton, (dialogInterface, i) -> {
                 dialogInterface.dismiss();
             });
@@ -132,7 +135,7 @@ public class DefaultShowInputDialog implements IShowInputDialog {
             alertdialog.setNeutralButton(dialogData.neutralButton, (dialogInterface, i) -> {
                 dialogInterface.dismiss();
             });
-        }
+        }*/
         AlertDialog alert = alertdialog.create();
         final boolean[] submitted = {false};
         alert.setOnDismissListener(new DialogInterface.OnDismissListener() {
