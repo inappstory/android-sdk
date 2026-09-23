@@ -19,9 +19,6 @@ import com.inappstory.sdk.core.api.impl.IASSingleStoryImpl;
 import com.inappstory.sdk.core.inputdialog.IInputDialogActions;
 import com.inappstory.sdk.core.inputdialog.InputDialogSource;
 import com.inappstory.sdk.core.ui.screens.ShareProcessHandler;
-import com.inappstory.sdk.game.cache.InGameResourceDownloadCallback;
-import com.inappstory.sdk.game.cache.InGameResourceDownloadResult;
-import com.inappstory.sdk.game.cache.InGameResourceDownloadSuccess;
 import com.inappstory.sdk.game.reader.logger.AbstractGameLogger;
 import com.inappstory.sdk.game.reader.logger.GameLoggerLvl0;
 import com.inappstory.sdk.game.reader.logger.GameLoggerLvl1;
@@ -485,58 +482,64 @@ public class GameManager {
         );
     }
 
-    public void storyShowTextInput(String id, String data) {
-        DialogStructure structure = JsonParser.fromJson(data, DialogStructure.class);
-        GameReaderContentFragment gameHost = host;
-        if (!gameHost.isAdded()) return;
-        core.showInputDialog().onShow(
-                gameHost.getContext(),
-                structure.toInputDialogData(),
-                InputDialogSource.GAME,
-                new IInputDialogActions() {
-                    @Override
-                    public void onShow() {
-                        new Handler(Looper.getMainLooper()).post(new Runnable() {
+    public void showTextInput(String data) {
+        GameSTIData structure = JsonParser.fromJson(data, GameSTIData.class);
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                GameReaderContentFragment gameHost = host;
+                if (!gameHost.isAdded()) return;
+                core.showInputDialog().onShow(
+                        gameHost.getContext(),
+                        structure.toInputDialogData(),
+                        InputDialogSource.GAME,
+                        new IInputDialogActions() {
                             @Override
-                            public void run() {
-                                if (!gameHost.isAdded()) return;
-                               // host.pauseGame();
+                            public void onShow() {
+                                new Handler(Looper.getMainLooper()).post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        if (!gameHost.isAdded()) return;
+                                        // host.pauseGame();
+                                    }
+                                });
                             }
-                        });
-                    }
 
-                    @Override
-                    public void onSubmit(String message) {
-                        new Handler(Looper.getMainLooper()).post(new Runnable() {
                             @Override
-                            public void run() {
-                                if (!gameHost.isAdded()) return;
-                               // gameHost.resumeGame();
-                                submitInput(id, message);
+                            public void onSubmit(String message) {
+                                new Handler(Looper.getMainLooper()).post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        if (!gameHost.isAdded()) return;
+                                        // gameHost.resumeGame();
+                                        submitInput(structure.id, structure.cb, message);
+                                    }
+                                });
                             }
-                        });
-                    }
 
-                    @Override
-                    public void onCancel() {
-                        new Handler(Looper.getMainLooper()).post(new Runnable() {
                             @Override
-                            public void run() {
-                                if (!gameHost.isAdded()) return;
-                             //   gameHost.resumeGame();
-                                submitInput(id, "");
+                            public void onCancel() {
+                                new Handler(Looper.getMainLooper()).post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        if (!gameHost.isAdded()) return;
+                                        //   gameHost.resumeGame();
+                                        submitInput(structure.id, structure.cb, "");
+                                    }
+                                });
                             }
-                        });
-                    }
-                }
-        );
+                        }
+                );
+            }
+        });
+
     }
 
 
-    private void submitInput(final String id, final String message) {
+    private void submitInput(final String id, final String cb, final String message) {
         try {
             if (!host.isAdded()) return;
-            host.sendInputResult(id, message);
+            host.sendInputResult(id, cb, message);
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -9,7 +9,6 @@ import com.inappstory.sdk.LoggerTags;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.stories.api.models.CachedSessionData;
-import com.inappstory.sdk.stories.utils.KeyValueStorage;
 
 
 public class GameJSInterface {
@@ -29,8 +28,8 @@ public class GameJSInterface {
      */
 
     @JavascriptInterface
-    public void storyShowTextInput(String id, String data) {
-        manager.storyShowTextInput(id, data);
+    public void showTextInput(String data) {
+        manager.showTextInput(data);
     }
 
     @JavascriptInterface

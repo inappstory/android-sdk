@@ -162,7 +162,7 @@ public class DefaultShowInputDialog implements IShowInputDialog {
         Button positiveAlertButton = alert.getButton(AlertDialog.BUTTON_POSITIVE);
 
         positiveAlertButton.setOnClickListener(v -> {
-            if (validate(inttype, textField.getText(), textField.getMaskLength())) {
+            if (validate(inttype, textField.getText(), textField.getMaskLength() + textField.getAdditionalLength())) {
                 submitted[0] = true;
                 actions.onSubmit(textField.getText());
                 alert.dismiss();

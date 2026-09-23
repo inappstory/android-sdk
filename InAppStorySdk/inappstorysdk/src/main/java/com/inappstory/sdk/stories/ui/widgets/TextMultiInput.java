@@ -31,6 +31,13 @@ public class TextMultiInput extends LinearLayout {
         super(context);
     }
 
+    public int getAdditionalLength() {
+        if (countryCodeText != null) {
+            return countryCodeText.length() + 1;
+        }
+        return 0;
+    }
+
     public int getMaskLength() {
         if (watcher != null) {
             return watcher.mMask.length();
