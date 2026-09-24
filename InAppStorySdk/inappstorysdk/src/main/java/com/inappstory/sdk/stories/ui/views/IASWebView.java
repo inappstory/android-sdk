@@ -22,6 +22,8 @@ import androidx.core.view.ViewCompat;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.core.ui.widgets.elasticview.DraggableElasticLayout;
+import com.inappstory.sdk.game.reader.SafeAreaInsets;
+import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.logs.WebConsoleLog;
 
 import java.util.UUID;
@@ -162,7 +164,7 @@ public class IASWebView extends WebView implements NestedScrollingChild {
     }
 
 
-    public String setDir(String html, Context context) {
+    protected String setDir(String html, Context context) {
         try {
             int dir = context.getResources().getConfiguration().getLayoutDirection();
             String dirString = (dir == View.LAYOUT_DIRECTION_RTL) ? "rtl" : "ltr";
@@ -172,6 +174,14 @@ public class IASWebView extends WebView implements NestedScrollingChild {
         }
     }
 
+    protected String setSafeArea(String html, SafeAreaInsets insets) {
+        try {
+            String safeAreaString = JsonParser.getJson(insets);
+            return html.replace("{{%safeAreaInsets}}", safeAreaString);
+        } catch (Exception e) {
+            return html;
+        }
+    }
 
     private int mLastY;
     private final int[] mScrollOffset = new int[2];

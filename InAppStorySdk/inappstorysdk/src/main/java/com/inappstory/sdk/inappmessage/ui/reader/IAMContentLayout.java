@@ -422,6 +422,9 @@ public class IAMContentLayout extends FrameLayout implements Observer<IAMReaderS
                                 new Runnable() {
                                     @Override
                                     public void run() {
+                                        Pair<Integer, Integer> safeArea = newValue.safeArea();
+                                        localWebView.insets.top = Sizes.pxToDpExt(safeArea.first, getContext());
+                                        localWebView.insets.bottom = Sizes.pxToDpExt(safeArea.second, getContext());
                                         localWebView.loadSlide(newValue.layout());
                                     }
                                 }

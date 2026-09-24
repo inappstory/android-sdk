@@ -437,7 +437,12 @@ public class IAMContentFragment extends Fragment implements Observer<IAMReaderSl
                                 new Runnable() {
                                     @Override
                                     public void run() {
-                                        localWebView.loadSlide(newValue.layout());
+                                        Pair<Integer, Integer> safeArea = newValue.safeArea();
+                                        localWebView.insets.top = Sizes.pxToDpExt(safeArea.first, getContext());
+                                        localWebView.insets.bottom = Sizes.pxToDpExt(safeArea.second, getContext());
+                                        localWebView.loadSlide(
+                                                newValue.layout()
+                                        );
                                     }
                                 }
                         );

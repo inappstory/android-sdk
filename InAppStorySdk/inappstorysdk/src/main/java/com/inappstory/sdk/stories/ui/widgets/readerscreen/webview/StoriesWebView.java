@@ -308,16 +308,6 @@ public class StoriesWebView extends IASWebView implements ContentViewInteractor 
         insets.bottom = Sizes.pxToDpExt(bottom, context);
     }
 
-    private String setSafeArea(String html) {
-        try {
-
-            String safeAreaString = JsonParser.getJson(insets);
-            return html.replace("{{%safeAreaInsets}}", safeAreaString);
-        } catch (Exception e) {
-            return html;
-        }
-    }
-
 
     private Context context;
 
@@ -360,7 +350,8 @@ public class StoriesWebView extends IASWebView implements ContentViewInteractor 
                     setDir(
                             injectUnselectableStyle(firstData),
                             context != null ? context : getContext()
-                    )
+                    ),
+                    insets
             );
             new Handler(Looper.getMainLooper()).post(new Runnable() {
                 @Override

@@ -21,6 +21,7 @@ import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.exceptions.NotImplementedMethodException;
 import com.inappstory.sdk.core.ui.screens.IReaderSlideViewModel;
+import com.inappstory.sdk.game.reader.SafeAreaInsets;
 import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderScrollState;
 import com.inappstory.sdk.inappmessage.domain.reader.IIAMReaderSlideViewModel;
 import com.inappstory.sdk.network.JsonParser;
@@ -148,12 +149,14 @@ public class IAMWebView extends IASWebView implements ContentViewInteractor, Obs
             );
     }
 
+
+    public SafeAreaInsets insets = new SafeAreaInsets();
+
     @Override
     public void loadSlide(String content) {
         if (slideViewModel == null) return;
         contentInScrollProcess(false);
-        String newContent = setDir(content, getContext());
-
+        String newContent = setSafeArea(setDir(content, getContext()), insets);
         loadDataWithBaseURL(
                 "file:///data/",
                 newContent,

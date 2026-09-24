@@ -24,6 +24,7 @@ import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.banners.BannerJavascriptInterface;
 import com.inappstory.sdk.core.banners.IBannerViewModel;
 import com.inappstory.sdk.core.ui.screens.IReaderSlideViewModel;
+import com.inappstory.sdk.game.reader.SafeAreaInsets;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.ui.views.IASWebView;
 import com.inappstory.sdk.stories.ui.views.IASWebViewClient;
@@ -137,7 +138,7 @@ public class BannerWebView extends IASWebView implements ContentViewInteractor {
     @Override
     public void loadSlide(String content) {
         if (slideViewModel == null) return;
-        String newContent = setDir(content, getContext());
+        String newContent = setSafeArea(setDir(content, getContext()), new SafeAreaInsets());
         loadDataWithBaseURL(
                 "file:///data/",
                 newContent,
