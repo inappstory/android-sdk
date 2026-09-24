@@ -114,7 +114,6 @@ public class StoryTimelineManager {
     Runnable timerTask = new Runnable() {
         @Override
         public void run() {
-            Log.e("TimerTask", this.toString());
             float currentTime = (timerStart + System.currentTimeMillis() - timerStartTimestamp);
             if (!isActive || timerDuration > 0 && currentTime >= timerDuration) {
                 cancelTask();

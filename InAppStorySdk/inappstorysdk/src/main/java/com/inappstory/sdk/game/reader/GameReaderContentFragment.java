@@ -482,7 +482,6 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         payloadMap.put("response", filesWithTypes);
         String payload = JsonParser.mapToJsonString(payloadMap);
         String webString = "window." + cbName + "('" + StringsUtils.escapeSingleQuotes(payload) + "');";
-        Log.e("WebString", webString);
         try {
             if (webView != null)
                 webView.evaluateJavascript(webString, null);
@@ -1056,7 +1055,6 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         try {
             String payload = JsonParser.stringifyToJsString(response);
             String url = cb + "(" + payload + ");";
-            Log.e("sendInputResult", url);
             webView.evaluateJavascript(url, null);
         } catch (Exception e) {
 

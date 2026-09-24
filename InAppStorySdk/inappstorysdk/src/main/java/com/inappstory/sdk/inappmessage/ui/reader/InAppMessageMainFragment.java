@@ -247,7 +247,6 @@ public class InAppMessageMainFragment extends Fragment implements Observer<IAMRe
                 ((BottomSheetContentContainer) contentContainer).slideCallback(new BottomSheetSlideCallback() {
                     @Override
                     public void onSlide(float slideOffset) {
-                        Log.e("contentFragmentOffset", "" + slideOffset);
                         if (contentFragment != null) {
                             contentFragment.changeContentWebViewSwipe(slideOffset < 1 && slideOffset > 0);
                         }

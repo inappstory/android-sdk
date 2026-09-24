@@ -227,26 +227,5 @@ public class BannerPagerAdapter extends PagerAdapter implements Observer<BannerS
 
     @Override
     public void onUpdate(BannerState newValue) {
-        if (newValue == null) return;
-
-       /* Log.e("ObserverUpdate", Thread.currentThread().getName() + " PagerAdapter onUpdate " + newValue);
-        if (currentState == null ||
-                (newValue.loadState() != currentState.loadState())
-        ) {
-            if (Objects.requireNonNull(newValue.loadState()) == BannerLoadStates.FAILED) {
-                if (listLoadCallback != null)
-                    listLoadCallback.bannerLoadError(newValue.bannerId(), newValue.bannerIsActive());
-            }
-        }
-        if (currentState == null ||
-                (newValue.slideJSStatus() != currentState.slideJSStatus())
-        ) {
-            if (newValue.slideJSStatus() == 1) {
-                if (listLoadCallback != null)
-                    listLoadCallback.bannerLoaded(newValue.bannerId(), newValue.bannerIsActive());
-            }
-
-        }*/
-        //currentState = newValue;
     }
 }

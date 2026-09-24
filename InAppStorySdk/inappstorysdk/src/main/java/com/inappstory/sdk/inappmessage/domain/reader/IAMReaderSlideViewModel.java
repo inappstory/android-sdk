@@ -148,9 +148,6 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
             if (!slideStatObjects.isEmpty()) {
                 try {
                     slideAnalytics = JsonParser.getJson(slideStatObjects);
-                    //   Log.e("SlideTimes", slideAnalytics);
-                    //  slideAnalytics = new UrlEncoder().encode(slideAnalytics);
-                    //  Log.e("SlideTimes", slideAnalytics);
                 } catch (Exception ignored) {
 
                 }
@@ -189,7 +186,6 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
                 );
         if (readerContent == null) return;
         WebPageConverter converter = new WebPageConverter();
-        Log.e("LoadContentPage", "update IAM layout " + readerContent.id());
         String layout = converter.replaceLayout(readerContent);
         slideTimeState.updateSlidesCount(readerContent.actualSlidesCount());
         slideStateObservable.updateValue(
@@ -914,7 +910,6 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
         InAppMessageDownloadManager downloadManager = core.contentLoader().inAppMessageDownloadManager();
         if (state.showOnlyIfLoaded) {
             downloadManager.addSubscriber(this);
-            Log.e("LoadContentPage", "check assets url for IAM " + state.iamId);
             if (downloadManager.concreteSlidesLoaded(readerContent, new HashSet<>(
                     Collections.singletonList(0)
             )) && core.assetsHolder().assetsIsDownloaded(iamUsedAssets()) &&

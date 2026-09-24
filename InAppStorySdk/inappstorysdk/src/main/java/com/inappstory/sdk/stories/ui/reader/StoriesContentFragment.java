@@ -606,7 +606,6 @@ public class StoriesContentFragment extends Fragment
     }
 
     public void swipeCloseEvent(final int position, boolean check) {
-        Log.e("swipeCloseEvent", position + " " + check);
         if (check) {
             InAppStoryManager.useCore(new UseIASCoreCallback() {
                 @Override

@@ -292,7 +292,6 @@ public final class BottomSheetContentContainer extends IAMContentContainer<InApp
 
     @Override
     public void onUpdate(IAMReaderScrollState newValue) {
-        Log.e("IAMReaderScrollState", newValue.toString());
         if (bottomSheetBehavior != null)
             bottomSheetBehavior.setDraggable(
                     closeEnabled &&

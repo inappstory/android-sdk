@@ -82,16 +82,6 @@ public class CacheJournalItem implements Serializable {
     }
 
 
-  /*  public CacheJournalItem(String uniqueKey, String filePath, long time, long size, long downloadedSize) {
-        this.uniqueKey = uniqueKey;
-        this.filePath = filePath;
-        Log.e("CacheJournalItem", "Data:\nKey:" + uniqueKey + "\nName: " + filePath);
-        this.time = time;
-        this.size = size;
-        this.downloadedSize = downloadedSize;
-    }*/
-
-
     public String getUniqueKey() {
         return uniqueKey;
     }
