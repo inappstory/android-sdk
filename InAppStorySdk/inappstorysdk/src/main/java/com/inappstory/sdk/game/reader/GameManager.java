@@ -35,7 +35,6 @@ import com.inappstory.sdk.share.IShareCompleteListener;
 import com.inappstory.sdk.stories.api.models.CachedSessionData;
 import com.inappstory.sdk.stories.api.models.UrlObject;
 import com.inappstory.sdk.stories.api.models.WebResource;
-import com.inappstory.sdk.stories.api.models.dialogstructure.DialogStructure;
 import com.inappstory.sdk.stories.outercallbacks.common.gamereader.GameReaderCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.CallToActionCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickAction;
@@ -241,7 +240,7 @@ public class GameManager {
             if (options.openStory != null
                     && options.openStory.id != null
                     && !options.openStory.id.isEmpty()) {
-                ((IASSingleStoryImpl) core.singleStoryAPI()).show(
+                ((IASSingleStoryImpl) core.singleStoryAPI()).externalShow(
                         new CancellationTokenImpl(),
                         host.getContext(),
                         options.openStory.id,

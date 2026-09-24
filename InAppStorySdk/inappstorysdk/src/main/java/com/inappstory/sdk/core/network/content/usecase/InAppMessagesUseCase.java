@@ -1,7 +1,5 @@
 package com.inappstory.sdk.core.network.content.usecase;
 
-import android.text.TextUtils;
-
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.data.IInAppMessage;

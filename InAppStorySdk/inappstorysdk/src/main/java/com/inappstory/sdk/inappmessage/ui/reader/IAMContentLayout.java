@@ -28,7 +28,6 @@ import com.inappstory.sdk.core.inputdialog.IInputDialogActions;
 import com.inappstory.sdk.core.inputdialog.InputDialogSource;
 import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenData;
 import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenStrategy;
-import com.inappstory.sdk.inappmessage.InAppMessageSlideData;
 import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderSlideState;
 import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderState;
 import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderUIStates;
@@ -273,7 +272,7 @@ public class IAMContentLayout extends FrameLayout implements Observer<IAMReaderS
     private void openStoryHandle(IASCore core, final ContentIdWithIndex contentIdWithIndex) {
         try {
             AppearanceManager appearanceManager = AppearanceManager.checkOrCreateAppearanceManager(null);
-            ((IASSingleStoryImpl) core.singleStoryAPI()).show(
+            ((IASSingleStoryImpl) core.singleStoryAPI()).externalShow(
                     new CancellationTokenImpl(),
                     getContext(),
                     contentIdWithIndex.id() + "",

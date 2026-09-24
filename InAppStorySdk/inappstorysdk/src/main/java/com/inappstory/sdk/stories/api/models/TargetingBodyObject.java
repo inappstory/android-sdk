@@ -12,6 +12,9 @@ public class TargetingBodyObject {
     public List<String> tags;
     @SerializedName("options")
     public Map<String, String> options;
+    @SerializedName("targeting")
+    public boolean targeting = true;
+
 
     public TargetingBodyObject() {
     }

@@ -12,11 +12,9 @@ import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewParent;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
@@ -344,7 +342,7 @@ public class BannerView extends FrameLayout implements Observer<BannerState> {
         try {
             if (!(getContext() instanceof Activity)) return;
             AppearanceManager appearanceManager = AppearanceManager.checkOrCreateAppearanceManager(null);
-            ((IASSingleStoryImpl) core.singleStoryAPI()).show(
+            ((IASSingleStoryImpl) core.singleStoryAPI()).externalShow(
                     new CancellationTokenImpl(),
                     (Activity) getContext(),
                     contentIdWithIndex.id() + "",

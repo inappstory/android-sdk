@@ -25,6 +25,11 @@ public class DummyApiInterface implements ApiInterface {
     }
 
     @Override
+    public Request getBannerByIdWithTargeting(String id, String fields, String expand, TargetingBodyObject filterObject, String xUserId, String xSessionId, String lang) {
+        return new DummyRequest();
+    }
+
+    @Override
     public Request getInAppMessages(Integer srcList, String ids, TargetingBodyObject target, String fields, String expand, String xUserId, String xSessionId, String lang) {
         return new DummyRequest();
     }
@@ -44,6 +49,11 @@ public class DummyApiInterface implements ApiInterface {
             String xSessionId,
             String lang
     ) {
+        return new DummyRequest();
+    }
+
+    @Override
+    public Request getInAppMessageWithTargeting(String id, Integer srcList, String fields, String expand, TargetingBodyObject filterObject, String xUserId, String xSessionId, String lang) {
         return new DummyRequest();
     }
 
@@ -252,6 +262,11 @@ public class DummyApiInterface implements ApiInterface {
             String xSessionId,
             String lang
     ) {
+        return new DummyRequest();
+    }
+
+    @Override
+    public Request getStoryByIdWithTargeting(String id, String test, Integer once, Integer srcList, String expand, TargetingBodyObject filterObject, String xUserId, String xSessionId, String lang) {
         return new DummyRequest();
     }
 

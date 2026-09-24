@@ -144,9 +144,14 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
 
     private void getLocalReaderContent(
             GetLocalInAppMessage getLocalInAppMessage,
+            boolean useTargeting,
             List<String> tagsToCheck
     ) {
         if (inAppMessageOpenSettings.id() != null) {
+            if (useTargeting) {
+                getLocalInAppMessage.error(null);
+                return;
+            }
             IInAppMessage inAppMessage = (IInAppMessage) core.contentHolder().readerContent().getByIdAndType(
                     inAppMessageOpenSettings.id(),
                     ContentType.IN_APP_MESSAGE
@@ -291,7 +296,9 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
                             if (localSettings.id() != null) {
                                 new InAppMessageByIdUseCase(
                                         core,
-                                        localSettings.id()
+                                        localSettings.id(),
+                                        localSettings.hasTargeting(),
+                                        localTags
                                 ).get(
                                         new InAppMessageByIdCallback() {
                                             @Override
@@ -359,6 +366,7 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
                                                                 );
                                                             }
                                                         },
+                                                        localSettings.hasTargeting(),
                                                         null
                                                 );
                                             }
@@ -380,6 +388,7 @@ public class LaunchIAMScreenStrategy implements LaunchScreenStrategy {
                         }
                     }
                 },
+                localSettings.hasTargeting(),
                 localTags
         );
     }

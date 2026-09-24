@@ -11,6 +11,7 @@ import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.network.models.RequestLocalParameters;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.core.network.content.models.Story;
+import com.inappstory.sdk.stories.api.models.TargetingBodyObject;
 import com.inappstory.sdk.stories.api.models.callbacks.GetStoryByIdCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
@@ -18,6 +19,8 @@ import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.outercallbacks.common.single.SingleLoadCallback;
 
 import java.lang.reflect.Type;
+import java.util.List;
+import java.util.Map;
 
 public class StoryByStringIdUseCase {
     private final IASCore core;
@@ -29,6 +32,7 @@ public class StoryByStringIdUseCase {
 
     public void get(
             final String id,
+            final TargetingBodyObject targetingBodyObject,
             final GetStoryByIdCallback storyByIdCallback,
             final boolean showOnce,
             final SourceType readerSource
@@ -40,76 +44,95 @@ public class StoryByStringIdUseCase {
                             final RequestLocalParameters requestLocalParameters
                     ) {
                         final String storyUID = core.statistic().profiling().addTask("api_story");
-                        core.network().enqueue(
-                                core.network().getApi().getStoryById(
-                                        id,
-                                        core.projectSettingsAPI().testKey(),
-                                        showOnce ? 1 : 0,
-                                        1,
-                                        RequestFields.STORY_EXPAND,
-                                        requestLocalParameters.userId(),
-                                        requestLocalParameters.sessionId(),
-                                        requestLocalParameters.locale()
-                                ),
-                                new NetworkCallback<Story>() {
-                                    @Override
-                                    public void onSuccess(final Story response) {
-                                        core.statistic().profiling().setReady(
-                                                storyUID
-                                        );
-                                        core.callbacksAPI().useCallback(
-                                                IASCallbackType.SINGLE,
-                                                new UseIASCallback<SingleLoadCallback>() {
-                                                    @Override
-                                                    public void use(@NonNull SingleLoadCallback callback) {
-                                                        callback.singleLoadSuccess(
-                                                                StoryData.getStoryData(
-                                                                        response,
-                                                                        null,
-                                                                        readerSource,
-                                                                        ContentType.STORY
-                                                                )
-                                                        );
-                                                    }
-                                                }
-                                        );
-                                        updateListItem(response);
-                                        if (storyByIdCallback != null)
-                                            storyByIdCallback.getStory(
-                                                    response,
-                                                    requestLocalParameters.sessionId()
-                                            );
-                                    }
+                        NetworkCallback<Story> callback = new NetworkCallback<Story>() {
+                            @Override
+                            public void onSuccess(final Story response) {
+                                core.statistic().profiling().setReady(
+                                        storyUID
+                                );
+                                core.callbacksAPI().useCallback(
+                                        IASCallbackType.SINGLE,
+                                        new UseIASCallback<SingleLoadCallback>() {
+                                            @Override
+                                            public void use(@NonNull SingleLoadCallback callback) {
+                                                callback.singleLoadSuccess(
+                                                        StoryData.getStoryData(
+                                                                response,
+                                                                null,
+                                                                readerSource,
+                                                                ContentType.STORY
+                                                        )
+                                                );
+                                            }
+                                        }
+                                );
+                                updateListItem(response);
+                                if (storyByIdCallback != null)
+                                    storyByIdCallback.getStory(
+                                            response,
+                                            requestLocalParameters.sessionId()
+                                    );
+                            }
 
-                                    @Override
-                                    public Type getType() {
-                                        return Story.class;
-                                    }
+                            @Override
+                            public Type getType() {
+                                return Story.class;
+                            }
 
-                                    @Override
-                                    public void emptyContent() {
-                                        if (storyByIdCallback != null)
-                                            storyByIdCallback.loadError(-2);
-                                    }
+                            @Override
+                            public void emptyContent() {
+                                if (storyByIdCallback != null)
+                                    storyByIdCallback.loadError(-2);
+                            }
 
-                                    @Override
-                                    public void errorDefault(String message) {
-                                        core.statistic().profiling().setReady(storyUID);
-                                        core.callbacksAPI().useCallback(
-                                                IASCallbackType.SINGLE,
-                                                new UseIASCallback<SingleLoadCallback>() {
-                                                    @Override
-                                                    public void use(@NonNull SingleLoadCallback callback) {
-                                                        callback.singleLoadError(id, "Can't load story");
-                                                    }
-                                                }
-                                        );
-                                        if (storyByIdCallback != null)
-                                            storyByIdCallback.loadError(-1);
-                                    }
-                                },
-                                requestLocalParameters
-                        );
+                            @Override
+                            public void errorDefault(String message) {
+                                core.statistic().profiling().setReady(storyUID);
+                                core.callbacksAPI().useCallback(
+                                        IASCallbackType.SINGLE,
+                                        new UseIASCallback<SingleLoadCallback>() {
+                                            @Override
+                                            public void use(@NonNull SingleLoadCallback callback) {
+                                                callback.singleLoadError(id, "Can't load story");
+                                            }
+                                        }
+                                );
+                                if (storyByIdCallback != null)
+                                    storyByIdCallback.loadError(-1);
+                            }
+                        };
+                        if (targetingBodyObject == null) {
+                            core.network().enqueue(
+                                    core.network().getApi().getStoryById(
+                                            id,
+                                            core.projectSettingsAPI().testKey(),
+                                            showOnce ? 1 : 0,
+                                            1,
+                                            RequestFields.STORY_EXPAND,
+                                            requestLocalParameters.userId(),
+                                            requestLocalParameters.sessionId(),
+                                            requestLocalParameters.locale()
+                                    ),
+                                    callback,
+                                    requestLocalParameters
+                            );
+                        } else {
+                            core.network().enqueue(
+                                    core.network().getApi().getStoryByIdWithTargeting(
+                                            id,
+                                            core.projectSettingsAPI().testKey(),
+                                            showOnce ? 1 : 0,
+                                            1,
+                                            RequestFields.STORY_EXPAND,
+                                            targetingBodyObject,
+                                            requestLocalParameters.userId(),
+                                            requestLocalParameters.sessionId(),
+                                            requestLocalParameters.locale()
+                                    ),
+                                    callback,
+                                    requestLocalParameters
+                            );
+                        }
                     }
 
                     @Override

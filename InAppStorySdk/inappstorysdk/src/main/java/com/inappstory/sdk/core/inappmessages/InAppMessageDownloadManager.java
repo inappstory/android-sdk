@@ -1,7 +1,5 @@
 package com.inappstory.sdk.core.inappmessages;
 
-import android.util.Log;
-
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.core.IASCore;
@@ -11,14 +9,12 @@ import com.inappstory.sdk.core.data.IReaderContent;
 import com.inappstory.sdk.core.network.content.usecase.InAppMessageByIdUseCase;
 import com.inappstory.sdk.core.ui.screens.IReaderSlideViewModel;
 import com.inappstory.sdk.inappmessage.InAppMessageLoadCallback;
-import com.inappstory.sdk.stories.api.models.ContentIdWithIndex;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.cache.ContentIdAndType;
 import com.inappstory.sdk.stories.cache.SlideTaskKey;
 import com.inappstory.sdk.stories.cache.SlidesDownloader;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -47,7 +43,7 @@ public class InAppMessageDownloadManager {
         if (readerContent != null) {
             addSlides(readerContent, callback);
         } else {
-            new InAppMessageByIdUseCase(core, inAppMessageId).get(
+            new InAppMessageByIdUseCase(core, inAppMessageId, false, null).get(
                     new InAppMessageByIdCallback() {
                         @Override
                         public void success(IReaderContent readerContent) {

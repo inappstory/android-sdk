@@ -28,9 +28,19 @@ public class BannerPlaceLoadSettings {
         return tags;
     }
 
+    public boolean hasTargeting() {
+        return useTargeting;
+    }
+
+    private boolean useTargeting;
 
     public BannerPlaceLoadSettings placeId(String placeId) {
         this.placeId = placeId;
+        return this;
+    }
+
+    public BannerPlaceLoadSettings useTargeting() {
+        this.useTargeting = true;
         return this;
     }
 

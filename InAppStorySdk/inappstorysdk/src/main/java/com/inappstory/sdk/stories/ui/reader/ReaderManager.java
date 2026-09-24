@@ -27,7 +27,6 @@ import com.inappstory.sdk.core.ui.screens.ShareProcessHandler;
 import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryScreen;
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenAppearance;
 import com.inappstory.sdk.core.utils.CallbackTypesConverter;
-import com.inappstory.sdk.stories.cache.SessionAssetsIsReadyCallback;
 import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.stories.api.models.ContentIdWithIndex;
 import com.inappstory.sdk.stories.api.models.ContentType;
@@ -45,7 +44,6 @@ import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 public class ReaderManager {
 
@@ -335,7 +333,7 @@ public class ReaderManager {
         } else {
             appearanceManager = new AppearanceManager();
         }
-        ((IASSingleStoryImpl) core.singleStoryAPI()).show(
+        ((IASSingleStoryImpl) core.singleStoryAPI()).externalShow(
                 new CancellationTokenImpl(),
                 host.getContext(),
                 storyId + "",

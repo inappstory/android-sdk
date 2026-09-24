@@ -12,6 +12,8 @@ public class InAppMessageOpenSettings {
 
     private List<String> tags;
 
+    private boolean useTargeting;
+
     @Override
     public String toString() {
         return "IAM_DATA {" + "id=" + id + ", event='" + event + '\'' + '}';
@@ -44,12 +46,21 @@ public class InAppMessageOpenSettings {
         return event;
     }
 
+    public boolean hasTargeting() {
+        return useTargeting;
+    }
+
     public List<String> tags() {
         return tags;
     }
 
     public boolean showOnlyIfLoaded() {
         return showOnlyIfLoaded;
+    }
+
+    public InAppMessageOpenSettings useTargeting() {
+        this.useTargeting = true;
+        return this;
     }
 
     public InAppMessageOpenSettings id(Integer id) {
@@ -68,8 +79,11 @@ public class InAppMessageOpenSettings {
     }
 
     public InAppMessageOpenSettings tags(List<String> tags) {
-        if (tags != null)
+        if (tags != null) {
             this.tags = new ArrayList<>(tags);
+            if (!tags.isEmpty())
+                useTargeting = true;
+        }
         return this;
     }
 }

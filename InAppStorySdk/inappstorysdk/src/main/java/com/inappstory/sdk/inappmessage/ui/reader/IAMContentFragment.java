@@ -197,7 +197,7 @@ public class IAMContentFragment extends Fragment implements Observer<IAMReaderSl
     private void openStoryHandle(IASCore core, final ContentIdWithIndex contentIdWithIndex) {
         try {
             AppearanceManager appearanceManager = AppearanceManager.checkOrCreateAppearanceManager(null);
-            ((IASSingleStoryImpl) core.singleStoryAPI()).show(
+            ((IASSingleStoryImpl) core.singleStoryAPI()).externalShow(
                     new CancellationTokenImpl(),
                     requireActivity(),
                     contentIdWithIndex.id() + "",
