@@ -7,11 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public class BannerCarouselState implements IBannerCarouselState {
-
-    public Integer currentIndex() {
-        return currentIndex;
-    }
+public class BannerGridState implements IBannerWidgetState {
 
     public List<String> tags() {
         return tags;
@@ -33,53 +29,47 @@ public class BannerCarouselState implements IBannerCarouselState {
         return placeId;
     }
 
-    public BannerCarouselState() {
+    public BannerGridState() {
     }
 
-    private BannerCarouselState(List<IBanner> items) {
+    private BannerGridState(List<IBanner> items) {
         this.items = new ArrayList<>(items);
     }
 
-    public BannerCarouselState currentIndex(Integer currentIndex) {
-        this.currentIndex = currentIndex;
-        return this;
-    }
 
-    public BannerCarouselState iterationId(String iterationId) {
+    public BannerGridState iterationId(String iterationId) {
         this.iterationId = iterationId;
         return this;
     }
 
-    public BannerCarouselState loadState(BannersWidgetLoadStates loadState) {
+    public BannerGridState loadState(BannersWidgetLoadStates loadState) {
         this.loadState = loadState;
         return this;
     }
 
-    public BannerCarouselState items(List<IBanner> items) {
+    public BannerGridState items(List<IBanner> items) {
         this.items = items;
         return this;
     }
 
-    public BannerCarouselState tags(List<String> tags) {
+    public BannerGridState tags(List<String> tags) {
         this.tags = tags;
         return this;
     }
 
-    public BannerCarouselState placeId(String placeId) {
+    public BannerGridState placeId(String placeId) {
         this.placeId = placeId;
         return this;
     }
 
-    Integer currentIndex;
     String placeId = "";
     String iterationId = UUID.randomUUID().toString();
     BannersWidgetLoadStates loadState = BannersWidgetLoadStates.NONE;
     List<IBanner> items = new ArrayList<>();
     List<String> tags = new ArrayList<>();
 
-    public BannerCarouselState copy() {
-        return new BannerCarouselState(this.items)
-                .currentIndex(this.currentIndex)
+    public BannerGridState copy() {
+        return new BannerGridState(this.items)
                 .iterationId(this.iterationId)
                 .tags(this.tags)
                 .placeId(this.placeId)

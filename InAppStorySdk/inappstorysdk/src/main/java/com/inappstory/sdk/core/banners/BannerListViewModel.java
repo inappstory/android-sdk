@@ -174,12 +174,12 @@ public class BannerListViewModel implements IBannersWidgetViewModel<BannerListSt
 
     @Override
     public void enableVerticalSwipeGesture() {
-        singleTimeEvents.updateValue(new STETypeAndData(STEDataType.ENABLE_VERTICAL_SWIPE, null));
+      //  singleTimeEvents.updateValue(new STETypeAndData(STEDataType.ENABLE_VERTICAL_SWIPE, null));
     }
 
     @Override
     public void disableVerticalSwipeGesture() {
-        singleTimeEvents.updateValue(new STETypeAndData(STEDataType.DISABLE_VERTICAL_SWIPE, null));
+     //   singleTimeEvents.updateValue(new STETypeAndData(STEDataType.DISABLE_VERTICAL_SWIPE, null));
     }
 
     @Override

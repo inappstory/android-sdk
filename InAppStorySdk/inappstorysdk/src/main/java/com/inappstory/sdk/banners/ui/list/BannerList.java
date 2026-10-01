@@ -1,6 +1,7 @@
 package com.inappstory.sdk.banners.ui.list;
 
 
+import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 
 import android.content.Context;
@@ -111,6 +112,12 @@ public class BannerList extends RecyclerView implements Observer<BannerListState
 
     @Override
     public void setAdapter(@Nullable Adapter adapter) {
+        final int orientation = customBannerListAppearance.orientation();
+        if (orientation == HORIZONTAL) {
+            setNestedScrollingEnabled(getLayoutParams().width != WRAP_CONTENT);
+        } else {
+            setNestedScrollingEnabled(getLayoutParams().height != WRAP_CONTENT);
+        }
         setLayoutManager(customLayoutManager != null ? customLayoutManager : defaultLayoutManager);
         updateAppearance();
         super.setAdapter(adapter);

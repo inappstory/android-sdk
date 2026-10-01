@@ -1,8 +1,8 @@
 package com.inappstory.sdk.core.network.content.models;
 
 
-import com.inappstory.sdk.core.banners.BannerCarouselAppearance;
-import com.inappstory.sdk.core.banners.IBannerCarouselAppearance;
+import com.inappstory.sdk.core.banners.BannerAppearance;
+import com.inappstory.sdk.core.banners.IBannerAppearance;
 import com.inappstory.sdk.core.data.IBanner;
 import com.inappstory.sdk.core.data.IReaderContentSlide;
 import com.inappstory.sdk.core.data.IResource;
@@ -228,7 +228,7 @@ public class Banner implements IBanner {
     }
 
     @Override
-    public IBannerCarouselAppearance bannerAppearance() {
-        return new BannerCarouselAppearance(appearance);
+    public IBannerAppearance bannerAppearance() {
+        return new BannerAppearance(appearance);
     }
 }

@@ -671,7 +671,6 @@ public class BannerView extends FrameLayout implements Observer<BannerState> {
                                         hideLoaderContainer();
                                         if (bannerViewModel != null && bannerViewModel.bannerIsActive()) {
                                             startBanner();
-                                            //   bannerWebView.resumeSlide();
                                         }
                                     }
                                 }

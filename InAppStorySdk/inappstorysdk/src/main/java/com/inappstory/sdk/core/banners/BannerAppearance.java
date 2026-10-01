@@ -10,13 +10,13 @@ import com.inappstory.sdk.utils.NumberUtils;
 
 import java.util.Map;
 
-public class BannerCarouselAppearance implements IBannerCarouselAppearance {
+public class BannerAppearance implements IBannerAppearance {
     private Float singleBannerAspectRatio = 2f;
     private Float cornerRadius;
     private String backgroundColor;
     private IReaderBackground background;
 
-    public BannerCarouselAppearance(Map<String, Object> appearanceMap) {
+    public BannerAppearance(Map<String, Object> appearanceMap) {
         if (appearanceMap == null) return;
         NumberUtils numberUtils = new NumberUtils();
         singleBannerAspectRatio = numberUtils.convertNumberToFloat(appearanceMap.get("content_ratio"));
