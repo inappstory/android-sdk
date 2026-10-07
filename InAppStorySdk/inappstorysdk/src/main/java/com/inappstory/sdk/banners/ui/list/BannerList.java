@@ -270,7 +270,7 @@ public class BannerList extends RecyclerView implements Observer<BannerListState
         init();
     }
 
-    final IBannerPlaceLoadCallback internalBannerPlaceLoadCallback = new InnerBannerPlaceLoadCallback() {
+    private final IBannerPlaceLoadCallback internalBannerPlaceLoadCallback = new InnerBannerPlaceLoadCallback() {
         @Override
         public void bannerPlaceLoaded(List<IBanner> banners) {
             List<BannerData> bannerData = new ArrayList<>();

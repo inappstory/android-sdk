@@ -1,5 +1,7 @@
 package com.inappstory.sdk.banners.ui.grid;
 
+import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
+
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Rect;
@@ -18,6 +20,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.banners.BannerData;
+import com.inappstory.sdk.banners.BannerPlaceLoadCallback;
 import com.inappstory.sdk.banners.ICustomBannerPlaceholder;
 import com.inappstory.sdk.banners.ui.IBannersWidget;
 import com.inappstory.sdk.banners.ui.list.BannerList;
@@ -30,9 +34,11 @@ import com.inappstory.sdk.core.banners.BannerListViewModel;
 import com.inappstory.sdk.core.banners.BannerPlaceViewModelsHolder;
 import com.inappstory.sdk.core.banners.BannerWidgetViewModelType;
 import com.inappstory.sdk.core.banners.BannersWidgetLoadStates;
+import com.inappstory.sdk.core.banners.IBannerPlaceLoadCallback;
 import com.inappstory.sdk.core.banners.IBannersWidgetViewModel;
 import com.inappstory.sdk.core.banners.ICustomBannerGridAppearance;
 import com.inappstory.sdk.core.banners.ICustomBannerListAppearance;
+import com.inappstory.sdk.core.banners.InnerBannerPlaceLoadCallback;
 import com.inappstory.sdk.core.data.IBanner;
 import com.inappstory.sdk.stories.utils.LoopedExecutor;
 import com.inappstory.sdk.stories.utils.Observer;
@@ -54,6 +60,65 @@ public class BannerGrid extends LinearLayout implements Observer<BannerListState
     private BannerListViewModel bannerGridViewModel;
     private BannersWidgetLoadStates currentLoadState = BannersWidgetLoadStates.EMPTY;
 
+    private BannerPlaceLoadCallback bannerPlaceLoadCallback = null;
+
+    public void loadCallback(BannerPlaceLoadCallback bannerPlaceLoadCallback) {
+        if (bannerPlaceLoadCallback.bannerPlace() == null) {
+            if (placeId != null) {
+                bannerPlaceLoadCallback.bannerPlace(placeId);
+            } else {
+                //TODO Log error
+            }
+        }
+        this.bannerPlaceLoadCallback = bannerPlaceLoadCallback;
+    }
+
+    private final IBannerPlaceLoadCallback internalBannerPlaceLoadCallback = new InnerBannerPlaceLoadCallback() {
+        @Override
+        public void bannerPlaceLoaded(List<IBanner> banners) {
+            List<BannerData> bannerData = new ArrayList<>();
+            if (bannerPlaceLoadCallback != null) {
+                if (banners == null || banners.isEmpty()) {
+                    bannerPlaceLoadCallback.bannerPlaceLoaded(0, new ArrayList<BannerData>(), WRAP_CONTENT);
+                } else {
+                    for (IBanner banner : banners) {
+                        bannerData.add(
+                                new BannerData(
+                                        banner, placeId
+                                )
+                        );
+                    }
+                    bannerPlaceLoadCallback.bannerPlaceLoaded(
+                            bannerData.size(),
+                            bannerData,
+                            -1
+                    );
+                }
+            }
+        }
+
+        @Override
+        public void loadError() {
+            if (bannerPlaceLoadCallback != null) bannerPlaceLoadCallback.loadError();
+
+        }
+
+        @Override
+        public void bannerLoaded(int bannerId, boolean isCurrent) {
+            if (bannerPlaceLoadCallback != null) bannerLoaded(bannerId, isCurrent);
+
+        }
+
+        @Override
+        public void bannerLoadError(int bannerId, boolean isCurrent) {
+            if (bannerPlaceLoadCallback != null) bannerLoadError(bannerId, isCurrent);
+        }
+
+        @Override
+        public String bannerPlace() {
+            return placeId;
+        }
+    };
 
     private void initVM() {
         if (initialized) return;
@@ -268,6 +333,7 @@ public class BannerGrid extends LinearLayout implements Observer<BannerListState
         switch (newValue.loadState()) {
             case EMPTY:
             case LOADED:
+                internalBannerPlaceLoadCallback.bannerPlaceLoaded(newValue.getItems());
                 new Handler(Looper.getMainLooper()).post(new Runnable() {
                     @Override
                     public void run() {
@@ -276,6 +342,7 @@ public class BannerGrid extends LinearLayout implements Observer<BannerListState
                 });
                 break;
             case FAILED:
+                internalBannerPlaceLoadCallback.loadError();
                 break;
             case NONE:
             case LOADING:
