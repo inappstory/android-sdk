@@ -154,6 +154,21 @@ public class BannerWebView extends IASWebView implements ContentViewInteractor {
     }
 
     @Override
+    public boolean isNestedScrollingEnabled() {
+        return false;
+    }
+
+    @Override
+    public boolean startNestedScroll(int axes) {
+        return false;
+    }
+
+    @Override
+    public void stopNestedScroll() {
+        return;
+    }
+
+    @Override
     public void startSlide(IASCore core) {
         loadUrl("javascript:(function(){" +
                 "if ('story_slide_start' in window) " +

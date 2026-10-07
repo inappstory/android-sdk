@@ -21,6 +21,7 @@ import androidx.core.view.NestedScrollingChildHelper;
 import androidx.core.view.ViewCompat;
 
 import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.banners.ui.banner.BannerWebView;
 import com.inappstory.sdk.core.ui.widgets.elasticview.DraggableElasticLayout;
 import com.inappstory.sdk.game.reader.SafeAreaInsets;
 import com.inappstory.sdk.network.JsonParser;

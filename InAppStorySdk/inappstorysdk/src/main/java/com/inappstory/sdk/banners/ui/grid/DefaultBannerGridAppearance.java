@@ -26,7 +26,7 @@ public class DefaultBannerGridAppearance implements ICustomBannerGridAppearance 
     }
 
     @Override
-    public final int columnCount() {
+    public int columnCount() {
         return 2;
     }
 

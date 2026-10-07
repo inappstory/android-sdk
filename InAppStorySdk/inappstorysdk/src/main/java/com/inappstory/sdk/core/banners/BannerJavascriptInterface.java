@@ -105,11 +105,13 @@ public class BannerJavascriptInterface {
     @JavascriptInterface
     public void storyFreezeUI() {
         slideViewModel.freezeUI();
+        Log.e("BannerUI", "freezeUI");
     }
 
     @JavascriptInterface
     public void storyUnfreezeUI() {
         slideViewModel.unfreezeUI();
+        Log.e("BannerUI", "unfreezeUI");
     }
 
     @JavascriptInterface
@@ -125,11 +127,13 @@ public class BannerJavascriptInterface {
     @JavascriptInterface
     public void disableVerticalSwipeGesture() {
         slideViewModel.disableVerticalSwipeGesture();
+        Log.e("BannerUI", "disableVerticalSwipeGesture");
     }
 
     @JavascriptInterface
     public void enableVerticalSwipeGesture() {
         slideViewModel.enableVerticalSwipeGesture();
+        Log.e("BannerUI", "enableVerticalSwipeGesture");
     }
 
     @JavascriptInterface

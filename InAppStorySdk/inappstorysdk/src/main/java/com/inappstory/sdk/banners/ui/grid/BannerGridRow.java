@@ -6,14 +6,18 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.banners.ui.banner.BannerInit;
 import com.inappstory.sdk.banners.ui.banner.BannerView;
 import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.UseIASCoreCallback;
+import com.inappstory.sdk.core.banners.BannerDownloadManager;
 import com.inappstory.sdk.core.banners.BannerViewModel;
 import com.inappstory.sdk.core.banners.IBannerViewModel;
 import com.inappstory.sdk.core.banners.IBannersWidgetViewModel;
@@ -42,6 +46,7 @@ public class BannerGridRow extends LinearLayout {
 
 
     private void init(Context context) {
+
         setOrientation(LinearLayout.HORIZONTAL);
     }
 
@@ -58,19 +63,24 @@ public class BannerGridRow extends LinearLayout {
         if (currentVisibility == newVisibility) return;
         currentVisibility = newVisibility;
         int count = getChildCount();
-        for (int i = 0; i < getChildCount(); i++) {
-            BannerView bannerView = ((BannerView) getChildAt(i));
-            if (newVisibility)
-                if (bannersStarted)
-                    bannerView.resumeBanner();
-                else {
-                    bannerView.startBanner();
-                }
-            else
-                bannerView.pauseBanner();
+        try {
+            for (int i = 0; i < getChildCount(); i++) {
+                BannerView bannerView = ((BannerView) getChildAt(i));
+                if (newVisibility)
+                    if (bannersStarted)
+                        bannerView.resumeBanner();
+                    else {
+                        bannerView.startBanner();
+                    }
+                else
+                    bannerView.pauseBanner();
+            }
+            if (count > 0 && newVisibility)
+                bannersStarted = true;
+        } catch (Exception e) {
+
         }
-        if (count > 0 && newVisibility)
-            bannersStarted = true;
+
     }
 
     private boolean currentVisibility = false;
@@ -79,6 +89,8 @@ public class BannerGridRow extends LinearLayout {
     public void setViews(
             IASCore core,
             int startIndex,
+            int rootWidth,
+            String iterationId,
             String bannerGridId,
             ICustomBannerGridAppearance appearance,
             @NonNull List<IBanner> banners
@@ -90,15 +102,7 @@ public class BannerGridRow extends LinearLayout {
         IBannersWidgetViewModel bannerGridViewModel = core
                 .widgetViewModels()
                 .bannerPlaceViewModels()
-                .get(
-                        bannerGridId
-                );
-       /* IBanner banner = banners.get(position % banners.size());
-        final int bannerId = banner.id();
-         .getBannerViewModel(
-                bannerId,
-                position
-        );*/
+                .get(bannerGridId);
         if (columns == 0) return;
         float minRatio = banners.get(0).bannerAppearance().singleBannerAspectRatio();
         for (int i = 1; i < columns; i++) {
@@ -107,7 +111,7 @@ public class BannerGridRow extends LinearLayout {
             );
         }
         int maxBannerWidth =
-                (getMeasuredWidth() - Sizes.dpToPxExt(appearance.horizontalGap(), getContext())) / maxColumns;
+                (rootWidth - Sizes.dpToPxExt(appearance.horizontalGap(), getContext())) / maxColumns;
         for (int i = 0; i < columns; i++) {
             int position = startIndex + i;
             IBanner banner = banners.get(position);
@@ -115,6 +119,7 @@ public class BannerGridRow extends LinearLayout {
                     banner.id(),
                     position
             );
+            bannerViewModel.iterationId(iterationId);
             String tag = "banner_" + position;
             BannerView bannerView = new BannerView(getContext(), new BannerInit() {
                 @Override
@@ -124,19 +129,35 @@ public class BannerGridRow extends LinearLayout {
                     }
                 }
             });
+            View view = new View(getContext());
+            view.setBackground(banner.bannerAppearance().backgroundDrawable());
             bannerView.setBannerBackground(banner.bannerAppearance().backgroundDrawable());
-            bannerView.setSize(-1, -1, false);
-            bannerView.setLayoutParams(
-                    new LinearLayout.LayoutParams(
-                            ViewGroup.LayoutParams.MATCH_PARENT,
-                            (int) (maxBannerWidth / banner.bannerAppearance().singleBannerAspectRatio()),
-                            1f
-                    )
+            bannerView.setSize(-1, -1, true);
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    (int) (maxBannerWidth / banner.bannerAppearance().singleBannerAspectRatio()),
+                    1f
             );
+
             if (i < columns - 1) {
-                // bannerView.setMar
+                lp.setMarginEnd(Sizes.dpToPxExt(appearance.horizontalGap(), getContext()));
             }
+            view.setLayoutParams(lp);
+            bannerView.setLayoutParams(lp);
             bannerView.setTag(tag);
+            bannerView.viewModel(
+                    bannerViewModel
+            );
+            InAppStoryManager.useCoreInSeparateThread(new UseIASCoreCallback() {
+                @Override
+                public void use(@NonNull IASCore core) {
+                    BannerDownloadManager bannerDownloadManager = core.contentLoader().bannerDownloadManager();
+                    bannerDownloadManager.setMaxPriority(banner.id(), false);
+                    bannerViewModel.loadContent(false, null);
+                }
+            });
+           // addView(view);
+            addView(bannerView);
         }
 
     }
