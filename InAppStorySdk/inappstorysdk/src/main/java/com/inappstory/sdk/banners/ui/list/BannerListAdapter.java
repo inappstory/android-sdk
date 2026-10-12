@@ -150,7 +150,6 @@ public class BannerListAdapter extends RecyclerView.Adapter<BannerViewHolder> {
 
     @Override
     public int getItemCount() {
-        if (banners != null) return banners.size();
-        return 0;
+        return banners.size();
     }
 }

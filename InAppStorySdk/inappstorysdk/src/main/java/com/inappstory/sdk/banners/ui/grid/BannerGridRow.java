@@ -58,25 +58,65 @@ public class BannerGridRow extends LinearLayout {
         return rowRect.top <= displayRect.bottom && rowRect.bottom >= displayRect.top;
     }
 
+    private boolean externalPause = false;
+
+    public void pauseBanners() {
+        if (externalPause) return;
+        try {
+            externalPause = true;
+            if (currentVisibility && bannersStarted) {
+                for (int i = 0; i < getChildCount(); i++) {
+                    BannerView bannerView = ((BannerView) getChildAt(i));
+                    bannerView.pauseBanner();
+                }
+            }
+        } catch (Exception e) {
+
+        }
+    }
+
+    public void resumeBanners() {
+        if (!externalPause) return;
+        try {
+            if (currentVisibility && bannersStarted) {
+                for (int i = 0; i < getChildCount(); i++) {
+                    BannerView bannerView = ((BannerView) getChildAt(i));
+                    bannerView.resumeBanner();
+                }
+            }
+            externalPause = false;
+        } catch (Exception e) {
+
+        }
+    }
+
     public void updateVisibility() {
         boolean newVisibility = checkVisibility();
         if (currentVisibility == newVisibility) return;
         currentVisibility = newVisibility;
         int count = getChildCount();
         try {
-            for (int i = 0; i < getChildCount(); i++) {
-                BannerView bannerView = ((BannerView) getChildAt(i));
-                if (newVisibility)
-                    if (bannersStarted)
-                        bannerView.resumeBanner();
-                    else {
-                        bannerView.startBanner();
+            if (!externalPause) {
+                for (int i = 0; i < count; i++) {
+                    BannerView bannerView = ((BannerView) getChildAt(i));
+                    IBannerViewModel bannerViewModel = bannerView.viewModel();
+                    if (newVisibility) {
+                        if (bannerViewModel != null)
+                            bannerViewModel.bannerIsActive(true);
+                        if (bannersStarted)
+                            bannerView.resumeBanner();
+                        else {
+                            bannerView.startBanner();
+                        }
+                    } else {
+                        if (bannerViewModel != null)
+                            bannerViewModel.bannerIsActive(false);
+                        bannerView.pauseBanner();
                     }
-                else
-                    bannerView.pauseBanner();
+                }
+                if (count > 0 && newVisibility)
+                    bannersStarted = true;
             }
-            if (count > 0 && newVisibility)
-                bannersStarted = true;
         } catch (Exception e) {
 
         }
@@ -156,7 +196,7 @@ public class BannerGridRow extends LinearLayout {
                     bannerViewModel.loadContent(false, null);
                 }
             });
-           // addView(view);
+            // addView(view);
             addView(bannerView);
         }
 

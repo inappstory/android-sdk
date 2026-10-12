@@ -278,6 +278,10 @@ public class BannerGrid extends LinearLayout implements Observer<BannerListState
 
 
     public void pauseBanners() {
+        int childCount = getChildCount();
+        for (int i = 0; i < childCount; i++) {
+            ((BannerGridRow)getChildAt(i)).pauseBanners();
+        }
         if (executorService != null) {
             executorService.cancelTask();
             executorService.shutdown();
@@ -316,9 +320,14 @@ public class BannerGrid extends LinearLayout implements Observer<BannerListState
     };
 
     public void resumeBanners() {
+
         if (executorService == null) {
             executorService = new LoopedExecutor(1L, 300L, this.toString());
             executorService.task(checkVisibilityRunnable);
+        }
+        int childCount = getChildCount();
+        for (int i = 0; i < childCount; i++) {
+            ((BannerGridRow)getChildAt(i)).resumeBanners();
         }
     }
 

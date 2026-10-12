@@ -99,6 +99,9 @@ public class BannerView extends FrameLayout implements Observer<BannerState> {
         bannerWebView.checkIfClientIsSet();
     }
 
+    public IBannerViewModel viewModel() {
+        return bannerViewModel;
+    }
 
     public void setSize(float itemWidth, float contentRatio, boolean fullWidth) {
         if (bannerContainer != null) {
