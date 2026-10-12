@@ -363,6 +363,7 @@ public class BannerList extends RecyclerView implements Observer<BannerListState
                     ((BannerView) v).pauseBanner();
                 }
             }
+            //
         }
     }
 
