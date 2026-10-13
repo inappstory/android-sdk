@@ -395,32 +395,7 @@ public class ToastContentContainer extends IAMContentContainer<InAppMessageToast
 
     @Override
     protected Pair<Integer, Integer> countSafeArea(int containerHeight) {
-        Rect mainLayoutRect = new Rect();
-        mainLayout.getGlobalVisibleRect(mainLayoutRect);
-        int topOffset = Math.max(mainLayoutRect.top, 0);
-        int bottomOffset = Math.max(mainLayoutRect.bottom, 0);
-        Context context = getContext();
-        Activity activity = null;
-        if (context instanceof Activity) {
-            activity = (Activity) context;
-        }
-        if (activity == null) return new Pair<>(0, 0);
-        int phoneHeight = Sizes.getFullPhoneHeight(activity);
-        int topInsetOffset = 0;
-        int bottomInsetOffset = 0;
-        if (Build.VERSION.SDK_INT >= 23) {
-            if (activity.getWindow() != null) {
-                WindowInsets windowInsets = activity.getWindow().getDecorView().getRootWindowInsets();
-                if (windowInsets != null) {
-                    topInsetOffset = Math.max(0, windowInsets.getStableInsetTop());
-                    bottomInsetOffset = Math.max(0, windowInsets.getStableInsetBottom());
-                }
-            }
-        }
-        return new Pair<>(
-                Math.max(0, topInsetOffset - topOffset),
-                Math.max(0, bottomInsetOffset - (phoneHeight - bottomOffset))
-        );
+        return new Pair<>(0, 0);
     }
 
     @Override

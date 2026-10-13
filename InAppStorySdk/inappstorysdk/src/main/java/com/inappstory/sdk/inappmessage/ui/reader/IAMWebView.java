@@ -88,6 +88,7 @@ public class IAMWebView extends IASWebView implements ContentViewInteractor, Obs
     }
 
     public void showSlides(List<String> slides, String cardAppearance, int index, String config) {
+        Log.e("IAMSA", "showSlides " + config);
         List<String> escapedSlides = new ArrayList<>();
         for (String slide : slides) {
             escapedSlides.add(oldEscape(slide));
@@ -157,6 +158,7 @@ public class IAMWebView extends IASWebView implements ContentViewInteractor, Obs
         if (slideViewModel == null) return;
         contentInScrollProcess(false);
         String newContent = setSafeArea(setDir(content, getContext()), insets);
+        Log.e("IAMSA", "loadSlide " + insets);
         loadDataWithBaseURL(
                 "file:///data/",
                 newContent,
