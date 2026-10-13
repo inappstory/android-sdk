@@ -240,10 +240,10 @@ public class BannerGrid extends LinearLayout implements Observer<BannerListState
     }
 
     private void updateAppearance() {
+        if (currentState == null) return;
         int cc = customBannerGridAppearance.columnCount();
         if (cc <= 0) cc = 1;
         removeAllViews();
-        if (currentState == null) return;
         BannerListState state = currentState.copy();
         List<IBanner> banners = state.getItems();
         for (int i = 0; i < banners.size(); i += cc) {
