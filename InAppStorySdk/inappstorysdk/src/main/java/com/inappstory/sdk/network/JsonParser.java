@@ -159,7 +159,7 @@ public class JsonParser {
         return objMap;
     }
 
-    public static Map<String, Object> stringMapToEscapedObjMap(Map<String, String> map) {
+    private static Map<String, Object> stringMapToEscapedObjMap(Map<String, String> map) {
         Map<String, Object> objMap = new HashMap<>();
         if (map != null) {
             for (String key : map.keySet()) {

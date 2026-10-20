@@ -5,6 +5,10 @@ apply plugin: 'kotlin-android'
 apply plugin: 'maven-publish'
 apply plugin: 'com.vanniktech.maven.publish'
 
+
+//def githubProperties = new Properties()
+//githubProperties.load(new FileInputStream(rootProject.file("github.properties")))
+
 def getVersionName = { ->
     return inappstory_output_version
 }
@@ -13,8 +17,12 @@ def getArtifactId = { ->
     return "android-sdk"
 }
 
-def getGroupId = { ->
+def getMvnCGroupId = { ->
     return "io.github.inappstory"
+}
+
+def getGhGroupId = { ->
+    return "com.github.inappstory"
 }
 
 def gitCommitHash = 'git rev-parse --verify --short HEAD'.execute().text.trim()
@@ -69,13 +77,16 @@ android {
         jvmTarget = '1.8'
         freeCompilerArgs = ['-Xjvm-default=compatibility']
     }
+
    /* publishing {
-        singleVariant("maven") {
+        singleVariant("release") {
             withSourcesJar()
         }
     }*/
     namespace 'com.inappstory.sdk'
 }
+
+
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
@@ -98,13 +109,45 @@ dependencies {
     // implementation "com.github.paperrose:iasutilsconnector:1.0.2"
 }
 
+/*tasks.withType(PublishToMavenRepository).configureEach { task ->
+    // Если задача публикации относится НЕ к вашей публикации 'bar', мы её отключаем
+    if (!task.name.contains("BarPublication") && !task.name.contains("MavenCentral")) {
+        task.enabled = false
+    }
+}
+
+afterEvaluate {
+    publishing {
+        publications {
+            bar(MavenPublication) {
+                from components.release
+
+                groupId getGhGroupId()
+                artifactId getArtifactId()
+                version getVersionName()
+            }
+        }
+
+        repositories {
+            maven {
+                name = "GitHubPackages"
+                url = uri("https://maven.pkg.github.com/inappstory/android-sdk")
+
+                credentials {
+                    username = githubProperties['gpr.usr'] ?: ""
+                    password = githubProperties['gpr.key'] ?: ""
+                }
+            }
+        }
+    }
+}*/
 
 /*
 mavenPublishing {
 
     publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
     signAllPublications()
-    coordinates(getGroupId(), getArtifactId(), getVersionName())
+    coordinates(getMvnCGroupId(), getArtifactId(), getVersionName())
     pom {
         name = "Test publishing"
         description = "Test publishing"

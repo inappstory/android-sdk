@@ -169,12 +169,10 @@ public class BannerGridRow extends LinearLayout {
                     }
                 }
             });
-            View view = new View(getContext());
-            view.setBackground(banner.bannerAppearance().backgroundDrawable());
             bannerView.setBannerBackground(banner.bannerAppearance().backgroundDrawable());
             bannerView.setSize(-1, -1, true);
             LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    0,
                     (int) (maxBannerWidth / banner.bannerAppearance().singleBannerAspectRatio()),
                     1f
             );
@@ -182,7 +180,6 @@ public class BannerGridRow extends LinearLayout {
             if (i < columns - 1) {
                 lp.setMarginEnd(Sizes.dpToPxExt(appearance.horizontalGap(), getContext()));
             }
-            view.setLayoutParams(lp);
             bannerView.setLayoutParams(lp);
             bannerView.setTag(tag);
             bannerView.viewModel(
