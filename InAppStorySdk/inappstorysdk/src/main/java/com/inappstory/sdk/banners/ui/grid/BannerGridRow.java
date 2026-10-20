@@ -169,6 +169,7 @@ public class BannerGridRow extends LinearLayout {
                     }
                 }
             });
+            //
             bannerView.setBannerBackground(banner.bannerAppearance().backgroundDrawable());
             bannerView.setSize(-1, -1, true);
             LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
