@@ -27,10 +27,9 @@ public class GameJSInterface {
     /**
      * Show a toast from the web page
      */
-
     @JavascriptInterface
-    public void storyShowTextInput(String id, String data) {
-        manager.storyShowTextInput(id, data);
+    public void showTextInput(String data) {
+        manager.showTextInput(data);
     }
 
     @JavascriptInterface

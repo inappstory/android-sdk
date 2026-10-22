@@ -1,8 +1,6 @@
 package com.inappstory.sdk.core.banners;
 
 
-import android.util.Log;
-
 import com.inappstory.sdk.core.data.IBanner;
 
 import java.util.ArrayList;
@@ -72,7 +70,7 @@ public class BannerCarouselState implements IBannerCarouselState {
         return this;
     }
 
-    BannerCarouselAppearance appearance;
+    BannerAppearance appearance;
     Integer currentIndex;
     String placeId = "";
     String iterationId = UUID.randomUUID().toString();

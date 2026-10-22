@@ -47,7 +47,6 @@ public class TimerManager {
     Runnable timerTask = new Runnable() {
         @Override
         public void run() {
-            Log.e("TimerTask", this.toString());
             if (timerDuration > 0 && System.currentTimeMillis() - timerStartTimestamp >= timerDuration) {
                 if (pageManager != null)
                     pageManager.nextSlideAuto();

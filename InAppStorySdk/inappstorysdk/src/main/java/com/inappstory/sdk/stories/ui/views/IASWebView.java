@@ -294,7 +294,6 @@ public class IASWebView extends WebView implements NestedScrollingChild {
     private boolean contentNotInScrollProcess = false;
 
     public void passOverscroll(boolean passOverscroll, boolean passSwipeUpCallback) {
-        Log.e("passOverscroll", passOverscroll + " " + passSwipeUpCallback);
         this.passOverscroll = passOverscroll;
         this.passSwipeUpCallback = passSwipeUpCallback;
         if (parent != null)

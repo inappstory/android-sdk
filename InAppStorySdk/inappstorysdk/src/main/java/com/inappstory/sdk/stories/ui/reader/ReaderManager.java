@@ -335,7 +335,7 @@ public class ReaderManager {
         } else {
             appearanceManager = new AppearanceManager();
         }
-        ((IASSingleStoryImpl) core.singleStoryAPI()).show(
+        ((IASSingleStoryImpl) core.singleStoryAPI()).externalShow(
                 new CancellationTokenImpl(),
                 host.getContext(),
                 storyId + "",

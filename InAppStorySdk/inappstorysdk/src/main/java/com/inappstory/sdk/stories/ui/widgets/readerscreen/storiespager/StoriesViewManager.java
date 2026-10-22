@@ -425,7 +425,6 @@ public class StoriesViewManager {
     }
 
     private void slideInCache(final IReaderContent story, final int index) {
-        Log.e("LoadContentPage", "check assets url for story/slide " + story.id() + " " + index);
         if (core.assetsHolder().assetsIsDownloaded(
                 core.assetUrlsExtractor().extract(story)) && core.layoutHolder().layoutIsDownloaded()
         ) {
@@ -470,7 +469,6 @@ public class StoriesViewManager {
             }
         };
         ((StoriesWebView) storiesView).setLayerType(View.LAYER_TYPE_HARDWARE, null);
-        Log.e("LoadContentPage", "update story layout " + story.id());
         converter.replaceDataAndLoad(innerWebData, story, index, callback);
     }
 

@@ -25,6 +25,7 @@ import com.inappstory.sdk.R;
 import com.inappstory.sdk.banners.BannerPlaceLoadCallback;
 import com.inappstory.sdk.banners.ICustomBannerPlaceholder;
 import com.inappstory.sdk.banners.ui.IBannersWidget;
+import com.inappstory.sdk.banners.ui.banner.BannerView;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.banners.BannerListState;
@@ -78,6 +79,40 @@ public class BannerList extends RecyclerView implements Observer<BannerListState
     public String uniqueId() {
         return customUniqueId != null ? customUniqueId : defaultUniqueId;
     }
+
+    private boolean externalPause = false;
+
+    public void pauseBanners() {
+        if (externalPause) return;
+        if (getLayoutManager() instanceof LinearLayoutManager) {
+            externalPause = true;
+            LinearLayoutManager layoutManager = (LinearLayoutManager) getLayoutManager();
+            for (int i = layoutManager.findFirstVisibleItemPosition();
+                 i < layoutManager.findLastVisibleItemPosition(); i++) {
+                View v = layoutManager.findViewByPosition(i);
+                if (v instanceof BannerView) {
+                    ((BannerView) v).pauseBanner();
+                }
+            }
+            //
+        }
+    }
+
+    public void resumeBanners() {
+        if (!externalPause) return;
+        if (getLayoutManager() instanceof LinearLayoutManager) {
+            externalPause = false;
+            LinearLayoutManager layoutManager = (LinearLayoutManager) getLayoutManager();
+            for (int i = layoutManager.findFirstVisibleItemPosition();
+                 i < layoutManager.findLastVisibleItemPosition(); i++) {
+                View v = layoutManager.findViewByPosition(i);
+                if (v instanceof BannerView) {
+                    ((BannerView) v).resumeBanner();
+                }
+            }
+        }
+    }
+
 
     public void uniqueId(String customUniqueId) {
         if (customUniqueId == null || customUniqueId.isEmpty()) {

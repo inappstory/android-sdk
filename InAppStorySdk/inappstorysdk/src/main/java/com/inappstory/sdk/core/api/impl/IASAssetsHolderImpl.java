@@ -60,7 +60,6 @@ public class IASAssetsHolderImpl implements IASAssetsHolder {
             futures.add(downloader.submit(new Runnable() {
                 @Override
                 public void run() {
-                    Log.e("LoadContentPage", "asset download start " + asset.url);
                     new SessionAssetUseCase(core,
                             new UseCaseCallback<Pair<SessionAsset, File>>() {
                                 @Override
@@ -75,7 +74,6 @@ public class IASAssetsHolderImpl implements IASAssetsHolder {
                                     String url = result.first.url;
                                     synchronized (assetsLock) {
                                         if (!cachedAssetUrls.contains(url)) {
-                                            Log.e("LoadContentPage", "asset downloaded " + url);
                                             cachedAssetUrls.add(url);
                                         }
                                     }

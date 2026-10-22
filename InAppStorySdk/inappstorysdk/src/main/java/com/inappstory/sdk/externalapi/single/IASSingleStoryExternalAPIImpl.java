@@ -13,6 +13,7 @@ import com.inappstory.sdk.core.CancellationTokenWithStatus;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASSingleStory;
+import com.inappstory.sdk.stories.api.models.TargetingBodyObject;
 import com.inappstory.sdk.stories.callbacks.IShowStoryCallback;
 import com.inappstory.sdk.stories.callbacks.IShowStoryOnceCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.single.SingleLoadCallback;
@@ -22,6 +23,7 @@ public class IASSingleStoryExternalAPIImpl implements IASSingleStoryExternalAPI 
     public CancellationToken showOnce(
             final Context context,
             final String storyId,
+            final TargetingBodyObject targetingBodyObject,
             final AppearanceManager appearanceManager,
             final IShowStoryOnceCallback callback
     ) {
@@ -30,7 +32,15 @@ public class IASSingleStoryExternalAPIImpl implements IASSingleStoryExternalAPI 
             @Override
             public void use(@NonNull IASCore core) {
                 core.cancellationTokenPool().addToken(token);
-                core.singleStoryAPI().showOnce(token, context, storyId, appearanceManager, callback);
+                core.singleStoryAPI().showOnce(
+                        token,
+                        context,
+                        storyId,
+                        targetingBodyObject != null,
+                        targetingBodyObject != null ? targetingBodyObject.tags : null,
+                        appearanceManager,
+                        callback
+                );
             }
         });
         return token;
@@ -40,6 +50,7 @@ public class IASSingleStoryExternalAPIImpl implements IASSingleStoryExternalAPI 
     public CancellationToken show(
             final Context context,
             final String storyId,
+            final TargetingBodyObject targetingBodyObject,
             final AppearanceManager appearanceManager,
             final IShowStoryCallback callback,
             final Integer slide
@@ -49,7 +60,15 @@ public class IASSingleStoryExternalAPIImpl implements IASSingleStoryExternalAPI 
             @Override
             public void use(@NonNull IASCore core) {
                 core.cancellationTokenPool().addToken(token);
-                core.singleStoryAPI().show(token, context, storyId, appearanceManager, callback, slide);
+                core.singleStoryAPI().show(token,
+                        context,
+                        storyId,
+                        targetingBodyObject != null,
+                        targetingBodyObject != null ? targetingBodyObject.tags : null,
+                        appearanceManager,
+                        callback,
+                        slide
+                );
             }
         });
         return token;

@@ -97,9 +97,12 @@ public class BannerView extends FrameLayout implements Observer<BannerState> {
         bannerWebView.slideViewModel(bannerViewModel);
         BannerState state = bannerViewModel.getCurrentBannerState();
         bannerId = state.bannerId();
-        // Log.e("UpdateBannerState", state.toString());
         onUpdate(state);
         bannerWebView.checkIfClientIsSet();
+    }
+
+    public IBannerViewModel viewModel() {
+        return bannerViewModel;
     }
 
 
@@ -344,7 +347,6 @@ public class BannerView extends FrameLayout implements Observer<BannerState> {
     private void requestDisallowInterceptTouchEventForAllParents(View view, boolean disallowIntercept) {
         ViewParent parent = view.getParent();
         if (parent instanceof View) {
-            Log.e("requestDisallow", parent.toString());
             parent.requestDisallowInterceptTouchEvent(disallowIntercept);
             requestDisallowInterceptTouchEventForAllParents((View) parent, disallowIntercept);
         }
@@ -354,7 +356,7 @@ public class BannerView extends FrameLayout implements Observer<BannerState> {
         try {
             if (!(getContext() instanceof Activity)) return;
             AppearanceManager appearanceManager = AppearanceManager.checkOrCreateAppearanceManager(null);
-            ((IASSingleStoryImpl) core.singleStoryAPI()).show(
+            ((IASSingleStoryImpl) core.singleStoryAPI()).externalShow(
                     new CancellationTokenImpl(),
                     (Activity) getContext(),
                     contentIdWithIndex.id() + "",

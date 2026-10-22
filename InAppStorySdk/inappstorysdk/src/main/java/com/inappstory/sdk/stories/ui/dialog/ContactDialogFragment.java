@@ -159,10 +159,13 @@ public class ContactDialogFragment extends Fragment implements IASBackPressHandl
                 @Override
                 public void run() {
                     if (getActivity() != null) {
+                        InputMethodManager imm =
+                                (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+                        boolean isShown = imm.isAcceptingText();
                         getActivity().getWindow().getDecorView().getWindowVisibleDisplayFrame(rect);
-                        int size = dialogContainerSize.y - rect.height();
-
-                        boolean isShown = size >= Sizes.dpToPxExt(defaultKeyboardHeightDP, getActivity());
+                        int size = 0;
+                        if (isShown)
+                            size = Sizes.dpToPxExt(defaultKeyboardHeightDP, getActivity());
                         if (isShown == alreadyOpen) {
                             return;
                         }

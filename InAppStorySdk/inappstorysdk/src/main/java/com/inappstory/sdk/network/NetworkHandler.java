@@ -108,7 +108,8 @@ public final class NetworkHandler implements InvocationHandler {
                     bodyEncoded += "&" + ((Field) annotation).value() + "=" + encoder.encode(args[i].toString());
                 } else if (annotation instanceof Body) {
                     try {
-                        bodyRaw += JsonParser.getJson(args[i]);
+                        if (args[i] != null)
+                            bodyRaw += JsonParser.getJson(args[i]);
                     } catch (Exception e) {
                         e.printStackTrace();
                         InAppStoryManager.handleException(e);

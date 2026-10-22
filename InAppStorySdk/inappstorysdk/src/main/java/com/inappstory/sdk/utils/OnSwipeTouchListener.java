@@ -33,7 +33,6 @@ public class OnSwipeTouchListener implements View.OnTouchListener {
     }
 
     public boolean onTouch(View v, MotionEvent event) {
-        Log.e("SWTListener", "onTouch " + event.getAction());
         if (event.getAction() == MotionEvent.ACTION_CANCEL) {
             if (Math.abs(totalXDrag) > Math.abs(totalYDrag)) {
                 if (Math.abs(totalXDrag) > 200) {
@@ -79,7 +78,6 @@ public class OnSwipeTouchListener implements View.OnTouchListener {
         public boolean onScroll(@NonNull MotionEvent e1, @NonNull MotionEvent e2, float distanceX, float distanceY) {
             float diffY = e2.getY() - e1.getY();
             float diffX = e2.getX() - e1.getX();
-            Log.e("SWTListener", "onScroll " + diffX + " " + diffY);
             if (System.currentTimeMillis() - lastXScrollEventTime > 30) {
                 totalXDrag = 0f;
             }

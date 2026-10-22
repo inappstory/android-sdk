@@ -25,9 +25,16 @@ import java.util.Set;
 public class BannerUseCase {
     private final IASCore core;
     private final String bannerId;
+    private final List<String> tags;
+    private final boolean useTargeting;
 
-    public BannerUseCase(IASCore core, String bannerId) {
+    public BannerUseCase(IASCore core, String bannerId, List<String> tags, boolean useTargeting) {
         this.core = core;
+        if (tags != null && !tags.isEmpty())
+            this.tags = new ArrayList<>(tags);
+        else
+            this.tags = null;
+        this.useTargeting = useTargeting;
         this.bannerId = bannerId;
     }
 
@@ -42,6 +49,7 @@ public class BannerUseCase {
         core.statistic().profiling().addTask("banner_place");
 
         final String deviceId = ((IASDataSettingsHolder) core.settingsAPI()).deviceId();
+        final IASDataSettingsHolder settingsHolder = ((IASDataSettingsHolder) core.settingsAPI());
         new ConnectionCheck().check(
                 core.appContext(),
                 new ConnectionCheckCallback(core) {
@@ -90,18 +98,36 @@ public class BannerUseCase {
                                             loadError(loadCallback);
                                     }
                                 };
-                                core.network().enqueue(
-                                        core.network().getApi().getBannerById(
-                                                bannerId,
-                                                RequestFields.BANNER_FIELDS,
-                                                RequestFields.BANNER_EXPAND,
-                                                sessionParameters.userId(),
-                                                sessionParameters.sessionId(),
-                                                sessionParameters.locale()
-                                        ),
-                                        networkCallback,
-                                        sessionParameters
-                                );
+                                if (tags == null)
+                                    core.network().enqueue(
+                                            core.network().getApi().getBannerById(
+                                                    bannerId,
+                                                    RequestFields.BANNER_FIELDS,
+                                                    RequestFields.BANNER_EXPAND,
+                                                    sessionParameters.userId(),
+                                                    sessionParameters.sessionId(),
+                                                    sessionParameters.locale()
+                                            ),
+                                            networkCallback,
+                                            sessionParameters
+                                    );
+                                else
+                                    core.network().enqueue(
+                                            core.network().getApi().getBannerByIdWithTargeting(
+                                                    bannerId,
+                                                    RequestFields.BANNER_FIELDS,
+                                                    RequestFields.BANNER_EXPAND,
+                                                    new TargetingBodyObject(
+                                                            tags,
+                                                            settingsHolder.options()
+                                                    ),
+                                                    sessionParameters.userId(),
+                                                    sessionParameters.sessionId(),
+                                                    sessionParameters.locale()
+                                            ),
+                                            networkCallback,
+                                            sessionParameters
+                                    );
                             }
 
                             @Override

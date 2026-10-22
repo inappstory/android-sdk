@@ -482,7 +482,6 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         payloadMap.put("response", filesWithTypes);
         String payload = JsonParser.mapToJsonString(payloadMap);
         String webString = "window." + cbName + "('" + StringsUtils.escapeSingleQuotes(payload) + "');";
-        Log.e("WebString", webString);
         try {
             if (webView != null)
                 webView.evaluateJavascript(webString, null);
@@ -1049,10 +1048,17 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         }
     }
 
-    public void sendInputResult(String id, String data) {
-        data = data.replaceAll("\n", "<br>");
-        String url = "javascript:story_send_text_input_result(\"" + id + "\", \"" + data + "\")";
-        webView.loadUrl(url);
+    public void sendInputResult(String id, String cb, String data) {
+        GameSTIResponse response = new GameSTIResponse();
+        response.id = id;
+        response.response = data;//data.replaceAll("\n", "\\\n");
+        try {
+            String payload = JsonParser.stringifyToJsString(response);
+            String url = cb + "(" + payload + ");";
+            webView.evaluateJavascript(url, null);
+        } catch (Exception e) {
+
+        }
     }
 
     public void resumeGame() {

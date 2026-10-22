@@ -10,8 +10,10 @@ import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
 
+import com.inappstory.sdk.banners.ui.grid.DefaultBannerGridAppearance;
 import com.inappstory.sdk.banners.ui.list.DefaultBannerListAppearance;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
+import com.inappstory.sdk.core.banners.ICustomBannerGridAppearance;
 import com.inappstory.sdk.core.banners.ICustomBannerListAppearance;
 import com.inappstory.sdk.core.ui.widgets.customicons.IASDefaultAppearanceIcons;
 import com.inappstory.sdk.core.ui.widgets.customicons.IASDefaultIconCreator;
@@ -191,6 +193,7 @@ public class AppearanceManager {
 
     private ICustomBannerCarouselAppearance csBannerCarouselInterface = new DefaultBannerCarouselAppearance();
     private ICustomBannerListAppearance csBannerListInterface = new DefaultBannerListAppearance();
+    private ICustomBannerGridAppearance csBannerGridInterface = new DefaultBannerGridAppearance();
 
     private IStoryReaderLoaderView csStoryLoaderView;
 
@@ -1152,6 +1155,16 @@ public class AppearanceManager {
     public ICustomBannerListAppearance csBannerListInterface() {
         return csBannerListInterface != null ? csBannerListInterface : new DefaultBannerListAppearance();
     }
+
+    public ICustomBannerGridAppearance csBannerGridInterface() {
+        return csBannerGridInterface != null ? csBannerGridInterface : new DefaultBannerGridAppearance();
+    }
+    
+    public AppearanceManager csBannerGridInterface(ICustomBannerGridAppearance csBannerGridInterface) {
+        this.csBannerGridInterface = csBannerGridInterface;
+        return AppearanceManager.this;
+    }
+
 
     public AppearanceManager csBannerCarouselInterface(ICustomBannerCarouselAppearance csBannerCarouselInterface) {
         this.csBannerCarouselInterface = csBannerCarouselInterface;

@@ -273,7 +273,7 @@ public class IAMContentLayout extends FrameLayout implements Observer<IAMReaderS
     private void openStoryHandle(IASCore core, final ContentIdWithIndex contentIdWithIndex) {
         try {
             AppearanceManager appearanceManager = AppearanceManager.checkOrCreateAppearanceManager(null);
-            ((IASSingleStoryImpl) core.singleStoryAPI()).show(
+            ((IASSingleStoryImpl) core.singleStoryAPI()).externalShow(
                     new CancellationTokenImpl(),
                     getContext(),
                     contentIdWithIndex.id() + "",

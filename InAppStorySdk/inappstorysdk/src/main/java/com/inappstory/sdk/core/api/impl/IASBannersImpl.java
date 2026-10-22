@@ -191,7 +191,9 @@ public class IASBannersImpl implements IASBanners {
         }
         BannerUseCase bannerPlaceUseCase = new BannerUseCase(
                 core,
-                bannerId
+                bannerId,
+                settings.tags(),
+                settings.hasTargeting()
         );
         bannerPlaceViewModel.updateState(
                 new BannerCarouselState()

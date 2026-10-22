@@ -177,7 +177,6 @@ public class DraggableElasticLayout extends FrameLayout {
 
     @Override
     public void onNestedPreScroll(View target, int dx, int dy, int[] consumed) {
-        Log.e("ScrollEvents", "Elastic onNestedPreScroll " + " " + dy + " " + consumedToString(consumed));
         if (draggingDown && dy > 0) {
             if (disabled || !verticalGesturesEnabled) {
                 disabledDragScale(dy);
@@ -199,7 +198,6 @@ public class DraggableElasticLayout extends FrameLayout {
     @Override
     public void onNestedScroll(View target, int dxConsumed, int dyConsumed,
                                int dxUnconsumed, int dyUnconsumed) {
-        Log.e("ScrollEvents", "Elastic onNestedScroll " + " " + totalScrollValue + " " + dyConsumed + " " + dyUnconsumed);
         if (totalScrollValue == 0 && dyUnconsumed > 0) {
             disabledDragScale(dyUnconsumed);
         } else if (disabled || (draggingUp && swipeUpDisabled) || !verticalGesturesEnabled) {
@@ -364,7 +362,6 @@ public class DraggableElasticLayout extends FrameLayout {
     private void dispatchDragCallback(float elasticOffset, float elasticOffsetPixels,
                                       float rawOffset, float rawOffsetPixels) {
 
-        Log.e("ScrollEvents", "Elastic dispatch " + totalDrag + " " + elasticOffsetPixels);
         if (callbacks != null && !callbacks.isEmpty()) {
             for (DraggableElasticCallback callback : callbacks) {
                 if (callback != null)
@@ -375,7 +372,6 @@ public class DraggableElasticLayout extends FrameLayout {
     }
 
     private void dispatchDismissCallback() {
-        Log.e("ScrollEvents", "Elastic dispatch dispatchDismissCallback");
         totalScrollValue = 0;
         if (callbacks != null && !callbacks.isEmpty()) {
             for (DraggableElasticCallback callback : callbacks) {
@@ -423,7 +419,6 @@ public class DraggableElasticLayout extends FrameLayout {
 
 
     private void dispatchDropCallback() {
-        Log.e("ScrollEvents", "Elastic dispatch dispatchDropCallback");
         totalScrollValue = 0;
         if (callbacks != null && !callbacks.isEmpty()) {
             for (DraggableElasticCallback callback : callbacks) {

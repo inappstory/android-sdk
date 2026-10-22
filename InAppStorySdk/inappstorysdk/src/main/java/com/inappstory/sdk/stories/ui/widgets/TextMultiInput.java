@@ -38,6 +38,13 @@ public class TextMultiInput extends LinearLayout {
         return 0;
     }
 
+    public int getAdditionalLength() {
+        if (countryCodeText != null) {
+            return countryCodeText.length() + 1;
+        }
+        return 0;
+    }
+
     public void setHint(String hint) {
         if (inputType == PHONE) {
             phoneNumberHint.setHint(hint);

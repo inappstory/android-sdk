@@ -365,7 +365,6 @@ public class IAMWebView extends IASWebView implements ContentViewInteractor, Obs
     @Override
     public void onUpdate(IAMReaderScrollState newValue) {
         passOverscroll(newValue.passOverscroll(), newValue.passSwipeUpCallback());
-        Log.e("SWTListener", newValue.verticalGestureEnabled() + "");
         if (!newValue.verticalGestureEnabled()) {
 
             setOnTouchListener(null);

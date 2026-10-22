@@ -29,6 +29,17 @@ import com.inappstory.sdk.stories.api.models.StatisticSendObject;
 
 public interface ApiInterface {
 
+    @POST("v2/banner/{id}")
+    Request getBannerByIdWithTargeting(
+            @Path("id") String id,
+            @Query("fields") String fields,
+            @Query("expand") String expand,
+            @Body TargetingBodyObject filterObject,
+            @ReplaceHeader(HeadersKeys.USER_ID) String xUserId,
+            @ReplaceHeader(HeadersKeys.AUTH_SESSION_ID) String xSessionId,
+            @ReplaceHeader(HeadersKeys.ACCEPT_LANGUAGE) String lang
+    );
+
 
     @POST("v2/banner/place/{id}")
     Request getBannerPlace(
@@ -92,6 +103,19 @@ public interface ApiInterface {
     Request getInAppMessagesLimits(
             @Field("id") String ids
     );
+
+    @POST("v2/inappmessaging/message/{id}")
+    Request getInAppMessageWithTargeting(
+            @Path("id") String id,
+            @Query("srcList") Integer srcList,
+            @Query("fields") String fields,
+            @Query("expand") String expand,
+            @Body TargetingBodyObject filterObject,
+            @ReplaceHeader(HeadersKeys.USER_ID) String xUserId,
+            @ReplaceHeader(HeadersKeys.AUTH_SESSION_ID) String xSessionId,
+            @ReplaceHeader(HeadersKeys.ACCEPT_LANGUAGE) String lang
+    );
+
 
     @GET("v2/inappmessaging/message/{id}")
     Request getInAppMessage(
@@ -211,6 +235,19 @@ public interface ApiInterface {
             @Query("once") Integer once,
             @Query("src_list") Integer srcList,
             @Query("expand") String expand,
+            @ReplaceHeader(HeadersKeys.USER_ID) String xUserId,
+            @ReplaceHeader(HeadersKeys.AUTH_SESSION_ID) String xSessionId,
+            @ReplaceHeader(HeadersKeys.ACCEPT_LANGUAGE) String lang
+    );
+
+    @POST("v2/story/{id}")
+    Request getStoryByIdWithTargeting(
+            @Path("id") String id,
+            @Query("test") String test,
+            @Query("once") Integer once,
+            @Query("src_list") Integer srcList,
+            @Query("expand") String expand,
+            @Body TargetingBodyObject filterObject,
             @ReplaceHeader(HeadersKeys.USER_ID) String xUserId,
             @ReplaceHeader(HeadersKeys.AUTH_SESSION_ID) String xSessionId,
             @ReplaceHeader(HeadersKeys.ACCEPT_LANGUAGE) String lang

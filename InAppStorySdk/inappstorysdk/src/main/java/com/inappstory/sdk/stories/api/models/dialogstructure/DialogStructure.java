@@ -10,13 +10,13 @@ public class DialogStructure implements SerializableWithKey {
     public ConfigV2 configV2;
 
     public InputDialogData toInputDialogData() {
-        InputDialogData inputDialogData = new InputDialogData();
         try {
-            inputDialogData.title = configV2.main.question.text.value;
-            inputDialogData.submitButton = configV2.main.button.text.value;
-            inputDialogData.hint = configV2.main.input.text.placeholder;
-            inputDialogData.type = configV2.main.input.type;
-            return inputDialogData;
+            return new InputDialogData(
+                    configV2.main.question.text.value,
+                    configV2.main.input.text.placeholder,
+                    configV2.main.input.type,
+                    configV2.main.button.text.value
+            );
         } catch (Exception e) {
             return null;
         }
