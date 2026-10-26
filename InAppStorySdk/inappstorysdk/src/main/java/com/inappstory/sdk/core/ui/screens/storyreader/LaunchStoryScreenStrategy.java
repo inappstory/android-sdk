@@ -111,11 +111,11 @@ public class LaunchStoryScreenStrategy implements LaunchScreenStrategy {
                         readerAppearanceSettings.getSerializableKey(),
                         readerAppearanceSettings
                 );
-                currentScreenHolder.endLaunchProcess();
                 ((IOpenStoriesReader) openReader).onOpen(
                         context,
                         bundle
                 );
+                currentScreenHolder.endLaunchProcess();
             }
         };
         if (openedFromReader) {

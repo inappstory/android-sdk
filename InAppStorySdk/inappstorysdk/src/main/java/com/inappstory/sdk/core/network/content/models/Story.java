@@ -42,34 +42,16 @@ public class Story implements Parcelable, IStory, IContentWithTimeline {
     @SerializedName("stat_title")
     public String statTitle;
 
-    @SerializedName("video_cover")
-    public List<Image> videoUrl;
-
     @SerializedName("is_full_screen")
     public boolean isFullscreen;
 
-    @SerializedName("payload")
-    public HashMap<String, Object> ugcPayload;
-
-
-    @SerializedName("custom_attributes")
-    public Map<String, String> customAttributes;
-
-
-    @SerializedName("layout_template_variables")
-    public Map<String, String> layoutTemplateVariables;
 
     @SerializedName("background_color")
     public String backgroundColor;
 
-    @SerializedName("image")
-    public List<Image> image;
 
     @SerializedName("has_swipe_up")
     public Boolean hasSwipeUp;
-
-    @SerializedName("slides")
-    public List<StorySlide> slides;
 
     @SerializedName("like")
     public Integer like;
@@ -83,22 +65,14 @@ public class Story implements Parcelable, IStory, IContentWithTimeline {
     @SerializedName("hide_in_reader")
     public Boolean hideInReader;
 
-
     @SerializedName("deeplink")
     public String deeplink;
-
-    @SerializedName("game_instance")
-    public GameInstance gameInstance;
 
     @SerializedName("is_opened")
     public boolean isOpened;
 
     @SerializedName("disable_close")
     public boolean disableClose;
-
-    public boolean disableClose() {
-        return disableClose;
-    }
 
     @SerializedName("like_functional")
     public Boolean hasLike;
@@ -117,6 +91,31 @@ public class Story implements Parcelable, IStory, IContentWithTimeline {
 
     @SerializedName("layout")
     public String layout;
+
+    @SerializedName("payload")
+    public HashMap<String, Object> ugcPayload;
+
+    @SerializedName("custom_attributes")
+    public Map<String, String> customAttributes;
+
+    @SerializedName("layout_template_variables")
+    public Map<String, String> layoutTemplateVariables;
+
+    @SerializedName("video_cover")
+    public List<Image> videoUrl;
+
+    @SerializedName("image")
+    public List<Image> image;
+
+    @SerializedName("slides")
+    public List<StorySlide> slides;
+
+    @SerializedName("game_instance")
+    public GameInstance gameInstance;
+
+    public boolean disableClose() {
+        return disableClose;
+    }
 
     @Override
     public boolean fullscreen() {
