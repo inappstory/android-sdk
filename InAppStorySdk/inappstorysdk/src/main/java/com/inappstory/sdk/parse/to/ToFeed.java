@@ -21,7 +21,11 @@ public final class ToFeed extends ToModelParser<Feed> {
                     new JSONObject(value)
             );
             Feed feed = new Feed();
-            story.id = jsonObj.getInt("id");
+            feed.feedId = jsonObj.optIntNullable("id");
+            feed.hasFavorite = jsonObj.optBooleanNullable("hasFavorite");
+
+            feed.stories = new ToStoryList(jsonObj.optJSONArray("stories")).parse();
+            feed.feedCover = new ToImageList(jsonObj.optJSONArray("cover")).parse();
             return feed;
         } catch (Exception e) {
             return null;
