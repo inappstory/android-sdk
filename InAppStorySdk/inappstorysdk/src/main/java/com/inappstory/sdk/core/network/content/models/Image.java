@@ -32,13 +32,13 @@ public class Image implements Parcelable {
     }
 
     @SerializedName("url")
-    private String url;
+    public String url;
 
     @SerializedName("width")
-    private int width;
+    public int width;
 
     @SerializedName("height")
-    private int height;
+    public int height;
 
     public void setType(String type) {
         this.type = type;
@@ -49,14 +49,14 @@ public class Image implements Parcelable {
     }
 
     @SerializedName("type")
-    private String type;
+    public String type;
 
     public int getExpire() {
         return expire;
     }
 
     @SerializedName("expire")
-    private int expire;
+    public int expire;
 
     protected Image(Parcel in) {
         url = in.readString();

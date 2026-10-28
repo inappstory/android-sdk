@@ -40,11 +40,11 @@ public abstract class ToModelParser<T> {
         }
     }
 
-    protected T parseList(@NonNull JSONArray jsonArray) {
+    protected T parseList(JSONArray jsonArray) {
         return null;
     }
 
-    protected T parseObject(@NonNull JSONObject jsonObject) {
+    protected T parseObject(JSONObject jsonObject) {
         return null;
     }
 

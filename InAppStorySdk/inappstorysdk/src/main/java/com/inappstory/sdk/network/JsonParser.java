@@ -223,13 +223,22 @@ public class JsonParser {
     public static Map<String, String> toMap(String jsonString) {
         try {
             JSONObject jsonObject = new JSONObject(jsonString);
-            return toMap(jsonObject);
+            return toMapInternal(jsonObject);
         } catch (Exception e) {
             return null;
         }
     }
 
-    static Map<String, String> toMap(JSONObject jsonobj) throws JSONException {
+
+    public static Map<String, String> toMap(JSONObject jsonobj) {
+        try {
+            return toMapInternal(jsonobj);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    static Map<String, String> toMapInternal(JSONObject jsonobj) throws JSONException {
         Map<String, String> map = new HashMap<String, String>();
         Iterator<String> keys = jsonobj.keys();
         while (keys.hasNext()) {
@@ -238,7 +247,7 @@ public class JsonParser {
             if (value instanceof JSONArray) {
                 value = toList((JSONArray) value);
             } else if (value instanceof JSONObject) {
-                value = toMap((JSONObject) value);
+                value = toMapInternal((JSONObject) value);
             }
             map.put(key, value.toString());
         }
@@ -268,7 +277,7 @@ public class JsonParser {
             if (value instanceof JSONArray) {
                 value = toList((JSONArray) value);
             } else if (value instanceof JSONObject) {
-                value = toMap((JSONObject) value);
+                value = toMapInternal((JSONObject) value);
             }
             list.add(value);
         }
