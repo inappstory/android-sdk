@@ -495,8 +495,8 @@ public class BannerCarousel extends FrameLayout implements Observer<BannerCarous
     }
 
     private void initAttrs(@NonNull Context context, @Nullable AttributeSet attrs) {
-        TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.BannerPlace);
-        setPlaceId(typedArray.getString(R.styleable.BannerPlace_cs_place_id));
+        TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.BannerCarousel);
+        setPlaceId(typedArray.getString(R.styleable.BannerCarousel_cs_place_id));
     }
 
     public BannerCarousel(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {

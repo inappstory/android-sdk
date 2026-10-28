@@ -16,6 +16,9 @@ def getArtifactId = { ->
 def getGroupId = { ->
     return "io.github.inappstory"
 }
+def getGhGroupId = { ->
+    return "com.github.inappstory"
+}
 
 def gitCommitHash = 'git rev-parse --verify --short HEAD'.execute().text.trim()
 
@@ -128,6 +131,37 @@ mavenPublishing {
             url = "https://github.com/inappstory/android-sdk/"
             connection = "scm:git:git://github.com/inappstory/android-sdk.git"
             developerConnection = "scm:git:ssh://git@github.com/inappstory/android-sdk.git"
+        }
+    }
+}
+*/
+
+/*
+def githubProperties = new Properties()
+githubProperties.load(new FileInputStream(rootProject.file("github.properties")))
+
+afterEvaluate {
+    publishing {
+        publications {
+            bar(MavenPublication) {
+                from components.release
+
+                groupId getGhGroupId()
+                artifactId getArtifactId()
+                version getVersionName()
+            }
+        }
+
+        repositories {
+            maven {
+                name = "GitHubPackages"
+                url = uri("https://maven.pkg.github.com/inappstory/android-sdk")
+
+                credentials {
+                    username = githubProperties['gpr.usr'] ?: ""
+                    password = githubProperties['gpr.key'] ?: ""
+                }
+            }
         }
     }
 }

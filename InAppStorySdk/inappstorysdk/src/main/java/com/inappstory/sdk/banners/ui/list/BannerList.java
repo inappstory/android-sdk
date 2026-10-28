@@ -11,7 +11,6 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.AttributeSet;
 import android.view.View;
-import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -287,6 +286,7 @@ public class BannerList extends RecyclerView implements Observer<BannerListState
     ) {
         super(context, attrs);
         init();
+        initAttrs(context, attrs);
     }
 
     public BannerList(
@@ -296,6 +296,7 @@ public class BannerList extends RecyclerView implements Observer<BannerListState
     ) {
         super(context, attrs, defStyleAttr);
         init();
+        initAttrs(context, attrs);
     }
 
     final IBannerPlaceLoadCallback internalBannerPlaceLoadCallback = new InnerBannerPlaceLoadCallback() {
@@ -377,8 +378,8 @@ public class BannerList extends RecyclerView implements Observer<BannerListState
     }
 
     private void initAttrs(@NonNull Context context, @Nullable AttributeSet attrs) {
-        TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.BannerPlace);
-        setPlaceId(typedArray.getString(R.styleable.BannerPlace_cs_place_id));
+        TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.BannerCarousel);
+        setPlaceId(typedArray.getString(R.styleable.BannerList_cs_banner_list_place_id));
     }
 
     public void setPlaceId(final String placeId) {
