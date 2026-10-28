@@ -20,10 +20,6 @@ public class InnerShareData {
         return payload;
     }
 
-    public String getUrl() {
-        return url;
-    }
-
     @SerializedName("text")
     public String text;
     @SerializedName("title")

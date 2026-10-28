@@ -71,24 +71,6 @@ public class ListContentHolder implements IListsContentHolder {
         }
     }
 
-    private final Map<String, String> urlToPath = new HashMap<>();
-
-    @Override
-    public String getPathByUrl(String url) {
-        if (url == null) return null;
-        synchronized (contentLock) {
-            return urlToPath.get(url);
-        }
-    }
-
-    @Override
-    public void setPathByUrl(String url, String path) {
-        if (url == null) return;
-        synchronized (contentLock) {
-            urlToPath.put(url, path);
-        }
-    }
-
     @Override
     public void setByIdAndType(IListItemContent newContentItem, int id, ContentType type) {
         synchronized (contentLock) {

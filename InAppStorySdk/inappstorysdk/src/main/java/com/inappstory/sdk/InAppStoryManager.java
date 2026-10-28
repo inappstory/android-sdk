@@ -872,7 +872,6 @@ public class InAppStoryManager implements IASBackPressHandler {
                     builder.anonymous(),
                     builder.userId(),
                     builder.userSign(),
-                    builder.anonymous(),
                     builder.options(),
                     builder.locale(),
                     builder.gameDemoMode(),
@@ -925,7 +924,6 @@ public class InAppStoryManager implements IASBackPressHandler {
             final boolean anonymous,
             final String userId,
             final String userSign,
-            final boolean anonymous,
             final Map<String, String> options,
             final Locale locale,
             final boolean gameDemoMode,
@@ -1738,10 +1736,6 @@ public class InAppStoryManager implements IASBackPressHandler {
             return options;
         }
 
-        public boolean anonymous() {
-            return anonymous;
-        }
-
 
         public String apiKey() {
             return apiKey;
@@ -1787,7 +1781,6 @@ public class InAppStoryManager implements IASBackPressHandler {
 
         int cacheSize;
         String userId;
-        boolean anonymous;
         String userSign;
         String apiKey;
         String testKey;
@@ -1852,10 +1845,6 @@ public class InAppStoryManager implements IASBackPressHandler {
             return Builder.this;
         }
 
-        public Builder anonymous(boolean anonymous) {
-            Builder.this.anonymous = anonymous;
-            return Builder.this;
-        }
 
         public Builder testKey(String testKey) {
             Builder.this.testKey = testKey;
