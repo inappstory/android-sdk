@@ -27,14 +27,14 @@ allprojects {
 In the project `build.gradle` (app level) in the `dependencies` section add:
 
 ```gradle
- implementation 'com.github.inappstory:android-sdk:1.21.5'
+ implementation 'com.github.inappstory:android-sdk:1.26.0'
 ```
 
 Also for correct work in `dependencies` you need to add:
 
 ```gradle
  implementation 'androidx.recyclerview:recyclerview:1.2.1'
- implementation 'androidx.webkit:webkit:1.4.0'
+ implementation 'androidx.webkit:webkit:1.5.0'
 ```
 
 ### ProGuard
