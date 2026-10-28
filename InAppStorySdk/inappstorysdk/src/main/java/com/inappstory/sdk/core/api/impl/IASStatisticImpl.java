@@ -3,6 +3,7 @@ package com.inappstory.sdk.core.api.impl;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.IASStatistic;
+import com.inappstory.sdk.core.api.IASStatisticBannerV1;
 import com.inappstory.sdk.core.api.IASStatisticExceptions;
 import com.inappstory.sdk.core.api.IASStatisticIAMV1;
 import com.inappstory.sdk.core.api.IASStatisticProfiling;
@@ -10,6 +11,7 @@ import com.inappstory.sdk.core.api.IASStatisticStoriesV1;
 import com.inappstory.sdk.core.api.IASStatisticStoriesV2;
 import com.inappstory.sdk.stories.api.models.CachedSessionData;
 import com.inappstory.sdk.stories.statistic.GetStatisticV1Callback;
+import com.inappstory.sdk.stories.statistic.IASStatisticBannerV1Impl;
 import com.inappstory.sdk.stories.statistic.IASStatisticIAMV1Impl;
 import com.inappstory.sdk.stories.statistic.IASStatisticProfilingImpl;
 import com.inappstory.sdk.stories.statistic.IASStatisticStoriesV1Impl;
@@ -27,6 +29,7 @@ public class IASStatisticImpl implements IASStatistic {
     private final IASStatisticProfiling iasStatisticProfiling;
     private final IASStatisticExceptions iasStatisticExceptions;
     private final IASStatisticIAMV1 iasStatisticIAMV1;
+    private final IASStatisticBannerV1 iasStatisticBannerV1;
 
 
     public IASStatisticImpl(IASCore core) {
@@ -35,7 +38,10 @@ public class IASStatisticImpl implements IASStatistic {
         iasStatisticProfiling = new IASStatisticProfilingImpl(core);
         iasStatisticExceptions = new IASStatisticExceptionsImpl(core);
         iasStatisticIAMV1 = new IASStatisticIAMV1Impl(core);
+        iasStatisticBannerV1 = new IASStatisticBannerV1Impl(core);
     }
+
+
 
     @Override
     public IASStatisticStoriesV1 storiesV1() {
@@ -119,6 +125,11 @@ public class IASStatisticImpl implements IASStatistic {
     @Override
     public IASStatisticIAMV1 iamV1() {
         return iasStatisticIAMV1;
+    }
+
+    @Override
+    public IASStatisticBannerV1 bannersV1() {
+        return iasStatisticBannerV1;
     }
 
     @Override

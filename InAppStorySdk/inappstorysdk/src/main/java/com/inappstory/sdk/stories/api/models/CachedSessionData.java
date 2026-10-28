@@ -2,6 +2,7 @@ package com.inappstory.sdk.stories.api.models;
 
 
 import com.inappstory.sdk.core.network.content.models.StoryPlaceholder;
+import com.inappstory.sdk.network.annotations.models.SerializedName;
 
 import java.util.List;
 
@@ -12,6 +13,8 @@ public class CachedSessionData {
     public String tags;
     public List<StoryPlaceholder> placeholders;
     public String sessionId;
+    public String layoutTimestamp;
+    public boolean isGameReaderDefaultFullscreen;
     public String testKey;
     public String token;
     public boolean anonymous;

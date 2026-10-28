@@ -10,6 +10,7 @@ public interface IScreenHolder<T, K> {
     void lastOpenedData(K data);
     T getScreen();
     void startLaunchProcess();
+    void endLaunchProcess();
     boolean isLaunchProcessStarted();
     void subscribeScreen(T screen);
     void unsubscribeScreen(T screen);

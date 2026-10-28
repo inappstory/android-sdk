@@ -7,6 +7,7 @@ import androidx.annotation.WorkerThread;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.lrudiskcache.FileChecker;
 import com.inappstory.sdk.core.data.IDownloadResource;
+import com.inappstory.sdk.lrudiskcache.FileCheckerSuccess;
 import com.inappstory.sdk.stories.cache.DownloadFileState;
 import com.inappstory.sdk.stories.cache.usecases.GameSplashUseCase;
 
@@ -46,7 +47,7 @@ public class DownloadSplashUseCase {
                 if (oldSplash.exists()) {
                     oldSplash.deleteOnExit();
                 }
-                splashScreenCallback.onError("Splash screen is not valid");
+                splashScreenCallback.onError(new SimpleUseCaseError("Splash screen is not valid"));
                 return;
             }
 
@@ -55,13 +56,13 @@ public class DownloadSplashUseCase {
                     resource.size(),
                     resource.sha1(),
                     false
-            )) {
+            ) instanceof FileCheckerSuccess) {
                 splashScreenCallback.onSuccess(oldSplash);
                 return;
             }
         }
         if (resource == null || !URLUtil.isValidUrl(resource.url())) {
-            splashScreenCallback.onError("Splash screen is not valid");
+            splashScreenCallback.onError(new SimpleUseCaseError("Splash screen is not valid"));
             return;
         }
         GameSplashUseCase gameSplashUseCase =
@@ -79,7 +80,7 @@ public class DownloadSplashUseCase {
             }
             splashScreenCallback.onSuccess(fileState.file);
         } else  {
-            splashScreenCallback.onError("Can't download splash");
+            splashScreenCallback.onError(new SimpleUseCaseError("Can't download splash"));
         }
     }
 }

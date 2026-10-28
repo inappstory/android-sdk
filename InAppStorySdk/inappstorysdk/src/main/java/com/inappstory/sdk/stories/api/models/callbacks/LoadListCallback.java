@@ -44,4 +44,5 @@ public abstract class LoadListCallback extends NetworkCallback<List<Story>> {
             }
         });
     }
+
 }

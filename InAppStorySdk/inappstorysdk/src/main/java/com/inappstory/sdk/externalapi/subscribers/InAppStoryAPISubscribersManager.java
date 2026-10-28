@@ -31,6 +31,7 @@ import com.inappstory.sdk.externalapi.StoryFavoriteItemAPIData;
 import com.inappstory.sdk.externalapi.storylist.IASStoryListRequestData;
 import com.inappstory.sdk.externalapi.storylist.IASStoryListSessionData;
 import com.inappstory.sdk.game.cache.SuccessUseCaseCallback;
+import com.inappstory.sdk.game.cache.UseCaseError;
 import com.inappstory.sdk.game.reader.GameStoryData;
 import com.inappstory.sdk.imageloader.CustomFileLoader;
 import com.inappstory.sdk.stories.api.models.ContentType;
@@ -140,7 +141,7 @@ public class InAppStoryAPISubscribersManager {
         }
         currentStoryCover.setOpened(true);
         core.storyListCache().saveStoryOpened(coverId, ContentType.STORY);
-        String sessionId = ((IASDataSettingsHolder)core.settingsAPI()).sessionIdOrEmpty();
+        String sessionId = ((IASDataSettingsHolder) core.settingsAPI()).sessionIdOrEmpty();
         if (currentStoryCover.deeplink() != null && !currentStoryCover.deeplink().isEmpty()) {
             service.getListReaderConnector().changeStory(coverId, uniqueKey, false);
 
@@ -247,19 +248,15 @@ public class InAppStoryAPISubscribersManager {
                     j++;
                 }
             }
-            LaunchStoryScreenData launchData = new LaunchStoryScreenData(
-                    uniqueKey,
-                    requestData.feed,
-                    sessionId,
-                    readerStories,
-                    correctedIndex,
-                    false,
-                    ShowStory.ACTION_OPEN,
-                    SourceType.LIST,
-                    0,
-                    ContentType.STORY,
-                    null
-            );
+            LaunchStoryScreenData launchData = new LaunchStoryScreenData()
+                    .listUniqueId(uniqueKey)
+                    .feed(requestData.feed)
+                    .sessionId(sessionId)
+                    .storiesIds(new ArrayList<>(readerStories))
+                    .listIndex(correctedIndex)
+                    .firstAction(ShowStory.ACTION_OPEN)
+                    .sourceType(SourceType.LIST)
+                    .type(ContentType.STORY);
             boolean nonAnonymous = !((IASDataSettingsHolder) core.settingsAPI()).anonymous();
             core.screensManager().openScreen(context,
                     new LaunchStoryScreenStrategy(core, false).
@@ -279,6 +276,7 @@ public class InAppStoryAPISubscribersManager {
         final StoryDownloadManager downloadManager = core.contentLoader().storyDownloadManager();
         downloadManager.loadStories(
                 data.feed,
+                null,
                 new LoadStoriesCallback() {
                     @Override
                     public void storiesLoaded(List<Integer> storiesIds) {
@@ -347,7 +345,7 @@ public class InAppStoryAPISubscribersManager {
                     }
 
                     @Override
-                    public void onError(String message) {
+                    public void onError(UseCaseError error) {
                         favoriteItemAPIData.add(new StoryFavoriteItemAPIData(favoriteImage, null));
                         cacheFavoriteCellImage(iterator, favoriteItemAPIData, uniqueId);
                     }
@@ -512,11 +510,9 @@ public class InAppStoryAPISubscribersManager {
             ((IStoryAPIDataHolder) subscriber).setStoryAPIData(storyAPIData);
             subscriber.updateStoriesData(
                     storyAPIData,
-                    new IASStoryListSessionData()
-                            .previewAspectRatio(
-                                    ((IASDataSettingsHolder)core.settingsAPI()).sessionData().previewAspectRatio
-                            )
-                            .feed(feed)
+                    new IASStoryListSessionData().previewAspectRatio(
+                            ((IASDataSettingsHolder) core.settingsAPI()).sessionData().previewAspectRatio
+                    )
             );
         }
     }
@@ -563,8 +559,6 @@ public class InAppStoryAPISubscribersManager {
                 videoPath = urlLocalPath.get(videoUrl);
             }
         }
-
-        Log.e("IAS_SDK_API", "update: " + story.id() + " " + image + " " + video);
         for (IAPISubscriber subscriber : inAppStoryAPISubscribers.values()) {
             if (subscriber instanceof IStoryAPIDataHolder) {
                 StoryAPIData data = ((IStoryAPIDataHolder) subscriber).updateStoryAPIData(
@@ -573,15 +567,11 @@ public class InAppStoryAPISubscribersManager {
                         videoPath
                 );
                 if (data != null) {
-                    Log.e("IAS_SDK_API", "update data: " + data);
                     subscriber.updateStoryData(
                             data,
-                            new IASStoryListSessionData()
-                                    .previewAspectRatio(
-                                            ((IASDataSettingsHolder)core.settingsAPI())
-                                                    .sessionData().previewAspectRatio
-                                    )
-                                    .feed(null)
+                            new IASStoryListSessionData().previewAspectRatio(
+                                    ((IASDataSettingsHolder) core.settingsAPI()).sessionData().previewAspectRatio
+                            )
                     );
                 }
             }
@@ -647,11 +637,9 @@ public class InAppStoryAPISubscribersManager {
                 ((InAppStoryAPIFavoriteListSubscriber) subscriber).setStoryAPIData(newData);
                 subscriber.updateStoriesData(
                         newData,
-                        new IASStoryListSessionData()
-                                .previewAspectRatio(
-                                        ((IASDataSettingsHolder)core.settingsAPI()).sessionData().previewAspectRatio
-                                )
-                                .feed(null)
+                        new IASStoryListSessionData().previewAspectRatio(
+                                ((IASDataSettingsHolder) core.settingsAPI()).sessionData().previewAspectRatio
+                        )
                 );
             }
         }

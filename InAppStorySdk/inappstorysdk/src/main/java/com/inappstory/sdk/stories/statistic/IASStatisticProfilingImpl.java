@@ -8,7 +8,7 @@ import android.os.Build;
 import android.telephony.TelephonyManager;
 
 import com.inappstory.sdk.InAppStoryManager;
-import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.LoggerTags;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.IASStatisticProfiling;
@@ -33,11 +33,18 @@ public class IASStatisticProfilingImpl implements IASStatisticProfiling {
 
     public IASStatisticProfilingImpl(IASCore core) {
         this.core = core;
-        loopedExecutor.init(queueTasksRunnable);
     }
 
 
-    private final ExecutorService runnableExecutor = Executors.newFixedThreadPool(1);
+    private boolean looperInitialized = false;
+
+    private void initLooper() {
+        if (looperInitialized) return;
+        looperInitialized = true;
+        loopedExecutor.task(queueTasksRunnable);
+    }
+
+    private final ExecutorService runnableExecutor = Executors.newSingleThreadExecutor();
 
     private final Object tasksLock = new Object();
 
@@ -46,7 +53,7 @@ public class IASStatisticProfilingImpl implements IASStatisticProfiling {
         task.uniqueHash = hash;
         task.name = name;
         task.startTime = System.currentTimeMillis();
-        task.isAllowToForceSend = !(disabled || softDisabled);
+        task.isAllowToForceSend = !disabled;
         synchronized (tasksLock) {
             for (ProfilingTask hasTask : tasks) {
                 if (hasTask.uniqueHash.equals(hash)) {
@@ -88,7 +95,7 @@ public class IASStatisticProfilingImpl implements IASStatisticProfiling {
             }
             if (readyTask == null) return;
             tasks.remove(readyTask);
-            if (hash == null || hash.isEmpty()) return;
+            if (hash.isEmpty()) return;
             readyTask.endTime = System.currentTimeMillis();
             readyTask.isReady = true;
 
@@ -106,6 +113,7 @@ public class IASStatisticProfilingImpl implements IASStatisticProfiling {
                 });
             } else {
                 readyTasks.add(readyTask);
+                initLooper();
             }
         }
     }
@@ -120,7 +128,7 @@ public class IASStatisticProfilingImpl implements IASStatisticProfiling {
         }
     }
 
-    LoopedExecutor loopedExecutor = new LoopedExecutor(100, 100);
+    LoopedExecutor loopedExecutor = new LoopedExecutor(100, 100, getClass().getName());
 
     private final Runnable queueTasksRunnable = new Runnable() {
         @Override
@@ -129,16 +137,15 @@ public class IASStatisticProfilingImpl implements IASStatisticProfiling {
             synchronized (tasksLock) {
                 readyIsEmpty = readyTasks.size() == 0;
             }
-            if (readyIsEmpty || disabled || softDisabled) {
-                loopedExecutor.freeExecutor();
+            if (readyIsEmpty || disabled) {
+                loopedExecutor.cancelTask();
+                looperInitialized = false;
                 return;
             }
             ProfilingTask task;
             synchronized (tasksLock) {
-                task = readyTasks.get(0);
-                readyTasks.remove(0);
+                task = readyTasks.remove(0);
             }
-
             if (task != null) {
                 try {
                     sendTiming(task);
@@ -169,7 +176,7 @@ public class IASStatisticProfilingImpl implements IASStatisticProfiling {
     private void sendTiming(ProfilingTask task) throws Exception {
         Map<String, String> qParams = new HashMap<>();
         qParams.put("s", (task.sessionId != null && !task.sessionId.isEmpty()) ? task.sessionId :
-                ((IASDataSettingsHolder)core.settingsAPI()).sessionIdOrEmpty());
+                ((IASDataSettingsHolder) core.settingsAPI()).sessionIdOrEmpty());
         qParams.put("u", task.userId != null ? task.userId : "");
         String cc = getCC();
         qParams.put("ts", "" + System.currentTimeMillis() / 1000);
@@ -189,19 +196,14 @@ public class IASStatisticProfilingImpl implements IASStatisticProfiling {
         connection.setReadTimeout(30000);
         connection.setRequestMethod("POST");
         int statusCode = connection.getResponseCode();
-        InAppStoryManager.showDLog("InAppStory_Network", connection.getURL().toString() + " \nStatus Code: " + statusCode);
+        InAppStoryManager.showDLog(LoggerTags.IAS_NETWORK, connection.getURL().toString() + " \nStatus Code: " + statusCode);
         connection.disconnect();
         return;
 
     }
 
-    private boolean softDisabled;
     private boolean disabled;
-
-    @Override
-    public boolean softDisabled() {
-        return softDisabled || disabled;
-    }
+    private boolean softDisabled;
 
     @Override
     public void disabled(boolean softDisabled, boolean disabled) {
@@ -212,5 +214,10 @@ public class IASStatisticProfilingImpl implements IASStatisticProfiling {
     @Override
     public boolean disabled() {
         return disabled;
+    }
+
+    @Override
+    public boolean softDisabled() {
+        return softDisabled || disabled;
     }
 }

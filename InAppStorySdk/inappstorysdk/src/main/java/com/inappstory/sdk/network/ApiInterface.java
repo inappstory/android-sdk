@@ -7,6 +7,8 @@ import com.inappstory.sdk.network.annotations.api.ExcludeHeaders;
 import com.inappstory.sdk.network.annotations.api.Field;
 import com.inappstory.sdk.network.annotations.api.FormUrlEncoded;
 import com.inappstory.sdk.network.annotations.api.GET;
+import com.inappstory.sdk.network.annotations.api.MultipartData;
+import com.inappstory.sdk.network.annotations.api.MultipartRequest;
 import com.inappstory.sdk.network.annotations.api.POST;
 import com.inappstory.sdk.network.annotations.api.PUT;
 import com.inappstory.sdk.network.annotations.api.Path;
@@ -14,12 +16,12 @@ import com.inappstory.sdk.network.annotations.api.Query;
 import com.inappstory.sdk.network.annotations.api.QueryObject;
 import com.inappstory.sdk.network.annotations.api.QueryVars;
 import com.inappstory.sdk.network.annotations.api.ReplaceHeader;
+import com.inappstory.sdk.network.fileupload.FilePart;
 import com.inappstory.sdk.network.models.Request;
 import com.inappstory.sdk.network.utils.headers.HeadersKeys;
+import com.inappstory.sdk.stories.api.models.TargetingBodyObject;
 import com.inappstory.sdk.stories.api.models.GameLaunchConfigObject;
 import com.inappstory.sdk.stories.api.models.StatisticSendObject;
-
-import java.util.List;
 
 /**
  * InAppStory API. Contains all request
@@ -27,11 +29,68 @@ import java.util.List;
 
 public interface ApiInterface {
 
-    @GET("v2/inappmessaging")
+    @POST("v2/banner/{id}")
+    Request getBannerByIdWithTargeting(
+            @Path("id") String id,
+            @Query("fields") String fields,
+            @Query("expand") String expand,
+            @Body TargetingBodyObject filterObject,
+            @ReplaceHeader(HeadersKeys.USER_ID) String xUserId,
+            @ReplaceHeader(HeadersKeys.AUTH_SESSION_ID) String xSessionId,
+            @ReplaceHeader(HeadersKeys.ACCEPT_LANGUAGE) String lang
+    );
+
+
+    @POST("v2/banner/place/{id}")
+    Request getBannerPlace(
+            @Path("id") String id,
+            @Query("srcList") Integer srcList,
+            @Query("fields") String fields,
+            @Query("expand") String expand,
+            @Body TargetingBodyObject filterObject,
+            @ReplaceHeader(HeadersKeys.USER_ID) String xUserId,
+            @ReplaceHeader(HeadersKeys.AUTH_SESSION_ID) String xSessionId,
+            @ReplaceHeader(HeadersKeys.ACCEPT_LANGUAGE) String lang
+    );
+
+    @GET("v2/banner/{id}")
+    Request getBannerById(
+            @Path("id") String id,
+            @Query("fields") String fields,
+            @Query("expand") String expand,
+            @ReplaceHeader(HeadersKeys.USER_ID) String xUserId,
+            @ReplaceHeader(HeadersKeys.AUTH_SESSION_ID) String xSessionId,
+            @ReplaceHeader(HeadersKeys.ACCEPT_LANGUAGE) String lang
+    );
+
+    @FormUrlEncoded
+    @PUT("v2/banner/{id}/data")
+    Request sendBannerUserData(
+            @Path("id") String id,
+            @Field("data") String data);
+
+    @POST("v2/banner/{id}/event/{event_name}")
+    Request sendBannerStat(
+            @Path("id") String id,
+            @Path("event_name") String eventName,
+            @Query("ei") String eventId,
+            @Query("ii") String iterationId,
+            @Query("si") Integer slideIndex,
+            @Query("st") Integer slideTotal,
+            @Query("d") Long durationMs,
+            @Query("wi") String widgetId,
+            @Query("wl") String widgetLabel,
+            @Query("wv") String widgetValue,
+            @Query("wa") Integer widgetAnswer,
+            @Query("wal") String widgetAnswerLabel,
+            @Query("was") Integer widgetAnswerScore
+    );
+
+    @POST("v2/inappmessaging")
     Request getInAppMessages(
             @Query("srcList") Integer srcList,
             @Query("id") String ids,
-            @Query("tags") String tags,
+            @Body TargetingBodyObject filterObject,
             @Query("fields") String fields,
             @Query("expand") String expand,
             @ReplaceHeader(HeadersKeys.USER_ID) String xUserId,
@@ -44,6 +103,19 @@ public interface ApiInterface {
     Request getInAppMessagesLimits(
             @Field("id") String ids
     );
+
+    @POST("v2/inappmessaging/message/{id}")
+    Request getInAppMessageWithTargeting(
+            @Path("id") String id,
+            @Query("srcList") Integer srcList,
+            @Query("fields") String fields,
+            @Query("expand") String expand,
+            @Body TargetingBodyObject filterObject,
+            @ReplaceHeader(HeadersKeys.USER_ID) String xUserId,
+            @ReplaceHeader(HeadersKeys.AUTH_SESSION_ID) String xSessionId,
+            @ReplaceHeader(HeadersKeys.ACCEPT_LANGUAGE) String lang
+    );
+
 
     @GET("v2/inappmessaging/message/{id}")
     Request getInAppMessage(
@@ -66,19 +138,22 @@ public interface ApiInterface {
             @Query("si") Integer slideIndex,
             @Query("st") Integer slideTotal,
             @Query("d") Long durationMs,
+            @Query("v") String value,
             @Query("wi") String widgetId,
             @Query("wl") String widgetLabel,
             @Query("wv") String widgetValue,
             @Query("wa") Integer widgetAnswer,
             @Query("wal") String widgetAnswerLabel,
-            @Query("was") Integer widgetAnswerScore
+            @Query("was") Integer widgetAnswerScore,
+            @Query("sa") String slideAnalytics
     );
 
     @FormUrlEncoded
     @PUT("v2/inappmessaging/message/{id}/data")
     Request sendIAMUserData(
             @Path("id") String id,
-            @Field("data") String data);
+            @Field("data") String data
+    );
 
     @GET("v2/ugc/feed")
     Request getUgcStories(
@@ -106,6 +181,13 @@ public interface ApiInterface {
             @Path("id") String id,
             @Field("data") String data);
 
+    @GET("v2/layout")
+    Request getLayout(
+            @ReplaceHeader(HeadersKeys.USER_ID) String xUserId,
+            @ReplaceHeader(HeadersKeys.AUTH_SESSION_ID) String xSessionId,
+            @ReplaceHeader(HeadersKeys.ACCEPT_LANGUAGE) String lang
+    );
+
     @GET("v2/story")
     Request getStories(
             @Query("test") String test,
@@ -118,12 +200,12 @@ public interface ApiInterface {
             @ReplaceHeader(HeadersKeys.ACCEPT_LANGUAGE) String lang);
 
 
-    @GET("v2/feed/{feed}")
+    @POST("v2/feed/{feed}")
     Request getFeed(
             @Path("feed") String feed,
             @Query("test") String test,
             @Query("favorite") Integer favorite,
-            @Query("tags") String tags,
+            @Body TargetingBodyObject filterObject,
             @Query("fields") String fields,
             @Query("expand") String expand,
             @ReplaceHeader(HeadersKeys.USER_ID) String xUserId,
@@ -132,12 +214,13 @@ public interface ApiInterface {
     );
 
 
-    @GET("v2/feed/{feed}/onboarding")
+    @POST("v2/feed/{feed}/onboarding")
     Request getOnboardingFeed(
             @Path("feed") String feed,
             @Query("test") String test,
             @Query("limit") Integer limit,
-            @Query("tags") String tags,
+            @Body TargetingBodyObject filterObject,
+            @Query("fields") String fields,
             @Query("expand") String expand,
             @ReplaceHeader(HeadersKeys.USER_ID) String xUserId,
             @ReplaceHeader(HeadersKeys.AUTH_SESSION_ID) String xSessionId,
@@ -152,6 +235,19 @@ public interface ApiInterface {
             @Query("once") Integer once,
             @Query("src_list") Integer srcList,
             @Query("expand") String expand,
+            @ReplaceHeader(HeadersKeys.USER_ID) String xUserId,
+            @ReplaceHeader(HeadersKeys.AUTH_SESSION_ID) String xSessionId,
+            @ReplaceHeader(HeadersKeys.ACCEPT_LANGUAGE) String lang
+    );
+
+    @POST("v2/story/{id}")
+    Request getStoryByIdWithTargeting(
+            @Path("id") String id,
+            @Query("test") String test,
+            @Query("once") Integer once,
+            @Query("src_list") Integer srcList,
+            @Query("expand") String expand,
+            @Body TargetingBodyObject filterObject,
             @ReplaceHeader(HeadersKeys.USER_ID) String xUserId,
             @ReplaceHeader(HeadersKeys.AUTH_SESSION_ID) String xSessionId,
             @ReplaceHeader(HeadersKeys.ACCEPT_LANGUAGE) String lang
@@ -196,12 +292,12 @@ public interface ApiInterface {
             @Field("launchTryNumber") int launchTryNumber,
             @Field("timestamp") Long timestamp,
             @Field("message") String message,
+            @Field("webViewPackage") String webViewPackage,
+            @Field("webViewVersion") String webViewVersion,
             @Field("stacktrace") String stacktrace,
             @Field("logSession") String logSession,
             @Field("gameLaunched") boolean gameLaunched
     );
-
-
 
 
     @GET("stat/{event_name}")
@@ -225,6 +321,7 @@ public interface ApiInterface {
             @Query("si") Integer slideIndex,
             @Query("st") Integer slideTotal,
             @Query("d") Long durationMs,
+            @Query("v") String value,
             @Query("wi") String widgetId,
             @Query("wl") String widgetLabel,
             @Query("wv") String widgetValue,
@@ -242,7 +339,6 @@ public interface ApiInterface {
             @Path("id") String id,
             @Field("data") String data,
             @Query("session_id") String sessionId);
-
 
 
     @POST("v2/story-like/{id}")
@@ -300,7 +396,9 @@ public interface ApiInterface {
             @Field("app_build") String appBuild,
             @Field("anonymous") boolean anonymous,
             @Field("user_id") String userId,
-            @Field("user_sign") String userSign
+            @Field("user_sign") String userSign,
+            @Field("debug_session_key") String debugSessionKey,
+            @ReplaceHeader(HeadersKeys.USER_ID) String xUserId
     );
 
     @POST("v2/session/update")
@@ -308,6 +406,13 @@ public interface ApiInterface {
             @Body StatisticSendObject request,
             @ReplaceHeader(HeadersKeys.USER_ID) String xUserId,
             @ReplaceHeader(HeadersKeys.ACCEPT_LANGUAGE) String lang
+    );
+
+    @POST("v2/debug-log/{debug_session_key}")
+    @MultipartRequest
+    Request debugLog(
+            @Path("debug_session_key") String debugSessionKey,
+            @MultipartData FilePart filePart
     );
 
     @POST("v2/session/close")

@@ -3,10 +3,12 @@
     <string name="ias_api_key_error">Config is not valid. Parameter \'apiKey\' cannot be null or empty</string>
     <string name="ias_builder_user_length_error">Config is not valid. Parameter \'userId\' cannot be longer than 255 bytes</string>
     <string name="ias_builder_tags_length_error">Config is not valid. Parameter \'tags\' cannot be longer than 4000 bytes</string>
+    <string name="ias_builder_tags_count_error">Config is not valid. Parameter \'tags\' cannot have more than 100 items</string>
     <string name="ias_setter_user_length_error">Value \'userId\' cannot be null or longer than 255 bytes</string>
     <string name="ias_tag_pattern_error">Tag \'%1$s\' is incorrect</string>
     <string name="game_reader_already_opened_error">Game reader already opened</string>
     <string name="ias_setter_tags_length_error">Value \'tags\' cannot be longer than 4000 bytes</string>
+    <string name="ias_setter_tags_count_error">Value \'tags\' cannot be more than 100 items</string>
     <string name="ias_context_is_null">InAppStoryManager data is not valid. \'context\' cannot be null</string>
     <string name="ias_usage_without_user_and_device">UserId is empty and deviceId usage is prohibited</string>
     <string name="ias_user_cant_change_with_anonymous">You can\'t change user id with anonymous settings</string>

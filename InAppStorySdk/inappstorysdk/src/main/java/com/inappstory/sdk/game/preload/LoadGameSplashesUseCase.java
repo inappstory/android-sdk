@@ -4,6 +4,7 @@ import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.game.cache.DownloadSplashUseCase;
 import com.inappstory.sdk.game.cache.GetLocalSplashUseCase;
 import com.inappstory.sdk.game.cache.UseCaseCallback;
+import com.inappstory.sdk.game.cache.UseCaseError;
 import com.inappstory.sdk.game.utils.GameConstants;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.interfaces.IGameCenterData;
@@ -70,7 +71,7 @@ public class LoadGameSplashesUseCase {
 
             getLocalStaticSplashUseCase.get(new UseCaseCallback<File>() {
                 @Override
-                public void onError(String message) {
+                public void onError(UseCaseError message) {
                 }
 
                 @Override
@@ -80,7 +81,7 @@ public class LoadGameSplashesUseCase {
             });
             getLocalAnimSplashUseCase.get(new UseCaseCallback<File>() {
                 @Override
-                public void onError(String message) {
+                public void onError(UseCaseError message) {
                 }
 
                 @Override
@@ -107,7 +108,7 @@ public class LoadGameSplashesUseCase {
             );
             final UseCaseCallback<File> downloadAnimSplashCallback = new UseCaseCallback<File>() {
                 @Override
-                public void onError(String message) {
+                public void onError(UseCaseError message) {
                     core.keyValueStorage().saveString(
                             GameConstants.SPLASH_ANIM_KV + gameData.id(),
                             ""
@@ -145,7 +146,7 @@ public class LoadGameSplashesUseCase {
 
             downloadStaticSplashUseCase.download(new UseCaseCallback<File>() {
                 @Override
-                public void onError(String message) {
+                public void onError(UseCaseError message) {
                     if (useAnimSplash) {
                         downloadAnimSplashUseCase.download(downloadAnimSplashCallback);
                     } else {

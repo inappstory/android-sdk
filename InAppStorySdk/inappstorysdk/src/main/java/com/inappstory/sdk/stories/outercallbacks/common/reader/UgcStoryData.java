@@ -16,7 +16,7 @@ public class UgcStoryData extends StoryData {
             Map<String, Object> ugcPayload,
             SourceType sourceType
     ) {
-        super(id, ContentType.UGC, title, slidesCount, null, sourceType);
+        super(id, ContentType.UGC, title, slidesCount, null, sourceType, null);
         this.ugcPayload = ugcPayload;
     }
 

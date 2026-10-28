@@ -2,12 +2,15 @@ package com.inappstory.sdk.stories.cache.usecases;
 
 
 import android.system.Os;
+import android.util.Log;
 
-import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.game.cache.SimpleUseCaseError;
 import com.inappstory.sdk.game.cache.UseCaseCallback;
 import com.inappstory.sdk.lrudiskcache.CacheJournalItem;
 import com.inappstory.sdk.lrudiskcache.FileChecker;
+import com.inappstory.sdk.lrudiskcache.FileCheckerResult;
+import com.inappstory.sdk.lrudiskcache.FileCheckerSuccess;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.stories.api.models.WebResource;
 import com.inappstory.sdk.stories.cache.DownloadFileState;
@@ -18,6 +21,8 @@ import com.inappstory.sdk.utils.StringsUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class GameResourceUseCase extends GetCacheFileUseCase<Void> {
     private final WebResource resource;
@@ -34,10 +39,8 @@ public class GameResourceUseCase extends GetCacheFileUseCase<Void> {
         return "";
     }
 
-
-    private String symlinkKey = null;
+    private List<String> symlinkKeys = new ArrayList<>();
     private String symlinkDir = null;
-
 
     public GameResourceUseCase(
             IASCore core,
@@ -46,9 +49,11 @@ public class GameResourceUseCase extends GetCacheFileUseCase<Void> {
             ProgressCallback progressCallback,
             DownloadInterruption interruption,
             UseCaseCallback<Void> useCaseCallback,
-            WebResource resource
+            List<WebResource> resources
     ) {
         super(core);
+        if (resources == null || resources.isEmpty()) throw new RuntimeException("");
+        WebResource resource = resources.get(0);
         this.useCaseCallback = useCaseCallback;
         this.interruption = interruption;
         this.progressCallback = progressCallback;
@@ -74,10 +79,33 @@ public class GameResourceUseCase extends GetCacheFileUseCase<Void> {
                 "resources_" +
                 gameInstanceId +
                 File.separator;
-        symlinkKey = symlinkDir + resource.key;
+        for (WebResource webResource: resources) {
+            symlinkKeys.add(symlinkDir + webResource.key);
+        }
         this.filePath = realPath;
     }
 
+    private void createSymlinks() {
+        try {
+            new File(symlinkDir).mkdirs();
+        } catch (Exception e) {
+
+        }
+        for (String symlinkKey: symlinkKeys) {
+            try {
+                Os.remove(symlinkKey);
+            } catch (Exception e) {
+
+            }
+            try {
+                Os.symlink(filePath, symlinkKey);
+            } catch (Exception e) {
+                filePath = symlinkKey;
+                e.printStackTrace();
+                break;
+            }
+        }
+    }
 
     private boolean getLocalResource() {
 
@@ -90,7 +118,7 @@ public class GameResourceUseCase extends GetCacheFileUseCase<Void> {
                     resource.size,
                     resource.sha1,
                     true
-            )) {
+            ) instanceof FileCheckerSuccess) {
                 progressCallback.onProgress(resource.size, resource.size);
                 useCaseCallback.onSuccess(null);
                 downloadLog.generateResponseLog(true, filePath);
@@ -104,7 +132,7 @@ public class GameResourceUseCase extends GetCacheFileUseCase<Void> {
                 resource.size,
                 resource.sha1,
                 true
-        )) {
+        ) instanceof FileCheckerSuccess) {
             progressCallback.onProgress(resource.size, resource.size);
             useCaseCallback.onSuccess(null);
             try {
@@ -121,29 +149,9 @@ public class GameResourceUseCase extends GetCacheFileUseCase<Void> {
         return false;
     }
 
-    private void createSymlink() {
-        try {
-            new File(symlinkDir).mkdirs();
-        } catch (Exception e) {
-
-        }
-        try {
-            Os.remove(symlinkKey);
-        } catch (Exception e) {
-
-        }
-        try {
-            Os.symlink(filePath, symlinkKey);
-        } catch (Exception e) {
-            filePath = symlinkKey;
-            e.printStackTrace();
-        }
-    }
-
-
     @Override
     public Void getFile() {
-        createSymlink();
+        createSymlinks();
         if (!getLocalResource())
             downloadResource();
         return null;
@@ -156,7 +164,7 @@ public class GameResourceUseCase extends GetCacheFileUseCase<Void> {
                     resource.key == null ||
                     resource.key.isEmpty()
             ) {
-                useCaseCallback.onError("Wrong resource key or url");
+                useCaseCallback.onError(new SimpleUseCaseError("Wrong resource key or url"));
                 return;
             }
             long offset = 0;
@@ -173,28 +181,36 @@ public class GameResourceUseCase extends GetCacheFileUseCase<Void> {
                             public void finish(DownloadFileState fileState) {
                                 downloadLog.sendResponseLog();
                                 if (fileState == null || fileState.downloadedSize != fileState.totalSize) {
-                                    useCaseCallback.onError("Download interrupted");
+                                    useCaseCallback.onError(new SimpleUseCaseError("Download interrupted"));
                                 } else {
-                                    if (fileChecker.checkWithShaAndSize(
+                                    FileCheckerResult checkerResult = fileChecker.checkWithShaAndSize(
                                             fileState.file,
                                             resource.size,
                                             resource.sha1,
                                             true
-                                    )) {
+                                    );
+                                    if (checkerResult instanceof FileCheckerSuccess) {
                                         CacheJournalItem cacheJournalItem = generateCacheItem();
                                         cacheJournalItem.setSize(fileState.totalSize);
                                         cacheJournalItem.setDownloadedSize(fileState.totalSize);
                                         try {
                                             getCache().put(cacheJournalItem);
                                         } catch (IOException e) {
-                                            useCaseCallback.onError(e.getMessage());
+                                            useCaseCallback.onError(new SimpleUseCaseError(e.getMessage()));
                                         }
                                         progressCallback.onProgress(resource.size, resource.size);
                                         useCaseCallback.onSuccess(null);
                                     } else {
-                                        useCaseCallback.onError("Wrong size or sha1");
+                                        useCaseCallback.onError(
+                                                new SimpleUseCaseError("Wrong size or sha1 for url " + resource.url + ": " + checkerResult)
+                                        );
                                     }
                                 }
+                            }
+
+                            @Override
+                            public void waiting() {
+
                             }
                         };
                 core
@@ -226,12 +242,12 @@ public class GameResourceUseCase extends GetCacheFileUseCase<Void> {
                                 callback
                         );
             } catch (Exception e) {
-                useCaseCallback.onError(e.getMessage());
+                useCaseCallback.onError(new SimpleUseCaseError(e.getMessage()));
                 e.printStackTrace();
             }
         } catch (Exception e) {
             core.exceptionManager().createExceptionLog(e);
-            useCaseCallback.onError(e.getMessage());
+            useCaseCallback.onError(new SimpleUseCaseError(e.getMessage()));
         }
     }
 

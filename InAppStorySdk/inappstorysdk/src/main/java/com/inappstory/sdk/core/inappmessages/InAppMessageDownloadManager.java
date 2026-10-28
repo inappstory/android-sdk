@@ -1,23 +1,24 @@
 package com.inappstory.sdk.core.inappmessages;
 
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.core.IASCore;
-import com.inappstory.sdk.core.api.IASAssetsHolder;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.data.IReaderContent;
 import com.inappstory.sdk.core.network.content.usecase.InAppMessageByIdUseCase;
 import com.inappstory.sdk.core.ui.screens.IReaderSlideViewModel;
-import com.inappstory.sdk.game.cache.SessionAssetsIsReadyCallback;
 import com.inappstory.sdk.inappmessage.InAppMessageLoadCallback;
+import com.inappstory.sdk.stories.api.models.ContentIdWithIndex;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.cache.ContentIdAndType;
 import com.inappstory.sdk.stories.cache.SlideTaskKey;
 import com.inappstory.sdk.stories.cache.SlidesDownloader;
-import com.inappstory.sdk.utils.ISessionHolder;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -34,20 +35,19 @@ public class InAppMessageDownloadManager {
                 core,
                 null
         );
-        this.slidesDownloader.init();
     }
 
     public void addInAppMessageTask(
             final int inAppMessageId,
-            ContentType type,
             final InAppMessageLoadCallback callback
     ) {
+        ContentType type = ContentType.IN_APP_MESSAGE;
         IReaderContent readerContent =
                 core.contentHolder().readerContent().getByIdAndType(inAppMessageId, type);
         if (readerContent != null) {
             addSlides(readerContent, callback);
         } else {
-            new InAppMessageByIdUseCase(core, inAppMessageId).get(
+            new InAppMessageByIdUseCase(core, inAppMessageId, false, null).get(
                     new InAppMessageByIdCallback() {
                         @Override
                         public void success(IReaderContent readerContent) {
@@ -79,23 +79,31 @@ public class InAppMessageDownloadManager {
         return slidesDownloader.allSlidesLoaded(readerContent, ContentType.IN_APP_MESSAGE);
     }
 
-    public boolean checkBundleResources(
-            final IReaderSlideViewModel pageViewModel,
-            boolean sync
-    ) {
-        if (sync) return allBundlesLoaded();
-        slidesDownloader.checkBundleResources(pageViewModel, 0);
-        return true;
+    public boolean concreteSlidesLoaded(IReaderContent readerContent, Set<Integer> indexes) {
+        return slidesDownloader.concreteSlidesLoaded(
+                readerContent,
+                ContentType.IN_APP_MESSAGE,
+                indexes
+        );
     }
 
-    public boolean allBundlesLoaded() {
-        return core.assetsHolder().assetsIsDownloaded();
+    public boolean concreteBundlesLoaded(IReaderContent readerContent) {
+        return core.assetsHolder().assetsIsDownloaded(
+                core.assetUrlsExtractor().extract(readerContent)
+        ) && core.layoutHolder().layoutIsDownloaded();
     }
 
     private void addSlides(@NonNull final IReaderContent readerContent, final InAppMessageLoadCallback callback) {
+
+     //   this.slidesDownloader.init();
         if (allSlidesLoaded(readerContent)) {
             contentIsLoaded(readerContent, callback);
+            return;
         }
+        if (readerContent.actualSlidesCount() == 0) return;
+        final Set<Integer> indexes = new HashSet<>();
+        indexes.add(0);
+
         core.contentLoader().inAppMessageDownloadManager().addSubscriber(
                 new IReaderSlideViewModel() {
                     @Override
@@ -109,6 +117,11 @@ public class InAppMessageDownloadManager {
                     @Override
                     public Integer externalSubscriber() {
                         return readerContent.id();
+                    }
+
+                    @Override
+                    public void renderReady() {
+
                     }
 
                     @Override
@@ -162,11 +175,12 @@ public class InAppMessageDownloadManager {
         );
 
 
-        slidesDownloader.addStorySlides(
+        slidesDownloader.addSlidesHighPriority(
                 new ContentIdAndType(readerContent.id(),
                         ContentType.IN_APP_MESSAGE
                 ),
                 readerContent,
+                indexes,
                 3,
                 true
         );
@@ -206,6 +220,7 @@ public class InAppMessageDownloadManager {
         return true;
     }
 
+
     public void clearSlidesDownloader() {
         slidesDownloader.cleanTasks();
         slidesDownloader.clearSubscribers();
@@ -223,11 +238,11 @@ public class InAppMessageDownloadManager {
         slidesDownloader.clearSubscribers();
     }
 
-    public int isSlideLoaded(int id, int index, ContentType type) {
+    public int isSlideLoaded(int id, int index) {
         try {
             return slidesDownloader.isSlideLoaded(
                     new SlideTaskKey(
-                            new ContentIdAndType(id, type),
+                            new ContentIdAndType(id, ContentType.IN_APP_MESSAGE),
                             index
                     )
             );
@@ -235,6 +250,25 @@ public class InAppMessageDownloadManager {
             return 0;
         }
     }
+
+    public int isSlidesLoaded(int id) {
+        try {
+            return slidesDownloader.isSlidesLoaded(
+                    new ContentIdAndType(id, ContentType.IN_APP_MESSAGE)
+            );
+        } catch (IOException e) {
+            return 0;
+        }
+    }
+
+    public void removeInAppMessageTask(int id) {
+        slidesDownloader.removeSlideTasks(new ContentIdAndType(id, ContentType.IN_APP_MESSAGE));
+    }
+
+    public void checkInAppMessageTask(int id) {
+        slidesDownloader.removeSlideTasks(new ContentIdAndType(id, ContentType.IN_APP_MESSAGE));
+    }
+
 
     public void clearLocalData() {
         core.contentHolder().readerContent().clearByType(ContentType.IN_APP_MESSAGE);

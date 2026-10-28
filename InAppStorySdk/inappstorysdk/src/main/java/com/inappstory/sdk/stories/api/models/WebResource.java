@@ -24,4 +24,9 @@ public class WebResource implements Serializable, IDownloadResource {
     public String sha1() {
         return sha1;
     }
+
+    public String uniqueKey() {
+        if (sha1 != null) return url + " " + sha1;
+        return url;
+    }
 }

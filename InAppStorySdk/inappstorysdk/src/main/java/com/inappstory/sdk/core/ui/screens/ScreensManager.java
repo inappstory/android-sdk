@@ -129,11 +129,17 @@ public class ScreensManager implements IScreensLauncher,
     }
 
     @Override
+    public IIAMReaderViewModel iamReaderViewModel(int id) {
+        return null;
+    }
+
+    @Override
     public boolean onBackPressed() {
         IIAMReaderViewModel iamReaderViewModel = iamReaderViewModel();
         IAMReaderState state = iamReaderViewModel.getCurrentState();
         if (!state.uiState.equals(IAMReaderUIStates.CLOSED)) {
-            getIAMScreenHolder().closeScreen();
+            if (state.canBeClosed)
+                getIAMScreenHolder().closeScreen();
             return true;
         }
         return false;

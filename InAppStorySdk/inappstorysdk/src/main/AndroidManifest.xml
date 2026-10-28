@@ -11,7 +11,8 @@
         android:forceDarkAllowed="true"
         android:hardwareAccelerated="true"
         android:largeHeap="true"
-        android:supportsRtl="true">
+        android:supportsRtl="true"
+        tools:ignore="UnusedAttribute">
         <provider
             android:name=".share.InAppStoryFileProvider"
             android:authorities="${applicationId}.com.inappstory.fileprovider"
@@ -25,7 +26,6 @@
         <activity
             android:name="com.inappstory.sdk.stories.ui.reader.StoriesActivity"
             android:hardwareAccelerated="true"
-            android:screenOrientation="portrait"
             android:theme="@style/StoriesSDKAppTheme.Transparent"
             tools:ignore="LockedOrientationActivity" />
         <activity

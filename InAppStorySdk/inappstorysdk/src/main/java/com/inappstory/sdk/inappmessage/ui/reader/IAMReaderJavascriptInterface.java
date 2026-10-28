@@ -2,7 +2,11 @@ package com.inappstory.sdk.inappmessage.ui.reader;
 
 import android.webkit.JavascriptInterface;
 
+import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.LoggerTags;
 import com.inappstory.sdk.inappmessage.domain.reader.IIAMReaderSlideViewModel;
+import com.inappstory.sdk.network.JsonParser;
+import com.inappstory.sdk.stories.api.models.OnVerticalScrollJSData;
 
 public class IAMReaderJavascriptInterface {
     private final IIAMReaderSlideViewModel slideViewModel;
@@ -19,6 +23,21 @@ public class IAMReaderJavascriptInterface {
     @JavascriptInterface
     public void updateTimeline(String data) {
         slideViewModel.updateTimeline(data);
+    }
+
+
+
+    @JavascriptInterface
+    public void onVerticalScrollChange(String data) {
+        OnVerticalScrollJSData verticalScrollData =
+                JsonParser.fromJson(data, OnVerticalScrollJSData.class);
+        slideViewModel.onVerticalScrollChange(verticalScrollData);
+    }
+
+    @JavascriptInterface
+    public void storyRenderReady() {
+        slideViewModel.renderReady();
+        logMethod("iamRenderReady");
     }
 
     @JavascriptInterface
@@ -41,6 +60,22 @@ public class IAMReaderJavascriptInterface {
         slideViewModel.sendApiRequest(data);
     }
 
+    @JavascriptInterface
+    public void onCardLoadingStateChange(int state, String reason) {
+        slideViewModel.onCardLoadingStateChange(state, reason);
+        logMethod("onCardLoadingStateChange " + state + " " + reason);
+    }
+
+    private void logMethod(String payload) {
+        InAppStoryManager.showELog(LoggerTags.IAS_IAM_JS, payload);
+    }
+
+    @JavascriptInterface
+    public void onEvent(String name, String event) {
+        slideViewModel.onEvent(name, event);
+
+        logMethod("onEvent " + name + " " + event);
+    }
 
     @JavascriptInterface
     public void vibrate(int[] vibratePattern) {
@@ -134,6 +169,11 @@ public class IAMReaderJavascriptInterface {
     }
 
     @JavascriptInterface
+    public void storyUnfreezeUI() {
+        slideViewModel.storyUnfreezeUI();
+    }
+
+    @JavascriptInterface
     public void closeStory(String reason) {
         slideViewModel.closeReader();
     }
@@ -157,6 +197,17 @@ public class IAMReaderJavascriptInterface {
     @JavascriptInterface
     public void shareSlideScreenshotCb(String shareId, boolean result) {
         slideViewModel.shareSlideScreenshotCb(shareId, result);
+    }
+
+
+    @JavascriptInterface
+    public void disableVerticalSwipeGesture() {
+        slideViewModel.disableVerticalSwipeGesture();
+    }
+
+    @JavascriptInterface
+    public void enableVerticalSwipeGesture() {
+        slideViewModel.enableVerticalSwipeGesture();
     }
 
 

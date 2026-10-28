@@ -1,8 +1,5 @@
 package com.inappstory.sdk.stories.cache;
 
-import static com.inappstory.sdk.stories.cache.StoryDownloadManager.EXPAND_STRING;
-
-
 import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
@@ -13,6 +10,7 @@ import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.data.IListItemContent;
 import com.inappstory.sdk.core.data.IReaderContent;
+import com.inappstory.sdk.core.network.content.RequestFields;
 import com.inappstory.sdk.core.utils.ConnectionCheck;
 import com.inappstory.sdk.core.utils.ConnectionCheckCallback;
 import com.inappstory.sdk.network.JsonParser;
@@ -26,9 +24,11 @@ import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.core.network.content.models.Feed;
 import com.inappstory.sdk.core.network.content.models.Story;
 import com.inappstory.sdk.stories.api.models.StoryListType;
+import com.inappstory.sdk.stories.api.models.TargetingBodyObject;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadFeedCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadListCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
+import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallbackWithUID;
 import com.inappstory.sdk.stories.outercallbacks.common.errors.ErrorCallback;
 import com.inappstory.sdk.stories.utils.LoopedExecutor;
 import com.inappstory.sdk.utils.StringsUtils;
@@ -51,10 +51,13 @@ class StoryDownloader {
     }
 
 
-    private final LoopedExecutor loopedExecutor = new LoopedExecutor(100, 100);
+    private final LoopedExecutor loopedExecutor = new LoopedExecutor(100, 100, getClass().getName());
+    boolean initialized = false;
 
     void init() {
-        loopedExecutor.init(queueStoryReadRunnable);
+        if (initialized) return;
+        initialized = true;
+        loopedExecutor.task(queueStoryReadRunnable);
     }
 
     private DownloadStoryCallback callback;
@@ -66,6 +69,7 @@ class StoryDownloader {
         synchronized (storyTasksLock) {
             storyTasks.put(new ContentIdAndType(storyId, type), new StoryTaskWithPriority(-1, 3));
         }
+        init();
     }
 
     void cleanTasks() {
@@ -175,6 +179,7 @@ class StoryDownloader {
             }
             changePriority(keyByStoryId, addIds, type);
         }
+        init();
     }
 
 
@@ -250,7 +255,8 @@ class StoryDownloader {
                 e.printStackTrace();
             }
             if (tKey == null) {
-                loopedExecutor.freeExecutor();
+                initialized = false;
+                loopedExecutor.cancelTask();
                 return;
             }
             final ContentIdAndType key = tKey;
@@ -327,7 +333,7 @@ class StoryDownloader {
                         core.network().getApi().getUgcStoryById(
                                 Integer.toString(key.contentId),
                                 1,
-                                EXPAND_STRING
+                                RequestFields.STORY_EXPAND
                         )
                 );
             } else {
@@ -338,7 +344,7 @@ class StoryDownloader {
                                 core.projectSettingsAPI().testKey(),
                                 0,
                                 1,
-                                EXPAND_STRING,
+                                RequestFields.STORY_EXPAND,
                                 null,
                                 null,
                                 null
@@ -363,8 +369,8 @@ class StoryDownloader {
                         core.projectSettingsAPI().testKey(),
                         1,
                         null,
-                        "id, background_color, image",
-                        "slides",
+                        RequestFields.STORY_COVER_FIELDS,
+                        RequestFields.STORY_COVER_EXPAND,
                         requestLocalParameters.userId(),
                         requestLocalParameters.sessionId(),
                         requestLocalParameters.locale()
@@ -447,6 +453,7 @@ class StoryDownloader {
 
     void loadStoryListByFeed(
             final String feed,
+            final String widgetUID,
             final SimpleApiCallback<List<Story>> callback,
             final boolean retry
     ) {
@@ -455,23 +462,28 @@ class StoryDownloader {
                 new ConnectionCheckCallback(core) {
                     @Override
                     public void success() {
-                        core.sessionManager().useOrOpenSession(new OpenSessionCallback() {
+                        core.sessionManager().useOrOpenSession(new OpenSessionCallbackWithUID() {
+                            @Override
+                            public String getUID() {
+                                return widgetUID;
+                            }
+
                             @Override
                             public void onSuccess(final RequestLocalParameters requestLocalParameters) {
                                 final String loadStoriesUID =
                                         core.statistic().profiling().addTask("api_story_list");
-                                String tags = TextUtils.join(
-                                        ",",
-                                        ((IASDataSettingsHolder) core.settingsAPI()).tags()
-                                );
+                                IASDataSettingsHolder settingsHolder = (IASDataSettingsHolder) core.settingsAPI();
                                 core.network().enqueue(
                                         core.network().getApi().getFeed(
                                                 feed,
                                                 core.projectSettingsAPI().testKey(),
                                                 0,
-                                                tags.isEmpty() ? null : tags,
-                                                null,
-                                                "stories.slides",
+                                                new TargetingBodyObject(
+                                                        settingsHolder.tags().isEmpty() ? null : settingsHolder.tags(),
+                                                        settingsHolder.options()
+                                                ),
+                                                RequestFields.FEED_STORY_FIELDS,
+                                                RequestFields.FEED_STORY_EXPAND,
                                                 requestLocalParameters.userId(),
                                                 requestLocalParameters.sessionId(),
                                                 requestLocalParameters.locale()
@@ -508,7 +520,11 @@ class StoryDownloader {
                                                 callback.onError(message);
                                                 closeSessionIf424();
                                                 if (retry)
-                                                    loadStoryListByFeed(feed, callback, false);
+                                                    loadStoryListByFeed(feed,
+                                                            widgetUID,
+                                                            callback,
+                                                            false
+                                                    );
                                             }
                                         },
                                         requestLocalParameters
@@ -536,11 +552,17 @@ class StoryDownloader {
 
     void loadStoryList(
             final SimpleApiCallback<List<Story>> callback,
+            final String widgetUID,
             final boolean isFavorite,
             final boolean retry
     ) {
         core.sessionManager().useOrOpenSession(
-                new OpenSessionCallback() {
+                new OpenSessionCallbackWithUID() {
+                    @Override
+                    public String getUID() {
+                        return widgetUID;
+                    }
+
                     @Override
                     public void onSuccess(final RequestLocalParameters requestLocalParameters) {
                         final String loadStoriesUID = core.statistic().profiling().addTask(
@@ -555,8 +577,8 @@ class StoryDownloader {
                                         isFavorite ? null :
                                                 TextUtils.join(",",
                                                         ((IASDataSettingsHolder) core.settingsAPI()).tags()),
-                                        null,
-                                        "slides",
+                                        RequestFields.LIST_STORY_FIELDS,
+                                        RequestFields.LIST_STORY_EXPAND,
                                         requestLocalParameters.userId(),
                                         requestLocalParameters.sessionId(),
                                         requestLocalParameters.locale()
@@ -588,7 +610,7 @@ class StoryDownloader {
                                         callback.onError(message);
                                         closeSessionIf424();
                                         if (retry)
-                                            loadStoryList(callback, isFavorite, false);
+                                            loadStoryList(callback, widgetUID, isFavorite, false);
                                     }
                                 },
                                 requestLocalParameters

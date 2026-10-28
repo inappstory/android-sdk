@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Map;
 
 public interface IReaderContentSlide extends ISlideTimeline {
-    ISlideTimeline slideTimeline();
     int index();
     String slidePayload();
     int duration();

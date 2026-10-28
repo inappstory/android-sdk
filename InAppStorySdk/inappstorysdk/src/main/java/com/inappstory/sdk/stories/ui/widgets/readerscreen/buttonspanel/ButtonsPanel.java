@@ -150,6 +150,14 @@ public class ButtonsPanel extends LinearLayout {
 
     ButtonsPanelManager manager;
 
+    public void mirror(boolean mirrored) {
+        if (likeLayout != null) likeLayout.setScaleX(mirrored ? -1 : 1);
+        if (dislikeLayout != null) dislikeLayout.setScaleX(mirrored ? -1 : 1);
+        if (favoriteLayout != null) favoriteLayout.setScaleX(mirrored ? -1 : 1);
+        if (soundLayout != null) soundLayout.setScaleX(mirrored ? -1 : 1);
+        if (shareLayout != null) shareLayout.setScaleX(mirrored ? -1 : 1);
+    }
+
     public void init(Context context) {
         inflate(getContext(), R.layout.cs_buttons_panel_layout, this);
         likeLayout = findViewById(R.id.likeButton);

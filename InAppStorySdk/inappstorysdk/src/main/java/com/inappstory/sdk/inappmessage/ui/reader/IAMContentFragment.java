@@ -1,9 +1,13 @@
 package com.inappstory.sdk.inappmessage.ui.reader;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,14 +19,16 @@ import androidx.fragment.app.Fragment;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.core.CancellationTokenImpl;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.api.impl.IASSingleStoryImpl;
+import com.inappstory.sdk.core.inputdialog.IInputDialogActions;
+import com.inappstory.sdk.core.inputdialog.InputDialogSource;
 import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenData;
 import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenStrategy;
-import com.inappstory.sdk.core.utils.ColorUtils;
 import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderSlideState;
 import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderState;
 import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderUIStates;
@@ -30,20 +36,25 @@ import com.inappstory.sdk.inappmessage.domain.reader.IIAMReaderSlideViewModel;
 import com.inappstory.sdk.inappmessage.domain.reader.IIAMReaderViewModel;
 import com.inappstory.sdk.inappmessage.domain.stedata.JsSendApiRequestData;
 import com.inappstory.sdk.inappmessage.domain.stedata.STETypeAndData;
-import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageAppearance;
-import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageBottomSheetAppearance;
-import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageFullscreenAppearance;
-import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessagePopupAppearance;
+import com.inappstory.sdk.inappmessage.domain.stedata.ShowInputData;
+import com.inappstory.sdk.inappmessage.domain.stedata.SlideInCacheData;
+import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.jsapiclient.JsApiClient;
 import com.inappstory.sdk.network.jsapiclient.JsApiResponseCallback;
 import com.inappstory.sdk.stories.api.models.ContentId;
 import com.inappstory.sdk.stories.api.models.ContentIdWithIndex;
+import com.inappstory.sdk.stories.api.models.dialogstructure.DialogStructure;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.CallToActionCallback;
 import com.inappstory.sdk.inappmessage.domain.stedata.CallToActionData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ContentViewInteractor;
 import com.inappstory.sdk.stories.utils.Observer;
+import com.inappstory.sdk.stories.utils.Sizes;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 
 public class IAMContentFragment extends Fragment implements Observer<IAMReaderSlideState> {
     ContentViewInteractor contentWebView;
@@ -51,41 +62,86 @@ public class IAMContentFragment extends Fragment implements Observer<IAMReaderSl
     IIAMReaderSlideViewModel readerSlideViewModel;
     IAMReaderSlideState currentState;
 
+    public void changeContentWebViewSwipe(boolean swiped) {
+        if (contentWebView instanceof IAMWebView) {
+            ((IAMWebView) contentWebView).swiped = swiped;
+        }
+    }
+
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(
-                R.layout.cs_inappmessage_content_layout,
-                container,
-                false
-        );
+        View v;
+        try {
+            v = inflater.inflate(
+                    R.layout.cs_inappmessage_content_layout,
+                    container,
+                    false
+            );
+        } catch (Exception e) {
+            e.printStackTrace();
+            v = inflater.inflate(
+                    R.layout.cs_inappmessage_inflate_error_layout,
+                    container,
+                    false
+            );
+        }
+        return v;
     }
 
     @Override
     public void onDestroyView() {
         if (readerSlideViewModel != null) {
             readerSlideViewModel.removeSubscriber(this);
+            if (contentWebView != null) {
+                readerSlideViewModel.removeScrollSubscriber((IAMWebView) contentWebView);
+            }
             readerSlideViewModel.singleTimeEvents().unsubscribe(callToActionDataObserver);
         }
-        contentWebView.stopSlide(false);
+        if (contentWebView != null)
+            contentWebView.stopSlide(false);
         super.onDestroyView();
     }
 
     @Override
     public void onPause() {
         super.onPause();
+        pauseScreen();
+    }
+
+    public void pauseScreen() {
         isPaused = true;
         if (readerSlideViewModel != null)
             readerSlideViewModel.readerIsClosing();
-        contentWebView.pauseSlide();
+        if (contentWebView != null)
+            contentWebView.pauseSlide();
+    }
+
+    public void resumeScreen() {
+        if (readerSlideViewModel != null)
+            readerSlideViewModel.readerIsOpened(!isPaused);
+        if (contentWebView != null)
+            contentWebView.resumeSlide();
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        if (readerSlideViewModel != null)
-            readerSlideViewModel.readerIsOpened(!isPaused);
-        contentWebView.resumeSlide();
+        resumeScreen();
+    }
+
+    public void refreshClick() {
+        readerSlideViewModel.reloadContent();
+        /*if (!(contentWebView instanceof IAMWebView)) return;
+        final IAMWebView localWebView = (IAMWebView) contentWebView;
+        IAMReaderSlideState current = currentState;
+        if (current == null) return;
+        localWebView.showSlides(
+                current.slides(),
+                JsonParser.mapToJsonString(current.cardAppearance()),
+                current.slideIndex()
+        );*/
     }
 
     Observer<STETypeAndData> callToActionDataObserver = new Observer<STETypeAndData>() {
@@ -100,6 +156,11 @@ public class IAMContentFragment extends Fragment implements Observer<IAMReaderSl
                             callToActionHandle(
                                     core,
                                     (CallToActionData) newValue.data()
+                            );
+                            break;
+                        case SLIDE_IN_CACHE:
+                            slideInCache(
+                                    (SlideInCacheData) newValue.data()
                             );
                             break;
                         case JS_SEND_API_REQUEST:
@@ -120,6 +181,12 @@ public class IAMContentFragment extends Fragment implements Observer<IAMReaderSl
                                     (ContentId) newValue.data()
                             );
                             break;
+                        case SHOW_TEXT_INPUT:
+                            showTextInput(
+                                    core,
+                                    (ShowInputData) newValue.data()
+                            );
+                            break;
 
                     }
                 }
@@ -130,7 +197,8 @@ public class IAMContentFragment extends Fragment implements Observer<IAMReaderSl
     private void openStoryHandle(IASCore core, final ContentIdWithIndex contentIdWithIndex) {
         try {
             AppearanceManager appearanceManager = AppearanceManager.checkOrCreateAppearanceManager(null);
-            ((IASSingleStoryImpl) core.singleStoryAPI()).show(
+            ((IASSingleStoryImpl) core.singleStoryAPI()).externalShow(
+                    new CancellationTokenImpl(),
                     requireActivity(),
                     contentIdWithIndex.id() + "",
                     appearanceManager,
@@ -146,16 +214,75 @@ public class IAMContentFragment extends Fragment implements Observer<IAMReaderSl
 
     }
 
+    private void submitInput(final String id, final String message) {
+        try {
+            ((IAMWebView) contentWebView).sendInputResult(id, message);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void showTextInput(final IASCore core, final ShowInputData inputData) {
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                if (!isAdded()) return;
+                Context context = getContext();
+
+                DialogStructure structure = JsonParser.fromJson(inputData.data(), DialogStructure.class);
+                core.showInputDialog().onShow(
+                        context,
+                        structure.toInputDialogData(),
+                        InputDialogSource.IN_APP_MESSAGE,
+                        new IInputDialogActions() {
+                            @Override
+                            public void onShow() {
+                                new Handler(Looper.getMainLooper()).post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        pauseScreen();
+                                    }
+                                });
+                            }
+
+                            @Override
+                            public void onSubmit(String message) {
+                                new Handler(Looper.getMainLooper()).post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        resumeScreen();
+                                        submitInput(inputData.id(), message);
+                                    }
+                                });
+                            }
+
+                            @Override
+                            public void onCancel() {
+                                new Handler(Looper.getMainLooper()).post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        resumeScreen();
+                                        submitInput(inputData.id(), "");
+                                    }
+                                });
+                            }
+                        }
+                );
+            }
+        });
+
+    }
+
     private void openGameHandle(IASCore core, final ContentId contentId) {
         try {
-            IIAMReaderViewModel readerViewModel = core.screensManager().iamReaderViewModel();
+            if (readerSlideViewModel == null) return;
             if (core.gamesAPI().gameCanBeOpened(contentId.id())) {
                 core.screensManager().openScreen(
                         requireActivity(),
                         new LaunchGameScreenStrategy(core, true)
                                 .data(new LaunchGameScreenData(
                                         null,
-                                        readerViewModel.getCurrentInAppMessageData(),
+                                        readerSlideViewModel.slideData(),
                                         contentId.id()
                                 ))
                 );
@@ -163,6 +290,20 @@ public class IAMContentFragment extends Fragment implements Observer<IAMReaderSl
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private void slideInCache(final SlideInCacheData slideInCacheData) {
+        final IAMWebView webView = (IAMWebView) contentWebView;
+        webView.post(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    webView.slideInCache(JsonParser.getJson(slideInCacheData));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
     }
 
     private void jsSendApiRequestHandle(
@@ -176,7 +317,8 @@ public class IAMContentFragment extends Fragment implements Observer<IAMReaderSl
         ).sendApiRequest(apiRequestData.data(), new JsApiResponseCallback() {
             @Override
             public void onJsApiResponse(String result, String cb) {
-                contentWebView.loadJsApiResponse(result, cb);
+                if (contentWebView != null)
+                    contentWebView.loadJsApiResponse(result, cb);
             }
         });
     }
@@ -230,80 +372,99 @@ public class IAMContentFragment extends Fragment implements Observer<IAMReaderSl
                 IIAMReaderViewModel readerViewModel = core.screensManager().iamReaderViewModel();
                 IAMReaderState readerState = readerViewModel.getCurrentState();
                 readerSlideViewModel = readerViewModel.slideViewModel();
-                if (readerSlideViewModel != null) {
-                    contentWebView.slideViewModel(readerSlideViewModel);
-                    contentWebView.checkIfClientIsSet();
-                    readerSlideViewModel.addSubscriber(
-                            IAMContentFragment.this
-                    );
-                    readerSlideViewModel.singleTimeEvents().subscribe(
-                            callToActionDataObserver
-                    );
-                    if (!readerSlideViewModel.loadContent()) {
-                        readerViewModel.updateCurrentUiState(IAMReaderUIStates.CLOSED);
-                        return;
+                if (contentWebView != null) {
+                    if (readerSlideViewModel != null) {
+                        final IAMWebView webView = (IAMWebView) contentWebView;
+                        readerSlideViewModel.addScrollSubscriber(webView);
+                        contentWebView.slideViewModel(readerSlideViewModel);
+                        contentWebView.checkIfClientIsSet();
+                        readerSlideViewModel.addSubscriber(
+                                IAMContentFragment.this
+                        );
+                        readerSlideViewModel.singleTimeEvents().subscribe(
+                                callToActionDataObserver
+                        );
+                        if (!readerSlideViewModel.loadContent()) {
+                            readerViewModel.updateCurrentUiState(IAMReaderUIStates.CLOSED);
+                            return;
+                        }
                     }
+                    if (readerState != null)
+                        setWebViewBackground();
+                } else {
+                    readerViewModel.updateCurrentUiState(IAMReaderUIStates.CLOSED);
                 }
-                if (readerState != null)
-                    setWebViewBackground(readerState.appearance);
             }
         });
     }
 
-    private void setWebViewBackground(InAppMessageAppearance appearance) {
-        if (appearance != null) {
-            int backgroundColor = Color.WHITE;
-            if (appearance instanceof InAppMessageFullscreenAppearance) {
-                backgroundColor = ColorUtils.parseColorRGBA(
-                        ((InAppMessageFullscreenAppearance) appearance)
-                                .backgroundColor()
-                );
-            } else if (appearance instanceof InAppMessagePopupAppearance) {
-                backgroundColor = ColorUtils.parseColorRGBA(
-                        ((InAppMessagePopupAppearance) appearance)
-                                .backgroundColor()
-                );
-            } else if (appearance instanceof InAppMessageBottomSheetAppearance) {
-                backgroundColor = ColorUtils.parseColorRGBA(
-                        ((InAppMessageBottomSheetAppearance) appearance)
-                                .backgroundColor()
-                );
-            }
-            contentWebView.setBackgroundColor(Color.argb(1, 255, 255, 255));
+    private void setWebViewBackground() {
+        contentWebView.setBackgroundColor(Color.argb(1, 255, 255, 255));
+    }
+
+    private String generateShowSlidesConfig(IAMReaderSlideState value) {
+        try {
+            Context context = requireContext();
+            Map<String, Object> configMap = new HashMap<>();
+            Pair<Integer, Integer> safeArea = value.safeArea();
+            configMap.put("safeAreaInsetTop", Sizes.pxToDpExt(safeArea.first, context));
+            configMap.put("safeAreaInsetBottom", Sizes.pxToDpExt(safeArea.second, context));
+            return JsonParser.mapToJsonString(configMap);
+        } catch (Exception e) {
+            return "{}";
         }
+
     }
 
     @Override
     public void onUpdate(final IAMReaderSlideState newValue) {
         if (newValue == null) return;
-        if (currentState == null ||
-                (newValue.contentStatus() != currentState.contentStatus())
+        if (Objects.equals(currentState, newValue)) return;
+        IAMReaderSlideState localCurrentState = currentState;
+        currentState = newValue;
+        if (!(contentWebView instanceof IAMWebView)) return;
+        final IAMWebView localWebView = (IAMWebView) contentWebView;
+        if (localCurrentState == null ||
+                (newValue.contentStatus() != localCurrentState.contentStatus())
         ) {
             switch (newValue.contentStatus()) {
                 case 0:
                     break;
                 case 1:
-                    if (newValue.content() != null &&
-                            !newValue.content().isEmpty()) {
-                        if (contentWebView instanceof View) {
-                            ((View) contentWebView).post(
-                                    new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            contentWebView.loadSlide(newValue.content());
-                                        }
+                    if (newValue.layout() != null &&
+                            !newValue.layout().isEmpty()) {
+                        localWebView.post(
+                                new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        localWebView.loadSlide(newValue.layout());
                                     }
-                            );
-                        }
+                                }
+                        );
                     }
                     break;
-                case -1:
+                case 2:
+                    localWebView.post(
+                            new Runnable() {
+                                @Override
+                                public void run() {
+                                    localWebView.setClientVariables();
+
+                                    localWebView.showSlides(
+                                            newValue.slides(),
+                                            JsonParser.mapToJsonString(newValue.cardAppearance()),
+                                            0,
+                                            generateShowSlidesConfig(newValue)
+                                    );
+                                }
+                            }
+                    );
                     break;
             }
 
         }
-        if (currentState != null &&
-                (newValue.slideJSStatus() != currentState.slideJSStatus())
+        if (localCurrentState != null &&
+                (newValue.slideJSStatus() != localCurrentState.slideJSStatus())
         ) {
             switch (newValue.slideJSStatus()) {
                 case 0:
@@ -314,7 +475,6 @@ public class IAMContentFragment extends Fragment implements Observer<IAMReaderSl
                                 new Runnable() {
                                     @Override
                                     public void run() {
-
                                         contentWebView.startSlide(null);
                                         contentWebView.resumeSlide();
                                     }
@@ -327,6 +487,5 @@ public class IAMContentFragment extends Fragment implements Observer<IAMReaderSl
             }
 
         }
-        currentState = newValue;
     }
 }

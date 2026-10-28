@@ -24,13 +24,18 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 
 public class IASWebViewClient extends WebViewClient {
+    public Set<String> allowedPaths = new HashSet<>();
 
     private File getCachedFile(String key) {
         InAppStoryManager manager = InAppStoryManager.getInstance();
@@ -54,8 +59,10 @@ public class IASWebViewClient extends WebViewClient {
         } else if (url.startsWith("file://")) {
             filePath = Uri.parse(url).getPath();
         }
-        if (filePath != null && context != null) {
-            if (filePath.startsWith(context.getFilesDir().getAbsolutePath() + "/ias/") ||
+        if (filePath != null) {
+            if (allowedPaths.contains(filePath))
+                file = new File(filePath);
+            else if (filePath.startsWith(context.getFilesDir().getAbsolutePath() + "/ias/") ||
                     filePath.startsWith(context.getCacheDir().getAbsolutePath() + "/ias/")) {
                 file = new File(filePath);
             } else
@@ -116,7 +123,6 @@ public class IASWebViewClient extends WebViewClient {
                 return new WebResourceResponse("text/plain", "UTF-8", 200, "OK", headers, null);
             }
             String key = url.substring(indexOf + vodAsset.length());
-            Log.e("VOD_req", key);
             Map<String, String> headers = request.getRequestHeaders();
             String rangeHeader = headers.get("range");
             WebResourceResponse response = getWebResourceResponse(rangeHeader, key);
@@ -144,7 +150,6 @@ public class IASWebViewClient extends WebViewClient {
             range = new ContentRange(0, item.getFullSize(), item.getFullSize());
         }
 
-        Log.e("WebProfiling", "getWebResourceResponse Req " + item.getUrl() + " " + rangeHeader + " " + System.currentTimeMillis());
         try {
             StoryVODResourceFileUseCaseResult res = new StoryVODResourceFileUseCase(
                     core,
@@ -159,9 +164,6 @@ public class IASWebViewClient extends WebViewClient {
             String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(
                     MimeTypeMap.getFileExtensionFromUrl(item.getUrl())
             );
-            Log.e("VODTest", item.getUrl() + " " + range.start() + " " + range.end());
-
-
             WebResourceResponse response = new WebResourceResponse(
                     mimeType,
                     "BINARY",
@@ -171,9 +173,6 @@ public class IASWebViewClient extends WebViewClient {
             Map<String, String> currentHeaders = response.getResponseHeaders();
             if (currentHeaders == null) currentHeaders = new HashMap<>();
             HashMap<String, String> newHeaders = new HashMap<>(currentHeaders);
-            Log.e("VOD_Resource", item.getUrl() + " " +
-                    (range.start() + "-" + range.end() + "/" + range.length())
-                    + " Cached:" + res.cached());
             if (res.cached())
                 newHeaders.put("X-VOD-From-Cache", "");
             newHeaders.put("Access-Control-Allow-Origin", "*");
@@ -191,15 +190,12 @@ public class IASWebViewClient extends WebViewClient {
     @Override
     public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
         try {
-            Log.e("shouldInterceptRequest", request.getUrl().toString());
             WebResourceResponse response = parseVODRequest(request);
             if (response == null)
                 response = getChangedResponse(request.getUrl().toString(), view.getContext());
             if (response != null) {
-                Log.e("shouldInterceptRequest", request.getUrl().toString() + " success");
                 return response;
             } else {
-
                 Log.e("shouldInterceptRequest", request.getUrl().toString() + " error");
             }
         } catch (Exception e) {

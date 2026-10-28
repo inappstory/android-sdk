@@ -8,6 +8,9 @@ public class InnerShareData {
     public String getText() {
         return text;
     }
+    public String getUrl() {
+        return url;
+    }
 
     public String getTitle() {
         return title;

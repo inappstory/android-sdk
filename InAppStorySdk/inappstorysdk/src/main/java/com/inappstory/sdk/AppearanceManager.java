@@ -3,7 +3,6 @@ package com.inappstory.sdk;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Typeface;
-import android.util.SizeF;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,12 +10,17 @@ import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
 
+import com.inappstory.sdk.banners.ui.grid.DefaultBannerGridAppearance;
+import com.inappstory.sdk.banners.ui.list.DefaultBannerListAppearance;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
+import com.inappstory.sdk.core.banners.ICustomBannerGridAppearance;
+import com.inappstory.sdk.core.banners.ICustomBannerListAppearance;
 import com.inappstory.sdk.core.ui.widgets.customicons.IASDefaultAppearanceIcons;
-import com.inappstory.sdk.core.ui.widgets.customicons.IASDefaultIcon;
 import com.inappstory.sdk.core.ui.widgets.customicons.IASDefaultIconCreator;
 import com.inappstory.sdk.core.ui.widgets.customicons.IIASDefaultIconCreator;
 import com.inappstory.sdk.stories.ui.widgets.LoadProgressBar;
+import com.inappstory.sdk.banners.ui.carousel.DefaultBannerCarouselAppearance;
+import com.inappstory.sdk.core.banners.ICustomBannerCarouselAppearance;
 import com.inappstory.sdk.stories.api.models.CachedSessionData;
 import com.inappstory.sdk.core.network.content.models.Image;
 import com.inappstory.sdk.stories.ui.list.StoriesList;
@@ -117,6 +121,7 @@ public class AppearanceManager {
         this.csListItemHeight = other.csListItemHeight;
         this.csListItemBorderVisibility = other.csListItemBorderVisibility;
         this.csListItemBorderColor = other.csListItemBorderColor;
+        this.csBannerCarouselInterface = other.csBannerCarouselInterface;
         this.csFavoriteListItemInterface = other.csFavoriteListItemInterface;
         this.csListItemInterface = other.csListItemInterface;
         this.csListUGCItemInterface = other.csListUGCItemInterface;
@@ -185,6 +190,10 @@ public class AppearanceManager {
     private IGetFavoriteListItem csFavoriteListItemInterface;
     private IStoriesListItem csListItemInterface;
     private IStoriesListUGCItem csListUGCItemInterface;
+
+    private ICustomBannerCarouselAppearance csBannerCarouselInterface = new DefaultBannerCarouselAppearance();
+    private ICustomBannerListAppearance csBannerListInterface = new DefaultBannerListAppearance();
+    private ICustomBannerGridAppearance csBannerGridInterface = new DefaultBannerGridAppearance();
 
     private IStoryReaderLoaderView csStoryLoaderView;
 
@@ -1135,6 +1144,35 @@ public class AppearanceManager {
 
     public AppearanceManager csListItemInterface(IStoriesListItem csListItemInterface) {
         this.csListItemInterface = csListItemInterface;
+        return AppearanceManager.this;
+    }
+
+    public ICustomBannerCarouselAppearance csBannerPlaceInterface() {
+        return csBannerCarouselInterface != null ? csBannerCarouselInterface : new DefaultBannerCarouselAppearance();
+    }
+
+
+    public ICustomBannerListAppearance csBannerListInterface() {
+        return csBannerListInterface != null ? csBannerListInterface : new DefaultBannerListAppearance();
+    }
+
+    public ICustomBannerGridAppearance csBannerGridInterface() {
+        return csBannerGridInterface != null ? csBannerGridInterface : new DefaultBannerGridAppearance();
+    }
+    
+    public AppearanceManager csBannerGridInterface(ICustomBannerGridAppearance csBannerGridInterface) {
+        this.csBannerGridInterface = csBannerGridInterface;
+        return AppearanceManager.this;
+    }
+
+
+    public AppearanceManager csBannerCarouselInterface(ICustomBannerCarouselAppearance csBannerCarouselInterface) {
+        this.csBannerCarouselInterface = csBannerCarouselInterface;
+        return AppearanceManager.this;
+    }
+
+    public AppearanceManager csBannerListInterface(ICustomBannerListAppearance csBannerListInterface) {
+        this.csBannerListInterface = csBannerListInterface;
         return AppearanceManager.this;
     }
 

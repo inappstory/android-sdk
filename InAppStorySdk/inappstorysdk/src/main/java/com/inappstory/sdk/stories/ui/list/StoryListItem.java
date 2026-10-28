@@ -13,6 +13,7 @@ import com.inappstory.sdk.UseManagerInstanceCallback;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.ui.screens.storyreader.StoryScreenHolder;
+import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.cache.usecases.IGetStoryCoverCallback;
 import com.inappstory.sdk.stories.cache.usecases.StoryCoverUseCase;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoryItemCoordinates;
@@ -75,7 +76,6 @@ public class StoryListItem extends BaseStoryListItem {
                                 @Override
                                 public void success(final String file) {
                                     core.contentHolder().listsContent().setPathByUrl(imageUrl, file);
-                                    if (coverIsSent) return;
                                     itemView.post(new Runnable() {
                                         @Override
                                         public void run() {
@@ -88,7 +88,6 @@ public class StoryListItem extends BaseStoryListItem {
 
                                 @Override
                                 public void error() {
-                                    if (coverIsSent) return;
                                     itemView.post(new Runnable() {
                                         @Override
                                         public void run() {
@@ -101,7 +100,7 @@ public class StoryListItem extends BaseStoryListItem {
                             }
                     ).getFile();
                 } else {
-                    if (viewCanBeUsed(itemView, getParent()) && !coverIsSent) {
+                    if (viewCanBeUsed(itemView, getParent())) {
                         getListItem.setImage(itemView, null, backgroundColor);
                     }
                 }
@@ -134,7 +133,6 @@ public class StoryListItem extends BaseStoryListItem {
 
             @Override
             public void error() {
-                if (coverIsSent) return;
                 itemView.post(new Runnable() {
                     @Override
                     public void run() {
@@ -147,8 +145,6 @@ public class StoryListItem extends BaseStoryListItem {
         });
     }
 
-    private boolean coverIsSent = false;
-
     public void bind(Integer id,
                      String titleText,
                      Integer titleColor,
@@ -160,7 +156,6 @@ public class StoryListItem extends BaseStoryListItem {
                      StoryData storyData,
                      ClickCallback callback) {
         this.callback = callback;
-        coverIsSent = false;
         itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -190,21 +185,20 @@ public class StoryListItem extends BaseStoryListItem {
             this.backgroundColor = backgroundColor;
             if (viewCanBeUsed(itemView, getParent())) {
                 getListItem.setId(itemView, id);
-
-                getListItem.setTitle(itemView, titleText, titleColor);
-                getListItem.setHasAudio(itemView, hasAudio);
-                getListItem.setOpened(itemView, isOpened);
-                if (getListItem instanceof IStoriesListItemWithStoryData) {
-                    ((IStoriesListItemWithStoryData) getListItem).setCustomData(itemView, storyData);
-                }
                 InAppStoryManager.useCore(new UseIASCoreCallback() {
                     @Override
                     public void use(@NonNull IASCore core) {
                         String path = core.contentHolder().listsContent().getPathByUrl(imageUrl);
-                        coverIsSent = (path != null);
                         getListItem.setImage(itemView, path, StoryListItem.this.backgroundColor);
                     }
                 });
+                getListItem.setTitle(itemView, titleText, titleColor);
+                getListItem.setHasAudio(itemView, hasAudio);
+                getListItem.setOpened(itemView, isOpened);
+
+                if (getListItem instanceof IStoriesListItemWithStoryData) {
+                    ((IStoriesListItemWithStoryData) getListItem).setCustomData(itemView, storyData);
+                }
             }
             loadCovers(getListItem, imageUrl, backgroundColor, videoUrl);
         }

@@ -92,6 +92,7 @@ public class ExceptionManager {
         log.timestamp = System.currentTimeMillis();
         log.message = throwable.getClass().getCanonicalName() + ": " + throwable.getMessage();
         log.session = ((IASDataSettingsHolder)core.settingsAPI()).sessionIdOrEmpty();
+
         StackTraceElement[] stackTraceElements = throwable.getStackTrace();
         if (stackTraceElements.length > 0) {
             String stackTrace = "";

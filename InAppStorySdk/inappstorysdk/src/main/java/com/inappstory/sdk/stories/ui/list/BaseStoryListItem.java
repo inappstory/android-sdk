@@ -2,6 +2,8 @@ package com.inappstory.sdk.stories.ui.list;
 
 import android.app.Activity;
 import android.content.Context;
+import android.util.Log;
+import android.util.Size;
 import android.view.View;
 
 import androidx.annotation.NonNull;

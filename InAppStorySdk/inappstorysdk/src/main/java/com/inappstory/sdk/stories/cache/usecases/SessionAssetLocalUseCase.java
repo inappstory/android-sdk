@@ -1,11 +1,14 @@
 package com.inappstory.sdk.stories.cache.usecases;
 
 import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.game.cache.SimpleUseCaseError;
 import com.inappstory.sdk.game.cache.UseCaseCallback;
 import com.inappstory.sdk.lrudiskcache.CacheJournalItem;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.core.network.content.models.SessionAsset;
 import com.inappstory.sdk.stories.cache.DownloadFileState;
+import com.inappstory.sdk.utils.FilePathCacheGenerator;
+import com.inappstory.sdk.utils.FilePathCacheType;
 import com.inappstory.sdk.utils.StringsUtils;
 
 import java.io.File;
@@ -25,13 +28,11 @@ public class SessionAssetLocalUseCase extends GetCacheFileUseCase<Void> {
         this.cacheObject = cacheObject;
         this.useCaseCallback = useCaseCallback;
         this.uniqueKey = StringsUtils.md5(cacheObject.filename);
-        this.filePath = getCache().getCacheDir().getAbsolutePath() +
-                File.separator +
-                "v2" +
-                File.separator +
-                "bundle" +
-                File.separator +
-                cacheObject.filename;
+        this.filePath = new FilePathCacheGenerator(
+                cacheObject.filename,
+                core,
+                FilePathCacheType.SESSION_ASSET_LOCAL
+        ).generate();
     }
 
     private void deleteCacheKey() {
@@ -67,7 +68,7 @@ public class SessionAssetLocalUseCase extends GetCacheFileUseCase<Void> {
                 deleteCacheKey();
             }
         }
-        useCaseCallback.onError("No local file");
+        useCaseCallback.onError(new SimpleUseCaseError("No local file"));
         return false;
     }
 

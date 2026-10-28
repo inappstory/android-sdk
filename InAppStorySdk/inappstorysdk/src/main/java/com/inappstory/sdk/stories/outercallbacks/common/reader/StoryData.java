@@ -1,11 +1,11 @@
 package com.inappstory.sdk.stories.outercallbacks.common.reader;
 
 import com.inappstory.sdk.core.data.IStatData;
-import com.inappstory.sdk.network.annotations.models.Ignore;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.utils.StringsUtils;
 
-import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 
 public class StoryData extends ContentData {
     /**
@@ -37,6 +37,8 @@ public class StoryData extends ContentData {
     @Deprecated
     public int slidesCount;
 
+    private final Map<String, String> extraFields = new HashMap<>();
+
     public StoryData(IStatData story, String feed, SourceType sourceType) {
         this(
                 story.id(),
@@ -44,7 +46,8 @@ public class StoryData extends ContentData {
                 StringsUtils.getNonNull(story.statTitle()),
                 story.slidesCount(),
                 feed,
-                sourceType
+                sourceType,
+                story.customAttributes()
         );
     }
 
@@ -54,12 +57,16 @@ public class StoryData extends ContentData {
             String title,
             int slidesCount,
             String feed,
-            SourceType sourceType
+            SourceType sourceType,
+            Map<String, String> extraFields
     ) {
         super(sourceType, contentType);
         this.id = id;
         this.title = title;
         this.slidesCount = slidesCount;
+        if (extraFields != null) {
+            this.extraFields.putAll(extraFields);
+        }
         this.feed = feed;
     }
 
@@ -72,6 +79,9 @@ public class StoryData extends ContentData {
         return title;
     }
 
+    public Map<String, String> extraFields() {
+        return new HashMap<>(extraFields);
+    }
 
     public String feed() {
         return feed;
@@ -90,6 +100,7 @@ public class StoryData extends ContentData {
                 ", sourceType='" + sourceType().name() + '\'' +
                 ", contentType='" + contentType().name() + '\'' +
                 ", slidesCount=" + slidesCount() +
+                ", extraFields =" + extraFields() +
                 '}';
     }
 

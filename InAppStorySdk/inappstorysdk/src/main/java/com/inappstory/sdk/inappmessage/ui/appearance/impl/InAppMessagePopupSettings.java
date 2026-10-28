@@ -5,43 +5,28 @@ import android.graphics.drawable.Drawable;
 
 import com.inappstory.sdk.core.utils.ColorUtils;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageBackdrop;
-import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageBackground;
+import com.inappstory.sdk.inappmessage.ui.appearance.IReaderBackground;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessagePopupAppearance;
 import com.inappstory.sdk.utils.NumberUtils;
 
 import java.util.Map;
 
 public class InAppMessagePopupSettings implements InAppMessagePopupAppearance {
-    public InAppMessagePopupSettings(
-            Float contentRatio,
-            Integer cornerRadius,
-            Integer horizontalPadding,
-            Integer closeButtonPosition,
-            Integer animationType,
-            String backgroundColor,
-            InAppMessageBackdrop backdrop
-    ) {
-        this.contentRatio = contentRatio;
-        this.cornerRadius = cornerRadius;
-        this.horizontalPadding = horizontalPadding;
-        this.closeButtonPosition = closeButtonPosition;
-        this.animationType = animationType;
-        this.backgroundColor = backgroundColor;
-        this.backdrop = backdrop;
-    }
 
     public InAppMessagePopupSettings() {}
 
-    public InAppMessagePopupSettings(Map<String, Object> appearance) {
+    public InAppMessagePopupSettings(Map<String, Object> appearance, boolean disableClose) {
         if (appearance == null) return;
+        this.disableClose = disableClose;
         String contentRatioKey = "content_ratio";
         String cornerRadiusKey = "corner_radius";
-        String horizontalPaddingKey = "horizontal_padding";
+        String horizontalOffsetKey = "horizontal_offset";
         String closeButtonPositionKey = "close_button_position";
         String animationTypeKey = "animation_type";
         String backgroundColorKey = "background_color";
         String backgroundKey = "background";
         String backdropKey = "backdrop";
+        String cardAppearanceKey = "card_appearance";
         NumberUtils numberUtils = new NumberUtils();
         if (appearance.containsKey(contentRatioKey)) {
             contentRatio = numberUtils.convertNumberToFloat(appearance.get(contentRatioKey));
@@ -49,8 +34,8 @@ public class InAppMessagePopupSettings implements InAppMessagePopupAppearance {
         if (appearance.containsKey(cornerRadiusKey)) {
             cornerRadius = numberUtils.convertNumberToInt(appearance.get(cornerRadiusKey));
         }
-        if (appearance.containsKey(horizontalPaddingKey)) {
-            horizontalPadding = numberUtils.convertNumberToInt(appearance.get(horizontalPaddingKey));
+        if (appearance.containsKey(horizontalOffsetKey)) {
+            horizontalOffset = numberUtils.convertNumberToInt(appearance.get(horizontalOffsetKey));
         }
         if (appearance.containsKey(closeButtonPositionKey)) {
             closeButtonPosition = numberUtils.convertNumberToInt(appearance.get(closeButtonPositionKey));
@@ -65,20 +50,26 @@ public class InAppMessagePopupSettings implements InAppMessagePopupAppearance {
             backgroundColor = (String) appearance.get(backgroundColorKey);
         }
         if (appearance.containsKey(backgroundKey)) {
-            background = new InAppMessageBackgroundSettings(
+            background = new ReaderBackgroundSettings(
                     (Map<String, Object>) appearance.get(backgroundKey)
             );
+        }
+        if (appearance.containsKey(cardAppearanceKey)) {
+            cardAppearance = (Map<String, Object>) appearance.get(cardAppearanceKey);
         }
     }
 
     private Float contentRatio;
     private Integer cornerRadius;
-    private Integer horizontalPadding;
+    private Integer horizontalOffset;
     private Integer closeButtonPosition;
     private Integer animationType;
     private String backgroundColor;
     private InAppMessageBackdrop backdrop;
-    private InAppMessageBackground background;
+    private IReaderBackground background;
+    private boolean disableClose;
+    private Map<String, Object> cardAppearance;
+
 
     @Override
     public float contentRatio() {
@@ -86,8 +77,8 @@ public class InAppMessagePopupSettings implements InAppMessagePopupAppearance {
     }
 
     @Override
-    public int horizontalPadding() {
-        return horizontalPadding != null ? horizontalPadding : 16;
+    public int horizontalOffset() {
+        return horizontalOffset != null ? horizontalOffset : 16;
     }
 
     @Override
@@ -117,7 +108,7 @@ public class InAppMessagePopupSettings implements InAppMessagePopupAppearance {
     }
 
     @Override
-    public InAppMessageBackground background() {
+    public IReaderBackground background() {
         return background;
     }
 
@@ -129,4 +120,13 @@ public class InAppMessagePopupSettings implements InAppMessagePopupAppearance {
         return drawable;
     }
 
+    @Override
+    public boolean disableClose() {
+        return disableClose;
+    }
+
+    @Override
+    public Map<String, Object> cardAppearance() {
+        return cardAppearance;
+    }
 }

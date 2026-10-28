@@ -13,14 +13,6 @@ public class GameReaderCallbackAdapter implements GameReaderCallback {
     }
 
     @Override
-    public void finishGame(
-            ContentData gameLaunchSourceData,
-            String gameId,
-            String result) {
-
-    }
-
-    @Override
     public void closeGame(
             ContentData gameLaunchSourceData,
             String gameId) {

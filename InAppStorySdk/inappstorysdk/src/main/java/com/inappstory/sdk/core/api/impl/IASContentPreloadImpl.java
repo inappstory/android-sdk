@@ -1,45 +1,38 @@
 package com.inappstory.sdk.core.api.impl;
 
-import static com.inappstory.sdk.core.api.impl.IASSettingsImpl.TAG_LIMIT;
+import static com.inappstory.sdk.core.api.impl.IASSettingsImpl.TAG_LIMIT_COUNT;
 
 import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.InAppStoryManager;
-import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.LoggerTags;
 import com.inappstory.sdk.R;
-import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.core.IASCore;
-import com.inappstory.sdk.core.api.IASAssetsHolder;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.IASContentPreload;
-import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.data.IReaderContent;
 import com.inappstory.sdk.core.inappmessages.InAppMessageFeedCallback;
 import com.inappstory.sdk.core.network.content.usecase.InAppMessagesUseCase;
-import com.inappstory.sdk.game.cache.SessionAssetsIsReadyCallback;
+import com.inappstory.sdk.stories.cache.LayoutIsReadyCallback;
+import com.inappstory.sdk.stories.cache.SessionAssetsIsReadyCallback;
 import com.inappstory.sdk.game.cache.SuccessUseCaseCallback;
-import com.inappstory.sdk.game.cache.UseCaseCallback;
 import com.inappstory.sdk.game.preload.GamePreloader;
 import com.inappstory.sdk.game.preload.IGamePreloader;
 import com.inappstory.sdk.inappmessage.InAppMessageLoadCallback;
 import com.inappstory.sdk.inappmessage.InAppMessagePreloadSettings;
 import com.inappstory.sdk.stories.api.interfaces.IGameCenterData;
-import com.inappstory.sdk.core.network.content.models.SessionAsset;
-import com.inappstory.sdk.stories.api.models.ContentType;
-import com.inappstory.sdk.stories.cache.usecases.SessionAssetUseCase;
 import com.inappstory.sdk.stories.utils.TagsUtils;
-import com.inappstory.sdk.utils.ISessionHolder;
 import com.inappstory.sdk.utils.StringsUtils;
 
-import java.io.File;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class IASContentPreloadImpl implements IASContentPreload {
     private final IASCore core;
@@ -58,7 +51,7 @@ public class IASContentPreloadImpl implements IASContentPreload {
                         new Handler(Looper.getMainLooper()).post(new Runnable() {
                             @Override
                             public void run() {
-                                Log.d("IAS_Game_Preloading", "Game " + result.id() + " is loaded");
+                                // Log.d("IAS_Game_Preloading", "Game " + result.id() + " is loaded");
                             }
                         });
                     }
@@ -83,7 +76,7 @@ public class IASContentPreloadImpl implements IASContentPreload {
                 for (String tag : copyTags) {
                     if (!TagsUtils.checkTagPattern(tag)) {
                         InAppStoryManager.showELog(
-                                InAppStoryManager.IAS_WARN_TAG,
+                                LoggerTags.IAS_WARN_TAG,
                                 StringsUtils.getFormattedErrorStringFromContext(
                                         core.appContext(),
                                         R.string.ias_tag_pattern_error,
@@ -94,12 +87,12 @@ public class IASContentPreloadImpl implements IASContentPreload {
                     }
                     filteredTags.add(tag);
                 }
-                if (StringsUtils.getBytesLength(TextUtils.join(",", filteredTags)) > TAG_LIMIT) {
+                if (filteredTags.size() > TAG_LIMIT_COUNT) {
                     InAppStoryManager.showELog(
-                            InAppStoryManager.IAS_ERROR_TAG,
+                            LoggerTags.IAS_ERROR_TAG,
                             StringsUtils.getErrorStringFromContext(
                                     core.appContext(),
-                                    R.string.ias_setter_tags_length_error
+                                    R.string.ias_setter_tags_count_error
                             )
                     );
                     if (callback != null)
@@ -114,17 +107,52 @@ public class IASContentPreloadImpl implements IASContentPreload {
                 .get(new InAppMessageFeedCallback() {
                     @Override
                     public void success(final List<IReaderContent> content) {
-                        IASAssetsHolder assetsHolder = core.assetsHolder();
-                        if (assetsHolder.assetsIsDownloaded()) {
-                            downloadInAppMessagesContent(content, callback);
-                        } else {
-                            assetsHolder.addAssetsIsReadyCallback(new SessionAssetsIsReadyCallback() {
-                                @Override
-                                public void isReady() {
-                                    downloadInAppMessagesContent(content, callback);
-                                }
-                            });
-                        }
+                        core.assetsHolder().checkOrAddAssetsIsReadyCallback(
+                                new SessionAssetsIsReadyCallback() {
+                                    @Override
+                                    public void isReady() {
+                                        core.layoutHolder().checkOrAddLayoutIsReadyCallback(
+                                                new LayoutIsReadyCallback() {
+                                                    @Override
+                                                    public void isReady() {
+                                                        core.layoutHolder().removeLayoutIsReadyCallback(this);
+                                                        downloadInAppMessagesContent(content, callback);
+                                                    }
+
+                                                    @Override
+                                                    public void layoutIsLoading() {
+
+                                                    }
+
+                                                    @Override
+                                                    public void error() {
+                                                        core.layoutHolder().removeLayoutIsReadyCallback(this);
+                                                    }
+                                                }
+                                        );
+
+                                    }
+
+                                    @Override
+                                    public void assetsIsLoading() {
+
+                                    }
+
+                                    @Override
+                                    public void error() {
+
+                                    }
+
+                                    @Override
+                                    public Set<String> usedAssets() {
+                                        Set<String> resAssets = new HashSet<>();
+                                        for (IReaderContent readerContent : content) {
+                                            resAssets.addAll(core.assetUrlsExtractor()
+                                                    .extract(readerContent));
+                                        }
+                                        return resAssets;
+                                    }
+                                });
                     }
 
                     @Override
@@ -161,7 +189,6 @@ public class IASContentPreloadImpl implements IASContentPreload {
     private void downloadInAppMessageContent(final IReaderContent content, final InAppMessageLoadCallback callback) {
         core.contentLoader().inAppMessageDownloadManager().addInAppMessageTask(
                 content.id(),
-                ContentType.IN_APP_MESSAGE,
                 callback
         );
     }

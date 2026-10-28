@@ -12,6 +12,8 @@ public class IAMStatisticV1Task {
     public String iterationId;
     @SerializedName("si")
     public Integer slideIndex;
+    @SerializedName("li")
+    public Integer layerIndex;
     @SerializedName("st")
     public Integer slideTotal;
     @SerializedName("d")
@@ -22,10 +24,14 @@ public class IAMStatisticV1Task {
     public String widgetLabel;
     @SerializedName("wv")
     public String widgetValue;
+    @SerializedName("v")
+    public String value;
     @SerializedName("wa")
     public Integer widgetAnswer;
     @SerializedName("wal")
     public String widgetAnswerLabel;
+    @SerializedName("sa")
+    public String slideAnalytics;
     @SerializedName("was")
     public Integer widgetAnswerScore;
 

@@ -5,19 +5,20 @@ import android.util.Log;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.game.utils.GameConstants;
 import com.inappstory.sdk.lrudiskcache.FileManager;
+import com.inappstory.sdk.stories.api.interfaces.ConditionsResult;
+import com.inappstory.sdk.stories.api.interfaces.GLCError;
 import com.inappstory.sdk.stories.api.interfaces.IGameCenterData;
 import com.inappstory.sdk.stories.api.models.GameArchiveItem;
 import com.inappstory.sdk.stories.api.models.GameCenterData;
+import com.inappstory.sdk.stories.api.models.GameLaunchConditionsChecker;
 import com.inappstory.sdk.stories.api.models.WebResource;
 import com.inappstory.sdk.stories.cache.DownloadInterruption;
-import com.inappstory.sdk.stories.cache.FilesDownloadManager;
 import com.inappstory.sdk.stories.cache.usecases.ArchiveUseCase;
 import com.inappstory.sdk.stories.cache.usecases.GameFolderUseCase;
-import com.inappstory.sdk.stories.statistic.IASStatisticProfilingImpl;
-import com.inappstory.sdk.stories.utils.KeyValueStorage;
 import com.inappstory.sdk.utils.ProgressCallback;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -70,9 +71,9 @@ public class GameCacheManager {
         );
         getLocalStaticSplashUseCase.get(new UseCaseCallback<File>() {
             @Override
-            public void onError(String message) {
+            public void onError(UseCaseError error) {
                 if (staticSplashScreenCallback != null)
-                    staticSplashScreenCallback.onWarn(message);
+                    staticSplashScreenCallback.onWarn(error.message());
             }
 
             @Override
@@ -88,9 +89,9 @@ public class GameCacheManager {
         });
         getLocalAnimSplashUseCase.get(new UseCaseCallback<File>() {
             @Override
-            public void onError(String message) {
+            public void onError(UseCaseError error) {
                 if (animSplashScreenCallback != null)
-                    animSplashScreenCallback.onWarn(message);
+                    animSplashScreenCallback.onWarn(error.message());
             }
 
             @Override
@@ -101,15 +102,30 @@ public class GameCacheManager {
 
                     if (animSplashScreenCallback != null)
                         animSplashScreenCallback.onSuccess(result);
-                } else {
-                    Log.e("Game_Loading", result.getAbsolutePath() + " not exists");
                 }
             }
         });
         new GetGameModelUseCase(core).get(gameId, new GameLoadCallback() {
             @Override
             public void onSuccess(GameCenterData data) {
+                GameLaunchConditionsChecker checker =
+                        new GameLaunchConditionsChecker(core);
+                ConditionsResult result =
+                        checker.checkConditions(
+                                data.gameLaunchConditions != null ?
+                                        data.gameLaunchConditions.launchConditions() :
+                                        new ArrayList<>()
+                        );
                 gameModelCallback.onSuccess(data);
+                if (result instanceof GLCError) {
+                    gameLoadCallback.onError(
+                            new UIUseCaseError(
+                                    ((GLCError) result).uiMessage,
+                                    ((GLCError) result).logMessage
+                            )
+                    );
+                    return;
+                }
                 final List<GameArchiveItem> archiveItems = data.archiveItems();
                 final String archiveUrl = data.url;
                 final DownloadSplashUseCase downloadAnimSplashUseCase;
@@ -146,7 +162,7 @@ public class GameCacheManager {
                 );
                 final UseCaseCallback<File> animSplashDownloadCallback = new UseCaseCallback<File>() {
                     @Override
-                    public void onError(String message) {
+                    public void onError(UseCaseError error) {
                         if (animSplashScreenCallback != null)
                             animSplashScreenCallback.onSuccess(null);
                     }
@@ -163,7 +179,6 @@ public class GameCacheManager {
                                 if (animSplashScreenCallback != null)
                                     animSplashScreenCallback.onSuccess(result);
                         } else {
-                            Log.e("Game_Loading", result.getAbsolutePath() + " not exists");
                             if (animSplashScreenCallback != null)
                                 animSplashScreenCallback.onSuccess(null);
                         }
@@ -171,9 +186,9 @@ public class GameCacheManager {
                 };
                 downloadSplashUseCase.download(new UseCaseCallback<File>() {
                     @Override
-                    public void onError(String message) {
+                    public void onError(UseCaseError error) {
                         if (staticSplashScreenCallback != null)
-                            staticSplashScreenCallback.onWarn(message);
+                            staticSplashScreenCallback.onWarn(error.message());
                         if (downloadAnimSplashUseCase != null) {
                             downloadAnimSplashUseCase.download(animSplashDownloadCallback);
                         }
@@ -239,8 +254,8 @@ public class GameCacheManager {
                                 },
                                 new UseCaseCallback<Void>() {
                                     @Override
-                                    public void onError(String message) {
-                                        gameLoadCallback.onError(message);
+                                    public void onError(UseCaseError error) {
+                                        gameLoadCallback.onError(error);
                                     }
 
                                     @Override
@@ -260,7 +275,7 @@ public class GameCacheManager {
                                                     )
                                             );
                                         } catch (Exception e) {
-                                            gameLoadCallback.onError(e.getMessage());
+                                            gameLoadCallback.onError(new SimpleUseCaseError(e.getMessage()));
                                         }
                                     }
                                 }
@@ -273,8 +288,8 @@ public class GameCacheManager {
                         archiveItems,
                         new UseCaseCallback<String>() {
                             @Override
-                            public void onError(String message) {
-                                gameLoadCallback.onError(message);
+                            public void onError(UseCaseError error) {
+                                gameLoadCallback.onError(error);
                             }
 
                             @Override
@@ -327,8 +342,8 @@ public class GameCacheManager {
                                 interruption,
                                 new UseCaseCallback<File>() {
                                     @Override
-                                    public void onError(String message) {
-                                        gameLoadCallback.onError(message);
+                                    public void onError(UseCaseError error) {
+                                        gameLoadCallback.onError(error);
                                     }
 
                                     @Override
@@ -350,9 +365,9 @@ public class GameCacheManager {
 
             @Override
             public void onError(String message) {
-                Log.e("Game_Loading", message);
-                gameLoadCallback.onError("Can't retrieve game from game center: " + message);
+                gameLoadCallback.onError(new SimpleUseCaseError("Can't retrieve game from game center: " + message));
             }
+
 
             @Override
             public void onCreateLog(int loggerLevel) {

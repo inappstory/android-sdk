@@ -30,13 +30,11 @@ public class BothSideViewPager extends ViewPager {
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
-        Log.e("ViewPagerTouch", "onInterceptTouchEvent " + ev);
         return super.onInterceptTouchEvent(ev);
     }
 
     @Override
     public boolean onTouchEvent(MotionEvent ev) {
-        Log.e("ViewPagerTouch", "onTouchEvent " + ev);
         return super.onTouchEvent(ev);
     }
 

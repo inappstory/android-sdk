@@ -5,6 +5,7 @@ import static com.inappstory.sdk.utils.DebugUtils.getMethodName;
 import android.webkit.JavascriptInterface;
 
 import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.LoggerTags;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.stories.api.models.CachedSessionData;
@@ -26,7 +27,10 @@ public class GameJSInterface {
     /**
      * Show a toast from the web page
      */
-
+    @JavascriptInterface
+    public void showTextInput(String data) {
+        manager.showTextInput(data);
+    }
 
     @JavascriptInterface
     public int pausePlaybackOtherApp() {
@@ -41,6 +45,11 @@ public class GameJSInterface {
     @JavascriptInterface
     public void vibrate(int[] vibratePattern) {
         manager.vibrate(vibratePattern);
+    }
+
+    @JavascriptInterface
+    public void addToCache(String payload) {
+        manager.addToCache(payload);
     }
 
     @JavascriptInterface
@@ -92,8 +101,10 @@ public class GameJSInterface {
     }
 
     private void logMethod(String payload) {
-        InAppStoryManager.showDLog("JS_game_method_test",
-                manager.gameCenterId + " " + getMethodName() + " " + payload);
+        InAppStoryManager.showDLog(
+                LoggerTags.IAS_GAME_JS,
+                manager.gameCenterId + " " + getMethodName() + " " + payload
+        );
     }
 
     @JavascriptInterface
@@ -135,6 +146,7 @@ public class GameJSInterface {
 
     @JavascriptInterface
     public void gameComplete(String data) {
+       // manager.testMethod();
         manager.gameCompleted(data, null, null);
         logMethod(data);
     }
@@ -146,6 +158,7 @@ public class GameJSInterface {
 
     @JavascriptInterface
     public void gameComplete(String data, String eventData, String urlOrOptions) {
+        //manager.testMethod();
         manager.gameCompleted(data, urlOrOptions, eventData);
         logMethod("data:" + data + " | deeplink:" + urlOrOptions + " | eventData:" + eventData);
     }

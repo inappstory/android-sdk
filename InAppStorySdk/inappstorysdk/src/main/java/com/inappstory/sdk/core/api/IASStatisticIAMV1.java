@@ -1,5 +1,9 @@
 package com.inappstory.sdk.core.api;
 
+import com.inappstory.sdk.stories.api.models.SlideLayerKey;
+
+import java.util.Map;
+
 public interface IASStatisticIAMV1 extends StatDisabled {
 
     void sendWidgetEvent(
@@ -11,6 +15,14 @@ public interface IASStatisticIAMV1 extends StatDisabled {
             long duration,
             String iterationId
     );
+
+    void setScrollEvents(Map<SlideLayerKey, Float> scrollEvents);
+
+    Map<SlideLayerKey, Float> getScrollEvents();
+
+    void addScrollEvent(SlideLayerKey key, float value);
+
+    void sendSlideScrollEvents(String iterationId);
 
     void sendOpenEvent(
             int iamId,
@@ -25,6 +37,7 @@ public interface IASStatisticIAMV1 extends StatDisabled {
             int slideIndex,
             int slidesTotal,
             long duration,
+            String slideAnalytics,
             String iterationId
     );
 }

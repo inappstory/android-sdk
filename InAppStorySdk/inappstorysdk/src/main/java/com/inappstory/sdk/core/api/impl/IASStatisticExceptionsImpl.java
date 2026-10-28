@@ -12,16 +12,21 @@ public class IASStatisticExceptionsImpl implements IASStatisticExceptions {
 
     @Override
     public boolean disabled() {
-        return true;
+        return disabled;
     }
 
     @Override
     public boolean softDisabled() {
-        return true;
+        return softDisabled || disabled;
     }
+
+    private boolean disabled;
+    private boolean softDisabled;
 
     @Override
     public void disabled(boolean softDisabled, boolean disabled) {
-
+        this.softDisabled = softDisabled;
+        this.disabled = disabled;
     }
+
 }

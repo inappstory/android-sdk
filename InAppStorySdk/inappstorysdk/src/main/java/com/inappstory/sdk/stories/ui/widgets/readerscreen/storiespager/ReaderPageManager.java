@@ -14,10 +14,14 @@ import com.inappstory.sdk.core.api.IASStatisticStoriesV1;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.data.IReaderContent;
 import com.inappstory.sdk.core.ui.screens.IReaderSlideViewModel;
+import com.inappstory.sdk.goods.outercallbacks.ProductCartUpdatedProcessCallback;
+import com.inappstory.sdk.goods.outercallbacks.ProductCartOffer;
+import com.inappstory.sdk.goods.outercallbacks.ProductCartInteractionCallback;
 import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.core.network.content.models.Story;
+import com.inappstory.sdk.stories.api.models.SlideLayerKey;
 import com.inappstory.sdk.stories.api.models.SlideLinkObject;
 import com.inappstory.sdk.stories.cache.ContentIdAndType;
 import com.inappstory.sdk.stories.managers.TimerManager;
@@ -32,11 +36,11 @@ import com.inappstory.sdk.stories.statistic.GetStatisticV1Callback;
 import com.inappstory.sdk.stories.ui.reader.ReaderManager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.buttonspanel.ButtonsPanelManager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.progresstimeline.StoryTimelineManager;
-import com.inappstory.sdk.stories.ui.widgets.readerscreen.webview.StoriesWebView;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.utils.StringsUtils;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
@@ -51,8 +55,60 @@ public class ReaderPageManager implements IReaderSlideViewModel {
     public boolean swipeGestureEnabled = true;
     public boolean backPressEnabled = true;
 
+
+    public void updateCart(
+            final ProductCartOffer cartOffer,
+            final ProductCartUpdatedProcessCallback productCartUpdatedProcessCallback
+    ) {
+        core.callbacksAPI().useCallback(IASCallbackType.PRODUCT_CART_INTERACTION,
+                new UseIASCallback<ProductCartInteractionCallback>() {
+                    @Override
+                    public void use(@NonNull ProductCartInteractionCallback callback) {
+                        callback.cartUpdate(
+                                cartOffer,
+                                productCartUpdatedProcessCallback
+                        );
+                    }
+
+                    @Override
+                    public void onDefault() {
+                        productCartUpdatedProcessCallback.onError("No ProductCartInteractionCallback");
+                    }
+                }
+        );
+    }
+
+    public void cartClicked() {
+        core.callbacksAPI().useCallback(IASCallbackType.PRODUCT_CART_INTERACTION,
+                new UseIASCallback<ProductCartInteractionCallback>() {
+                    @Override
+                    public void use(@NonNull ProductCartInteractionCallback callback) {
+                        callback.cartClicked();
+                    }
+                }
+        );
+    }
+
+    public void cartGetState(
+            final ProductCartUpdatedProcessCallback productCartUpdatedProcessCallback
+    ) {
+        core.callbacksAPI().useCallback(IASCallbackType.PRODUCT_CART_INTERACTION,
+                new UseIASCallback<ProductCartInteractionCallback>() {
+                    @Override
+                    public void use(@NonNull ProductCartInteractionCallback callback) {
+                        callback.cartGetState(productCartUpdatedProcessCallback);
+                    }
+
+                    @Override
+                    public void onDefault() {
+                        productCartUpdatedProcessCallback.onError("No ProductCartInteractionCallback");
+                    }
+                }
+        );
+    }
+
     public void handleBackPress() {
-        ((StoriesWebView)host.storiesView).handleBackPress();
+        host.storiesView.handleBackPress();
     }
 
     public boolean isCorrectSubscriber(ContentIdAndType contentIdAndType) {
@@ -67,7 +123,8 @@ public class ReaderPageManager implements IReaderSlideViewModel {
     }
 
     public void unlockShareButton() {
-        buttonsPanelManager.unlockShareButton();
+        if (buttonsPanelManager != null)
+            buttonsPanelManager.unlockShareButton();
     }
 
     public void swipeVerticalGestureEnabled(boolean enabled) {
@@ -77,6 +134,13 @@ public class ReaderPageManager implements IReaderSlideViewModel {
 
         swipeGestureEnabled = enabled;
     }
+
+    public void contentInScrollProcess(boolean contentInScrollProcess) {
+        if (parentManager != null) {
+            parentManager.contentInScrollProcess(contentInScrollProcess);
+        }
+    }
+
 
     public void backPressEnabled(boolean enabled) {
         if (parentManager != null) {
@@ -118,6 +182,11 @@ public class ReaderPageManager implements IReaderSlideViewModel {
     public void gameComplete(String data) {
         if (checkIfManagersIsNull()) return;
         webViewManager.gameComplete(data);
+    }
+
+    public void startCommonTimer() {
+        if (webViewManager != null)
+            webViewManager.startCommonShowRefresh(slideIndex);
     }
 
     public void setStoryId(int storyId) {
@@ -196,6 +265,7 @@ public class ReaderPageManager implements IReaderSlideViewModel {
                 getViewContentType()
         );
     }
+
 
     public void widgetEvent(final String widgetName, String widgetData) {
         final IReaderContent story = core.contentHolder().readerContent().getByIdAndType(
@@ -332,9 +402,15 @@ public class ReaderPageManager implements IReaderSlideViewModel {
         isPaused = true;
         if (withBackground) {
             timerManager.pauseTimerAndRefreshStat();
+            cachedScrollEvents = core.statistic().storiesV2().getScrollEvents();
+            core.statistic().storiesV2().sendSlideScrollEvents(
+                    getFeedId()
+            );
         }
         webViewManager.pauseStory();
     }
+
+    Map<SlideLayerKey, Float> cachedScrollEvents;
 
     boolean isPaused;
 
@@ -343,6 +419,10 @@ public class ReaderPageManager implements IReaderSlideViewModel {
         if (!isPaused) return;
         isPaused = false;
         if (withBackground) {
+            if (cachedScrollEvents != null) {
+                core.statistic().storiesV2().setScrollEvents(new HashMap<>(cachedScrollEvents));
+                cachedScrollEvents = null;
+            }
             timerManager.resumeTimerAndRefreshStat();
         }
         webViewManager.resumeStory();
@@ -483,7 +563,11 @@ public class ReaderPageManager implements IReaderSlideViewModel {
                 storyId + "_" + slideIndex);
         isPaused = false;
         pauseTimers();
+        core.statistic().storiesV2().sendSlideScrollEvents(
+                getFeedId()
+        );
         core.statistic().storiesV2().sendCurrentState();
+        startCommonTimer();
         core.contentLoader().storyDownloadManager().changePriorityForSingle(
                 parentManager.getByIdAndIndex(storyId),
                 parentManager.contentType
@@ -622,6 +706,11 @@ public class ReaderPageManager implements IReaderSlideViewModel {
             host.storyLoadError();
     }
 
+    public void gatherScrollEvents() {
+        core.statistic().storiesV2().sendSlideScrollEvents(
+                getFeedId()
+        );
+    }
 
     @Override
     public void slideLoadSuccess(int index) {
@@ -631,6 +720,11 @@ public class ReaderPageManager implements IReaderSlideViewModel {
     @Override
     public Integer externalSubscriber() {
         return null;
+    }
+
+    @Override
+    public void renderReady() {
+
     }
 
     @Override

@@ -1,14 +1,41 @@
+import com.vanniktech.maven.publish.SonatypeHost
+
 apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
+apply plugin: 'maven-publish'
+apply plugin: 'com.vanniktech.maven.publish'
+
+def getVersionName = { ->
+    return inappstory_output_version
+}
+
+def getArtifactId = { ->
+    return "android-sdk"
+}
+
+def getGroupId = { ->
+    return "io.github.inappstory"
+}
+def getGhGroupId = { ->
+    return "com.github.inappstory"
+}
+
+def gitCommitHash = 'git rev-parse --verify --short HEAD'.execute().text.trim()
 
 android {
-    compileSdkVersion inappstory_target_sdk
-    buildToolsVersion "29.0.3"
+    compileSdk inappstory_target_sdk
 
     defaultConfig {
-        minSdkVersion inappstory_min_sdk
-        targetSdkVersion inappstory_target_sdk
+        minSdk inappstory_min_sdk
+        targetSdk inappstory_target_sdk
         versionCode inappstory_output_build
         versionName inappstory_output_version
+
+
+        buildConfigField 'int', 'VERSION_CODE', "$inappstory_output_build"
+        buildConfigField 'String', 'VERSION_NAME', "\"$inappstory_output_version\""
+        buildConfigField 'String', 'GIT_HASH', "\"${gitCommitHash}\""
+
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles 'consumer-rules.pro'
@@ -31,6 +58,26 @@ android {
         }
     }
 
+
+    buildFeatures {
+        buildConfig = true
+    }
+
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    kotlinOptions {
+        jvmTarget = '1.8'
+        freeCompilerArgs = ['-Xjvm-default=compatibility']
+    }
+   /* publishing {
+        singleVariant("maven") {
+            withSourcesJar()
+        }
+    }*/
+    namespace 'com.inappstory.sdk'
 }
 
 dependencies {
@@ -51,4 +98,71 @@ dependencies {
     androidTestImplementation 'androidx.test:rules:1.4.0'
     implementation 'androidx.palette:palette:1.0.0'
     implementation "com.github.inappstory:android-sdk-utilsconnector:$utils_connector_version"
+    // implementation "com.github.paperrose:iasutilsconnector:1.0.2"
 }
+
+
+/*
+mavenPublishing {
+
+    publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
+    signAllPublications()
+    coordinates(getGroupId(), getArtifactId(), getVersionName())
+    pom {
+        name = "Test publishing"
+        description = "Test publishing"
+        inceptionYear = "2025"
+        url = "https://github.com/inappstory/android-sdk/"
+        licenses {
+            license {
+                name = "The Apache License, Version 2.0"
+                url = "https://www.apache.org/licenses/LICENSE-2.0.txt"
+                distribution = "https://www.apache.org/licenses/LICENSE-2.0.txt"
+            }
+        }
+        developers {
+            developer {
+                id = "inappstory"
+                name = "inappstory"
+                url = "https://github.com/inappstory/"
+            }
+        }
+        scm {
+            url = "https://github.com/inappstory/android-sdk/"
+            connection = "scm:git:git://github.com/inappstory/android-sdk.git"
+            developerConnection = "scm:git:ssh://git@github.com/inappstory/android-sdk.git"
+        }
+    }
+}
+*/
+
+/*
+def githubProperties = new Properties()
+githubProperties.load(new FileInputStream(rootProject.file("github.properties")))
+
+afterEvaluate {
+    publishing {
+        publications {
+            bar(MavenPublication) {
+                from components.release
+
+                groupId getGhGroupId()
+                artifactId getArtifactId()
+                version getVersionName()
+            }
+        }
+
+        repositories {
+            maven {
+                name = "GitHubPackages"
+                url = uri("https://maven.pkg.github.com/inappstory/android-sdk")
+
+                credentials {
+                    username = githubProperties['gpr.usr'] ?: ""
+                    password = githubProperties['gpr.key'] ?: ""
+                }
+            }
+        }
+    }
+}
+*/

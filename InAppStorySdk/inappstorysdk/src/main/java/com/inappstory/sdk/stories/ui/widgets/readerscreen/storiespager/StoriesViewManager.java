@@ -1,11 +1,5 @@
 package com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager;
 
-import static android.content.Context.CLIPBOARD_SERVICE;
-
-import static com.inappstory.sdk.InAppStoryManager.IAS_ERROR_TAG;
-
-import android.content.ClipData;
-import android.content.ClipboardManager;
 import android.content.Context;
 import android.media.AudioManager;
 import android.os.Handler;
@@ -28,10 +22,14 @@ import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenData;
 import com.inappstory.sdk.core.ui.screens.gamereader.LaunchGameScreenStrategy;
 import com.inappstory.sdk.core.utils.ConnectionCheck;
 import com.inappstory.sdk.core.utils.ConnectionCheckCallback;
+import com.inappstory.sdk.goods.models.ProductCartUpdateCallbacks;
+import com.inappstory.sdk.goods.models.ProductCartUpdateJSData;
+import com.inappstory.sdk.goods.outercallbacks.ProductCart;
+import com.inappstory.sdk.goods.outercallbacks.ProductCartUpdatedProcessCallback;
 import com.inappstory.sdk.stories.api.models.ContentType;
+import com.inappstory.sdk.stories.api.models.OnVerticalScrollJSData;
+import com.inappstory.sdk.stories.api.models.SlideLayerKey;
 import com.inappstory.sdk.stories.api.models.UpdateTimelineData;
-import com.inappstory.sdk.stories.api.models.WriteClipboardData;
-import com.inappstory.sdk.stories.outercallbacks.common.gamereader.GameReaderCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.ui.widgets.LoadProgressBar;
@@ -58,7 +56,8 @@ import com.inappstory.sdk.utils.ClipboardUtils;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
-import java.util.Objects;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 public class StoriesViewManager {
@@ -84,6 +83,7 @@ public class StoriesViewManager {
             pageManager.widgetEvent(name, eventData);
     }
 
+
     void screenshotShare(String shareId) {
         if (storiesView != null)
             storiesView.screenshotShare(shareId);
@@ -98,9 +98,97 @@ public class StoriesViewManager {
     }
 
     void goodsWidgetComplete(String widgetId) {
-
         if (storiesView != null)
             storiesView.goodsWidgetComplete(widgetId);
+    }
+
+    void cartUpdatedResultSuccess(String successCB, String requestId, ProductCart productCart) {
+        String cardStr = "{}";
+        try {
+            cardStr = JsonParser.getJson(productCart);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        if (storiesView instanceof StoriesWebView) {
+            ((StoriesWebView) storiesView).cartUpdatedResultSuccess(successCB, requestId, cardStr);
+        }
+    }
+
+    void cartUpdatedResultError(String errorCB, String requestId, String reason) {
+        if (storiesView instanceof StoriesWebView) {
+            ((StoriesWebView) storiesView).cartUpdatedResultError(errorCB, requestId, reason);
+        }
+    }
+
+
+    public void productCartUpdate(String productCartData, String callbacks) {
+        ProductCartUpdateCallbacks cartUpdateCallbacks =
+                JsonParser.fromJson(callbacks, ProductCartUpdateCallbacks.class);
+        final String requestId = cartUpdateCallbacks.requestId;
+        final String successCB = cartUpdateCallbacks.successCb;
+        final String errorCB = cartUpdateCallbacks.errorCb;
+        final ProductCartUpdateJSData cartUpdateJSData =
+                JsonParser.fromJson(productCartData, ProductCartUpdateJSData.class);
+        pageManager.updateCart(
+                cartUpdateJSData.offer,
+                new ProductCartUpdatedProcessCallback() {
+                    @Override
+                    public void onSuccess(final ProductCart productCart) {
+                        new Handler(Looper.getMainLooper()).post(new Runnable() {
+                            @Override
+                            public void run() {
+                                cartUpdatedResultSuccess(successCB, requestId, productCart);
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onError(final String reason) {
+                        new Handler(Looper.getMainLooper()).post(new Runnable() {
+                            @Override
+                            public void run() {
+                                cartUpdatedResultError(errorCB, requestId, reason);
+                            }
+                        });
+                    }
+                }
+        );
+    }
+
+    public void productCartClicked() {
+        pageManager.cartClicked();
+    }
+
+    public void productCartGetState(String callbacks) {
+        ProductCartUpdateCallbacks cartUpdateCallbacks =
+                JsonParser.fromJson(callbacks, ProductCartUpdateCallbacks.class);
+        final String requestId = cartUpdateCallbacks.requestId;
+        final String successCB = cartUpdateCallbacks.successCb;
+        final String errorCB = cartUpdateCallbacks.errorCb;
+        pageManager.cartGetState(
+                new ProductCartUpdatedProcessCallback() {
+                    @Override
+                    public void onSuccess(final ProductCart productCart) {
+                        new Handler(Looper.getMainLooper()).post(new Runnable() {
+                            @Override
+                            public void run() {
+
+                                cartUpdatedResultSuccess(successCB, requestId, productCart);
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onError(final String reason) {
+                        new Handler(Looper.getMainLooper()).post(new Runnable() {
+                            @Override
+                            public void run() {
+                                cartUpdatedResultError(errorCB, requestId, reason);
+                            }
+                        });
+                    }
+                }
+        );
     }
 
 
@@ -162,6 +250,7 @@ public class StoriesViewManager {
                 .contentHolder()
                 .readerContent()
                 .getByIdAndType(storyId, pageManager.getViewContentType());
+        if (story == null) return;
         innerLoad(story);
     }
 
@@ -225,6 +314,18 @@ public class StoriesViewManager {
         }
     }
 
+    private void clearShowRefreshCommon() {
+        synchronized (latestIndexLock) {
+            if (showRefreshCommon != null) {
+                try {
+                    showRefreshHandler.removeCallbacks(showRefreshCommon);
+                } catch (Exception e) {
+                }
+            }
+            showRefreshCommon = null;
+        }
+    }
+
     private void clearShowLoader() {
         synchronized (latestIndexLock) {
             if (showLoader != null) {
@@ -241,15 +342,23 @@ public class StoriesViewManager {
 
     public class ShowRefresh implements Runnable {
         int slideIndex = -1;
+        boolean common;
 
-        public ShowRefresh(int slideIndex) {
+        public ShowRefresh(int slideIndex, boolean common) {
             this.slideIndex = slideIndex;
+            this.common = common;
         }
 
         @Override
         public void run() {
             clearShowLoader();
             clearShowRefresh();
+            clearShowRefreshCommon();
+            if (common) {
+                synchronized (latestIndexLock) {
+                    commonWaitError = true;
+                }
+            }
             if (this.slideIndex == index)
                 pageManager.slideLoadError(index);
             if (storiesView != null) storiesView.clearSlide(getLatestVisibleIndex());
@@ -258,6 +367,7 @@ public class StoriesViewManager {
     }
 
     ShowRefresh showRefresh;
+    ShowRefresh showRefreshCommon;
     ShowLoader showLoader;
 
     Handler showRefreshHandler = new Handler(Looper.getMainLooper());
@@ -267,13 +377,26 @@ public class StoriesViewManager {
         if (!(storiesView instanceof StoriesWebView)) return;
         clearShowLoader();
         clearShowRefresh();
+        clearShowRefreshCommon();
         synchronized (latestIndexLock) {
-            showRefresh = new ShowRefresh(index);
+            if (commonWaitError) return;
+            showRefresh = new ShowRefresh(index, false);
             showLoader = new ShowLoader(index);
             showRefreshHandler.postDelayed(showLoader, 500);
             showRefreshHandler.postDelayed(showRefresh, 15000);
         }
         ((StoriesWebView) storiesView).loadWebData(firstData, replaceData);
+    }
+
+    boolean commonWaitError = false;
+
+    public void startCommonShowRefresh(int index) {
+        clearShowRefreshCommon();
+        synchronized (latestIndexLock) {
+            commonWaitError = false;
+            showRefreshCommon = new ShowRefresh(index, true);
+            showRefreshHandler.postDelayed(showRefreshCommon, 30000);
+        }
     }
 
     public void loadStory(IReaderContent story, int index) {
@@ -302,7 +425,9 @@ public class StoriesViewManager {
     }
 
     private void slideInCache(final IReaderContent story, final int index) {
-        if (core.assetsHolder().assetsIsDownloaded()) {
+        if (core.assetsHolder().assetsIsDownloaded(
+                core.assetUrlsExtractor().extract(story)) && core.layoutHolder().layoutIsDownloaded()
+        ) {
             innerLoad(story);
             pageManager.slideLoadSuccess(index, true);
         } else {
@@ -336,7 +461,6 @@ public class StoriesViewManager {
         String innerWebData = story.slideByIndex(index);
         if (innerWebData == null) return;
         if (storiesView == null || !(storiesView instanceof StoriesWebView)) return;
-
         WebPageConvertCallback callback = new WebPageConvertCallback() {
             @Override
             public void onConvert(String replaceData, String firstData, int lastIndex) {
@@ -345,36 +469,14 @@ public class StoriesViewManager {
             }
         };
         ((StoriesWebView) storiesView).setLayerType(View.LAYER_TYPE_HARDWARE, null);
-        if (innerWebData.contains("<video")) {
-            isVideo = true;
-        } else {
-            isVideo = false;
-        }
-
         converter.replaceDataAndLoad(innerWebData, story, index, callback);
     }
 
     WebPageConverter converter = new WebPageConverter();
 
-
-    boolean isVideo = false;
-
-
     public void setStoriesView(ContentViewInteractor storiesWebView) {
         this.storiesView = storiesWebView;
         storiesWebView.checkIfClientIsSet();
-    }
-
-
-    public LoadProgressBar getProgressBar() {
-        return progressBar;
-    }
-
-
-    private LoadProgressBar progressBar;
-
-    public void setProgressBar(LoadProgressBar progressBar) {
-        this.progressBar = progressBar;
     }
 
     ContentViewInteractor storiesView;
@@ -441,6 +543,34 @@ public class StoriesViewManager {
         }
     }
 
+    private final Map<SlideLayerKey, Float> scrollValues = new HashMap<>();
+
+    private void onChangePassOverscroll(float newY, boolean passSwipeUpCallback) {
+        if (storiesView instanceof StoriesWebView) {
+            ((StoriesWebView) storiesView).passOverscroll(
+                    newY == 0f,
+                    passSwipeUpCallback
+            );
+        }
+    }
+
+    public void onVerticalScrollChanged(OnVerticalScrollJSData verticalScrollData) {
+        onChangePassOverscroll(verticalScrollData.scrollY,
+                !verticalScrollData.isScrollableLayer ||
+                        verticalScrollData.scrollPercent > 99.9f
+        );
+        if (verticalScrollData.isScrollableLayer) {
+            core.statistic().storiesV2().addScrollEvent(
+                    new SlideLayerKey(
+                            verticalScrollData.cardId,
+                            verticalScrollData.slideIndex,
+                            verticalScrollData.layerIndex
+                    ),
+                    verticalScrollData.scrollPercent
+            );
+        }
+    }
+
 
     public void shareComplete(String stId, boolean success) {
         storiesView.shareComplete(stId, success);
@@ -500,7 +630,7 @@ public class StoriesViewManager {
     Vibrator vibrator;
 
 
-    public void openGameReaderFromGameCenter(final String gameId) {
+    public void openGameReaderFromGameCenter(String gameId) {
         final StoriesContentFragment storiesContentFragment =
                 (StoriesContentFragment) pageManager.host.getParentFragment();
         String uniqueId = null;
@@ -510,7 +640,6 @@ public class StoriesViewManager {
         }
         Context localContext = pageManager.host.getContext();
         if (localContext == null) localContext = context;
-
         if (localContext != null)
             if (core.gamesAPI().gameCanBeOpened(gameId)) {
                 core.screensManager().openScreen(
@@ -542,6 +671,7 @@ public class StoriesViewManager {
     public void storyLoaded(int slideIndex) {
         clearShowLoader();
         clearShowRefresh();
+        clearShowRefreshCommon();
         storyIsLoaded = true;
         int lastIndex = pageManager.parentManager.getByIdAndIndex(storyId).index();
         if ((slideIndex >= 0 && lastIndex != slideIndex)) {
@@ -615,6 +745,15 @@ public class StoriesViewManager {
         storiesView.freezeUI();
     }
 
+    public void renderReady() {
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                storiesView.setClientVariables();
+            }
+        });
+    }
+
     public void closeStory(String reason) {
         int closeStoryAction = CloseStory.CLICK;
         switch (reason) {
@@ -632,17 +771,23 @@ public class StoriesViewManager {
     }
 
     public void storySetLocalData(String data, boolean sendToServer) {
-        IASDataSettingsHolder settingsHolder = (IASDataSettingsHolder)core.settingsAPI();
         core.keyValueStorage().saveString("story" + storyId + "__" +
-                settingsHolder.userIdOrAnonymous(), data);
+                ((IASDataSettingsHolder) core.settingsAPI()).userId(), data);
         if (core.statistic().storiesV1().softDisabled()) return;
 
         if (sendToServer) {
+
+            IReaderContent readerContent = core
+                    .contentHolder()
+                    .readerContent()
+                    .getByIdAndType(storyId, pageManager.getViewContentType());
+            if (readerContent != null)
+                readerContent.layoutTemplateVariables().put("{{%serverData}}", data);
             core.network().enqueue(
                     core.network().getApi().sendStoryData(
                             Integer.toString(storyId),
                             data,
-                            settingsHolder.sessionIdOrEmpty()
+                            ((IASDataSettingsHolder) core.settingsAPI()).sessionIdOrEmpty()
                     ),
                     new NetworkCallback<Response>() {
                         @Override
@@ -666,6 +811,10 @@ public class StoriesViewManager {
         pageManager.swipeVerticalGestureEnabled(enabled);
     }
 
+    public void contentInScrollProcess(boolean contentInScrollProcess) {
+        pageManager.contentInScrollProcess(contentInScrollProcess);
+    }
+
     public void backPressEnabled(boolean enabled) {
         pageManager.backPressEnabled(enabled);
     }
@@ -676,7 +825,7 @@ public class StoriesViewManager {
                 core.network().getApi().sendStoryData(
                         Integer.toString(storyId),
                         data,
-                        ((IASDataSettingsHolder)core.settingsAPI()).sessionIdOrEmpty()
+                        ((IASDataSettingsHolder) core.settingsAPI()).sessionIdOrEmpty()
                 ),
                 new NetworkCallback<Response>() {
                     @Override
@@ -727,6 +876,7 @@ public class StoriesViewManager {
     public void slideLoadError(int index) {
         clearShowRefresh();
         clearShowLoader();
+        clearShowRefreshCommon();
         setLatestVisibleIndex(-1);
         pageManager.slideLoadError(index);
     }

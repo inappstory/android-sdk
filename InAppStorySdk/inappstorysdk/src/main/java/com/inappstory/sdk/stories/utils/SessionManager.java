@@ -10,11 +10,11 @@ import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.api.IASCallback;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.IASStatisticStoriesV1;
@@ -24,22 +24,33 @@ import com.inappstory.sdk.core.data.models.UniqueSessionParameters;
 import com.inappstory.sdk.core.utils.ConnectionCheck;
 import com.inappstory.sdk.core.utils.ConnectionCheckCallback;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
+import com.inappstory.sdk.network.fileupload.FilePart;
 import com.inappstory.sdk.network.models.RequestLocalParameters;
+import com.inappstory.sdk.network.models.Response;
 import com.inappstory.sdk.stories.api.models.CachedSessionData;
 import com.inappstory.sdk.stories.api.models.SessionRequestFields;
 import com.inappstory.sdk.core.network.content.models.SessionResponse;
 import com.inappstory.sdk.stories.api.models.StatisticSendObject;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
+import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallbackWithUID;
+import com.inappstory.sdk.stories.callbacks.SessionIsOpenedCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.errors.ErrorCallback;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryWidgetCallback;
 import com.inappstory.sdk.stories.statistic.GetStatisticV1Callback;
 import com.inappstory.sdk.ugc.extinterfaces.IOpenSessionCallback;
 import com.inappstory.sdk.utils.ISessionHolder;
 
+import java.io.File;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class SessionManager {
     private final IASCore core;
@@ -56,6 +67,7 @@ public class SessionManager {
     public void useOrOpenSession(OpenSessionCallback callback, boolean errorIfCachedDataIsDifferent) {
         checkOpenStatistic(callback, errorIfCachedDataIsDifferent);
     }
+
 
     public void addStaticOpenSessionCallback(IOpenSessionCallback callback) {
         synchronized (openProcessLock) {
@@ -152,6 +164,11 @@ public class SessionManager {
                 ),
                 !isSendStatistic
         );
+        core.statistic().bannersV1().disabled(!(response.isAllowStatV1 ||
+                        response.isAllowStatV2
+                ),
+                !isSendStatistic
+        );
         ((IASSettingsImpl) core.settingsAPI()).sessionPlaceholders(response.placeholders);
         ((IASSettingsImpl) core.settingsAPI()).sessionImagePlaceholders(response.imagePlaceholders);
     }
@@ -167,6 +184,7 @@ public class SessionManager {
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
+                final IASDataSettingsHolder settingsHolder = ((IASDataSettingsHolder) core.settingsAPI());
                 synchronized (openProcessLock) {
                     openProcess = false;
                     for (OpenSessionCallback localCallback : callbacks)
@@ -174,6 +192,7 @@ public class SessionManager {
                             localCallback.onSuccess(rlp);
                     callbacks.clear();
                 }
+
             }
         });
         core.statistic().storiesV1(new GetStatisticV1Callback() {
@@ -190,8 +209,29 @@ public class SessionManager {
         sessionIsSaved(response);
     }
 
+    private final String[] FEATURES_ARRAY = {
+            "animation",
+            "data",
+            "deeplink",
+            "placeholder",
+            "webp",
+            "resetTimers",
+            "gameReader",
+            "swipeUpItems",
+            "sendApi",
+            "imgPlaceholder",
+            "assets",
+            "vod",
+            "closeStoryApi",
+            "slideTimerEndApi",
+            "multislideIam",
+            "productCart",
+            "scrollview",
+            "textInputApi"
+    };
+
     private final String FEATURES =
-            "animation,data,deeplink,placeholder,webp,resetTimers,gameReader,swipeUpItems,sendApi,imgPlaceholder,assets,vod,closeStoryApi,slideTimerEndApi";
+            TextUtils.join(",", FEATURES_ARRAY);
 
     private final String SESSION_FIELDS = TextUtils.join(",", new String[]{
             SessionRequestFields.session,
@@ -200,21 +240,40 @@ public class SessionManager {
             SessionRequestFields.isAllowStatV1,
             SessionRequestFields.isAllowStatV2,
             SessionRequestFields.isAllowCrash,
+            SessionRequestFields.debugSessionKey,
             SessionRequestFields.isAllowUgc,
             SessionRequestFields.placeholders,
             SessionRequestFields.preloadGame,
-            SessionRequestFields.imagePlaceholders
+            SessionRequestFields.imagePlaceholders,
+            SessionRequestFields.layoutUpdatedAt
     });
     private final String SESSION_EXPAND = TextUtils.join(",", new String[]{
             SessionRequestFields.sessionAssets
     });
 
+    private void replaceOrAddCallback(OpenSessionCallback callback) {
+        if (callback == null) return;
+        if (callback instanceof OpenSessionCallbackWithUID) {
+            String newUid = ((OpenSessionCallbackWithUID) callback).getUID();
+            if (newUid != null) {
+                for (int i = 0; i < callbacks.size(); i++) {
+                    if (callbacks.get(i) instanceof OpenSessionCallbackWithUID) {
+                        if (Objects.equals(newUid, ((OpenSessionCallbackWithUID) callbacks.get(i)).
+                                getUID())) {
+                            callbacks.set(i, callback);
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+        callbacks.add(callback);
+    }
 
     public void openSession(final OpenSessionCallback callback) {
         synchronized (openProcessLock) {
             if (openProcess) {
-                if (callback != null)
-                    callbacks.add(callback);
+                replaceOrAddCallback(callback);
                 return;
             }
         }
@@ -259,6 +318,7 @@ public class SessionManager {
         final String appVersion = (pInfo != null ? pInfo.versionName : "");
         final String appBuild = (pInfo != null ? Integer.toString(pInfo.versionCode) : "");
 
+        final String oldDebugKey = core.sharedPreferencesAPI().getString(SESSION_DEBUG_KEY);
         new ConnectionCheck().check(
                 context,
                 new ConnectionCheckCallback(core) {
@@ -286,38 +346,59 @@ public class SessionManager {
                                         appBuild,
                                         initialSessionParameters.anonymous(),
                                         initialSessionParameters.userId(),
-                                        initialSessionParameters.userSign()
+                                        initialSessionParameters.userSign(),
+                                        oldDebugKey,
+                                        initialSessionParameters.userId()
                                 ),
                                 new NetworkCallback<SessionResponse>() {
                                     @Override
                                     public void onSuccess(SessionResponse response) {
-                                        UniqueSessionParameters currentSessionParameters = dataSettingsHolder.sessionParameters();
                                         String currentSession = dataSettingsHolder.sessionIdOrEmpty();
                                         if (reOpenSessionIfSettingsWereChanged(initialSessionParameters)) {
                                             return;
                                         }
                                         core.statistic().profiling().setReady(sessionOpenUID);
+                                        core.callbacksAPI().useCallback(
+                                                IASCallbackType.SESSION_IS_OPENED,
+                                                new UseIASCallback<SessionIsOpenedCallback>() {
+                                                    @Override
+                                                    public void use(@NonNull SessionIsOpenedCallback callback) {
+                                                        callback.isOpened();
+                                                    }
+                                                }
+                                        );
+                                        //
                                         CachedSessionData cachedSessionData = new CachedSessionData();
                                         cachedSessionData.userId = initialSessionParameters.userId();
                                         cachedSessionData.locale = initialSessionParameters.locale();
+                                        cachedSessionData.preloadGames = response.preloadGame;
                                         cachedSessionData.placeholders = response.placeholders;
                                         cachedSessionData.previewAspectRatio = response.getPreviewAspectRatio();
                                         cachedSessionData.isAllowUGC = response.isAllowUgc;
-                                        cachedSessionData.preloadGames = response.preloadGame;
                                         cachedSessionData.sessionId = response.session.id;
+                                        cachedSessionData.layoutTimestamp = Integer.toString(response.layoutUpdatedAt);
+                                        cachedSessionData.isGameReaderDefaultFullscreen = response.isGameReaderDefaultFullscreen;
+                                        cachedSessionData.anonymous = initialSessionParameters.anonymous();
                                         cachedSessionData.testKey = core.projectSettingsAPI().testKey();
                                         cachedSessionData.token = core.projectSettingsAPI().apiKey();
-                                        cachedSessionData.anonymous = initialSessionParameters.anonymous();
                                         cachedSessionData.tags =
                                                 TextUtils.join(",", dataSettingsHolder.tags());
-                                        IASDataSettingsHolder settingsHolder = ((IASDataSettingsHolder) core.settingsAPI());
-                                        boolean isSendStatistic = settingsHolder.sendStatistic() && !settingsHolder.anonymous();
+                                        boolean isSendStatistic = dataSettingsHolder.sendStatistic() && !dataSettingsHolder.anonymous();
                                         ((IASSettingsImpl) dataSettingsHolder).sessionData(cachedSessionData);
                                         core.statistic().changeSession(cachedSessionData, !(isSendStatistic && response.isAllowStatV1));
                                         if (response.preloadGame)
                                             core.contentPreload().restartGamePreloader();
                                         saveSession(response);
+                                        if (response.debugSessionKey != null) {
+                                            String debugKeyToSend = oldDebugKey != null ? oldDebugKey : response.debugSessionKey;
+                                            sendDebugLog(debugKeyToSend);
+                                            core.sharedPreferencesAPI().saveString(
+                                                    SESSION_DEBUG_KEY,
+                                                    response.debugSessionKey
+                                            );
+                                        }
                                         openStatisticSuccess(response);
+                                        core.layoutHolder().loadLocalLayout();
                                         core.inAppStoryService()
                                                 .getListReaderConnector().sessionIsOpened(currentSession);
 
@@ -377,11 +458,52 @@ public class SessionManager {
 
     }
 
+    private final String SESSION_DEBUG_KEY = "SESSION_DEBUG_KEY";
+
+    private void sendDebugLog(String debugKey) {
+        final List<FilePart> fileParts = getFiles();
+
+        logExecutor.submit(new Runnable() {
+            @Override
+            public void run() {
+                for (FilePart filePart : fileParts) {
+                    Response response = core.network().execute(
+                            core.network().getApi().debugLog(debugKey, filePart));
+                    if (response.code < 300) {
+                        (new File(filePart.filePath())).delete();
+                    }
+                }
+            }
+        });
+
+    }
+
+    private final Set<String> usedLogFiles = new HashSet<>();
+
+    private @NonNull List<FilePart> getFiles() {
+        prepareLogFiles();
+        List<String> filePaths = core.logSaver().getFiles();
+        List<FilePart> fileParts = new ArrayList<>();
+
+        for (String filePath : filePaths) {
+            if (usedLogFiles.contains(filePath)) continue;
+            usedLogFiles.add(filePath);
+            fileParts.add(new FilePart("file", filePath));
+        }
+        return fileParts;
+    }
+
+    private void prepareLogFiles() {
+        core.logSaver().prepareFiles();
+    }
+
+    ExecutorService logExecutor = Executors.newSingleThreadExecutor();
+
     private boolean reOpenSessionIfSettingsWereChanged(UniqueSessionParameters initialSessionParameters) {
         final IASDataSettingsHolder dataSettingsHolder = (IASDataSettingsHolder) core.settingsAPI();
         final String deviceId = dataSettingsHolder.deviceId();
         UniqueSessionParameters currentSessionParameters = dataSettingsHolder.sessionParameters();
-        String currentSession = getSession().getSessionId();
+        String currentSession = dataSettingsHolder.sessionIdOrEmpty();
         if (!Objects.equals(currentSessionParameters, initialSessionParameters)) {
             closeSession(
                     initialSessionParameters.anonymous(),
@@ -415,19 +537,13 @@ public class SessionManager {
     ) {
         if (oldSessionId == null) return;
         clearCaches();
-        if (!anonymous) {
+        if (sendStatistic && !anonymous) {
             core.statistic().storiesV1(oldSessionId, new GetStatisticV1Callback() {
                 @Override
                 public void get(@NonNull IASStatisticStoriesV1 manager) {
-                    List<List<Object>> stat = new ArrayList<>(
-                            sendStatistic ?
-                                    manager.extractCurrentStatistic() :
-                                    new ArrayList<List<Object>>()
-                    );
-
+                    List<List<Object>> stat = new ArrayList<>(manager.extractCurrentStatistic());
                     final String sessionCloseUID =
                             core.statistic().profiling().addTask("api_session_close");
-                    Log.e("statisticTests", "closeSession");
                     core.network().enqueue(
                             core.network().getApi().sessionClose(
                                     new StatisticSendObject(
@@ -444,6 +560,7 @@ public class SessionManager {
                                 public void onSuccess(SessionResponse response) {
                                     core.statistic().profiling().setReady(sessionCloseUID, true);
                                     if (changeSessionSettings) {
+                                        core.widgetViewModels().bannerPlaceViewModels().reloadSession();
                                         core.inAppStoryService().getListReaderConnector().userIdChanged();
                                     }
                                 }
@@ -458,6 +575,7 @@ public class SessionManager {
                                     core.statistic().profiling().setReady(sessionCloseUID);
                                     if (changeSessionSettings) {
                                         core.inAppStoryService().getListReaderConnector().userIdChanged();
+                                        core.widgetViewModels().bannerPlaceViewModels().reloadSession();
                                     }
                                 }
                             }

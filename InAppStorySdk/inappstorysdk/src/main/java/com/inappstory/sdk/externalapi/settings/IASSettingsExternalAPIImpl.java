@@ -10,7 +10,6 @@ import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASDataSettings;
 import com.inappstory.sdk.core.data.IAppVersion;
 import com.inappstory.sdk.core.data.IInAppStoryUserSettings;
-import com.inappstory.sdk.core.exceptions.NotImplementedMethodException;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
 
 import java.lang.reflect.Field;
@@ -21,7 +20,12 @@ import java.util.Map;
 public class IASSettingsExternalAPIImpl implements IASDataSettings {
     @Override
     public void agentPrefix(String prefix) {
-        throw new NoSuchMethodError();
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.settingsAPI().agentPrefix(prefix);
+            }
+        });
     }
 
     @Override
@@ -113,7 +117,7 @@ public class IASSettingsExternalAPIImpl implements IASDataSettings {
             public void use(@NonNull InAppStoryManager manager) throws Exception {
                 manager.iasCore().settingsAPI().sendStatistic(sendStatistic);
                 try {
-                    Field f1 = manager.getClass().getDeclaredField("sendStatistic");
+                    Field f1  = manager.getClass().getDeclaredField("sendStatistic");
                     f1.setAccessible(true);
                     f1.set(manager, sendStatistic);
                 } catch (Exception e) {
@@ -166,6 +170,16 @@ public class IASSettingsExternalAPIImpl implements IASDataSettings {
             @Override
             public void use(@NonNull IASCore core) {
                 core.settingsAPI().addTags(tags);
+            }
+        });
+    }
+
+    @Override
+    public void options(final Map<String, String> options) {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.settingsAPI().options(options);
             }
         });
     }

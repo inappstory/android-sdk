@@ -46,7 +46,6 @@ public class FilesDownloader {
     }
 
 
-
     public static String getFileExtensionFromUrl(String url) {
         String croppedUrl = deleteQueryArgumentsFromUrl(url, true);
         String[] parts = croppedUrl.split("/");
@@ -81,7 +80,7 @@ public class FilesDownloader {
     public DownloadFileState downloadFile(
             String url,
             File outputFile,
-            FileLoadProgressCallback callback,
+            FileLoadProgressCallback progressCallback,
             ApiLogResponse apiLogResponse,
             DownloadInterruption interruption,
             long downloadOffset,
@@ -89,11 +88,17 @@ public class FilesDownloader {
             FinishDownloadFileCallback finishCallback
     ) throws Exception {
         DownloadFileState state = null;
+        String finishCallbackOutputFile = outputFile != null ?
+                outputFile.getAbsolutePath() : "";
         FilesDownloadManager manager = core.contentLoader().filesDownloadManager();
-
-        if (manager != null && !manager.addFinishCallback(url, finishCallback))
+        if (manager != null && !manager.addFinishCallback(
+                url,
+                finishCallbackOutputFile,
+                finishCallback)
+        ) {
+            finishCallback.waiting();
             return null;
-
+        }
         outputFile.getParentFile().mkdirs();
         if (!outputFile.exists())
             outputFile.createNewFile();
@@ -101,7 +106,7 @@ public class FilesDownloader {
         URL urlS = new URL(url);
         HttpURLConnection urlConnection = (HttpURLConnection) urlS.openConnection();
         urlConnection.setRequestProperty("Accept-Encoding", "br, gzip");
-        urlConnection.setConnectTimeout(300000);
+        urlConnection.setConnectTimeout(5000);
         urlConnection.setReadTimeout(300000);
         urlConnection.setRequestMethod("GET");
         urlConnection.setRequestProperty("User-Agent", core.network().userAgent());
@@ -121,7 +126,7 @@ public class FilesDownloader {
             urlConnection.connect();
         } catch (Exception e) {
             if (manager != null)
-                manager.invokeFinishCallbacks(url, null);
+                manager.invokeFinishCallbacks(url, finishCallbackOutputFile, null);
             return null;
         }
         int status = urlConnection.getResponseCode();
@@ -132,7 +137,7 @@ public class FilesDownloader {
         if (freeSpace > 0 && sz > freeSpace) {
             urlConnection.disconnect();
             if (manager != null)
-                manager.invokeFinishCallbacks(url, null);
+                manager.invokeFinishCallbacks(url, finishCallbackOutputFile, null);
             return null;
         }
         boolean allowPartial = false;
@@ -168,9 +173,10 @@ public class FilesDownloader {
                     urlConnection.getErrorStream(),
                     decompression
             );
+            urlConnection.disconnect();
             apiLogResponse.generateFile(status, res, headers);
             if (manager != null)
-                manager.invokeFinishCallbacks(url, null);
+                manager.invokeFinishCallbacks(url, finishCallbackOutputFile, null);
             return null;
         }
 
@@ -194,16 +200,17 @@ public class FilesDownloader {
             while ((bufferLength = inputStream.read(buffer)) > 0) {
                 if (interruption != null && interruption.active) {
                     releaseStreamAndFile(fileOutputStream, lock);
+                    urlConnection.disconnect();
                     if (allowPartial)
                         state = new DownloadFileState(outputFile, sz, outputFile.length());
                     if (manager != null)
-                        manager.invokeFinishCallbacks(url, state);
+                        manager.invokeFinishCallbacks(url, finishCallbackOutputFile, state);
                     return state;
                 } else {
                     fileOutputStream.write(buffer, 0, bufferLength);
                     cnt += bufferLength;
-                    if (callback != null)
-                        callback.onProgress(downloadOffset + cnt, sz);
+                    if (progressCallback != null)
+                        progressCallback.onProgress(downloadOffset + cnt, sz);
                 }
             }
             releaseStreamAndFile(fileOutputStream, lock);
@@ -215,8 +222,10 @@ public class FilesDownloader {
                 state = new DownloadFileState(outputFile, sz, outputFile.length());
             }
         }
+        //
+        urlConnection.disconnect();
         if (manager != null)
-            manager.invokeFinishCallbacks(url, state);
+            manager.invokeFinishCallbacks(url, finishCallbackOutputFile, state);
         return state;
     }
 

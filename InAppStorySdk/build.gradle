@@ -2,26 +2,28 @@
 
 buildscript {
     ext {
-        inappstory_output_version = "1.21.26"
-        inappstory_output_build = 1036
-        inappstory_target_sdk = 31
+        kotlin_version = '1.7.20'
+        inappstory_output_version = "1.26.0"
+        inappstory_output_build = 1250
+        inappstory_target_sdk = 33
         inappstory_min_sdk = 21
 
+        camerax_version = "1.1.0"
         coroutines_version = "1.6.0"
         core_ktx_version = "1.6.0"
-        material_version = "1.6.1"
+        material_version = "1.8.0"
         window_version = "1.0.0"
         webkit_version = "1.5.0"
         appcompat_version = "1.6.0"
         lifecycle_runtime_ktx_version = "2.4.0"
         exif_version = "1.3.6"
-        gradle_version = "4.2.2"
+        gradle_version = "8.0.0"
         gradle_plugin_version = "1.7.20"
-        utils_connector_version = "1f1a1925cb3e7f03e08040683213d5bfdfc46bcc"
+        utils_connector_version = "5c9b532a64e1d121386c86cfa9989a96eb1d5ec9"
     }
     repositories {
         google()
-        jcenter()
+        mavenCentral()
         maven { url "https://jitpack.io" }
         maven { url 'https://plugins.gradle.org/m2' }
         
@@ -29,9 +31,10 @@ buildscript {
     dependencies {
 
 
-        classpath 'com.android.tools.build:gradle:3.6.1'
-        classpath 'com.github.dcendents:android-maven-gradle-plugin:1.5'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$gradle_plugin_version"
+        classpath "com.android.tools.build:gradle:$gradle_version"
+        classpath 'com.github.dcendents:android-maven-gradle-plugin:1.5'
+        classpath 'com.vanniktech:gradle-maven-publish-plugin:0.29.0'
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
     }
@@ -40,8 +43,9 @@ buildscript {
 allprojects {
     repositories {
         google()
-        jcenter()
+        mavenCentral()
         maven { url "https://jitpack.io" }
+        maven { url 'https://plugins.gradle.org/m2' }
         
     }
 }

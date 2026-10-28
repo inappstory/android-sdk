@@ -73,7 +73,7 @@ public class LruCachesHolder {
                 bundleCache = new LruDiskCache(
                         core,
                         cacheDir,
-                        prefix + "infiniteCache",
+                        prefix + "bundleCache",
                         cacheDir.getFreeSpace(),
                         CacheType.BUNDLE
                 );
@@ -114,6 +114,6 @@ public class LruCachesHolder {
         commonCache.clearCache();
         infiniteCache.clearCache();
         vodCache.clearCache();
-        bundleCache.clearCache();
+        // bundleCache.clearCache();
     }
 }

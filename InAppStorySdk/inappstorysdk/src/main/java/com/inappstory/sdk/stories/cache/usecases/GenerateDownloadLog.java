@@ -9,8 +9,8 @@ import java.util.HashMap;
 import java.util.UUID;
 
 public class GenerateDownloadLog {
-    ApiLogRequest requestLog;
-    ApiLogResponse responseLog;
+    public ApiLogRequest requestLog;
+    public ApiLogResponse responseLog;
 
     public void generateRequestLog(String url) {
         String requestId = UUID.randomUUID().toString();

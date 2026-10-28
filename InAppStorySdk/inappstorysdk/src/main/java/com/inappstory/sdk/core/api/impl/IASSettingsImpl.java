@@ -8,6 +8,7 @@ import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.LoggerTags;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASDataSettings;
@@ -40,6 +41,7 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
     private Locale lang = Locale.getDefault();
     private final Map<String, String> userPlaceholders = new HashMap<>();
     private final Map<String, ImagePlaceholderValue> userImagePlaceholders = new HashMap<>();
+    private Map<String, String> options;
     private final List<String> tags = new ArrayList<>();
     private String deviceId = null;
     private String userId;
@@ -47,12 +49,18 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
     private String userSign;
     private final Object settingsLock = new Object();
     private IAppVersion externalAppVersion;
+
     private boolean anonymous = false;
     private boolean sendStatistic = true;
     private boolean gameDemoMode = false;
+
+    private final Map<String, String> sessionPlaceholders = new HashMap<>();
+    private final Map<String, ImagePlaceholderValue> sessionImagePlaceholders = new HashMap<>();
     private CachedSessionData cachedSessionData = null;
 
     public final static int TAG_LIMIT = 4000;
+
+    public final static int TAG_LIMIT_COUNT = 100;
 
     public IASSettingsImpl(IASCore core) {
         this.core = core;
@@ -65,13 +73,31 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
     }
 
     @Override
+    public String sessionId() {
+        synchronized (settingsLock) {
+            if (cachedSessionData != null) {
+                return cachedSessionData.sessionId;
+            } else {
+                return null;
+            }
+        }
+    }
+
+    @Override
+    public String sessionIdOrEmpty() {
+        String sessionId = sessionId();
+        if (sessionId == null) return "";
+        return sessionId;
+    }
+
+    @Override
     public void setUserId(final String newUserId, final String newUserSign) {
         String localDeviceId;
         synchronized (settingsLock) {
             localDeviceId = deviceId;
             if (anonymous) {
-                InAppStoryManager.showDLog(
-                        InAppStoryManager.IAS_ERROR_TAG,
+                InAppStoryManager.showELog(
+                        LoggerTags.IAS_ERROR_TAG,
                         StringsUtils.getErrorStringFromContext(
                                 core.appContext(),
                                 R.string.ias_only_anonymous_usage_user
@@ -82,7 +108,7 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
         }
         if (localDeviceId == null && (newUserId == null || newUserId.isEmpty())) {
             InAppStoryManager.showELog(
-                    InAppStoryManager.IAS_ERROR_TAG,
+                    LoggerTags.IAS_ERROR_TAG,
                     StringsUtils.getErrorStringFromContext(
                             core.appContext(),
                             R.string.ias_usage_without_user_and_device
@@ -92,7 +118,7 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
         }
         if (newUserId == null || StringsUtils.getBytesLength(newUserId) > 255) {
             InAppStoryManager.showELog(
-                    InAppStoryManager.IAS_ERROR_TAG,
+                    LoggerTags.IAS_ERROR_TAG,
                     StringsUtils.getErrorStringFromContext(
                             core.appContext(),
                             R.string.ias_setter_user_length_error
@@ -125,21 +151,38 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
     }
 
     @Override
-    public String sessionId() {
+    public CachedSessionData sessionData() {
         synchronized (settingsLock) {
-            if (cachedSessionData != null) {
-                return cachedSessionData.sessionId;
-            } else {
-                return null;
-            }
+            return cachedSessionData;
+        }
+    }
+
+
+    @Override
+    public String userIdOrAnonymous() {
+        synchronized (settingsLock) {
+            if (anonymous) return "IAS_ANONYMOUS";
+            return userId;
         }
     }
 
     @Override
-    public String sessionIdOrEmpty() {
-        String sessionId = sessionId();
-        if (sessionId == null) return "";
-        return sessionId;
+    public boolean anonymous() {
+        synchronized (settingsLock) {
+            return anonymous;
+        }
+    }
+
+    @Override
+    public UniqueSessionParameters sessionParameters() {
+        synchronized (settingsLock) {
+            return new UniqueSessionParameters()
+                    .anonymous(anonymous)
+                    .userId(userId)
+                    .userSign(userSign)
+                    .locale(lang)
+                    .sendStatistic(sendStatistic);
+        }
     }
 
     public void refreshSession(
@@ -150,22 +193,25 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
             final boolean anonymous
     ) {
         final String sessionId = sessionId();
-        sessionData(null);
-        core.storiesListVMHolder().clear();
-        core.storyListCache().clearLocalOpensKey();
         core.screensManager().forceCloseAllReaders(new ForceCloseReaderCallback() {
             @Override
             public void onComplete() {
+                sessionData(null);
+                core.storiesListVMHolder().clear();
+                core.storyListCache().clearLocalOpensKey();
                 if (sessionId != null && !sessionId.isEmpty()) {
+                    //core.layoutHolder().clear();
                     core.contentHolder().favoriteItems().clearByType(ContentType.STORY);
                     core.contentHolder().favoriteItems().clearByType(ContentType.UGC);
                     core.contentLoader().storyDownloadManager().refreshLocals(ContentType.STORY);
                     core.contentLoader().storyDownloadManager().refreshLocals(ContentType.UGC);
-                    core.contentLoader().storyDownloadManager().cleanTasks(false);
+                    core.contentLoader().storyDownloadManager().cleanTasks(true);
                     core.contentHolder().readerContent().clearByType(ContentType.IN_APP_MESSAGE);
                     core.contentHolder().readerContent().clearByType(ContentType.STORY);
                     core.contentLoader().inAppMessageDownloadManager().clearLocalData();
                     core.contentLoader().inAppMessageDownloadManager().clearSlidesDownloader();
+                    core.contentLoader().bannerDownloadManager().clearLocalData();
+                    core.contentLoader().bannerDownloadManager().clearSlidesDownloader();
                     core.sessionManager().closeSession(
                             anonymous,
                             sendStatistic,
@@ -177,6 +223,7 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
                     );
                 } else {
                     core.inAppStoryService().getListReaderConnector().userIdChanged();
+                    core.widgetViewModels().bannerPlaceViewModels().reloadSession();
                 }
             }
         });
@@ -184,7 +231,9 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
 
     @Override
     public void setExternalAppVersion(IAppVersion externalAppVersion) {
-        this.externalAppVersion = externalAppVersion;
+        synchronized (settingsLock) {
+            this.externalAppVersion = externalAppVersion;
+        }
     }
 
     @Override
@@ -226,6 +275,12 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
     }
 
 
+    public void options(Map<String, String> options) {
+        synchronized (settingsLock) {
+            this.options = new HashMap<>(options);
+        }
+    }
+
     @Override
     public void setPlaceholders(@NonNull Map<String, String> newPlaceholders) {
         synchronized (settingsLock) {
@@ -256,7 +311,7 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
             for (String tag : copyTags) {
                 if (!TagsUtils.checkTagPattern(tag)) {
                     InAppStoryManager.showELog(
-                            InAppStoryManager.IAS_WARN_TAG,
+                            LoggerTags.IAS_WARN_TAG,
                             StringsUtils.getFormattedErrorStringFromContext(
                                     core.appContext(),
                                     R.string.ias_tag_pattern_error,
@@ -268,12 +323,12 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
                 newList.add(tag);
             }
         }
-        if (StringsUtils.getBytesLength(TextUtils.join(",", newList)) > TAG_LIMIT) {
+        if (newList.size() > TAG_LIMIT_COUNT) {
             InAppStoryManager.showELog(
-                    InAppStoryManager.IAS_ERROR_TAG,
+                    LoggerTags.IAS_ERROR_TAG,
                     StringsUtils.getErrorStringFromContext(
                             core.appContext(),
-                            R.string.ias_setter_tags_length_error
+                            R.string.ias_setter_tags_count_error
                     )
             );
             return;
@@ -328,11 +383,10 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
                 hasNewTags = true;
             }
         }
-        String tagsString = TextUtils.join(",", mergedTags);
-        if (StringsUtils.getBytesLength(tagsString) > TAG_LIMIT) {
+        if (mergedTags.size() > TAG_LIMIT_COUNT) {
             StringsUtils.getErrorStringFromContext(
                     core.appContext(),
-                    R.string.ias_setter_tags_length_error
+                    R.string.ias_setter_tags_count_error
             );
             return;
         }
@@ -368,9 +422,6 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
             core.storiesListVMHolder().clear();
         }
     }
-
-    private final Map<String, String> sessionPlaceholders = new HashMap<>();
-    private final Map<String, ImagePlaceholderValue> sessionImagePlaceholders = new HashMap<>();
 
     public void sessionPlaceholders(List<StoryPlaceholder> sessionPlaceholders) {
         if (sessionPlaceholders == null) return;
@@ -458,13 +509,14 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
     public void inAppStorySettings(IInAppStoryUserSettings settings) {
         final Locale currentLang;
         final String currentUserId;
+        final String currentUserSign;
         final boolean currentSendStatistic;
         final boolean currentAnonymous;
         final String currentDeviceId;
         boolean needToReloadSession = false;
         if (settings.anonymous() && settings.userId() != null) {
             InAppStoryManager.showDLog(
-                    InAppStoryManager.IAS_WARN_TAG,
+                    LoggerTags.IAS_WARN_TAG,
                     StringsUtils.getErrorStringFromContext(
                             core.appContext(),
                             R.string.ias_only_anonymous_usage_user
@@ -475,6 +527,7 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
             currentLang = this.lang;
             currentSendStatistic = this.sendStatistic;
             currentUserId = this.userId;
+            currentUserSign = this.userSign;
             currentAnonymous = this.anonymous;
             if (!currentAnonymous) {
                 currentDeviceId = deviceId;
@@ -486,7 +539,7 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
             if (settings.anonymous()) {
                 if (settings.userId() != null && !settings.userId().isEmpty()) {
                     InAppStoryManager.showDLog(
-                            InAppStoryManager.IAS_WARN_TAG,
+                            LoggerTags.IAS_WARN_TAG,
                             StringsUtils.getErrorStringFromContext(
                                     core.appContext(),
                                     R.string.ias_only_anonymous_usage_user
@@ -495,7 +548,7 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
                 }
                 if (currentUserId != null && !currentUserId.isEmpty())
                     InAppStoryManager.showDLog(
-                            InAppStoryManager.IAS_WARN_TAG,
+                            LoggerTags.IAS_WARN_TAG,
                             StringsUtils.getErrorStringFromContext(
                                     core.appContext(),
                                     R.string.ias_set_anon_clear_user
@@ -507,7 +560,7 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
                 if (settings.userId() != null) {
                     if (deviceId == null && settings.userId().isEmpty()) {
                         InAppStoryManager.showELog(
-                                InAppStoryManager.IAS_ERROR_TAG,
+                                LoggerTags.IAS_ERROR_TAG,
                                 StringsUtils.getErrorStringFromContext(
                                         core.appContext(),
                                         R.string.ias_usage_without_user_and_device
@@ -517,7 +570,7 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
                     }
                     if (StringsUtils.getBytesLength(settings.userId()) > 255) {
                         InAppStoryManager.showELog(
-                                InAppStoryManager.IAS_ERROR_TAG,
+                                LoggerTags.IAS_ERROR_TAG,
                                 StringsUtils.getErrorStringFromContext(
                                         core.appContext(),
                                         R.string.ias_setter_user_length_error
@@ -525,15 +578,13 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
                         );
                         return;
                     }
-                    if (currentUserId != null && currentUserId.equals(settings.userId())) {
-                        if (!Objects.equals(userSign, settings.userSign())) {
+                    if (settings.userId() != null) {
+                        if (!Objects.equals(currentUserId, settings.userId()) ||
+                                !Objects.equals(currentUserSign, settings.userSign())) {
                             userSign = settings.userSign();
                             userId = settings.userId();
                             needToReloadSession = true;
                         }
-                    } else if (currentUserId == null) {
-                        userSign = settings.userSign();
-                        userId = settings.userId();
                     }
                 }
             }
@@ -543,7 +594,7 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
                 for (String tag : copyTags) {
                     if (!TagsUtils.checkTagPattern(tag)) {
                         InAppStoryManager.showELog(
-                                InAppStoryManager.IAS_WARN_TAG,
+                                LoggerTags.IAS_WARN_TAG,
                                 StringsUtils.getFormattedErrorStringFromContext(
                                         core.appContext(),
                                         R.string.ias_tag_pattern_error,
@@ -554,12 +605,12 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
                     }
                     filteredList.add(tag);
                 }
-                if (StringsUtils.getBytesLength(TextUtils.join(",", filteredList)) > TAG_LIMIT) {
+                if (filteredList.size() > TAG_LIMIT_COUNT) {
                     InAppStoryManager.showELog(
-                            InAppStoryManager.IAS_ERROR_TAG,
+                            LoggerTags.IAS_ERROR_TAG,
                             StringsUtils.getErrorStringFromContext(
                                     core.appContext(),
-                                    R.string.ias_setter_tags_length_error
+                                    R.string.ias_setter_tags_count_error
                             )
                     );
                     return;
@@ -589,6 +640,10 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
                     core.storiesListVMHolder().clear();
                 }
             }
+            Map<String, String> settingsExtraOptions = settings.options();
+            if (settingsExtraOptions != null) {
+                this.options = new HashMap<>(settingsExtraOptions);
+            }
             if (settings.imagePlaceholders() != null) {
                 this.userImagePlaceholders.clear();
                 this.userImagePlaceholders.putAll(settings.imagePlaceholders());
@@ -598,7 +653,7 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
                 this.userPlaceholders.putAll(settings.placeholders());
             }
             if (settings.lang() != null) {
-                if (!currentLang.toLanguageTag().equals(settings.lang().toLanguageTag())) {
+                if (!lang.toLanguageTag().equals(settings.lang().toLanguageTag())) {
                     lang = settings.lang();
                     changeLayoutDirection = settings.changeLayoutDirection();
                     needToReloadSession = true;
@@ -627,10 +682,11 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
         setUserId(userId, null);
     }
 
-
     @Override
     public IAppVersion externalAppVersion() {
-        return externalAppVersion;
+        synchronized (settingsLock) {
+            return externalAppVersion;
+        }
     }
 
     @Override
@@ -655,31 +711,9 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
     }
 
     @Override
-    public String userIdOrAnonymous() {
-        synchronized (settingsLock) {
-            if (anonymous) return "IAS_ANONYMOUS";
-            return userId;
-        }
-    }
-
-    @Override
-    public CachedSessionData sessionData() {
-        synchronized (settingsLock) {
-            return cachedSessionData;
-        }
-    }
-
-    @Override
     public String userSign() {
         synchronized (settingsLock) {
             return userSign;
-        }
-    }
-
-    @Override
-    public boolean anonymous() {
-        synchronized (settingsLock) {
-            return anonymous;
         }
     }
 
@@ -701,18 +735,6 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
     public boolean isSoundOn() {
         synchronized (settingsLock) {
             return isSoundOn;
-        }
-    }
-
-    @Override
-    public UniqueSessionParameters sessionParameters() {
-        synchronized (settingsLock) {
-            return new UniqueSessionParameters()
-                    .anonymous(anonymous)
-                    .userId(userId)
-                    .userSign(userSign)
-                    .locale(lang)
-                    .sendStatistic(sendStatistic);
         }
     }
 
@@ -803,13 +825,15 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
     @Override
     public boolean noCorrectTags() {
         synchronized (settingsLock) {
-            return StringsUtils.getBytesLength(TextUtils.join(",", tags)) > TAG_LIMIT;
+            return tags.size() > TAG_LIMIT_COUNT;
         }
     }
 
     @Override
     public boolean gameDemoMode() {
-        return gameDemoMode;
+        synchronized (settingsLock) {
+            return gameDemoMode;
+        }
     }
 
     @Override
@@ -821,26 +845,16 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
         final boolean currentSendStatistic;
         final boolean anonymous;
         synchronized (settingsLock) {
-            if (sendStatistic && this.anonymous) {
-                InAppStoryManager.showDLog(
-                        InAppStoryManager.IAS_ERROR_TAG,
-                        StringsUtils.getErrorStringFromContext(
-                                core.appContext(),
-                                R.string.ias_only_anonymous_usage_stat
-                        )
-                );
-                return;
-            }
             currentSendStatistic = this.sendStatistic;
             currentLang = lang;
             currentUserId = userId;
+            this.sendStatistic = sendStatistic;
             anonymous = this.anonymous;
             if (anonymous) {
                 currentDeviceId = null;
             } else {
                 currentDeviceId = deviceId;
             }
-            this.sendStatistic = sendStatistic;
         }
         refreshSession(
                 currentUserId,
@@ -851,14 +865,26 @@ public class IASSettingsImpl implements IASDataSettings, IASDataSettingsHolder {
         );
     }
 
-
     public void gameDemoMode(boolean gameDemoMode) {
-        this.gameDemoMode = gameDemoMode;
+
+        synchronized (settingsLock) {
+            this.gameDemoMode = gameDemoMode;
+        }
     }
 
     @Override
     public boolean sendStatistic() {
-        return sendStatistic && !anonymous;
+        synchronized (settingsLock) {
+            return sendStatistic;
+        }
+    }
+
+    @Override
+    @NonNull
+    public Map<String, String> options() {
+        synchronized (settingsLock) {
+            return options != null ? new HashMap<>(options) : new HashMap<String, String>();
+        }
     }
 
 }

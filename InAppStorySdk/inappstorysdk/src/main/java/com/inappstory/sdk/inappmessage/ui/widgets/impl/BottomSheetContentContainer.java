@@ -4,17 +4,22 @@ import static com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_
 import static com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED;
 import static com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_HIDDEN;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Point;
+import android.graphics.Rect;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
+import android.os.Build;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.util.Pair;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowInsets;
 import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
@@ -24,12 +29,15 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.inappstory.sdk.core.ui.widgets.roundedlayout.RoundedCornerLayout;
 import com.inappstory.sdk.core.utils.ColorUtils;
+import com.inappstory.sdk.inappmessage.domain.reader.IAMReaderScrollState;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageBottomSheetAppearance;
 import com.inappstory.sdk.inappmessage.ui.widgets.BottomSheetLine;
 import com.inappstory.sdk.inappmessage.ui.widgets.IAMContentContainer;
+import com.inappstory.sdk.stories.utils.Observer;
 import com.inappstory.sdk.stories.utils.Sizes;
 
-public final class BottomSheetContentContainer extends IAMContentContainer<InAppMessageBottomSheetAppearance> {
+public final class BottomSheetContentContainer extends IAMContentContainer<InAppMessageBottomSheetAppearance>
+        implements Observer<IAMReaderScrollState> {
     private BottomSheetBehavior<RoundedCornerLayout> bottomSheetBehavior;
     private RoundedCornerLayout roundedCornerLayout;
     private CoordinatorLayout.LayoutParams layoutParams;
@@ -89,12 +97,15 @@ public final class BottomSheetContentContainer extends IAMContentContainer<InApp
         roundedCornerLayout.addView(content);
         bottomSheetLine = new BottomSheetLine(context);
         bottomSheetLineContainer = new FrameLayout(context);
-        bottomSheetLineContainer.setOnClickListener(new OnClickListener() {
+
+        bottomSheetLineContainer.setClickable(false);
+        /*bottomSheetLineContainer.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                closeWithAnimation();
+                if (closeEnabled)
+                    closeWithAnimation();
             }
-        });
+        });*/
         roundedCornerLayout.addView(bottomSheetLineContainer);
         bottomSheetLineContainer.addView(bottomSheetLine);
         bottomSheetBehavior = BottomSheetBehavior.from(roundedCornerLayout);
@@ -115,6 +126,7 @@ public final class BottomSheetContentContainer extends IAMContentContainer<InApp
             public void onSlide(@NonNull View bottomSheet, float slideOffset) {
                 if (slideOffset >= 0 && slideOffset <= 1f)
                     background.setAlpha(slideOffset);
+                if (slideCallback != null) slideCallback.onSlide(slideOffset);
             }
         });
         coordinatorLayout.addView(roundedCornerLayout);
@@ -122,8 +134,14 @@ public final class BottomSheetContentContainer extends IAMContentContainer<InApp
         if (appearance != null) appearance(appearance);
     }
 
+    public void slideCallback(BottomSheetSlideCallback slideCallback) {
+        this.slideCallback = slideCallback;
+    }
+
+    BottomSheetSlideCallback slideCallback = null;
+
     @Override
-    protected void visibleRectIsCalculated() {
+    protected int visibleRectIsCalculated() {
         float contentRatio = 1.33f;
         if (appearance.contentRatio() < 5f && appearance.contentRatio() > 0.01f) {
             contentRatio = appearance.contentRatio();
@@ -141,17 +159,18 @@ public final class BottomSheetContentContainer extends IAMContentContainer<InApp
             );
         }
         float screenContentRatio = availableWidth / availableHeight;
+        int height = 0;
         if (contentRatio >= screenContentRatio) {
-            layoutParams.height = Math.min(
+            height = Math.min(
                     Math.round(availableHeight),
                     Math.round(availableWidth / contentRatio)
             );
             layoutParams.width = Math.round(availableWidth);
         } else {
-            layoutParams.height = Math.round(availableHeight);
+            height = Math.round(availableHeight);
             layoutParams.width = Math.round(availableHeight * contentRatio);
         }
-
+        layoutParams.height = height;
         roundedCornerLayout.setRadius(
                 Sizes.dpToPxExt(appearance.cornerRadius(), getContext()),
                 Sizes.dpToPxExt(appearance.cornerRadius(), getContext()),
@@ -162,13 +181,48 @@ public final class BottomSheetContentContainer extends IAMContentContainer<InApp
                 layoutParams
         );
         roundedCornerLayout.requestLayout();
+        return height;
+    }
+
+    @Override
+    protected Pair<Integer, Integer> countSafeArea(int containerHeight) {
+        Rect mainLayoutRect = new Rect(
+                externalContainerRect
+        );
+        mainLayoutRect.top = Math.max(0, mainLayoutRect.bottom - containerHeight);
+        Rect roundedLayoutRect = new Rect();
+        roundedCornerLayout.getGlobalVisibleRect(roundedLayoutRect);
+        Context context = getContext();
+        Activity activity = null;
+        if (context instanceof Activity) {
+            activity = (Activity) context;
+        }
+        if (activity == null) return new Pair<>(0, 0);
+        int topOffset = Math.max(mainLayoutRect.top, 0);
+        int bottomOffset = Math.max(mainLayoutRect.bottom, 0);
+        int phoneHeight = Sizes.getFullPhoneHeight(activity);
+        int topInsetOffset = 0;
+        int bottomInsetOffset = 0;
+        if (Build.VERSION.SDK_INT >= 23) {
+            if (activity.getWindow() != null) {
+                WindowInsets windowInsets = activity.getWindow().getDecorView().getRootWindowInsets();
+                if (windowInsets != null) {
+                    topInsetOffset = Math.max(0, windowInsets.getStableInsetTop());
+                    bottomInsetOffset = Math.max(0, windowInsets.getStableInsetBottom());
+                }
+            }
+        }
+        return new Pair<>(
+                Math.max(0, topInsetOffset - topOffset),
+                Math.max(0, bottomInsetOffset - (phoneHeight - bottomOffset))
+        );
     }
 
     @Override
     public void appearance(InAppMessageBottomSheetAppearance appearance) {
         super.appearance(appearance);
         if (content == null) return;
-
+        bottomSheetBehavior.setDraggable(closeEnabled);
         float backdropAlpha = appearance.backdrop().alpha();
         int backdropColor = ColorUtils.modifyAlpha(Color.BLACK, backdropAlpha);
         background.setBackgroundColor(backdropColor);
@@ -177,7 +231,10 @@ public final class BottomSheetContentContainer extends IAMContentContainer<InApp
         );
         content.setBackground(appearance.backgroundDrawable());
         generateLoader(backgroundColor);
+        generateRefresh();
+        loaderContainer.setClickable(false);
         roundedCornerLayout.addView(loaderContainer);
+        roundedCornerLayout.addView(refreshContainer);
         if (appearance.lineAppearance().height() == 0) {
             bottomSheetLineContainer.setVisibility(GONE);
             return;
@@ -209,11 +266,6 @@ public final class BottomSheetContentContainer extends IAMContentContainer<InApp
 
     private int bsState = 0;
 
-    @Override
-    public void clearContentBackground() {
-        content.setBackground(null);
-        content.setBackgroundColor(Color.RED);
-    }
 
     @Override
     public void showWithAnimation() {
@@ -230,6 +282,7 @@ public final class BottomSheetContentContainer extends IAMContentContainer<InApp
     @Override
     public void closeWithAnimation() {
         bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+
     }
 
     @Override
@@ -237,4 +290,13 @@ public final class BottomSheetContentContainer extends IAMContentContainer<InApp
         bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
     }
 
+    @Override
+    public void onUpdate(IAMReaderScrollState newValue) {
+        if (bottomSheetBehavior != null)
+            bottomSheetBehavior.setDraggable(
+                    closeEnabled &&
+                    newValue.passOverscroll() &&
+                    newValue.verticalGestureEnabled()
+            );
+    }
 }

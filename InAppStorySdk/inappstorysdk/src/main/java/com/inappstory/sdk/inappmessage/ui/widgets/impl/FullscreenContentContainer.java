@@ -6,11 +6,14 @@ import android.graphics.Color;
 import android.graphics.Rect;
 import android.os.Build;
 import android.util.AttributeSet;
+import android.util.Log;
+import android.util.Pair;
 import android.util.SizeF;
 import android.view.DisplayCutout;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowInsets;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.FrameLayout;
@@ -67,28 +70,59 @@ public class FullscreenContentContainer extends IAMContentContainer<InAppMessage
         background.setBackgroundColor(Color.TRANSPARENT);
         content.setBackground(appearance.backgroundDrawable());
         generateLoader(backgroundColor);
+        generateRefresh();
         container.addView(loaderContainer);
-        switch (appearance.closeButtonPosition()) {
-            case 0:
-                closeButton.setVisibility(GONE);
-                break;
-            case 1:
-                closeButtonLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_START);
-                break;
-            default:
-                closeButtonLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_END);
-                break;
+        container.addView(refreshContainer);
+        if (closeEnabled) {
+            switch (appearance.closeButtonPosition()) {
+                case 0:
+                    closeButton.setVisibility(GONE);
+                    break;
+                case 1:
+                    closeButtonLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_START);
+                    break;
+                default:
+                    closeButtonLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_END);
+                    break;
+            }
+        } else {
+            closeButton.setVisibility(GONE);
         }
-
         closeButton.setLayoutParams(closeButtonLayoutParams);
         closeButton.requestLayout();
         //  showWithAnimation();
     }
 
+    @Override
+    protected Pair<Integer, Integer> countSafeArea(int containerHeight) {
+        int topOffset = Math.max(externalContainerRect.top, 0);
+        int bottomOffset = Math.max(externalContainerRect.bottom, 0);
+        Context context = getContext();
+        Activity activity = null;
+        if (context instanceof Activity) {
+            activity = (Activity) context;
+        }
+        if (activity == null) return new Pair<>(0, 0);
+        int phoneHeight = Sizes.getFullPhoneHeight(activity);
+        int topInsetOffset = 0;
+        int bottomInsetOffset = 0;
+        if (Build.VERSION.SDK_INT >= 23) {
+            if (activity.getWindow() != null) {
+                WindowInsets windowInsets = activity.getWindow().getDecorView().getRootWindowInsets();
+                if (windowInsets != null) {
+                    topInsetOffset = Math.max(0, windowInsets.getStableInsetTop());
+                    bottomInsetOffset = Math.max(0, windowInsets.getStableInsetBottom());
+                }
+            }
+        }
+        return new Pair<>(
+                Math.max(0, topInsetOffset - topOffset),
+                Math.max(0, bottomInsetOffset - (phoneHeight - bottomOffset))
+        );
+    }
+
     private void setCloseButtonOffset(final Context context) {
-        final Rect readerContainer = new Rect();
-        closeButton.getGlobalVisibleRect(readerContainer);
-        int topOffset = Math.max(readerContainer.top - externalContainerRect.top, 0);
+        int topOffset = Math.max(externalContainerRect.top, 0);
         Activity activity = null;
         if (context instanceof Activity) {
             activity = (Activity) context;
@@ -109,12 +143,6 @@ public class FullscreenContentContainer extends IAMContentContainer<InAppMessage
                 }
             }
         }
-    }
-
-    @Override
-    public void clearContentBackground() {
-        content.setBackground(null);
-        content.setBackgroundColor(Color.RED);
     }
 
 
@@ -355,8 +383,9 @@ public class FullscreenContentContainer extends IAMContentContainer<InAppMessage
     }
 
     @Override
-    protected void visibleRectIsCalculated() {
+    protected int visibleRectIsCalculated() {
         setCloseButtonOffset(getContext());
+        return externalContainerRect.height();
     }
 
 }

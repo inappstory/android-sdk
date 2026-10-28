@@ -13,6 +13,7 @@ import androidx.viewpager.widget.ViewPager;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.core.CancellationTokenImpl;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.IASStatisticStoriesV1;
@@ -26,7 +27,7 @@ import com.inappstory.sdk.core.ui.screens.ShareProcessHandler;
 import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryScreen;
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenAppearance;
 import com.inappstory.sdk.core.utils.CallbackTypesConverter;
-import com.inappstory.sdk.game.cache.SessionAssetsIsReadyCallback;
+import com.inappstory.sdk.stories.cache.SessionAssetsIsReadyCallback;
 import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.stories.api.models.ContentIdWithIndex;
 import com.inappstory.sdk.stories.api.models.ContentType;
@@ -44,6 +45,7 @@ import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class ReaderManager {
 
@@ -192,6 +194,13 @@ public class ReaderManager {
             manager.swipeUp();
     }
 
+    public void contentInScrollProcess(boolean contentInScrollProcess) {
+        if (host != null) {
+            host.storiesViewPager.contentInScrollProcess(contentInScrollProcess);
+        }
+    }
+
+
     public void swipeVerticalGestureEnabled(boolean enabled) {
         if (host != null) {
             host.storiesViewPager.swipeVerticalEnabled(enabled);
@@ -326,7 +335,8 @@ public class ReaderManager {
         } else {
             appearanceManager = new AppearanceManager();
         }
-        ((IASSingleStoryImpl) core.singleStoryAPI()).show(
+        ((IASSingleStoryImpl) core.singleStoryAPI()).externalShow(
+                new CancellationTokenImpl(),
                 host.getContext(),
                 storyId + "",
                 appearanceManager,
@@ -489,6 +499,7 @@ public class ReaderManager {
     void changeStory() {
         final List<Integer> lst = new ArrayList<>();
         lst.add(currentStoryId);
+        core.statistic().storiesV2().sendSlideScrollEvents(feedId);
         if (contentType == ContentType.STORY)
             core.statistic().storiesV1(getSessionId(), new GetStatisticV1Callback() {
                 @Override
@@ -659,21 +670,6 @@ public class ReaderManager {
     }
 
     private final HashSet<ReaderPageManager> subscribers = new HashSet<>();
-
-    private final SessionAssetsIsReadyCallback assetsIsReadyCallback = new SessionAssetsIsReadyCallback() {
-        @Override
-        public void isReady() {
-
-        }
-    };
-
-    public void subscribeToAssets() {
-        core.assetsHolder().addAssetsIsReadyCallback(assetsIsReadyCallback);
-    }
-
-    public void unsubscribeFromAssets() {
-        core.assetsHolder().removeAssetsIsReadyCallback(assetsIsReadyCallback);
-    }
 
     public void addSubscriber(ReaderPageManager manager) {
         synchronized (subscribers) {

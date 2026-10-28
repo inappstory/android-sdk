@@ -1,20 +1,17 @@
 package com.inappstory.sdk.game.reader.logger;
 
+import android.content.pm.PackageInfo;
 import android.os.Handler;
+import android.text.TextUtils;
 
-import androidx.annotation.NonNull;
-
-import com.inappstory.sdk.InAppStoryManager;
-import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.R;
-import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
-import com.inappstory.sdk.network.JsonParser;
-import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
+import com.inappstory.sdk.utils.WebViewUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public abstract class AbstractGameLogger {
 
@@ -26,6 +23,8 @@ public abstract class AbstractGameLogger {
     protected final String consoleInfo = "consoleInfo";
     protected final String sdkError = "sdkError";
     protected final String sdkWarn = "sdkWarn";
+
+    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
 
     private final IASCore core;
 
@@ -78,23 +77,57 @@ public abstract class AbstractGameLogger {
         new Handler().post(new Runnable() {
             @Override
             public void run() {
-                core.logs().logSaver().saveLog(log);
+                core.gameLogs().logSaver().saveLog(log);
             }
         });
     }
 
+    List<String> multipleLogs = new ArrayList<>();
+    int lastType = -1;
+
+    public final void sendDebugLog(int type, final String message) {
+        if (type == 3 && multipleLogs.size() < 20) {
+            multipleLogs.add(message);
+        } else {
+            final String msg;
+            if (type == 3) {
+                msg = TextUtils.join(" *** ", multipleLogs);
+                multipleLogs.clear();
+            } else {
+                msg = message;
+            }
+            executorService.submit(new Runnable() {
+                @Override
+                public void run() {
+                    core.gameLogs().logSaver().saveLog(createBaseLog().type("debug").message(msg));
+                }
+            });
+        }
+    }
+
+
     public final void stopQueue() {
-        core.logs().logSender().stop();
+        core.gameLogs().logSender().stop();
     }
 
     public final void startQueue(boolean gameLaunched) {
-        core.logs().logSender().start(gameLaunched);
+        core.gameLogs().logSender().start(gameLaunched);
     }
 
     protected final GameLog createBaseLog() {
+        PackageInfo pi = WebViewUtils.getCheckableWebViewPI(core);
+        if (pi == null) pi = WebViewUtils.getUncheckableWebViewPI(core);
+        int ver = 0;
+        String packageName = "Unknown";
+        if (pi != null) {
+            packageName = pi.packageName;
+            ver = WebViewUtils.getWebViewVersion(pi);
+        }
         return new GameLog(
                 gameInstanceId,
-                ((IASDataSettingsHolder)core.settingsAPI()).sessionIdOrEmpty(),
+                ((IASDataSettingsHolder) core.settingsAPI()).sessionIdOrEmpty(),
+                packageName,
+                ver,
                 System.currentTimeMillis() / 1000,
                 launchTryNumber,
                 gameLoaded

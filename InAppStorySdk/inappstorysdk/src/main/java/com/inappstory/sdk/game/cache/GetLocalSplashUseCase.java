@@ -32,7 +32,7 @@ public class GetLocalSplashUseCase {
                 return;
             }
         }
-        splashScreenCallback.onError("No cached appropriate splash");
+        splashScreenCallback.onError(new SimpleUseCaseError("No cached appropriate splash"));
     }
 
 }

@@ -1,7 +1,6 @@
 package com.inappstory.sdk.core.api.impl;
 
-import static com.inappstory.sdk.InAppStoryManager.IAS_ERROR_TAG;
-import static com.inappstory.sdk.core.api.impl.IASSettingsImpl.TAG_LIMIT;
+import static com.inappstory.sdk.core.api.impl.IASSettingsImpl.TAG_LIMIT_COUNT;
 
 import android.content.Context;
 import android.text.TextUtils;
@@ -10,13 +9,16 @@ import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.LoggerTags;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.core.CancellationTokenWithStatus;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.IASOnboardings;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.data.IListItemContent;
+import com.inappstory.sdk.core.network.content.RequestFields;
 import com.inappstory.sdk.core.ui.screens.ScreenType;
 import com.inappstory.sdk.core.ui.screens.launcher.ILaunchScreenCallback;
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenAppearance;
@@ -26,6 +28,7 @@ import com.inappstory.sdk.network.models.RequestLocalParameters;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.core.network.content.models.Feed;
 import com.inappstory.sdk.core.network.content.models.Story;
+import com.inappstory.sdk.stories.api.models.TargetingBodyObject;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadFeedCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.onboarding.OnboardingLoadCallback;
@@ -50,6 +53,7 @@ public class IASOnboardingsImpl implements IASOnboardings {
 
     @Override
     public void show(
+            final CancellationTokenWithStatus cancellationToken,
             final Context context,
             String feed,
             final AppearanceManager appearanceManager,
@@ -59,9 +63,10 @@ public class IASOnboardingsImpl implements IASOnboardings {
         if (feed == null || feed.isEmpty()) feed = ONBOARDING_FEED;
         final String usedFeed = feed;
         final IASDataSettingsHolder settingsHolder = ((IASDataSettingsHolder) core.settingsAPI());
+        if (cancellationToken != null && cancellationToken.cancelled()) return;
         if (settingsHolder.anonymous()) {
             InAppStoryManager.showELog(
-                    IAS_ERROR_TAG,
+                    LoggerTags.IAS_ERROR_TAG,
                     "Onboarding stories are unavailable for anonymous mode"
             );
             loadOnboardingError(usedFeed, "Onboarding stories are unavailable for anonymous mode");
@@ -71,14 +76,14 @@ public class IASOnboardingsImpl implements IASOnboardings {
             loadOnboardingError(usedFeed, "Incorrect user id and device id");
             return;
         }
-        final String localTags;
+        final List<String> localTags;
         if (tags != null) {
             List<String> filteredList = new ArrayList<>();
             List<String> copyTags = new ArrayList<>(tags);
             for (String tag : copyTags) {
                 if (!TagsUtils.checkTagPattern(tag)) {
                     InAppStoryManager.showELog(
-                            InAppStoryManager.IAS_WARN_TAG,
+                            LoggerTags.IAS_WARN_TAG,
                             StringsUtils.getFormattedErrorStringFromContext(
                                     core.appContext(),
                                     R.string.ias_tag_pattern_error,
@@ -89,21 +94,21 @@ public class IASOnboardingsImpl implements IASOnboardings {
                 }
                 filteredList.add(tag);
             }
-            if (StringsUtils.getBytesLength(TextUtils.join(",", filteredList)) > TAG_LIMIT) {
+            if (filteredList.size() > TAG_LIMIT_COUNT) {
                 InAppStoryManager.showELog(
-                        IAS_ERROR_TAG,
+                        LoggerTags.IAS_ERROR_TAG,
                         StringsUtils.getErrorStringFromContext(
                                 core.appContext(),
-                                R.string.ias_setter_tags_length_error
+                                R.string.ias_setter_tags_count_error
                         )
                 );
                 loadOnboardingError(usedFeed, "Tags string too long");
                 return;
 
             }
-            localTags = TextUtils.join(",", filteredList);
+            localTags = filteredList;
         } else {
-            localTags = TextUtils.join(",", settingsHolder.tags());
+            localTags = settingsHolder.tags();
         }
         core.sessionManager().useOrOpenSession(new OpenSessionCallback() {
             @Override
@@ -115,8 +120,9 @@ public class IASOnboardingsImpl implements IASOnboardings {
                                 usedFeed,
                                 core.projectSettingsAPI().testKey(),
                                 limit,
-                                localTags,
-                                "stories.slides",
+                                new TargetingBodyObject(!localTags.isEmpty() ? localTags : null, settingsHolder.options()),
+                                RequestFields.FEED_STORY_FIELDS,
+                                RequestFields.FEED_STORY_EXPAND,
                                 requestLocalParameters.userId(),
                                 requestLocalParameters.sessionId(),
                                 requestLocalParameters.locale()
@@ -145,6 +151,7 @@ public class IASOnboardingsImpl implements IASOnboardings {
                                     }
                                 }
                                 showLoadedOnboardings(
+                                        cancellationToken,
                                         notOpened,
                                         context,
                                         appearanceManager,
@@ -156,12 +163,16 @@ public class IASOnboardingsImpl implements IASOnboardings {
                             @Override
                             public void onError(int code, String message) {
                                 core.statistic().profiling().setReady(onboardUID);
+                                if (cancellationToken != null && cancellationToken.cancelled())
+                                    return;
                                 loadOnboardingError(usedFeed, "Can't load onboardings: request code " + code);
                             }
 
                             @Override
                             public void timeoutError() {
                                 core.statistic().profiling().setReady(onboardUID);
+                                if (cancellationToken != null && cancellationToken.cancelled())
+                                    return;
                                 loadOnboardingError(usedFeed, "Can't load onboardings: timeout");
                             }
                         },
@@ -171,6 +182,7 @@ public class IASOnboardingsImpl implements IASOnboardings {
 
             @Override
             public void onError() {
+                if (cancellationToken != null && cancellationToken.cancelled()) return;
                 loadOnboardingError(usedFeed, "Can't open session");
             }
 
@@ -192,6 +204,7 @@ public class IASOnboardingsImpl implements IASOnboardings {
     }
 
     private void showLoadedOnboardings(
+            final CancellationTokenWithStatus cancellationToken,
             final List<Story> response,
             final Context outerContext,
             final AppearanceManager manager,
@@ -200,6 +213,7 @@ public class IASOnboardingsImpl implements IASOnboardings {
     ) {
         ContentType contentType = ContentType.STORY;
         if (response == null || response.size() == 0) {
+            if (cancellationToken != null && cancellationToken.cancelled()) return;
             core.callbacksAPI().useCallback(IASCallbackType.ONBOARDING,
                     new UseIASCallback<OnboardingLoadCallback>() {
                         @Override
@@ -220,29 +234,25 @@ public class IASOnboardingsImpl implements IASOnboardings {
             storiesIds.add(story.id());
             core.contentHolder().listsContent().setByIdAndType(story, story.id(), contentType);
         }
-        LaunchStoryScreenData launchData = new LaunchStoryScreenData(
-                null,
-                feed,
-                sessionId,
-                storiesIds,
-                0,
-                false,
-                ShowStory.ACTION_OPEN,
-                SourceType.ONBOARDING,
-                0,
-                ContentType.STORY,
-                null
-        );
-        boolean isAnonymous = ((IASDataSettingsHolder)core.settingsAPI()).anonymous();
+        LaunchStoryScreenData launchData = new LaunchStoryScreenData()
+                .feed(feed)
+                .sessionId(sessionId)
+                .storiesIds(new ArrayList<>(storiesIds))
+                .firstAction(ShowStory.ACTION_OPEN)
+                .sourceType(SourceType.ONBOARDING)
+                .slideIndex(0)
+                .type(ContentType.STORY)
+                .cancellationTokenUID(cancellationToken.getUniqueId());
         core.screensManager().openScreen(
                 outerContext,
                 new LaunchStoryScreenStrategy(core, false).
+                        cancellationToken(cancellationToken).
                         launchStoryScreenData(launchData).
                         readerAppearanceSettings(
                                 new LaunchStoryScreenAppearance(
                                         AppearanceManager.checkOrCreateAppearanceManager(manager),
                                         outerContext,
-                                        !isAnonymous
+                                        true
                                 )
                         )
                         .addLaunchScreenCallback(

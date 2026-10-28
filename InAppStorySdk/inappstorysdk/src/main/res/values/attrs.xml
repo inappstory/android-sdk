@@ -27,4 +27,16 @@
         <attr name="cs_listIsFavorite" format="boolean" />
         <attr name="cs_feed" format="string" />
     </declare-styleable>
+
+    <declare-styleable name="BannerCarousel">
+        <attr name="cs_place_id" format="string" />
+    </declare-styleable>
+
+    <declare-styleable name="BannerList">
+        <attr name="cs_banner_list_place_id" format="string" />
+    </declare-styleable>
+
+    <declare-styleable name="BannerGrid">
+        <attr name="cs_banner_grid_place_id" format="string" />
+    </declare-styleable>
 </resources>

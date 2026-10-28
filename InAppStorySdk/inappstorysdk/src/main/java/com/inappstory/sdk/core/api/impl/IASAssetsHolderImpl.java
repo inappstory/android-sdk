@@ -1,29 +1,36 @@
 package com.inappstory.sdk.core.api.impl;
 
-import androidx.annotation.NonNull;
+import android.util.Log;
+import android.util.Pair;
 
-import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASAssetsHolder;
 import com.inappstory.sdk.core.network.content.models.SessionAsset;
-import com.inappstory.sdk.game.cache.SessionAssetsIsReadyCallback;
+import com.inappstory.sdk.stories.cache.SessionAssetsIsReadyCallback;
 import com.inappstory.sdk.game.cache.UseCaseCallback;
+import com.inappstory.sdk.game.cache.UseCaseError;
 import com.inappstory.sdk.stories.cache.usecases.SessionAssetUseCase;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
-import java.util.concurrent.Callable;
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 public class IASAssetsHolderImpl implements IASAssetsHolder {
     private final IASCore core;
 
 
-    private final ExecutorService downloader = Executors.newFixedThreadPool(5);
+    private ExecutorService downloader = Executors.newFixedThreadPool(5);
+    private final ExecutorService mainLoaderThread = Executors.newSingleThreadExecutor();
     private final List<SessionAsset> sessionAssets = new ArrayList<>();
+
+
     public IASAssetsHolderImpl(IASCore core) {
         this.core = core;
     }
@@ -37,92 +44,158 @@ public class IASAssetsHolderImpl implements IASAssetsHolder {
         return assets;
     }
 
-    @Override
-    public void downloadAssets() {
+    private void loadAssets() {
         List<SessionAsset> assets = new ArrayList<>();
         synchronized (assetsLock) {
             assets.addAll(sessionAssets);
-        }
-        if (assets.isEmpty()) return;
-        synchronized (assetsLock) {
+            if (assets.isEmpty()) return;
             if (assetsIsDownloaded) return;
+            if (assetsDownloadError) return;
             if (assetsIsLoading) return;
             assetsIsLoading = true;
         }
-        List<Callable<Object>> assetTasks = new ArrayList<>(assets.size());
-
-        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
-            @Override
-            public void use(@NonNull final InAppStoryService service) throws Exception {
-
-            }
-        });
         final boolean[] assetsStatus = {true};
-
+        Collection<Future<?>> futures = new ArrayList<>();
         for (final SessionAsset asset : assets) {
-            assetTasks.add(new Callable<Object>() {
+            futures.add(downloader.submit(new Runnable() {
                 @Override
-                public Object call() throws Exception {
-                    return new SessionAssetUseCase(core,
-                            new UseCaseCallback<File>() {
+                public void run() {
+                    new SessionAssetUseCase(core,
+                            new UseCaseCallback<Pair<SessionAsset, File>>() {
                                 @Override
-                                public void onError(String message) {
+                                public void onError(UseCaseError error) {
                                     synchronized (assetsLock) {
                                         assetsStatus[0] = false;
                                     }
                                 }
 
                                 @Override
-                                public void onSuccess(File result) {
-
+                                public void onSuccess(Pair<SessionAsset, File> result) {
+                                    String url = result.first.url;
+                                    synchronized (assetsLock) {
+                                        if (!cachedAssetUrls.contains(url)) {
+                                            cachedAssetUrls.add(url);
+                                        }
+                                    }
                                 }
                             },
                             asset
                     ).getFile();
                 }
-            });
+            }));
         }
-        try {
-            downloader.invokeAll(assetTasks);
-        } catch (InterruptedException e) {
-            synchronized (assetsLock) {
-                assetsIsLoading = false;
-                assetsStatus[0] = false;
+        for (Future<?> future : futures) {
+            try {
+                boolean success = false;
+                synchronized (assetsLock) {
+                    success = assetsStatus[0];
+                }
+                if (!success) {
+                    downloader.shutdownNow();
+                    downloader = Executors.newFixedThreadPool(5);
+                    break;
+                }
+                future.get();
+
+            } catch (InterruptedException | ExecutionException e) {
+                synchronized (assetsLock) {
+                    assetsStatus[0] = false;
+                }
             }
         }
+
         List<SessionAssetsIsReadyCallback> copyCallbacks = new ArrayList<>();
         synchronized (assetsLock) {
             assetsIsLoading = false;
             if (assetsStatus[0]) {
                 assetsIsDownloaded = true;
+            } else {
+                assetsDownloadError = true;
             }
-            if (assetsIsDownloaded) {
-                copyCallbacks.addAll(callbacks);
-                callbacks.clear();
-            }
+            copyCallbacks.addAll(callbacks);
+            callbacks.clear();
         }
-        for (SessionAssetsIsReadyCallback callback: copyCallbacks) {
-            callback.isReady();
+        for (SessionAssetsIsReadyCallback callback : copyCallbacks) {
+            if (assetsStatus[0]) {
+                callback.isReady();
+            } else {
+                callback.error();
+            }
         }
 
     }
 
     @Override
-    public void setAssets(List<SessionAsset> assets) {
+    public void downloadAssets() {
+        mainLoaderThread.execute(new Runnable() {
+            @Override
+            public void run() {
+                loadAssets();
+            }
+        });
+
+    }
+
+    @Override
+    public void reloadAssets(SessionAssetsIsReadyCallback callback) {
         synchronized (assetsLock) {
+            if (assetsIsDownloaded) {
+                callback.isReady();
+                return;
+            }
+            if (assetsDownloadError) {
+                assetsDownloadError = false;
+            }
+            callbacks.add(callback);
+            if (assetsIsLoading) {
+                return;
+            }
+        }
+        callback.assetsIsLoading();
+        downloadAssets();
+    }
+
+    @Override
+    public void setAssets(List<SessionAsset> assets) {
+        List<SessionAsset> orderedAssets = new ArrayList<>();
+        synchronized (assetsLock) {
+            layoutAssetUrls.clear();
+            for (SessionAsset sessionAsset : assets) {
+                if (sessionAsset.isMainAsset()) {
+                    layoutAssetUrls.add(sessionAsset.url);
+                    orderedAssets.add(0, sessionAsset);
+                } else {
+                    orderedAssets.add(sessionAsset);
+                }
+            }
             sessionAssets.clear();
-            sessionAssets.addAll(assets);
+            sessionAssets.addAll(orderedAssets);
         }
     }
 
     private final Object assetsLock = new Object();
     private boolean assetsIsDownloaded = false;
+    private final List<String> cachedAssetUrls = new ArrayList<>();
+    private final Set<String> layoutAssetUrls = new HashSet<>();
+    private boolean assetsDownloadError = false;
     private boolean assetsIsLoading = false;
 
     @Override
-    public boolean assetsIsDownloaded() {
+    public boolean assetsIsDownloaded(Set<String> assetUrls) {
         synchronized (assetsLock) {
-            return assetsIsDownloaded;
+            if (assetsIsDownloaded) {
+                return true;
+            }
+            if (assetUrls == null) {
+                return false;
+            }
+            Set<String> allCheckUrls = new HashSet<>(layoutAssetUrls);
+            allCheckUrls.addAll(assetUrls);
+            for (String assetUrl : allCheckUrls) {
+                if (!cachedAssetUrls.contains(assetUrl))
+                    return false;
+            }
+            return true;
         }
     }
 
@@ -131,7 +204,26 @@ public class IASAssetsHolderImpl implements IASAssetsHolder {
     @Override
     public void addAssetsIsReadyCallback(SessionAssetsIsReadyCallback callback) {
         synchronized (assetsLock) {
+            if (assetsIsLoading) callback.assetsIsLoading();
             callbacks.add(callback);
+        }
+    }
+
+    @Override
+    public void checkOrAddAssetsIsReadyCallback(SessionAssetsIsReadyCallback callback) {
+        if (assetsIsDownloaded(callback.usedAssets())) {
+            callback.isReady();
+            return;
+        }
+        synchronized (assetsLock) {
+            if (assetsDownloadError) {
+                callback.error();
+            } else {
+                if (assetsIsLoading) {
+                    callback.assetsIsLoading();
+                }
+                callbacks.add(callback);
+            }
         }
     }
 
@@ -146,8 +238,10 @@ public class IASAssetsHolderImpl implements IASAssetsHolder {
     public void clear() {
         synchronized (assetsLock) {
             callbacks.clear();
+            cachedAssetUrls.clear();
             assetsIsDownloaded = false;
             assetsIsLoading = false;
+            assetsDownloadError = false;
         }
     }
 }

@@ -6,7 +6,7 @@ import android.graphics.drawable.Drawable;
 import com.inappstory.sdk.core.utils.ColorUtils;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageBSLineAppearance;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageBackdrop;
-import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageBackground;
+import com.inappstory.sdk.inappmessage.ui.appearance.IReaderBackground;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageBottomSheetAppearance;
 import com.inappstory.sdk.utils.NumberUtils;
 
@@ -30,21 +30,25 @@ public class InAppMessageBottomSheetSettings implements InAppMessageBottomSheetA
     private Float contentRatio;
     private Integer cornerRadius;
     private String backgroundColor;
+    private IReaderBackground background;
     private InAppMessageBSLineAppearance lineAppearance;
     private InAppMessageBackdrop backdrop;
-    private InAppMessageBackground background;
+    private boolean disableClose;
+    private Map<String, Object> cardAppearance;
 
     public InAppMessageBottomSheetSettings() {
     }
 
-    public InAppMessageBottomSheetSettings(Map<String, Object> appearance) {
+    public InAppMessageBottomSheetSettings(Map<String, Object> appearance, boolean disableClose) {
         if (appearance == null) return;
+        this.disableClose = disableClose;
         String contentRatioKey = "content_ratio";
         String cornerRadiusKey = "corner_radius";
         String lineAppearanceKey = "close_button";
         String backgroundColorKey = "background_color";
         String backgroundKey = "background";
         String backdropKey = "backdrop";
+        String cardAppearanceKey = "card_appearance";
         NumberUtils numberUtils = new NumberUtils();
         if (appearance.containsKey(contentRatioKey)) {
             contentRatio = numberUtils.convertNumberToFloat(appearance.get(contentRatioKey));
@@ -62,9 +66,12 @@ public class InAppMessageBottomSheetSettings implements InAppMessageBottomSheetA
             backgroundColor = (String) appearance.get(backgroundColorKey);
         }
         if (appearance.containsKey(backgroundKey)) {
-            background = new InAppMessageBackgroundSettings(
+            background = new ReaderBackgroundSettings(
                     (Map<String, Object>) appearance.get(backgroundKey)
             );
+        }
+        if (appearance.containsKey(cardAppearanceKey)) {
+            cardAppearance = (Map<String, Object>) appearance.get(cardAppearanceKey);
         }
     }
 
@@ -85,7 +92,7 @@ public class InAppMessageBottomSheetSettings implements InAppMessageBottomSheetA
     }
 
     @Override
-    public InAppMessageBackground background() {
+    public IReaderBackground background() {
         return background;
     }
 
@@ -98,6 +105,11 @@ public class InAppMessageBottomSheetSettings implements InAppMessageBottomSheetA
     }
 
     @Override
+    public boolean disableClose() {
+        return disableClose;
+    }
+
+    @Override
     public InAppMessageBSLineAppearance lineAppearance() {
         return lineAppearance != null ? lineAppearance : new InAppMessageBSLineSettings();
     }
@@ -105,5 +117,10 @@ public class InAppMessageBottomSheetSettings implements InAppMessageBottomSheetA
     @Override
     public InAppMessageBackdrop backdrop() {
         return backdrop != null ? backdrop : new InAppMessageBackdropSettings();
+    }
+
+    @Override
+    public Map<String, Object> cardAppearance() {
+        return cardAppearance;
     }
 }

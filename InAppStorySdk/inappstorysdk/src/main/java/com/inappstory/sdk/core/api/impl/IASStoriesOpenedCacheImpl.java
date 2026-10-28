@@ -22,6 +22,7 @@ public class IASStoriesOpenedCacheImpl implements IASStoriesOpenedCache {
     public String getLocalOpensKey(ContentType type) {
         IASDataSettingsHolder settingsHolder = (IASDataSettingsHolder) core.settingsAPI();
         String uid = settingsHolder.userIdOrAnonymous();
+
         if (localOpensKey == null && uid != null) {
             localOpensKey = "opened" + uid;
         }

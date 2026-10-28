@@ -1,5 +1,7 @@
 package com.inappstory.sdk.stories.api.models;
 
+import android.view.View;
+
 import com.inappstory.sdk.game.reader.GameScreenOptions;
 import com.inappstory.sdk.network.annotations.models.Required;
 import com.inappstory.sdk.network.annotations.models.SerializedName;
@@ -8,6 +10,7 @@ import com.inappstory.sdk.stories.api.interfaces.IGameCenterData;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class GameCenterData implements IGameCenterData {
     @SerializedName("id")
@@ -22,6 +25,10 @@ public class GameCenterData implements IGameCenterData {
     public List<WebResource> resources;
     @SerializedName("screenOptions")
     public GameScreenOptions options;
+    @SerializedName("launchConditions")
+    public GameLaunchConditions gameLaunchConditions;
+    @SerializedName("languageDirection")
+    public String layoutDirection;
     @SerializedName("loggerLevel")
     public Integer loggerLevel;
 
@@ -43,6 +50,17 @@ public class GameCenterData implements IGameCenterData {
 
     @SerializedName("archiveSha1")
     public String archiveSha1;
+
+    @Override
+    public String layoutDirectionString() {
+        return Objects.equals(layoutDirection, "rtl") ? "rtl" : "ltr";
+    }
+
+    @Override
+    public int layoutDirectionRaw() {
+        return Objects.equals(layoutDirection, "rtl") ?
+                View.LAYOUT_DIRECTION_RTL : View.LAYOUT_DIRECTION_LTR;
+    }
 
     @Override
     public GameSplashScreen splashLandscapeScreen() {

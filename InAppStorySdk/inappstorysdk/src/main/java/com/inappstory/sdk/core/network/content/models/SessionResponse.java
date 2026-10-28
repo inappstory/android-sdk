@@ -1,6 +1,7 @@
 package com.inappstory.sdk.core.network.content.models;
 
 
+import com.inappstory.sdk.network.annotations.models.Required;
 import com.inappstory.sdk.network.annotations.models.SerializedName;
 import com.inappstory.sdk.stories.api.models.SessionRequestFields;
 
@@ -12,6 +13,7 @@ import java.util.List;
 
 public class SessionResponse {
 
+    //@Required
     @SerializedName(SessionRequestFields.session)
     public Session session;
 
@@ -25,6 +27,11 @@ public class SessionResponse {
     public float previewAspectRatio;
     @SerializedName(SessionRequestFields.sessionAssets)
     public List<SessionAsset> sessionAssets;
+    @SerializedName(SessionRequestFields.layoutUpdatedAt)
+    public int layoutUpdatedAt;
+
+    @SerializedName(SessionRequestFields.isGameReaderDefaultFullscreen)
+    public boolean isGameReaderDefaultFullscreen;
 
     @SerializedName(SessionRequestFields.isAllowProfiling)
     public boolean isAllowProfiling;
@@ -34,6 +41,8 @@ public class SessionResponse {
     public Boolean isAllowStatV2;
     @SerializedName(SessionRequestFields.isAllowCrash)
     public Boolean isAllowCrash;
+    @SerializedName(SessionRequestFields.debugSessionKey)
+    public String debugSessionKey;
 
     public float getPreviewAspectRatio() {
         if (previewAspectRatio > 0) return previewAspectRatio;

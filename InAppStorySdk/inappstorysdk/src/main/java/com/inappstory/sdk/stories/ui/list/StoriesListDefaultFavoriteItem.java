@@ -36,7 +36,6 @@ public final class StoriesListDefaultFavoriteItem implements IGetFavoriteListIte
 
     IStoriesListDefaultFavoriteItemPresenter manager = new StoriesListDefaultFavoriteItemPresenter();
     int layoutDirection;
-
     int parentWidth;
 
     public StoriesListDefaultFavoriteItem(

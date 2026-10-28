@@ -26,6 +26,7 @@ import com.inappstory.sdk.core.utils.ConnectionCheck;
 import com.inappstory.sdk.core.utils.ConnectionCheckCallback;
 import com.inappstory.sdk.core.utils.StringWithPlaceholders;
 import com.inappstory.sdk.game.cache.SuccessUseCaseCallback;
+import com.inappstory.sdk.game.cache.UseCaseError;
 import com.inappstory.sdk.game.reader.GameStoryData;
 import com.inappstory.sdk.imageloader.CustomFileLoader;
 import com.inappstory.sdk.stories.api.models.ContentType;
@@ -112,7 +113,7 @@ public class StackStoryObserver implements IStackFeedActions {
                     }
 
                     @Override
-                    public void onError(String message) {
+                    public void onError(UseCaseError message) {
                         localStackStoryData.updateStoryDataCover(
                                 null,
                                 StackStoryCoverLoadType.IMAGE,
@@ -133,7 +134,7 @@ public class StackStoryObserver implements IStackFeedActions {
                     }
 
                     @Override
-                    public void onError(String message) {
+                    public void onError(UseCaseError message) {
                         localStackStoryData.updateStoryDataCover(
                                 null,
                                 StackStoryCoverLoadType.VIDEO,
@@ -153,7 +154,6 @@ public class StackStoryObserver implements IStackFeedActions {
             stackStoryUpdated.onUpdate(null);
         }
         final Story currentStory = stories.get(newIndex);
-        Log.e("NewStackStoryData", newIndex + " " + currentStory.isOpened());
         String image = currentStory.imageCoverByQuality(appearanceManager.csCoverQuality());
         final String video = currentStory.videoCover();
         boolean[] statuses = new boolean[stories.size()];
@@ -366,19 +366,16 @@ public class StackStoryObserver implements IStackFeedActions {
                     j++;
                 }
             }
-            LaunchStoryScreenData launchData = new LaunchStoryScreenData(
-                    listId,
-                    feed,
-                    sessionId,
-                    readerStories,
-                    openIndex,
-                    showOnlyNewStories,
-                    ShowStory.ACTION_OPEN,
-                    SourceType.STACK,
-                    0,
-                    ContentType.STORY,
-                    null
-            );
+            LaunchStoryScreenData launchData = new LaunchStoryScreenData()
+                    .listUniqueId(listId)
+                    .feed(feed)
+                    .sessionId(sessionId)
+                    .storiesIds(new ArrayList<>(readerStories))
+                    .listIndex(openIndex)
+                    .shownOnlyNewStories(showOnlyNewStories)
+                    .firstAction(ShowStory.ACTION_OPEN)
+                    .sourceType(SourceType.STACK)
+                    .type(ContentType.STORY);
             boolean nonAnonymous = !((IASDataSettingsHolder)core.settingsAPI()).anonymous();
             core.screensManager().openScreen(context,
                     new LaunchStoryScreenStrategy(core, false).

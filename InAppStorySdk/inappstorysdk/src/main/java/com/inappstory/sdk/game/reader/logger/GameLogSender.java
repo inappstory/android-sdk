@@ -2,9 +2,7 @@ package com.inappstory.sdk.game.reader.logger;
 
 import androidx.annotation.NonNull;
 
-import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.core.IASCore;
-import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.network.models.Response;
 import com.inappstory.sdk.utils.ScheduledTPEManager;
@@ -12,8 +10,6 @@ import com.inappstory.sdk.utils.ScheduledTPEManager;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 public class GameLogSender implements IGameLogSender {
@@ -33,9 +29,9 @@ public class GameLogSender implements IGameLogSender {
     ) {
         this.core = core;
         this.saver = saver;
-        submitRunnable();
     }
 
+    private boolean submitted = false;
 
     private final Runnable statisticUpdateRunnable = new Runnable() {
         @Override
@@ -44,7 +40,9 @@ public class GameLogSender implements IGameLogSender {
         }
     };
 
-    private void submitRunnable() {
+    public void submitRunnable() {
+        if (submitted) return;
+        submitted = true;
         long statisticUpdateInterval = 1000;
         statisticScheduledThread.scheduleAtFixedRate(
                 statisticUpdateRunnable,
@@ -54,7 +52,7 @@ public class GameLogSender implements IGameLogSender {
         );
     }
 
-    private final ScheduledTPEManager statisticScheduledThread =
+    private ScheduledTPEManager statisticScheduledThread =
             new ScheduledTPEManager();
 
     private void sendLogs() {
@@ -79,7 +77,6 @@ public class GameLogSender implements IGameLogSender {
     private void sendLogs(
             final List<GameLog> logs
     ) {
-        boolean isGameLaunched = false;
         if (logs.isEmpty()) {
             synchronized (lock) {
                 inProcess = false;
@@ -88,7 +85,6 @@ public class GameLogSender implements IGameLogSender {
         }
         synchronized (lock) {
             if (paused) return;
-            isGameLaunched = gameLaunched;
         }
         GameLog log = logs.get(0);
         final List<GameLog> nextLogs = new ArrayList<>();
@@ -102,6 +98,8 @@ public class GameLogSender implements IGameLogSender {
                         log.launchTryNumber(),
                         log.timestamp(),
                         log.message(),
+                        log.webViewPackage(),
+                        log.webViewVersion(),
                         log.stacktrace(),
                         log.logSession(),
                         log.gameLoaded()
@@ -131,10 +129,13 @@ public class GameLogSender implements IGameLogSender {
             paused = true;
             gameLaunched = false;
         }
+        statisticScheduledThread.shutdownNow();
+        statisticScheduledThread = new ScheduledTPEManager();
     }
 
     @Override
     public void start(boolean gameLaunched) {
+        submitRunnable();
         synchronized (lock) {
             this.gameLaunched = gameLaunched;
             paused = false;

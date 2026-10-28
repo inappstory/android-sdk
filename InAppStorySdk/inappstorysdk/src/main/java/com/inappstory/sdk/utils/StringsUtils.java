@@ -2,6 +2,7 @@ package com.inappstory.sdk.utils;
 
 
 import android.content.Context;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.StringRes;
@@ -13,7 +14,11 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 public class StringsUtils {
     public static @NonNull String getNonNull(String str) {
@@ -21,6 +26,38 @@ public class StringsUtils {
         return str;
     }
 
+    public static MDStringModel generateMDStringReplacement(String raw) {
+        Pattern p;
+        try {
+            p = Pattern.compile("\\[([^\\]]+)\\]\\(([^\\)]+)\\)");
+        } catch (PatternSyntaxException ex) {
+            ex.printStackTrace();
+            return null;
+        }
+        String keyText = raw;
+        String valueText = raw;
+        Matcher matcher = p.matcher(raw);
+        int index = 0;
+        int keyCount = 0;
+        List<MDStringReplacement> replacements = new ArrayList<>();
+        while (true) {
+            if (matcher.find(index)) {
+                String key = "%%key" + keyCount + "%%";
+                keyText = keyText.replace(matcher.group(0), key);
+                valueText = valueText.replace(matcher.group(0), matcher.group(1));
+                replacements.add(
+                        new MDStringReplacement(
+                                key, matcher.group(1), matcher.group(2)
+                        )
+                );
+                keyCount++;
+                index = matcher.end();
+            } else {
+                break;
+            }
+        }
+        return new MDStringModel(raw, keyText, valueText, replacements);
+    }
 
     public static String getErrorStringFromContext(Context context, @StringRes int resourceId) {
         if (context != null)

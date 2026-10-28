@@ -2,24 +2,43 @@ package com.inappstory.sdk.inappmessage.domain.reader;
 
 
 import com.inappstory.sdk.core.ui.screens.IReaderSlideViewModel;
+import com.inappstory.sdk.inappmessage.InAppMessageSlideData;
 import com.inappstory.sdk.inappmessage.domain.stedata.STETypeAndData;
 import com.inappstory.sdk.stories.api.models.ContentIdWithIndex;
+import com.inappstory.sdk.stories.api.models.OnVerticalScrollJSData;
 import com.inappstory.sdk.stories.utils.Observer;
 import com.inappstory.sdk.stories.utils.SingleTimeEvent;
 
 public interface IIAMReaderSlideViewModel extends IReaderSlideViewModel {
+    void reloadContent();
+
     void addSubscriber(Observer<IAMReaderSlideState> observer);
+
     void removeSubscriber(Observer<IAMReaderSlideState> observer);
 
+    void addScrollSubscriber(Observer<IAMReaderScrollState> observer);
+
+    void removeScrollSubscriber(Observer<IAMReaderScrollState> observer);
+
     void readerIsOpened(boolean fromScratch);
+
     void readerIsClosing();
+
     void closeReader();
+
+    void updateLayout();
+
+    void onVerticalScrollChange(OnVerticalScrollJSData scrollData);
+
+    void onCardLoadingStateChange(int state, String reason);
+
+    void onEvent(String name, String event);
 
     SingleTimeEvent<STETypeAndData> singleTimeEvents();
 
     ContentIdWithIndex iamId();
 
-    String modifyContent(String content);
+    InAppMessageSlideData slideData();
 
     void slideClick(String payload);
 
@@ -75,6 +94,8 @@ public interface IIAMReaderSlideViewModel extends IReaderSlideViewModel {
 
     void storyFreezeUI();
 
+    void storyUnfreezeUI();
+
     void storySendData(String data);
 
     void setLocalUserData(String data, boolean sendToServer);
@@ -82,6 +103,10 @@ public interface IIAMReaderSlideViewModel extends IReaderSlideViewModel {
     String getLocalUserData();
 
     void shareSlideScreenshotCb(String shareId, boolean result);
+
+    void enableVerticalSwipeGesture();
+
+    void disableVerticalSwipeGesture();
 
     void defaultTap(String val);
 }

@@ -1,7 +1,5 @@
 package com.inappstory.sdk.stories.cache;
 
-import android.util.Log;
-
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.core.IASCore;
@@ -30,6 +28,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
 public class StoryDownloadManager {
     private final IASCore core;
@@ -42,17 +41,17 @@ public class StoryDownloadManager {
         //   core.contentHolder().listsContent().clearByType(ContentType.UGC);
     }
 
-    static final String EXPAND_STRING = "slides,layout";
-
     public boolean changePriority(ContentIdWithIndex storyId,
                                   List<ContentIdWithIndex> adjacent,
                                   ContentType type) {
+        initDownloader();
         if (slidesDownloader != null)
             return slidesDownloader.changePriority(storyId, adjacent, type);
         return false;
     }
 
     public void changePriorityForSingle(ContentIdWithIndex storyId, ContentType type) {
+        initDownloader();
         if (slidesDownloader != null)
             slidesDownloader.changePriorityForSingle(storyId, type);
 
@@ -73,8 +72,6 @@ public class StoryDownloadManager {
         if (cleanStories) {
             core.contentHolder().readerContent().clearByType(ContentType.STORY);
             core.contentHolder().readerContent().clearByType(ContentType.UGC);
-            //  core.contentHolder().listsContent().clearByType(ContentType.STORY);
-            //   core.contentHolder().listsContent().clearByType(ContentType.UGC);
         }
         storyDownloader.cleanTasks();
         slidesDownloader.cleanTasks();
@@ -123,7 +120,7 @@ public class StoryDownloadManager {
             return;
         }
         for (IReaderSlideViewModel pageViewModel : locals) {
-            if (pageViewModel.contentIdAndType().equals(contentIdAndType)) {
+            if (Objects.equals(pageViewModel.contentIdAndType(), contentIdAndType)) {
                 pageViewModel.contentLoadError();
                 return;
             }
@@ -136,11 +133,10 @@ public class StoryDownloadManager {
             locals.addAll(pageViewModels);
         }
         for (IReaderSlideViewModel pageViewModel : locals) {
-            if (
-                    pageViewModel.contentIdAndType().equals(
-                            new ContentIdAndType(story.id(), type)
-                    )
-            ) {
+            if (Objects.equals(
+                    pageViewModel.contentIdAndType(),
+                    new ContentIdAndType(story.id(), type)
+            )) {
                 pageViewModel.contentLoadSuccess(story);
                 return;
             }
@@ -169,7 +165,7 @@ public class StoryDownloadManager {
             public void onDownload(IReaderContent story, int loadType, ContentType type) {
                 storyLoaded(story, type);
                 try {
-                    slidesDownloader.addStorySlides(
+                    slidesDownloader.addSlides(
                             new ContentIdAndType(story.id(), type),
                             story,
                             loadType,
@@ -199,11 +195,16 @@ public class StoryDownloadManager {
                 }
         );
 
-        storyDownloader.init();
-        slidesDownloader.init();
+    }
+
+    private void initDownloader() {
+
+        //      storyDownloader.init();
+        //       slidesDownloader.init();
     }
 
     public void addStoryTask(ContentIdWithIndex storyId, ArrayList<ContentIdWithIndex> addIds, ContentType type) {
+        initDownloader();
         try {
             storyDownloader.addStoryTask(storyId, addIds, type);
         } catch (Exception e) {
@@ -223,11 +224,12 @@ public class StoryDownloadManager {
     private final SlidesDownloader slidesDownloader;
 
     public void addCompletedStoryTask(IReaderContent story, ContentType type) {
+        initDownloader();
         if (storyDownloader != null) {
             storyDownloader.addCompletedStoryTask(story.id(), type);
             storyLoaded(story, type);
             try {
-                slidesDownloader.addStorySlides(
+                slidesDownloader.addSlides(
                         new ContentIdAndType(story.id(), type),
                         story,
                         3,
@@ -272,6 +274,7 @@ public class StoryDownloadManager {
 
     public void loadStories(
             String feed,
+            String widgetUID,
             final LoadStoriesCallback callback,
             final LoadFavoritesCallback favCallback,
             boolean isFavorite,
@@ -281,10 +284,10 @@ public class StoryDownloadManager {
         SimpleListCallback loadCallback = new SimpleListCallback() {
             @Override
             public void onSuccess(final List<Story> stories, Object... args) {
-
                 IASDataSettingsHolder dataSettingsHolder = (IASDataSettingsHolder) core.settingsAPI();
                 CachedSessionData cachedSessionData = dataSettingsHolder.sessionData();
                 if (cachedSessionData == null) return;
+
                 String feedId = null;
                 final ContentType type = ContentType.STORY;
                 final IContentHolder contentHolder = core.contentHolder();
@@ -298,12 +301,14 @@ public class StoryDownloadManager {
                 }
                 setLocalsOpened(ContentType.STORY);
                 boolean loadFav = loadFavorite;
+
                 RequestLocalParameters requestLocalParameters = new RequestLocalParameters()
                         .sessionId(cachedSessionData.sessionId)
                         .userId(cachedSessionData.userId)
                         .sendStatistic(dataSettingsHolder.sendStatistic())
                         .anonymous(cachedSessionData.anonymous)
                         .locale(Locale.forLanguageTag(cachedSessionData.locale));
+
                 if (args != null && args.length > 0) {
                     int shift = 0;
                     if (args[0] instanceof RequestLocalParameters) {
@@ -444,9 +449,18 @@ public class StoryDownloadManager {
             }
         };
         if (feed != null && !isFavorite) {
-            storyDownloader.loadStoryListByFeed(feed, loadCallback, true);
+            storyDownloader.loadStoryListByFeed(feed,
+                    widgetUID,
+                    loadCallback,
+                    true
+            );
         } else {
-            storyDownloader.loadStoryList(isFavorite ? loadCallbackWithoutFav : loadCallback, isFavorite, true);
+            storyDownloader.loadStoryList(
+                    isFavorite ? loadCallbackWithoutFav : loadCallback,
+                    widgetUID,
+                    isFavorite,
+                    true
+            );
         }
     }
 

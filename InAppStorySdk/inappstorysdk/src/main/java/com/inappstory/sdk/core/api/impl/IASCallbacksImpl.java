@@ -2,16 +2,21 @@ package com.inappstory.sdk.core.api.impl;
 
 import androidx.annotation.NonNull;
 
+import com.inappstory.sdk.banners.BannerWidgetCallback;
+import com.inappstory.sdk.banners.ShowBannerCallback;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASCallback;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.IASCallbacks;
 import com.inappstory.sdk.core.api.UseIASCallback;
+import com.inappstory.sdk.goods.outercallbacks.ProductCartInteractionCallback;
 import com.inappstory.sdk.inappmessage.CloseInAppMessageCallback;
 import com.inappstory.sdk.inappmessage.InAppMessageLoadCallback;
 import com.inappstory.sdk.inappmessage.InAppMessageWidgetCallback;
 import com.inappstory.sdk.inappmessage.ShowInAppMessageCallback;
+import com.inappstory.sdk.inappmessage.ShowInAppMessageSlideCallback;
 import com.inappstory.sdk.stories.callbacks.ExceptionCallback;
+import com.inappstory.sdk.stories.callbacks.SessionIsOpenedCallback;
 import com.inappstory.sdk.stories.callbacks.ShareCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.errors.ErrorCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.gamereader.GameReaderCallback;
@@ -47,6 +52,12 @@ public class IASCallbacksImpl implements IASCallbacks {
             case EXCEPTION:
                 if (exceptionCallback != null) {
                     useIASCallback.use(exceptionCallback);
+                    return;
+                }
+                break;
+            case SESSION_IS_OPENED:
+                if (sessionIsOpenedCallback != null) {
+                    useIASCallback.use(sessionIsOpenedCallback);
                     return;
                 }
                 break;
@@ -140,6 +151,12 @@ public class IASCallbacksImpl implements IASCallbacks {
                     return;
                 }
                 break;
+            case SHOW_IN_APP_MESSAGE_SLIDE:
+                if (showInAppMessageSlideCallback != null) {
+                    useIASCallback.use(showInAppMessageSlideCallback);
+                    return;
+                }
+                break;
             case CLOSE_IN_APP_MESSAGE:
                 if (closeInAppMessageCallback != null) {
                     useIASCallback.use(closeInAppMessageCallback);
@@ -152,6 +169,24 @@ public class IASCallbacksImpl implements IASCallbacks {
                     return;
                 }
                 break;
+            case SHOW_BANNER:
+                if (showBannerCallback != null) {
+                    useIASCallback.use(showBannerCallback);
+                    return;
+                }
+                break;
+            case BANNER_WIDGET:
+                if (bannerWidgetCallback != null) {
+                    useIASCallback.use(bannerWidgetCallback);
+                    return;
+                }
+                break;
+            case PRODUCT_CART_INTERACTION:
+                if (productCartInteractionCallback != null) {
+                    useIASCallback.use(productCartInteractionCallback);
+                    return;
+                }
+                break;
             default:
                 break;
         }
@@ -161,6 +196,9 @@ public class IASCallbacksImpl implements IASCallbacks {
     @Override
     public void setCallback(IASCallbackType type, IASCallback callback) {
         switch (type) {
+            case SESSION_IS_OPENED:
+                sessionIsOpenedCallback = (SessionIsOpenedCallback) callback;
+                return;
             case ERROR:
                 errorCallback = (ErrorCallback) callback;
                 return;
@@ -209,11 +247,23 @@ public class IASCallbacksImpl implements IASCallbacks {
             case SHOW_IN_APP_MESSAGE:
                 showInAppMessageCallback = (ShowInAppMessageCallback) callback;
                 return;
+            case SHOW_IN_APP_MESSAGE_SLIDE:
+                showInAppMessageSlideCallback = (ShowInAppMessageSlideCallback) callback;
+                return;
             case CLOSE_IN_APP_MESSAGE:
                 closeInAppMessageCallback = (CloseInAppMessageCallback) callback;
                 return;
             case IN_APP_MESSAGE_WIDGET:
                 inAppMessageWidgetCallback = (InAppMessageWidgetCallback) callback;
+                return;
+            case SHOW_BANNER:
+                showBannerCallback = (ShowBannerCallback) callback;
+                return;
+            case BANNER_WIDGET:
+                bannerWidgetCallback = (BannerWidgetCallback) callback;
+                return;
+            case PRODUCT_CART_INTERACTION:
+                productCartInteractionCallback = (ProductCartInteractionCallback) callback;
                 return;
             default:
                 break;
@@ -222,6 +272,7 @@ public class IASCallbacksImpl implements IASCallbacks {
 
 
     private ExceptionCallback exceptionCallback;
+    private SessionIsOpenedCallback sessionIsOpenedCallback;
     private ErrorCallback errorCallback;
     private GameReaderCallback gameReaderCallback;
     private OnboardingLoadCallback onboardingLoadCallback;
@@ -233,10 +284,14 @@ public class IASCallbacksImpl implements IASCallbacks {
     private LikeDislikeStoryCallback likeDislikeStoryCallback;
     private InAppMessageLoadCallback inAppMessageLoadCallback;
     private ShowInAppMessageCallback showInAppMessageCallback;
-    private CloseInAppMessageCallback closeInAppMessageCallback;
+    private ShowInAppMessageSlideCallback showInAppMessageSlideCallback;
     private InAppMessageWidgetCallback inAppMessageWidgetCallback;
+    private CloseInAppMessageCallback closeInAppMessageCallback;
+    private ShowBannerCallback showBannerCallback;
+    private BannerWidgetCallback bannerWidgetCallback;
     private ShowSlideCallback showSlideCallback;
     private ShowStoryCallback showStoryCallback;
+    private ProductCartInteractionCallback productCartInteractionCallback;
     private SingleLoadCallback singleLoadCallback;
     private ShareCallback shareCallback;
 

@@ -5,14 +5,13 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 
-import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.core.CancellationTokenWithStatus;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.ui.screens.holder.IScreensHolder;
 import com.inappstory.sdk.core.ui.screens.launcher.ILaunchScreenCallback;
 import com.inappstory.sdk.core.ui.screens.launcher.LaunchScreenStrategy;
 import com.inappstory.sdk.core.ui.screens.ScreenType;
-import com.inappstory.sdk.core.ui.screens.holder.ScreensHolder;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenReader;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenStoriesReader;
 
@@ -26,6 +25,7 @@ public class LaunchStoryScreenStrategy implements LaunchScreenStrategy {
     private LaunchStoryScreenAppearance readerAppearanceSettings;
     private List<ILaunchScreenCallback> launchScreenCallbacks = new ArrayList<>();
     private final boolean openedFromReader;
+    private CancellationTokenWithStatus cancellationToken;
 
     public LaunchStoryScreenStrategy(IASCore core, boolean openedFromReader) {
         this.openedFromReader = openedFromReader;
@@ -34,6 +34,11 @@ public class LaunchStoryScreenStrategy implements LaunchScreenStrategy {
 
     public LaunchStoryScreenStrategy readerAppearanceSettings(LaunchStoryScreenAppearance readerAppearanceSettings) {
         this.readerAppearanceSettings = readerAppearanceSettings;
+        return this;
+    }
+
+    public LaunchStoryScreenStrategy cancellationToken(CancellationTokenWithStatus cancellationToken) {
+        this.cancellationToken = cancellationToken;
         return this;
     }
 
@@ -53,25 +58,31 @@ public class LaunchStoryScreenStrategy implements LaunchScreenStrategy {
             final IOpenReader openReader,
             final IScreensHolder screensHolder
     ) {
-        StoryScreenHolder currentScreenHolder = screensHolder.getStoryScreenHolder();
+        final StoryScreenHolder currentScreenHolder = screensHolder.getStoryScreenHolder();
         boolean cantBeOpened = false;
         if (!(openReader instanceof IOpenStoriesReader)) return;
+        if (cancellationToken != null && cancellationToken.cancelled()) {
+            return;
+        }
         String message = "Story reader can't be opened. Please, close another opened reader first.";
-
         if (screensHolder.hasActiveScreen(currentScreenHolder)) {
             cantBeOpened = !openedFromReader;
         }
         if (currentScreenHolder.isOpened(launchStoryScreenData)) {
             cantBeOpened = true;
         }
+        currentScreenHolder.startLaunchProcess();
         if (launchStoryScreenData != null) {
-            if (launchStoryScreenData.getStoriesIds().isEmpty()) {
+            if (launchStoryScreenData.storiesIds().isEmpty()) {
                 cantBeOpened = true;
                 message = "No story from list can be opened in reader.";
-            } else if (launchStoryScreenData.getStoriesIds().size() <= launchStoryScreenData.getListIndex()) {
+            } else if (launchStoryScreenData.storiesIds().size() <= launchStoryScreenData.listIndex()) {
                 cantBeOpened = true;
-                message = "Can't open reader from this story index";
+                message = "Can't open reader from this story index.";
             }
+        } else {
+            cantBeOpened = true;
+            message = "No reader settings.";
         }
         if (((IASDataSettingsHolder)core.settingsAPI()).sessionIdOrEmpty().isEmpty()) {
             cantBeOpened = true;
@@ -81,6 +92,7 @@ public class LaunchStoryScreenStrategy implements LaunchScreenStrategy {
             for (ILaunchScreenCallback callback : launchScreenCallbacks) {
                 if (callback != null) callback.onError(getType(), message);
             }
+            currentScreenHolder.endLaunchProcess();
             return;
         }
 
@@ -99,6 +111,7 @@ public class LaunchStoryScreenStrategy implements LaunchScreenStrategy {
                         readerAppearanceSettings.getSerializableKey(),
                         readerAppearanceSettings
                 );
+                currentScreenHolder.endLaunchProcess();
                 ((IOpenStoriesReader) openReader).onOpen(
                         context,
                         bundle

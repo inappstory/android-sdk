@@ -42,6 +42,24 @@ public class ListContentHolder implements IListsContentHolder {
     private final List<IListItemContent> stories = new ArrayList<>();
     private final List<IListItemContent> ugcStories = new ArrayList<>();
 
+    private final Map<String, String> urlToPath = new HashMap<>();
+
+    @Override
+    public String getPathByUrl(String url) {
+        if (url == null) return null;
+        synchronized (contentLock) {
+            return urlToPath.get(url);
+        }
+    }
+
+    @Override
+    public void setPathByUrl(String url, String path) {
+        if (url == null) return;
+        synchronized (contentLock) {
+            urlToPath.put(url, path);
+        }
+    }
+
     private List<IListItemContent> getContentList(ContentType type) {
         switch (type) {
             case STORY:

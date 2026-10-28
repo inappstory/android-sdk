@@ -5,8 +5,9 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 
 import com.inappstory.sdk.core.utils.ColorUtils;
-import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageBackground;
+import com.inappstory.sdk.inappmessage.ui.appearance.IReaderBackground;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageFullscreenAppearance;
+import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessagePopupAppearance;
 import com.inappstory.sdk.utils.NumberUtils;
 
 import java.util.Map;
@@ -15,17 +16,21 @@ public class InAppMessageFullscreenSettings implements InAppMessageFullscreenApp
     private String backgroundColor;
     private Integer closeButtonPosition;
     private Integer animationType;
-    private InAppMessageBackground background;
+    private IReaderBackground background;
+    private boolean disableClose;
+    private Map<String, Object> cardAppearance;
 
     public InAppMessageFullscreenSettings() {
     }
 
-    public InAppMessageFullscreenSettings(Map<String, Object> appearance) {
+    public InAppMessageFullscreenSettings(Map<String, Object> appearance, boolean disableClose) {
         if (appearance == null) return;
+        this.disableClose = disableClose;
         String closeButtonPositionKey = "close_button_position";
         String animationTypeKey = "animation_type";
         String backgroundColorKey = "background_color";
         String backgroundKey = "background";
+        String cardAppearanceKey = "card_appearance";
         NumberUtils numberUtils = new NumberUtils();
         if (appearance.containsKey(closeButtonPositionKey)) {
             closeButtonPosition = numberUtils.convertNumberToInt(appearance.get(closeButtonPositionKey));
@@ -37,9 +42,12 @@ public class InAppMessageFullscreenSettings implements InAppMessageFullscreenApp
             backgroundColor = (String) appearance.get(backgroundColorKey);
         }
         if (appearance.containsKey(backgroundKey)) {
-            background = new InAppMessageBackgroundSettings(
+            background = new ReaderBackgroundSettings(
                     (Map<String, Object>) appearance.get(backgroundKey)
             );
+        }
+        if (appearance.containsKey(cardAppearanceKey)) {
+            cardAppearance = (Map<String, Object>) appearance.get(cardAppearanceKey);
         }
     }
 
@@ -64,13 +72,15 @@ public class InAppMessageFullscreenSettings implements InAppMessageFullscreenApp
         return animationType != null ? animationType : 1;
     }
 
+
+
     @Override
     public String backgroundColor() {
         return backgroundColor != null ? backgroundColor : "#FFFFFF";
     }
 
     @Override
-    public InAppMessageBackground background() {
+    public IReaderBackground background() {
         return background;
     }
 
@@ -80,6 +90,17 @@ public class InAppMessageFullscreenSettings implements InAppMessageFullscreenApp
         ColorDrawable drawable = new ColorDrawable();
         drawable.setColor(ColorUtils.parseColorRGBA(backgroundColor()));
         return drawable;
+    }
+
+    @Override
+    public boolean disableClose() {
+        return disableClose;
+    }
+
+
+    @Override
+    public Map<String, Object> cardAppearance() {
+        return cardAppearance;
     }
 
 }

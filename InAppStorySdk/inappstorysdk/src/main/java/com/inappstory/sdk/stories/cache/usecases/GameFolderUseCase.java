@@ -1,6 +1,7 @@
 package com.inappstory.sdk.stories.cache.usecases;
 
 import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.game.cache.SimpleUseCaseError;
 import com.inappstory.sdk.game.cache.UnzipUseCase;
 import com.inappstory.sdk.game.cache.UseCaseCallback;
 import com.inappstory.sdk.lrudiskcache.CacheJournalItem;
@@ -119,7 +120,7 @@ public class GameFolderUseCase extends GetCacheFileUseCase<Void> {
                 FilesDownloader.getFileExtensionFromUrl(url);
         File zipFile = new File(zipFilePath);
         if (!zipFile.exists()) {
-            useCaseCallback.onError("Can't find archive");
+            useCaseCallback.onError(new SimpleUseCaseError("Can't find archive"));
         }
         final UnzipUseCase unzipUseCase =
                 new UnzipUseCase(zipFilePath);
@@ -128,7 +129,7 @@ public class GameFolderUseCase extends GetCacheFileUseCase<Void> {
                 progressCallback
         );
         if (!unzipResult) {
-            useCaseCallback.onError("Can't unarchive game");
+            useCaseCallback.onError(new SimpleUseCaseError("Can't unarchive game"));
         } else {
             File directory = new File(this.filePath);
             String checkRes = checkForExpectedItems(directory);
@@ -137,7 +138,7 @@ public class GameFolderUseCase extends GetCacheFileUseCase<Void> {
                 putToCache(getFileSize(directory));
                 useCaseCallback.onSuccess(filePath);
             } else {
-                useCaseCallback.onError("Archive has wrong files structure. " + checkRes);
+                useCaseCallback.onError(new SimpleUseCaseError("Archive has wrong files structure. " + checkRes));
             }
         }
         return null;

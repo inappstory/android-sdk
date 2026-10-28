@@ -10,12 +10,6 @@ public interface GameReaderCallback extends IASCallback {
             String gameId
     );
 
-    void finishGame(
-            ContentData gameLaunchSourceData,
-            String result,
-            String gameId
-    );
-
     void closeGame(
             ContentData gameLaunchSourceData,
             String gameId

@@ -7,11 +7,12 @@ import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASCallback;
 import com.inappstory.sdk.core.api.IASCallbackType;
-import com.inappstory.sdk.core.api.IASCallbacks;
 import com.inappstory.sdk.core.api.UseIASCallback;
+import com.inappstory.sdk.goods.outercallbacks.ProductCartInteractionCallback;
 import com.inappstory.sdk.inappmessage.CloseInAppMessageCallback;
 import com.inappstory.sdk.inappmessage.InAppMessageWidgetCallback;
 import com.inappstory.sdk.inappmessage.ShowInAppMessageCallback;
+import com.inappstory.sdk.inappmessage.ShowInAppMessageSlideCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.errors.ErrorCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.CallToActionCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickOnShareStoryCallback;
@@ -109,6 +110,20 @@ public class IASCallbacksExternalAPIImpl implements IASCallbacksExternalAPI {
         });
     }
 
+    public void goodsCartInteraction(
+            final ProductCartInteractionCallback productCartInteractionCallback
+    ) {
+        useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.callbacksAPI().setCallback(
+                        IASCallbackType.PRODUCT_CART_INTERACTION,
+                        productCartInteractionCallback
+                );
+            }
+        });
+    }
+
     public void showInAppMessage(final ShowInAppMessageCallback showInAppMessageCallback) {
         useCore(new UseIASCoreCallback() {
             @Override
@@ -116,6 +131,18 @@ public class IASCallbacksExternalAPIImpl implements IASCallbacksExternalAPI {
                 core.callbacksAPI().setCallback(
                         IASCallbackType.SHOW_IN_APP_MESSAGE,
                         showInAppMessageCallback
+                );
+            }
+        });
+    }
+
+    public void showInAppMessageSlide(final ShowInAppMessageSlideCallback showInAppMessageSlideCallback) {
+        useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.callbacksAPI().setCallback(
+                        IASCallbackType.SHOW_IN_APP_MESSAGE_SLIDE,
+                        showInAppMessageSlideCallback
                 );
             }
         });
@@ -140,6 +167,19 @@ public class IASCallbacksExternalAPIImpl implements IASCallbacksExternalAPI {
                 core.callbacksAPI().setCallback(
                         IASCallbackType.IN_APP_MESSAGE_WIDGET,
                         inAppMessageWidgetCallback
+                );
+            }
+        });
+    }
+
+    @Override
+    public void productCartInteractionCallback(ProductCartInteractionCallback productCartInteractionCallback) {
+        useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.callbacksAPI().setCallback(
+                        IASCallbackType.PRODUCT_CART_INTERACTION,
+                        productCartInteractionCallback
                 );
             }
         });

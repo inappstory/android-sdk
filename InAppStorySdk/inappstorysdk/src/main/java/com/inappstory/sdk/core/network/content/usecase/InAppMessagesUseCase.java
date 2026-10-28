@@ -6,12 +6,14 @@ import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.data.IInAppMessage;
 import com.inappstory.sdk.core.inappmessages.InAppMessageFeedCallback;
+import com.inappstory.sdk.core.network.content.RequestFields;
 import com.inappstory.sdk.core.utils.ConnectionCheck;
 import com.inappstory.sdk.core.utils.ConnectionCheckCallback;
 import com.inappstory.sdk.core.network.content.models.InAppMessageFeed;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.network.models.RequestLocalParameters;
 import com.inappstory.sdk.stories.api.models.ContentType;
+import com.inappstory.sdk.stories.api.models.TargetingBodyObject;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.utils.TagsUtils;
 
@@ -39,11 +41,12 @@ public class InAppMessagesUseCase {
             final boolean retry
     ) {
         core.statistic().profiling().addTask("inAppMessages");
+        final IASDataSettingsHolder settingsHolder = (IASDataSettingsHolder) core.settingsAPI();
         final List<String> localTags = new ArrayList<>();
         if (this.tags != null) {
             localTags.addAll(this.tags);
         } else {
-            localTags.addAll(((IASDataSettingsHolder) core.settingsAPI()).tags());
+            localTags.addAll(settingsHolder.tags());
         }
         final String deviceId = ((IASDataSettingsHolder) core.settingsAPI()).deviceId();
         new ConnectionCheck().check(
@@ -83,6 +86,11 @@ public class InAppMessagesUseCase {
                                     }
 
                                     @Override
+                                    public void errorDefault(String message) {
+                                        loadError(loadCallback);
+                                    }
+
+                                    @Override
                                     public Type getType() {
                                         return InAppMessageFeed.class;
                                     }
@@ -109,9 +117,12 @@ public class InAppMessagesUseCase {
                                         core.network().getApi().getInAppMessages(
                                                 1,
                                                 ids,
-                                                !localTags.isEmpty() ? TextUtils.join(",", localTags) : null,
-                                                null,
-                                                "messages.slides",
+                                                new TargetingBodyObject(
+                                                        !localTags.isEmpty() ? localTags : null,
+                                                        settingsHolder.options()
+                                                ),
+                                                RequestFields.LIST_IAM_FIELDS,
+                                                RequestFields.LIST_IAM_EXPAND,
                                                 sessionParameters.userId(),
                                                 sessionParameters.sessionId(),
                                                 sessionParameters.locale()
@@ -129,6 +140,11 @@ public class InAppMessagesUseCase {
                         core.sessionManager().useOrOpenSession(
                                 openSessionCallback
                         );
+                    }
+
+                    @Override
+                    protected void error() {
+                        loadCallback.error();
                     }
                 }
         );

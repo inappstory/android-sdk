@@ -4,11 +4,13 @@ import com.inappstory.sdk.core.data.IReaderContent;
 import com.inappstory.sdk.stories.cache.ContentIdAndType;
 
 public interface IReaderSlideViewModel {
+
     ContentIdAndType contentIdAndType();
     void contentLoadError();
     void slideLoadError(int index);
     void contentLoadSuccess(IReaderContent content);
     void slideLoadSuccess(int index);
     Integer externalSubscriber();
+    void renderReady();
     boolean loadContent();
 }

@@ -1,27 +1,23 @@
 package com.inappstory.sdk.stories.outercallbacks.common.objects;
 
 
-import android.util.Log;
+import android.view.ViewGroup;
+import android.widget.FrameLayout;
 
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
-import com.inappstory.sdk.core.data.IInAppMessage;
-import com.inappstory.sdk.inappmessage.InAppMessageScreenActions;
-import com.inappstory.sdk.inappmessage.ui.reader.InAppMessageCloseAction;
 import com.inappstory.sdk.inappmessage.ui.reader.InAppMessageMainFragment;
+import com.inappstory.sdk.inappmessage.ui.reader.InAppMessageMainView;
 
 
 public class DefaultOpenInAppMessageReader implements IOpenInAppMessageReader {
     public final static String IN_APP_MESSAGE_FRAGMENT = "IAM_MAIN_FRAGMENT";
 
     @Override
-    public void onOpen(
-            IInAppMessage inAppMessage,
-            boolean showOnlyIfLoaded,
+    public void onOpenInFragment(
             FragmentManager fragmentManager,
-            int containerId,
-            final InAppMessageScreenActions screenActions
+            int containerId
     ) {
         try {
             InAppMessageMainFragment inAppMessageFragment =
@@ -32,17 +28,27 @@ public class DefaultOpenInAppMessageReader implements IOpenInAppMessageReader {
                             inAppMessageFragment,
                             IN_APP_MESSAGE_FRAGMENT
                     );
-            //   t.addToBackStack(IN_APP_MESSAGE_FRAGMENT);
-            t.commit();
-            inAppMessageFragment.setOnCloseAction(new InAppMessageCloseAction() {
-                @Override
-                public void onClose() {
-                    screenActions.readerIsClosed();
-                }
-            });
-            Log.e("ShowIAMLog", System.currentTimeMillis() + "_finish");
+            t.commitNow();
         } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
+    @Override
+    public void onOpenInLayout(
+            FrameLayout frameLayout
+    ) {
+        try {
+            InAppMessageMainView inAppMessageView =
+                    new InAppMessageMainView(frameLayout.getContext());
+            inAppMessageView.setLayoutParams(
+                    new FrameLayout.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT,
+                            ViewGroup.LayoutParams.MATCH_PARENT
+                    )
+            );
+            frameLayout.addView(inAppMessageView);
+        } catch (Exception e) {
         }
     }
 }

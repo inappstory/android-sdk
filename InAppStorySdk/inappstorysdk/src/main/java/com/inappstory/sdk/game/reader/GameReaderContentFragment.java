@@ -21,12 +21,19 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.TextPaint;
+import android.text.method.LinkMovementMethod;
+import android.text.style.ClickableSpan;
 import android.util.Log;
+import android.util.Pair;
 import android.util.SizeF;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.view.WindowInsets;
 import android.webkit.ConsoleMessage;
 import android.webkit.PermissionRequest;
@@ -37,6 +44,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -50,6 +58,7 @@ import com.inappstory.iasutilsconnector.filepicker.IFilePicker;
 import com.inappstory.iasutilsconnector.filepicker.OnFilesChooseCallback;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.BuildConfig;
+import com.inappstory.sdk.LoggerTags;
 import com.inappstory.sdk.core.api.impl.IASSettingsImpl;
 import com.inappstory.sdk.core.ui.widgets.customicons.CustomIconWithoutStates;
 import com.inappstory.sdk.InAppStoryManager;
@@ -64,9 +73,18 @@ import com.inappstory.sdk.core.ui.screens.ShareProcessHandler;
 import com.inappstory.sdk.core.ui.screens.gamereader.BaseGameScreen;
 import com.inappstory.sdk.core.ui.screens.gamereader.GameReaderOverlapContainerDataForShare;
 import com.inappstory.sdk.game.cache.FilePathAndContent;
+import com.inappstory.sdk.game.cache.InGameResourceCallbackObj;
+import com.inappstory.sdk.game.cache.InGameResourceDownloadError;
+import com.inappstory.sdk.game.cache.InGameResourceDownloadResult;
+import com.inappstory.sdk.game.cache.InGameResourceDownloadResultObj;
+import com.inappstory.sdk.game.cache.InGameResourceDownloadSuccess;
 import com.inappstory.sdk.game.cache.SetGameLoggerCallback;
+import com.inappstory.sdk.game.cache.UIUseCaseError;
 import com.inappstory.sdk.game.cache.UseCaseCallback;
+import com.inappstory.sdk.game.cache.UseCaseError;
 import com.inappstory.sdk.game.cache.UseCaseWarnCallback;
+import com.inappstory.sdk.game.cache.UseCaseWithShowErrorCallback;
+import com.inappstory.sdk.game.reader.logger.GameLog;
 import com.inappstory.sdk.game.ui.GameProgressLoader;
 import com.inappstory.sdk.game.utils.GameConstants;
 import com.inappstory.sdk.imageloader.CustomFileLoader;
@@ -79,9 +97,11 @@ import com.inappstory.sdk.network.models.RequestLocalParameters;
 import com.inappstory.sdk.stories.api.models.CachedSessionData;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ContentData;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.InAppMessageData;
+import com.inappstory.sdk.inappmessage.InAppMessageData;
 import com.inappstory.sdk.stories.ui.widgets.TouchFrameLayout;
 import com.inappstory.sdk.utils.IAcceleratorSubscriber;
+import com.inappstory.sdk.utils.MDStringModel;
+import com.inappstory.sdk.utils.MDStringReplacement;
 import com.inappstory.sdk.utils.UrlEncoder;
 import com.inappstory.sdk.network.utils.UserAgent;
 import com.inappstory.sdk.share.IASShareData;
@@ -115,14 +135,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.UUID;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
+import java.util.Objects;
 
 public class GameReaderContentFragment extends Fragment implements OverlapFragmentObserver, IASBackPressHandler, IAcceleratorSubscriber {
     private IASWebView webView;
     private ImageView loader;
     private FrameLayout gameWebViewContainer;
     private TouchFrameLayout closeButton;
+    private TextView additionalError;
     private View blackTop;
     private View blackBottom;
     private View webViewAndLoaderContainer;
@@ -133,6 +156,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
     public static final int GAME_READER_REQUEST = 405;
 
     private TouchFrameLayout refreshGame;
+    private LinearLayout refreshGameContainer;
 
     private boolean onBackPressedLocked = false;
 
@@ -166,71 +190,187 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
 
     GameLoadedError gameLoadedErrorCallback = new GameLoadedError() {
         @Override
-        public void onError(final GameCenterData data, String error) {
+        public void onError(GameCenterData data, final boolean showInUI, final String error) {
             manager.gameLoadError();
-            InAppStoryManager.showDLog("Game_Loading", error);
-            webView.post(new Runnable() {
-                @Override
-                public void run() {
-                    closeButton.setVisibility(View.VISIBLE);
-                    showRefresh.run();
-                }
-            });
+            if (error != null)
+                InAppStoryManager.showDLog(LoggerTags.IAS_GAME_LOADING, error);
+            if (webView != null)
+                webView.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        closeButton.setVisibility(View.VISIBLE);
+                        if (showInUI) {
+                            additionalError.setVisibility(View.VISIBLE);
+                            additionalError.setText(parseErrorMDText(error));
+                            additionalError.setMovementMethod(LinkMovementMethod.getInstance());
+                        } else {
+                            additionalError.setVisibility(View.GONE);
+                        }
+                        showRefresh.run();
+                    }
+                });
         }
     };
 
+    private void defaultUrlClick(String url) {
+        Intent i = new Intent(Intent.ACTION_VIEW);
+        i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        i.setData(Uri.parse(url));
+        try {
+            getContext().startActivity(i);
+            if (getContext() instanceof Activity) {
+                ((Activity) getContext()).overridePendingTransition(R.anim.popup_show, R.anim.empty_animation);
+            }
+        } catch (Exception e) {
 
-    public void shareComplete(String id, boolean success) {
-        webView.loadUrl("javascript:(function(){share_complete(\"" + id + "\", " + success + ");})()");
+        }
     }
 
-    void restartGame() {
-        final IASCore core = getCore();
-        if (core == null) return;
+    private SpannableString parseErrorMDText(String raw) {
+        MDStringModel stringModel = StringsUtils.generateMDStringReplacement(raw);
+        if (stringModel == null) return new SpannableString(raw);
+        SpannableString ss = new SpannableString(stringModel.valueText);
+        String currentKeyReplacedString = stringModel.keyText;
+        for (int i = 0; i < stringModel.replacements.size(); i++) {
+            MDStringReplacement replacement = stringModel.replacements.get(i);
+            ClickableSpan clickableSpan = new ClickableSpan() {
+                @Override
+                public void onClick(View textView) {
+                    defaultUrlClick(replacement.link);
+                }
+
+                @Override
+                public void updateDrawState(TextPaint ds) {
+                    super.updateDrawState(ds);
+                    ds.setUnderlineText(true);
+                }
+            };
+            int startIndex = currentKeyReplacedString.indexOf(replacement.key);
+            int endIndex = startIndex + replacement.value.length();
+            ss.setSpan(clickableSpan, startIndex, endIndex, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            currentKeyReplacedString = currentKeyReplacedString.replace(replacement.key, replacement.value);
+        }
+        return ss;
+    }
+
+    public void shareComplete(String id, boolean success) {
+        if (webView != null)
+            webView.loadUrl("javascript:(function(){share_complete(\"" + id + "\", " + success + ");})()");
+    }
+
+    public void testMethod() {
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
-                closeButton.setVisibility(View.VISIBLE);
-                loaderContainer.setVisibility(View.VISIBLE);
-                synchronized (initLock) {
-                    initWithEmpty = true;
-                }
-
-                clearWebView();
-                if (webView != null) {
-                    webView.postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            synchronized (initLock) {
-                                init = false;
-                                initWithEmpty = false;
-                            }
-                            FilePathAndContent filePathAndContent =
-                                    core
-                                            .contentLoader()
-                                            .gameCacheManager()
-                                            .getCurrentFilePathAndContent();
-                            if (webView != null)
-                                webView.loadDataWithBaseURL(
-                                        filePathAndContent.getFilePath(),
-                                        webView.setDir(
-                                                filePathAndContent.getFileContent(),
-                                                getContext()
-                                        ),
-                                        "text/html; charset=utf-8", "UTF-8",
-                                        null
-                                );
-                        }
-                    }, 200);
-                }
-
+                if (webView != null)
+                    try {
+                        String script = "javascript:(function(){ " +
+                                "(async () => {" +
+                                "    try {" +
+                                "    await GameCenterApi.ResourceManager.getInstance().addToCache(GameCenterApi.ResourceManager.getInstance().resLists[0], {" +
+                                "            \"key\": \"victoryCardsres10\"," +
+                                "            \"url\": \"https://cs.test.inappstory.com/np/file/ib/uk/ms/xuxs0ay9lizzyphcnh3pho1yvg.jpg?k=KgAAAAAAAAACAQ\"," +
+                                "            \"size\": 60609," +
+                                "            \"sha1\": \"09192be86d860bd6e1cf1c40e1f3246c673c3f44\"" +
+                                "        });" +
+                                "        console.log(\"Done\");" +
+                                "    } catch (err) {" +
+                                "        console.error(err);" +
+                                "    }" +
+                                "})();" +
+                                " })()";
+                        webView.evaluateJavascript(script, null);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
             }
         });
+    }
+
+    public void addToCacheComplete(String cb, String id, InGameResourceDownloadResult result) {
+        InGameResourceDownloadResultObj inGameResourceDownloadResultObj = new InGameResourceDownloadResultObj();
+        inGameResourceDownloadResultObj.result = result instanceof InGameResourceDownloadSuccess;
+        if (result instanceof InGameResourceDownloadError) {
+            inGameResourceDownloadResultObj.reason = ((InGameResourceDownloadError) result).message();
+        }
+        InGameResourceCallbackObj resourceCallback = new InGameResourceCallbackObj();
+        resourceCallback.id = id;
+        resourceCallback.response = inGameResourceDownloadResultObj;
+        try {
+            final String strResult = JsonParser.getJson(resourceCallback);
+            new Handler(Looper.getMainLooper()).post(new Runnable() {
+                @Override
+                public void run() {
+                    String loadUrl = "javascript:window." + cb + "('" +
+                            StringsUtils.escapeSingleQuotes(
+                                    strResult
+                                            .replaceAll("\\\\n", "\\\\\n")
+                                            .replaceAll("\\\\r", "\\\\\r")
+                                            .replaceAll("\\\\t", "\\\\\t")
+                            ) + "')";
+                    if (webView != null)
+                        webView.loadUrl(loadUrl);
+                }
+            });
+
+        } catch (Exception e) {
+
+        }
+
+    }
+
+    void restartGame() {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull final IASCore core) {
+                new Handler(Looper.getMainLooper()).post(new Runnable() {
+                    @Override
+                    public void run() {
+                        closeButton.setVisibility(View.VISIBLE);
+                        loaderContainer.setVisibility(View.VISIBLE);
+                        synchronized (initLock) {
+                            initWithEmpty = true;
+                        }
+
+                        clearWebView();
+                        if (webView != null) {
+                            webView.postDelayed(new Runnable() {
+                                @Override
+                                public void run() {
+                                    synchronized (initLock) {
+                                        init = false;
+                                        initWithEmpty = false;
+                                    }
+                                    FilePathAndContent filePathAndContent =
+                                            core
+                                                    .contentLoader()
+                                                    .gameCacheManager()
+                                                    .getCurrentFilePathAndContent();
+                                    if (webView != null)
+                                        webView.loadDataWithBaseURL(
+                                                filePathAndContent.getFilePath(),
+                                                webView.setDir(
+                                                        filePathAndContent.getFileContent(),
+                                                        currentLayoutDirectionString
+                                                ),
+                                                "text/html; charset=utf-8", "UTF-8",
+                                                null
+                                        );
+                                }
+                            }, 200);
+                        }
+
+                    }
+                });
+            }
+        });
+
     }
 
 
     void gameShouldForeground() {
         long leftTime = Math.max(0, 2000 - (System.currentTimeMillis() - startDownloadTime));
+        if (webView == null) return;
         webView.postDelayed(new Runnable() {
             @Override
             public void run() {
@@ -246,6 +386,28 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
     }
 
     void updateUI() {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                // ContentData dataModel = getStoryDataModel();
+                /*if (dataModel instanceof SlideData) {
+                    SlideData slideData = (SlideData) dataModel;
+                    core.statistic().profiling().setReady(
+                            "game_init" +
+                                    + slideData.story().id()
+                                    + "_"
+                                    + slideData.index()
+                    );
+                } else if (dataModel instanceof InAppMessageData) {
+                    InAppMessageData iamData = (InAppMessageData) dataModel;
+                }
+                if (dataModel != null && dataModel.storyData() != null) {
+
+                }*/
+
+
+            }
+        });
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
@@ -270,28 +432,33 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
     }
 
     void openFilePicker(final String data) {
-        final IASCore core = getCore();
-        if (core == null) return;
-        IFilePicker filePicker = core.externalUtilsAPI().getUtilsAPI().getFilePicker();
-        filePicker.setPickerSettings(data);
-        filePicker.show(
-                getContext(),
-                getBaseGameReader().getScreenFragmentManager(),
-                R.id.ias_file_picker_container,
-                new OnFilesChooseCallback() {
+        InAppStoryManager.useCore(
+                new UseIASCoreCallback() {
                     @Override
-                    public void onChoose(String cbName, String cbId, String[] filesWithTypes) {
-                        uploadFilesFromFilePicker(cbName, cbId, filesWithTypes);
-                    }
+                    public void use(@NonNull IASCore core) {
+                        IFilePicker filePicker = core.externalUtilsAPI().getUtilsAPI().getFilePicker();
+                        filePicker.setPickerSettings(data);
+                        filePicker.show(
+                                getContext(),
+                                getBaseGameReader().getScreenFragmentManager(),
+                                R.id.ias_file_picker_container,
+                                new OnFilesChooseCallback() {
+                                    @Override
+                                    public void onChoose(String cbName, String cbId, String[] filesWithTypes) {
+                                        uploadFilesFromFilePicker(cbName, cbId, filesWithTypes);
+                                    }
 
-                    @Override
-                    public void onCancel(String cbName, String cbId) {
-                        uploadFilesFromFilePicker(cbName, cbId, new String[0]);
-                    }
+                                    @Override
+                                    public void onCancel(String cbName, String cbId) {
+                                        uploadFilesFromFilePicker(cbName, cbId, new String[0]);
+                                    }
 
-                    @Override
-                    public void onError(String cbName, String cbId, String reason) {
-                        uploadFilesFromFilePicker(cbName, cbId, new String[0]);
+                                    @Override
+                                    public void onError(String cbName, String cbId, String reason) {
+                                        uploadFilesFromFilePicker(cbName, cbId, new String[0]);
+                                    }
+                                }
+                        );
                     }
                 }
         );
@@ -299,12 +466,28 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
 
     private void uploadFilesFromFilePicker(String cbName, String cbId, String[] filesWithTypes) {
         Map<String, Object> payloadMap = new HashMap<>();
+        for (String fileWithType : filesWithTypes) {
+            String filePath = null;
+            if (fileWithType.startsWith("http://file-assets")) {
+                filePath = Uri.parse(fileWithType
+                        .replace("http://file-assets", "file://")
+                ).getPath();
+            } else if (fileWithType.startsWith("file://")) {
+                filePath = Uri.parse(fileWithType).getPath();
+            }
+            if (webViewClient != null && filePath != null)
+                webViewClient.allowedPaths.add(filePath);
+        }
         payloadMap.put("id", cbId);
         payloadMap.put("response", filesWithTypes);
         String payload = JsonParser.mapToJsonString(payloadMap);
         String webString = "window." + cbName + "('" + StringsUtils.escapeSingleQuotes(payload) + "');";
-        Log.e("webString", webString);
-        webView.evaluateJavascript(webString, null);
+        try {
+            if (webView != null)
+                webView.evaluateJavascript(webString, null);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     void share(InnerShareData shareObject) {
@@ -332,43 +515,46 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
     }
 
     private void shareCustomOrDefault(final IASShareData shareObject) {
-        final IASCore core = getCore();
-        if (core == null) return;
-        core.screensManager().getShareProcessHandler().isShareProcess(false);
-        core.callbacksAPI().useCallback(
-                IASCallbackType.SHARE_ADDITIONAL,
-                new UseIASCallback<ShareCallback>() {
-                    @Override
-                    public void use(@NonNull ShareCallback callback) {
-                        int storyId = -1;
-                        int slideIndex = 0;
-                        ContentData dataModel = getStoryDataModel();
-                        if (dataModel instanceof SlideData) {
-                            storyId = ((SlideData) dataModel).story().id();
-                            slideIndex = ((SlideData) dataModel).index();
-                        }
-                        core.screensManager().getGameScreenHolder()
-                                .openShareOverlapContainer(
-                                        new GameReaderOverlapContainerDataForShare()
-                                                .shareData(shareObject)
-                                                .slideIndex(slideIndex)
-                                                .storyId(storyId),
-                                        getBaseGameReader()
-                                                .getScreenFragmentManager(),
-                                        GameReaderContentFragment.this
-                                );
-                    }
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull final IASCore core) {
+                core.screensManager().getShareProcessHandler().isShareProcess(false);
+                core.callbacksAPI().useCallback(
+                        IASCallbackType.SHARE_ADDITIONAL,
+                        new UseIASCallback<ShareCallback>() {
+                            @Override
+                            public void use(@NonNull ShareCallback callback) {
+                                int storyId = -1;
+                                int slideIndex = 0;
+                                ContentData dataModel = getStoryDataModel();
+                                if (dataModel instanceof SlideData) {
+                                    storyId = ((SlideData) dataModel).story().id();
+                                    slideIndex = ((SlideData) dataModel).index();
+                                }
+                                core.screensManager().getGameScreenHolder()
+                                        .openShareOverlapContainer(
+                                                new GameReaderOverlapContainerDataForShare()
+                                                        .shareData(shareObject)
+                                                        .slideIndex(slideIndex)
+                                                        .storyId(storyId),
+                                                getBaseGameReader()
+                                                        .getScreenFragmentManager(),
+                                                GameReaderContentFragment.this
+                                        );
+                            }
 
-                    @Override
-                    public void onDefault() {
-                        new IASShareManager().shareDefault(
-                                StoryShareBroadcastReceiver.class,
-                                getContext(),
-                                shareObject
-                        );
-                    }
-                }
-        );
+                            @Override
+                            public void onDefault() {
+                                new IASShareManager().shareDefault(
+                                        StoryShareBroadcastReceiver.class,
+                                        getContext(),
+                                        shareObject
+                                );
+                            }
+                        }
+                );
+            }
+        });
 
     }
 
@@ -377,107 +563,123 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
-        if (manager != null) manager.setHost(this);
     }
 
     @Override
     public void onDetach() {
         super.onDetach();
-        if (manager != null) manager.clearHost();
         getActivity().setRequestedOrientation(oldOrientation);
     }
 
     @Override
     public void onDestroyView() {
-        IASCore core = getCore();
-        if (core != null) {
-            if (isFullscreen) {
-                Activity activity = getActivity();
-                if (activity != null) {
-                    ((IOpenGameReader) core.screensManager()
-                            .getOpenReader(ScreenType.GAME))
-                            .onRestoreScreen(getActivity());
+        if (isFullscreen) {
+            InAppStoryManager.useCore(new UseIASCoreCallback() {
+                @Override
+                public void use(@NonNull IASCore core) {
+                    Activity activity = getActivity();
+                    if (activity != null) {
+                        ((IOpenGameReader) core.screensManager()
+                                .getOpenReader(ScreenType.GAME))
+                                .onRestoreScreen(getActivity());
+                    }
                 }
-            }
-            core.acceleratorUtils().unsubscribe(GameReaderContentFragment.this);
+            });
         }
         if (manager != null && manager.logger != null)
             manager.logger.stopQueue();
-        clearAnonymousClasses();
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                core.acceleratorUtils().unsubscribe(GameReaderContentFragment.this);
+            }
+        });
         super.onDestroyView();
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        final IASCore core = getCore();
-        if (core == null) {
-            forceFinish();
-            return;
-        }
-        initAnonymousClasses();
-        manager = new GameManager(
-                GameReaderContentFragment.this,
-                core,
-                gameReaderLaunchData.getGameId(),
-                getStoryDataModel()
-        );
-        Activity activity = getActivity();
-        if (activity != null)
-            oldOrientation = activity.getRequestedOrientation();
-        initWebView();
-        refreshGame.setClickListener(new View.OnClickListener() {
+
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
-            public void onClick(View v) {
-                interruption.active = false;
-                progressLoader.setProgress(0, 100);
-                changeView(progressLoader, refreshGame);
-                new Handler().postDelayed(new Runnable() {
+            public void use(@NonNull IASCore core) {
+
+                final IASDataSettingsHolder dataSettingsHolder =
+                        (IASDataSettingsHolder) core.settingsAPI();
+                CachedSessionData sessionData = ((IASSettingsImpl) dataSettingsHolder).
+                        sessionData();
+                if (sessionData != null)
+                    forceFullscreen = sessionData.isGameReaderDefaultFullscreen;
+                manager = new GameManager(
+                        GameReaderContentFragment.this,
+                        InAppStoryManager.getInstance().iasCore(),
+                        gameReaderLaunchData.getGameId(),
+                        getStoryDataModel()
+                );
+                Activity activity = getActivity();
+                if (activity != null)
+                    oldOrientation = activity.getRequestedOrientation();
+                initWebView();
+                refreshGame.setClickListener(new View.OnClickListener() {
                     @Override
-                    public void run() {
-                        synchronized (initLock) {
-                            init = false;
+                    public void onClick(View v) {
+                        interruption.active = false;
+                        progressLoader.setProgress(0, 100);
+                        changeView(progressLoader, refreshGameContainer);
+                        new Handler().postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                synchronized (initLock) {
+                                    init = false;
+                                }
+                                if (manager != null) {
+                                    manager.statusHolder.clearGameStatus();
+                                    manager.logger.gameLoaded(false);
+                                }
+                                downloadGame(true);
+                            }
+                        }, 500);
+                        try {
+                            final CustomIconWithoutStates refreshIconInterface =
+                                    AppearanceManager.getCommonInstance().csCustomIcons().refreshIcon();
+                            refreshIconInterface.clickEvent(refreshGame.getChildAt(0));
+                        } catch (Exception e) {
+
                         }
-                        if (manager != null) {
-                            manager.statusHolder.clearGameStatus();
-                            manager.logger.gameLoaded(false);
-                        }
-                        downloadGame(true);
                     }
-                }, 500);
-                try {
-                    final CustomIconWithoutStates refreshIconInterface =
-                            AppearanceManager.getCommonInstance().csCustomIcons().refreshIcon();
-                    refreshIconInterface.clickEvent(refreshGame.getChildAt(0));
-                } catch (Exception e) {
+                });
+                if (Sizes.isTablet(getContext()) && baseContainer != null) {
+                    baseContainer.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            closeGame();
+                        }
+                    });
+                }
+                closeButton.setClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        try {
+                            final CustomIconWithoutStates closeIconInterface =
+                                    AppearanceManager.getCommonInstance().csCustomIcons().closeIcon();
+                            closeIconInterface.clickEvent(closeButton.getChildAt(0));
+                        } catch (Exception e) {
 
-                }
+                        }
+                        closeGame();
+                    }
+                });
+                checkInsets();
+                checkIntentValues(core, gameLoadedErrorCallback);
+                downloadGame(false);
             }
-        });
-        if (Sizes.isTablet(getContext()) && baseContainer != null) {
-            baseContainer.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    closeGame();
-                }
-            });
-        }
-        closeButton.setClickListener(new View.OnClickListener() {
+
             @Override
-            public void onClick(View v) {
-                try {
-                    final CustomIconWithoutStates closeIconInterface =
-                            AppearanceManager.getCommonInstance().csCustomIcons().closeIcon();
-                    closeIconInterface.clickEvent(closeButton.getChildAt(0));
-                } catch (Exception e) {
-
-                }
-                closeGame();
+            public void error() {
+                forceFinish();
             }
         });
-        checkInsets();
-        checkIntentValues(core, gameLoadedErrorCallback);
-        downloadGame(false);
     }
 
     public void closeGame() {
@@ -489,14 +691,15 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         closing = true;
 
         if (manager.statusHolder.gameLoaded()) {
-            webView.evaluateJavascript("closeGameReader();", new ValueCallback<String>() {
-                @Override
-                public void onReceiveValue(String s) {
-                    if (!s.equals("true")) {
-                        closeGameReader();
+            if (webView != null)
+                webView.evaluateJavascript("closeGameReader();", new ValueCallback<String>() {
+                    @Override
+                    public void onReceiveValue(String s) {
+                        if (!s.equals("true")) {
+                            closeGameReader();
+                        }
                     }
-                }
-            });
+                });
         } else {
             closeGameReader();
         }
@@ -514,35 +717,53 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
     }
 
     void showGoods(final String skusString, final String widgetId) {
+        final ContentData dataModel = getStoryDataModel();
+        if (dataModel == null) return;
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+               /* ScreensManager.getInstance().showGoods(
+                        skusString,
+                        GameActivity.this,
+                        new ShowGoodsCallback() {
+                            @Override
+                            public void onPause() {
+                                goodsViewIsShown = true;
+                                pauseGame();
+                            }
 
+                            @Override
+                            public void onResume(String widgetId) {
+                                goodsViewIsShown = false;
+                                goodsWidgetComplete(widgetId);
+                                resumeGame();
+                            }
+
+                            @Override
+                            public void onEmptyResume(String widgetId) {
+                                goodsWidgetComplete(widgetId);
+                            }
+                        },
+                        true,
+                        widgetId,
+                        dataModel.slideData
+                );*/
+            }
+        });
     }
 
-    AudioManager.OnAudioFocusChangeListener audioFocusChangeListener;
-
-    private void clearAnonymousClasses() {
-        audioFocusChangeListener = null;
-        showRefresh = null;
-    }
-
-    private void initAnonymousClasses() {
-        audioFocusChangeListener =
-                new AudioManager.OnAudioFocusChangeListener() {
-                    public void onAudioFocusChange(final int focusChange) {
+    AudioManager.OnAudioFocusChangeListener audioFocusChangeListener =
+            new AudioManager.OnAudioFocusChangeListener() {
+                public void onAudioFocusChange(final int focusChange) {
+                    if (webView != null)
                         webView.post(new Runnable() {
                             @Override
                             public void run() {
                                 gameReaderAudioFocusChange(focusChange);
                             }
                         });
-                    }
-                };
-        showRefresh = new Runnable() {
-            @Override
-            public void run() {
-                changeView(refreshGame, progressLoader);
-            }
-        };
-    }
+                }
+            };
 
     private void gameReaderAudioFocusChange(int focusChange) {
         if (webView != null) {
@@ -571,21 +792,24 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                 closing = true;
                 final String observableUID = gameReaderLaunchData.getObservableUID();
                 if (observableUID != null) {
-                    final IASCore core = getCore();
-                    if (core != null) {
-                        GameCompleteEventObserver observer =
-                                core.screensManager().getGameScreenHolder()
-                                        .getGameObserver(observableUID);
-                        if (observer != null) {
-                            observer.gameComplete(
-                                    new GameCompleteEvent(
-                                            gameState,
-                                            ((SlideData) dataModel).story().id(),
-                                            ((SlideData) dataModel).index()
-                                    )
-                            );
+                    InAppStoryManager.useCore(new UseIASCoreCallback() {
+                        @Override
+                        public void use(@NonNull IASCore core) {
+                            GameCompleteEventObserver observer =
+                                    core.screensManager().getGameScreenHolder()
+                                            .getGameObserver(observableUID);
+                            if (observer != null) {
+                                observer.gameComplete(
+                                        new GameCompleteEvent(
+                                                gameState,
+                                                ((SlideData) dataModel).story().id(),
+                                                ((SlideData) dataModel).index()
+                                        )
+                                );
+                            }
                         }
-                    }
+                    });
+
                 }
             }
             forceFinish();
@@ -616,12 +840,26 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
 
     private final Object initLock = new Object();
 
+    private IASWebViewClient webViewClient = null;
+
     private void initWebView() {
         if (getContext() == null) return;
-        webView = new IASWebView(getContext().getApplicationContext());
-        gameWebViewContainer.addView(webView);
+        try {
+            webView = new IASWebView(getContext());
+            webView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                @Override
+                public void onGlobalLayout() {
+                    webView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                }
+            });
+            gameWebViewContainer.addView(webView);
+        } catch (Exception e) {
+            forceFinish();
+            return;
+        }
         final ContentData dataModel = getStoryDataModel();
-        webView.setWebViewClient(new IASWebViewClient());
+        webViewClient = new IASWebViewClient();
+        webView.setWebViewClient(webViewClient);
         webView.setWebChromeClient(new WebChromeClient() {
 
             @Override
@@ -675,8 +913,11 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                             break;
                     }
                 }
-                Log.d("InAppStory_SDK_Game", "Console: " +
-                        consoleMessage.messageLevel().name() + ": " + msg);
+                InAppStoryManager.showDLog(
+                        LoggerTags.IAS_GAME_CONSOLE,
+                        "Console: " +
+                                consoleMessage.messageLevel().name() + ": " + msg
+                );
                 return super.onConsoleMessage(consoleMessage);
             }
 
@@ -807,7 +1048,20 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         }
     }
 
-    private void resumeGame() {
+    public void sendInputResult(String id, String cb, String data) {
+        GameSTIResponse response = new GameSTIResponse();
+        response.id = id;
+        response.response = data;//data.replaceAll("\n", "\\\n");
+        try {
+            String payload = JsonParser.stringifyToJsString(response);
+            String url = cb + "(" + payload + ");";
+            webView.evaluateJavascript(url, null);
+        } catch (Exception e) {
+
+        }
+    }
+
+    public void resumeGame() {
         webView.loadUrl("javascript:(function() {" +
                 "if ('resumeUI' in window) " +
                 "{" +
@@ -816,7 +1070,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                 "})()");
     }
 
-    private void pauseGame() {
+    public void pauseGame() {
         webView.loadUrl("javascript:(function() {" +
                 "if ('pauseUI' in window) " +
                 "{" +
@@ -826,7 +1080,12 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         // webView.evaluateJavascript("pauseUI();", null);
     }
 
-    Runnable showRefresh;
+    Runnable showRefresh = new Runnable() {
+        @Override
+        public void run() {
+            changeView(refreshGameContainer, progressLoader);
+        }
+    };
 
     private void changeView(final View view1, final View view2) {
         if (view1 == null || view2 == null) return;
@@ -860,7 +1119,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
     private void checkIntentValues(IASCore core, final GameLoadedError callback) {
         String gameId = gameReaderLaunchData.getGameId();
         if (gameId == null) {
-            callback.onError(null, "No game id");
+            callback.onError(null, false, "No game id");
             forceFinish();
             return;
         }
@@ -893,20 +1152,22 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
 
     private void setFullScreenFromOptions(GameScreenOptions options) {
         isFullscreen = options != null && options.fullScreen;
-        if (forceFullscreen != null)
-            isFullscreen = forceFullscreen;
+        if (Objects.equals(forceFullscreen, true))
+            isFullscreen = true;
         if (isFullscreen) {
-            IASCore core = getCore();
-            if (core != null) {
-                Activity activity = getActivity();
-                if (activity != null) {
-                    ((IOpenGameReader) core.screensManager()
-                            .getOpenReader(ScreenType.GAME))
-                            .onShowInFullscreen(getActivity());
+            InAppStoryManager.useCore(new UseIASCoreCallback() {
+                @Override
+                public void use(@NonNull IASCore core) {
+                    Activity activity = getActivity();
+                    if (activity != null) {
+                        ((IOpenGameReader) core.screensManager()
+                                .getOpenReader(ScreenType.GAME))
+                                .onShowInFullscreen(getActivity());
+                    }
                 }
-            }
+            });
         }
-        setOffsets(isFullscreen);
+        setOffsets(isFullscreen, null);
     }
 
     private long startDownloadTime;
@@ -931,6 +1192,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
     @Override
     public void onDestroy() {
         super.onDestroy();
+        webViewClient = null;
     }
 
     private void downloadGame(boolean forceReloadArchive) {
@@ -940,173 +1202,193 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         );
     }
 
-    private IASCore getCore() {
-        if (InAppStoryManager.getInstance() == null) return null;
-        return InAppStoryManager.getInstance().iasCore();
-    }
+    private int currentLayoutDirection = View.LAYOUT_DIRECTION_LTR;
+    private String currentLayoutDirectionString = "ltr";
 
     void downloadGame(
             final String gameId,
             final boolean forceReloadArchive
     ) {
         startDownloadTime = System.currentTimeMillis();
-        final IASCore core = getCore();
-        if (core == null) return;
-        core.contentPreload().pauseGamePreloader();
-        core.contentLoader().gameCacheManager().getGame(
-                gameId,
-                core.externalUtilsAPI().hasLottieAnimation(),
-                interruption,
-                new ProgressCallback() {
-                    @Override
-                    public void onProgress(long loadedSize, long totalSize) {
-                        if (totalSize == 0) return;
-                        final int percent = (int) ((loadedSize * 100) / totalSize);
-
-                        if (progressLoader != null)
-                            progressLoader.setProgress(percent, 100);
-                    }
-                },
-                new UseCaseWarnCallback<File>() {
-                    @Override
-                    public void onWarn(String message) {
-                        if (manager != null && manager.logger != null) {
-                            manager.logger.sendSdkWarn(message);
-                        }
-                        InAppStoryManager.showDLog("Game_Loading", message);
-                    }
-
-                    @Override
-                    public void onError(String message) {
-                        InAppStoryManager.showDLog("Game_Loading", message);
-                    }
-
-                    @Override
-                    public void onSuccess(File result) {
-                        setStaticSplashScreen(result);
-                    }
-                },
-                new UseCaseWarnCallback<File>() {
-                    @Override
-                    public void onWarn(String message) {
-                        if (manager != null && manager.logger != null) {
-                            manager.logger.sendSdkWarn(message);
-                        }
-                        InAppStoryManager.showDLog("Game_Loading", message);
-                    }
-
-                    @Override
-                    public void onError(String message) {
-                        progressLoader.launchLoaderAnimation(null);
-                        InAppStoryManager.showDLog("Game_Loading", message);
-                    }
-
-                    @Override
-                    public void onSuccess(File result) {
-                        setLoader(result);
-                        //progressLoader.launchLoaderAnimation(result);
-                    }
-                },
-                new UseCaseCallback<IGameCenterData>() {
-                    @Override
-                    public void onError(String message) {
-                        if (manager != null && manager.logger != null) {
-                            manager.logger.sendSdkError(message, null);
-                        }
-                        gameLoadedErrorCallback.onError(null, message);
-                    }
-
-                    @Override
-                    public void onSuccess(final IGameCenterData iGameCenterData) {
-                        if (manager == null) return;
-
-
-                        new Handler(Looper.getMainLooper()).post(new Runnable() {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull final IASCore core) {
+                core.contentPreload().pauseGamePreloader();
+                core.contentLoader().gameCacheManager().getGame(
+                        gameId,
+                        core.externalUtilsAPI().hasLottieAnimation(),
+                        interruption,
+                        new ProgressCallback() {
                             @Override
-                            public void run() {
-                                GameCenterData gameCenterData = (GameCenterData) iGameCenterData;
-                                progressLoader.setIndeterminate(false);
-                                manager.statusHolder.setTotalReloadTries(
-                                        gameCenterData.canTryReloadCount()
-                                );
-                                manager.gameConfig = gameCenterData.initCode;
-                                manager.path = gameCenterData.url;
-                                try {
-                                    GameScreenOptions options = gameCenterData.options;
-                                    manager.resources = gameCenterData.resources;
-                                    setOrientationFromOptions(options);
-                                    setFullScreenFromOptions(options);
-                                } catch (Exception ignored) {
+                            public void onProgress(long loadedSize, long totalSize) {
+                                if (totalSize == 0) return;
+                                final int percent = (int) ((loadedSize * 100) / totalSize);
+
+                                if (progressLoader != null)
+                                    progressLoader.setProgress(percent, 100);
+                            }
+                        },
+                        new UseCaseWarnCallback<File>() {
+                            @Override
+                            public void onWarn(String message) {
+                                if (manager != null && manager.logger != null) {
+                                    manager.logger.sendSdkWarn(message);
                                 }
-                                core.sessionManager().useOrOpenSession(new OpenSessionCallback() {
-                                    @Override
-                                    public void onSuccess(RequestLocalParameters sessionId) {
-                                        replaceConfigs((IASDataSettingsHolder) core.settingsAPI());
-                                    }
+                                InAppStoryManager.showDLog("Game_Loading", message);
+                            }
 
-                                    @Override
-                                    public void onError() {
+                            @Override
+                            public void onError(UseCaseError error) {
+                                InAppStoryManager.showDLog("Game_Loading", error.message());
+                            }
 
+                            @Override
+                            public void onSuccess(File result) {
+                                setStaticSplashScreen(result);
+                            }
+                        },
+                        new UseCaseWarnCallback<File>() {
+                            @Override
+                            public void onWarn(String message) {
+                                if (manager != null && manager.logger != null) {
+                                    manager.logger.sendSdkWarn(message);
+                                }
+                                InAppStoryManager.showDLog("Game_Loading", message);
+                            }
+
+                            @Override
+                            public void onError(UseCaseError error) {
+                                progressLoader.launchLoaderAnimation(null, currentLayoutDirection);
+                                InAppStoryManager.showDLog("Game_Loading", error.message());
+                            }
+
+                            @Override
+                            public void onSuccess(File result) {
+                                setLoader(result);
+                                //progressLoader.launchLoaderAnimation(result);
+                            }
+                        },
+                        new UseCaseCallback<IGameCenterData>() {
+                            @Override
+                            public void onError(UseCaseError error) {
+                                if (manager != null && manager.logger != null) {
+                                    manager.logger.startQueue(false);
+                                    manager.logger.sendSdkError(error.message(), null);
+                                }
+                                gameLoadedErrorCallback.onError(
+                                        null,
+                                        false,
+                                        error.message()
+                                );
+                            }
+
+                            @Override
+                            public void onSuccess(final IGameCenterData iGameCenterData) {
+                                if (manager == null) return;
+
+
+                                new Handler(Looper.getMainLooper()).post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        GameCenterData gameCenterData = (GameCenterData) iGameCenterData;
+                                        currentLayoutDirection = gameCenterData.layoutDirectionRaw();
+                                        currentLayoutDirectionString = gameCenterData.layoutDirectionString();
+                                        if (getView() != null)
+                                            getView().setLayoutDirection(currentLayoutDirection);
+                                        progressLoader.layoutDirection(currentLayoutDirection);
+                                        progressLoader.setIndeterminate(false);
+                                        manager.statusHolder.setTotalReloadTries(
+                                                gameCenterData.canTryReloadCount()
+                                        );
+                                        manager.gameConfig = gameCenterData.initCode;
+                                        manager.path = gameCenterData.url;
+                                        try {
+                                            GameScreenOptions options = gameCenterData.options;
+                                            manager.resources = gameCenterData.resources;
+                                            setOrientationFromOptions(options);
+                                            setFullScreenFromOptions(options);
+                                        } catch (Exception ignored) {
+
+                                        }
+                                        core.sessionManager().useOrOpenSession(new OpenSessionCallback() {
+                                            @Override
+                                            public void onSuccess(RequestLocalParameters sessionId) {
+                                                replaceConfigs((IASDataSettingsHolder) core.settingsAPI());
+                                            }
+
+                                            @Override
+                                            public void onError() {
+
+                                            }
+                                        });
                                     }
                                 });
                             }
-                        });
-                    }
-                },
-                new UseCaseCallback<FilePathAndContent>() {
-                    @Override
-                    public void onError(final String message) {
-                        webView.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                if (manager != null && manager.logger != null) {
-                                    manager.logger.sendSdkError(message, null);
-                                }
-                                gameLoadedErrorCallback.onError(null, message);
-                            }
-                        });
-                    }
+                        },
+                        new UseCaseCallback<FilePathAndContent>() {
 
-                    @Override
-                    public void onSuccess(final FilePathAndContent result) {
-                        CachedSessionData sessionData = ((IASDataSettingsHolder) core.settingsAPI()).sessionData();
-                        if (sessionData == null) {
-                            gameLoadedErrorCallback.onError(null, "No session found");
-                            return;
-                        }
-                        if (sessionData.preloadGames)
-                            core.contentPreload().resumeGamePreloader();
-                        webView.post(new Runnable() {
                             @Override
-                            public void run() {
-                                synchronized (initLock) {
-                                    init = false;
-                                    initWithEmpty = false;
-                                }
-                                webView.loadDataWithBaseURL(
-                                        result.getFilePath(),
-                                        webView.setDir(
-                                                result.getFileContent(),
-                                                getContext()
-                                        ),
-                                        "text/html; charset=utf-8", "UTF-8",
-                                        null
-                                );
-                                progressLoader.setIndeterminate(true);
+                            public void onError(final UseCaseError error) {
+                                webView.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        if (manager != null && manager.logger != null) {
+                                            manager.logger.startQueue(false);
+                                            manager.logger.sendSdkError(error.message(), null);
+                                        }
+                                        gameLoadedErrorCallback.onError(
+                                                null,
+                                                error instanceof UIUseCaseError,
+                                                (error instanceof UIUseCaseError) ?
+                                                        ((UIUseCaseError) error).uiMessage() :
+                                                        error.message()
+                                        );
+                                    }
+                                });
                             }
-                        });
-                    }
-                },
-                new SetGameLoggerCallback() {
-                    @Override
-                    public void setLogger(int loggerLevel) {
-                        if (manager != null) {
-                            manager.setLogger(loggerLevel);
-                        }
-                    }
-                },
-                forceReloadArchive
-        );
+
+                            @Override
+                            public void onSuccess(final FilePathAndContent result) {
+                                CachedSessionData sessionData = ((IASDataSettingsHolder) core.settingsAPI()).sessionData();
+                                if (sessionData == null) {
+                                    gameLoadedErrorCallback.onError(null, false, "No session found");
+                                    return;
+                                }
+                                if (sessionData.preloadGames)
+                                    core.contentPreload().resumeGamePreloader();
+                                webView.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        synchronized (initLock) {
+                                            init = false;
+                                            initWithEmpty = false;
+                                        }
+                                        progressLoader.setIndeterminate(true);
+                                        webView.loadDataWithBaseURL(
+                                                result.getFilePath(),
+                                                webView.setDir(
+                                                        result.getFileContent(),
+                                                        currentLayoutDirectionString
+                                                ),
+                                                "text/html; charset=utf-8", "UTF-8",
+                                                null);
+                                    }
+                                });
+                            }
+                        },
+                        new SetGameLoggerCallback() {
+                            @Override
+                            public void setLogger(int loggerLevel) {
+                                if (manager != null) {
+                                    manager.setLogger(loggerLevel);
+                                }
+                            }
+                        },
+                        forceReloadArchive
+                );
+            }
+        });
+
     }
 
     void clearGameView() {
@@ -1136,15 +1418,9 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
 
     private void replaceConfigs(IASDataSettingsHolder dataSettingsHolder) {
         if (manager.gameConfig != null) {
-            if (manager.gameConfig.contains("{{%sdkVersion}}"))
-                manager.gameConfig = manager.gameConfig.replace("{{%sdkVersion}}", BuildConfig.VERSION_NAME);
-            if (manager.gameConfig.contains("{{%sdkConfig}}") || manager.gameConfig.contains("\"{{%sdkConfig}}\"")) {
+            if (manager.gameConfig.contains("\"{{%sdkConfig}}\"")) {
                 String replacedConfig = generateJsonConfig();
                 manager.gameConfig = manager.gameConfig.replace("\"{{%sdkConfig}}\"", replacedConfig);
-            } else if (manager.gameConfig.contains("{{%sdkPlaceholders}}") || manager.gameConfig.contains("\"{{%sdkPlaceholders}}\"")) {
-                String replacedPlaceholders = generateJsonPlaceholders(dataSettingsHolder);
-                manager.gameConfig = manager.gameConfig.replace("\"{{%sdkPlaceholders}}\"", replacedPlaceholders);
-                manager.gameConfig = manager.gameConfig.replace("{{%sdkPlaceholders}}", replacedPlaceholders);
             }
         }
     }
@@ -1152,119 +1428,91 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
 
     private String generateJsonConfig() {
         Context context = getContext();
+        InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
+        final IASCore core = inAppStoryManager != null ? inAppStoryManager.iasCore() : null;
+
         GameConfigOptions options = new GameConfigOptions();
+        if (!isAdded()) return "{}";
         options.fullScreen = isFullscreen;
-        final IASCore core = getCore();
         if (core != null) {
-            if (context == null) context = core.appContext();
+            if (context == null)
+                context = core.appContext();
+            if (context == null) {
+                return "{}";
+            }
             IASDataSettingsHolder dataSettingsHolder = ((IASDataSettingsHolder) core.settingsAPI());
             CachedSessionData sessionData = dataSettingsHolder.sessionData();
             options.apiBaseUrl = core.network().getBaseUrl();
             options.deviceId = dataSettingsHolder.deviceId();
             if (sessionData != null && sessionData.userId != null)
-                options.userId = StringsUtils.getEscapedString(
-                        new UrlEncoder().encode(sessionData.userId)
-                );
+                options.userId = sessionData.userId;
             else
                 options.userId = "";
             options.lang = dataSettingsHolder.lang().toLanguageTag();
-            options.userAgent = StringsUtils.getEscapedString(
-                    core.network().userAgent()
-            );
+            options.userAgent = core.network().userAgent();
             options.sessionId = sessionData != null && sessionData.sessionId != null ? sessionData.sessionId : "";
             options.apiKey = core.projectSettingsAPI().apiKey();
             options.placeholders = generatePlaceholders(dataSettingsHolder);
+            options.userExtraOptions = JsonParser.stringMapToObjMap(
+                    dataSettingsHolder.options()
+            );
         } else {
+            if (context == null) {
+                return "{}";
+            }
             options.lang = Locale.getDefault().toLanguageTag();
             options.deviceId = "";
             options.apiBaseUrl = "";
-            options.userAgent = StringsUtils.getEscapedString(
-                    new UserAgent().generate(context)
-            );
+            options.userAgent = new UserAgent().generate(context);
             options.sessionId = "";
         }
-        if (context == null) return "{}";
-        int orientation = Configuration.ORIENTATION_PORTRAIT;
-        try {
-            orientation = context.getResources().getConfiguration().orientation;
-        } catch (Exception e) {
-
-        }
+        int orientation = context.getResources().getConfiguration().orientation;
         options.screenOrientation =
                 (orientation == Configuration.ORIENTATION_LANDSCAPE) ? "landscape" : "portrait";
         String appPackageName = "";
         try {
             appPackageName = context.getPackageManager().getPackageInfo(context.getPackageName(), 0).packageName;
-        } catch (Exception e) {
+        } catch (PackageManager.NameNotFoundException e) {
             e.printStackTrace();
         }
         options.appPackageId = appPackageName;
-        options.sdkVersion = StringsUtils.getEscapedString(
-                BuildConfig.VERSION_NAME
-        );
+        options.sdkVersion = BuildConfig.VERSION_NAME;
         SafeAreaInsets insets = new SafeAreaInsets();
-        try {
-            if (Build.VERSION.SDK_INT >= 28) {
-                if (getActivity() != null) {
-                    WindowInsets windowInsets = getActivity().getWindow().getDecorView().getRootWindowInsets();
-                    if (windowInsets != null) {
-                        insets.top = Sizes.pxToDpExt(windowInsets.getStableInsetTop(), context);
-                        insets.bottom = Sizes.pxToDpExt(windowInsets.getStableInsetBottom(), context);
-                        insets.left = Sizes.pxToDpExt(windowInsets.getStableInsetLeft(), context);
-                        insets.right = Sizes.pxToDpExt(windowInsets.getStableInsetRight(), context);
-                    }
+        if (Build.VERSION.SDK_INT >= 28) {
+            if (getActivity() != null) {
+                WindowInsets windowInsets = getActivity().getWindow().getDecorView().getRootWindowInsets();
+                if (windowInsets != null) {
+                    insets.top = Sizes.pxToDpExt(windowInsets.getStableInsetTop(), context);
+                    insets.bottom = Sizes.pxToDpExt(windowInsets.getStableInsetBottom(), context);
+                    insets.left = Sizes.pxToDpExt(windowInsets.getStableInsetLeft(), context);
+                    insets.right = Sizes.pxToDpExt(windowInsets.getStableInsetRight(), context);
                 }
             }
-        } catch (Exception e) {
         }
         options.safeAreaInsets = insets;
         String gameId = gameReaderLaunchData.getGameId();
         if (gameId != null)
             options.gameInstanceId = gameId;
         try {
-            return JsonParser.getJson(options);
+            return JsonParser.stringifyToJsString(options);
         } catch (Exception e) {
-            return "";
+            // TODO write Exception to debug logger
+            return "{}";
         }
     }
 
     private void checkInsets() {
-        if (Build.VERSION.SDK_INT >= 28) {
-            new Handler(Looper.getMainLooper()).post(new Runnable() {
+        setOffsets(isFullscreen, new Pair<>(startedTop, startedBottom));
+      /*  if (webView != null) {
+            final ViewTreeObserver viewTreeObserver = webView.getViewTreeObserver();
+            viewTreeObserver.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
                 @Override
-                public void run() {
-                    if (getActivity() == null) return;
-                    if (getActivity().getWindow() != null) {
-                        WindowInsets windowInsets = getActivity().getWindow().getDecorView().getRootWindowInsets();
-                        if (windowInsets != null) {
-                            ((RelativeLayout.LayoutParams) closeButton.getLayoutParams()).topMargin =
-                                    Math.max(windowInsets.getStableInsetTop(),
-                                            Sizes.dpToPxExt(16, getContext())
-                                    );
-                            closeButton.requestLayout();
-                        }
-                        if (Sizes.isTablet(getContext())) {
+                public void onGlobalLayout() {
+                    webView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
 
-                            View gameContainer = getView().findViewById(R.id.gameContainer);
-                            if (gameContainer != null) {
-                                Point size = Sizes.getScreenSize(getContext());
-                                if (windowInsets != null) {
-                                    size.y -= (windowInsets.getStableInsetTop() +
-                                            windowInsets.getStableInsetBottom());
-                                }
-                                gameContainer.getLayoutParams().height = size.y;
-                                gameContainer.getLayoutParams().width = (int) (size.y / 1.5f);
-                                gameContainer.requestLayout();
-                            }
-                        }
-                    }
-
-                    closeButton.setVisibility(View.VISIBLE);
                 }
             });
-        } else {
-            closeButton.setVisibility(View.VISIBLE);
-        }
+        }*/
     }
 
 
@@ -1286,39 +1534,18 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         ArrayList<GameDataPlaceholder> gameDataPlaceholders = new ArrayList<GameDataPlaceholder>();
         for (Map.Entry<String, String> entry : textPlaceholders.entrySet()) {
             if (entry.getKey() != null && entry.getValue() != null)
-                gameDataPlaceholders.add(
-                        new GameDataPlaceholder(
-                                "text",
-                                StringsUtils.getEscapedString(
-                                        entry.getKey()
-                                ),
-                                StringsUtils.getEscapedString(
-                                        entry.getValue()
-                                )
-                        )
-                );
+                gameDataPlaceholders.add(new GameDataPlaceholder("text", entry.getKey(), entry.getValue()));
         }
         for (Map.Entry<String, ImagePlaceholderValue> entry : imagePlaceholders.entrySet()) {
             if (entry.getKey() != null && entry.getValue() != null
                     && entry.getValue().getType() == ImagePlaceholderType.URL)
-                gameDataPlaceholders.add(
-                        new GameDataPlaceholder(
-                                "image",
-                                StringsUtils.getEscapedString(
-                                        entry.getKey()
-                                ),
-                                StringsUtils.getEscapedString(
-                                        entry.getValue().getUrl()
-                                )
-                        )
-                );
+                gameDataPlaceholders.add(new GameDataPlaceholder("image", entry.getKey(), entry.getValue().getUrl()));
         }
         return gameDataPlaceholders;
     }
 
     private void setLoader(File splashFile) {
-        Log.e("LoaderFile", "Anim " + (splashFile != null ? splashFile.getAbsolutePath() : "empty"));
-        progressLoader.launchLoaderAnimation(splashFile);
+        progressLoader.launchLoaderAnimation(splashFile, currentLayoutDirection);
     }
 
     private void setStaticSplashScreen(File splashFile) {
@@ -1330,14 +1557,23 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                     splashFile.getAbsolutePath(),
                     new IGetBitmapFromMemoryCache() {
                         @Override
-                        public void get(Bitmap bitmap) {
-                            loader.setImageBitmap(bitmap);
+                        public void get(final Bitmap bitmap) {
+                            loader.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    loader.setImageBitmap(bitmap);
+                                }
+                            });
+
                         }
                     },
                     null
             );
         }
     }
+
+    int startedTop = 0;
+    int startedBottom = 0;
 
     @SuppressLint("UseCompatLoadingForDrawables")
     @Nullable
@@ -1351,6 +1587,8 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         gameReaderLaunchData = (GameReaderLaunchData) getArguments().getSerializable(
                 GameReaderLaunchData.SERIALIZABLE_KEY
         );
+        startedTop = getArguments().getInt("startedTop", 0);
+        startedBottom = getArguments().getInt("startedBottom", 0);
         gameWebViewContainer = view.findViewById(R.id.gameWebviewContainer);
         loader = view.findViewById(R.id.loader);
         baseContainer = view.findViewById(R.id.draggable_frame);
@@ -1361,6 +1599,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         Context context = view.getContext();
 
         refreshGame = view.findViewById(R.id.gameRefresh);
+        refreshGameContainer = view.findViewById(R.id.gameRefreshContainer);
         int maxRefreshSize = Sizes.dpToPxExt(40, context);
         final CustomIconWithoutStates refreshIconInterface = AppearanceManager.getCommonInstance().csCustomIcons().refreshIcon();
         final View refreshView = refreshIconInterface.createIconView(context, new SizeF(maxRefreshSize, maxRefreshSize));
@@ -1375,10 +1614,12 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         });
 
         closeButton = view.findViewById(R.id.close_button);
+        additionalError = view.findViewById(R.id.additionalErrorText);
         int maxCloseSize = Sizes.dpToPxExt(30, context);
         final CustomIconWithoutStates closeIconInterface = AppearanceManager.getCommonInstance().csCustomIcons().closeIcon();
         final View closeView = closeIconInterface.createIconView(context, new SizeF(maxCloseSize, maxCloseSize));
         closeView.setClickable(false);
+        closeButton.setVisibility(View.GONE);
         closeButton.addView(closeView);
         closeButton.setTouchListener(new View.OnTouchListener() {
             @Override
@@ -1392,9 +1633,26 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         return view;
     }
 
-    private void setOffsets(boolean isFullscreen) {
+    private void setOffsets(boolean isFullscreen, Pair<Integer, Integer> startedOffsets) {
         FragmentActivity fragmentActivity = getActivity();
         if (fragmentActivity == null) return;
+
+        int topInsetOffset = 0;
+        int bottomInsetOffset = 0;
+        if (startedOffsets != null) {
+            topInsetOffset = startedOffsets.first;
+            bottomInsetOffset = startedOffsets.second;
+        } else if (Build.VERSION.SDK_INT >= 23) {
+            if (fragmentActivity.getWindow() != null) {
+                WindowInsets windowInsets = fragmentActivity.getWindow().getDecorView().getRootWindowInsets();
+                if (windowInsets != null) {
+                    topInsetOffset = Math.max(0, windowInsets.getStableInsetTop());
+                    bottomInsetOffset = Math.max(0, windowInsets.getStableInsetBottom());
+                }
+            }
+        }
+
+        RelativeLayout.LayoutParams buttonLP = (RelativeLayout.LayoutParams) closeButton.getLayoutParams();
         if (!Sizes.isTablet(fragmentActivity)) {
 
             if (blackTop != null) {
@@ -1410,32 +1668,56 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                     // window.getLocationInWindow(location2);
                 }
 
-                int topInsetOffset = 0;
-                int bottomInsetOffset = 0;
-                if (Build.VERSION.SDK_INT >= 23) {
-                    if (fragmentActivity.getWindow() != null) {
-                        WindowInsets windowInsets = fragmentActivity.getWindow().getDecorView().getRootWindowInsets();
-                        if (windowInsets != null) {
-                            topInsetOffset = Math.max(0, windowInsets.getStableInsetTop());
-                            bottomInsetOffset = Math.max(0, windowInsets.getStableInsetBottom());
-                        }
-                    }
-                }
 
                 if (!isFullscreen) {
+                    LinearLayout.LayoutParams topLp = (LinearLayout.LayoutParams) blackTop.getLayoutParams();
+                    LinearLayout.LayoutParams bottomLp = (LinearLayout.LayoutParams) blackBottom.getLayoutParams();
                     if (location[1] < topInsetOffset) {
-                        LinearLayout.LayoutParams topLp = (LinearLayout.LayoutParams) blackTop.getLayoutParams();
-                        topLp.height = topInsetOffset;
-                        blackTop.requestLayout();
+                        topLp.height = topInsetOffset - location[1];
+                        buttonLP.topMargin = topInsetOffset - location[1] + Sizes.dpToPxExt(16, getContext());
+                    } else {
+                        topLp.height = 0;
+                        buttonLP.topMargin = Sizes.dpToPxExt(16, getContext());
                     }
                     if (phoneHeight - location[1] - bottomInsetOffset < windowHeight) {
-                        LinearLayout.LayoutParams bottomLp = (LinearLayout.LayoutParams) blackBottom.getLayoutParams();
                         bottomLp.height = bottomInsetOffset;
-                        blackBottom.requestLayout();
+                    } else {
+                        bottomLp.height = 0;
+                    }
+                    blackTop.requestLayout();
+                    blackBottom.requestLayout();
+                } else {
+                    if (location[1] < topInsetOffset) {
+                        buttonLP.topMargin = topInsetOffset - location[1] + Sizes.dpToPxExt(16, getContext());
+                    } else {
+                        buttonLP.topMargin = Sizes.dpToPxExt(16, getContext());
                     }
                 }
             }
+        } else {
+            View gameContainer = getView().findViewById(R.id.gameContainer);
+            if (gameContainer != null) {
+                Point size = Sizes.getScreenSize(getContext());
+                size.y -= (topInsetOffset +
+                        bottomInsetOffset);
+                gameContainer.getLayoutParams().height = size.y;
+                gameContainer.getLayoutParams().width = (int) (size.y / 1.5f);
+                gameContainer.requestLayout();
+            }
+            buttonLP.topMargin =
+                    Sizes.dpToPxExt(16, getContext());
         }
+        closeButton.requestLayout();
+        closeButton.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (showClose) {
+                    closeButton.setVisibility(View.VISIBLE);
+                    loader.setVisibility(View.VISIBLE);
+                }
+            }
+        }, 200);
+
     }
 
     void loadJsApiResponse(String gameResponse, String cb) {
@@ -1447,24 +1729,27 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
 
     @Override
     public void closeView(final HashMap<String, Object> data) {
-        final IASCore core = getCore();
-        if (core == null) return;
-        new Handler(Looper.getMainLooper()).post(new Runnable() {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
-            public void run() {
-                ShareProcessHandler shareProcessHandler = core.screensManager().getShareProcessHandler();
-                if (shareProcessHandler == null) return;
-                boolean shared = false;
-                if (data.containsKey("shared")) shared = (boolean) data.get("shared");
-                IShareCompleteListener shareCompleteListener =
-                        shareProcessHandler.shareCompleteListener();
-                if (shareCompleteListener != null) {
-                    shareCompleteListener.complete(shared);
-                }
-                if (!shared)
-                    resumeGame();
-                shareViewIsShown = false;
-                shareProcessHandler.clearShareIds();
+            public void use(@NonNull final IASCore core) {
+                new Handler(Looper.getMainLooper()).post(new Runnable() {
+                    @Override
+                    public void run() {
+                        ShareProcessHandler shareProcessHandler = core.screensManager().getShareProcessHandler();
+                        if (shareProcessHandler == null) return;
+                        boolean shared = false;
+                        if (data.containsKey("shared")) shared = (boolean) data.get("shared");
+                        IShareCompleteListener shareCompleteListener =
+                                shareProcessHandler.shareCompleteListener();
+                        if (shareCompleteListener != null) {
+                            shareCompleteListener.complete(shared);
+                        }
+                        if (!shared)
+                            resumeGame();
+                        shareViewIsShown = false;
+                        shareProcessHandler.clearShareIds();
+                    }
+                });
             }
         });
 
@@ -1498,13 +1783,14 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
 
     private void gameReaderGestureBack() {
         if (manager.statusHolder.gameLoaded()) {
-            webView.evaluateJavascript("gameReaderGestureBack();", new ValueCallback<String>() {
-                @Override
-                public void onReceiveValue(String s) {
-                    if (!s.equals("true"))
-                        closeGame();
-                }
-            });
+            if (webView != null)
+                webView.evaluateJavascript("gameReaderGestureBack();", new ValueCallback<String>() {
+                    @Override
+                    public void onReceiveValue(String s) {
+                        if (!s.equals("true"))
+                            closeGame();
+                    }
+                });
         } else {
             gameCompleted(null, null);
         }
@@ -1538,6 +1824,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         webView.post(new Runnable() {
             @Override
             public void run() {
+
                 webView.evaluateJavascript(
                         "userAccelerationSensorCbError("
                                 + type + ","
@@ -1553,6 +1840,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         webView.post(new Runnable() {
             @Override
             public void run() {
+
                 webView.evaluateJavascript(
                         "userAccelerationSensorCbRead("
                                 + x + ","

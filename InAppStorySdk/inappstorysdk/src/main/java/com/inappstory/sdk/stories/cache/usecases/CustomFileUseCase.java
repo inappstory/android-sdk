@@ -3,11 +3,14 @@ package com.inappstory.sdk.stories.cache.usecases;
 import android.util.Log;
 
 import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.game.cache.SimpleUseCaseError;
 import com.inappstory.sdk.game.cache.UseCaseCallback;
 import com.inappstory.sdk.lrudiskcache.CacheJournalItem;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.stories.cache.DownloadFileState;
 import com.inappstory.sdk.stories.cache.FilesDownloader;
+import com.inappstory.sdk.utils.FilePathCacheGenerator;
+import com.inappstory.sdk.utils.FilePathCacheType;
 import com.inappstory.sdk.utils.StringsUtils;
 
 import java.io.File;
@@ -26,23 +29,18 @@ public class CustomFileUseCase extends GetCacheFileUseCase<Void> {
         this.getFileCallback = getFileCallback;
         this.url = url;
         this.uniqueKey = StringsUtils.md5(url);
-        this.filePath = getCache().getCacheDir().getAbsolutePath() +
-                File.separator +
-                "v2" +
-                File.separator +
-                "custom" +
-                File.separator +
-                uniqueKey +
-                FilesDownloader.getFileExtensionFromUrl(url);
+        this.filePath = new FilePathCacheGenerator(
+                url,
+                core,
+                FilePathCacheType.CUSTOM_FILE
+        ).generate();
     }
 
     @Override
     public Void getFile() {
         downloadLog.generateRequestLog(url);
-        Log.e("ScenarioDownload", "UniqueKey: " + uniqueKey);
         DownloadFileState fileState = getCache().get(uniqueKey);
         if (fileState == null || fileState.downloadedSize != fileState.totalSize) {
-            Log.e("ScenarioDownload", "Download: " + uniqueKey + " Url: " + url);
             downloadLog.sendRequestLog();
             downloadLog.generateResponseLog(false, filePath);
             core
@@ -57,10 +55,9 @@ public class CustomFileUseCase extends GetCacheFileUseCase<Void> {
                                     public void finish(DownloadFileState fileState) {
                                         downloadLog.sendResponseLog();
                                         if (fileState == null || fileState.downloadedSize != fileState.totalSize) {
-                                            getFileCallback.onError("");
+                                            getFileCallback.onError(new SimpleUseCaseError(""));
                                             return;
                                         }
-                                        Log.e("ScenarioDownload", "Downloaded: " + uniqueKey + " Url: " + url);
                                         CacheJournalItem cacheJournalItem = generateCacheItem();
                                         cacheJournalItem.setSize(fileState.totalSize);
                                         cacheJournalItem.setDownloadedSize(fileState.totalSize);
@@ -68,9 +65,14 @@ public class CustomFileUseCase extends GetCacheFileUseCase<Void> {
                                             getCache().put(cacheJournalItem);
                                         } catch (IOException e) {
 
-                                            getFileCallback.onError(e.getMessage());
+                                            getFileCallback.onError(new SimpleUseCaseError(e.getMessage()));
                                         }
                                         getFileCallback.onSuccess(new File(filePath));
+                                    }
+
+                                    @Override
+                                    public void waiting() {
+
                                     }
                                 };
                                 core
@@ -86,12 +88,11 @@ public class CustomFileUseCase extends GetCacheFileUseCase<Void> {
                                         );
 
                             } catch (Exception e) {
-                                getFileCallback.onError(e.getMessage());
+                                getFileCallback.onError(new SimpleUseCaseError(e.getMessage()));
                             }
                         }
                     });
         } else {
-            Log.e("ScenarioDownload", "Cached: " + uniqueKey);
             downloadLog.generateResponseLog(true, filePath);
             downloadLog.sendRequestResponseLog();
             getFileCallback.onSuccess(new File(filePath));

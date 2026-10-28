@@ -1,12 +1,9 @@
 package com.inappstory.sdk.stories.ui.list;
 
 
-import static com.inappstory.sdk.InAppStoryManager.IAS_ERROR_TAG;
-
 import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.TypedArray;
-import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.os.Handler;
 import android.os.Looper;
@@ -17,7 +14,6 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
-import android.view.ViewTreeObserver;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -28,6 +24,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.LoggerTags;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.core.IASCore;
@@ -41,7 +38,7 @@ import com.inappstory.sdk.core.ui.screens.storyreader.StoryScreenHolder;
 import com.inappstory.sdk.network.models.RequestLocalParameters;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.core.network.content.callbacks.LoadStoriesCallback;
-import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
+import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallbackWithUID;
 import com.inappstory.sdk.stories.callbacks.OnFavoriteItemClick;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoryItemCoordinates;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
@@ -51,17 +48,17 @@ import com.inappstory.sdk.stories.outercallbacks.storieslist.ListScrollCallback;
 import com.inappstory.sdk.stories.statistic.GetStatisticV1Callback;
 import com.inappstory.sdk.stories.statistic.IASStatisticStoriesV2Impl;
 import com.inappstory.sdk.stories.ui.reader.ActiveStoryItem;
-import com.inappstory.sdk.stories.utils.Sizes;
+import com.inappstory.sdk.stories.utils.LoopedExecutor;
 import com.inappstory.sdk.ugc.list.OnUGCItemClick;
 import com.inappstory.sdk.utils.ScheduledTPEManager;
 import com.inappstory.sdk.utils.StringsUtils;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -233,9 +230,8 @@ public class StoriesList extends RecyclerView {
 
     @Override
     public void onDetachedFromWindow() {
-        Log.e("StoriesListMeasures", "onDetachedFromWindow");
         super.onDetachedFromWindow();
-        scheduledTimerCheckVisibility.cancel(false);
+        pauseStatCollect();
         InAppStoryService.useInstance(new UseServiceInstanceCallback() {
             @Override
             public void use(@NonNull InAppStoryService service) {
@@ -249,18 +245,12 @@ public class StoriesList extends RecyclerView {
         });
     }
 
-    private ScheduledTPEManager executorService = new ScheduledTPEManager();
+    private LoopedExecutor executorService = null;
 
     @Override
     public void onAttachedToWindow() {
-        Log.e("StoriesListMeasures", "onAttachedToWindow");
         super.onAttachedToWindow();
-        scheduledTimerCheckVisibility = executorService.scheduleAtFixedRate(
-                checkVisibilityRunnable,
-                1L,
-                300,
-                TimeUnit.MILLISECONDS
-        );
+        resumeStatCollect();
         manager.list = this;
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
@@ -339,6 +329,8 @@ public class StoriesList extends RecyclerView {
 
     OnItemTouchListener itemTouchListener;
 
+    String widgetUID = UUID.randomUUID().toString();
+
     private boolean hasSessionUGC() {
         InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
         if (inAppStoryManager == null) return false;
@@ -391,7 +383,12 @@ public class StoriesList extends RecyclerView {
                         final List<Integer> newIndexes = core.statistic().newStatisticPreviews(indexes);
                         if (newIndexes.isEmpty()) return;
                         core.sessionManager().useOrOpenSession(
-                                new OpenSessionCallback() {
+                                new OpenSessionCallbackWithUID() {
+                                    @Override
+                                    public String getUID() {
+                                        return widgetUID;
+                                    }
+
                                     @Override
                                     public void onSuccess(RequestLocalParameters requestLocalParameters) {
                                         core.statistic().storiesV2().sendViewStory(
@@ -425,11 +422,40 @@ public class StoriesList extends RecyclerView {
 
     }
 
+    public void pauseStatCollect() {
+        if (executorService != null) {
+            executorService.cancelTask();
+            executorService.shutdown();
+            executorService = null;
+        }
+    }
+
+    @Override
+    public void setVisibility(int visibility) {
+        super.setVisibility(visibility);
+        if (visibility != VISIBLE)
+            pauseStatCollect();
+        else
+            resumeStatCollect();
+    }
+
+    public void resumeStatCollect() {
+        if (executorService == null) {
+            executorService = new LoopedExecutor(1L, 300L, this.toString());
+            executorService.task(checkVisibilityRunnable);
+        }
+    }
+
     Runnable checkVisibilityRunnable = new Runnable() {
         @Override
         public void run() {
+            if (adapter == null || adapter.getItemCount() == 0) {
+                executorService.freeExecutor();
+                return;
+            }
             getVisibleItems();
             sendIndexes();
+            executorService.freeExecutor();
         }
     };
 
@@ -700,7 +726,7 @@ public class StoriesList extends RecyclerView {
                     core.statistic().storiesV1(
                             manager != null ?
                                     manager.currentSessionId :
-                                    ((IASDataSettingsHolder)core.settingsAPI()).sessionIdOrEmpty(),
+                                    ((IASDataSettingsHolder) core.settingsAPI()).sessionIdOrEmpty(),
                             new GetStatisticV1Callback() {
                                 @Override
                                 public void get(@NonNull IASStatisticStoriesV1 manager) {
@@ -760,18 +786,6 @@ public class StoriesList extends RecyclerView {
     LoadStoriesCallback lcallback;
 
     public void loadStories() {
-        if (InAppStoryManager.getInstance() != null && isFavoriteList) {
-            IASCore core = InAppStoryManager.getInstance().iasCore();
-            IASDataSettingsHolder settingsHolder = (IASDataSettingsHolder) core.settingsAPI();
-            if (settingsHolder.anonymous()) {
-                InAppStoryManager.showELog(
-                        IAS_ERROR_TAG,
-                        "Favorites is unavailable for anonymous mode"
-                );
-                if (callback != null) callback.loadError(feed);
-                return;
-            }
-        }
         loadStoriesLaunched = true;
         InAppStoryManager.debugSDKCalls("StoriesList_loadStories", "");
         try {
@@ -863,7 +877,7 @@ public class StoriesList extends RecyclerView {
         return this.appearanceManager;
     }
 
-    ScheduledFuture scheduledTimerCheckVisibility;
+    ScheduledFuture scheduledTimerCheckVisibility = null;
 
     private void setOrRefreshAdapter(final List<Integer> storiesIds) {
         InAppStoryManager.useCore(new UseIASCoreCallback() {
@@ -947,6 +961,7 @@ public class StoriesList extends RecyclerView {
             public void getItemOffsets(@NonNull Rect outRect, @NonNull View view, @NonNull RecyclerView parent, @NonNull State state) {
                 super.getItemOffsets(outRect, view, parent, state);
                 int margin = appearanceManager.csListItemMargin(getContext());
+
                 outRect.bottom = margin;
                 outRect.top = margin;
                 int position = parent.getChildAdapterPosition(view);
@@ -966,10 +981,9 @@ public class StoriesList extends RecyclerView {
         InAppStoryManager.useCoreInSeparateThread(new UseIASCoreCallback() {
             @Override
             public void use(@NonNull final IASCore core) {
-                IASDataSettingsHolder settingsHolder = (IASDataSettingsHolder) core.settingsAPI();
-                if (!settingsHolder.anonymous() && settingsHolder.noCorrectUserIdOrDevice()) {
+                if (((IASDataSettingsHolder) core.settingsAPI()).noCorrectUserIdOrDevice()) {
                     InAppStoryManager.showELog(
-                            InAppStoryManager.IAS_ERROR_TAG,
+                            LoggerTags.IAS_ERROR_TAG,
                             StringsUtils.getErrorStringFromContext(
                                     getContext(),
                                     R.string.ias_usage_without_user_and_device
@@ -986,10 +1000,7 @@ public class StoriesList extends RecyclerView {
 
                 InAppStoryManager.debugSDKCalls("StoriesList_loadStoriesInner", "");
                 final String listUid = core.statistic().profiling().addTask("widget_init");
-                final boolean hasFavorite = (!isFavoriteList &&
-                        getAppearanceManager().csHasFavorite() &&
-                        !settingsHolder.anonymous()
-                );
+                final boolean hasFavorite = (!isFavoriteList && getAppearanceManager().csHasFavorite());
 
                 lcallback = new LoadStoriesCallback() {
                     @Override
@@ -1034,6 +1045,7 @@ public class StoriesList extends RecyclerView {
                 };
                 core.contentLoader().storyDownloadManager().loadStories(
                         getFeed(),
+                        widgetUID,
                         lcallback,
                         null,
                         isFavoriteList,
@@ -1045,7 +1057,7 @@ public class StoriesList extends RecyclerView {
             public void error() {
                 setOrRefreshAdapter(new ArrayList<Integer>());
                 InAppStoryManager.showELog(
-                        InAppStoryManager.IAS_ERROR_TAG,
+                        LoggerTags.IAS_ERROR_TAG,
                         StringsUtils.getErrorStringFromContext(
                                 getContext(),
                                 R.string.ias_npe_manager

@@ -5,15 +5,18 @@ import android.text.TextUtils;
 
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.LoggerTags;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.IASStackFeed;
 import com.inappstory.sdk.core.data.IListItemContent;
+import com.inappstory.sdk.core.network.content.RequestFields;
 import com.inappstory.sdk.network.models.RequestLocalParameters;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.core.network.content.models.Feed;
 import com.inappstory.sdk.core.network.content.models.Image;
+import com.inappstory.sdk.stories.api.models.TargetingBodyObject;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadFeedCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.stackfeed.IStackFeedActions;
@@ -24,7 +27,7 @@ import com.inappstory.sdk.stories.stackfeed.StackStoryUpdatedCallback;
 import com.inappstory.sdk.stories.utils.TagsUtils;
 import com.inappstory.sdk.utils.StringsUtils;
 
-import static com.inappstory.sdk.core.api.impl.IASSettingsImpl.TAG_LIMIT;
+import static com.inappstory.sdk.core.api.impl.IASSettingsImpl.TAG_LIMIT_COUNT;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,19 +47,19 @@ public class IASStackFeedImpl implements IASStackFeed {
             final List<String> tags,
             final IStackFeedResult stackFeedResult
     ) {
-        IASDataSettingsHolder settingsHolder = (IASDataSettingsHolder) core.settingsAPI();
+        final IASDataSettingsHolder settingsHolder = (IASDataSettingsHolder) core.settingsAPI();
         if (settingsHolder.noCorrectUserIdOrDevice()) {
             stackFeedResult.error();
             return;
         }
-        final String localTags;
+        final List<String> localTags;
         if (tags != null) {
             List<String> filteredList = new ArrayList<>();
             List<String> copyTags = new ArrayList<>(tags);
             for (String tag : copyTags) {
                 if (!TagsUtils.checkTagPattern(tag)) {
                     InAppStoryManager.showELog(
-                            InAppStoryManager.IAS_WARN_TAG,
+                            LoggerTags.IAS_WARN_TAG,
                             StringsUtils.getFormattedErrorStringFromContext(
                                     core.appContext(),
                                     R.string.ias_tag_pattern_error,
@@ -67,21 +70,21 @@ public class IASStackFeedImpl implements IASStackFeed {
                 }
                 filteredList.add(tag);
             }
-            if (StringsUtils.getBytesLength(TextUtils.join(",", filteredList)) > TAG_LIMIT) {
+            if (filteredList.size() > TAG_LIMIT_COUNT) {
                 InAppStoryManager.showELog(
-                        InAppStoryManager.IAS_ERROR_TAG,
+                        LoggerTags.IAS_ERROR_TAG,
                         StringsUtils.getErrorStringFromContext(
                                 core.appContext(),
-                                R.string.ias_setter_tags_length_error
+                                R.string.ias_setter_tags_count_error
                         )
                 );
                 stackFeedResult.error();
                 return;
 
             }
-            localTags = TextUtils.join(",", filteredList);
+            localTags = new ArrayList<>(filteredList);
         } else {
-            localTags = TextUtils.join(",", settingsHolder.tags());
+            localTags = new ArrayList<>(settingsHolder.tags());
         }
         final String localFeed;
         if (feed != null && !feed.isEmpty()) localFeed = feed;
@@ -98,9 +101,12 @@ public class IASStackFeedImpl implements IASStackFeed {
                                 localFeed,
                                 core.projectSettingsAPI().testKey(),
                                 0,
-                                localTags,
-                                null,
-                                "stories.slides",
+                                new TargetingBodyObject(
+                                        !localTags.isEmpty() ? localTags : null,
+                                        settingsHolder.options()
+                                ),
+                                RequestFields.FEED_STORY_FIELDS,
+                                RequestFields.FEED_STORY_EXPAND,
                                 requestLocalParameters.userId(),
                                 requestLocalParameters.sessionId(),
                                 requestLocalParameters.locale()
@@ -111,7 +117,7 @@ public class IASStackFeedImpl implements IASStackFeed {
                                 if (response == null || response.stories == null) {
                                     stackFeedResult.error();
                                 } else {
-                                    for (IListItemContent story: response.stories) {
+                                    for (IListItemContent story : response.stories) {
                                         core.contentHolder().listsContent().setByIdAndType(
                                                 story, story.id(), ContentType.STORY
                                         );

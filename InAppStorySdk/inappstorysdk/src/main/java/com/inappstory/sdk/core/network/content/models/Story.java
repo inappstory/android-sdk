@@ -8,6 +8,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.LoggerTags;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.data.IContentWithTimeline;
 import com.inappstory.sdk.core.data.IReaderContentSlide;
@@ -21,6 +22,7 @@ import com.inappstory.sdk.utils.StringsUtils;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by Paperrose on 08.07.2018.
@@ -46,6 +48,14 @@ public class Story implements Parcelable, IStory, IContentWithTimeline {
 
     @SerializedName("payload")
     public HashMap<String, Object> ugcPayload;
+
+
+    @SerializedName("custom_attributes")
+    public Map<String, String> customAttributes;
+
+
+    @SerializedName("layout_template_variables")
+    public Map<String, String> layoutTemplateVariables;
 
     @SerializedName("background_color")
     public String backgroundColor;
@@ -120,7 +130,12 @@ public class Story implements Parcelable, IStory, IContentWithTimeline {
 
     @Override
     public boolean checkIfEmpty() {
-        return (layout == null || slides == null || slides.isEmpty());
+        return (
+                slides == null ||
+                slides.isEmpty() ||
+                layoutTemplateVariables == null ||
+                layoutTemplateVariables.isEmpty()
+        );
     }
 
     @Override
@@ -195,7 +210,7 @@ public class Story implements Parcelable, IStory, IContentWithTimeline {
     private IReaderContentSlide slide(int index) {
         if (slides == null || index < 0 || slides.size() <= index) {
             InAppStoryManager.showELog(
-                    InAppStoryManager.IAS_ERROR_TAG,
+                    LoggerTags.IAS_ERROR_TAG,
                     "Slide index out of bounds: " + index + " from " + slidesCount
             );
             return null;
@@ -204,7 +219,7 @@ public class Story implements Parcelable, IStory, IContentWithTimeline {
             if (slide.index() == index) return slide;
         }
         InAppStoryManager.showELog(
-                InAppStoryManager.IAS_ERROR_TAG,
+                LoggerTags.IAS_ERROR_TAG,
                 "Slide " + index + " not in slides array of story " + id()
         );
         return null;
@@ -306,8 +321,19 @@ public class Story implements Parcelable, IStory, IContentWithTimeline {
     }
 
     @Override
+    public Map<String, String> customAttributes() {
+        return customAttributes;
+    }
+
+    @Override
     public String layout() {
         return layout;
+    }
+
+    @Override
+    public Map<String, String> layoutTemplateVariables() {
+        if (layoutTemplateVariables == null) layoutTemplateVariables = new HashMap<>();
+        return layoutTemplateVariables;
     }
 
     @Override

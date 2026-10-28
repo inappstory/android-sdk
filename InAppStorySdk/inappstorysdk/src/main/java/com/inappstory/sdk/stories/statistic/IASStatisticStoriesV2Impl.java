@@ -1,6 +1,7 @@
 package com.inappstory.sdk.stories.statistic;
 
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.core.IASCore;
@@ -10,6 +11,7 @@ import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.models.Response;
 import com.inappstory.sdk.stories.api.models.CachedSessionData;
 import com.inappstory.sdk.stories.api.models.CurrentV2StatisticState;
+import com.inappstory.sdk.stories.api.models.SlideLayerKey;
 import com.inappstory.sdk.stories.utils.LoopedExecutor;
 
 import java.util.ArrayList;
@@ -33,7 +35,6 @@ public class IASStatisticStoriesV2Impl implements IASStatisticStoriesV2 {
 
     private boolean disabled;
     private boolean softDisabled;
-
 
     public IASStatisticStoriesV2Impl(IASCore core) {
         this.core = core;
@@ -81,6 +82,7 @@ public class IASStatisticStoriesV2Impl implements IASStatisticStoriesV2 {
     private void addTask(StoryStatisticV2Task task, boolean force) {
         if (disabled) return;
         if (!force && softDisabled) return;
+        initLooper();
         synchronized (statisticTasksLock) {
             tasks.add(task);
             saveTasksSP();
@@ -129,7 +131,6 @@ public class IASStatisticStoriesV2Impl implements IASStatisticStoriesV2 {
         return softDisabled;
     }
 
-
     public void cleanTasks() {
         synchronized (statisticTasksLock) {
             tasks.clear();
@@ -164,7 +165,7 @@ public class IASStatisticStoriesV2Impl implements IASStatisticStoriesV2 {
         }
     }
 
-    private final LoopedExecutor loopedExecutor = new LoopedExecutor(100, 100);
+    private final LoopedExecutor loopedExecutor = new LoopedExecutor(100, 100, getClass().getName());
 
 
     private void init() {
@@ -182,6 +183,8 @@ public class IASStatisticStoriesV2Impl implements IASStatisticStoriesV2 {
                     if (fakeTasksJson != null) {
                         tasks.addAll(JsonParser.listFromJson(fakeTasksJson, StoryStatisticV2Task.class));
                     }
+                    if (!tasks.isEmpty())
+                        initLooper();
                     for (StoryStatisticV2Task task : tasks) {
                         task.isFake = false;
                     }
@@ -190,7 +193,14 @@ public class IASStatisticStoriesV2Impl implements IASStatisticStoriesV2 {
                 }
             }
         });
-        loopedExecutor.init(queueTasksRunnable);
+    }
+
+    private boolean looperInitialized = false;
+
+    private void initLooper() {
+        if (looperInitialized) return;
+        looperInitialized = true;
+        loopedExecutor.task(queueTasksRunnable);
     }
 
     public void cleanFakeEvents() {
@@ -250,8 +260,8 @@ public class IASStatisticStoriesV2Impl implements IASStatisticStoriesV2 {
         task.widgetId = widgetId;
         task.feedId = feedId;
         generateBase(task);
-        IASDataSettingsHolder settingsHolder = ((IASDataSettingsHolder) core.settingsAPI());
-        addTask(task, settingsHolder.sendStatistic() && !settingsHolder.anonymous());
+        addTask(task, InAppStoryManager.getInstance() != null &&
+                InAppStoryManager.getInstance().isSendStatistic());
     }
 
     public void sendGoodsClick(final int i, final int si,
@@ -265,8 +275,8 @@ public class IASStatisticStoriesV2Impl implements IASStatisticStoriesV2 {
         task.widgetId = wi;
         task.widgetValue = sku;
         generateBase(task);
-        IASDataSettingsHolder settingsHolder = ((IASDataSettingsHolder) core.settingsAPI());
-        addTask(task, settingsHolder.sendStatistic() && !settingsHolder.anonymous());
+        addTask(task, InAppStoryManager.getInstance() != null &&
+                InAppStoryManager.getInstance().isSendStatistic());
     }
 
     public void sendViewStory(List<Integer> ids, final String w,
@@ -318,6 +328,7 @@ public class IASStatisticStoriesV2Impl implements IASStatisticStoriesV2 {
                                final Integer si,
                                final Integer st,
                                final String feedId) {
+
         sendCurrentState();
         if (cTimes == null) cTimes = new HashMap<>();
         Long tm = cTimes.get(i) != null ? cTimes.get(i) : 0L;
@@ -485,8 +496,8 @@ public class IASStatisticStoriesV2Impl implements IASStatisticStoriesV2 {
         task.feedId = feedId;
         task.mode = mode;
         generateBase(task);
-        IASDataSettingsHolder settingsHolder = ((IASDataSettingsHolder) core.settingsAPI());
-        addTask(task, settingsHolder.sendStatistic() && !settingsHolder.anonymous());
+        addTask(task, InAppStoryManager.getInstance() != null &&
+                InAppStoryManager.getInstance().isSendStatistic());
 
     }
 
@@ -507,6 +518,59 @@ public class IASStatisticStoriesV2Impl implements IASStatisticStoriesV2 {
             );
         } catch (Exception e) {
         }
+    }
+
+    @Override
+    public void setScrollEvents(Map<SlideLayerKey, Float> scrollEvents) {
+        scrollValues.putAll(scrollEvents);
+    }
+
+    @Override
+    public Map<SlideLayerKey, Float> getScrollEvents() {
+        return new HashMap<>(scrollValues);
+    }
+
+    @Override
+    public void addScrollEvent(SlideLayerKey key, float value) {
+        Float cacheValue = scrollValues.get(key);
+        if (cacheValue == null) cacheValue = value;
+        else cacheValue = Math.max(cacheValue, value);
+        scrollValues.put(key, cacheValue);
+    }
+
+    @Override
+    public void sendSlideScrollEvents(String feedId) {
+        Map<SlideLayerKey, Float> localScrollValues = new HashMap<>(scrollValues);
+        scrollValues.clear();
+        for (SlideLayerKey key : localScrollValues.keySet()) {
+            Float value = localScrollValues.get(key);
+            if (value == null) value = 0f;
+            sendScrollEvent(
+                    key.cardId,
+                    key.slideIndex,
+                    key.layerIndex,
+                    value,
+                    feedId
+            );
+        }
+    }
+
+    private final Map<SlideLayerKey, Float> scrollValues = new HashMap<>();
+
+
+    private void sendScrollEvent(int i, int si, int li, float value, String feedId) {
+        StoryStatisticV2Task task = new StoryStatisticV2Task();
+        task.event = "w-scrollview-impression";
+        task.storyId = Integer.toString(i);
+        task.slideIndex = si;
+        task.layoutIndex = li;
+        task.feedId = feedId;
+        task.value = Float.toString(value);
+        generateBase(task);
+        addTask(
+                task,
+                true
+        );
     }
 
     public void sendGameEvent(final String name, final String data,
@@ -544,6 +608,7 @@ public class IASStatisticStoriesV2Impl implements IASStatisticStoriesV2 {
                                     task.slideIndex,
                                     task.slideTotal,
                                     task.durationMs,
+                                    task.value,
                                     task.widgetId,
                                     task.widgetLabel,
                                     task.widgetValue,

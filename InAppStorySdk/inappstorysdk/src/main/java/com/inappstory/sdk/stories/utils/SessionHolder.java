@@ -1,11 +1,9 @@
 package com.inappstory.sdk.stories.utils;
 
 
-
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.stories.api.models.CachedSessionData;
 import com.inappstory.sdk.utils.ISessionHolder;
-
 
 public class SessionHolder implements ISessionHolder {
     private final IASCore core;

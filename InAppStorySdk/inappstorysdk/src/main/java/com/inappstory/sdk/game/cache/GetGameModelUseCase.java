@@ -6,7 +6,10 @@ import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.network.models.RequestLocalParameters;
+import com.inappstory.sdk.stories.api.interfaces.ConditionsResult;
+import com.inappstory.sdk.stories.api.interfaces.GLCError;
 import com.inappstory.sdk.stories.api.models.GameCenterData;
+import com.inappstory.sdk.stories.api.models.GameLaunchConditionsChecker;
 import com.inappstory.sdk.stories.api.models.GameLaunchConfigObject;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 
@@ -60,7 +63,7 @@ public class GetGameModelUseCase {
 
                                     @Override
                                     public void errorDefault(String message) {
-                                        callback.onError(message);
+                                        callback.onError( message);
                                     }
 
                                     @Override

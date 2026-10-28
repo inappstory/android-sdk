@@ -1,11 +1,7 @@
 package com.inappstory.sdk.externalapi.callbacks;
 
-import androidx.annotation.NonNull;
-
-import com.inappstory.sdk.core.IASCore;
-import com.inappstory.sdk.core.UseIASCoreCallback;
-import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.IASCallbacks;
+import com.inappstory.sdk.goods.outercallbacks.ProductCartInteractionCallback;
 import com.inappstory.sdk.inappmessage.CloseInAppMessageCallback;
 import com.inappstory.sdk.inappmessage.InAppMessageWidgetCallback;
 import com.inappstory.sdk.inappmessage.ShowInAppMessageCallback;
@@ -43,4 +39,6 @@ public interface IASCallbacksExternalAPI extends IASCallbacks {
     void closeInAppMessage(final CloseInAppMessageCallback closeInAppMessageCallback);
 
     void inAppMessageWidget(final InAppMessageWidgetCallback inAppMessageWidgetCallback);
+
+    void productCartInteractionCallback(final ProductCartInteractionCallback productCartInteractionCallback);
 }

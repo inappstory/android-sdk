@@ -9,6 +9,7 @@ import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_50;
 
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASContentLoader;
+import com.inappstory.sdk.core.banners.BannerDownloadManager;
 import com.inappstory.sdk.core.inappmessages.InAppMessageDownloadManager;
 import com.inappstory.sdk.game.cache.GameCacheManager;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
@@ -24,13 +25,9 @@ import com.inappstory.sdk.utils.ScheduledTPEManager;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 public class IASContentLoaderImpl implements IASContentLoader {
@@ -39,6 +36,7 @@ public class IASContentLoaderImpl implements IASContentLoader {
     private final GameCacheManager gameCacheManager;
     private final FilesDownloader filesDownloader;
     private final InAppMessageDownloadManager inAppMessageDownloadManager;
+    private final BannerDownloadManager bannerDownloadManager;
     private Set<String> iamByTagsWereLoaded = new HashSet<>();
 
     private final StoryDownloadManager storyDownloadManager;
@@ -50,6 +48,7 @@ public class IASContentLoaderImpl implements IASContentLoader {
         this.storyDownloadManager = new StoryDownloadManager(core);
         this.gameCacheManager = new GameCacheManager(core);
         this.inAppMessageDownloadManager = new InAppMessageDownloadManager(core);
+        this.bannerDownloadManager = new BannerDownloadManager(core);
         runFreeSpaceCheck();
     }
 
@@ -94,6 +93,11 @@ public class IASContentLoaderImpl implements IASContentLoader {
     }
 
     @Override
+    public BannerDownloadManager bannerDownloadManager() {
+        return bannerDownloadManager;
+    }
+
+    @Override
     public GameCacheManager gameCacheManager() {
         return gameCacheManager;
     }
@@ -129,6 +133,9 @@ public class IASContentLoaderImpl implements IASContentLoader {
             core.contentHolder().readerContent().clearByType(ContentType.STORY);
             core.contentLoader().inAppMessageDownloadManager().clearSlidesDownloader();
             core.contentLoader().inAppMessageDownloadManager().clearLocalData();
+            core.contentLoader().bannerDownloadManager().clearSlidesDownloader();
+            core.contentLoader().bannerDownloadManager().clearLocalData();
+            core.widgetViewModels().bannerPlaceViewModels().clear();
             storyDownloadManager.clearCache();
             core.keyValueStorage().clear();
             synchronized (this) {
@@ -138,6 +145,7 @@ public class IASContentLoaderImpl implements IASContentLoader {
 
         }
         core.assetsHolder().clear();
+        core.layoutHolder().clear();
     }
 
     @Override

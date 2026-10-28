@@ -1,9 +1,12 @@
 package com.inappstory.sdk.core.ui.screens.inappmessagereader;
 
-public class IAMShownTime {
+import com.inappstory.sdk.core.data.IShownTime;
+
+public class IAMShownTime implements IShownTime {
     int iamId;
     long latestShownTime = 0;
 
+    @Override
     public void updateLatestShownTime() {
         this.latestShownTime = System.currentTimeMillis();
     }
@@ -20,6 +23,17 @@ public class IAMShownTime {
         latestShownTime = Long.parseLong(idTime[1]);
     }
 
+    @Override
+    public int id() {
+        return iamId;
+    }
+
+    @Override
+    public long latestShownTime() {
+        return latestShownTime;
+    }
+
+    @Override
     public String getSaveKey() {
         return iamId + "_" + latestShownTime;
     }

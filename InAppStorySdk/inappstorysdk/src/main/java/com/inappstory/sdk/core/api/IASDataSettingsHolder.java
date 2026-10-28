@@ -2,6 +2,8 @@ package com.inappstory.sdk.core.api;
 
 import android.util.Pair;
 
+import androidx.annotation.NonNull;
+
 import com.inappstory.sdk.core.data.IAppVersion;
 import com.inappstory.sdk.core.data.models.UniqueSessionParameters;
 import com.inappstory.sdk.stories.api.models.CachedSessionData;
@@ -17,11 +19,11 @@ public interface IASDataSettingsHolder {
     String deviceId();
     String userId();
     String userIdOrAnonymous();
+    String userSign();
+    boolean anonymous();
     CachedSessionData sessionData();
     String sessionId();
     String sessionIdOrEmpty();
-    String userSign();
-    boolean anonymous();
     Locale lang();
     boolean changeLayoutDirection();
     boolean isSoundOn();
@@ -34,4 +36,6 @@ public interface IASDataSettingsHolder {
     boolean noCorrectTags();
     boolean gameDemoMode();
     boolean sendStatistic();
+    @NonNull
+    Map<String, String> options();
 }

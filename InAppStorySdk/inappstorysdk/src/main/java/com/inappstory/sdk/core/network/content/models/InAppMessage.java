@@ -6,13 +6,15 @@ import com.inappstory.sdk.core.data.IInAppMessage;
 import com.inappstory.sdk.core.data.IReaderContentSlide;
 import com.inappstory.sdk.core.data.IResource;
 import com.inappstory.sdk.core.exceptions.NotImplementedMethodException;
+import com.inappstory.sdk.inappmessage.InAppMessageType;
 import com.inappstory.sdk.inappmessage.ui.appearance.InAppMessageAppearance;
 import com.inappstory.sdk.inappmessage.ui.appearance.impl.InAppMessageBottomSheetSettings;
 import com.inappstory.sdk.inappmessage.ui.appearance.impl.InAppMessageFullscreenSettings;
 import com.inappstory.sdk.inappmessage.ui.appearance.impl.InAppMessagePopupSettings;
+import com.inappstory.sdk.inappmessage.ui.appearance.impl.InAppMessageToastSettings;
+import com.inappstory.sdk.inappmessage.ui.appearance.impl.InAppMessageUndefinedSettings;
 import com.inappstory.sdk.network.annotations.models.Required;
 import com.inappstory.sdk.network.annotations.models.SerializedName;
-import com.inappstory.sdk.inappmessage.IAMUiContainerType;
 
 import java.util.HashMap;
 import java.util.List;
@@ -30,9 +32,6 @@ public class InAppMessage implements IInAppMessage {
     @SerializedName("has_limit")
     public boolean hasLimit;
 
-    @SerializedName("layout")
-    public String layout;
-
     @SerializedName("frequency_limit")
     public Long frequencyLimit;
 
@@ -45,8 +44,15 @@ public class InAppMessage implements IInAppMessage {
     @SerializedName("slides")
     public List<InAppMessageSlide> slides;
 
+    @SerializedName("slides_html")
+    public List<String> slidesHtml;
+
     @SerializedName("campaign_name")
     public String campaignName;
+
+
+    @SerializedName("custom_attributes")
+    public Map<String, String> customAttributes;
 
     @SerializedName("has_swipe_up")
     public Boolean hasSwipeUp;
@@ -60,22 +66,22 @@ public class InAppMessage implements IInAppMessage {
     @SerializedName("appearance")
     public Map<String, Object> appearance;
 
-
     @SerializedName("events")
     public List<InAppMessageEvent> events;
 
     @Override
     public String layout() {
-        return layout;
+        return null;
     }
+
+    @SerializedName("layout_template_variables")
+    public Map<String, String> layoutTemplateVariables;
 
     private IReaderContentSlide slide(int index) {
         if (slides == null || index < 0 || slides.size() < index)
             throw new RuntimeException("Slide index out of bounds: " + index + " from " + slides.size());
-        for (IReaderContentSlide slide : slides) {
-            if (slide.index() == index) return slide;
-        }
-        throw new RuntimeException("Slide " + index + " not in slides array of inAppMessage " + id());
+        return slides.get(index);
+        //throw new RuntimeException("Slide " + index + " not in slides array of inAppMessage " + id());
     }
 
     @Override
@@ -99,6 +105,12 @@ public class InAppMessage implements IInAppMessage {
     }
 
     @Override
+    public Map<String, String> layoutTemplateVariables() {
+        if (layoutTemplateVariables == null) layoutTemplateVariables = new HashMap<>();
+        return layoutTemplateVariables;
+    }
+
+    @Override
     public Map<String, String> placeholdersMap(int index) {
         return slide(index).placeholdersMap();
     }
@@ -115,7 +127,11 @@ public class InAppMessage implements IInAppMessage {
 
     @Override
     public boolean checkIfEmpty() {
-        return (layout == null || slides == null || slides.isEmpty());
+        return (slides == null ||
+                slides.isEmpty() ||
+                layoutTemplateVariables == null ||
+                layoutTemplateVariables.isEmpty()
+        );
     }
 
     @Override
@@ -131,6 +147,11 @@ public class InAppMessage implements IInAppMessage {
     @Override
     public String statTitle() {
         return campaignName;
+    }
+
+    @Override
+    public Map<String, String> customAttributes() {
+        return customAttributes;
     }
 
     @Override
@@ -229,26 +250,18 @@ public class InAppMessage implements IInAppMessage {
     }
 
     @Override
-    public IAMUiContainerType screenType() {
-        switch (screenType) {
-            case 2:
-                return IAMUiContainerType.POPUP;
-            case 3:
-                return IAMUiContainerType.FULLSCREEN;
-            default:
-                return IAMUiContainerType.BOTTOM_SHEET;
-        }
-    }
-
-    @Override
     public InAppMessageAppearance inAppMessageAppearance() {
         switch (screenType) {
+            case 1:
+                return new InAppMessageBottomSheetSettings(appearance, disableClose);
             case 2:
-                return new InAppMessagePopupSettings(appearance);
+                return new InAppMessagePopupSettings(appearance, disableClose);
             case 3:
-                return new InAppMessageFullscreenSettings(appearance);
+                return new InAppMessageFullscreenSettings(appearance, disableClose);
+            case 4:
+                return new InAppMessageToastSettings(appearance, disableClose);
             default:
-                return new InAppMessageBottomSheetSettings(appearance);
+                return new InAppMessageUndefinedSettings();
         }
     }
 
@@ -262,6 +275,22 @@ public class InAppMessage implements IInAppMessage {
             }
         }
         return false;
+    }
+
+    @Override
+    public InAppMessageType messageType() {
+        switch (screenType) {
+            case 1:
+                return InAppMessageType.BOTTOM_SHEET;
+            case 2:
+                return InAppMessageType.POPUP;
+            case 3:
+                return InAppMessageType.FULLSCREEN;
+            case 4:
+                return InAppMessageType.TOAST;
+            default:
+                return InAppMessageType.UNDEFINED;
+        }
     }
 
     @Override

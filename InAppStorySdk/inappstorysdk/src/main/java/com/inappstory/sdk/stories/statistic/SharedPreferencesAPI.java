@@ -89,7 +89,6 @@ public class SharedPreferencesAPI {
                     SharedPreferences.Editor editor = getDefaultPreferences().edit();
                     editor.putStringSet(key, value);
                     boolean isCommitted = editor.commit();
-                    Log.e("saveStringSet", isCommitted + "");
                 }
             }
         }).start();

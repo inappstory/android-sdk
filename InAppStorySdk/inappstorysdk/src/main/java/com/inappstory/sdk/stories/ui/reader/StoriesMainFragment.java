@@ -4,6 +4,7 @@ package com.inappstory.sdk.stories.ui.reader;
 import android.app.Activity;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
+import android.content.res.Configuration;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.os.Bundle;
@@ -28,6 +29,7 @@ import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASCallbackType;
+import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.IASStatisticStoriesV1;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.core.data.IReaderContent;
@@ -57,6 +59,8 @@ import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPag
 import com.inappstory.sdk.stories.utils.IASBackPressHandler;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 import com.inappstory.sdk.stories.utils.Sizes;
+
+import java.util.Locale;
 
 
 public abstract class StoriesMainFragment extends Fragment implements
@@ -118,7 +122,7 @@ public abstract class StoriesMainFragment extends Fragment implements
 
     @Override
     public void backPressEnabled(boolean enabled) {
-
+        this.backPressEnabled = enabled;
     }
 
     @Override
@@ -343,6 +347,17 @@ public abstract class StoriesMainFragment extends Fragment implements
                 LaunchStoryScreenData.SERIALIZABLE_KEY
         );
         View view = inflater.inflate(R.layout.cs_mainscreen_stories_draggable, container, false);
+
+        InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
+        if (inAppStoryManager != null) {
+            IASCore core = inAppStoryManager.iasCore();
+            Locale lang = ((IASDataSettingsHolder) core.settingsAPI()).lang();
+            Configuration configuration = getResources().getConfiguration();
+            configuration.setLocale(lang);
+            configuration.setLayoutDirection(lang);
+            view.setLayoutDirection(configuration.getLayoutDirection());
+        }
+
         draggableFrame = view.findViewById(R.id.draggable_frame);
         blockView = view.findViewById(R.id.blockView);
         backTintView = view.findViewById(R.id.background);
@@ -501,7 +516,7 @@ public abstract class StoriesMainFragment extends Fragment implements
                         final IReaderContent story = core
                                 .contentHolder()
                                 .readerContent()
-                                .getByIdAndType(storyId, launchData.getType());
+                                .getByIdAndType(storyId, launchData.type());
                         final int slideIndex = fragment.readerManager.getByIdAndIndex(storyId).index();
                         if (story != null) {
                             core.callbacksAPI().useCallback(
@@ -513,9 +528,9 @@ public abstract class StoriesMainFragment extends Fragment implements
                                                     new SlideData(
                                                             StoryData.getStoryData(
                                                                     story,
-                                                                    launchData.getFeed(),
-                                                                    launchData.getSourceType(),
-                                                                    launchData.getType()
+                                                                    launchData.feed(),
+                                                                    launchData.sourceType(),
+                                                                    launchData.type()
                                                             ),
                                                             slideIndex,
                                                             story.slideEventPayload(slideIndex)
@@ -544,7 +559,7 @@ public abstract class StoriesMainFragment extends Fragment implements
                                     cause,
                                     slideIndex,
                                     story.slidesCount(),
-                                    launchData.getFeed()
+                                    launchData.feed()
                             );
                         }
                     }
@@ -593,8 +608,11 @@ public abstract class StoriesMainFragment extends Fragment implements
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         if (orientationChangeIsLocked()) {
-            oldOrientation = getActivity().getRequestedOrientation();
-            getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+            if (context instanceof Activity) {
+                oldOrientation = ((Activity)context).getRequestedOrientation();
+                ((Activity)context).setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+            }
+
         }
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
@@ -726,7 +744,7 @@ public abstract class StoriesMainFragment extends Fragment implements
             @Override
             public void use(@NonNull IASCore core) {
                 core.statistic().storiesV1(
-                        launchData.getSessionId(),
+                        launchData.sessionId(),
                         new GetStatisticV1Callback() {
                             @Override
                             public void get(@NonNull IASStatisticStoriesV1 manager) {
@@ -829,7 +847,18 @@ public abstract class StoriesMainFragment extends Fragment implements
                 return true;
             }
         }
-        closeWithAction(-1);
+        useContentFragment(new StoriesContentFragmentAction() {
+            @Override
+            public void invoke(StoriesContentFragment fragment) {
+                if (fragment.onBackPressed()) return;
+                closeWithAction(-1);
+            }
+
+            @Override
+            public void error() {
+                closeWithAction(-1);
+            }
+        });
         return true;
     }
 

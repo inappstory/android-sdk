@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Color;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -37,7 +38,7 @@ public class DraggableElasticLayout extends FrameLayout {
     private float dragElacticity = 0.8f;
 
     // state
-    private float totalDrag;
+    public float totalDrag;
     private float totalDisabledDrag;
     private boolean draggingDown = false;
     private boolean draggingUp = false;
@@ -166,6 +167,14 @@ public class DraggableElasticLayout extends FrameLayout {
 
     int totalScrollValue = 0;
 
+    private String consumedToString(int[] consumed) {
+        String res = "";
+        for (int j : consumed) {
+            res += j + ",";
+        }
+        return res;
+    }
+
     @Override
     public void onNestedPreScroll(View target, int dx, int dy, int[] consumed) {
         if (draggingDown && dy > 0) {
@@ -227,6 +236,7 @@ public class DraggableElasticLayout extends FrameLayout {
     }
 
     boolean disableClose = false;
+    public boolean useSwipeCallbacks = true;
 
     public void disableClose(boolean disableClose) {
         this.disableClose = disableClose;
@@ -235,7 +245,8 @@ public class DraggableElasticLayout extends FrameLayout {
     @Override
     public void onStopNestedScroll(View child) {
         if (totalDisabledDrag > 400) {
-            swipeUpCallback();
+            if (useSwipeCallbacks)
+                swipeUpCallback();
         } else if (!disableClose && totalDisabledDrag < -400) {
             swipeDownCallback();
         }
@@ -350,6 +361,7 @@ public class DraggableElasticLayout extends FrameLayout {
 
     private void dispatchDragCallback(float elasticOffset, float elasticOffsetPixels,
                                       float rawOffset, float rawOffsetPixels) {
+
         if (callbacks != null && !callbacks.isEmpty()) {
             for (DraggableElasticCallback callback : callbacks) {
                 if (callback != null)
@@ -422,6 +434,40 @@ public class DraggableElasticLayout extends FrameLayout {
      * navigation bar) whilst elastic drags are performed and
      * {@link Activity#finishAfterTransition() finishes} the activity when drag dismissed.
      */
+
+    public static class DraggableElasticDragCallback extends DraggableElasticCallback {
+        @Override
+        public void onDrag(float elasticOffset, float elasticOffsetPixels, float rawOffset, float rawOffsetPixels) {
+            super.onDrag(elasticOffset, elasticOffsetPixels, rawOffset, rawOffsetPixels);
+        }
+
+        @Override
+        public final void onDragDismissed() {
+        }
+
+        @Override
+        public final void onDragDropped() {
+
+        }
+
+        @Override
+        public final void touchPause() {
+        }
+
+        @Override
+        public final void touchResume() {
+        }
+
+
+        @Override
+        public final void swipeDown() {
+        }
+
+        @Override
+        public final void swipeUp() {
+        }
+    }
+
     public static class DraggableElasticFader extends DraggableElasticCallback {
 
         private final Activity activity;

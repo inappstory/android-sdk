@@ -9,6 +9,8 @@ import com.inappstory.sdk.UseManagerInstanceCallback;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASGames;
+import com.inappstory.sdk.core.exceptions.NotImplementedMethodException;
+import com.inappstory.sdk.game.cache.InGameResourceDownloadManager;
 import com.inappstory.sdk.stories.outercallbacks.common.gamereader.GameReaderCallback;
 
 public class IASGamesExternalAPIImpl implements IASGames {
@@ -37,6 +39,11 @@ public class IASGamesExternalAPIImpl implements IASGames {
                 core.gamesAPI().callback(gameReaderCallback);
             }
         });
+    }
+
+    @Override
+    public InGameResourceDownloadManager inGameResourceDownloadManager() {
+        throw new NotImplementedMethodException();
     }
 
     @Override

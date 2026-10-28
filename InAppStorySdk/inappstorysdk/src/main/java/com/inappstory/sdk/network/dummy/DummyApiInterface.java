@@ -1,17 +1,36 @@
 package com.inappstory.sdk.network.dummy;
 
 import com.inappstory.sdk.network.ApiInterface;
+import com.inappstory.sdk.network.annotations.api.Body;
+import com.inappstory.sdk.network.annotations.api.POST;
+import com.inappstory.sdk.network.annotations.api.Query;
+import com.inappstory.sdk.network.annotations.api.ReplaceHeader;
+import com.inappstory.sdk.network.fileupload.FilePart;
 import com.inappstory.sdk.network.models.Request;
+import com.inappstory.sdk.network.utils.headers.HeadersKeys;
+import com.inappstory.sdk.stories.api.models.TargetingBodyObject;
 import com.inappstory.sdk.stories.api.models.GameLaunchConfigObject;
 import com.inappstory.sdk.stories.api.models.StatisticSendObject;
 
-import java.util.List;
-
 public class DummyApiInterface implements ApiInterface {
 
+    @Override
+    public Request getBannerPlace(String id, Integer srcList, String fields, String expand, TargetingBodyObject filterObject, String xUserId, String xSessionId, String lang) {
+        return new DummyRequest();
+    }
 
     @Override
-    public Request getInAppMessages(Integer srcList, String ids, String tags, String fields, String expand, String xUserId, String xSessionId, String lang) {
+    public Request getBannerById(String id, String fields, String expand, String xUserId, String xSessionId, String lang) {
+        return new DummyRequest();
+    }
+
+    @Override
+    public Request getBannerByIdWithTargeting(String id, String fields, String expand, TargetingBodyObject filterObject, String xUserId, String xSessionId, String lang) {
+        return new DummyRequest();
+    }
+
+    @Override
+    public Request getInAppMessages(Integer srcList, String ids, TargetingBodyObject target, String fields, String expand, String xUserId, String xSessionId, String lang) {
         return new DummyRequest();
     }
 
@@ -21,17 +40,70 @@ public class DummyApiInterface implements ApiInterface {
     }
 
     @Override
-    public Request getInAppMessage(String id, Integer srcList, String fields, String expand, String xUserId, String xSessionId, String lang) {
+    public Request getInAppMessage(
+            String id,
+            Integer srcList,
+            String fields,
+            String expand,
+            String xUserId,
+            String xSessionId,
+            String lang
+    ) {
         return new DummyRequest();
     }
 
     @Override
-    public Request sendInAppMessageStat(String id, String eventName, String eventId, String iterationId, Integer slideIndex, Integer slideTotal, Long durationMs, String widgetId, String widgetLabel, String widgetValue, Integer widgetAnswer, String widgetAnswerLabel, Integer widgetAnswerScore) {
+    public Request getInAppMessageWithTargeting(String id, Integer srcList, String fields, String expand, TargetingBodyObject filterObject, String xUserId, String xSessionId, String lang) {
+        return new DummyRequest();
+    }
+
+    @Override
+    public Request sendInAppMessageStat(
+            String id,
+            String eventName,
+            String eventId,
+            String iterationId,
+            Integer slideIndex,
+            Integer slideTotal,
+            Long durationMs,
+            String value,
+            String widgetId,
+            String widgetLabel,
+            String widgetValue,
+            Integer widgetAnswer,
+            String widgetAnswerLabel,
+            Integer widgetAnswerScore,
+            String slideAnalytics
+    ) {
+        return new DummyRequest();
+    }
+
+    @Override
+    public Request sendBannerStat(
+            String id,
+            String eventName,
+            String eventId,
+            String iterationId,
+            Integer slideIndex,
+            Integer slideTotal,
+            Long durationMs,
+            String widgetId,
+            String widgetLabel,
+            String widgetValue,
+            Integer widgetAnswer,
+            String widgetAnswerLabel,
+            Integer widgetAnswerScore
+    ) {
         return new DummyRequest();
     }
 
     @Override
     public Request sendIAMUserData(String id, String data) {
+        return new DummyRequest();
+    }
+
+    @Override
+    public Request sendBannerUserData(String id, String data) {
         return new DummyRequest();
     }
 
@@ -51,17 +123,31 @@ public class DummyApiInterface implements ApiInterface {
     }
 
     @Override
-    public Request sendBaseStat(String eventName, String sessionId, String userId,
-                                Long timestamp, Integer storyId, String whence,
-                                String cause, Integer slideIndex,
-                                Integer slideTotal, Long durationMs, Long spendMs) {
+    public Request sendBaseStat(
+            String eventName,
+            String sessionId,
+            String userId,
+            Long timestamp,
+            Integer storyId,
+            String whence,
+            String cause,
+            Integer slideIndex,
+            Integer slideTotal,
+            Long durationMs,
+            Long spendMs
+    ) {
         return new DummyRequest();
     }
 
     @Override
-    public Request sendException(String session, Long timestamp,
-                                 String message,
-                                 String file, Integer line, String trace) {
+    public Request sendException(
+            String session,
+            Long timestamp,
+            String message,
+            String file,
+            Integer line,
+            String trace
+    ) {
         return new DummyRequest();
     }
 
@@ -72,6 +158,8 @@ public class DummyApiInterface implements ApiInterface {
             int launchTryNumber,
             Long timestamp,
             String message,
+            String webViewPackage,
+            String webViewVersion,
             String stacktrace,
             String logSession,
             boolean gameLaunched
@@ -80,39 +168,104 @@ public class DummyApiInterface implements ApiInterface {
     }
 
     @Override
-    public Request sendStat(String eventName, String fullData, String sessionId, String userId,
-                            Long timestamp, String feedId, String storyId,
-                            String whence, String cause, Integer slideIndex,
-                            Integer slideTotal, Long durationMs,
-                            String widgetId, String widgetLabel,
-                            String widgetValue, Integer widgetAnswer,
-                            String widgetAnswerLabel, Integer widgetAnswerScore,
-                            Integer layoutIndex, String t, Integer type) {
+    public Request sendStat(
+            String eventName,
+            String fullData,
+            String sessionId,
+            String userId,
+            Long timestamp,
+            String feedId,
+            String storyId,
+            String whence,
+            String cause,
+            Integer slideIndex,
+            Integer slideTotal,
+            Long durationMs,
+            String value,
+            String widgetId,
+            String widgetLabel,
+            String widgetValue,
+            Integer widgetAnswer,
+            String widgetAnswerLabel,
+            Integer widgetAnswerScore,
+            Integer layoutIndex,
+            String t,
+            Integer type
+    ) {
         return new DummyRequest();
     }
 
     @Override
-    public Request sendGameData(String id, String data) {
+    public Request sendGameData(
+            String id,
+            String data
+    ) {
         return new DummyRequest();
     }
 
     @Override
-    public Request getStories(String test, Integer favorite, String tags, String fields, String expand, String xUserId, String xSessionId, String lang) {
+    public Request getLayout(String xUserId, String xSessionId, String lang) {
         return new DummyRequest();
     }
 
     @Override
-    public Request getFeed(String feed, String test, Integer favorite, String tags, String fields, String expand, String xUserId, String xSessionId, String lang) {
+    public Request getStories(String test,
+                              Integer favorite,
+                              String tags,
+                              String fields,
+                              String expand,
+                              String xUserId,
+                              String xSessionId,
+                              String lang
+    ) {
         return new DummyRequest();
     }
 
     @Override
-    public Request getOnboardingFeed(String feed, String test, Integer limit, String tags, String expand, String xUserId, String xSessionId, String lang) {
+    public Request getFeed(
+            String feed,
+            String test,
+            Integer favorite,
+            TargetingBodyObject target,
+            String fields,
+            String expand,
+            String xUserId,
+            String xSessionId,
+            String lang
+    ) {
         return new DummyRequest();
     }
 
     @Override
-    public Request getStoryById(String id, String test, Integer once, Integer srcList, String expand, String xUserId, String xSessionId, String lang) {
+    public Request getOnboardingFeed(
+            String feed,
+            String test, Integer limit,
+            TargetingBodyObject target,
+            String fields,
+            String expand,
+            String xUserId,
+            String xSessionId,
+            String lang
+    ) {
+        return new DummyRequest();
+    }
+
+    @Override
+    public Request getStoryById(
+            String id,
+            String test,
+            Integer once,
+            Integer srcList,
+            String expand,
+            String xUserId,
+            String xSessionId,
+            String lang
+    ) {
+        return new DummyRequest();
+    }
+
+    @Override
+    public Request getStoryByIdWithTargeting(String id, String test, Integer once, Integer srcList, String expand, TargetingBodyObject filterObject, String xUserId, String xSessionId, String lang) {
         return new DummyRequest();
     }
 
@@ -152,12 +305,34 @@ public class DummyApiInterface implements ApiInterface {
     }
 
     @Override
-    public Request sessionOpen(String fields, String expand, String features, String platform,
-                               String deviceId, String model, String manufacturer,
-                               String brand, String screenWidth, String screenHeight,
-                               String screenDpi, String osVersion, String osSdkVersion,
-                               String appPackageId, String appVersion, String appBuild,
-                               boolean anonymous, String userId, String userSign) {
+    public Request sessionOpen(
+            String fields,
+            String expand,
+            String features,
+            String platform,
+            String deviceId,
+            String model,
+            String manufacturer,
+            String brand,
+            String screenWidth,
+            String screenHeight,
+            String screenDpi,
+            String osVersion,
+            String osSdkVersion,
+            String appPackageId,
+            String appVersion,
+            String appBuild,
+            boolean anonymous,
+            String userId,
+            String userSign,
+            String debugSessionKey,
+            String xUserId
+    ) {
+        return new DummyRequest();
+    }
+
+    @Override
+    public Request debugLog(String debugSessionKey, FilePart filePart) {
         return new DummyRequest();
     }
 

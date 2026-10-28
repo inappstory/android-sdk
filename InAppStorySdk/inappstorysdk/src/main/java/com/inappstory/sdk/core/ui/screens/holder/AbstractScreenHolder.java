@@ -23,6 +23,13 @@ public abstract class AbstractScreenHolder<T extends BaseScreen, K> implements I
     }
 
     @Override
+    public void endLaunchProcess() {
+        synchronized (screenLock) {
+            inLaunchProcess = false;
+        }
+    }
+
+    @Override
     public boolean isLaunchProcessStarted() {
         synchronized (screenLock) {
             return inLaunchProcess;

@@ -1,10 +1,13 @@
 package com.inappstory.sdk.stories.utils;
 
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class Observable<T> {
     private T value;
+    private final Object listenerLock = new Object();
     private final List<Observer<T>> listeners = new ArrayList<>();
 
     public Observable() {
@@ -15,12 +18,48 @@ public class Observable<T> {
         this.value = initialValue;
     }
 
-    public void subscribe(Observer<T> listener) {
-        listeners.add(listener);
+    public boolean subscribe(Observer<T> listener) {
+        synchronized (listenerLock) {
+            if (listeners.contains(listener)) return false;
+            listeners.add(listener);
+        }
+        return true;
+    }
+
+    public boolean subscribeSingle(Observer<T> listener) {
+        synchronized (listenerLock) {
+            listeners.clear();
+            listeners.add(listener);
+        }
+        return true;
+    }
+
+    public boolean subscribeAndGetValue(final Observer<T> listener) {
+        synchronized (listenerLock) {
+            if (listeners.contains(listener)) return false;
+            listeners.add(listener);
+        }
+        listener.onUpdate(value);
+        return true;
+    }
+
+
+    public boolean subscribeAndGetValueForced(final Observer<T> listener) {
+        synchronized (listenerLock) {
+            if (listeners.contains(listener)) {
+                listener.onUpdate(value);
+                return false;
+            }
+            listeners.add(listener);
+        }
+        listener.onUpdate(value);
+        return true;
     }
 
     public void unsubscribe(Observer<T> listener) {
-        listeners.remove(listener);
+        synchronized (listenerLock) {
+            listeners.remove(listener);
+        }
     }
 
     public T getValue() {
@@ -31,9 +70,17 @@ public class Observable<T> {
         this.value = value;
     }
 
-    public void updateValue(T value) {
+    public List<Observer<T>> getSubscribers() {
+        synchronized (listenerLock) {
+            return new ArrayList<>(listeners);
+        }
+    }
+
+    public void updateValue(final T value) {
+        if (Objects.equals(this.value, value)) return;
         setValue(value);
-        for (Observer<T> listener: listeners) {
+        List<Observer<T>> subs = getSubscribers();
+        for (Observer<T> listener : subs) {
             listener.onUpdate(value);
         }
     }

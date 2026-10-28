@@ -4,6 +4,9 @@ import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 
+import androidx.core.content.res.ResourcesCompat;
+
+import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.stories.utils.Sizes;
 
@@ -31,7 +34,12 @@ public class GoodsWidgetAppearanceAdapter implements IGoodsWidgetAppearance {
 
     @Override
     public Drawable getCloseButtonImage() {
-        if (context != null) return context.getResources().getDrawable(R.drawable.cs_swipe_down_arrow);
+        if (context != null)
+            return ResourcesCompat.getDrawable(
+                    context.getResources(),
+                    R.drawable.cs_swipe_down_arrow,
+                    context.getTheme()
+            );
         return null;
     }
 

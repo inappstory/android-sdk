@@ -20,18 +20,21 @@ import androidx.annotation.Nullable;
 import androidx.core.view.ViewCompat;
 
 import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.LoggerTags;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
-import com.inappstory.sdk.inappmessage.domain.reader.IIAMReaderSlideViewModel;
+import com.inappstory.sdk.core.ui.screens.IReaderSlideViewModel;
+import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.ui.views.IASWebView;
 import com.inappstory.sdk.stories.ui.views.IASWebViewClient;
-import com.inappstory.sdk.stories.ui.widgets.TouchFrameLayout;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ContentViewInteractor;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.StoriesViewManager;
 import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.utils.StringsUtils;
+
+import java.util.Map;
 
 /**
  * Created by Paperrose on 07.06.2018.
@@ -42,6 +45,25 @@ public class StoriesWebView extends IASWebView implements ContentViewInteractor 
     private boolean clientIsSet = false;
 
     GestureDetector gestureDetector;
+
+    @Override
+    public void setClientVariables() {
+        InAppStoryManager.useCore(new UseIASCoreCallback() {
+            @Override
+            public void use(@NonNull IASCore core) {
+                Map<String, String> extraOptions = ((IASDataSettingsHolder) core.settingsAPI()).options();
+                try {
+                    String extraOptionsString = JsonParser.stringMapToEscapedJsonString(extraOptions);
+                    loadUrl("javascript:window.set_sdk_client_variables('" +
+                            StringsUtils.getEscapedString(StringsUtils.escapeSingleQuotes(extraOptionsString))
+                            + "')");
+                    logMethod("set_sdk_client_variables");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
 
 
     public void restartSlide(IASCore core) {
@@ -60,7 +82,7 @@ public class StoriesWebView extends IASWebView implements ContentViewInteractor 
     }
 
     private void logMethod(String payload) {
-        InAppStoryManager.showDLog("JS_method_call",
+        InAppStoryManager.showDLog(LoggerTags.IAS_STORY_JS_CALL,
                 manager.storyId + " " + manager.loadedIndex + " " + payload);
     }
 
@@ -74,6 +96,24 @@ public class StoriesWebView extends IASWebView implements ContentViewInteractor 
         else
             loadUrl("javascript:game_complete()");
         logMethod("game_complete " + data);
+    }
+
+    public void cartUpdatedResultSuccess(String successCB, String requestId, String cardStr) {
+        loadUrl("javascript:window." + successCB + "('" + requestId + "', '" +
+                StringsUtils.escapeSingleQuotes(
+                        cardStr
+                                .replaceAll("\\\\n", "\\\\\n")
+                                .replaceAll("\\\\r", "\\\\\r")
+                                .replaceAll("\\\\t", "\\\\\t")
+                ) + "')");
+    }
+
+    public void cartUpdatedResultError(String errorCB, String requestId, String reason) {
+        loadUrl("javascript:window." + errorCB + "('" + requestId + "', '" +
+                StringsUtils.escapeSingleQuotes(reason
+                        .replaceAll("\\\\n", "\\\\\n")
+                        .replaceAll("\\\\r", "\\\\\r")
+                        .replaceAll("\\\\t", "\\\\\t")) + "')");
     }
 
     String currentPage = "";
@@ -166,7 +206,6 @@ public class StoriesWebView extends IASWebView implements ContentViewInteractor 
                 "story_slide_stop('{\"prepareForRestart\": true}'); " :
                 "story_slide_stop('{\"prepareForRestart\": false}'); ";
         if (manager.loadedIndex < 0) return;
-
         loadUrl("javascript:(function(){" +
                 "if ('story_slide_stop' in window) " +
                 "{" +
@@ -179,10 +218,12 @@ public class StoriesWebView extends IASWebView implements ContentViewInteractor 
 
     @Override
     public void swipeUp() {
-
-        loadUrl("javascript:window.story_slide_swipe_up()");
-        logMethod("story_slide_swipe_up");
+        if (passSwipeUpCallback) {
+            loadUrl("javascript:window.story_slide_swipe_up()");
+            logMethod("story_slide_swipe_up");
+        }
     }
+
 
     @Override
     public void loadJsApiResponse(String result, String cb) {
@@ -274,8 +315,10 @@ public class StoriesWebView extends IASWebView implements ContentViewInteractor 
         clearHistory();
         clearCache(true);
         loadUrl("about:blank");
-        manager.loadedId = -1;
-        manager.loadedIndex = -1;
+        if (manager != null) {
+            manager.loadedId = -1;
+            manager.loadedIndex = -1;
+        }
         removeAllViews();
         destroyDrawingCache();
         this.context = null;
@@ -289,6 +332,8 @@ public class StoriesWebView extends IASWebView implements ContentViewInteractor 
     boolean notFirstLoading = false;
 
     public void loadWebData(String firstData, final String replaceData) {
+        passOverscroll(true, true);
+        contentInScrollProcess(false);
         currentPage = replaceData;
         if (!notFirstLoading || replaceData.isEmpty()) {
             notFirstLoading = true;
@@ -339,13 +384,14 @@ public class StoriesWebView extends IASWebView implements ContentViewInteractor 
 
     public void freezeUI() {
         touchSlider = true;
-
+        unlockedUI = false;
         getParentForAccessibility().requestDisallowInterceptTouchEvent(true);
     }
 
     @Override
     public void unfreezeUI() {
         touchSlider = false;
+        unlockedUI = true;
         getParentForAccessibility().requestDisallowInterceptTouchEvent(false);
         getManager().getPageManager().resumeSlide(false);
     }
@@ -362,7 +408,7 @@ public class StoriesWebView extends IASWebView implements ContentViewInteractor 
 
         if (!clientIsSet) {
             addJavascriptInterface(
-                    new WebAppInterface(
+                    new StoryReaderJavascriptInterface(
                             getManager(),
                             getManager().core()
                     ), "Android");
@@ -397,11 +443,13 @@ public class StoriesWebView extends IASWebView implements ContentViewInteractor 
                                 0,
                                 manager.index);
                     }
-
-                    Log.d("InAppStory_SDK_Web", consoleMessage.messageLevel().name() + ": "
-                            + consoleMessage.message() + " -- From line "
-                            + consoleMessage.lineNumber() + " of "
-                            + consoleMessage.sourceId());
+                    InAppStoryManager.showDLog(
+                            LoggerTags.IAS_STORY_CONSOLE,
+                            consoleMessage.messageLevel().name() + ": "
+                                    + consoleMessage.message() + " -- From line "
+                                    + consoleMessage.lineNumber() + " of "
+                                    + consoleMessage.sourceId()
+                    );
                     return super.onConsoleMessage(consoleMessage);
                 }
             });
@@ -419,7 +467,7 @@ public class StoriesWebView extends IASWebView implements ContentViewInteractor 
     }
 
     @Override
-    public void slideViewModel(IIAMReaderSlideViewModel slideViewModel) {
+    public void slideViewModel(IReaderSlideViewModel slideViewModel) {
 
     }
 
@@ -481,7 +529,7 @@ public class StoriesWebView extends IASWebView implements ContentViewInteractor 
             if (System.currentTimeMillis() - lastTap < 1500) {
                 return false;
             }
-        //    getManager().getPageManager().pauseSlide(false);
+            //    getManager().getPageManager().pauseSlide(false);
             lastTap = System.currentTimeMillis();
         } else if (motionEvent.getAction() == MotionEvent.ACTION_UP || motionEvent.getAction() == MotionEvent.ACTION_CANCEL) {
             touchSlider = false;
@@ -491,5 +539,9 @@ public class StoriesWebView extends IASWebView implements ContentViewInteractor 
         return c || touchSlider;
     }
 
-
+    @Override
+    protected void contentInScrollProcess(boolean contentInScrollProcess) {
+        if (manager != null)
+            manager.contentInScrollProcess(contentInScrollProcess);
+    }
 }

@@ -25,7 +25,8 @@ public class IASShareData implements Serializable {
         return files;
     }
 
-    public IASShareData() {}
+    public IASShareData() {
+    }
 
     public IASShareData(List<String> files) {
         this.files = files;

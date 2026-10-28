@@ -39,9 +39,11 @@ import android.widget.RelativeLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.cardview.widget.CardView;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
 
 import com.inappstory.sdk.AppearanceManager;
+import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.ui.widgets.customicons.CustomIconWithoutStates;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.R;
@@ -97,7 +99,7 @@ public class ReaderPageFragment extends Fragment {
     }
 
 
-    void bindViews(View view) {
+    void bindViews(View view, int mirrored) {
         close = view.findViewById(R.id.ias_close_button);
         refresh = view.findViewById(R.id.ias_refresh_button);
         blackTop = view.findViewById(R.id.ias_black_top);
@@ -106,7 +108,8 @@ public class ReaderPageFragment extends Fragment {
         storiesView = view.findViewById(R.id.ias_stories_view);
         timeline = view.findViewById(R.id.ias_timeline);
 
-        int mirrorScale = view.getResources().getInteger(R.integer.mirrorScaleX);
+        int mirrorScale = 1 - mirrored * 2;
+        buttonsPanel.mirror(mirrored == 1);
         close.setScaleX(mirrorScale);
         timeline.setScaleX(mirrorScale);
         try {
@@ -232,7 +235,7 @@ public class ReaderPageFragment extends Fragment {
             view.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
                 @Override
                 public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
-                    Log.e("ScreenSizes", "View " + v.getTop() + " " + v.getBottom());
+                    //Log.e("ScreenSizes", "View " + v.getTop() + " " + v.getBottom());
                 }
             });
 
@@ -274,11 +277,6 @@ public class ReaderPageFragment extends Fragment {
                 int restHeight = Math.max(0, screenSize.y - maxRatioHeight) + topInsetOffset;
                 LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) blackTop.getLayoutParams();
                 lp.height = restHeight;
-                Log.e("ScreenSizes",
-                        "ScreenSizeY: " + screenSize.y + "\nPhoneHeight: " +
-                                phoneHeight + "\nWindowHeight: " + windowHeight + "\nMaxRatioHeight: " +
-                                maxRatioHeight + "\nTopInsetOffset:" +
-                                topInsetOffset + "\nBottomInsetOffset:" + bottomInsetOffset + "\n");
                 blackTop.requestLayout();
             }
 
@@ -331,10 +329,12 @@ public class ReaderPageFragment extends Fragment {
 
                     }
                     view.setVisibility(View.GONE);
-                    if (loader == null) return;
-                    loader.setAlpha(1f);
-                    loader.setVisibility(View.VISIBLE);
+                    if (loader != null) {
+                        loader.setAlpha(1f);
+                        loader.setVisibility(View.VISIBLE);
+                    }
                     manager.reloadStory();
+                    manager.startCommonTimer();
                 }
             });
     }
@@ -424,7 +424,10 @@ public class ReaderPageFragment extends Fragment {
         appearanceSettings = (LaunchStoryScreenAppearance)
                 requireArguments().getSerializable(LaunchStoryScreenAppearance.SERIALIZABLE_KEY);
         try {
-            return createFragmentView(container);
+            View v = createFragmentView(container);
+            if (container != null)
+                v.setLayoutDirection(container.getLayoutDirection());
+            return v;
         } catch (Exception e) {
             e.printStackTrace();
             InAppStoryManager.handleException(e);
@@ -578,6 +581,8 @@ public class ReaderPageFragment extends Fragment {
     }
 
 
+    private boolean inflateError = false;
+
     private View createWebViewContainer(Context context) {
         LinearLayout webViewContainer = new LinearLayout(context);
         RelativeLayout.LayoutParams webViewContainerParams = new RelativeLayout.LayoutParams(
@@ -586,12 +591,18 @@ public class ReaderPageFragment extends Fragment {
         webViewContainer.setElevation(4);
         webViewContainer.setOrientation(LinearLayout.VERTICAL);
         webViewContainer.setLayoutParams(webViewContainerParams);
-        storiesView = new StoriesWebView(context);
-        storiesView.setId(R.id.ias_stories_view);
-        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
-                MATCH_PARENT, MATCH_PARENT);
-        storiesView.setLayoutParams(lp);
-        webViewContainer.addView(((StoriesWebView) storiesView));
+
+        try {
+            storiesView = new StoriesWebView(context);
+            storiesView.setId(R.id.ias_stories_view);
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                    MATCH_PARENT, MATCH_PARENT);
+            storiesView.setLayoutParams(lp);
+            webViewContainer.addView(((StoriesWebView) storiesView));
+        } catch (Exception e) {
+            inflateError = true;
+        }
+
         return webViewContainer;
     }
 
@@ -631,19 +642,20 @@ public class ReaderPageFragment extends Fragment {
             final int[] colorsArray = new int[timerGradient.csColors.size()];
             final float[] locationsArray = new float[timerGradient.csColors.size()];
 
-            if (colors == null ||
-                    colors.isEmpty()) {
+            if (colors.isEmpty()) {
                 return;
             }
             if (colors.size() != locations.size()) return;
             int i = 0;
             for (Integer color : colors) {
-                colorsArray[i] = color.intValue();
+                if (color == null) return;
+                colorsArray[i] = color;
                 i++;
             }
             i = 0;
             for (Float location : locations) {
-                locationsArray[i] = location.floatValue();
+                if (location == null) return;
+                locationsArray[i] = location;
                 i++;
             }
             if (timerGradient.csGradientHeight > 0) {
@@ -664,7 +676,14 @@ public class ReaderPageFragment extends Fragment {
             paint.setShaderFactory(shaderFactory);
             gradientView.setBackground(paint);
         } else {
-            gradientView.setBackground(getResources().getDrawable(R.drawable.story_gradient));
+
+            gradientView.setBackground(
+                    ResourcesCompat.getDrawable(
+                            context.getResources(),
+                            R.drawable.story_gradient,
+                            context.getTheme()
+                    )
+            );
         }
 
         gradientView.setLayoutParams(lp);
@@ -687,7 +706,6 @@ public class ReaderPageFragment extends Fragment {
         timeline.setId(R.id.ias_timeline);
         timeline.setLayoutParams(new RelativeLayout.LayoutParams(MATCH_PARENT,
                 Sizes.dpToPxExt(3, getContext())));
-
         close = new TouchFrameLayout(context);
         final CustomIconWithoutStates customCloseIconInterface = AppearanceManager.
                 getCommonInstance().
@@ -723,6 +741,13 @@ public class ReaderPageFragment extends Fragment {
     @Override
     public void onViewCreated(final @NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        if (inflateError) {
+            if (getParentFragment() instanceof StoriesContentFragment) {
+                ((StoriesContentFragment) getParentFragment()).forceFinish();
+            }
+            return;
+        }
+
         setOffsets(view);
         InAppStoryManager.useCore(new UseIASCoreCallback() {
             @Override
@@ -738,9 +763,10 @@ public class ReaderPageFragment extends Fragment {
                 if (parentManager != null) {
                     parentManager.addSubscriber(manager);
                 }
-                bindViews(view);
+                bindViews(view, view.getLayoutDirection());
                 setActions();
                 if (setManagers(core)) {
+                    manager.startCommonTimer();
                     core.contentLoader().storyDownloadManager().addSubscriber(manager);
                     Story story = (Story) core.contentHolder().readerContent().getByIdAndType(
                             storyId,
@@ -805,8 +831,13 @@ public class ReaderPageFragment extends Fragment {
         if (storiesView != null)
             storiesView.destroyView();
         if (manager != null) {
-            if (manager.timerManager != null)
+            if (manager.timerManager != null) {
                 manager.timerManager.pauseSlideTimer();
+                manager.timerManager.shutdown();
+            }
+            if (manager.timelineManager != null) {
+                manager.timelineManager.shutdown();
+            }
             if (parentManager != null) {
                 parentManager.removeSubscriber(manager);
             }
