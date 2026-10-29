@@ -8,16 +8,15 @@ import com.inappstory.sdk.core.data.IBanner;
 import com.inappstory.sdk.core.data.IShownTime;
 import com.inappstory.sdk.core.network.content.RequestFields;
 import com.inappstory.sdk.core.network.content.models.Banner;
-import com.inappstory.sdk.core.network.content.models.BannerPlaceModel;
 import com.inappstory.sdk.core.utils.ConnectionCheck;
 import com.inappstory.sdk.core.utils.ConnectionCheckCallback;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.network.models.RequestLocalParameters;
+import com.inappstory.sdk.parse.to.ToBanner;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.TargetingBodyObject;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -76,11 +75,6 @@ public class BannerUseCase {
                                     }
 
                                     @Override
-                                    public Type getType() {
-                                        return Banner.class;
-                                    }
-
-                                    @Override
                                     public void error424(String message) {
                                         core.statistic().profiling().setReady("banner_place");
                                         core.sessionManager().closeSession(
@@ -109,6 +103,7 @@ public class BannerUseCase {
                                                     sessionParameters.locale()
                                             ),
                                             networkCallback,
+                                            ToBanner.class,
                                             sessionParameters
                                     );
                                 else
@@ -126,6 +121,7 @@ public class BannerUseCase {
                                                     sessionParameters.locale()
                                             ),
                                             networkCallback,
+                                            ToBanner.class,
                                             sessionParameters
                                     );
                             }

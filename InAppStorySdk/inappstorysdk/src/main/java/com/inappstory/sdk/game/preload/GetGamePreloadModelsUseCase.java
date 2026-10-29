@@ -2,11 +2,10 @@ package com.inappstory.sdk.game.preload;
 
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
+import com.inappstory.sdk.parse.to.ToPreloadGameCenterDataList;
 import com.inappstory.sdk.stories.api.interfaces.IGameCenterData;
 import com.inappstory.sdk.stories.api.models.PreloadGameCenterData;
-import com.inappstory.sdk.stories.api.models.PreloadGameCenterDataListType;
 
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,15 +30,11 @@ public class GetGamePreloadModelsUseCase {
                     }
 
                     @Override
-                    public Type getType() {
-                        return new PreloadGameCenterDataListType();
-                    }
-
-                    @Override
                     public void onError(int code, String message) {
                         callback.onSuccess(new ArrayList<IGameCenterData>());
                     }
-                }
+                },
+                ToPreloadGameCenterDataList.class
         );
     }
 }

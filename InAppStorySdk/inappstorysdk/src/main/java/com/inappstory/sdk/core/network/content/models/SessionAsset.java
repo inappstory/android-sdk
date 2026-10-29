@@ -2,6 +2,7 @@ package com.inappstory.sdk.core.network.content.models;
 
 
 
+import com.inappstory.sdk.network.annotations.models.Required;
 import com.inappstory.sdk.network.annotations.models.SerializedName;
 
 import java.util.Objects;
@@ -11,6 +12,7 @@ import java.util.Objects;
  */
 
 public class SessionAsset {
+    @Required
     @SerializedName("url")
     public String url;
     @SerializedName("size")

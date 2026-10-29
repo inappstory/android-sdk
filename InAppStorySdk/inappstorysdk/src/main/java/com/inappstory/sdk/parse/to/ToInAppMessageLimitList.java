@@ -30,4 +30,9 @@ public final class ToInAppMessageLimitList extends ToModelParser<List<InAppMessa
             return null;
         }
     }
+
+    @Override
+    protected String getClassName() {
+        return "List of InAppMessageLimit";
+    }
 }

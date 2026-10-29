@@ -30,4 +30,9 @@ public final class ToPreloadGameCenterDataList extends ToModelParser<List<Preloa
             return null;
         }
     }
+
+    @Override
+    protected String getClassName() {
+        return "List of PreloadGameCenterData";
+    }
 }

@@ -29,4 +29,9 @@ public final class ToShareObject extends ToModelParser<ShareObject> {
             return null;
         }
     }
+
+    @Override
+    protected String getClassName() {
+        return "ShareObject";
+    }
 }

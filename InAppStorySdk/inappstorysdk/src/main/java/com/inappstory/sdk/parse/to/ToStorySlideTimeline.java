@@ -25,4 +25,9 @@ public final class ToStorySlideTimeline extends ToModelParser<StorySlideTimeline
             return null;
         }
     }
+
+    @Override
+    protected String getClassName() {
+        return "StorySlideTimeline";
+    }
 }

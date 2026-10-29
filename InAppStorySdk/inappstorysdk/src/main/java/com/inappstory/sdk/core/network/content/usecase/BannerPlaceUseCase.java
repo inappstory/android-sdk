@@ -5,7 +5,6 @@ import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.banners.BannerShownTime;
 import com.inappstory.sdk.core.banners.BannerPlaceUseCaseCallback;
 import com.inappstory.sdk.core.data.IBanner;
-import com.inappstory.sdk.core.data.IReaderContent;
 import com.inappstory.sdk.core.data.IShownTime;
 import com.inappstory.sdk.core.network.content.RequestFields;
 import com.inappstory.sdk.core.network.content.models.BannerPlaceModel;
@@ -13,12 +12,12 @@ import com.inappstory.sdk.core.utils.ConnectionCheck;
 import com.inappstory.sdk.core.utils.ConnectionCheckCallback;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.network.models.RequestLocalParameters;
+import com.inappstory.sdk.parse.to.ToBannerPlaceModel;
 import com.inappstory.sdk.stories.api.models.TargetingBodyObject;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallbackWithUID;
 
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -95,10 +94,6 @@ public class BannerPlaceUseCase {
                                         loadCallback.success(banners);
                                     }
 
-                                    @Override
-                                    public Type getType() {
-                                        return BannerPlaceModel.class;
-                                    }
 
                                     @Override
                                     public void error424(String message) {
@@ -133,6 +128,7 @@ public class BannerPlaceUseCase {
                                                 sessionParameters.locale()
                                         ),
                                         networkCallback,
+                                        ToBannerPlaceModel.class,
                                         sessionParameters
                                 );
                             }

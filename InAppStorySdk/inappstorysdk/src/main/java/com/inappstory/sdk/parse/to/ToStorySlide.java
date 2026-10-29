@@ -31,4 +31,9 @@ public final class ToStorySlide extends ToModelParser<StorySlide> {
             return null;
         }
     }
+
+    @Override
+    protected String getClassName() {
+        return "StorySlide";
+    }
 }

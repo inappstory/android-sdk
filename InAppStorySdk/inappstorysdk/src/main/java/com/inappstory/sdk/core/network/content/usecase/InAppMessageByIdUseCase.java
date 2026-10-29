@@ -10,12 +10,11 @@ import com.inappstory.sdk.core.utils.ConnectionCheckCallback;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.network.models.RequestLocalParameters;
+import com.inappstory.sdk.parse.to.ToInAppMessage;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.TargetingBodyObject;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
-import com.inappstory.sdk.stories.utils.TagsUtils;
 
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -57,10 +56,6 @@ public class InAppMessageByIdUseCase {
                                         callback.success(response);
                                     }
 
-                                    @Override
-                                    public Type getType() {
-                                        return InAppMessage.class;
-                                    }
 
                                     @Override
                                     public void onError(int code, String message) {
@@ -83,6 +78,7 @@ public class InAppMessageByIdUseCase {
                                                     requestLocalParameters.locale()
                                             ),
                                             iamCallback,
+                                            ToInAppMessage.class,
                                             requestLocalParameters
                                     );
                                 else {
@@ -97,6 +93,7 @@ public class InAppMessageByIdUseCase {
                                                     requestLocalParameters.locale()
                                             ),
                                             iamCallback,
+                                            ToInAppMessage.class,
                                             requestLocalParameters
                                     );
                                 }

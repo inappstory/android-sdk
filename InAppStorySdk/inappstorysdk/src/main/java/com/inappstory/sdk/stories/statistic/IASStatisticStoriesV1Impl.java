@@ -7,12 +7,12 @@ import com.inappstory.sdk.core.api.IASStatistic;
 import com.inappstory.sdk.core.api.IASStatisticStoriesV1;
 import com.inappstory.sdk.core.utils.ConnectionCheck;
 import com.inappstory.sdk.core.utils.ConnectionCheckCallback;
-import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.core.network.content.models.SessionResponse;
+import com.inappstory.sdk.network.callbacks.NetworkCallback;
+import com.inappstory.sdk.parse.to.ToSessionResponse;
 import com.inappstory.sdk.stories.api.models.StatisticSendObject;
 import com.inappstory.sdk.utils.ScheduledTPEManager;
 
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -144,7 +144,7 @@ public class IASStatisticStoriesV1Impl implements IASStatisticStoriesV1 {
     @Override
     public void sendStatistic() {
 
-        final String sessionId = ((IASDataSettingsHolder)core.settingsAPI()).sessionIdOrEmpty();
+        final String sessionId = ((IASDataSettingsHolder) core.settingsAPI()).sessionIdOrEmpty();
         if (sessionId.isEmpty()) return;
         synchronized (openProcessLock) {
             if (statistic.isEmpty()) {
@@ -189,12 +189,9 @@ public class IASStatisticStoriesV1Impl implements IASStatisticStoriesV1 {
                                             putStatistic(statisticObject);
                                         }
                                     }
-
-                                    @Override
-                                    public Type getType() {
-                                        return SessionResponse.class;
-                                    }
-                                });
+                                },
+                                ToSessionResponse.class
+                        );
 
                     }
                 } catch (Exception e) {

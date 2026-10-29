@@ -26,4 +26,9 @@ public final class ToGameScreenOptions extends ToModelParser<GameScreenOptions> 
             return null;
         }
     }
+
+    @Override
+    protected String getClassName() {
+        return "GameScreenOptions";
+    }
 }

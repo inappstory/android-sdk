@@ -29,4 +29,9 @@ public final class ToBannerPlaceModel extends ToModelParser<BannerPlaceModel> {
             return null;
         }
     }
+
+    @Override
+    protected String getClassName() {
+        return "BannerPlaceModel";
+    }
 }

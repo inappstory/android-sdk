@@ -27,4 +27,9 @@ public final class ToImage extends ToModelParser<Image> {
             return null;
         }
     }
+
+    @Override
+    protected String getClassName() {
+        return "Image";
+    }
 }

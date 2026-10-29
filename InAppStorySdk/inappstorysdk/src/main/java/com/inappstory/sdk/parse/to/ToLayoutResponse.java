@@ -28,4 +28,9 @@ public final class ToLayoutResponse extends ToModelParser<LayoutResponse> {
             return null;
         }
     }
+
+    @Override
+    protected String getClassName() {
+        return "LayoutResponse";
+    }
 }

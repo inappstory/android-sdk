@@ -6,12 +6,10 @@ import android.util.Pair;
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.InAppStoryManager;
-import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.utils.ConnectionCheck;
 import com.inappstory.sdk.core.utils.ConnectionCheckCallback;
-import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.constants.HttpMethods;
 import com.inappstory.sdk.network.models.Request;
 import com.inappstory.sdk.network.models.Response;

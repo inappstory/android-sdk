@@ -11,6 +11,7 @@ import com.inappstory.sdk.game.cache.UseCaseCallback;
 import com.inappstory.sdk.lrudiskcache.CacheJournalItem;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
+import com.inappstory.sdk.parse.to.ToLayoutResponse;
 import com.inappstory.sdk.stories.api.models.CachedSessionData;
 import com.inappstory.sdk.stories.cache.DownloadFileState;
 import com.inappstory.sdk.utils.FilePathCacheGenerator;
@@ -21,7 +22,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.lang.reflect.Type;
 
 public class LayoutUseCase extends GetCacheFileUseCase<Void> {
     private final UseCaseCallback<String> useCaseCallback;
@@ -62,16 +62,12 @@ public class LayoutUseCase extends GetCacheFileUseCase<Void> {
                     public void success() {
                         IASDataSettingsHolder settingsHolder = (IASDataSettingsHolder) core.settingsAPI();
                         CachedSessionData sessionData = settingsHolder.sessionData();
-                        NetworkCallback<LayoutResponse> layoutCallback = new NetworkCallback<LayoutResponse>() {
+                        NetworkCallback<LayoutResponse> layoutCallback =
+                                new NetworkCallback<LayoutResponse>() {
                             @Override
                             public void onSuccess(LayoutResponse response) {
                                 writeToFile(response.layout);
                                 useCaseCallback.onSuccess(response.layout);
-                            }
-
-                            @Override
-                            public Type getType() {
-                                return LayoutResponse.class;
                             }
 
                             @Override
@@ -85,7 +81,8 @@ public class LayoutUseCase extends GetCacheFileUseCase<Void> {
                                         sessionData.sessionId,
                                         sessionData.locale
                                 ),
-                                layoutCallback
+                                layoutCallback,
+                                ToLayoutResponse.class
                         );
                     }
                 }

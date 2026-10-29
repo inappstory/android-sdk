@@ -9,6 +9,7 @@ import com.inappstory.sdk.core.data.IListItemContent;
 import com.inappstory.sdk.core.network.content.RequestFields;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.network.models.RequestLocalParameters;
+import com.inappstory.sdk.parse.to.ToStory;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.core.network.content.models.Story;
 import com.inappstory.sdk.stories.api.models.TargetingBodyObject;
@@ -17,10 +18,6 @@ import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.outercallbacks.common.single.SingleLoadCallback;
-
-import java.lang.reflect.Type;
-import java.util.List;
-import java.util.Map;
 
 public class StoryByStringIdUseCase {
     private final IASCore core;
@@ -75,11 +72,6 @@ public class StoryByStringIdUseCase {
                             }
 
                             @Override
-                            public Type getType() {
-                                return Story.class;
-                            }
-
-                            @Override
                             public void emptyContent() {
                                 if (storyByIdCallback != null)
                                     storyByIdCallback.loadError(-2);
@@ -114,6 +106,7 @@ public class StoryByStringIdUseCase {
                                             requestLocalParameters.locale()
                                     ),
                                     callback,
+                                    ToStory.class,
                                     requestLocalParameters
                             );
                         } else {
@@ -130,6 +123,7 @@ public class StoryByStringIdUseCase {
                                             requestLocalParameters.locale()
                                     ),
                                     callback,
+                                    ToStory.class,
                                     requestLocalParameters
                             );
                         }

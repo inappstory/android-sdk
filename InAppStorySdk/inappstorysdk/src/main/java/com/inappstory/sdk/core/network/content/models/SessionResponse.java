@@ -13,9 +13,6 @@ import java.util.List;
 
 public class SessionResponse {
 
-    //@Required
-    @SerializedName(SessionRequestFields.session)
-    public Session session;
 
     @SerializedName(SessionRequestFields.isAllowUgc)
     public boolean isAllowUgc;
@@ -25,14 +22,10 @@ public class SessionResponse {
     public boolean preloadGame;
     @SerializedName(SessionRequestFields.previewAspectRatio)
     public float previewAspectRatio;
-    @SerializedName(SessionRequestFields.sessionAssets)
-    public List<SessionAsset> sessionAssets;
     @SerializedName(SessionRequestFields.layoutUpdatedAt)
     public int layoutUpdatedAt;
-
     @SerializedName(SessionRequestFields.isGameReaderDefaultFullscreen)
     public boolean isGameReaderDefaultFullscreen;
-
     @SerializedName(SessionRequestFields.isAllowProfiling)
     public boolean isAllowProfiling;
     @SerializedName(SessionRequestFields.isAllowStatV1)
@@ -44,14 +37,21 @@ public class SessionResponse {
     @SerializedName(SessionRequestFields.debugSessionKey)
     public String debugSessionKey;
 
-    public float getPreviewAspectRatio() {
-        if (previewAspectRatio > 0) return previewAspectRatio;
-        return 1f;
-    }
+    @SerializedName(SessionRequestFields.session)
+    public Session session;
+
+    @SerializedName(SessionRequestFields.sessionAssets)
+    public List<SessionAsset> sessionAssets;
 
     @SerializedName(SessionRequestFields.placeholders)
     public List<StoryPlaceholder> placeholders;
 
     @SerializedName(SessionRequestFields.imagePlaceholders)
     public List<StoryPlaceholder> imagePlaceholders;
+
+    public float getPreviewAspectRatio() {
+        if (previewAspectRatio > 0) return previewAspectRatio;
+        return 1f;
+    }
+
 }

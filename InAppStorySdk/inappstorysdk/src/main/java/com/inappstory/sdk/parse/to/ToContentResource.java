@@ -30,4 +30,9 @@ public final class ToContentResource extends ToModelParser<ContentResource> {
             return null;
         }
     }
+
+    @Override
+    protected String getClassName() {
+        return "ContentResource";
+    }
 }

@@ -10,12 +10,12 @@ import com.inappstory.sdk.core.utils.ConnectionCheckCallback;
 import com.inappstory.sdk.core.network.content.models.InAppMessageFeed;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.network.models.RequestLocalParameters;
+import com.inappstory.sdk.parse.to.ToInAppMessageFeed;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.TargetingBodyObject;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.utils.TagsUtils;
 
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -89,11 +89,6 @@ public class InAppMessagesUseCase {
                                     }
 
                                     @Override
-                                    public Type getType() {
-                                        return InAppMessageFeed.class;
-                                    }
-
-                                    @Override
                                     public void error424(String message) {
                                         core.statistic().profiling().setReady("inAppMessages");
                                         core.sessionManager().closeSession(
@@ -126,6 +121,7 @@ public class InAppMessagesUseCase {
                                                 sessionParameters.locale()
                                         ),
                                         networkCallback,
+                                        ToInAppMessageFeed.class,
                                         sessionParameters
                                 );
                             }

@@ -23,4 +23,9 @@ public final class ToGameInstance extends ToModelParser<GameInstance> {
             return null;
         }
     }
+
+    @Override
+    protected String getClassName() {
+        return "GameInstance";
+    }
 }

@@ -10,8 +10,7 @@ import com.inappstory.sdk.core.data.IReaderContent;
 import com.inappstory.sdk.core.ui.screens.ShareProcessHandler;
 import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
-import com.inappstory.sdk.network.models.Response;
-import com.inappstory.sdk.share.IShareCompleteListener;
+import com.inappstory.sdk.parse.to.ToShareObject;
 import com.inappstory.sdk.stories.api.models.ContentIdWithIndex;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.ShareObject;
@@ -19,8 +18,6 @@ import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickOnShareStory
 import com.inappstory.sdk.stories.outercallbacks.common.reader.FavoriteStoryCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.LikeDislikeStoryCallback;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPageManager;
-
-import java.lang.reflect.Type;
 
 public class ButtonsPanelManager {
     public void setStoryId(int storyId) {
@@ -106,9 +103,9 @@ public class ButtonsPanelManager {
                         Integer.toString(storyId),
                         val
                 ),
-                new NetworkCallback<Response>() {
+                new NetworkCallback<Void>() {
                     @Override
-                    public void onSuccess(Response response) {
+                    public void onSuccess(Void response) {
                         core.statistic().profiling().setReady(likeUID);
                         core.contentHolder().like(
                                 storyId, pageManager.getViewContentType(), val
@@ -124,12 +121,8 @@ public class ButtonsPanelManager {
                         if (callback != null)
                             callback.onError();
                     }
-
-                    @Override
-                    public Type getType() {
-                        return null;
-                    }
-                });
+                }
+        );
     }
 
     public void removeStoryFromFavorite() {
@@ -167,9 +160,9 @@ public class ButtonsPanelManager {
                         Integer.toString(storyId),
                         val ? 0 : 1
                 ),
-                new NetworkCallback<Response>() {
+                new NetworkCallback<Void>() {
                     @Override
-                    public void onSuccess(Response response) {
+                    public void onSuccess(Void response) {
                         core.statistic().profiling().setReady(favUID);
                         boolean res = !val;
                         core.contentHolder().favorite(storyId, contentType, res);
@@ -185,11 +178,6 @@ public class ButtonsPanelManager {
                         core.statistic().profiling().setReady(favUID);
                         if (callback != null)
                             callback.onError();
-                    }
-
-                    @Override
-                    public Type getType() {
-                        return null;
                     }
                 }
         );
@@ -265,12 +253,8 @@ public class ButtonsPanelManager {
                             callback.onError();
                         shareProcessHandler.isShareProcess(false);
                     }
-
-                    @Override
-                    public Type getType() {
-                        return ShareObject.class;
-                    }
-                }
+                },
+                ToShareObject.class
         );
     }
 }

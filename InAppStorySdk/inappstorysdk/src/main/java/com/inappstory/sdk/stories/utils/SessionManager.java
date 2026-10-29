@@ -14,7 +14,6 @@ import android.util.DisplayMetrics;
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.core.IASCore;
-import com.inappstory.sdk.core.api.IASCallback;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.core.api.IASStatisticStoriesV1;
@@ -27,6 +26,7 @@ import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.network.fileupload.FilePart;
 import com.inappstory.sdk.network.models.RequestLocalParameters;
 import com.inappstory.sdk.network.models.Response;
+import com.inappstory.sdk.parse.to.ToSessionResponse;
 import com.inappstory.sdk.stories.api.models.CachedSessionData;
 import com.inappstory.sdk.stories.api.models.SessionRequestFields;
 import com.inappstory.sdk.core.network.content.models.SessionResponse;
@@ -35,20 +35,17 @@ import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallbackWithUID;
 import com.inappstory.sdk.stories.callbacks.SessionIsOpenedCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.errors.ErrorCallback;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryWidgetCallback;
 import com.inappstory.sdk.stories.statistic.GetStatisticV1Callback;
 import com.inappstory.sdk.ugc.extinterfaces.IOpenSessionCallback;
 import com.inappstory.sdk.utils.ISessionHolder;
 
 import java.io.File;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -405,11 +402,6 @@ public class SessionManager {
 
                                     }
 
-                                    @Override
-                                    public Type getType() {
-                                        return SessionResponse.class;
-                                    }
-
 
                                     @Override
                                     public void errorDefault(String message) {
@@ -442,7 +434,8 @@ public class SessionManager {
                                             }
                                         });
                                     }
-                                }
+                                },
+                                ToSessionResponse.class
                         );
 
                     }
@@ -469,7 +462,8 @@ public class SessionManager {
             public void run() {
                 for (FilePart filePart : fileParts) {
                     Response response = core.network().execute(
-                            core.network().getApi().debugLog(debugKey, filePart));
+                            core.network().getApi().debugLog(debugKey, filePart)
+                    );
                     if (response.code < 300) {
                         (new File(filePart.filePath())).delete();
                     }
@@ -567,11 +561,6 @@ public class SessionManager {
                                 }
 
                                 @Override
-                                public Type getType() {
-                                    return SessionResponse.class;
-                                }
-
-                                @Override
                                 public void errorDefault(String message) {
                                     core.statistic().profiling().setReady(sessionCloseUID);
                                     if (changeSessionSettings) {
@@ -579,7 +568,8 @@ public class SessionManager {
                                         core.widgetViewModels().bannerPlaceViewModels().reloadSession();
                                     }
                                 }
-                            }
+                            },
+                            ToSessionResponse.class
                     );
                 }
             });

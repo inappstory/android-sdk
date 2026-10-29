@@ -8,9 +8,8 @@ import com.inappstory.sdk.core.data.IInAppMessageLimit;
 import com.inappstory.sdk.core.inappmessages.InAppMessagesLimitCallback;
 import com.inappstory.sdk.core.network.content.models.InAppMessageLimit;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
-import com.inappstory.sdk.stories.api.models.InAppMessageLimitListType;
+import com.inappstory.sdk.parse.to.ToInAppMessageLimitList;
 
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -56,12 +55,8 @@ public class InAppMessageLimitsUseCase {
                             limitsHolder.addLimitToCache(idsInString, limits);
                             callback.success(limits);
                         }
-
-                        @Override
-                        public Type getType() {
-                            return new InAppMessageLimitListType();
-                        }
-                    }
+                    },
+                    ToInAppMessageLimitList.class
             );
         }
 

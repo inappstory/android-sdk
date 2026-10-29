@@ -10,11 +10,8 @@ import com.inappstory.sdk.core.ui.screens.holder.GetScreenCallback;
 import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryScreen;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.network.models.RequestLocalParameters;
-import com.inappstory.sdk.network.models.Response;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
-
-import java.lang.reflect.Type;
 
 public class IASFavoritesImpl implements IASFavorites {
     private final IASCore core;
@@ -73,9 +70,10 @@ public class IASFavoritesImpl implements IASFavorites {
         final String favUID = core.statistic().profiling().addTask("api_favorite");
         core.network().enqueue(
                 core.network().getApi().storyFavorite(Integer.toString(storyId), favorite ? 1 : 0),
-                new NetworkCallback<Response>() {
+                new NetworkCallback<Void>() {
+
                     @Override
-                    public void onSuccess(Response response) {
+                    public void onSuccess(Void response) {
                         core.statistic().profiling().setReady(favUID);
                         core.contentHolder().favorite(storyId, ContentType.STORY, favorite);
                         core.inAppStoryService().getListReaderConnector().storyFavorite(storyId, favorite);
@@ -103,12 +101,8 @@ public class IASFavoritesImpl implements IASFavorites {
                         super.timeoutError();
                         core.statistic().profiling().setReady(favUID);
                     }
-
-                    @Override
-                    public Type getType() {
-                        return null;
-                    }
-                });
+                }
+        );
 
     }
 
@@ -116,9 +110,9 @@ public class IASFavoritesImpl implements IASFavorites {
         final String favUID = core.statistic().profiling().addTask("api_favorite_remove_all");
         core.network().enqueue(
                 core.network().getApi().removeAllFavorites(),
-                new NetworkCallback<Response>() {
+                new NetworkCallback<Void>() {
                     @Override
-                    public void onSuccess(Response response) {
+                    public void onSuccess(Void response) {
                         core.statistic().profiling().setReady(favUID);
                         core.contentHolder().clearAllFavorites(ContentType.STORY);
                         core.contentHolder().clearAllFavorites(ContentType.UGC);
@@ -144,12 +138,8 @@ public class IASFavoritesImpl implements IASFavorites {
                         super.timeoutError();
                         core.statistic().profiling().setReady(favUID);
                     }
-
-                    @Override
-                    public Type getType() {
-                        return null;
-                    }
-                });
+                }
+        );
 
     }
 }

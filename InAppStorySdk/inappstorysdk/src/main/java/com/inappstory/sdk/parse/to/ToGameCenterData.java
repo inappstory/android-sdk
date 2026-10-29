@@ -50,4 +50,9 @@ public final class ToGameCenterData extends ToModelParser<GameCenterData> {
             return null;
         }
     }
+
+    @Override
+    protected String getClassName() {
+        return "GameCenterData";
+    }
 }

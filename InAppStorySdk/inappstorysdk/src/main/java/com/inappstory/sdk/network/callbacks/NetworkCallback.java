@@ -6,6 +6,11 @@ import com.inappstory.sdk.network.models.Response;
 
 public abstract class NetworkCallback<T> implements Callback<T>, NetworkErrorsHandler {
     @Override
+    public void onRawResponse(Response response) {
+
+    }
+
+    @Override
     public final void onFailure(Response response) {
         onError(response.code, response.errorBody);
     }

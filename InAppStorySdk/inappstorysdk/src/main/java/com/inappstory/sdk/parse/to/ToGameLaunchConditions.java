@@ -26,4 +26,10 @@ public final class ToGameLaunchConditions extends ToModelParser<GameLaunchCondit
             return null;
         }
     }
+
+
+    @Override
+    protected String getClassName() {
+        return "GameLaunchConditions";
+    }
 }

@@ -5,13 +5,12 @@ import android.util.Log;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
-import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.network.JsonParser;
+import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.network.models.RequestLocalParameters;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.api.models.logs.ExceptionLog;
 
-import java.lang.reflect.Type;
 import java.util.UUID;
 
 public class ExceptionManager {
@@ -57,15 +56,10 @@ public class ExceptionManager {
                                 copiedLog.line,
                                 copiedLog.stacktrace
                         ),
-                        new NetworkCallback() {
+                        new NetworkCallback<Void>() {
                             @Override
-                            public void onSuccess(Object response) {
+                            public void onSuccess(Void response) {
                                 core.sharedPreferencesAPI().removeString(SAVED_EX);
-                            }
-
-                            @Override
-                            public Type getType() {
-                                return null;
                             }
                         }
                 );

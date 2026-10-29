@@ -18,12 +18,13 @@ import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.network.callbacks.SimpleApiCallback;
 import com.inappstory.sdk.network.models.RequestLocalParameters;
 import com.inappstory.sdk.network.models.Response;
+import com.inappstory.sdk.parse.to.ToFeed;
+import com.inappstory.sdk.parse.to.ToStoryList;
 import com.inappstory.sdk.stories.api.models.CachedSessionData;
 import com.inappstory.sdk.stories.api.models.ContentIdWithIndex;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.core.network.content.models.Feed;
 import com.inappstory.sdk.core.network.content.models.Story;
-import com.inappstory.sdk.stories.api.models.StoryListType;
 import com.inappstory.sdk.stories.api.models.TargetingBodyObject;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadFeedCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadListCallback;
@@ -33,7 +34,6 @@ import com.inappstory.sdk.stories.outercallbacks.common.errors.ErrorCallback;
 import com.inappstory.sdk.stories.utils.LoopedExecutor;
 import com.inappstory.sdk.utils.StringsUtils;
 
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -376,6 +376,7 @@ class StoryDownloader {
                         requestLocalParameters.locale()
                 ),
                 callback,
+                ToStoryList.class,
                 requestLocalParameters
         );
     }
@@ -420,11 +421,6 @@ class StoryDownloader {
                             }
 
                             @Override
-                            public Type getType() {
-                                return new StoryListType();
-                            }
-
-                            @Override
                             public void errorDefault(String message) {
                                 core.statistic().profiling().setReady(loadStoriesUID);
                                 generateCommonLoadListError(UGC_FEED);
@@ -440,7 +436,9 @@ class StoryDownloader {
                                 closeSessionIf424();
                                 loadUgcStoryList(callback, payload);
                             }
-                        });
+                        },
+                        ToStoryList.class
+                );
             }
 
             @Override
@@ -527,6 +525,7 @@ class StoryDownloader {
                                                     );
                                             }
                                         },
+                                        ToFeed.class,
                                         requestLocalParameters
                                 );
                             }
@@ -613,6 +612,7 @@ class StoryDownloader {
                                             loadStoryList(callback, widgetUID, isFavorite, false);
                                     }
                                 },
+                                ToStoryList.class,
                                 requestLocalParameters
                         );
                     }

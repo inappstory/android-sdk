@@ -24,4 +24,9 @@ public final class ToGameArchiveItem extends ToModelParser<GameArchiveItem> {
             return null;
         }
     }
+
+    @Override
+    protected String getClassName() {
+        return "GameArchiveItem";
+    }
 }

@@ -1,7 +1,6 @@
 package com.inappstory.sdk.stories.statistic;
 
 import android.text.TextUtils;
-import android.util.Log;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.core.IASCore;

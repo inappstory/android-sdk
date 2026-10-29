@@ -23,4 +23,9 @@ public final class ToGameLCMinWebViewVersion extends ToModelParser<GameLCMinWebV
             return null;
         }
     }
+
+    @Override
+    protected String getClassName() {
+        return "GameLCMinWebViewVersion";
+    }
 }

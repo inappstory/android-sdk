@@ -5,7 +5,6 @@ import android.media.AudioManager;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Vibrator;
-import android.util.Log;
 import android.view.View;
 
 import androidx.annotation.NonNull;
@@ -32,13 +31,10 @@ import com.inappstory.sdk.stories.api.models.SlideLayerKey;
 import com.inappstory.sdk.stories.api.models.UpdateTimelineData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
-import com.inappstory.sdk.stories.ui.widgets.LoadProgressBar;
 import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.network.JsonParser;
-import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.network.jsapiclient.JsApiClient;
 import com.inappstory.sdk.network.jsapiclient.JsApiResponseCallback;
-import com.inappstory.sdk.network.models.Response;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ShowSlideCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
@@ -55,7 +51,6 @@ import com.inappstory.sdk.stories.utils.WebPageConverter;
 import com.inappstory.sdk.utils.ClipboardUtils;
 
 import java.io.IOException;
-import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -788,18 +783,7 @@ public class StoriesViewManager {
                             Integer.toString(storyId),
                             data,
                             ((IASDataSettingsHolder) core.settingsAPI()).sessionIdOrEmpty()
-                    ),
-                    new NetworkCallback<Response>() {
-                        @Override
-                        public void onSuccess(Response response) {
-
-                        }
-
-                        @Override
-                        public Type getType() {
-                            return null;
-                        }
-                    }
+                    )
             );
         }
     }
@@ -826,18 +810,7 @@ public class StoriesViewManager {
                         Integer.toString(storyId),
                         data,
                         ((IASDataSettingsHolder) core.settingsAPI()).sessionIdOrEmpty()
-                ),
-                new NetworkCallback<Response>() {
-                    @Override
-                    public void onSuccess(Response response) {
-
-                    }
-
-                    @Override
-                    public Type getType() {
-                        return null;
-                    }
-                }
+                )
         );
     }
 

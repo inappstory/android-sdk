@@ -28,4 +28,9 @@ public final class ToInAppMessageFeed extends ToModelParser<InAppMessageFeed> {
             return null;
         }
     }
+
+    @Override
+    protected String getClassName() {
+        return "InAppMessageFeed";
+    }
 }

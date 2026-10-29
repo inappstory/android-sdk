@@ -1,7 +1,5 @@
 package com.inappstory.sdk.core.banners;
 
-import android.util.Log;
-
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.banners.BannerPlacePreloadCallback;
@@ -21,8 +19,6 @@ import com.inappstory.sdk.inappmessage.domain.stedata.STEDataType;
 import com.inappstory.sdk.inappmessage.domain.stedata.STETypeAndData;
 import com.inappstory.sdk.inappmessage.domain.stedata.ShowInputData;
 import com.inappstory.sdk.network.JsonParser;
-import com.inappstory.sdk.network.callbacks.NetworkCallback;
-import com.inappstory.sdk.network.models.Response;
 import com.inappstory.sdk.stories.api.models.ContentId;
 import com.inappstory.sdk.stories.api.models.ContentIdWithIndex;
 import com.inappstory.sdk.stories.api.models.ContentType;
@@ -40,7 +36,6 @@ import com.inappstory.sdk.stories.utils.WebPageConverter;
 import com.inappstory.sdk.utils.ClipboardUtils;
 import com.inappstory.sdk.utils.StringsUtils;
 
-import java.lang.reflect.Type;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
@@ -508,18 +503,7 @@ public class BannerViewModel implements IBannerViewModel {
                 core.network().getApi().sendBannerUserData(
                         Integer.toString(bannerState.bannerId()),
                         data
-                ),
-                new NetworkCallback<Response>() {
-                    @Override
-                    public void onSuccess(Response response) {
-
-                    }
-
-                    @Override
-                    public Type getType() {
-                        return null;
-                    }
-                }
+                )
         );
     }
 
@@ -550,18 +534,7 @@ public class BannerViewModel implements IBannerViewModel {
                     core.network().getApi().sendBannerUserData(
                             Integer.toString(bannerState.bannerId()),
                             data
-                    ),
-                    new NetworkCallback<Response>() {
-                        @Override
-                        public void onSuccess(Response response) {
-
-                        }
-
-                        @Override
-                        public Type getType() {
-                            return null;
-                        }
-                    }
+                    )
             );
         }
     }

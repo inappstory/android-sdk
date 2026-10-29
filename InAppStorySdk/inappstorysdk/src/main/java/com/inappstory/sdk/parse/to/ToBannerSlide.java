@@ -30,4 +30,9 @@ public final class ToBannerSlide extends ToModelParser<BannerSlide> {
             return null;
         }
     }
+
+    @Override
+    protected String getClassName() {
+        return "BannerSlide";
+    }
 }

@@ -5,15 +5,14 @@ import androidx.annotation.NonNull;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.UseIASCoreCallback;
-import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.core.network.content.models.SessionEditor;
+import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.network.models.RequestLocalParameters;
+import com.inappstory.sdk.parse.to.ToSessionEditor;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.ugc.dto.SessionEditorDTO;
 import com.inappstory.sdk.ugc.extinterfaces.IGetUgcEditorCallback;
 import com.inappstory.sdk.ugc.extinterfaces.IGetUgcEditor;
-
-import java.lang.reflect.Type;
 
 public class GetUgcEditor implements IGetUgcEditor {
 
@@ -40,16 +39,12 @@ public class GetUgcEditor implements IGetUgcEditor {
                                     }
 
                                     @Override
-                                    public Type getType() {
-                                        return SessionEditor.class;
-                                    }
-
-                                    @Override
                                     public void onError(int code, String message) {
                                         super.onError(code, message);
                                         callback.onError();
                                     }
-                                }
+                                },
+                                ToSessionEditor.class
                         );
                     }
 

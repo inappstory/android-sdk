@@ -3,7 +3,6 @@ package com.inappstory.sdk.inappmessage.domain.reader;
 
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 
@@ -25,8 +24,6 @@ import com.inappstory.sdk.inappmessage.domain.stedata.STEDataType;
 import com.inappstory.sdk.inappmessage.domain.stedata.STETypeAndData;
 import com.inappstory.sdk.inappmessage.domain.stedata.SlideInCacheData;
 import com.inappstory.sdk.network.JsonParser;
-import com.inappstory.sdk.network.callbacks.NetworkCallback;
-import com.inappstory.sdk.network.models.Response;
 import com.inappstory.sdk.stories.api.models.CachedSessionData;
 import com.inappstory.sdk.stories.api.models.ContentId;
 import com.inappstory.sdk.stories.api.models.ContentIdWithIndex;
@@ -44,7 +41,6 @@ import com.inappstory.sdk.stories.utils.WebPageConverter;
 import com.inappstory.sdk.utils.ClipboardUtils;
 import com.inappstory.sdk.utils.StringsUtils;
 
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -575,18 +571,7 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
                 core.network().getApi().sendIAMUserData(
                         Integer.toString(iamId),
                         data
-                ),
-                new NetworkCallback<Response>() {
-                    @Override
-                    public void onSuccess(Response response) {
-
-                    }
-
-                    @Override
-                    public Type getType() {
-                        return null;
-                    }
-                }
+                )
         );
     }
 
@@ -614,18 +599,7 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
                     core.network().getApi().sendIAMUserData(
                             Integer.toString(readerState.iamId),
                             data
-                    ),
-                    new NetworkCallback<Response>() {
-                        @Override
-                        public void onSuccess(Response response) {
-
-                        }
-
-                        @Override
-                        public Type getType() {
-                            return null;
-                        }
-                    }
+                    )
             );
         }
     }

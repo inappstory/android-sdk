@@ -27,10 +27,8 @@ import com.inappstory.sdk.game.reader.logger.GameLoggerLvl3;
 import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.network.JsonParser;
 
-import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.network.jsapiclient.JsApiClient;
 import com.inappstory.sdk.network.jsapiclient.JsApiResponseCallback;
-import com.inappstory.sdk.network.models.Response;
 import com.inappstory.sdk.share.IShareCompleteListener;
 import com.inappstory.sdk.stories.api.models.CachedSessionData;
 import com.inappstory.sdk.stories.api.models.UrlObject;
@@ -47,7 +45,6 @@ import com.inappstory.sdk.utils.ClipboardUtils;
 import com.inappstory.sdk.utils.IAcceleratorInitCallback;
 import com.inappstory.sdk.utils.StringsUtils;
 
-import java.lang.reflect.Type;
 import java.util.List;
 
 public class GameManager {
@@ -112,18 +109,8 @@ public class GameManager {
 
         if (core.statistic().storiesV1().softDisabled()) return;
         if (sendToServer) {
-            core.network().enqueue(core.network().getApi().sendGameData(gameInstanceId, data),
-                    new NetworkCallback<Response>() {
-                        @Override
-                        public void onSuccess(Response response) {
-
-                        }
-
-                        @Override
-                        public Type getType() {
-                            return null;
-                        }
-                    }
+            core.network().enqueue(
+                    core.network().getApi().sendGameData(gameInstanceId, data)
             );
         }
     }

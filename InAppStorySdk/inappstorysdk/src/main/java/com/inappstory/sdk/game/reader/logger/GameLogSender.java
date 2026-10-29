@@ -4,10 +4,8 @@ import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
-import com.inappstory.sdk.network.models.Response;
 import com.inappstory.sdk.utils.ScheduledTPEManager;
 
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -104,9 +102,9 @@ public class GameLogSender implements IGameLogSender {
                         log.logSession(),
                         log.gameLoaded()
                 ),
-                new NetworkCallback<Response>() {
+                new NetworkCallback<Void>() {
                     @Override
-                    public void onSuccess(Response response) {
+                    public void onSuccess(Void response) {
                         sendLogs(nextLogs);
                     }
 
@@ -115,10 +113,6 @@ public class GameLogSender implements IGameLogSender {
                         sendLogs(nextLogs);
                     }
 
-                    @Override
-                    public Type getType() {
-                        return null;
-                    }
                 }
         );
     }

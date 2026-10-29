@@ -52,7 +52,13 @@ public abstract class ToModelParser<T> {
         return null;
     }
 
-    protected String parseError(String field) {
+    public String parseError(String field) {
         return "Field " + field + " has incorrect format.";
+    }
+
+    protected abstract String getClassName();
+
+    public String parseError() {
+        return "Can't parse model: " + getClassName();
     }
 }

@@ -6,14 +6,10 @@ import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.network.models.RequestLocalParameters;
-import com.inappstory.sdk.stories.api.interfaces.ConditionsResult;
-import com.inappstory.sdk.stories.api.interfaces.GLCError;
+import com.inappstory.sdk.parse.to.ToGameCenterData;
 import com.inappstory.sdk.stories.api.models.GameCenterData;
-import com.inappstory.sdk.stories.api.models.GameLaunchConditionsChecker;
 import com.inappstory.sdk.stories.api.models.GameLaunchConfigObject;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
-
-import java.lang.reflect.Type;
 
 public class GetGameModelUseCase {
     private final IASCore core;
@@ -57,11 +53,6 @@ public class GetGameModelUseCase {
                                     }
 
                                     @Override
-                                    public Type getType() {
-                                        return GameCenterData.class;
-                                    }
-
-                                    @Override
                                     public void errorDefault(String message) {
                                         callback.onError( message);
                                     }
@@ -70,7 +61,8 @@ public class GetGameModelUseCase {
                                     public void timeoutError() {
                                         callback.onError("Game loading run out of time");
                                     }
-                                }
+                                },
+                                ToGameCenterData.class
                         );
                     }
 

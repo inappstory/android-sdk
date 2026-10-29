@@ -16,14 +16,12 @@ import com.inappstory.sdk.stories.api.models.ContentIdWithIndex;
 import com.inappstory.sdk.core.network.content.models.Image;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.core.network.content.models.Story;
-import com.inappstory.sdk.stories.api.models.StoryListType;
 import com.inappstory.sdk.core.network.content.callbacks.LoadFavoritesCallback;
 import com.inappstory.sdk.core.network.content.callbacks.LoadStoriesCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.SimpleListCallback;
 import com.inappstory.sdk.stories.ui.list.StoryFavoriteImage;
 
 import java.io.IOException;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -373,11 +371,6 @@ public class StoryDownloadManager {
                                             callback.storiesLoaded(ids);
                                         }
                                     }
-                                }
-
-                                @Override
-                                public Type getType() {
-                                    return new StoryListType();
                                 }
 
                                 @Override

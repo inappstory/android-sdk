@@ -3,7 +3,6 @@ package com.inappstory.sdk.core.api.impl;
 import static com.inappstory.sdk.core.api.impl.IASSettingsImpl.TAG_LIMIT_COUNT;
 
 import android.content.Context;
-import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
 
@@ -25,6 +24,7 @@ import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenAppearanc
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenData;
 import com.inappstory.sdk.core.ui.screens.storyreader.LaunchStoryScreenStrategy;
 import com.inappstory.sdk.network.models.RequestLocalParameters;
+import com.inappstory.sdk.parse.to.ToFeed;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.core.network.content.models.Feed;
 import com.inappstory.sdk.core.network.content.models.Story;
@@ -176,6 +176,7 @@ public class IASOnboardingsImpl implements IASOnboardings {
                                 loadOnboardingError(usedFeed, "Can't load onboardings: timeout");
                             }
                         },
+                        ToFeed.class,
                         requestLocalParameters
                 );
             }

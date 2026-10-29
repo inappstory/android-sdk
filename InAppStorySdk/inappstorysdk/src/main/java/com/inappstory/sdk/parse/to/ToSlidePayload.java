@@ -26,4 +26,9 @@ public final class ToSlidePayload extends ToModelParser<SlidePayload> {
             return null;
         }
     }
+
+    @Override
+    protected String getClassName() {
+        return "SlidePayload";
+    }
 }

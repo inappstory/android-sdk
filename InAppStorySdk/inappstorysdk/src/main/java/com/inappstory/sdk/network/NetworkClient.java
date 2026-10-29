@@ -1,12 +1,9 @@
 package com.inappstory.sdk.network;
 
-import android.util.Log;
 import android.util.Pair;
 
 import androidx.annotation.WorkerThread;
 
-import com.inappstory.sdk.InAppStoryManager;
-import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.network.callbacks.Callback;
@@ -17,8 +14,8 @@ import com.inappstory.sdk.network.models.Response;
 import com.inappstory.sdk.network.utils.RequestSender;
 import com.inappstory.sdk.network.utils.UserAgent;
 import com.inappstory.sdk.network.utils.headers.Header;
+import com.inappstory.sdk.parse.to.ToModelParser;
 
-import java.lang.reflect.ParameterizedType;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.util.List;
@@ -63,15 +60,44 @@ public class NetworkClient {
 
     ExecutorService netExecutor = Executors.newFixedThreadPool(10);
 
-    public void enqueue(final Request request,
-                        final Callback callback
+    public static final String NC_IS_UNAVAILABLE = "Network client is unavailable";
+
+
+    public <T, M extends ToModelParser<T>> void enqueue(
+            final Request request,
+            final Callback<T> callback,
+            final Class<M> parserClass
     ) {
-        enqueue(request, callback, null);
+        enqueue(request, callback, parserClass, null);
     }
 
-    public void enqueue(final Request request,
-                        final Callback callback,
-                        final RequestLocalParameters requestLocalParameters
+    public <T> void enqueue(final Request request,
+                            final Callback<T> callback
+    ) {
+        enqueue(request, callback, null, null);
+    }
+
+    public <T> void enqueue(final Request request
+    ) {
+        enqueue(request, null, null, null);
+    }
+
+    @WorkerThread
+    public Response execute(Request request) {
+        if (networkHandler == null) {
+            return new Response
+                    .Builder().code(-4)
+                    .errorBody("InAppStoryManager wasn't initialized")
+                    .build();
+        }
+        return execute(request, null, null, null);
+    }
+
+    public <T, M extends ToModelParser<T>> void enqueue(
+            final Request request,
+            final Callback<T> callback,
+            Class<M> parserClass,
+            final RequestLocalParameters requestLocalParameters
     ) {
         if (networkHandler == null) {
             callback.onFailure(
@@ -85,27 +111,17 @@ public class NetworkClient {
         netExecutor.submit(new Callable<Response>() {
             @Override
             public Response call() {
-                return execute(request, callback, requestLocalParameters);
+                return execute(request, callback, parserClass, requestLocalParameters);
             }
         });
     }
 
-    @WorkerThread
-    public Response execute(Request request) {
-        if (networkHandler == null) {
-            return new Response
-                    .Builder().code(-4)
-                    .errorBody("InAppStoryManager wasn't initialized")
-                    .build();
-        }
-        return execute(request, null, null);
-    }
-
-
-    public static final String NC_IS_UNAVAILABLE = "Network client is unavailable";
-
-    @WorkerThread
-    public Response execute(Request request, Callback callback, RequestLocalParameters requestLocalParameters) {
+    public <T, M extends ToModelParser<T>> Response execute(
+            Request request,
+            Callback<T> callback,
+            Class<M> parserClass,
+            RequestLocalParameters requestLocalParameters
+    ) {
         Response response;
         String requestId = UUID.randomUUID().toString();
         try {
@@ -132,36 +148,24 @@ public class NetworkClient {
                 callback.onEmptyContent();
                 return response;
             } else if (response.body != null) {
-                if (callback.getType() == null) {
-                    callback.onSuccess(response);
-                    return response;
+                if (parserClass == null) {
+                    callback.onSuccess(null);
+                    callback.onRawResponse(response);
                 } else {
-                    Object obj;
-                    Class parseClass;
-                    if (callback.getType() instanceof ParameterizedType) {
-                        ParameterizedType parameterizedType = (ParameterizedType) callback.getType();
-                        parseClass = (Class) (parameterizedType.getActualTypeArguments()[0]);
-                        obj = JsonParser.listFromJson(response.body, parseClass);
-                    } else {
-                        parseClass = (Class) callback.getType();
-                        obj = JsonParser.fromJson(response.body, parseClass);
-                    }
+                    M parser = parserClass.newInstance();
+                    T obj = parser.parse();
                     if (obj != null) {
                         callback.onSuccess(obj);
                     } else {
-                        String error = "";
-                        try {
-                            error = "Can't parse model " + parseClass.getSimpleName();
-                        } catch (Exception e) {
-
-                        }
                         response = new Response.Builder().code(response.code)
-                                .errorBody(error).build();
+                                .errorBody(
+                                        parser.parseError()
+                                ).build();
                         response.logId = requestId;
                         callback.onFailure(response);
                     }
-                    return response;
                 }
+                return response;
             }
             response = new Response.Builder().code(response.code)
                     .errorBody(response.errorBody).build();
@@ -188,6 +192,7 @@ public class NetworkClient {
         }
         return response;
     }
+
 
     public List<Header> generateHeaders(
             String[] exclude,

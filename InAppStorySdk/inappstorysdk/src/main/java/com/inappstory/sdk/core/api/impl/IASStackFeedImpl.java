@@ -1,7 +1,6 @@
 package com.inappstory.sdk.core.api.impl;
 
 import android.content.Context;
-import android.text.TextUtils;
 
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
@@ -13,6 +12,7 @@ import com.inappstory.sdk.core.api.IASStackFeed;
 import com.inappstory.sdk.core.data.IListItemContent;
 import com.inappstory.sdk.core.network.content.RequestFields;
 import com.inappstory.sdk.network.models.RequestLocalParameters;
+import com.inappstory.sdk.parse.to.ToFeed;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.core.network.content.models.Feed;
 import com.inappstory.sdk.core.network.content.models.Image;
@@ -181,6 +181,7 @@ public class IASStackFeedImpl implements IASStackFeed {
                                 stackFeedResult.error();
                             }
                         },
+                        ToFeed.class,
                         requestLocalParameters
                 );
             }

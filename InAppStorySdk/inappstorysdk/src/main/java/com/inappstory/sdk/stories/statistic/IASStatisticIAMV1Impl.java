@@ -1,7 +1,5 @@
 package com.inappstory.sdk.stories.statistic;
 
-import android.util.Log;
-
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASStatisticIAMV1;
 import com.inappstory.sdk.network.JsonParser;

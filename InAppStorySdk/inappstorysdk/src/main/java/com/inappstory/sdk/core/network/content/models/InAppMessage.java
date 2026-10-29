@@ -41,9 +41,6 @@ public class InAppMessage implements IInAppMessage {
     @SerializedName("display_from")
     public Long displayFrom;
 
-    @SerializedName("slides")
-    public List<InAppMessageSlide> slides;
-
     @SerializedName("slides_html")
     public List<String> slidesHtml;
 
@@ -54,6 +51,18 @@ public class InAppMessage implements IInAppMessage {
     @SerializedName("custom_attributes")
     public Map<String, String> customAttributes;
 
+    @SerializedName("appearance")
+    public Map<String, Object> appearance;
+
+    @SerializedName("layout_template_variables")
+    public Map<String, String> layoutTemplateVariables;
+
+    @SerializedName("events")
+    public List<InAppMessageEvent> events;
+
+    @SerializedName("slides")
+    public List<InAppMessageSlide> slides;
+
     @SerializedName("has_swipe_up")
     public Boolean hasSwipeUp;
 
@@ -63,19 +72,10 @@ public class InAppMessage implements IInAppMessage {
     @SerializedName("type")
     public int screenType;
 
-    @SerializedName("appearance")
-    public Map<String, Object> appearance;
-
-    @SerializedName("events")
-    public List<InAppMessageEvent> events;
-
     @Override
     public String layout() {
         return null;
     }
-
-    @SerializedName("layout_template_variables")
-    public Map<String, String> layoutTemplateVariables;
 
     private IReaderContentSlide slide(int index) {
         if (slides == null || index < 0 || slides.size() < index)

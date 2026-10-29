@@ -28,4 +28,9 @@ public final class ToWebResource extends ToModelParser<WebResource> {
             return null;
         }
     }
+
+    @Override
+    protected String getClassName() {
+        return "WebResource";
+    }
 }
