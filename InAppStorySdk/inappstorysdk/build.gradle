@@ -72,11 +72,11 @@ android {
         jvmTarget = '1.8'
         freeCompilerArgs = ['-Xjvm-default=compatibility']
     }
-   /* publishing {
-        singleVariant("maven") {
+    publishing {
+        singleVariant("release") {
             withSourcesJar()
         }
-    }*/
+    }
     namespace 'com.inappstory.sdk'
 }
 
@@ -98,57 +98,17 @@ dependencies {
     androidTestImplementation 'androidx.test:rules:1.4.0'
     implementation 'androidx.palette:palette:1.0.0'
     implementation "com.github.inappstory:android-sdk-utilsconnector:$utils_connector_version"
-    // implementation "com.github.paperrose:iasutilsconnector:1.0.2"
 }
-
-
-/*
-mavenPublishing {
-
-    publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
-    signAllPublications()
-    coordinates(getGroupId(), getArtifactId(), getVersionName())
-    pom {
-        name = "Test publishing"
-        description = "Test publishing"
-        inceptionYear = "2025"
-        url = "https://github.com/inappstory/android-sdk/"
-        licenses {
-            license {
-                name = "The Apache License, Version 2.0"
-                url = "https://www.apache.org/licenses/LICENSE-2.0.txt"
-                distribution = "https://www.apache.org/licenses/LICENSE-2.0.txt"
-            }
-        }
-        developers {
-            developer {
-                id = "inappstory"
-                name = "inappstory"
-                url = "https://github.com/inappstory/"
-            }
-        }
-        scm {
-            url = "https://github.com/inappstory/android-sdk/"
-            connection = "scm:git:git://github.com/inappstory/android-sdk.git"
-            developerConnection = "scm:git:ssh://git@github.com/inappstory/android-sdk.git"
-        }
-    }
-}
-*/
-
-/*
-def githubProperties = new Properties()
-githubProperties.load(new FileInputStream(rootProject.file("github.properties")))
 
 afterEvaluate {
     publishing {
         publications {
-            bar(MavenPublication) {
+            release(MavenPublication) {
                 from components.release
 
-                groupId getGhGroupId()
-                artifactId getArtifactId()
-                version getVersionName()
+                groupId = getGhGroupId()
+                artifactId = getArtifactId()
+                version = System.getenv("GITHUB_REF_NAME") ?: getVersionName()
             }
         }
 
@@ -158,11 +118,10 @@ afterEvaluate {
                 url = uri("https://maven.pkg.github.com/inappstory/android-sdk")
 
                 credentials {
-                    username = githubProperties['gpr.usr'] ?: ""
-                    password = githubProperties['gpr.key'] ?: ""
+                    username = System.getenv("GITHUB_ACTOR") ?: ""
+                    password = System.getenv("GITHUB_TOKEN") ?: ""
                 }
             }
         }
     }
 }
-*/
