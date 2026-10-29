@@ -20,9 +20,10 @@ public final class ToInAppMessageFeed extends ToModelParser<InAppMessageFeed> {
             ExtendedJsonObject jsonObj = new ExtendedJsonObject(
                     new JSONObject(value)
             );
-            InAppMessageFeed inAppMessageFeed = new InAppMessageFeed();
-            story.id = jsonObj.getInt("id");
-            return inAppMessageFeed;
+            InAppMessageFeed feed = new InAppMessageFeed();
+            feed.messages =
+                    new ToInAppMessageList(jsonObj.optJSONArray("messages")).parse();
+            return feed;
         } catch (Exception e) {
             return null;
         }

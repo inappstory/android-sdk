@@ -9,10 +9,10 @@ import com.inappstory.sdk.network.annotations.models.SerializedName;
 
 public class ShareObject {
     @SerializedName("url")
-    String url;
+    public String url;
 
     @SerializedName("title")
-    String title;
+    public String title;
 
     public String getUrl() {
         return url;
@@ -27,5 +27,5 @@ public class ShareObject {
     }
 
     @SerializedName("description")
-    String description;
+    public String description;
 }

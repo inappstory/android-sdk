@@ -22,7 +22,8 @@ public final class ToBannerPlaceModel extends ToModelParser<BannerPlaceModel> {
                     new JSONObject(value)
             );
             BannerPlaceModel bannerPlaceModel = new BannerPlaceModel();
-            story.id = jsonObj.getInt("id");
+            bannerPlaceModel.id = jsonObj.getInt("id");
+            bannerPlaceModel.banners = new ToBannerList(jsonObj.optJSONArray("banners")).parse();
             return bannerPlaceModel;
         } catch (Exception e) {
             return null;

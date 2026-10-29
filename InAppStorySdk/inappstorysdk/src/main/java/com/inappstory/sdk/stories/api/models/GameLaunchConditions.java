@@ -11,7 +11,7 @@ import java.util.List;
 
 public class GameLaunchConditions implements IGameLaunchConditions {
     @SerializedName("minWebViewVersion")
-    GameLCMinWebViewVersion minWebViewVersion;
+    public GameLCMinWebViewVersion minWebViewVersion;
 
     @Override
     @NonNull

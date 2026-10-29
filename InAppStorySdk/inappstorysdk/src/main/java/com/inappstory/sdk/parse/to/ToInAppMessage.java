@@ -14,6 +14,15 @@ public final class ToInAppMessage extends ToModelParser<InAppMessage> {
         super(value);
     }
 
+    public ToInAppMessage(JSONObject value) {
+        super(value);
+    }
+
+    @Override
+    protected InAppMessage parseObject(JSONObject jsonObject) {
+        return super.parseObject(jsonObject);
+    }
+
     @Override
     protected InAppMessage parseString(@NonNull String value) {
         try {

@@ -27,6 +27,9 @@ public class GameCenterData implements IGameCenterData {
     public GameScreenOptions options;
     @SerializedName("launchConditions")
     public GameLaunchConditions gameLaunchConditions;
+    @SerializedName("archiveItems")
+    public List<GameArchiveItem> archiveItems;
+
     @SerializedName("languageDirection")
     public String layoutDirection;
     @SerializedName("loggerLevel")
@@ -38,9 +41,6 @@ public class GameCenterData implements IGameCenterData {
     @Required
     @SerializedName("initCode")
     public String initCode;
-
-    @SerializedName("archiveItems")
-    public List<GameArchiveItem> archiveItems;
 
     @SerializedName("canTryReloadCount")
     public Integer canTryReloadCount;

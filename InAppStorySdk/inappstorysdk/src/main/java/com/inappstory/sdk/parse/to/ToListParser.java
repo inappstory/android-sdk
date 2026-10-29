@@ -36,14 +36,13 @@ public abstract class ToListParser<T, M extends ToModelParser<T>> {
     }
 
     private List<T> parseJSONArray(JSONArray jsonArray) {
-        if (jsonArray == null) return null;
         try {
             List<T> values = new ArrayList<>();
             for (int i = 0; i < jsonArray.length(); i++) {
-                values.add(
-                        createParserInstance(jsonArray.getJSONObject(i))
-                                .parse()
-                );
+                T item = createParserInstance(jsonArray.getJSONObject(i))
+                        .parse();
+                if (item == null) return null;
+                values.add(item);
             }
             return values;
         } catch (Exception e) {

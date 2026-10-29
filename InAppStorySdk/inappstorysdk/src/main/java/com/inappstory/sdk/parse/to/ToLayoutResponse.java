@@ -21,7 +21,8 @@ public final class ToLayoutResponse extends ToModelParser<LayoutResponse> {
                     new JSONObject(value)
             );
             LayoutResponse layoutResponse = new LayoutResponse();
-            story.id = jsonObj.getInt("id");
+            layoutResponse.layout = jsonObj.getString("layout");
+            layoutResponse.lastUpdatedAt = jsonObj.optStringNullable("last_updated_at");
             return layoutResponse;
         } catch (Exception e) {
             return null;

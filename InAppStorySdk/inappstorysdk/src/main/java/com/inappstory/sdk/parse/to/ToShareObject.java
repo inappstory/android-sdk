@@ -21,7 +21,9 @@ public final class ToShareObject extends ToModelParser<ShareObject> {
                     new JSONObject(value)
             );
             ShareObject shareObject = new ShareObject();
-            story.id = jsonObj.getInt("id");
+            shareObject.url = jsonObj.getString("url");
+            shareObject.title = jsonObj.optStringNullable("title");
+            shareObject.description = jsonObj.optStringNullable("description");
             return shareObject;
         } catch (Exception e) {
             return null;

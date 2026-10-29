@@ -21,7 +21,30 @@ public final class ToGameCenterData extends ToModelParser<GameCenterData> {
                     new JSONObject(value)
             );
             GameCenterData gameCenterData = new GameCenterData();
-            story.id = jsonObj.getInt("id");
+            gameCenterData.id = jsonObj.getString("id");
+            gameCenterData.layoutDirection = jsonObj.optStringNullable("languageDirection");
+            gameCenterData.loggerLevel = jsonObj.optIntNullable("loggerLevel");
+            gameCenterData.url = jsonObj.getString("downloadUrl");
+            gameCenterData.initCode = jsonObj.getString("initCode");
+            gameCenterData.canTryReloadCount = jsonObj.optIntNullable("canTryReloadCount");
+            gameCenterData.archiveSize = jsonObj.optLongNullable("archiveSize");
+            gameCenterData.archiveSha1 = jsonObj.optStringNullable("archiveSha1");
+
+            gameCenterData.archiveItems =
+                    new ToGameArchiveItemList(jsonObj.optJSONArray("archiveItems")).parse();
+            gameCenterData.resources =
+                    new ToWebResourceList(jsonObj.optJSONArray("resources")).parse();
+            gameCenterData.splashScreen =
+                    new ToGameSplashScreen(jsonObj.optJSONObject("splashScreen")).parse();
+            gameCenterData.splashLandscapeScreen =
+                    new ToGameSplashScreen(jsonObj.optJSONObject("splashLandscapeScreen")).parse();
+            gameCenterData.options =
+                    new ToGameScreenOptions(jsonObj.optJSONObject("screenOptions")).parse();
+            gameCenterData.gameLaunchConditions =
+                    new ToGameLaunchConditions(jsonObj.optJSONObject("launchConditions")).parse();
+            gameCenterData.splashAnimation =
+                    new ToGameSplashAnimation(jsonObj.optJSONObject("splashLottieScreen")).parse();
+
             return gameCenterData;
         } catch (Exception e) {
             return null;

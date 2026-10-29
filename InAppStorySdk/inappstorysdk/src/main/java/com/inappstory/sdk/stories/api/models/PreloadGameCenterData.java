@@ -19,6 +19,7 @@ public class PreloadGameCenterData implements IGameCenterData {
     public GameSplashAnimation splashAnimation;
     @SerializedName("resources")
     public List<WebResource> resources;
+    @Required
     @SerializedName("downloadUrl")
     public String url;
 

@@ -2,12 +2,9 @@ package com.inappstory.sdk.parse.to;
 
 import androidx.annotation.NonNull;
 
-import com.inappstory.sdk.core.network.content.models.InAppMessage;
 import com.inappstory.sdk.core.network.content.models.InAppMessageLimit;
-import com.inappstory.sdk.parse.ExtendedJsonObject;
 
 import org.json.JSONArray;
-import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,9 +21,10 @@ public final class ToInAppMessageLimitList extends ToModelParser<List<InAppMessa
             JSONArray limits = new JSONArray(value);
             List<InAppMessageLimit> inAppMessageLimits = new ArrayList<>();
             for (int i = 0; i < limits.length(); i++) {
-                inAppMessageLimits.add()
+                InAppMessageLimit limit = new ToInAppMessageLimit(limits.optJSONObject(i)).parse();
+                if (limit == null) return null;
+                inAppMessageLimits.add(limit);
             }
-
             return inAppMessageLimits;
         } catch (Exception e) {
             return null;

@@ -1,9 +1,11 @@
 package com.inappstory.sdk.stories.api.models;
 
+import com.inappstory.sdk.network.annotations.models.Required;
 import com.inappstory.sdk.network.annotations.models.SerializedName;
 import com.inappstory.sdk.stories.api.interfaces.IGameLaunchCondition;
 
 public class GameLCMinWebViewVersion implements IGameLaunchCondition {
+    @Required
     @SerializedName("minVersion")
     public int minVersion;
     @SerializedName("message")
