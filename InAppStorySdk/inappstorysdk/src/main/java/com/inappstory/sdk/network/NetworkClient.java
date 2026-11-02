@@ -167,7 +167,7 @@ public class NetworkClient {
                     } else {
                         response = new Response.Builder().code(response.code)
                                 .errorBody(
-                                        parser.parseError()
+                                        parser != null ? parser.parseError() : "Can't create parser instance: " + parserClass.getSimpleName()
                                 ).build();
                         response.logId = requestId;
                         callback.onFailure(response);
