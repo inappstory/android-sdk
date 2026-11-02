@@ -30,7 +30,7 @@ public final class ToInAppMessageFeed extends ToModelParser<InAppMessageFeed> {
     }
 
     @Override
-    protected String getClassName() {
+    protected String getModelClassName() {
         return "InAppMessageFeed";
     }
 }

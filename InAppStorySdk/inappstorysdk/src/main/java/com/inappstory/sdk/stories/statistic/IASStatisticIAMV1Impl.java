@@ -4,6 +4,8 @@ import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASStatisticIAMV1;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.models.Response;
+import com.inappstory.sdk.parse.to.ToIAMStatisticV1Task;
+import com.inappstory.sdk.parse.to.ToStoryStatisticV2Task;
 import com.inappstory.sdk.stories.api.models.SlideLayerKey;
 import com.inappstory.sdk.stories.utils.LoopedExecutor;
 
@@ -147,7 +149,8 @@ public class IASStatisticIAMV1Impl implements IASStatisticIAMV1 {
     ) {
         if (disabled) return;
         String eventId = UUID.randomUUID().toString();
-        IAMStatisticV1Task task = JsonParser.fromJson(widgetData, IAMStatisticV1Task.class);
+        IAMStatisticV1Task task = new ToIAMStatisticV1Task(widgetData).parse();
+        if (task == null) return;
         task.iamId = iamId;
         task.eventId = eventId;
         task.iterationId = iterationId;

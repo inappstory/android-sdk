@@ -41,6 +41,8 @@ import com.inappstory.sdk.inappmessage.domain.stedata.SlideInCacheData;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.jsapiclient.JsApiClient;
 import com.inappstory.sdk.network.jsapiclient.JsApiResponseCallback;
+import com.inappstory.sdk.parse.from.FromSlideInCacheData;
+import com.inappstory.sdk.parse.to.ToDialogStructure;
 import com.inappstory.sdk.stories.api.models.ContentId;
 import com.inappstory.sdk.stories.api.models.ContentIdWithIndex;
 import com.inappstory.sdk.stories.api.models.dialogstructure.DialogStructure;
@@ -225,45 +227,46 @@ public class IAMContentLayout extends FrameLayout implements Observer<IAMReaderS
                 if (!isAttachedToWindow()) return;
                 Context context = getContext();
 
-                DialogStructure structure = JsonParser.fromJson(inputData.data(), DialogStructure.class);
-                core.showInputDialog().onShow(
-                        context,
-                        structure.toInputDialogData(),
-                        InputDialogSource.IN_APP_MESSAGE,
-                        new IInputDialogActions() {
-                            @Override
-                            public void onShow() {
-                                new Handler(Looper.getMainLooper()).post(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        onPause();
-                                    }
-                                });
-                            }
+                DialogStructure structure = new ToDialogStructure(inputData.data()).parse();
+                if (structure != null)
+                    core.showInputDialog().onShow(
+                            context,
+                            structure.toInputDialogData(),
+                            InputDialogSource.IN_APP_MESSAGE,
+                            new IInputDialogActions() {
+                                @Override
+                                public void onShow() {
+                                    new Handler(Looper.getMainLooper()).post(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            onPause();
+                                        }
+                                    });
+                                }
 
-                            @Override
-                            public void onSubmit(String message) {
-                                new Handler(Looper.getMainLooper()).post(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        onResume();
-                                        submitInput(inputData.id(), message);
-                                    }
-                                });
-                            }
+                                @Override
+                                public void onSubmit(String message) {
+                                    new Handler(Looper.getMainLooper()).post(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            onResume();
+                                            submitInput(inputData.id(), message);
+                                        }
+                                    });
+                                }
 
-                            @Override
-                            public void onCancel() {
-                                new Handler(Looper.getMainLooper()).post(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        onResume();
-                                        submitInput(inputData.id(), "");
-                                    }
-                                });
+                                @Override
+                                public void onCancel() {
+                                    new Handler(Looper.getMainLooper()).post(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            onResume();
+                                            submitInput(inputData.id(), "");
+                                        }
+                                    });
+                                }
                             }
-                        }
-                );
+                    );
             }
         });
 
@@ -314,7 +317,9 @@ public class IAMContentLayout extends FrameLayout implements Observer<IAMReaderS
             @Override
             public void run() {
                 try {
-                    webView.slideInCache(JsonParser.getJson(slideInCacheData));
+                    String slideData = new FromSlideInCacheData(slideInCacheData).parse();
+                    if (slideData != null)
+                        webView.slideInCache(slideData);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

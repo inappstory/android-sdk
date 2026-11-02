@@ -19,6 +19,8 @@ import com.inappstory.sdk.inappmessage.domain.stedata.STEDataType;
 import com.inappstory.sdk.inappmessage.domain.stedata.STETypeAndData;
 import com.inappstory.sdk.inappmessage.domain.stedata.ShowInputData;
 import com.inappstory.sdk.network.JsonParser;
+import com.inappstory.sdk.parse.to.ToSlideLinkObject;
+import com.inappstory.sdk.parse.to.ToUpdateTimelineData;
 import com.inappstory.sdk.stories.api.models.ContentId;
 import com.inappstory.sdk.stories.api.models.ContentIdWithIndex;
 import com.inappstory.sdk.stories.api.models.ContentType;
@@ -60,7 +62,10 @@ public class BannerViewModel implements IBannerViewModel {
     @Override
     public void updateTimeline(String strData) {
         if (strData != null && !strData.isEmpty()) {
-            UpdateTimelineData data = JsonParser.fromJson(strData, UpdateTimelineData.class);
+            UpdateTimelineData data = new ToUpdateTimelineData(strData).parse();
+            if (data == null) {
+                return;
+            }
             if (data.showError) {
                 slideLoadError(0);
                 updateCurrentLoaderState(BannerRefreshLoaderState.FAILED);
@@ -313,7 +318,7 @@ public class BannerViewModel implements IBannerViewModel {
     @Override
     public void slideClick(String payload) {
         if (payload != null && !payload.isEmpty()) {
-            SlideLinkObject object = JsonParser.fromJson(payload, SlideLinkObject.class);
+            SlideLinkObject object = new ToSlideLinkObject(payload).parse();
             if (object != null) {
                 ClickAction action = ClickAction.BUTTON;
                 if (object.getLink().getType().equals("url")) {

@@ -65,6 +65,10 @@ public class ExtendedJsonObject {
         return value.optBoolean(name);
     }
 
+    public boolean optBoolean(String name, boolean defValue) {
+        return value.optBoolean(name, defValue);
+    }
+
     public long optLong(String name) {
         return value.optLong(name);
     }

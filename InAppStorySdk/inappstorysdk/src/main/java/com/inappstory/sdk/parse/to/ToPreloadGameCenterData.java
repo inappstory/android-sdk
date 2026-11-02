@@ -39,7 +39,7 @@ public final class ToPreloadGameCenterData extends ToModelParser<PreloadGameCent
     }
 
     @Override
-    protected String getClassName() {
+    protected String getModelClassName() {
         return "PreloadGameCenterData";
     }
 }

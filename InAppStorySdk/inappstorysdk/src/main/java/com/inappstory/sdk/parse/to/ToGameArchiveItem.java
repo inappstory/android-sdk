@@ -26,7 +26,7 @@ public final class ToGameArchiveItem extends ToModelParser<GameArchiveItem> {
     }
 
     @Override
-    protected String getClassName() {
+    protected String getModelClassName() {
         return "GameArchiveItem";
     }
 }

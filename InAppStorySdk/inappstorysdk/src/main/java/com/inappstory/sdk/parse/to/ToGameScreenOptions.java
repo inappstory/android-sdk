@@ -28,7 +28,7 @@ public final class ToGameScreenOptions extends ToModelParser<GameScreenOptions> 
     }
 
     @Override
-    protected String getClassName() {
+    protected String getModelClassName() {
         return "GameScreenOptions";
     }
 }

@@ -45,7 +45,7 @@ public final class ToSessionEditor extends ToModelParser<SessionEditor> {
     }
 
     @Override
-    protected String getClassName() {
+    protected String getModelClassName() {
         return "SessionEditor";
     }
 }

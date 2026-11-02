@@ -57,7 +57,7 @@ public final class ToBanner extends ToModelParser<Banner> {
     }
 
     @Override
-    protected String getClassName() {
+    protected String getModelClassName() {
         return "Banner";
     }
 }

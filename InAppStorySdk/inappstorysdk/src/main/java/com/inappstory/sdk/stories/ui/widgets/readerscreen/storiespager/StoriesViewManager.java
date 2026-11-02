@@ -25,6 +25,10 @@ import com.inappstory.sdk.goods.models.ProductCartUpdateCallbacks;
 import com.inappstory.sdk.goods.models.ProductCartUpdateJSData;
 import com.inappstory.sdk.goods.outercallbacks.ProductCart;
 import com.inappstory.sdk.goods.outercallbacks.ProductCartUpdatedProcessCallback;
+import com.inappstory.sdk.parse.from.FromProductCart;
+import com.inappstory.sdk.parse.to.ToInnerShareData;
+import com.inappstory.sdk.parse.to.ToProductCartUpdateCallbacks;
+import com.inappstory.sdk.parse.to.ToProductCartUpdateJSData;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.stories.api.models.OnVerticalScrollJSData;
 import com.inappstory.sdk.stories.api.models.SlideLayerKey;
@@ -98,12 +102,8 @@ public class StoriesViewManager {
     }
 
     void cartUpdatedResultSuccess(String successCB, String requestId, ProductCart productCart) {
-        String cardStr = "{}";
-        try {
-            cardStr = JsonParser.getJson(productCart);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        String cardStr = new FromProductCart(productCart).parse();
+        if (cardStr == null) cardStr = "{}";
         if (storiesView instanceof StoriesWebView) {
             ((StoriesWebView) storiesView).cartUpdatedResultSuccess(successCB, requestId, cardStr);
         }
@@ -118,12 +118,14 @@ public class StoriesViewManager {
 
     public void productCartUpdate(String productCartData, String callbacks) {
         ProductCartUpdateCallbacks cartUpdateCallbacks =
-                JsonParser.fromJson(callbacks, ProductCartUpdateCallbacks.class);
+                new ToProductCartUpdateCallbacks(callbacks).parse();
+        if (cartUpdateCallbacks == null) return;
         final String requestId = cartUpdateCallbacks.requestId;
         final String successCB = cartUpdateCallbacks.successCb;
         final String errorCB = cartUpdateCallbacks.errorCb;
         final ProductCartUpdateJSData cartUpdateJSData =
-                JsonParser.fromJson(productCartData, ProductCartUpdateJSData.class);
+                new ToProductCartUpdateJSData(productCartData).parse();
+        if (cartUpdateJSData == null) return;
         pageManager.updateCart(
                 cartUpdateJSData.offer,
                 new ProductCartUpdatedProcessCallback() {
@@ -155,8 +157,8 @@ public class StoriesViewManager {
     }
 
     public void productCartGetState(String callbacks) {
-        ProductCartUpdateCallbacks cartUpdateCallbacks =
-                JsonParser.fromJson(callbacks, ProductCartUpdateCallbacks.class);
+        ProductCartUpdateCallbacks cartUpdateCallbacks = new ToProductCartUpdateCallbacks(callbacks).parse();
+        if (cartUpdateCallbacks == null) return;
         final String requestId = cartUpdateCallbacks.requestId;
         final String successCB = cartUpdateCallbacks.successCb;
         final String errorCB = cartUpdateCallbacks.errorCb;
@@ -580,7 +582,7 @@ public class StoriesViewManager {
         if (shareProcessHandler == null || shareProcessHandler.isShareProcess())
             return;
         shareProcessHandler.isShareProcess(true);
-        InnerShareData shareData = JsonParser.fromJson(data, InnerShareData.class);
+        InnerShareData shareData = new ToInnerShareData(data).parse();
 
         IReaderContent story = core.contentHolder().readerContent()
                 .getByIdAndType(storyId, pageManager.getViewContentType());

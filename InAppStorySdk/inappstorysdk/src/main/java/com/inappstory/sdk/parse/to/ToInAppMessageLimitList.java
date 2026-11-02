@@ -32,7 +32,7 @@ public final class ToInAppMessageLimitList extends ToModelParser<List<InAppMessa
     }
 
     @Override
-    protected String getClassName() {
+    protected String getModelClassName() {
         return "List of InAppMessageLimit";
     }
 }

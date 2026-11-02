@@ -30,7 +30,7 @@ public final class ToWebResource extends ToModelParser<WebResource> {
     }
 
     @Override
-    protected String getClassName() {
+    protected String getModelClassName() {
         return "WebResource";
     }
 }

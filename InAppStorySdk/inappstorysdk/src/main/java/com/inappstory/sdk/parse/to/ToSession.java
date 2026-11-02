@@ -25,7 +25,7 @@ public final class ToSession extends ToModelParser<Session> {
     }
 
     @Override
-    protected String getClassName() {
+    protected String getModelClassName() {
         return "Session";
     }
 }

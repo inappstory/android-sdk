@@ -10,6 +10,9 @@ import com.inappstory.sdk.LoggerTags;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.network.JsonParser;
+import com.inappstory.sdk.parse.to.ToOnVerticalScrollJSData;
+import com.inappstory.sdk.parse.to.ToStoryLoadedData;
+import com.inappstory.sdk.parse.to.ToUpdateTimelineData;
 import com.inappstory.sdk.stories.api.models.OnVerticalScrollJSData;
 import com.inappstory.sdk.stories.api.models.StoryLoadedData;
 import com.inappstory.sdk.stories.api.models.UpdateTimelineData;
@@ -49,16 +52,18 @@ public class StoryReaderJavascriptInterface {
 
     @JavascriptInterface
     public void onVerticalScrollChange(String data) {
-        OnVerticalScrollJSData verticalScrollData =
-                JsonParser.fromJson(data, OnVerticalScrollJSData.class);
-        manager.onVerticalScrollChanged(verticalScrollData);
+
+        OnVerticalScrollJSData verticalScrollData = new ToOnVerticalScrollJSData(data).parse();
+        if (verticalScrollData != null)
+            manager.onVerticalScrollChanged(verticalScrollData);
     }
 
     @JavascriptInterface
     public void updateTimeline(String data) {
         if (data != null) {
-            UpdateTimelineData updateTimelineData = JsonParser.fromJson(data, UpdateTimelineData.class);
-            manager.updateTimeline(updateTimelineData);
+            UpdateTimelineData updateTimelineData = new ToUpdateTimelineData(data).parse();
+            if (updateTimelineData != null)
+                manager.updateTimeline(updateTimelineData);
         }
         logMethod(data);
     }
@@ -66,8 +71,9 @@ public class StoryReaderJavascriptInterface {
     @JavascriptInterface
     public void storyLoadingFailed(String data) {
         if (data != null) {
-            StoryLoadedData loadedData = JsonParser.fromJson(data, StoryLoadedData.class);
-            manager.slideLoadError(loadedData.index);
+            StoryLoadedData loadedData = new ToStoryLoadedData(data).parse();
+            if (loadedData != null)
+                manager.slideLoadError(loadedData.index);
         }
         logMethod("");
     }
@@ -195,8 +201,9 @@ public class StoryReaderJavascriptInterface {
     @JavascriptInterface
     public void storyLoaded(String data) {
         if (data != null) {
-            int slideIndex = JsonParser.fromJson(data, StoryLoadedData.class).index;
-            manager.storyLoaded(slideIndex);
+            StoryLoadedData loadedData = new ToStoryLoadedData(data).parse();
+            if (loadedData != null)
+                manager.storyLoaded(loadedData.index);
         } else {
             manager.storyLoaded(-1);
         }

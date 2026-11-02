@@ -31,7 +31,7 @@ public final class ToBannerPlaceModel extends ToModelParser<BannerPlaceModel> {
     }
 
     @Override
-    protected String getClassName() {
+    protected String getModelClassName() {
         return "BannerPlaceModel";
     }
 }

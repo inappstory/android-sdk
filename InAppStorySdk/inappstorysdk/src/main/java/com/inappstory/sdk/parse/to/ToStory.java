@@ -81,7 +81,7 @@ public final class ToStory extends ToModelParser<Story> {
     }
 
     @Override
-    protected String getClassName() {
+    protected String getModelClassName() {
         return "Story";
     }
 }

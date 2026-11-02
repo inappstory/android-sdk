@@ -30,7 +30,7 @@ public final class ToLayoutResponse extends ToModelParser<LayoutResponse> {
     }
 
     @Override
-    protected String getClassName() {
+    protected String getModelClassName() {
         return "LayoutResponse";
     }
 }

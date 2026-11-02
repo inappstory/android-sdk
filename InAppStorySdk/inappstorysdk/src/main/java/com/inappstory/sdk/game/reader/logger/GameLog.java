@@ -81,16 +81,20 @@ public class GameLog {
         return stacktrace;
     }
 
+    public String message;
+    public String logSession;
+    public String webViewVersion;
+    public String stacktrace;
     public String gameInstanceId;
     public String type;
     public String webViewPackage;
+    public boolean gameLoaded;
     public Long timestamp;
+    public int launchTryNumber;
 
     public int launchTryNumber() {
         return launchTryNumber;
     }
-
-    public int launchTryNumber;
 
     public GameLog(
             String gameInstanceId,
@@ -110,10 +114,5 @@ public class GameLog {
         this.gameLoaded = gameLoaded;
     }
 
-    public String message;
-    public String logSession;
-    public String webViewVersion;
-    public String stacktrace;
-    public boolean gameLoaded;
 
 }

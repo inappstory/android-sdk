@@ -25,6 +25,8 @@ import com.inappstory.sdk.banners.ui.banner.BannerWebView;
 import com.inappstory.sdk.core.ui.widgets.elasticview.DraggableElasticLayout;
 import com.inappstory.sdk.game.reader.SafeAreaInsets;
 import com.inappstory.sdk.network.JsonParser;
+import com.inappstory.sdk.parse.from.FromSafeAreaInsets;
+import com.inappstory.sdk.parse.from.FromSlideInCacheData;
 import com.inappstory.sdk.stories.api.models.logs.WebConsoleLog;
 
 import java.util.UUID;
@@ -176,12 +178,11 @@ public class IASWebView extends WebView implements NestedScrollingChild {
     }
 
     protected String setSafeArea(String html, SafeAreaInsets insets) {
-        try {
-            String safeAreaString = JsonParser.getJson(insets);
+        String safeAreaString = new FromSafeAreaInsets(insets).parse();
+        if (safeAreaString != null)
             return html.replace("{{%safeAreaInsets}}", safeAreaString);
-        } catch (Exception e) {
+        else
             return html;
-        }
     }
 
     private int mLastY;

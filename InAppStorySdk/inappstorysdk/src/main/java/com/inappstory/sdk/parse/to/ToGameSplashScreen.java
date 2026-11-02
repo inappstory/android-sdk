@@ -28,7 +28,7 @@ public final class ToGameSplashScreen extends ToModelParser<GameSplashScreen> {
     }
 
     @Override
-    protected String getClassName() {
+    protected String getModelClassName() {
         return "GameSplashScreen";
     }
 }

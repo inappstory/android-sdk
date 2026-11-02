@@ -19,6 +19,7 @@ import com.inappstory.sdk.goods.outercallbacks.ProductCartOffer;
 import com.inappstory.sdk.goods.outercallbacks.ProductCartInteractionCallback;
 import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.network.JsonParser;
+import com.inappstory.sdk.parse.to.ToSlideLinkObject;
 import com.inappstory.sdk.stories.api.models.ContentType;
 import com.inappstory.sdk.core.network.content.models.Story;
 import com.inappstory.sdk.stories.api.models.SlideLayerKey;
@@ -291,7 +292,7 @@ public class ReaderPageManager implements IReaderSlideViewModel {
     }
 
     private void tapOnLink(String link) {
-        final SlideLinkObject object = JsonParser.fromJson(link, SlideLinkObject.class);
+        final SlideLinkObject object = new ToSlideLinkObject(link).parse();
         if (object != null) {
             ClickAction action = ClickAction.BUTTON;
             final IReaderContent story = core.contentHolder().readerContent().getByIdAndType(

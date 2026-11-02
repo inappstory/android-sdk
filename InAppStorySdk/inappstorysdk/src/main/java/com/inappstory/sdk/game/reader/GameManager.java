@@ -29,6 +29,13 @@ import com.inappstory.sdk.network.JsonParser;
 
 import com.inappstory.sdk.network.jsapiclient.JsApiClient;
 import com.inappstory.sdk.network.jsapiclient.JsApiResponseCallback;
+import com.inappstory.sdk.parse.to.ToGameAcceleratorOptions;
+import com.inappstory.sdk.parse.to.ToGameAddToCachePayload;
+import com.inappstory.sdk.parse.to.ToGameFinishOptions;
+import com.inappstory.sdk.parse.to.ToGameLoadedConfig;
+import com.inappstory.sdk.parse.to.ToGameSTIData;
+import com.inappstory.sdk.parse.to.ToInnerShareData;
+import com.inappstory.sdk.parse.to.ToUrlObject;
 import com.inappstory.sdk.share.IShareCompleteListener;
 import com.inappstory.sdk.stories.api.models.CachedSessionData;
 import com.inappstory.sdk.stories.api.models.UrlObject;
@@ -116,7 +123,7 @@ public class GameManager {
     }
 
     void openUrl(String data) {
-        UrlObject urlObject = JsonParser.fromJson(data, UrlObject.class);
+        UrlObject urlObject = new ToUrlObject(data).parse();
         if (urlObject != null && urlObject.url != null && !urlObject.url.isEmpty())
             tapOnLink(urlObject.url, host.getContext());
     }
@@ -129,8 +136,7 @@ public class GameManager {
 
     @JavascriptInterface
     public void initUserAccelerationSensor(String options) {
-        GameAcceleratorOptions gameAcceleratorOptions =
-                JsonParser.fromJson(options, GameAcceleratorOptions.class);
+        GameAcceleratorOptions gameAcceleratorOptions = new ToGameAcceleratorOptions(options).parse();
         core.acceleratorUtils().init(
                 gameAcceleratorOptions.frequency,
                 new IAcceleratorInitCallback() {
@@ -263,7 +269,7 @@ public class GameManager {
     }
 
     void gameCompleted(String gameState, String urlOrOptions, String eventData) {
-        GameFinishOptions options = JsonParser.fromJson(urlOrOptions, GameFinishOptions.class);
+        GameFinishOptions options = new ToGameFinishOptions(urlOrOptions).parse();
         if (options == null) {
             gameCompletedWithUrl(gameState, urlOrOptions, eventData);
         } else if (options.openUrl != null) {
@@ -340,7 +346,8 @@ public class GameManager {
     }
 
     void gameShouldForegroundCallback(String data) {
-        GameLoadedConfig config = JsonParser.fromJson(data, GameLoadedConfig.class);
+        GameLoadedConfig config = new ToGameLoadedConfig(data).parse();
+        if (config == null) return;
         host.gameReaderGestureBack = config.backGesture;
         host.showClose = config.showClose;
         host.updateUI();
@@ -443,7 +450,7 @@ public class GameManager {
         if (shareProcessHandler == null || shareProcessHandler.isShareProcess())
             return;
         shareProcessHandler.isShareProcess(true);
-        InnerShareData shareObj = JsonParser.fromJson(data, InnerShareData.class);
+        InnerShareData shareObj = new ToInnerShareData(data).parse();
         shareProcessHandler.shareCompleteListener(
                 new IShareCompleteListener(id, -1) {
                     @Override
@@ -453,13 +460,14 @@ public class GameManager {
                     }
                 }
         );
-        host.share(shareObj);
+        if (shareObj != null)
+            host.share(shareObj);
 
     }
 
     public void addToCache(String payload) {
-        GameAddToCachePayload atcPayload =
-                JsonParser.fromJson(payload, GameAddToCachePayload.class);
+        GameAddToCachePayload atcPayload = new ToGameAddToCachePayload(payload).parse();
+        if (atcPayload == null) return;
         core.gamesAPI().inGameResourceDownloadManager().addNewTask(
                 path,
                 gameCenterId,
@@ -469,7 +477,8 @@ public class GameManager {
     }
 
     public void showTextInput(String data) {
-        GameSTIData structure = JsonParser.fromJson(data, GameSTIData.class);
+        GameSTIData structure = new ToGameSTIData(data).parse();
+        if (structure == null) return;
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {

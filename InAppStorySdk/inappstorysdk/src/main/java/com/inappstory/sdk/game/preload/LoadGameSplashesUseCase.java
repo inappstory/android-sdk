@@ -7,6 +7,7 @@ import com.inappstory.sdk.game.cache.UseCaseCallback;
 import com.inappstory.sdk.game.cache.UseCaseError;
 import com.inappstory.sdk.game.utils.GameConstants;
 import com.inappstory.sdk.network.JsonParser;
+import com.inappstory.sdk.parse.from.FromGameSplashAnimation;
 import com.inappstory.sdk.stories.api.interfaces.IGameCenterData;
 import com.inappstory.sdk.stories.cache.DownloadInterruption;
 import com.inappstory.sdk.stories.cache.FilesDownloadManager;
@@ -131,7 +132,7 @@ public class LoadGameSplashesUseCase {
                     try {
                         core.keyValueStorage().saveString(
                                 GameConstants.SPLASH_ANIM_KV_SETTINGS + gameData.id(),
-                                JsonParser.getJson(gameData.splashAnimation())
+                                new FromGameSplashAnimation(gameData.splashAnimation()).parse()
                         );
                     } catch (Exception e) {
                     }

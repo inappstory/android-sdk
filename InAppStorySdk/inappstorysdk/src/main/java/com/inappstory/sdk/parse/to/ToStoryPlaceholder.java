@@ -25,7 +25,7 @@ public final class ToStoryPlaceholder extends ToModelParser<StoryPlaceholder> {
     }
 
     @Override
-    protected String getClassName() {
+    protected String getModelClassName() {
         return "StoryPlaceholder";
     }
 }

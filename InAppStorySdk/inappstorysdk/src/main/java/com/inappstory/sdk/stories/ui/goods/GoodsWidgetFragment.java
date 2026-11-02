@@ -19,6 +19,7 @@ import com.inappstory.sdk.core.UseIASCoreCallback;
 import com.inappstory.sdk.core.api.IASCallbackType;
 import com.inappstory.sdk.core.api.UseIASCallback;
 import com.inappstory.sdk.network.JsonParser;
+import com.inappstory.sdk.parse.to.ToStringList;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryWidgetCallback;
@@ -32,6 +33,7 @@ import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class GoodsWidgetFragment extends Fragment implements IASBackPressHandler {
@@ -85,11 +87,11 @@ public class GoodsWidgetFragment extends Fragment implements IASBackPressHandler
         widgetView.setOnRefreshClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                final ArrayList<String> skus = JsonParser.listFromJson(
-                        getArguments().getString("skusString"),
-                        String.class
+                final List<String> skus = new ToStringList(getArguments().getString("skusString")).parse();
+                customGoodsWidget.getSkus(widgetView,
+                        new ArrayList<>(skus != null ? skus : new ArrayList<>()),
+                        getGoodsDataCallback
                 );
-                customGoodsWidget.getSkus(widgetView, skus, getGoodsDataCallback);
             }
         });
         getGoodsDataCallback = new GetGoodsDataCallback() {
@@ -103,7 +105,7 @@ public class GoodsWidgetFragment extends Fragment implements IASBackPressHandler
                         );
                     }
                 });
-                ((GoodsRecyclerView)widgetView).onSuccess(data);
+                ((GoodsRecyclerView) widgetView).onSuccess(data);
 
             }
 
@@ -117,7 +119,7 @@ public class GoodsWidgetFragment extends Fragment implements IASBackPressHandler
                         );
                     }
                 });
-                ((GoodsRecyclerView)widgetView).onError();
+                ((GoodsRecyclerView) widgetView).onError();
             }
 
             @Override
@@ -171,10 +173,7 @@ public class GoodsWidgetFragment extends Fragment implements IASBackPressHandler
             }
         });
 
-        final ArrayList<String> skus = JsonParser.listFromJson(
-                getArguments().getString("skusString"),
-                String.class
-        );
+        final List<String> skus = new ToStringList(getArguments().getString("skusString")).parse();
         FrameLayout layout = view.findViewById(R.id.cs_widget_container);
         Context context = getContext();
         View appearanceView = customGoodsWidget.getWidgetView(context);
@@ -194,7 +193,7 @@ public class GoodsWidgetFragment extends Fragment implements IASBackPressHandler
         layout.addView(appearanceView);
         AppearanceManager.getCommonInstance().csCustomGoodsWidget().getSkus(
                 appearanceView,
-                skus,
+                new ArrayList<>(skus),
                 getGoodsDataCallback
         );
     }

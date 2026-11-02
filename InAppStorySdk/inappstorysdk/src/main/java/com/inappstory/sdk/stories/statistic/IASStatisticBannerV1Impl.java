@@ -4,6 +4,8 @@ import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.api.IASStatisticBannerV1;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.models.Response;
+import com.inappstory.sdk.parse.to.ToBannerStatisticV1Task;
+import com.inappstory.sdk.parse.to.ToIAMStatisticV1Task;
 import com.inappstory.sdk.stories.utils.LoopedExecutor;
 
 import java.util.ArrayList;
@@ -144,10 +146,9 @@ public class IASStatisticBannerV1Impl implements IASStatisticBannerV1 {
     ) {
         if (disabled) return;
         String eventId = UUID.randomUUID().toString();
-        BannerStatisticV1Task task = JsonParser.fromJson(
-                widgetData,
-                BannerStatisticV1Task.class
-        );
+
+        BannerStatisticV1Task task = new ToBannerStatisticV1Task(widgetData).parse();
+        if (task == null) return;
         task.bannerId = bannerId;
         task.eventId = eventId;
         task.iterationId = iterationId;

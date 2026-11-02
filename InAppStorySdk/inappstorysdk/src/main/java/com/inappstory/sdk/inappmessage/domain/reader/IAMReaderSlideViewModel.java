@@ -14,6 +14,10 @@ import com.inappstory.sdk.core.data.IInAppMessage;
 import com.inappstory.sdk.core.data.IReaderContent;
 import com.inappstory.sdk.core.inappmessages.InAppMessageDownloadManager;
 import com.inappstory.sdk.inappmessage.domain.stedata.ShowInputData;
+import com.inappstory.sdk.parse.from.FromListOfIAMReaderSlideStatObject;
+import com.inappstory.sdk.parse.to.ToShowSlideJSPayload;
+import com.inappstory.sdk.parse.to.ToSlideLeftJSPayload;
+import com.inappstory.sdk.parse.to.ToSlideLinkObject;
 import com.inappstory.sdk.stories.cache.LayoutIsReadyCallback;
 import com.inappstory.sdk.stories.cache.SessionAssetsIsReadyCallback;
 import com.inappstory.sdk.inappmessage.InAppMessageSlideData;
@@ -143,7 +147,7 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
             }
             if (!slideStatObjects.isEmpty()) {
                 try {
-                    slideAnalytics = JsonParser.getJson(slideStatObjects);
+                    slideAnalytics = new FromListOfIAMReaderSlideStatObject(slideStatObjects).parse();
                 } catch (Exception ignored) {
 
                 }
@@ -255,10 +259,7 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
     private void slideLeftEvent(String event) {
         sendSlideScrollEvents();
         if (event == null || event.isEmpty()) return;
-        final SlideLeftJSPayload slideLeftJSPayload = JsonParser.fromJson(
-                event,
-                SlideLeftJSPayload.class
-        );
+        final SlideLeftJSPayload slideLeftJSPayload = new ToSlideLeftJSPayload(event).parse();
         if (slideLeftJSPayload != null) {
             slideTimeState.leftSlide(slideLeftJSPayload.index);
         }
@@ -266,10 +267,7 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
 
     private void showSlideEvent(String event) {
         if (event == null || event.isEmpty()) return;
-        final ShowSlideJSPayload showSlideJSPayload = JsonParser.fromJson(
-                event,
-                ShowSlideJSPayload.class
-        );
+        final ShowSlideJSPayload showSlideJSPayload = new ToShowSlideJSPayload(event).parse();
         // scrollStateObservable.updateValue(new IAMReaderScrollState(0f));
         if (showSlideJSPayload != null) {
             slideStateObservable.updateValue(
@@ -337,7 +335,7 @@ public class IAMReaderSlideViewModel implements IIAMReaderSlideViewModel {
 
     public void slideClick(String payload) {
         if (payload != null && !payload.isEmpty()) {
-            SlideLinkObject object = JsonParser.fromJson(payload, SlideLinkObject.class);
+            SlideLinkObject object = new ToSlideLinkObject(payload).parse();
             if (object != null) {
                 ClickAction action = ClickAction.BUTTON;
                 if (object.getLink().getType().equals("url")) {

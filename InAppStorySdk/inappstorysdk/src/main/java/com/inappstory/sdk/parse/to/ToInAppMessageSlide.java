@@ -37,7 +37,7 @@ public final class ToInAppMessageSlide extends ToModelParser<InAppMessageSlide> 
     }
 
     @Override
-    protected String getClassName() {
+    protected String getModelClassName() {
         return "InAppMessageSlide";
     }
 }

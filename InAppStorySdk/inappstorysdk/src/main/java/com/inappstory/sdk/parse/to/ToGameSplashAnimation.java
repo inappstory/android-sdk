@@ -27,7 +27,7 @@ public final class ToGameSplashAnimation extends ToModelParser<GameSplashAnimati
     }
 
     @Override
-    protected String getClassName() {
+    protected String getModelClassName() {
         return "GameSplashAnimation";
     }
 }

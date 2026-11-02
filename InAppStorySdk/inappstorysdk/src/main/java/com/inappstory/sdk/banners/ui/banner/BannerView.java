@@ -47,6 +47,7 @@ import com.inappstory.sdk.inappmessage.domain.stedata.ShowInputData;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.jsapiclient.JsApiClient;
 import com.inappstory.sdk.network.jsapiclient.JsApiResponseCallback;
+import com.inappstory.sdk.parse.to.ToDialogStructure;
 import com.inappstory.sdk.stories.api.models.ContentId;
 import com.inappstory.sdk.stories.api.models.ContentIdWithIndex;
 import com.inappstory.sdk.stories.api.models.dialogstructure.DialogStructure;
@@ -377,7 +378,7 @@ public class BannerView extends FrameLayout implements Observer<BannerState> {
                 if (!isAttachedToWindow()) return;
                 Context context = getContext();
 
-                DialogStructure structure = JsonParser.fromJson(inputData.data(), DialogStructure.class);
+                DialogStructure structure = new ToDialogStructure(inputData.data()).parse();
                 core.showInputDialog().onShow(
                         context,
                         structure.toInputDialogData(),

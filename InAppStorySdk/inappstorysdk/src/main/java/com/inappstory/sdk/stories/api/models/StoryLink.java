@@ -18,6 +18,6 @@ public class StoryLink {
         return target;
     }
 
-    String type;
-    String target;
+    public String type;
+    public String target;
 }

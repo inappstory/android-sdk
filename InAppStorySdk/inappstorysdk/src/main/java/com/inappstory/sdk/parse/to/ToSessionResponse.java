@@ -49,7 +49,7 @@ public final class ToSessionResponse extends ToModelParser<SessionResponse> {
     }
 
     @Override
-    protected String getClassName() {
+    protected String getModelClassName() {
         return "SessionResponse";
     }
 }

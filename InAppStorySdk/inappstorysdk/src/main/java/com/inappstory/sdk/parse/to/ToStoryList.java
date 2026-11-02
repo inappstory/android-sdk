@@ -48,7 +48,7 @@ public final class ToStoryList extends ToModelParser<List<Story>> {
     }
 
     @Override
-    protected String getClassName() {
+    protected String getModelClassName() {
         return "List of Story";
     }
 }

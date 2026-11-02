@@ -9,9 +9,9 @@ public class TextStructure implements Serializable {
     public String color;
     public String value;
     public String placeholder;
-    String family;
-    String weight;
-    String style;
+    public String family;
+    public String weight;
+    public String style;
     public int limit;
     public int maxLines;
 

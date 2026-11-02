@@ -52,7 +52,7 @@ public final class ToGameCenterData extends ToModelParser<GameCenterData> {
     }
 
     @Override
-    protected String getClassName() {
+    protected String getModelClassName() {
         return "GameCenterData";
     }
 }

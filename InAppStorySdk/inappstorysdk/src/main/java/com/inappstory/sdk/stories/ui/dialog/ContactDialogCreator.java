@@ -11,6 +11,7 @@ import androidx.fragment.app.FragmentTransaction;
 
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.network.JsonParser;
+import com.inappstory.sdk.parse.to.ToDialogStructure;
 import com.inappstory.sdk.stories.api.models.dialogstructure.DialogStructure;
 import com.inappstory.sdk.core.ui.screens.storyreader.BaseStoryScreen;
 
@@ -34,7 +35,7 @@ public class ContactDialogCreator {
             SendListener sendListener,
             CancelListener cancelListener
     ) {
-        this.dialogStructure = JsonParser.fromJson(data, DialogStructure.class);
+        this.dialogStructure = new ToDialogStructure(data).parse();
         this.dialogId = dialogId;
         this.storyId = storyId;
         this.sendListener = sendListener;

@@ -152,8 +152,16 @@ public class NetworkClient {
                     callback.onSuccess(null);
                     callback.onRawResponse(response);
                 } else {
-                    M parser = parserClass.newInstance();
-                    T obj = parser.parse();
+                    M parser = null;
+                    T obj = null;
+                    try {
+                        parser = parserClass
+                                .getDeclaredConstructor(String.class)
+                                .newInstance(response.body);
+                        obj = parser.parse();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                     if (obj != null) {
                         callback.onSuccess(obj);
                     } else {

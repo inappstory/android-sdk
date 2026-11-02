@@ -25,7 +25,7 @@ public final class ToUGCVersionToSDKBuild extends ToModelParser<UGCVersionToSDKB
     }
 
     @Override
-    protected String getClassName() {
+    protected String getModelClassName() {
         return "UGCVersionToSDKBuild";
     }
 }

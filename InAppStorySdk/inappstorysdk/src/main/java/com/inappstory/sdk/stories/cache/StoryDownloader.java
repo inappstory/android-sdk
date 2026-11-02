@@ -19,6 +19,7 @@ import com.inappstory.sdk.network.callbacks.SimpleApiCallback;
 import com.inappstory.sdk.network.models.RequestLocalParameters;
 import com.inappstory.sdk.network.models.Response;
 import com.inappstory.sdk.parse.to.ToFeed;
+import com.inappstory.sdk.parse.to.ToStory;
 import com.inappstory.sdk.parse.to.ToStoryList;
 import com.inappstory.sdk.stories.api.models.CachedSessionData;
 import com.inappstory.sdk.stories.api.models.ContentIdWithIndex;
@@ -294,7 +295,7 @@ class StoryDownloader {
 
     void loadStoryResult(ContentIdAndType key, Response response) {
         if (response.body != null) {
-            Story story = JsonParser.fromJson(response.body, Story.class);
+            Story story = new ToStory(response.body).parse();
             int loadType;
             synchronized (storyTasksLock) {
                 if (getStoryLoadType(key) < 4) {

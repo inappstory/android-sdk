@@ -26,7 +26,7 @@ public final class ToInAppMessageEvent extends ToModelParser<InAppMessageEvent> 
     }
 
     @Override
-    protected String getClassName() {
+    protected String getModelClassName() {
         return "InAppMessageEvent";
     }
 }

@@ -5,7 +5,6 @@ import com.inappstory.sdk.stories.api.models.PhoneAppData;
 
 public class StoryStatisticV2Task {
     public String event;
-    public PhoneAppData app;
     @SerializedName("ts")
     public Long timestamp;
     @SerializedName("u")

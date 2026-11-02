@@ -33,7 +33,7 @@ public final class ToFeed extends ToModelParser<Feed> {
     }
 
     @Override
-    protected String getClassName() {
+    protected String getModelClassName() {
         return "Feed";
     }
 }

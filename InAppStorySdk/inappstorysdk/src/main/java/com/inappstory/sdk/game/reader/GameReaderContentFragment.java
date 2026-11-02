@@ -94,6 +94,10 @@ import com.inappstory.sdk.inner.share.ShareFilesPrepareCallback;
 import com.inappstory.sdk.memcache.IGetBitmapFromMemoryCache;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.models.RequestLocalParameters;
+import com.inappstory.sdk.parse.from.FromGameConfigOptions;
+import com.inappstory.sdk.parse.from.FromGameSTIResponse;
+import com.inappstory.sdk.parse.from.FromInGameResourceCallbackObj;
+import com.inappstory.sdk.parse.from.FromListOfGameDataPlaceholder;
 import com.inappstory.sdk.stories.api.models.CachedSessionData;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ContentData;
@@ -128,6 +132,8 @@ import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.stories.utils.StoryShareBroadcastReceiver;
 import com.inappstory.sdk.utils.ProgressCallback;
 import com.inappstory.sdk.utils.StringsUtils;
+
+import org.json.JSONObject;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -297,7 +303,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         resourceCallback.id = id;
         resourceCallback.response = inGameResourceDownloadResultObj;
         try {
-            final String strResult = JsonParser.getJson(resourceCallback);
+            final String strResult = new FromInGameResourceCallbackObj(resourceCallback).parse();
             new Handler(Looper.getMainLooper()).post(new Runnable() {
                 @Override
                 public void run() {
@@ -1053,9 +1059,12 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         response.id = id;
         response.response = data;//data.replaceAll("\n", "\\\n");
         try {
-            String payload = JsonParser.stringifyToJsString(response);
-            String url = cb + "(" + payload + ");";
-            webView.evaluateJavascript(url, null);
+            String sResponse = new FromGameSTIResponse(response).parse();
+            if (sResponse != null) {
+                String payload = JSONObject.quote(sResponse);
+                String url = cb + "(" + payload + ");";
+                webView.evaluateJavascript(url, null);
+            }
         } catch (Exception e) {
 
         }
@@ -1494,7 +1503,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         if (gameId != null)
             options.gameInstanceId = gameId;
         try {
-            return JsonParser.stringifyToJsString(options);
+            return JSONObject.quote(new FromGameConfigOptions(options).parse());
         } catch (Exception e) {
             return "{}";
         }
@@ -1504,16 +1513,6 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         setOffsets(isFullscreen, new Pair<>(startedTop, startedBottom));
     }
 
-
-    private String generateJsonPlaceholders(IASDataSettingsHolder dataSettingsHolder) {
-        String st = "[]";
-        try {
-            st = JsonParser.getJson(generatePlaceholders(dataSettingsHolder));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return st;
-    }
 
     private ArrayList<GameDataPlaceholder> generatePlaceholders(IASDataSettingsHolder dataSettingsHolder) {
         Map<String, String> textPlaceholders =
@@ -1657,8 +1656,6 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
 
                 LinearLayout.LayoutParams topLp = (LinearLayout.LayoutParams) blackTop.getLayoutParams();
                 LinearLayout.LayoutParams bottomLp = (LinearLayout.LayoutParams) blackBottom.getLayoutParams();
-
-
 
 
                 if (!isFullscreen) {

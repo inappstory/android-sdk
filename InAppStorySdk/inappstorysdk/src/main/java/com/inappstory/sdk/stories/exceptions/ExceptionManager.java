@@ -8,6 +8,8 @@ import com.inappstory.sdk.core.api.IASDataSettingsHolder;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.network.models.RequestLocalParameters;
+import com.inappstory.sdk.parse.from.FromExceptionLog;
+import com.inappstory.sdk.parse.to.ToExceptionLog;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.api.models.logs.ExceptionLog;
 
@@ -85,7 +87,7 @@ public class ExceptionManager {
         log.id = UUID.randomUUID().toString();
         log.timestamp = System.currentTimeMillis();
         log.message = throwable.getClass().getCanonicalName() + ": " + throwable.getMessage();
-        log.session = ((IASDataSettingsHolder)core.settingsAPI()).sessionIdOrEmpty();
+        log.session = ((IASDataSettingsHolder) core.settingsAPI()).sessionIdOrEmpty();
 
         StackTraceElement[] stackTraceElements = throwable.getStackTrace();
         if (stackTraceElements.length > 0) {
@@ -101,17 +103,15 @@ public class ExceptionManager {
     }
 
     private void saveException(ExceptionLog log) {
-        try {
-            core.sharedPreferencesAPI().saveString(SAVED_EX, JsonParser.getJson(log));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        String sLog = new FromExceptionLog(log).parse();
+        if (sLog != null)
+            core.sharedPreferencesAPI().saveString(SAVED_EX, sLog);
     }
 
     private ExceptionLog getSavedException() {
         String ex = core.sharedPreferencesAPI().getString(SAVED_EX, null);
         if (ex == null) return null;
-        return JsonParser.fromJson(ex, ExceptionLog.class);
+        return new ToExceptionLog(ex).parse();
     }
 
     void logException(ExceptionLog log) {

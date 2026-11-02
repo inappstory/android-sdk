@@ -55,7 +55,7 @@ public final class ToInAppMessage extends ToModelParser<InAppMessage> {
     }
 
     @Override
-    protected String getClassName() {
+    protected String getModelClassName() {
         return "InAppMessage";
     }
 }

@@ -33,7 +33,7 @@ public final class ToStorySlide extends ToModelParser<StorySlide> {
     }
 
     @Override
-    protected String getClassName() {
+    protected String getModelClassName() {
         return "StorySlide";
     }
 }

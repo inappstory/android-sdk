@@ -29,7 +29,7 @@ public final class ToGameLaunchConditions extends ToModelParser<GameLaunchCondit
 
 
     @Override
-    protected String getClassName() {
+    protected String getModelClassName() {
         return "GameLaunchConditions";
     }
 }

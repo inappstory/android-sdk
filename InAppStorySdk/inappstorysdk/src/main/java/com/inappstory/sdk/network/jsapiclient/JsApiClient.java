@@ -7,6 +7,7 @@ import android.content.Context;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.models.RequestLocalParameters;
+import com.inappstory.sdk.parse.to.ToJsApiRequestConfig;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.utils.TaskRunner;
 import com.inappstory.sdk.utils.StringsUtils;
@@ -30,7 +31,8 @@ public class JsApiClient {
     }
 
     public void sendApiRequest(String data, JsApiResponseCallback callback) {
-        JsApiRequestConfig config = JsonParser.fromJson(data, JsApiRequestConfig.class);
+        JsApiRequestConfig config = new ToJsApiRequestConfig(data).parse();
+        if (config == null) return;
         Map<String, String> headers = null;
         if (config.headers != null && !config.headers.isEmpty()) {
             headers = toMap(config.headers);

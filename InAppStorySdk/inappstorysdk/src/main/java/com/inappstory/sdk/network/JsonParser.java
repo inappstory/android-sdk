@@ -270,7 +270,7 @@ public class JsonParser {
         return map;
     }
 
-    public static List<Object> toList(JSONArray array) throws JSONException {
+    static List<Object> toList(JSONArray array) throws JSONException {
         List<Object> list = new ArrayList<Object>();
         for (int i = 0; i < array.length(); i++) {
             Object value = array.get(i);
@@ -298,34 +298,6 @@ public class JsonParser {
         return list;
     }
 
-    public static <T> ArrayList<T> listFromJson(String json, Class<T> typeOfT) {
-        ArrayList<T> res = new ArrayList<>();
-        if (json == null) return res;
-        try {
-            JSONTokener jsonT = new JSONTokener(json);
-            Object object = jsonT.nextValue();
-            if (object instanceof JSONArray) {
-                for (int i = 0; i < ((JSONArray) object).length(); i++) {
-                    Object obj = ((JSONArray) object).get(i);
-                    if (typeOfT.isPrimitive() || typeOfT.equals(Integer.class)
-                            || typeOfT.equals(Boolean.class) || typeOfT.equals(Character.class)
-                            || typeOfT.equals(Short.class) || typeOfT.equals(Long.class)
-                            || typeOfT.equals(Byte.class) || typeOfT.equals(Float.class)
-                            || typeOfT.equals(Double.class) || typeOfT.equals(String.class)) {
-                        res.add((T) obj);
-                    } else {
-                        res.add(fromJson((JSONObject) obj, typeOfT));
-                    }
-                }
-            } else {
-                throw new Exception();
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return res;
-    }
-
     public static <T> T fromJson(String json, Class<T> typeOfT) {
         if (json == null) return null;
         if (typeOfT == null) return null;
@@ -333,9 +305,9 @@ public class JsonParser {
         try {
             JSONTokener jsonT = new JSONTokener(json);
             Object object = jsonT.nextValue();
-            if (object != null && object instanceof JSONArray) {
+            if (object instanceof JSONArray) {
                 throw new Exception();
-            } else if (object != null && object instanceof JSONObject) {
+            } else if (object instanceof JSONObject) {
                 JSONObject jsonObject = new JSONObject(json);
                 res = fromJson(jsonObject, typeOfT);
             } else if (typeOfT.isPrimitive() || typeOfT.equals(Integer.class)
@@ -353,7 +325,7 @@ public class JsonParser {
 
     public static String getJson(Object instance) throws Exception {
         if (instance == null) return null;
-        if (instance instanceof List || instance instanceof ArrayList) {
+        if (instance instanceof List) {
             JSONArray arr = new JSONArray();
             for (int i = 0; i < ((List) instance).size(); i++) {
                 arr.put(getJsonObject(((List) instance).get(i)));
@@ -364,18 +336,6 @@ public class JsonParser {
         }
     }
 
-    /**
-     * Return the string with characters escaped for safe embedding in a JavaScript string literal. ("")
-     *
-     * @param instance Object
-     * @return String
-     */
-    public static String stringifyToJsString(Object instance) throws Exception {
-        String json = JsonParser.getJson(instance);
-        /// https://tc39.es/ecma262/multipage/structured-data.html#sec-json.parse
-        /// String values are wrapped in QUOTATION MARK (") code units. The code units " and \ are escaped with \ prefixes. Control characters code units are replaced with escape sequences \\uHHHH, or with the shorter forms, \b (BACKSPACE), \f (FORM FEED), \n (LINE FEED), \r (CARRIAGE RETURN), \t (CHARACTER TABULATION).
-        return JSONObject.quote(json);
-    }
 
     private static Object getJsonObject(Object instance) throws Exception {
         if (instance == null) return null;

@@ -32,7 +32,7 @@ public final class ToBannerSlide extends ToModelParser<BannerSlide> {
     }
 
     @Override
-    protected String getClassName() {
+    protected String getModelClassName() {
         return "BannerSlide";
     }
 }

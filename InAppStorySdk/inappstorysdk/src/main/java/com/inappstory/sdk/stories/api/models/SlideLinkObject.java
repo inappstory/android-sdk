@@ -29,9 +29,9 @@ public class SlideLinkObject {
     public String getElementId() {
         return elementId;
     }
-    String elementId;
 
-    String type;
-    StoryLink link;
+    public String elementId;
+    public String type;
+    public StoryLink link;
 
 }

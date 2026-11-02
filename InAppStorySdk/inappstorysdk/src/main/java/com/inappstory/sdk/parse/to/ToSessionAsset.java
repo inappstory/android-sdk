@@ -33,7 +33,7 @@ public final class ToSessionAsset extends ToModelParser<SessionAsset> {
     }
 
     @Override
-    protected String getClassName() {
+    protected String getModelClassName() {
         return "SessionAsset";
     }
 }
