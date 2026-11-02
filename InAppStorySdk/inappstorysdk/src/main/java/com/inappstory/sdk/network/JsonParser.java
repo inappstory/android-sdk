@@ -159,6 +159,34 @@ public class JsonParser {
         return objMap;
     }
 
+    public static <T> ArrayList<T> listFromJson(String json, Class<T> typeOfT) {
+        ArrayList<T> res = new ArrayList<>();
+        if (json == null) return res;
+        try {
+            JSONTokener jsonT = new JSONTokener(json);
+            Object object = jsonT.nextValue();
+            if (object instanceof JSONArray) {
+                for (int i = 0; i < ((JSONArray) object).length(); i++) {
+                    Object obj = ((JSONArray) object).get(i);
+                    if (typeOfT.isPrimitive() || typeOfT.equals(Integer.class)
+                            || typeOfT.equals(Boolean.class) || typeOfT.equals(Character.class)
+                            || typeOfT.equals(Short.class) || typeOfT.equals(Long.class)
+                            || typeOfT.equals(Byte.class) || typeOfT.equals(Float.class)
+                            || typeOfT.equals(Double.class) || typeOfT.equals(String.class)) {
+                        res.add((T) obj);
+                    } else {
+                        res.add(fromJson((JSONObject) obj, typeOfT));
+                    }
+                }
+            } else {
+                throw new Exception();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return res;
+    }
+
     private static Map<String, Object> stringMapToEscapedObjMap(Map<String, String> map) {
         Map<String, Object> objMap = new HashMap<>();
         if (map != null) {
