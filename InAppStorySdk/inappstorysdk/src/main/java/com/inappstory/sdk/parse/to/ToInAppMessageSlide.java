@@ -18,7 +18,7 @@ public final class ToInAppMessageSlide extends ToModelParser<InAppMessageSlide> 
             ExtendedJsonObject jsonObj = new ExtendedJsonObject(object);
             InAppMessageSlide slide = new InAppMessageSlide();
 
-            slide.slideIndex = jsonObj.optInt("slideIndex");
+            slide.slideIndex = jsonObj.optInt("slide_index");
             slide.duration = jsonObj.optInt("duration");
             slide.html = jsonObj.optString("html");
 

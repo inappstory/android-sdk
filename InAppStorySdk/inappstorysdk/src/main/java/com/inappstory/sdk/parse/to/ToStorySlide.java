@@ -17,7 +17,7 @@ public final class ToStorySlide extends ToModelParser<StorySlide> {
             ExtendedJsonObject jsonObj = new ExtendedJsonObject(object);
             StorySlide slide = new StorySlide();
 
-            slide.slideIndex = jsonObj.optInt("slideIndex");
+            slide.slideIndex = jsonObj.optInt("index");
             slide.duration = jsonObj.optInt("duration");
             slide.html = jsonObj.optString("html");
             slide.isScreenshotShare = jsonObj.optBoolean("screenshot_share");

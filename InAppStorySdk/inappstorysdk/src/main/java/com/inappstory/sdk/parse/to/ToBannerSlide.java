@@ -18,7 +18,7 @@ public final class ToBannerSlide extends ToModelParser<BannerSlide> {
             ExtendedJsonObject jsonObj = new ExtendedJsonObject(object);
             BannerSlide slide = new BannerSlide();
 
-            slide.slideIndex = jsonObj.optInt("slideIndex");
+            slide.slideIndex = jsonObj.optInt("id");
             slide.duration = jsonObj.optInt("duration");
             slide.html = jsonObj.optString("html");
 
