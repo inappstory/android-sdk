@@ -18,7 +18,7 @@ public class ExtendedJsonObject {
 
     public ExtendedJsonObject(@NonNull JSONObject value) {
         this.value = value;
-        cleanJson(this.value);
+   //     cleanJson(this.value);
         Log.e("cleaned", value.toString());
     }
 
@@ -59,6 +59,9 @@ public class ExtendedJsonObject {
 
     public String optStringNullable(String name) {
         try {
+            if ("null".equals(value.get(name).toString().trim())) {
+                return null;
+            }
             return value.getString(name);
         } catch (JSONException e) {
             return null;
@@ -67,6 +70,9 @@ public class ExtendedJsonObject {
 
     public Integer optIntNullable(String name) {
         try {
+            if ("null".equals(value.get(name).toString().trim())) {
+                return null;
+            }
             return value.getInt(name);
         } catch (JSONException e) {
             return null;
@@ -75,6 +81,9 @@ public class ExtendedJsonObject {
 
     public Boolean optBooleanNullable(String name) {
         try {
+            if ("null".equals(value.get(name).toString().trim())) {
+                return null;
+            }
             return value.getBoolean(name);
         } catch (JSONException e) {
             return null;
@@ -83,6 +92,9 @@ public class ExtendedJsonObject {
 
     public Long optLongNullable(String name) {
         try {
+            if ("null".equals(value.get(name).toString().trim())) {
+                return null;
+            }
             return value.getLong(name);
         } catch (JSONException e) {
             return null;
@@ -91,6 +103,9 @@ public class ExtendedJsonObject {
 
     public Double optDoubleNullable(String name) {
         try {
+            if ("null".equals(value.get(name).toString().trim())) {
+                return null;
+            }
             return value.getDouble(name);
         } catch (JSONException e) {
             return null;
@@ -150,10 +165,27 @@ public class ExtendedJsonObject {
     }
 
     public JSONObject optJSONObject(String name) {
-        return value.optJSONObject(name);
+        try {
+            if ("null".equals(value.get(name).toString().trim())) {
+                return null;
+            }
+            return value.optJSONObject(name);
+        } catch (JSONException e) {
+            return null;
+        }
+
+
     }
 
     public JSONArray optJSONArray(String name) {
-        return value.optJSONArray(name);
+        try {
+            if ("null".equals(value.get(name).toString().trim())) {
+                return null;
+            }
+            return value.optJSONArray(name);
+        } catch (JSONException e) {
+            return null;
+        }
+
     }
 }
