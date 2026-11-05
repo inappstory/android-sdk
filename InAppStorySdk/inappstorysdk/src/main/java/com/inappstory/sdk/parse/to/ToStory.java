@@ -45,7 +45,7 @@ public final class ToStory extends ToModelParser<Story> {
         story.hasShare = jsonObj.optBooleanNullable("share_functional");
         story.timelineIsHidden = jsonObj.optBoolean("hide_timeline");
 
-        story.image = new ToImageList(jsonObj.optJSONArray("images")).parse();
+        story.image = new ToImageList(jsonObj.optJSONArray("image")).parse();
         story.videoUrl = new ToImageList(jsonObj.optJSONArray("video_cover")).parse();
         story.slides = new ToStorySlideList(jsonObj.optJSONArray("slides")).parse();
         story.gameInstance = new ToGameInstance(jsonObj.optJSONObject("game_instance")).parse();
