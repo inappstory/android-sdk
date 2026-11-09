@@ -82,6 +82,7 @@ public final class ToInAppMessage extends ToModelParser<InAppMessage> {
         inAppMessage.events = new ToInAppMessageEventList(jsonObj.optJSONArray(
                 ModelFields.InAppMessage.events
         )).parse();
+
         return inAppMessage;
     }
 
