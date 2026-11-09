@@ -2,15 +2,16 @@ package com.inappstory.sdk.stories.api.models;
 
 import com.inappstory.sdk.network.annotations.models.Required;
 import com.inappstory.sdk.network.annotations.models.SerializedName;
+import com.inappstory.sdk.parse.fieldkeys.ModelFields;
 import com.inappstory.sdk.stories.api.interfaces.IGameLaunchCondition;
 
 public class GameLCMinWebViewVersion implements IGameLaunchCondition {
     @Required
-    @SerializedName("minVersion")
+    @SerializedName(ModelFields.GameLCMinWebViewVersion.minVersion)
     public int minVersion;
-    @SerializedName("message")
+    @SerializedName(ModelFields.GameLCMinWebViewVersion.message)
     public String message;
-    @SerializedName("loggerMessage")
+    @SerializedName(ModelFields.GameLCMinWebViewVersion.loggerMessage)
     public String loggerMessage;
 
     @Override

@@ -1,6 +1,7 @@
 package com.inappstory.sdk.parse.from;
 
 import com.inappstory.sdk.game.reader.GameDataPlaceholder;
+import com.inappstory.sdk.parse.fieldkeys.ModelFields;
 
 import org.json.JSONObject;
 
@@ -15,9 +16,9 @@ public class FromGameDataPlaceholder extends
     @Override
     protected JSONObject parseToJSONObject() throws Exception {
         JSONObject object = new JSONObject();
-        object.put("name", model.name);
-        object.put("type", model.type);
-        object.put("value", model.value);
+        object.put(ModelFields.GameDataPlaceholder.name, model.name);
+        object.put(ModelFields.GameDataPlaceholder.type, model.type);
+        object.put(ModelFields.GameDataPlaceholder.value, model.value);
         return object;
     }
 }

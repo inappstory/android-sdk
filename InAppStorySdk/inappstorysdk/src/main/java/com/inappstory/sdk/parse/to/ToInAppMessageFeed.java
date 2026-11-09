@@ -5,6 +5,7 @@ import androidx.annotation.NonNull;
 import com.inappstory.sdk.core.network.content.models.InAppMessage;
 import com.inappstory.sdk.core.network.content.models.InAppMessageFeed;
 import com.inappstory.sdk.parse.ExtendedJsonObject;
+import com.inappstory.sdk.parse.fieldkeys.ModelFields;
 
 import org.json.JSONObject;
 
@@ -21,8 +22,9 @@ public final class ToInAppMessageFeed extends ToModelParser<InAppMessageFeed> {
                     new JSONObject(value)
             );
             InAppMessageFeed feed = new InAppMessageFeed();
-            feed.messages =
-                    new ToInAppMessageList(jsonObj.optJSONArray("messages")).parse();
+            feed.messages = new ToInAppMessageList(jsonObj.optJSONArray(
+                            ModelFields.InAppMessageFeed.messages
+            )).parse();
             return feed;
         } catch (Exception e) {
             return null;

@@ -15,6 +15,7 @@ import com.inappstory.sdk.inappmessage.ui.appearance.impl.InAppMessageToastSetti
 import com.inappstory.sdk.inappmessage.ui.appearance.impl.InAppMessageUndefinedSettings;
 import com.inappstory.sdk.network.annotations.models.Required;
 import com.inappstory.sdk.network.annotations.models.SerializedName;
+import com.inappstory.sdk.parse.fieldkeys.ModelFields;
 
 import java.util.HashMap;
 import java.util.List;
@@ -23,59 +24,50 @@ import java.util.Objects;
 
 public class InAppMessage implements IInAppMessage {
     @Required
-    @SerializedName("id")
+    @SerializedName(ModelFields.InAppMessage.id)
     public int id;
 
-    @SerializedName("has_placeholder")
+    @SerializedName(ModelFields.InAppMessage.hasPlaceholders)
     public boolean hasPlaceholders;
 
-    @SerializedName("has_limit")
+    @SerializedName(ModelFields.InAppMessage.hasLimit)
     public boolean hasLimit;
 
-    @SerializedName("frequency_limit")
+    @SerializedName(ModelFields.InAppMessage.frequencyLimit)
     public Long frequencyLimit;
 
-    @SerializedName("display_to")
+    @SerializedName(ModelFields.InAppMessage.displayTo)
     public Long displayTo;
 
-    @SerializedName("display_from")
+    @SerializedName(ModelFields.InAppMessage.displayFrom)
     public Long displayFrom;
 
-    @SerializedName("slides_html")
-    public List<String> slidesHtml;
-
-    @SerializedName("campaign_name")
+    @SerializedName(ModelFields.InAppMessage.campaignName)
     public String campaignName;
 
-
-    @SerializedName("custom_attributes")
+    @SerializedName(ModelFields.InAppMessage.customAttributes)
     public Map<String, String> customAttributes;
 
-    @SerializedName("appearance")
+    @SerializedName(ModelFields.InAppMessage.appearance)
     public Map<String, Object> appearance;
 
-    @SerializedName("layout_template_variables")
+    @SerializedName(ModelFields.InAppMessage.layoutTemplateVariables)
     public Map<String, String> layoutTemplateVariables;
 
-    @SerializedName("events")
+    @SerializedName(ModelFields.InAppMessage.events)
     public List<InAppMessageEvent> events;
 
-    @SerializedName("slides")
+    @SerializedName(ModelFields.InAppMessage.slides)
     public List<InAppMessageSlide> slides;
 
-    @SerializedName("has_swipe_up")
+    @SerializedName(ModelFields.InAppMessage.hasSwipeUp)
     public Boolean hasSwipeUp;
 
-    @SerializedName("disable_close")
+    @SerializedName(ModelFields.InAppMessage.disableClose)
     public boolean disableClose;
 
-    @SerializedName("type")
+    @SerializedName(ModelFields.InAppMessage.screenType)
     public int screenType;
-
-    @Override
-    public String layout() {
-        return null;
-    }
 
     private IReaderContentSlide slide(int index) {
         if (slides == null || index < 0 || slides.size() < index)

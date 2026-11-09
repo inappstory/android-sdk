@@ -3,6 +3,7 @@ package com.inappstory.sdk.stories.api.models;
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.network.annotations.models.SerializedName;
+import com.inappstory.sdk.parse.fieldkeys.ModelFields;
 import com.inappstory.sdk.stories.api.interfaces.IGameLaunchCondition;
 import com.inappstory.sdk.stories.api.interfaces.IGameLaunchConditions;
 
@@ -10,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class GameLaunchConditions implements IGameLaunchConditions {
-    @SerializedName("minWebViewVersion")
+    @SerializedName(ModelFields.GameLaunchConditions.minWebViewVersion)
     public GameLCMinWebViewVersion minWebViewVersion;
 
     @Override

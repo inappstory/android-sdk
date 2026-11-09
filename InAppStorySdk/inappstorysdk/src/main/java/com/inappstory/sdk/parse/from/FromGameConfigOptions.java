@@ -5,6 +5,7 @@ import com.inappstory.sdk.game.reader.GameDataPlaceholder;
 import com.inappstory.sdk.game.reader.SafeAreaInsets;
 import com.inappstory.sdk.goods.outercallbacks.ProductCartOffer;
 import com.inappstory.sdk.network.annotations.models.SerializedName;
+import com.inappstory.sdk.parse.fieldkeys.ModelFields;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -21,20 +22,20 @@ public class FromGameConfigOptions extends ModelToStringParser<GameConfigOptions
     protected JSONObject parseToJSONObject() throws Exception {
         JSONObject object = new JSONObject();
 
-        object.put("sessionId", model.sessionId);
-        object.put("lang", model.lang);
-        object.put("apiKey", model.apiKey);
-        object.put("appPackageId", model.appPackageId);
-        object.put("deviceId", model.deviceId);
-        object.put("userId", model.userId);
-        object.put("sdkVersion", model.sdkVersion);
-        object.put("apiBaseUrl", model.apiBaseUrl);
-        object.put("screenOrientation", model.screenOrientation);
-        object.put("userAgent", model.userAgent);
-        object.put("fullScreen", model.fullScreen);
-        object.put("gameInstanceId", model.gameInstanceId);
+        object.put(ModelFields.GameConfigOptions.sessionId, model.sessionId);
+        object.put(ModelFields.GameConfigOptions.lang, model.lang);
+        object.put(ModelFields.GameConfigOptions.apiKey, model.apiKey);
+        object.put(ModelFields.GameConfigOptions.appPackageId, model.appPackageId);
+        object.put(ModelFields.GameConfigOptions.deviceId, model.deviceId);
+        object.put(ModelFields.GameConfigOptions.userId, model.userId);
+        object.put(ModelFields.GameConfigOptions.sdkVersion, model.sdkVersion);
+        object.put(ModelFields.GameConfigOptions.apiBaseUrl, model.apiBaseUrl);
+        object.put(ModelFields.GameConfigOptions.screenOrientation, model.screenOrientation);
+        object.put(ModelFields.GameConfigOptions.userAgent, model.userAgent);
+        object.put(ModelFields.GameConfigOptions.fullScreen, model.fullScreen);
+        object.put(ModelFields.GameConfigOptions.gameInstanceId, model.gameInstanceId);
         object.put(
-                "safeAreaInsets",
+                ModelFields.GameConfigOptions.safeAreaInsets,
                 new FromSafeAreaInsets(model.safeAreaInsets).parseToJSONObject()
         );
         if (model.placeholders != null) {
@@ -42,9 +43,9 @@ public class FromGameConfigOptions extends ModelToStringParser<GameConfigOptions
             for (GameDataPlaceholder placeholder : model.placeholders) {
                 placeholders.put(new FromGameDataPlaceholder(placeholder).parseToJSONObject());
             }
-            object.put("placeholders", placeholders);
+            object.put(ModelFields.GameConfigOptions.placeholders, placeholders);
         }
-        object.put("variables", new JSONObject(model.userExtraOptions));
+        object.put(ModelFields.GameConfigOptions.userExtraOptions, new JSONObject(model.userExtraOptions));
         return object;
     }
 }

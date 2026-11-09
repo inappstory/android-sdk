@@ -4,6 +4,7 @@ package com.inappstory.sdk.core.network.content.models;
 
 import com.inappstory.sdk.network.annotations.models.Required;
 import com.inappstory.sdk.network.annotations.models.SerializedName;
+import com.inappstory.sdk.parse.fieldkeys.ModelFields;
 
 import java.util.Objects;
 
@@ -13,23 +14,23 @@ import java.util.Objects;
 
 public class SessionAsset {
     @Required
-    @SerializedName("url")
+    @SerializedName(ModelFields.SessionAsset.url)
     public String url;
-    @SerializedName("size")
+    @SerializedName(ModelFields.SessionAsset.size)
     public long size;
-    @SerializedName("sha1")
+    @SerializedName(ModelFields.SessionAsset.sha1)
     public String sha1;
-    @SerializedName("type")
+    @SerializedName(ModelFields.SessionAsset.type)
     public String type;
-    @SerializedName("key")
+    @SerializedName(ModelFields.SessionAsset.replaceKey)
     public String replaceKey;
-    @SerializedName("filename")
+    @SerializedName(ModelFields.SessionAsset.filename)
     public String filename;
-    @SerializedName("format")
+    @SerializedName(ModelFields.SessionAsset.format)
     public String format;
-    @SerializedName("mimeType")
+    @SerializedName(ModelFields.SessionAsset.mimeType)
     public String mimeType;
-    @SerializedName("purpose")
+    @SerializedName(ModelFields.SessionAsset.purpose)
     public String purpose;
 
     public boolean isMainAsset() {

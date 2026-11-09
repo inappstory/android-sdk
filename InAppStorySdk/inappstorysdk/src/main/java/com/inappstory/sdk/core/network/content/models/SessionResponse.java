@@ -1,9 +1,8 @@
 package com.inappstory.sdk.core.network.content.models;
 
 
-import com.inappstory.sdk.network.annotations.models.Required;
 import com.inappstory.sdk.network.annotations.models.SerializedName;
-import com.inappstory.sdk.stories.api.models.SessionRequestFields;
+import com.inappstory.sdk.parse.fieldkeys.ModelFields;
 
 import java.util.List;
 
@@ -14,39 +13,39 @@ import java.util.List;
 public class SessionResponse {
 
 
-    @SerializedName(SessionRequestFields.isAllowUgc)
+    @SerializedName(ModelFields.SessionResponse.isAllowUgc)
     public boolean isAllowUgc;
-    @SerializedName(SessionRequestFields.serverTimestamp)
+    @SerializedName(ModelFields.SessionResponse.serverTimestamp)
     public Long serverTimestamp;
-    @SerializedName(SessionRequestFields.preloadGame)
+    @SerializedName(ModelFields.SessionResponse.preloadGame)
     public boolean preloadGame;
-    @SerializedName(SessionRequestFields.previewAspectRatio)
+    @SerializedName(ModelFields.SessionResponse.previewAspectRatio)
     public float previewAspectRatio;
-    @SerializedName(SessionRequestFields.layoutUpdatedAt)
+    @SerializedName(ModelFields.SessionResponse.layoutUpdatedAt)
     public int layoutUpdatedAt;
-    @SerializedName(SessionRequestFields.isGameReaderDefaultFullscreen)
+    @SerializedName(ModelFields.SessionResponse.isGameReaderDefaultFullscreen)
     public boolean isGameReaderDefaultFullscreen;
-    @SerializedName(SessionRequestFields.isAllowProfiling)
+    @SerializedName(ModelFields.SessionResponse.isAllowProfiling)
     public boolean isAllowProfiling;
-    @SerializedName(SessionRequestFields.isAllowStatV1)
+    @SerializedName(ModelFields.SessionResponse.isAllowStatV1)
     public Boolean isAllowStatV1;
-    @SerializedName(SessionRequestFields.isAllowStatV2)
+    @SerializedName(ModelFields.SessionResponse.isAllowStatV2)
     public Boolean isAllowStatV2;
-    @SerializedName(SessionRequestFields.isAllowCrash)
+    @SerializedName(ModelFields.SessionResponse.isAllowCrash)
     public Boolean isAllowCrash;
-    @SerializedName(SessionRequestFields.debugSessionKey)
+    @SerializedName(ModelFields.SessionResponse.debugSessionKey)
     public String debugSessionKey;
 
-    @SerializedName(SessionRequestFields.session)
+    @SerializedName(ModelFields.SessionResponse.session)
     public Session session;
 
-    @SerializedName(SessionRequestFields.sessionAssets)
+    @SerializedName(ModelFields.SessionResponse.sessionAssets)
     public List<SessionAsset> sessionAssets;
 
-    @SerializedName(SessionRequestFields.placeholders)
+    @SerializedName(ModelFields.SessionResponse.placeholders)
     public List<StoryPlaceholder> placeholders;
 
-    @SerializedName(SessionRequestFields.imagePlaceholders)
+    @SerializedName(ModelFields.SessionResponse.imagePlaceholders)
     public List<StoryPlaceholder> imagePlaceholders;
 
     public float getPreviewAspectRatio() {

@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 
 
 import com.inappstory.sdk.parse.ExtendedJsonObject;
+import com.inappstory.sdk.parse.fieldkeys.ModelFields;
 import com.inappstory.sdk.stories.api.models.dialogstructure.DialogStructure;
 
 import org.json.JSONObject;
@@ -23,8 +24,12 @@ public final class ToDialogStructure extends ToModelParser<DialogStructure> {
                     new JSONObject(value)
             );
             DialogStructure dialogStructure = new DialogStructure();
-            dialogStructure.configV2 = new ToConfigV2(jsonObj.optJSONObject("configV2")).parse();
-            dialogStructure.size = new ToSizeStructure(jsonObj.optJSONObject("size")).parse();
+            dialogStructure.configV2 = new ToConfigV2(jsonObj.optJSONObject(
+                    ModelFields.DialogStructure.configV2
+            )).parse();
+            dialogStructure.size = new ToSizeStructure(jsonObj.optJSONObject(
+                    ModelFields.DialogStructure.size
+            )).parse();
             return dialogStructure;
         } catch (Exception e) {
             return null;

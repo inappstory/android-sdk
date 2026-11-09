@@ -6,6 +6,7 @@ import com.inappstory.sdk.core.network.content.models.Banner;
 import com.inappstory.sdk.core.network.content.models.InAppMessage;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.parse.ExtendedJsonObject;
+import com.inappstory.sdk.parse.fieldkeys.ModelFields;
 
 import org.json.JSONObject;
 
@@ -31,23 +32,53 @@ public final class ToInAppMessage extends ToModelParser<InAppMessage> {
                     new JSONObject(value)
             );
             InAppMessage inAppMessage = new InAppMessage();
-            inAppMessage.id = jsonObj.getInt("id");
-            inAppMessage.hasPlaceholders = jsonObj.optBoolean("has_placeholder");
-            inAppMessage.hasLimit = jsonObj.optBoolean("has_limit");
-            inAppMessage.displayTo = jsonObj.optLongNullable("display_to");
-            inAppMessage.displayFrom = jsonObj.optLongNullable("display_from");
-            inAppMessage.frequencyLimit = jsonObj.optLongNullable("frequency_limit");
-            inAppMessage.campaignName = jsonObj.optStringNullable("campaign_name");
-            inAppMessage.hasSwipeUp = jsonObj.optBooleanNullable("has_swipe_up");
-            inAppMessage.disableClose = jsonObj.optBoolean("disable_close");
-            inAppMessage.screenType = jsonObj.optInt("type");
+            inAppMessage.id = jsonObj.getInt(
+                    ModelFields.InAppMessage.id
+            );
+            inAppMessage.hasPlaceholders = jsonObj.optBoolean(
+                    ModelFields.InAppMessage.hasPlaceholders
+            );
+            inAppMessage.hasLimit = jsonObj.optBoolean(
+                    ModelFields.InAppMessage.hasLimit
+            );
+            inAppMessage.displayTo = jsonObj.optLongNullable(
+                    ModelFields.InAppMessage.displayTo
+            );
+            inAppMessage.displayFrom = jsonObj.optLongNullable(
+                    ModelFields.InAppMessage.displayFrom
+            );
+            inAppMessage.frequencyLimit = jsonObj.optLongNullable(
+                    ModelFields.InAppMessage.frequencyLimit
+            );
+            inAppMessage.campaignName = jsonObj.optStringNullable(
+                    ModelFields.InAppMessage.campaignName
+            );
+            inAppMessage.hasSwipeUp = jsonObj.optBooleanNullable(
+                    ModelFields.InAppMessage.hasSwipeUp
+            );
+            inAppMessage.disableClose = jsonObj.optBoolean(
+                    ModelFields.InAppMessage.disableClose
+            );
+            inAppMessage.screenType = jsonObj.optInt(
+                    ModelFields.InAppMessage.screenType
+            );
 
-            inAppMessage.customAttributes = JsonParser.toMap(jsonObj.optJSONObject("custom_attributes"));
-            inAppMessage.layoutTemplateVariables = JsonParser.toMap(jsonObj.optJSONObject("layout_template_variables"));
-            inAppMessage.appearance = JsonParser.toObjectMap(jsonObj.optJSONObject("appearance"));
+            inAppMessage.customAttributes = JsonParser.toMap(jsonObj.optJSONObject(
+                    ModelFields.InAppMessage.customAttributes
+            ));
+            inAppMessage.layoutTemplateVariables = JsonParser.toMap(jsonObj.optJSONObject(
+                    ModelFields.InAppMessage.layoutTemplateVariables
+            ));
+            inAppMessage.appearance = JsonParser.toObjectMap(jsonObj.optJSONObject(
+                    ModelFields.InAppMessage.appearance
+            ));
 
-            inAppMessage.slides = new ToInAppMessageSlideList(jsonObj.optJSONArray("slides")).parse();
-            inAppMessage.events = new ToInAppMessageEventList(jsonObj.optJSONArray("events")).parse();
+            inAppMessage.slides = new ToInAppMessageSlideList(jsonObj.optJSONArray(
+                    ModelFields.InAppMessage.slides
+            )).parse();
+            inAppMessage.events = new ToInAppMessageEventList(jsonObj.optJSONArray(
+                    ModelFields.InAppMessage.events
+            )).parse();
             return inAppMessage;
         } catch (Exception e) {
             return null;

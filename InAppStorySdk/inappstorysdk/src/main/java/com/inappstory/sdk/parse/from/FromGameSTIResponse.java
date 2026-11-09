@@ -1,6 +1,7 @@
 package com.inappstory.sdk.parse.from;
 
 import com.inappstory.sdk.game.reader.GameSTIResponse;
+import com.inappstory.sdk.parse.fieldkeys.ModelFields;
 import com.inappstory.sdk.stories.api.models.GameSplashAnimation;
 
 import org.json.JSONObject;
@@ -13,8 +14,8 @@ public class FromGameSTIResponse extends ModelToStringParser<GameSTIResponse> {
     @Override
     protected JSONObject parseToJSONObject() throws Exception {
         JSONObject object = new JSONObject();
-        object.put("id", model.id);
-        object.put("response", model.response);
+        object.put(ModelFields.GameSTIResponse.id, model.id);
+        object.put(ModelFields.GameSTIResponse.response, model.response);
         return object;
     }
 }

@@ -1,6 +1,7 @@
 package com.inappstory.sdk.parse.to;
 
 import com.inappstory.sdk.parse.ExtendedJsonObject;
+import com.inappstory.sdk.parse.fieldkeys.ModelFields;
 import com.inappstory.sdk.stories.api.models.dialogstructure.ButtonStructure;
 import com.inappstory.sdk.stories.api.models.dialogstructure.QuestionStructure;
 
@@ -17,8 +18,12 @@ public final class ToQuestionStructure extends ToModelParser<QuestionStructure> 
         try {
             ExtendedJsonObject jsonObj = new ExtendedJsonObject(object);
             QuestionStructure structure = new QuestionStructure();
-            structure.text = new ToTextStructure(jsonObj.optJSONObject("text")).parse();
-            structure.padding = new ToPaddingStructure(jsonObj.optJSONObject("padding")).parse();
+            structure.text = new ToTextStructure(jsonObj.optJSONObject(
+                    ModelFields.QuestionStructure.text
+            )).parse();
+            structure.padding = new ToPaddingStructure(jsonObj.optJSONObject(
+                    ModelFields.QuestionStructure.padding
+            )).parse();
             return structure;
         } catch (Exception e) {
             return null;

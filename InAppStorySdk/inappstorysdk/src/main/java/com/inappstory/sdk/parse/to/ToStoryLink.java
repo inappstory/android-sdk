@@ -1,6 +1,7 @@
 package com.inappstory.sdk.parse.to;
 
 import com.inappstory.sdk.parse.ExtendedJsonObject;
+import com.inappstory.sdk.parse.fieldkeys.ModelFields;
 import com.inappstory.sdk.stories.api.models.StoryLink;
 
 import org.json.JSONObject;
@@ -16,8 +17,8 @@ public final class ToStoryLink extends ToModelParser<StoryLink> {
         try {
             ExtendedJsonObject jsonObj = new ExtendedJsonObject(object);
             StoryLink link = new StoryLink();
-            link.target = jsonObj.optStringNullable("target");
-            link.type = jsonObj.optStringNullable("type");
+            link.target = jsonObj.optStringNullable(ModelFields.StoryLink.target);
+            link.type = jsonObj.optStringNullable(ModelFields.StoryLink.type);
             return link;
         } catch (Exception e) {
             return null;

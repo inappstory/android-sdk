@@ -5,6 +5,7 @@ import androidx.annotation.NonNull;
 import com.inappstory.sdk.goods.models.ProductCartUpdateCallbacks;
 import com.inappstory.sdk.goods.models.ProductCartUpdateJSData;
 import com.inappstory.sdk.parse.ExtendedJsonObject;
+import com.inappstory.sdk.parse.fieldkeys.ModelFields;
 
 import org.json.JSONObject;
 
@@ -21,7 +22,9 @@ public final class ToProductCartUpdateJSData extends ToModelParser<ProductCartUp
                     new JSONObject(value)
             );
             ProductCartUpdateJSData data = new ProductCartUpdateJSData();
-            data.offer = new ToProductCartOffer(jsonObj.optJSONObject("offer")).parse();
+            data.offer = new ToProductCartOffer(jsonObj.optJSONObject(
+                    ModelFields.ProductCartUpdateJSData.offer
+            )).parse();
             return data;
         } catch (Exception e) {
             return null;

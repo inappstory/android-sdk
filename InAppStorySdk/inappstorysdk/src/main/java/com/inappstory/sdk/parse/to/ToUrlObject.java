@@ -3,6 +3,7 @@ package com.inappstory.sdk.parse.to;
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.parse.ExtendedJsonObject;
+import com.inappstory.sdk.parse.fieldkeys.ModelFields;
 import com.inappstory.sdk.stories.api.models.SlideLinkObject;
 import com.inappstory.sdk.stories.api.models.UrlObject;
 
@@ -23,7 +24,7 @@ public final class ToUrlObject extends ToModelParser<UrlObject> {
                     new JSONObject(value)
             );
             UrlObject urlObject = new UrlObject();
-            urlObject.url = jsonObj.optStringNullable("url");
+            urlObject.url = jsonObj.optStringNullable(ModelFields.UrlObject.url);
             return urlObject;
         } catch (Exception e) {
             return null;

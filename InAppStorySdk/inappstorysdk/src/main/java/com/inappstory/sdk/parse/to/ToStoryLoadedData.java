@@ -3,6 +3,7 @@ package com.inappstory.sdk.parse.to;
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.parse.ExtendedJsonObject;
+import com.inappstory.sdk.parse.fieldkeys.ModelFields;
 import com.inappstory.sdk.stories.api.models.StoryLoadedData;
 import com.inappstory.sdk.stories.statistic.StoryStatisticV2Task;
 
@@ -23,8 +24,8 @@ public final class ToStoryLoadedData extends ToModelParser<StoryLoadedData> {
                     new JSONObject(value)
             );
             StoryLoadedData data = new StoryLoadedData();
-            data.id = jsonObj.optInt("id");
-            data.index = jsonObj.optInt("index");
+            data.id = jsonObj.optInt(ModelFields.StoryLoadedData.id);
+            data.index = jsonObj.optInt(ModelFields.StoryLoadedData.index);
 
             return data;
         } catch (Exception e) {

@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.parse.ExtendedJsonObject;
+import com.inappstory.sdk.parse.fieldkeys.ModelFields;
 import com.inappstory.sdk.stories.api.models.UrlObject;
 
 import org.json.JSONObject;
@@ -23,10 +24,10 @@ public final class ToInnerShareData extends ToModelParser<InnerShareData> {
                     new JSONObject(value)
             );
             InnerShareData shareData = new InnerShareData();
-            shareData.text = jsonObj.optStringNullable("text");
-            shareData.url = jsonObj.optStringNullable("url");
-            shareData.title = jsonObj.optStringNullable("title");
-            shareData.payload = jsonObj.optStringNullable("payload");
+            shareData.text = jsonObj.optStringNullable(ModelFields.InnerShareData.text);
+            shareData.url = jsonObj.optStringNullable(ModelFields.InnerShareData.url);
+            shareData.title = jsonObj.optStringNullable(ModelFields.InnerShareData.title);
+            shareData.payload = jsonObj.optStringNullable(ModelFields.InnerShareData.payload);
 
             return shareData;
         } catch (Exception e) {

@@ -3,6 +3,7 @@ package com.inappstory.sdk.parse.to;
 import com.inappstory.sdk.game.reader.GameFinishGameOptions;
 import com.inappstory.sdk.game.reader.GameFinishStoryOptions;
 import com.inappstory.sdk.parse.ExtendedJsonObject;
+import com.inappstory.sdk.parse.fieldkeys.ModelFields;
 
 import org.json.JSONObject;
 
@@ -17,7 +18,7 @@ public final class ToGameFinishGameOptions extends ToModelParser<GameFinishGameO
         try {
             ExtendedJsonObject jsonObj = new ExtendedJsonObject(object);
             GameFinishGameOptions options = new GameFinishGameOptions();
-            options.id = jsonObj.getString("id");
+            options.id = jsonObj.getString(ModelFields.GameFinishGameOptions.id);
             return options;
         } catch (Exception e) {
             return null;

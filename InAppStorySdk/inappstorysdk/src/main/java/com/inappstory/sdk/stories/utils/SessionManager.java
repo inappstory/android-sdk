@@ -26,9 +26,9 @@ import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.network.fileupload.FilePart;
 import com.inappstory.sdk.network.models.RequestLocalParameters;
 import com.inappstory.sdk.network.models.Response;
+import com.inappstory.sdk.parse.fieldkeys.ModelFields;
 import com.inappstory.sdk.parse.to.ToSessionResponse;
 import com.inappstory.sdk.stories.api.models.CachedSessionData;
-import com.inappstory.sdk.stories.api.models.SessionRequestFields;
 import com.inappstory.sdk.core.network.content.models.SessionResponse;
 import com.inappstory.sdk.stories.api.models.StatisticSendObject;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
@@ -232,21 +232,23 @@ public class SessionManager {
             TextUtils.join(",", FEATURES_ARRAY);
 
     private final String SESSION_FIELDS = TextUtils.join(",", new String[]{
-            SessionRequestFields.session,
-            SessionRequestFields.previewAspectRatio,
-            SessionRequestFields.isAllowProfiling,
-            SessionRequestFields.isAllowStatV1,
-            SessionRequestFields.isAllowStatV2,
-            SessionRequestFields.isAllowCrash,
-            SessionRequestFields.debugSessionKey,
-            SessionRequestFields.isAllowUgc,
-            SessionRequestFields.placeholders,
-            SessionRequestFields.preloadGame,
-            SessionRequestFields.imagePlaceholders,
-            SessionRequestFields.layoutUpdatedAt
+            ModelFields.SessionResponse.session,
+            ModelFields.SessionResponse.previewAspectRatio,
+            ModelFields.SessionResponse.isAllowProfiling,
+            ModelFields.SessionResponse.isAllowStatV1,
+            ModelFields.SessionResponse.isAllowStatV2,
+            ModelFields.SessionResponse.isAllowCrash,
+            ModelFields.SessionResponse.debugSessionKey,
+            ModelFields.SessionResponse.isGameReaderDefaultFullscreen,
+            ModelFields.SessionResponse.isAllowUgc,
+            ModelFields.SessionResponse.placeholders,
+            ModelFields.SessionResponse.preloadGame,
+            ModelFields.SessionResponse.serverTimestamp,
+            ModelFields.SessionResponse.imagePlaceholders,
+            ModelFields.SessionResponse.layoutUpdatedAt
     });
     private final String SESSION_EXPAND = TextUtils.join(",", new String[]{
-            SessionRequestFields.sessionAssets
+            ModelFields.SessionResponse.sessionAssets
     });
 
     private void replaceOrAddCallback(OpenSessionCallback callback) {

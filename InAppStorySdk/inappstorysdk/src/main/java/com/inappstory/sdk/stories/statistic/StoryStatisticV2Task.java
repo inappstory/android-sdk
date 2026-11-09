@@ -1,52 +1,55 @@
 package com.inappstory.sdk.stories.statistic;
 
 import com.inappstory.sdk.network.annotations.models.SerializedName;
+import com.inappstory.sdk.parse.fieldkeys.ModelFields;
 import com.inappstory.sdk.stories.api.models.PhoneAppData;
 
 public class StoryStatisticV2Task {
+    @SerializedName(ModelFields.StoryStatisticV2Task.event)
     public String event;
-    @SerializedName("ts")
+    @SerializedName(ModelFields.StoryStatisticV2Task.timestamp)
     public Long timestamp;
-    @SerializedName("u")
+    @SerializedName(ModelFields.StoryStatisticV2Task.userId)
     public String userId;
-    @SerializedName("s")
+    @SerializedName(ModelFields.StoryStatisticV2Task.sessionId)
     public String sessionId;
+    @SerializedName(ModelFields.StoryStatisticV2Task.isFake)
     public boolean isFake;
-    @SerializedName("i")
+    @SerializedName(ModelFields.StoryStatisticV2Task.storyId)
     public String storyId;
-    @SerializedName("f")
+    @SerializedName(ModelFields.StoryStatisticV2Task.feedId)
     public String feedId;
-    @SerializedName("w")
+    @SerializedName(ModelFields.StoryStatisticV2Task.whence)
     public String whence;
-    @SerializedName("t")
+    @SerializedName(ModelFields.StoryStatisticV2Task.target)
     public String target;
-    @SerializedName("c")
+    @SerializedName(ModelFields.StoryStatisticV2Task.cause)
     public String cause;
-    @SerializedName("si")
+    @SerializedName(ModelFields.StoryStatisticV2Task.slideIndex)
     public Integer slideIndex;
-    @SerializedName("st")
+    @SerializedName(ModelFields.StoryStatisticV2Task.slideTotal)
     public Integer slideTotal;
-    @SerializedName("d")
+    @SerializedName(ModelFields.StoryStatisticV2Task.durationMs)
     public Long durationMs;
-    @SerializedName("v")
+    @SerializedName(ModelFields.StoryStatisticV2Task.value)
     public String value;
-    @SerializedName("wi")
+    @SerializedName(ModelFields.StoryStatisticV2Task.widgetId)
     public String widgetId;
-    @SerializedName("wl")
+    @SerializedName(ModelFields.StoryStatisticV2Task.widgetLabel)
     public String widgetLabel;
-    @SerializedName("wv")
+    @SerializedName(ModelFields.StoryStatisticV2Task.widgetValue)
     public String widgetValue;
-    @SerializedName("wa")
+    @SerializedName(ModelFields.StoryStatisticV2Task.widgetAnswer)
     public Integer widgetAnswer;
-    @SerializedName("wal")
+    @SerializedName(ModelFields.StoryStatisticV2Task.widgetAnswerLabel)
     public String widgetAnswerLabel;
-    @SerializedName("was")
+    @SerializedName(ModelFields.StoryStatisticV2Task.widgetAnswerScore)
     public Integer widgetAnswerScore;
-    @SerializedName("li")
+    @SerializedName(ModelFields.StoryStatisticV2Task.layoutIndex)
     public Integer layoutIndex;
-    @SerializedName("m")
+    @SerializedName(ModelFields.StoryStatisticV2Task.mode)
     public Integer mode;
-    @SerializedName("fullData")
+    @SerializedName(ModelFields.StoryStatisticV2Task.fullData)
     public String fullData;
 
 }

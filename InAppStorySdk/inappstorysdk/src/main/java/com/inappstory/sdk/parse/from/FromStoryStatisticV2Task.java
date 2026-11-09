@@ -2,6 +2,7 @@ package com.inappstory.sdk.parse.from;
 
 import com.inappstory.sdk.game.reader.logger.GameLog;
 import com.inappstory.sdk.network.annotations.models.SerializedName;
+import com.inappstory.sdk.parse.fieldkeys.ModelFields;
 import com.inappstory.sdk.stories.statistic.StoryStatisticV2Task;
 
 import org.json.JSONObject;
@@ -17,28 +18,29 @@ public class FromStoryStatisticV2Task extends
     @Override
     protected JSONObject parseToJSONObject() throws Exception {
         JSONObject object = new JSONObject();
-        object.put("event", model.event);
-        object.put("ts", model.timestamp);
-        object.put("u", model.userId);
-        object.put("s", model.sessionId);
-        object.put("isFake", model.isFake);
-        object.put("i", model.storyId);
-        object.put("f", model.feedId);
-        object.put("w", model.whence);
-        object.put("t", model.target);
-        object.put("si", model.slideIndex);
-        object.put("st", model.slideTotal);
-        object.put("d", model.durationMs);
-        object.put("v", model.value);
-        object.put("wi", model.widgetId);
-        object.put("wl", model.widgetLabel);
-        object.put("wv", model.widgetValue);
-        object.put("wa", model.widgetAnswer);
-        object.put("wal", model.widgetAnswerLabel);
-        object.put("was", model.widgetAnswerScore);
-        object.put("li", model.layoutIndex);
-        object.put("m", model.mode);
-        object.put("fullData", model.fullData);
+        object.put(ModelFields.StoryStatisticV2Task.event, model.event);
+        object.put(ModelFields.StoryStatisticV2Task.timestamp, model.timestamp);
+        object.put(ModelFields.StoryStatisticV2Task.userId, model.userId);
+        object.put(ModelFields.StoryStatisticV2Task.sessionId, model.sessionId);
+        object.put(ModelFields.StoryStatisticV2Task.isFake, model.isFake);
+        object.put(ModelFields.StoryStatisticV2Task.storyId, model.storyId);
+        object.put(ModelFields.StoryStatisticV2Task.feedId, model.feedId);
+        object.put(ModelFields.StoryStatisticV2Task.whence, model.whence);
+        object.put(ModelFields.StoryStatisticV2Task.target, model.target);
+        object.put(ModelFields.StoryStatisticV2Task.slideIndex, model.slideIndex);
+        object.put(ModelFields.StoryStatisticV2Task.slideTotal, model.slideTotal);
+        object.put(ModelFields.StoryStatisticV2Task.durationMs, model.durationMs);
+        object.put(ModelFields.StoryStatisticV2Task.value, model.value);
+        object.put(ModelFields.StoryStatisticV2Task.cause, model.cause);
+        object.put(ModelFields.StoryStatisticV2Task.widgetId, model.widgetId);
+        object.put(ModelFields.StoryStatisticV2Task.widgetLabel, model.widgetLabel);
+        object.put(ModelFields.StoryStatisticV2Task.widgetValue, model.widgetValue);
+        object.put(ModelFields.StoryStatisticV2Task.widgetAnswer, model.widgetAnswer);
+        object.put(ModelFields.StoryStatisticV2Task.widgetAnswerLabel, model.widgetAnswerLabel);
+        object.put(ModelFields.StoryStatisticV2Task.widgetAnswerScore, model.widgetAnswerScore);
+        object.put(ModelFields.StoryStatisticV2Task.layoutIndex, model.layoutIndex);
+        object.put(ModelFields.StoryStatisticV2Task.mode, model.mode);
+        object.put(ModelFields.StoryStatisticV2Task.fullData, model.fullData);
         return object;
     }
 }

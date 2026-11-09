@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.network.jsapiclient.JsApiRequestConfig;
 import com.inappstory.sdk.parse.ExtendedJsonObject;
+import com.inappstory.sdk.parse.fieldkeys.ModelFields;
 import com.inappstory.sdk.stories.api.models.OnVerticalScrollJSData;
 
 import org.json.JSONObject;
@@ -23,14 +24,30 @@ public final class ToJsApiRequestConfig extends ToModelParser<JsApiRequestConfig
                     new JSONObject(value)
             );
             JsApiRequestConfig config = new JsApiRequestConfig();
-            config.cb = jsonObj.optStringNullable("cb");
-            config.id = jsonObj.optStringNullable("id");
-            config.data = jsonObj.optStringNullable("data");
-            config.headers = jsonObj.optStringNullable("headers");
-            config.profilingKey = jsonObj.optStringNullable("profiling_key");
-            config.url = jsonObj.optStringNullable("url");
-            config.method = jsonObj.optStringNullable("method");
-            config.params = jsonObj.optStringNullable("params");
+            config.cb = jsonObj.optStringNullable(
+                    ModelFields.JsApiRequestConfig.cb
+            );
+            config.id = jsonObj.optStringNullable(
+                    ModelFields.JsApiRequestConfig.id
+            );
+            config.data = jsonObj.optStringNullable(
+                    ModelFields.JsApiRequestConfig.data
+            );
+            config.headers = jsonObj.optStringNullable(
+                    ModelFields.JsApiRequestConfig.headers
+            );
+            config.profilingKey = jsonObj.optStringNullable(
+                    ModelFields.JsApiRequestConfig.profilingKey
+            );
+            config.url = jsonObj.optStringNullable(
+                    ModelFields.JsApiRequestConfig.url
+            );
+            config.method = jsonObj.optStringNullable(
+                    ModelFields.JsApiRequestConfig.method
+            );
+            config.params = jsonObj.optStringNullable(
+                    ModelFields.JsApiRequestConfig.params
+            );
 
             return config;
         } catch (Exception e) {

@@ -3,16 +3,17 @@ package com.inappstory.sdk.core.network.content.models;
 import com.inappstory.sdk.core.data.IInAppMessageLimit;
 import com.inappstory.sdk.network.annotations.models.Required;
 import com.inappstory.sdk.network.annotations.models.SerializedName;
+import com.inappstory.sdk.parse.fieldkeys.ModelFields;
 
 public class InAppMessageLimit implements IInAppMessageLimit {
     @Required
-    @SerializedName("messageId")
+    @SerializedName(ModelFields.InAppMessageLimit.messageId)
     public int messageId;
 
-    @SerializedName("expire")
+    @SerializedName(ModelFields.InAppMessageLimit.expire)
     public long expire;
 
-    @SerializedName("canOpen")
+    @SerializedName(ModelFields.InAppMessageLimit.canOpen)
     public boolean canOpen;
 
 

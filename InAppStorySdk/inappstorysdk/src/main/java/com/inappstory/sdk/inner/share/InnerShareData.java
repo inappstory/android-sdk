@@ -1,6 +1,7 @@
 package com.inappstory.sdk.inner.share;
 
 import com.inappstory.sdk.network.annotations.models.SerializedName;
+import com.inappstory.sdk.parse.fieldkeys.ModelFields;
 
 import java.util.ArrayList;
 
@@ -20,13 +21,13 @@ public class InnerShareData {
         return payload;
     }
 
-    @SerializedName("text")
+    @SerializedName(ModelFields.InnerShareData.text)
     public String text;
-    @SerializedName("title")
+    @SerializedName(ModelFields.InnerShareData.title)
     public String title;
-    @SerializedName("payload")
+    @SerializedName(ModelFields.InnerShareData.payload)
     public String payload;
-    @SerializedName("url")
+    @SerializedName(ModelFields.InnerShareData.url)
     public String url;
 
     public ArrayList<InnerShareFile> getFiles() {

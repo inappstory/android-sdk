@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.game.reader.GameAcceleratorOptions;
 import com.inappstory.sdk.parse.ExtendedJsonObject;
+import com.inappstory.sdk.parse.fieldkeys.ModelFields;
 import com.inappstory.sdk.stories.api.models.UrlObject;
 
 import org.json.JSONObject;
@@ -23,7 +24,9 @@ public final class ToGameAcceleratorOptions extends ToModelParser<GameAccelerato
                     new JSONObject(value)
             );
             GameAcceleratorOptions acceleratorOptions = new GameAcceleratorOptions();
-            acceleratorOptions.frequency = jsonObj.optDouble("frequency");
+            acceleratorOptions.frequency = jsonObj.optDouble(
+                    ModelFields.GameAcceleratorOptions.frequency
+            );
             return acceleratorOptions;
         } catch (Exception e) {
             return null;

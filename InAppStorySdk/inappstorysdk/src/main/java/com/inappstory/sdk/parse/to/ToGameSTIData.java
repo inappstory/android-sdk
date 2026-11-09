@@ -5,6 +5,7 @@ import androidx.annotation.NonNull;
 import com.inappstory.sdk.game.reader.GameAddToCachePayload;
 import com.inappstory.sdk.game.reader.GameSTIData;
 import com.inappstory.sdk.parse.ExtendedJsonObject;
+import com.inappstory.sdk.parse.fieldkeys.ModelFields;
 
 import org.json.JSONObject;
 
@@ -23,9 +24,15 @@ public final class ToGameSTIData extends ToModelParser<GameSTIData> {
                     new JSONObject(value)
             );
             GameSTIData stiData = new GameSTIData();
-            stiData.cb = jsonObj.optStringNullable("cb");
-            stiData.id = jsonObj.optStringNullable("id");
-            stiData.config = new ToGameSTIConfigData(jsonObj.optJSONObject("config")).parse();
+            stiData.cb = jsonObj.optStringNullable(
+                    ModelFields.GameSTIData.cb
+            );
+            stiData.id = jsonObj.optStringNullable(
+                    ModelFields.GameSTIData.id
+            );
+            stiData.config = new ToGameSTIConfigData(jsonObj.optJSONObject(
+                    ModelFields.GameSTIData.config
+            )).parse();
 
             return stiData;
         } catch (Exception e) {

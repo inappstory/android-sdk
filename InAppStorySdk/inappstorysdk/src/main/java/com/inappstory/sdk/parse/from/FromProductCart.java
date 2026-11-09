@@ -2,6 +2,7 @@ package com.inappstory.sdk.parse.from;
 
 import com.inappstory.sdk.goods.outercallbacks.ProductCart;
 import com.inappstory.sdk.goods.outercallbacks.ProductCartOffer;
+import com.inappstory.sdk.parse.fieldkeys.ModelFields;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -14,15 +15,15 @@ public class FromProductCart extends ModelToStringParser<ProductCart> {
     @Override
     protected JSONObject parseToJSONObject() throws Exception {
         JSONObject object = new JSONObject();
-        object.put("price", model.price);
-        object.put("priceCurrency", model.priceCurrency);
-        object.put("oldPrice", model.oldPrice);
+        object.put(ModelFields.ProductCart.price, model.price);
+        object.put(ModelFields.ProductCart.priceCurrency, model.priceCurrency);
+        object.put(ModelFields.ProductCart.oldPrice, model.oldPrice);
         if (model.offers != null) {
             JSONArray offers = new JSONArray();
             for (ProductCartOffer offer : model.offers) {
                 offers.put(new FromProductCartOffer(offer).parseToJSONObject());
             }
-            object.put("offers", offers);
+            object.put(ModelFields.ProductCart.offers, offers);
         }
         return object;
     }

@@ -5,6 +5,7 @@ import androidx.annotation.NonNull;
 import com.inappstory.sdk.game.reader.GameFinishOptions;
 import com.inappstory.sdk.game.reader.GameLoadedConfig;
 import com.inappstory.sdk.parse.ExtendedJsonObject;
+import com.inappstory.sdk.parse.fieldkeys.ModelFields;
 
 import org.json.JSONObject;
 
@@ -23,8 +24,12 @@ public final class ToGameLoadedConfig extends ToModelParser<GameLoadedConfig> {
                     new JSONObject(value)
             );
             GameLoadedConfig finishOptions = new GameLoadedConfig();
-            finishOptions.backGesture = jsonObj.optBoolean("backGesture");
-            finishOptions.showClose = jsonObj.optBoolean("showClose", true);
+            finishOptions.backGesture = jsonObj.optBoolean(
+                    ModelFields.GameLoadedConfig.backGesture
+            );
+            finishOptions.showClose = jsonObj.optBoolean(
+                    ModelFields.GameLoadedConfig.showClose, true
+            );
             return finishOptions;
         } catch (Exception e) {
             return null;

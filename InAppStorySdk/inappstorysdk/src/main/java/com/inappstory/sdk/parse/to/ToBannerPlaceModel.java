@@ -6,6 +6,7 @@ import com.inappstory.sdk.core.network.content.models.BannerPlaceModel;
 import com.inappstory.sdk.core.network.content.models.Story;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.parse.ExtendedJsonObject;
+import com.inappstory.sdk.parse.fieldkeys.ModelFields;
 
 import org.json.JSONObject;
 
@@ -22,8 +23,10 @@ public final class ToBannerPlaceModel extends ToModelParser<BannerPlaceModel> {
                     new JSONObject(value)
             );
             BannerPlaceModel bannerPlaceModel = new BannerPlaceModel();
-            bannerPlaceModel.id = jsonObj.getInt("id");
-            bannerPlaceModel.banners = new ToBannerList(jsonObj.optJSONArray("banners")).parse();
+            bannerPlaceModel.id = jsonObj.getInt(ModelFields.BannerPlaceModel.id);
+            bannerPlaceModel.banners = new ToBannerList(jsonObj.optJSONArray(
+                    ModelFields.BannerPlaceModel.banners
+            )).parse();
             return bannerPlaceModel;
         } catch (Exception e) {
             return null;

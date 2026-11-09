@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.inappmessage.domain.reader.ShowSlideJSPayload;
 import com.inappstory.sdk.parse.ExtendedJsonObject;
+import com.inappstory.sdk.parse.fieldkeys.ModelFields;
 import com.inappstory.sdk.stories.api.models.OnVerticalScrollJSData;
 
 import org.json.JSONObject;
@@ -23,12 +24,24 @@ public final class ToOnVerticalScrollJSData extends ToModelParser<OnVerticalScro
                     new JSONObject(value)
             );
             OnVerticalScrollJSData data = new OnVerticalScrollJSData();
-            data.scrollY = (float) jsonObj.optDouble("scrollY");
-            data.scrollPercent = (float) jsonObj.optDouble("scrollPercent");
-            data.isScrollableLayer = jsonObj.optBoolean("isScrollableLayer");
-            data.cardId = jsonObj.optInt("cardId");
-            data.slideIndex = jsonObj.optInt("slideIndex");
-            data.layerIndex = jsonObj.optInt("layerIndex");
+            data.scrollY = (float) jsonObj.optDouble(
+                    ModelFields.OnVerticalScrollJSData.scrollY
+            );
+            data.scrollPercent = (float) jsonObj.optDouble(
+                    ModelFields.OnVerticalScrollJSData.scrollPercent
+            );
+            data.isScrollableLayer = jsonObj.optBoolean(
+                    ModelFields.OnVerticalScrollJSData.isScrollableLayer
+            );
+            data.cardId = jsonObj.optInt(
+                    ModelFields.OnVerticalScrollJSData.cardId
+            );
+            data.slideIndex = jsonObj.optInt(
+                    ModelFields.OnVerticalScrollJSData.slideIndex
+            );
+            data.layerIndex = jsonObj.optInt(
+                    ModelFields.OnVerticalScrollJSData.layerIndex
+            );
 
             return data;
         } catch (Exception e) {

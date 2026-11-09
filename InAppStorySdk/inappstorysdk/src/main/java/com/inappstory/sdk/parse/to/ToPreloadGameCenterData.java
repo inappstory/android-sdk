@@ -1,6 +1,7 @@
 package com.inappstory.sdk.parse.to;
 
 import com.inappstory.sdk.parse.ExtendedJsonObject;
+import com.inappstory.sdk.parse.fieldkeys.ModelFields;
 import com.inappstory.sdk.stories.api.models.PreloadGameCenterData;
 import com.inappstory.sdk.stories.api.models.WebResource;
 
@@ -17,21 +18,41 @@ public final class ToPreloadGameCenterData extends ToModelParser<PreloadGameCent
         try {
             ExtendedJsonObject jsonObj = new ExtendedJsonObject(object);
             PreloadGameCenterData pgcd = new PreloadGameCenterData();
-            pgcd.id = jsonObj.getString("id");
-            pgcd.url = jsonObj.getString("downloadUrl");
-            pgcd.archiveSize = jsonObj.optLongNullable("archiveSize");
-            pgcd.archiveUncompressedSize = jsonObj.optLongNullable("archiveUncompressedSize");
-            pgcd.archiveSha1 = jsonObj.optStringNullable("archiveSha1");
+            pgcd.id = jsonObj.getString(
+                    ModelFields.PreloadGameCenterData.id
+            );
+            pgcd.url = jsonObj.getString(
+                    ModelFields.PreloadGameCenterData.url
+            );
+            pgcd.archiveSize = jsonObj.optLongNullable(
+                    ModelFields.PreloadGameCenterData.archiveSize
+            );
+            pgcd.archiveUncompressedSize = jsonObj.optLongNullable(
+                    ModelFields.PreloadGameCenterData.archiveUncompressedSize
+            );
+            pgcd.archiveSha1 = jsonObj.optStringNullable(
+                    ModelFields.PreloadGameCenterData.archiveSha1
+            );
             pgcd.archiveItems =
-                    new ToGameArchiveItemList(jsonObj.optJSONArray("archiveItems")).parse();
+                    new ToGameArchiveItemList(jsonObj.optJSONArray(
+                            ModelFields.PreloadGameCenterData.archiveItems
+                    )).parse();
             pgcd.resources =
-                    new ToWebResourceList(jsonObj.optJSONArray("resources")).parse();
+                    new ToWebResourceList(jsonObj.optJSONArray(
+                            ModelFields.PreloadGameCenterData.resources
+                    )).parse();
             pgcd.splashScreen =
-                    new ToGameSplashScreen(jsonObj.optJSONObject("splashScreen")).parse();
+                    new ToGameSplashScreen(jsonObj.optJSONObject(
+                            ModelFields.PreloadGameCenterData.splashScreen
+                    )).parse();
             pgcd.splashLandscapeScreen =
-                    new ToGameSplashScreen(jsonObj.optJSONObject("splashLandscapeScreen")).parse();
+                    new ToGameSplashScreen(jsonObj.optJSONObject(
+                            ModelFields.PreloadGameCenterData.splashLandscapeScreen
+                    )).parse();
             pgcd.splashAnimation =
-                    new ToGameSplashAnimation(jsonObj.optJSONObject("splashLottieScreen")).parse();
+                    new ToGameSplashAnimation(jsonObj.optJSONObject(
+                            ModelFields.PreloadGameCenterData.splashAnimation
+                    )).parse();
             return pgcd;
         } catch (Exception e) {
             return null;

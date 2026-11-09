@@ -1,6 +1,7 @@
 package com.inappstory.sdk.parse.from;
 
 import com.inappstory.sdk.goods.outercallbacks.ProductCartOffer;
+import com.inappstory.sdk.parse.fieldkeys.ModelFields;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -16,26 +17,26 @@ public class FromProductCartOffer extends
     @Override
     protected JSONObject parseToJSONObject() throws Exception {
         JSONObject object = new JSONObject();
-        object.put("offerId", model.offerId);
-        object.put("groupId", model.groupId);
-        object.put("name", model.name);
-        object.put("description", model.description);
-        object.put("url", model.url);
-        object.put("coverUrl", model.coverUrl);
-        object.put("currency", model.currency);
-        object.put("price", model.price);
-        object.put("oldPrice", model.oldPrice);
-        object.put("adult", model.adult);
-        object.put("availability", model.availability);
-        object.put("size", model.size);
-        object.put("color", model.color);
-        object.put("quantity", model.quantity);
+        object.put(ModelFields.ProductCartOffer.offerId, model.offerId);
+        object.put(ModelFields.ProductCartOffer.groupId, model.groupId);
+        object.put(ModelFields.ProductCartOffer.name, model.name);
+        object.put(ModelFields.ProductCartOffer.description, model.description);
+        object.put(ModelFields.ProductCartOffer.url, model.url);
+        object.put(ModelFields.ProductCartOffer.coverUrl, model.coverUrl);
+        object.put(ModelFields.ProductCartOffer.currency, model.currency);
+        object.put(ModelFields.ProductCartOffer.price, model.price);
+        object.put(ModelFields.ProductCartOffer.oldPrice, model.oldPrice);
+        object.put(ModelFields.ProductCartOffer.adult, model.adult);
+        object.put(ModelFields.ProductCartOffer.availability, model.availability);
+        object.put(ModelFields.ProductCartOffer.size, model.size);
+        object.put(ModelFields.ProductCartOffer.color, model.color);
+        object.put(ModelFields.ProductCartOffer.quantity, model.quantity);
         if (model.imageUrls != null) {
             JSONArray imageUrls = new JSONArray();
             for (String imageUrl : model.imageUrls) {
                 imageUrls.put(imageUrl);
             }
-            object.put("imageUrls", imageUrls);
+            object.put(ModelFields.ProductCartOffer.imageUrls, imageUrls);
         }
         return object;
     }

@@ -2,6 +2,7 @@ package com.inappstory.sdk.parse.to;
 
 import com.inappstory.sdk.core.network.content.models.InAppMessageEvent;
 import com.inappstory.sdk.parse.ExtendedJsonObject;
+import com.inappstory.sdk.parse.fieldkeys.ModelFields;
 
 import org.json.JSONObject;
 
@@ -16,9 +17,9 @@ public final class ToInAppMessageEvent extends ToModelParser<InAppMessageEvent> 
         try {
             ExtendedJsonObject jsonObj = new ExtendedJsonObject(object);
             InAppMessageEvent event = new InAppMessageEvent();
-            event.name = jsonObj.getString("name");
-            event.id = jsonObj.optInt("id");
-            event.priority = jsonObj.optInt("priority");
+            event.name = jsonObj.getString(ModelFields.InAppMessageEvent.name);
+            event.id = jsonObj.optInt(ModelFields.InAppMessageEvent.id);
+            event.priority = jsonObj.optInt(ModelFields.InAppMessageEvent.priority);
             return event;
         } catch (Exception e) {
             return null;

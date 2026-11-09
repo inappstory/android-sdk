@@ -7,6 +7,7 @@ import com.inappstory.sdk.core.data.IResource;
 import com.inappstory.sdk.core.data.ISlideTimeline;
 import com.inappstory.sdk.core.exceptions.NotImplementedMethodException;
 import com.inappstory.sdk.network.annotations.models.SerializedName;
+import com.inappstory.sdk.parse.fieldkeys.ModelFields;
 import com.inappstory.sdk.stories.api.models.SlidePayload;
 
 import java.util.ArrayList;
@@ -16,17 +17,17 @@ import java.util.Map;
 import java.util.Objects;
 
 public class BannerSlide implements IReaderContentSlide {
-    @SerializedName("id")
+    @SerializedName(ModelFields.BannerSlide.slideIndex)
     public int slideIndex;
-    @SerializedName("event_payload")
+    @SerializedName(ModelFields.BannerSlide.slidePayload)
     public SlidePayload slidePayload;
-    @SerializedName("duration")
+    @SerializedName(ModelFields.BannerSlide.duration)
     public int duration;
-    @SerializedName("html")
+    @SerializedName(ModelFields.BannerSlide.html)
     public String html;
-    @SerializedName("resources")
+    @SerializedName(ModelFields.BannerSlide.resources)
     public List<ContentResource> resources;
-    @SerializedName("img_placeholders_resources")
+    @SerializedName(ModelFields.BannerSlide.placeholders)
     public List<ContentResource> placeholders;
 
     @Override

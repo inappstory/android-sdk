@@ -3,6 +3,7 @@ package com.inappstory.sdk.parse.to;
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.parse.ExtendedJsonObject;
+import com.inappstory.sdk.parse.fieldkeys.ModelFields;
 import com.inappstory.sdk.stories.statistic.BannerStatisticV1Task;
 import com.inappstory.sdk.stories.statistic.IAMStatisticV1Task;
 
@@ -23,22 +24,54 @@ public final class ToIAMStatisticV1Task extends ToModelParser<IAMStatisticV1Task
                     new JSONObject(value)
             );
             IAMStatisticV1Task task = new IAMStatisticV1Task();
-            task.iamId = jsonObj.optIntNullable("iamId");
-            task.event = jsonObj.optStringNullable("event");
-            task.eventId = jsonObj.optStringNullable("ei");
-            task.iterationId = jsonObj.optStringNullable("ii");
-            task.slideIndex = jsonObj.optIntNullable("si");
-            task.layerIndex = jsonObj.optIntNullable("li");
-            task.slideTotal = jsonObj.optIntNullable("st");
-            task.durationMs = jsonObj.optLongNullable("d");
-            task.widgetId = jsonObj.optStringNullable("wi");
-            task.widgetLabel = jsonObj.optStringNullable("wl");
-            task.widgetValue = jsonObj.optStringNullable("wv");
-            task.value = jsonObj.optStringNullable("v");
-            task.slideAnalytics = jsonObj.optStringNullable("sa");
-            task.widgetAnswerLabel = jsonObj.optStringNullable("wal");
-            task.widgetAnswer = jsonObj.optIntNullable("wa");
-            task.widgetAnswerScore = jsonObj.optIntNullable("was");
+            task.iamId = jsonObj.optIntNullable(
+                    ModelFields.IAMStatisticV1Task.iamId
+            );
+            task.event = jsonObj.optStringNullable(
+                    ModelFields.IAMStatisticV1Task.event
+            );
+            task.eventId = jsonObj.optStringNullable(
+                    ModelFields.IAMStatisticV1Task.eventId
+            );
+            task.iterationId = jsonObj.optStringNullable(
+                    ModelFields.IAMStatisticV1Task.iterationId
+            );
+            task.slideIndex = jsonObj.optIntNullable(
+                    ModelFields.IAMStatisticV1Task.slideIndex
+            );
+            task.layerIndex = jsonObj.optIntNullable(
+                    ModelFields.IAMStatisticV1Task.layerIndex
+            );
+            task.slideTotal = jsonObj.optIntNullable(
+                    ModelFields.IAMStatisticV1Task.slideTotal
+            );
+            task.durationMs = jsonObj.optLongNullable(
+                    ModelFields.IAMStatisticV1Task.durationMs
+            );
+            task.widgetId = jsonObj.optStringNullable(
+                    ModelFields.IAMStatisticV1Task.widgetId
+            );
+            task.widgetLabel = jsonObj.optStringNullable(
+                    ModelFields.IAMStatisticV1Task.widgetLabel
+            );
+            task.widgetValue = jsonObj.optStringNullable(
+                    ModelFields.IAMStatisticV1Task.widgetValue
+            );
+            task.value = jsonObj.optStringNullable(
+                    ModelFields.IAMStatisticV1Task.value
+            );
+            task.slideAnalytics = jsonObj.optStringNullable(
+                    ModelFields.IAMStatisticV1Task.slideAnalytics
+            );
+            task.widgetAnswerLabel = jsonObj.optStringNullable(
+                    ModelFields.IAMStatisticV1Task.widgetAnswerLabel
+            );
+            task.widgetAnswer = jsonObj.optIntNullable(
+                    ModelFields.IAMStatisticV1Task.widgetAnswer
+            );
+            task.widgetAnswerScore = jsonObj.optIntNullable(
+                    ModelFields.IAMStatisticV1Task.widgetAnswerScore
+            );
 
             return task;
         } catch (Exception e) {

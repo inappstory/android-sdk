@@ -1,31 +1,34 @@
 package com.inappstory.sdk.stories.statistic;
 
 import com.inappstory.sdk.network.annotations.models.SerializedName;
+import com.inappstory.sdk.parse.fieldkeys.ModelFields;
 
 public class BannerStatisticV1Task {
+    @SerializedName(ModelFields.BannerStatisticV1Task.bannerId)
     public Integer bannerId;
+    @SerializedName(ModelFields.BannerStatisticV1Task.event)
     public String event;
-    @SerializedName("ei")
+    @SerializedName(ModelFields.BannerStatisticV1Task.eventId)
     public String eventId;
-    @SerializedName("ii")
+    @SerializedName(ModelFields.BannerStatisticV1Task.iterationId)
     public String iterationId;
-    @SerializedName("si")
+    @SerializedName(ModelFields.BannerStatisticV1Task.slideIndex)
     public Integer slideIndex;
-    @SerializedName("st")
+    @SerializedName(ModelFields.BannerStatisticV1Task.slideTotal)
     public Integer slideTotal;
-    @SerializedName("d")
+    @SerializedName(ModelFields.BannerStatisticV1Task.durationMs)
     public Long durationMs;
-    @SerializedName("wi")
+    @SerializedName(ModelFields.BannerStatisticV1Task.widgetId)
     public String widgetId;
-    @SerializedName("wl")
+    @SerializedName(ModelFields.BannerStatisticV1Task.widgetLabel)
     public String widgetLabel;
-    @SerializedName("wv")
+    @SerializedName(ModelFields.BannerStatisticV1Task.widgetValue)
     public String widgetValue;
-    @SerializedName("wa")
+    @SerializedName(ModelFields.BannerStatisticV1Task.widgetAnswer)
     public Integer widgetAnswer;
-    @SerializedName("wal")
+    @SerializedName(ModelFields.BannerStatisticV1Task.widgetAnswerLabel)
     public String widgetAnswerLabel;
-    @SerializedName("was")
+    @SerializedName(ModelFields.BannerStatisticV1Task.widgetAnswerScore)
     public Integer widgetAnswerScore;
 
 }

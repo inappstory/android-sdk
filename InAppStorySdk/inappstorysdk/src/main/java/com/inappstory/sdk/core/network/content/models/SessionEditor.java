@@ -2,6 +2,7 @@ package com.inappstory.sdk.core.network.content.models;
 
 
 import com.inappstory.sdk.network.annotations.models.SerializedName;
+import com.inappstory.sdk.parse.fieldkeys.ModelFields;
 import com.inappstory.sdk.stories.api.models.UGCVersionToSDKBuild;
 
 import java.util.HashMap;
@@ -9,18 +10,16 @@ import java.util.List;
 
 public class SessionEditor {
 
-    @SerializedName("url")
+    @SerializedName(ModelFields.SessionEditor.url)
     public String url;
-    @SerializedName("urlTemplate")
+    @SerializedName(ModelFields.SessionEditor.urlTemplate)
     public String urlTemplate;
-    @SerializedName("versionTemplate")
+    @SerializedName(ModelFields.SessionEditor.versionTemplate)
     public String versionTemplate;
-    @SerializedName("versionsMap")
+    @SerializedName(ModelFields.SessionEditor.versionsMap)
     public List<UGCVersionToSDKBuild> versionsMap;
-
-    @SerializedName("config")
+    @SerializedName(ModelFields.SessionEditor.config)
     public HashMap<String, Object> config;
-
-    @SerializedName("messages")
+    @SerializedName(ModelFields.SessionEditor.messages)
     public HashMap<String, String> messages;
 }

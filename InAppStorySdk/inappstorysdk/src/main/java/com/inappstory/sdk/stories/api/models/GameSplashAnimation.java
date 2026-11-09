@@ -3,16 +3,17 @@ package com.inappstory.sdk.stories.api.models;
 import com.inappstory.sdk.network.annotations.models.Required;
 import com.inappstory.sdk.network.annotations.models.SerializedName;
 import com.inappstory.sdk.core.data.IDownloadResource;
+import com.inappstory.sdk.parse.fieldkeys.ModelFields;
 
 public class GameSplashAnimation implements IDownloadResource {
     @Required
-    @SerializedName("url")
+    @SerializedName(ModelFields.GameSplashAnimation.url)
     public String url;
-    @SerializedName("size")
+    @SerializedName(ModelFields.GameSplashAnimation.size)
     public Long size;
-    @SerializedName("sha1")
+    @SerializedName(ModelFields.GameSplashAnimation.sha1)
     public String sha1;
-    @SerializedName("durationMinimalMs")
+    @SerializedName(ModelFields.GameSplashAnimation.durationMinimalMs)
     public Long durationMinimalMs;
 
     @Override

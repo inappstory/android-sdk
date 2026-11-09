@@ -1,13 +1,19 @@
 package com.inappstory.sdk.stories.api.models;
 
 import com.inappstory.sdk.core.data.IDownloadResource;
+import com.inappstory.sdk.network.annotations.models.SerializedName;
+import com.inappstory.sdk.parse.fieldkeys.ModelFields;
 
 import java.io.Serializable;
 
 public class WebResource implements Serializable, IDownloadResource {
+    @SerializedName(ModelFields.WebResource.key)
     public String key;
+    @SerializedName(ModelFields.WebResource.url)
     public String url;
+    @SerializedName(ModelFields.WebResource.sha1)
     public String sha1;
+    @SerializedName(ModelFields.WebResource.size)
     public long size;
 
     @Override

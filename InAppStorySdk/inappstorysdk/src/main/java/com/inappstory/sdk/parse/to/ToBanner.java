@@ -5,6 +5,7 @@ import androidx.annotation.NonNull;
 import com.inappstory.sdk.core.network.content.models.Banner;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.parse.ExtendedJsonObject;
+import com.inappstory.sdk.parse.fieldkeys.ModelFields;
 
 import org.json.JSONObject;
 
@@ -29,20 +30,26 @@ public final class ToBanner extends ToModelParser<Banner> {
 
     private Banner parseWithException(ExtendedJsonObject jsonObj) throws Exception {
         Banner banner = new Banner();
-        banner.id = jsonObj.getInt("id");
-        banner.hasLimit = jsonObj.optBoolean("has_limit");
-        banner.layout = jsonObj.optStringNullable("layout");
-        banner.frequencyLimit = jsonObj.optLongNullable("frequency_limit");
-        banner.displayTo = jsonObj.optLongNullable("display_to");
-        banner.displayFrom = jsonObj.optLongNullable("display_from");
-        banner.hasSwipeUp = jsonObj.optBooleanNullable("has_swipe_up");
-        banner.disableClose = jsonObj.optBoolean("disable_close");
+        banner.id = jsonObj.getInt(ModelFields.Banner.id);
+        banner.hasLimit = jsonObj.optBoolean(ModelFields.Banner.hasLimit);
+        banner.frequencyLimit = jsonObj.optLongNullable(ModelFields.Banner.frequencyLimit);
+        banner.displayTo = jsonObj.optLongNullable(ModelFields.Banner.displayTo);
+        banner.displayFrom = jsonObj.optLongNullable(ModelFields.Banner.displayFrom);
+        banner.hasSwipeUp = jsonObj.optBooleanNullable(ModelFields.Banner.hasSwipeUp);
+        banner.disableClose = jsonObj.optBoolean(ModelFields.Banner.disableClose);
 
-        banner.slides = new ToBannerSlideList(jsonObj.optJSONArray("slides")).parse();
+        banner.slides = new ToBannerSlideList(jsonObj.optJSONArray(
+                ModelFields.Banner.slides
+        )).parse();
 
-        banner.customAttributes = JsonParser.toMap(jsonObj.optJSONObject("custom_attributes"));
-        banner.layoutTemplateVariables = JsonParser.toMap(jsonObj.optJSONObject("layout_template_variables"));
-        banner.appearance = JsonParser.toObjectMap(jsonObj.optJSONObject("appearance"));
+        banner.customAttributes = JsonParser.toMap(jsonObj.optJSONObject(
+                ModelFields.Banner.customAttributes));
+        banner.layoutTemplateVariables = JsonParser.toMap(jsonObj.optJSONObject(
+                ModelFields.Banner.layoutTemplateVariables
+        ));
+        banner.appearance = JsonParser.toObjectMap(jsonObj.optJSONObject(
+                ModelFields.Banner.appearance
+        ));
 
         return banner;
     }

@@ -1,12 +1,13 @@
 package com.inappstory.sdk.game.reader;
 
 import com.inappstory.sdk.network.annotations.models.SerializedName;
+import com.inappstory.sdk.parse.fieldkeys.ModelFields;
 
 public class GameFinishOptions {
-    @SerializedName("openUrl")
+    @SerializedName(ModelFields.GameFinishOptions.openUrl)
     public String openUrl;
-    @SerializedName("openStory")
+    @SerializedName(ModelFields.GameFinishOptions.openStory)
     public GameFinishStoryOptions openStory;
-    @SerializedName("openGameInstance")
+    @SerializedName(ModelFields.GameFinishOptions.openGameInstance)
     public GameFinishGameOptions openGameInstance;
 }

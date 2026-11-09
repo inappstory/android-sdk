@@ -3,30 +3,28 @@ package com.inappstory.sdk.core.network.content.models;
 
 import com.inappstory.sdk.network.annotations.models.SerializedName;
 import com.inappstory.sdk.core.data.IResource;
+import com.inappstory.sdk.parse.fieldkeys.ModelFields;
 
 /**
  * Created by paperrose on 19.02.2018.
  */
 
 public class ContentResource implements IResource {
-    @SerializedName("url")
+    @SerializedName(ModelFields.ContentResource.url)
     public String url;
-    @SerializedName("key")
+    @SerializedName(ModelFields.ContentResource.key)
     public String key;
-    @SerializedName("type")
+    @SerializedName(ModelFields.ContentResource.type)
     public String type;
-    @SerializedName("purpose")
+    @SerializedName(ModelFields.ContentResource.purpose)
     public String purpose;
-    @SerializedName("filename")
+    @SerializedName(ModelFields.ContentResource.filename)
     public String filename;
-
-    @SerializedName("slide_index")
+    @SerializedName(ModelFields.ContentResource.index)
     public Integer index;
-
-    @SerializedName("range_start")
+    @SerializedName(ModelFields.ContentResource.rangeStart)
     public Long rangeStart;
-
-    @SerializedName("range_end")
+    @SerializedName(ModelFields.ContentResource.rangeEnd)
     public Long rangeEnd;
 
     public String getType() {

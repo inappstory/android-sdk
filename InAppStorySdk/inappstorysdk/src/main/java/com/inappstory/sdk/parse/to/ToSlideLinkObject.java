@@ -3,6 +3,7 @@ package com.inappstory.sdk.parse.to;
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.parse.ExtendedJsonObject;
+import com.inappstory.sdk.parse.fieldkeys.ModelFields;
 import com.inappstory.sdk.stories.api.models.SlideLinkObject;
 import com.inappstory.sdk.stories.api.models.dialogstructure.DialogStructure;
 
@@ -23,9 +24,15 @@ public final class ToSlideLinkObject extends ToModelParser<SlideLinkObject> {
                     new JSONObject(value)
             );
             SlideLinkObject slideLink = new SlideLinkObject();
-            slideLink.elementId = jsonObj.optStringNullable("elementId");
-            slideLink.type = jsonObj.optStringNullable("type");
-            slideLink.link = new ToStoryLink(jsonObj.optJSONObject("link")).parse();
+            slideLink.elementId = jsonObj.optStringNullable(
+                    ModelFields.SlideLinkObject.elementId
+            );
+            slideLink.type = jsonObj.optStringNullable(
+                    ModelFields.SlideLinkObject.type
+            );
+            slideLink.link = new ToStoryLink(jsonObj.optJSONObject(
+                    ModelFields.SlideLinkObject.link
+            )).parse();
             return slideLink;
         } catch (Exception e) {
             return null;

@@ -5,6 +5,7 @@ import androidx.annotation.NonNull;
 import com.inappstory.sdk.game.reader.GameAddToCachePayload;
 import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.parse.ExtendedJsonObject;
+import com.inappstory.sdk.parse.fieldkeys.ModelFields;
 
 import org.json.JSONObject;
 
@@ -23,9 +24,15 @@ public final class ToGameAddToCachePayload extends ToModelParser<GameAddToCacheP
                     new JSONObject(value)
             );
             GameAddToCachePayload payload = new GameAddToCachePayload();
-            payload.id = jsonObj.optStringNullable("id");
-            payload.cb = jsonObj.optStringNullable("cb");
-            payload.webResource = new ToWebResource(jsonObj.optJSONObject("resource")).parse();
+            payload.id = jsonObj.optStringNullable(
+                    ModelFields.GameAddToCachePayload.id
+            );
+            payload.cb = jsonObj.optStringNullable(
+                    ModelFields.GameAddToCachePayload.cb
+            );
+            payload.webResource = new ToWebResource(jsonObj.optJSONObject(
+                    ModelFields.GameAddToCachePayload.webResource
+            )).parse();
             return payload;
         } catch (Exception e) {
             return null;

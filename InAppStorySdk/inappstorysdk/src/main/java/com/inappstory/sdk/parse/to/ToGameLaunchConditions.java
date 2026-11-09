@@ -2,6 +2,7 @@ package com.inappstory.sdk.parse.to;
 
 import com.inappstory.sdk.game.reader.GameScreenOptions;
 import com.inappstory.sdk.parse.ExtendedJsonObject;
+import com.inappstory.sdk.parse.fieldkeys.ModelFields;
 import com.inappstory.sdk.stories.api.models.GameLaunchConditions;
 
 import org.json.JSONObject;
@@ -18,9 +19,9 @@ public final class ToGameLaunchConditions extends ToModelParser<GameLaunchCondit
             ExtendedJsonObject jsonObj = new ExtendedJsonObject(object);
             GameLaunchConditions gameLaunchConditions = new GameLaunchConditions();
             gameLaunchConditions.minWebViewVersion =
-                    new ToGameLCMinWebViewVersion(
-                            jsonObj.optJSONObject("minWebViewVersion")
-                    ).parse();
+                    new ToGameLCMinWebViewVersion(jsonObj.optJSONObject(
+                            ModelFields.GameLaunchConditions.minWebViewVersion
+                    )).parse();
             return gameLaunchConditions;
         } catch (Exception e) {
             return null;

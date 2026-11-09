@@ -4,6 +4,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import com.inappstory.sdk.network.annotations.models.SerializedName;
+import com.inappstory.sdk.parse.fieldkeys.ModelFields;
 
 public class Image implements Parcelable {
     public static final String TYPE_SMALL = "s";
@@ -31,14 +32,20 @@ public class Image implements Parcelable {
         this.url = url;
     }
 
-    @SerializedName("url")
+    @SerializedName(ModelFields.Image.url)
     public String url;
 
-    @SerializedName("width")
+    @SerializedName(ModelFields.Image.width)
     public int width;
 
-    @SerializedName("height")
+    @SerializedName(ModelFields.Image.height)
     public int height;
+
+    @SerializedName(ModelFields.Image.type)
+    public String type;
+
+    @SerializedName(ModelFields.Image.expire)
+    public int expire;
 
     public void setType(String type) {
         this.type = type;
@@ -48,15 +55,9 @@ public class Image implements Parcelable {
         return type;
     }
 
-    @SerializedName("type")
-    public String type;
-
     public int getExpire() {
         return expire;
     }
-
-    @SerializedName("expire")
-    public int expire;
 
     protected Image(Parcel in) {
         url = in.readString();

@@ -9,6 +9,7 @@ import com.inappstory.sdk.core.data.IResource;
 import com.inappstory.sdk.core.exceptions.NotImplementedMethodException;
 import com.inappstory.sdk.network.annotations.models.Required;
 import com.inappstory.sdk.network.annotations.models.SerializedName;
+import com.inappstory.sdk.parse.fieldkeys.ModelFields;
 
 import java.util.HashMap;
 import java.util.List;
@@ -16,47 +17,39 @@ import java.util.Map;
 
 public class Banner implements IBanner {
     @Required
-    @SerializedName("id")
+    @SerializedName(ModelFields.Banner.id)
     public int id;
 
-    @SerializedName("has_limit")
+    @SerializedName(ModelFields.Banner.hasLimit)
     public boolean hasLimit;
 
-    @SerializedName("layout")
-    public String layout;
-
-    @SerializedName("frequency_limit")
+    @SerializedName(ModelFields.Banner.frequencyLimit)
     public Long frequencyLimit;
 
-    @SerializedName("display_to")
+    @SerializedName(ModelFields.Banner.displayTo)
     public Long displayTo;
 
-    @SerializedName("display_from")
+    @SerializedName(ModelFields.Banner.displayFrom)
     public Long displayFrom;
 
-    @SerializedName("slides")
+    @SerializedName(ModelFields.Banner.slides)
     public List<BannerSlide> slides;
 
-    @SerializedName("has_swipe_up")
+    @SerializedName(ModelFields.Banner.hasSwipeUp)
     public Boolean hasSwipeUp;
 
-    @SerializedName("disable_close")
+    @SerializedName(ModelFields.Banner.disableClose)
     public boolean disableClose;
 
-    @SerializedName("appearance")
+    @SerializedName(ModelFields.Banner.appearance)
     public Map<String, Object> appearance;
 
-    @SerializedName("layout_template_variables")
+    @SerializedName(ModelFields.Banner.layoutTemplateVariables)
     public Map<String, String> layoutTemplateVariables;
 
 
-    @SerializedName("custom_attributes")
+    @SerializedName(ModelFields.Banner.customAttributes)
     public Map<String, String> customAttributes;
-
-    @Override
-    public String layout() {
-        return layout;
-    }
 
     private IReaderContentSlide slide(int index) {
         if (slides == null || index < 0 || slides.size() < index)

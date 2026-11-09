@@ -2,13 +2,14 @@ package com.inappstory.sdk.core.network.content.models;
 
 import com.inappstory.sdk.core.data.ISlideTimeline;
 import com.inappstory.sdk.network.annotations.models.SerializedName;
+import com.inappstory.sdk.parse.fieldkeys.ModelFields;
 
 public class StorySlideTimeline implements ISlideTimeline {
-    @SerializedName("foreground")
+    @SerializedName(ModelFields.StorySlideTimeline.foregroundColor)
     public String foregroundColor;
-    @SerializedName("background")
+    @SerializedName(ModelFields.StorySlideTimeline.backgroundColor)
     public String backgroundColor;
-    @SerializedName("is_timeline_hidden")
+    @SerializedName(ModelFields.StorySlideTimeline.isTimelineHidden)
     public boolean isTimelineHidden;
 
     public static String DEFAULT_TIMELINE_BACKGROUND_COLOR = "#ffffff8a";

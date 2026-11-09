@@ -1,6 +1,7 @@
 package com.inappstory.sdk.game.reader;
 
 import com.inappstory.sdk.network.annotations.models.SerializedName;
+import com.inappstory.sdk.parse.fieldkeys.ModelFields;
 
 public class GameDataPlaceholder {
     public GameDataPlaceholder(String type, String name, String value) {
@@ -9,11 +10,11 @@ public class GameDataPlaceholder {
         this.value = value;
     }
 
-    @SerializedName("name")
+    @SerializedName(ModelFields.GameDataPlaceholder.name)
     public String name;
-    @SerializedName("type")
+    @SerializedName(ModelFields.GameDataPlaceholder.type)
     public String type;
-    @SerializedName("value")
+    @SerializedName(ModelFields.GameDataPlaceholder.value)
     public String value;
 
     public GameDataPlaceholder() {

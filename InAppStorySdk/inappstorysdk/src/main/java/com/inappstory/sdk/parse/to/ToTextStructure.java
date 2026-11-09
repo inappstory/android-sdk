@@ -1,6 +1,7 @@
 package com.inappstory.sdk.parse.to;
 
 import com.inappstory.sdk.parse.ExtendedJsonObject;
+import com.inappstory.sdk.parse.fieldkeys.ModelFields;
 import com.inappstory.sdk.stories.api.models.dialogstructure.QuestionStructure;
 import com.inappstory.sdk.stories.api.models.dialogstructure.TextStructure;
 
@@ -17,17 +18,39 @@ public final class ToTextStructure extends ToModelParser<TextStructure> {
         try {
             ExtendedJsonObject jsonObj = new ExtendedJsonObject(object);
             TextStructure structure = new TextStructure();
-            structure.align = jsonObj.optStringNullable("align");
-            structure.color = jsonObj.optStringNullable("color");
-            structure.value = jsonObj.optStringNullable("value");
-            structure.placeholder = jsonObj.optStringNullable("placeholder");
-            structure.family = jsonObj.optStringNullable("family");
-            structure.weight = jsonObj.optStringNullable("weight");
-            structure.style = jsonObj.optStringNullable("style");
-            structure.maxLines = jsonObj.optInt("maxLines");
-            structure.limit = jsonObj.optInt("limit");
-            structure.lineHeight = (float) jsonObj.optDouble("lineHeight");
-            structure.size = (float) jsonObj.optDouble("size");
+            structure.align = jsonObj.optStringNullable(
+                    ModelFields.TextStructure.align
+            );
+            structure.color = jsonObj.optStringNullable(
+                    ModelFields.TextStructure.color
+            );
+            structure.value = jsonObj.optStringNullable(
+                    ModelFields.TextStructure.value
+            );
+            structure.placeholder = jsonObj.optStringNullable(
+                    ModelFields.TextStructure.placeholder
+            );
+            structure.family = jsonObj.optStringNullable(
+                    ModelFields.TextStructure.family
+            );
+            structure.weight = jsonObj.optStringNullable(
+                    ModelFields.TextStructure.weight
+            );
+            structure.style = jsonObj.optStringNullable(
+                    ModelFields.TextStructure.style
+            );
+            structure.maxLines = jsonObj.optInt(
+                    ModelFields.TextStructure.maxLines
+            );
+            structure.limit = jsonObj.optInt(
+                    ModelFields.TextStructure.limit
+            );
+            structure.lineHeight = (float) jsonObj.optDouble(
+                    ModelFields.TextStructure.lineHeight
+            );
+            structure.size = (float) jsonObj.optDouble(
+                    ModelFields.TextStructure.size
+            );
             return structure;
         } catch (Exception e) {
             return null;

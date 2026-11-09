@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.inappmessage.domain.reader.ShowSlideJSPayload;
 import com.inappstory.sdk.parse.ExtendedJsonObject;
+import com.inappstory.sdk.parse.fieldkeys.ModelFields;
 
 import org.json.JSONObject;
 
@@ -22,8 +23,8 @@ public final class ToShowSlideJSPayload extends ToModelParser<ShowSlideJSPayload
                     new JSONObject(value)
             );
             ShowSlideJSPayload payload = new ShowSlideJSPayload();
-            payload.index = jsonObj.optInt("index");
-            payload.cardId = jsonObj.optInt("cardId");
+            payload.index = jsonObj.optInt(ModelFields.ShowSlideJSPayload.index);
+            payload.cardId = jsonObj.optInt(ModelFields.ShowSlideJSPayload.cardId);
 
             return payload;
         } catch (Exception e) {

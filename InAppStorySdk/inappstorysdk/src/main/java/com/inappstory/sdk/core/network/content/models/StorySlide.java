@@ -8,6 +8,7 @@ import com.inappstory.sdk.core.data.IReaderContentSlide;
 import com.inappstory.sdk.core.data.IResource;
 import com.inappstory.sdk.core.data.ISlideTimeline;
 import com.inappstory.sdk.network.annotations.models.SerializedName;
+import com.inappstory.sdk.parse.fieldkeys.ModelFields;
 import com.inappstory.sdk.stories.api.models.SlidePayload;
 
 import java.util.ArrayList;
@@ -17,21 +18,21 @@ import java.util.Map;
 import java.util.Objects;
 
 public class StorySlide implements IReaderContentSlide {
-    @SerializedName("index")
+    @SerializedName(ModelFields.StorySlide.slideIndex)
     public int slideIndex;
-    @SerializedName("timeline")
+    @SerializedName(ModelFields.StorySlide.slideTimeline)
     public StorySlideTimeline slideTimeline;
-    @SerializedName("event_payload")
+    @SerializedName(ModelFields.StorySlide.slidePayload)
     public SlidePayload slidePayload;
-    @SerializedName("duration")
+    @SerializedName(ModelFields.StorySlide.duration)
     public int duration;
-    @SerializedName("html")
+    @SerializedName(ModelFields.StorySlide.html)
     public String html;
-    @SerializedName("resources")
+    @SerializedName(ModelFields.StorySlide.resources)
     public List<ContentResource> resources;
-    @SerializedName("img_placeholders_resources")
+    @SerializedName(ModelFields.StorySlide.placeholders)
     public List<ContentResource> placeholders;
-    @SerializedName("screenshot_share")
+    @SerializedName(ModelFields.StorySlide.isScreenshotShare)
     public boolean isScreenshotShare;
 
     @Override

@@ -1,6 +1,7 @@
 package com.inappstory.sdk.parse.to;
 
 import com.inappstory.sdk.parse.ExtendedJsonObject;
+import com.inappstory.sdk.parse.fieldkeys.ModelFields;
 import com.inappstory.sdk.stories.api.models.dialogstructure.InputStructure;
 import com.inappstory.sdk.stories.api.models.dialogstructure.PaddingStructure;
 
@@ -17,13 +18,21 @@ public final class ToInputStructure extends ToModelParser<InputStructure> {
         try {
             ExtendedJsonObject jsonObj = new ExtendedJsonObject(object);
             InputStructure structure = new InputStructure();
-            structure.text = new ToTextStructure(jsonObj.optJSONObject("text")).parse();
-            structure.border = new ToBorderStructure(jsonObj.optJSONObject("border")).parse();
-            structure.type = jsonObj.optStringNullable("type");
-            structure.background = new ToBackgroundStructure(
-                    jsonObj.optJSONObject("background")
-            ).parse();
-            structure.padding = new ToPaddingStructure(jsonObj.optJSONObject("padding")).parse();
+            structure.text = new ToTextStructure(jsonObj.optJSONObject(
+                    ModelFields.InputStructure.text
+            )).parse();
+            structure.border = new ToBorderStructure(jsonObj.optJSONObject(
+                    ModelFields.InputStructure.border
+            )).parse();
+            structure.type = jsonObj.optStringNullable(
+                    ModelFields.InputStructure.type
+            );
+            structure.background = new ToBackgroundStructure(jsonObj.optJSONObject(
+                    ModelFields.InputStructure.background
+            )).parse();
+            structure.padding = new ToPaddingStructure(jsonObj.optJSONObject(
+                    ModelFields.InputStructure.padding
+            )).parse();
             return structure;
         } catch (Exception e) {
             return null;

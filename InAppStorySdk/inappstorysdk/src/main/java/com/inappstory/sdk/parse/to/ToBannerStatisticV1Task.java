@@ -2,7 +2,9 @@ package com.inappstory.sdk.parse.to;
 
 import androidx.annotation.NonNull;
 
+import com.inappstory.sdk.network.annotations.models.SerializedName;
 import com.inappstory.sdk.parse.ExtendedJsonObject;
+import com.inappstory.sdk.parse.fieldkeys.ModelFields;
 import com.inappstory.sdk.stories.api.models.logs.ExceptionLog;
 import com.inappstory.sdk.stories.statistic.BannerStatisticV1Task;
 
@@ -23,19 +25,45 @@ public final class ToBannerStatisticV1Task extends ToModelParser<BannerStatistic
                     new JSONObject(value)
             );
             BannerStatisticV1Task task = new BannerStatisticV1Task();
-            task.bannerId = jsonObj.optIntNullable("bannerId");
-            task.event = jsonObj.optStringNullable("event");
-            task.eventId = jsonObj.optStringNullable("ei");
-            task.iterationId = jsonObj.optStringNullable("ii");
-            task.slideIndex = jsonObj.optIntNullable("si");
-            task.slideTotal = jsonObj.optIntNullable("st");
-            task.durationMs = jsonObj.optLongNullable("d");
-            task.widgetId = jsonObj.optStringNullable("wi");
-            task.widgetLabel = jsonObj.optStringNullable("wl");
-            task.widgetValue = jsonObj.optStringNullable("wv");
-            task.widgetAnswerLabel = jsonObj.optStringNullable("wal");
-            task.widgetAnswer = jsonObj.optIntNullable("wa");
-            task.widgetAnswerScore = jsonObj.optIntNullable("was");
+            task.bannerId = jsonObj.optIntNullable(
+                    ModelFields.BannerStatisticV1Task.bannerId
+            );
+            task.event = jsonObj.optStringNullable(
+                    ModelFields.BannerStatisticV1Task.event
+            );
+            task.eventId = jsonObj.optStringNullable(
+                    ModelFields.BannerStatisticV1Task.eventId
+            );
+            task.iterationId = jsonObj.optStringNullable(
+                    ModelFields.BannerStatisticV1Task.iterationId
+            );
+            task.slideIndex = jsonObj.optIntNullable(
+                    ModelFields.BannerStatisticV1Task.slideIndex
+            );
+            task.slideTotal = jsonObj.optIntNullable(
+                    ModelFields.BannerStatisticV1Task.slideTotal
+            );
+            task.durationMs = jsonObj.optLongNullable(
+                    ModelFields.BannerStatisticV1Task.durationMs
+            );
+            task.widgetId = jsonObj.optStringNullable(
+                    ModelFields.BannerStatisticV1Task.widgetId
+            );
+            task.widgetLabel = jsonObj.optStringNullable(
+                    ModelFields.BannerStatisticV1Task.widgetLabel
+            );
+            task.widgetValue = jsonObj.optStringNullable(
+                    ModelFields.BannerStatisticV1Task.widgetValue
+            );
+            task.widgetAnswerLabel = jsonObj.optStringNullable(
+                    ModelFields.BannerStatisticV1Task.widgetAnswerLabel
+            );
+            task.widgetAnswer = jsonObj.optIntNullable(
+                    ModelFields.BannerStatisticV1Task.widgetAnswer
+            );
+            task.widgetAnswerScore = jsonObj.optIntNullable(
+                    ModelFields.BannerStatisticV1Task.widgetAnswerScore
+            );
 
             return task;
         } catch (Exception e) {

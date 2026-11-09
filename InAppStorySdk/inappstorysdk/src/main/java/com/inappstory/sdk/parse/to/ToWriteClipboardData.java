@@ -3,6 +3,7 @@ package com.inappstory.sdk.parse.to;
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.parse.ExtendedJsonObject;
+import com.inappstory.sdk.parse.fieldkeys.ModelFields;
 import com.inappstory.sdk.stories.api.models.StoryLoadedData;
 import com.inappstory.sdk.stories.api.models.WriteClipboardData;
 
@@ -23,8 +24,12 @@ public final class ToWriteClipboardData extends ToModelParser<WriteClipboardData
                     new JSONObject(value)
             );
             WriteClipboardData data = new WriteClipboardData();
-            data.type = jsonObj.optStringNullable("type");
-            data.textValue = jsonObj.optStringNullable("textValue");
+            data.type = jsonObj.optStringNullable(
+                    ModelFields.WriteClipboardData.type
+            );
+            data.textValue = jsonObj.optStringNullable(
+                    ModelFields.WriteClipboardData.textValue
+            );
             return data;
         } catch (Exception e) {
             return null;

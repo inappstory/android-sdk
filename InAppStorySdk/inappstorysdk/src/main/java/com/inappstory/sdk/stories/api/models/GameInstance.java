@@ -3,6 +3,9 @@ package com.inappstory.sdk.stories.api.models;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.inappstory.sdk.network.annotations.models.SerializedName;
+import com.inappstory.sdk.parse.fieldkeys.ModelFields;
+
 /**
  * Created by Paperrose on 08.07.2018.
  */
@@ -10,7 +13,7 @@ import android.os.Parcelable;
 
 public class GameInstance implements Parcelable {
 
-
+    @SerializedName(ModelFields.GameInstance.id)
     public String id;
 
 

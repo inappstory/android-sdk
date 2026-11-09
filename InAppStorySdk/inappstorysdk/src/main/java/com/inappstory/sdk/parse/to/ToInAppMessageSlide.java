@@ -3,6 +3,7 @@ package com.inappstory.sdk.parse.to;
 import com.inappstory.sdk.core.network.content.models.InAppMessageSlide;
 import com.inappstory.sdk.core.network.content.models.StorySlide;
 import com.inappstory.sdk.parse.ExtendedJsonObject;
+import com.inappstory.sdk.parse.fieldkeys.ModelFields;
 
 import org.json.JSONObject;
 
@@ -18,18 +19,28 @@ public final class ToInAppMessageSlide extends ToModelParser<InAppMessageSlide> 
             ExtendedJsonObject jsonObj = new ExtendedJsonObject(object);
             InAppMessageSlide slide = new InAppMessageSlide();
 
-            slide.slideIndex = jsonObj.optInt("slide_index");
-            slide.duration = jsonObj.optInt("duration");
-            slide.html = jsonObj.optString("html");
+            slide.slideIndex = jsonObj.optInt(
+                    ModelFields.InAppMessageSlide.slideIndex
+            );
+            slide.duration = jsonObj.optInt(
+                    ModelFields.InAppMessageSlide.duration
+            );
+            slide.html = jsonObj.optString(
+                    ModelFields.InAppMessageSlide.html
+            );
 
             slide.slidePayload =
-                    new ToSlidePayload(jsonObj.optJSONObject("event_payload")).parse();
+                    new ToSlidePayload(jsonObj.optJSONObject(
+                            ModelFields.InAppMessageSlide.slidePayload
+                    )).parse();
             slide.resources =
-                    new ToContentResourceList(jsonObj.optJSONArray("resources")).parse();
+                    new ToContentResourceList(jsonObj.optJSONArray(
+                            ModelFields.InAppMessageSlide.resources
+                    )).parse();
             slide.placeholders =
-                    new ToContentResourceList(
-                            jsonObj.optJSONArray("img_placeholders_resources")
-                    ).parse();
+                    new ToContentResourceList(jsonObj.optJSONArray(
+                            ModelFields.InAppMessageSlide.placeholders
+                    )).parse();
             return slide;
         } catch (Exception e) {
             return null;

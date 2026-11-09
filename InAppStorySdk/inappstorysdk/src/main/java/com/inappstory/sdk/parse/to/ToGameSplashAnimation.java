@@ -1,6 +1,7 @@
 package com.inappstory.sdk.parse.to;
 
 import com.inappstory.sdk.parse.ExtendedJsonObject;
+import com.inappstory.sdk.parse.fieldkeys.ModelFields;
 import com.inappstory.sdk.stories.api.models.GameSplashAnimation;
 
 import org.json.JSONObject;
@@ -16,10 +17,18 @@ public final class ToGameSplashAnimation extends ToModelParser<GameSplashAnimati
         try {
             ExtendedJsonObject jsonObj = new ExtendedJsonObject(object);
             GameSplashAnimation gameSplashAnimation = new GameSplashAnimation();
-            gameSplashAnimation.url = jsonObj.getString("url");
-            gameSplashAnimation.sha1 = jsonObj.optStringNullable("sha1");
-            gameSplashAnimation.size = jsonObj.optLongNullable("size");
-            gameSplashAnimation.durationMinimalMs = jsonObj.optLongNullable("durationMinimalMs");
+            gameSplashAnimation.url = jsonObj.getString(
+                    ModelFields.GameSplashAnimation.url
+            );
+            gameSplashAnimation.sha1 = jsonObj.optStringNullable(
+                    ModelFields.GameSplashAnimation.sha1
+            );
+            gameSplashAnimation.size = jsonObj.optLongNullable(
+                    ModelFields.GameSplashAnimation.size
+            );
+            gameSplashAnimation.durationMinimalMs = jsonObj.optLongNullable(
+                    ModelFields.GameSplashAnimation.durationMinimalMs
+            );
             return gameSplashAnimation;
         } catch (Exception e) {
             return null;

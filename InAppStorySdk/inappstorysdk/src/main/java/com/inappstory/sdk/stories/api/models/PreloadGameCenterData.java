@@ -2,6 +2,7 @@ package com.inappstory.sdk.stories.api.models;
 
 import com.inappstory.sdk.network.annotations.models.Required;
 import com.inappstory.sdk.network.annotations.models.SerializedName;
+import com.inappstory.sdk.parse.fieldkeys.ModelFields;
 import com.inappstory.sdk.stories.api.interfaces.IGameCenterData;
 
 import java.util.ArrayList;
@@ -9,30 +10,26 @@ import java.util.List;
 
 public class PreloadGameCenterData implements IGameCenterData {
     @Required
-    @SerializedName("id")
+    @SerializedName(ModelFields.PreloadGameCenterData.id)
     public String id;
-    @SerializedName("splashScreen")
+    @SerializedName(ModelFields.PreloadGameCenterData.splashScreen)
     public GameSplashScreen splashScreen;
-    @SerializedName("splashLandscapeScreen")
+    @SerializedName(ModelFields.PreloadGameCenterData.splashLandscapeScreen)
     public GameSplashScreen splashLandscapeScreen;
-    @SerializedName("splashLottieScreen")
+    @SerializedName(ModelFields.PreloadGameCenterData.splashAnimation)
     public GameSplashAnimation splashAnimation;
-    @SerializedName("resources")
+    @SerializedName(ModelFields.PreloadGameCenterData.resources)
     public List<WebResource> resources;
     @Required
-    @SerializedName("downloadUrl")
+    @SerializedName(ModelFields.PreloadGameCenterData.url)
     public String url;
-
-    @SerializedName("archiveSize")
+    @SerializedName(ModelFields.PreloadGameCenterData.archiveSize)
     public Long archiveSize;
-
-    @SerializedName("archiveSha1")
+    @SerializedName(ModelFields.PreloadGameCenterData.archiveSha1)
     public String archiveSha1;
-
-    @SerializedName("archiveUncompressedSize")
+    @SerializedName(ModelFields.PreloadGameCenterData.archiveUncompressedSize)
     public Long archiveUncompressedSize;
-
-    @SerializedName("archiveItems")
+    @SerializedName(ModelFields.PreloadGameCenterData.archiveItems)
     public List<GameArchiveItem> archiveItems;
 
     @Override

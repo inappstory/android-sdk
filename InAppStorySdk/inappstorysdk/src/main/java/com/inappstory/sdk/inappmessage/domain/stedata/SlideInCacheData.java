@@ -2,6 +2,7 @@ package com.inappstory.sdk.inappmessage.domain.stedata;
 
 
 import com.inappstory.sdk.network.annotations.models.SerializedName;
+import com.inappstory.sdk.parse.fieldkeys.ModelFields;
 
 public class SlideInCacheData implements STEData {
     public int index() {
@@ -26,8 +27,8 @@ public class SlideInCacheData implements STEData {
     public SlideInCacheData() {
     }
 
-    @SerializedName("index")
+    @SerializedName(ModelFields.SlideInCacheData.index)
     public int index;
-    @SerializedName("status")
+    @SerializedName(ModelFields.SlideInCacheData.status)
     public int status;
 }

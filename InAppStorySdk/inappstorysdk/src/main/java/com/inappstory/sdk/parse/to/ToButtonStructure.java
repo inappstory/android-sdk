@@ -1,6 +1,7 @@
 package com.inappstory.sdk.parse.to;
 
 import com.inappstory.sdk.parse.ExtendedJsonObject;
+import com.inappstory.sdk.parse.fieldkeys.ModelFields;
 import com.inappstory.sdk.stories.api.models.dialogstructure.ButtonStructure;
 import com.inappstory.sdk.stories.api.models.dialogstructure.InputStructure;
 
@@ -17,12 +18,20 @@ public final class ToButtonStructure extends ToModelParser<ButtonStructure> {
         try {
             ExtendedJsonObject jsonObj = new ExtendedJsonObject(object);
             ButtonStructure structure = new ButtonStructure();
-            structure.text = new ToTextStructure(jsonObj.optJSONObject("text")).parse();
-            structure.border = new ToBorderStructure(jsonObj.optJSONObject("border")).parse();
+            structure.text = new ToTextStructure(jsonObj.optJSONObject(
+                    ModelFields.ButtonStructure.text
+            )).parse();
+            structure.border = new ToBorderStructure(jsonObj.optJSONObject(
+                    ModelFields.ButtonStructure.border
+            )).parse();
             structure.background = new ToBackgroundStructure(
-                    jsonObj.optJSONObject("background")
+                    jsonObj.optJSONObject(
+                            ModelFields.ButtonStructure.background
+                    )
             ).parse();
-            structure.padding = new ToPaddingStructure(jsonObj.optJSONObject("padding")).parse();
+            structure.padding = new ToPaddingStructure(jsonObj.optJSONObject(
+                    ModelFields.ButtonStructure.padding
+            )).parse();
             return structure;
         } catch (Exception e) {
             return null;

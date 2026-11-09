@@ -1,6 +1,32 @@
 package com.inappstory.sdk.game.reader.logger;
 
+import com.inappstory.sdk.network.annotations.models.SerializedName;
+import com.inappstory.sdk.parse.fieldkeys.ModelFields;
+
 public class GameLog {
+
+
+    @SerializedName(ModelFields.GameLog.message)
+    public String message;
+    @SerializedName(ModelFields.GameLog.logSession)
+    public String logSession;
+    @SerializedName(ModelFields.GameLog.webViewVersion)
+    public String webViewVersion;
+    @SerializedName(ModelFields.GameLog.stacktrace)
+    public String stacktrace;
+    @SerializedName(ModelFields.GameLog.gameInstanceId)
+    public String gameInstanceId;
+    @SerializedName(ModelFields.GameLog.type)
+    public String type;
+    @SerializedName(ModelFields.GameLog.webViewPackage)
+    public String webViewPackage;
+    @SerializedName(ModelFields.GameLog.gameLoaded)
+    public boolean gameLoaded;
+    @SerializedName(ModelFields.GameLog.timestamp)
+    public Long timestamp;
+    @SerializedName(ModelFields.GameLog.launchTryNumber)
+    public int launchTryNumber;
+
     public GameLog() {
 
     }
@@ -80,17 +106,6 @@ public class GameLog {
     String stacktrace() {
         return stacktrace;
     }
-
-    public String message;
-    public String logSession;
-    public String webViewVersion;
-    public String stacktrace;
-    public String gameInstanceId;
-    public String type;
-    public String webViewPackage;
-    public boolean gameLoaded;
-    public Long timestamp;
-    public int launchTryNumber;
 
     public int launchTryNumber() {
         return launchTryNumber;

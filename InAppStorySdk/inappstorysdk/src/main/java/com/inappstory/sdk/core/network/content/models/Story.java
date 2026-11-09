@@ -16,6 +16,7 @@ import com.inappstory.sdk.core.data.IStory;
 import com.inappstory.sdk.network.annotations.models.Required;
 import com.inappstory.sdk.network.annotations.models.SerializedName;
 import com.inappstory.sdk.core.data.IResource;
+import com.inappstory.sdk.parse.fieldkeys.ModelFields;
 import com.inappstory.sdk.stories.api.models.GameInstance;
 import com.inappstory.sdk.utils.StringsUtils;
 
@@ -31,86 +32,57 @@ import java.util.Set;
 
 public class Story implements Parcelable, IStory, IContentWithTimeline {
     @Required
+    @SerializedName(ModelFields.Story.id)
     public int id;
-
-    @SerializedName("title")
+    @SerializedName(ModelFields.Story.title)
     public String title;
-
-    @SerializedName("title_color")
+    @SerializedName(ModelFields.Story.titleColor)
     public String titleColor;
-
-    @SerializedName("stat_title")
+    @SerializedName(ModelFields.Story.statTitle)
     public String statTitle;
-
-    @SerializedName("is_full_screen")
+    @SerializedName(ModelFields.Story.isFullscreen)
     public boolean isFullscreen;
-
-
-    @SerializedName("background_color")
+    @SerializedName(ModelFields.Story.backgroundColor)
     public String backgroundColor;
-
-
-    @SerializedName("has_swipe_up")
+    @SerializedName(ModelFields.Story.hasSwipeUp)
     public Boolean hasSwipeUp;
-
-    @SerializedName("like")
+    @SerializedName(ModelFields.Story.like)
     public Integer like;
-
-    @SerializedName("slides_count")
+    @SerializedName(ModelFields.Story.slidesCount)
     public int slidesCount;
-
-    @SerializedName("favorite")
+    @SerializedName(ModelFields.Story.favorite)
     public boolean favorite;
-
-    @SerializedName("hide_in_reader")
+    @SerializedName(ModelFields.Story.hideInReader)
     public Boolean hideInReader;
-
-    @SerializedName("deeplink")
+    @SerializedName(ModelFields.Story.deeplink)
     public String deeplink;
-
-    @SerializedName("is_opened")
+    @SerializedName(ModelFields.Story.isOpened)
     public boolean isOpened;
-
-    @SerializedName("disable_close")
+    @SerializedName(ModelFields.Story.disableClose)
     public boolean disableClose;
-
-    @SerializedName("like_functional")
+    @SerializedName(ModelFields.Story.hasLike)
     public Boolean hasLike;
-
-    @SerializedName("has_audio")
+    @SerializedName(ModelFields.Story.hasAudio)
     public Boolean hasAudio;
-
-    @SerializedName("favorite_functional")
+    @SerializedName(ModelFields.Story.hasFavorite)
     public Boolean hasFavorite;
-
-    @SerializedName("share_functional")
+    @SerializedName(ModelFields.Story.hasShare)
     public Boolean hasShare;
-
-    @SerializedName("hide_timeline")
+    @SerializedName(ModelFields.Story.timelineIsHidden)
     public boolean timelineIsHidden;
-
-    @SerializedName("layout")
-    public String layout;
-
-    @SerializedName("payload")
+    @SerializedName(ModelFields.Story.ugcPayload)
     public HashMap<String, Object> ugcPayload;
-
-    @SerializedName("custom_attributes")
+    @SerializedName(ModelFields.Story.customAttributes)
     public Map<String, String> customAttributes;
-
-    @SerializedName("layout_template_variables")
+    @SerializedName(ModelFields.Story.layoutTemplateVariables)
     public Map<String, String> layoutTemplateVariables;
-
-    @SerializedName("video_cover")
+    @SerializedName(ModelFields.Story.videoUrl)
     public List<Image> videoUrl;
-
-    @SerializedName("image")
+    @SerializedName(ModelFields.Story.image)
     public List<Image> image;
-
-    @SerializedName("slides")
+    @SerializedName(ModelFields.Story.slides)
     public List<StorySlide> slides;
-
-    @SerializedName("game_instance")
+    @SerializedName(ModelFields.Story.gameInstance)
     public GameInstance gameInstance;
 
     public boolean disableClose() {
@@ -332,10 +304,6 @@ public class Story implements Parcelable, IStory, IContentWithTimeline {
         return customAttributes;
     }
 
-    @Override
-    public String layout() {
-        return layout;
-    }
 
     @Override
     public Map<String, String> layoutTemplateVariables() {
@@ -368,7 +336,6 @@ public class Story implements Parcelable, IStory, IContentWithTimeline {
         titleColor = in.readString();
         isOpened = (in.readInt() == 1);
         favorite = (in.readInt() == 1);
-        layout = in.readString();
     }
 
     @Override
@@ -383,8 +350,6 @@ public class Story implements Parcelable, IStory, IContentWithTimeline {
         dest.writeString(titleColor);
         dest.writeInt(isOpened ? 1 : 0);
         dest.writeInt(favorite ? 1 : 0);
-        dest.writeString(layout);
-
     }
 
     public static final Parcelable.Creator<Story> CREATOR = new Parcelable.Creator<Story>() {

@@ -1,18 +1,18 @@
 package com.inappstory.sdk.core.network.content.models;
 
 import com.inappstory.sdk.network.annotations.models.SerializedName;
+import com.inappstory.sdk.parse.fieldkeys.ModelFields;
 
 import java.util.List;
 
 public class Feed {
-    @SerializedName("id")
+    @SerializedName(ModelFields.Feed.feedId)
     public Integer feedId;
-    @SerializedName("hasFavorite")
+    @SerializedName(ModelFields.Feed.hasFavorite)
     public Boolean hasFavorite;
-    @SerializedName("stories")
+    @SerializedName(ModelFields.Feed.stories)
     public List<Story> stories;
-
-    @SerializedName("cover")
+    @SerializedName(ModelFields.Feed.feedCover)
     public List<Image> feedCover;
 
     public String getFeedId() {

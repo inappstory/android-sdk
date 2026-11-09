@@ -5,13 +5,14 @@ import androidx.annotation.NonNull;
 import com.inappstory.sdk.core.data.IInAppMessage;
 import com.inappstory.sdk.core.data.IInAppMessageFeed;
 import com.inappstory.sdk.network.annotations.models.SerializedName;
+import com.inappstory.sdk.parse.fieldkeys.ModelFields;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class InAppMessageFeed implements IInAppMessageFeed<InAppMessage> {
 
-    @SerializedName("messages")
+    @SerializedName(ModelFields.InAppMessageFeed.messages)
     public List<InAppMessage> messages;
 
     public InAppMessageFeed() {

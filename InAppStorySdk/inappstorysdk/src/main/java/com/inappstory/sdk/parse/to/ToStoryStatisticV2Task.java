@@ -5,6 +5,7 @@ import androidx.annotation.NonNull;
 import com.inappstory.sdk.core.network.content.models.Story;
 import com.inappstory.sdk.network.annotations.models.SerializedName;
 import com.inappstory.sdk.parse.ExtendedJsonObject;
+import com.inappstory.sdk.parse.fieldkeys.ModelFields;
 import com.inappstory.sdk.stories.statistic.IAMStatisticV1Task;
 import com.inappstory.sdk.stories.statistic.StoryStatisticV2Task;
 
@@ -22,29 +23,75 @@ public final class ToStoryStatisticV2Task extends ToModelParser<StoryStatisticV2
 
     private StoryStatisticV2Task parseWithException(ExtendedJsonObject jsonObj) throws Exception {
         StoryStatisticV2Task task = new StoryStatisticV2Task();
-        task.event = jsonObj.optStringNullable("event");
-        task.timestamp = jsonObj.optLongNullable("ts");
-        task.userId = jsonObj.optStringNullable("u");
-        task.sessionId = jsonObj.optStringNullable("s");
-        task.isFake = jsonObj.optBoolean("isFake");
-        task.storyId = jsonObj.optStringNullable("i");
-        task.feedId = jsonObj.optStringNullable("f");
-        task.whence = jsonObj.optStringNullable("w");
-        task.target = jsonObj.optStringNullable("t");
-        task.cause = jsonObj.optStringNullable("c");
-        task.value = jsonObj.optStringNullable("v");
-        task.widgetId = jsonObj.optStringNullable("wi");
-        task.widgetLabel = jsonObj.optStringNullable("wl");
-        task.widgetValue = jsonObj.optStringNullable("wv");
-        task.widgetAnswerLabel = jsonObj.optStringNullable("wal");
-        task.fullData = jsonObj.optStringNullable("fullData");
-        task.durationMs = jsonObj.optLongNullable("d");
-        task.slideIndex = jsonObj.optIntNullable("si");
-        task.slideTotal = jsonObj.optIntNullable("st");
-        task.widgetAnswer = jsonObj.optIntNullable("wa");
-        task.widgetAnswerScore = jsonObj.optIntNullable("was");
-        task.layoutIndex = jsonObj.optIntNullable("li");
-        task.mode = jsonObj.optIntNullable("m");
+        task.event = jsonObj.optStringNullable(
+                ModelFields.StoryStatisticV2Task.event
+        );
+        task.timestamp = jsonObj.optLongNullable(
+                ModelFields.StoryStatisticV2Task.timestamp
+        );
+        task.userId = jsonObj.optStringNullable(
+                ModelFields.StoryStatisticV2Task.userId
+        );
+        task.sessionId = jsonObj.optStringNullable(
+                ModelFields.StoryStatisticV2Task.sessionId
+        );
+        task.isFake = jsonObj.optBoolean(
+                ModelFields.StoryStatisticV2Task.isFake
+        );
+        task.storyId = jsonObj.optStringNullable(
+                ModelFields.StoryStatisticV2Task.storyId
+        );
+        task.feedId = jsonObj.optStringNullable(
+                ModelFields.StoryStatisticV2Task.feedId
+        );
+        task.whence = jsonObj.optStringNullable(
+                ModelFields.StoryStatisticV2Task.whence
+        );
+        task.target = jsonObj.optStringNullable(
+                ModelFields.StoryStatisticV2Task.target
+        );
+        task.cause = jsonObj.optStringNullable(
+                ModelFields.StoryStatisticV2Task.cause
+        );
+        task.value = jsonObj.optStringNullable(
+                ModelFields.StoryStatisticV2Task.value
+        );
+        task.widgetId = jsonObj.optStringNullable(
+                ModelFields.StoryStatisticV2Task.widgetId
+        );
+        task.widgetLabel = jsonObj.optStringNullable(
+                ModelFields.StoryStatisticV2Task.widgetLabel
+        );
+        task.widgetValue = jsonObj.optStringNullable(
+                ModelFields.StoryStatisticV2Task.widgetValue
+        );
+        task.widgetAnswerLabel = jsonObj.optStringNullable(
+                ModelFields.StoryStatisticV2Task.widgetAnswerLabel
+        );
+        task.fullData = jsonObj.optStringNullable(
+                ModelFields.StoryStatisticV2Task.fullData
+        );
+        task.durationMs = jsonObj.optLongNullable(
+                ModelFields.StoryStatisticV2Task.durationMs
+        );
+        task.slideIndex = jsonObj.optIntNullable(
+                ModelFields.StoryStatisticV2Task.slideIndex
+        );
+        task.slideTotal = jsonObj.optIntNullable(
+                ModelFields.StoryStatisticV2Task.slideTotal
+        );
+        task.widgetAnswer = jsonObj.optIntNullable(
+                ModelFields.StoryStatisticV2Task.widgetAnswer
+        );
+        task.widgetAnswerScore = jsonObj.optIntNullable(
+                ModelFields.StoryStatisticV2Task.widgetAnswerScore
+        );
+        task.layoutIndex = jsonObj.optIntNullable(
+                ModelFields.StoryStatisticV2Task.layoutIndex
+        );
+        task.mode = jsonObj.optIntNullable(
+                ModelFields.StoryStatisticV2Task.mode
+        );
         return task;
     }
 

@@ -1,5 +1,6 @@
 package com.inappstory.sdk.parse.from;
 
+import com.inappstory.sdk.parse.fieldkeys.ModelFields;
 import com.inappstory.sdk.stories.api.models.GameSplashAnimation;
 
 import org.json.JSONObject;
@@ -12,10 +13,10 @@ public class FromGameSplashAnimation extends ModelToStringParser<GameSplashAnima
     @Override
     protected JSONObject parseToJSONObject() throws Exception {
         JSONObject object = new JSONObject();
-        object.put("url", model.url);
-        object.put("size", model.size);
-        object.put("durationMinimalMs", model.durationMinimalMs);
-        object.put("sha1", model.sha1);
+        object.put(ModelFields.GameSplashAnimation.url, model.url);
+        object.put(ModelFields.GameSplashAnimation.size, model.size);
+        object.put(ModelFields.GameSplashAnimation.durationMinimalMs, model.durationMinimalMs);
+        object.put(ModelFields.GameSplashAnimation.sha1, model.sha1);
         return object;
     }
 }

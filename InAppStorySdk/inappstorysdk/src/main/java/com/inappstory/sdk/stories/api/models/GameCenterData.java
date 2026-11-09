@@ -5,6 +5,7 @@ import android.view.View;
 import com.inappstory.sdk.game.reader.GameScreenOptions;
 import com.inappstory.sdk.network.annotations.models.Required;
 import com.inappstory.sdk.network.annotations.models.SerializedName;
+import com.inappstory.sdk.parse.fieldkeys.ModelFields;
 import com.inappstory.sdk.stories.api.interfaces.IGameCenterData;
 
 import java.util.ArrayList;
@@ -13,43 +14,42 @@ import java.util.Map;
 import java.util.Objects;
 
 public class GameCenterData implements IGameCenterData {
-    @SerializedName("id")
+    @SerializedName(ModelFields.GameCenterData.id)
     public String id;
-    @SerializedName("splashScreen")
+    @SerializedName(ModelFields.GameCenterData.splashScreen)
     public GameSplashScreen splashScreen;
-    @SerializedName("splashLandscapeScreen")
+    @SerializedName(ModelFields.GameCenterData.splashLandscapeScreen)
     public GameSplashScreen splashLandscapeScreen;
-    @SerializedName("splashLottieScreen")
+    @SerializedName(ModelFields.GameCenterData.splashAnimation)
     public GameSplashAnimation splashAnimation;
-    @SerializedName("resources")
+    @SerializedName(ModelFields.GameCenterData.resources)
     public List<WebResource> resources;
-    @SerializedName("screenOptions")
+    @SerializedName(ModelFields.GameCenterData.options)
     public GameScreenOptions options;
-    @SerializedName("launchConditions")
+    @SerializedName(ModelFields.GameCenterData.gameLaunchConditions)
     public GameLaunchConditions gameLaunchConditions;
-    @SerializedName("archiveItems")
+    @SerializedName(ModelFields.GameCenterData.archiveItems)
     public List<GameArchiveItem> archiveItems;
-
-    @SerializedName("languageDirection")
+    @SerializedName(ModelFields.GameCenterData.layoutDirection)
     public String layoutDirection;
-    @SerializedName("loggerLevel")
+    @SerializedName(ModelFields.GameCenterData.loggerLevel)
     public Integer loggerLevel;
-
     @Required
-    @SerializedName("downloadUrl")
+    @SerializedName(ModelFields.GameCenterData.url)
     public String url;
     @Required
-    @SerializedName("initCode")
+    @SerializedName(ModelFields.GameCenterData.initCode)
     public String initCode;
-
-    @SerializedName("canTryReloadCount")
+    @SerializedName(ModelFields.GameCenterData.canTryReloadCount)
     public Integer canTryReloadCount;
-
-    @SerializedName("archiveSize")
+    @SerializedName(ModelFields.GameCenterData.archiveSize)
     public Long archiveSize;
-
-    @SerializedName("archiveSha1")
+    @SerializedName(ModelFields.GameCenterData.archiveSha1)
     public String archiveSha1;
+    @SerializedName(ModelFields.GameCenterData.instanceUserData)
+    public Map<String, Object> instanceUserData;
+    @SerializedName(ModelFields.GameCenterData.archiveUncompressedSize)
+    public Long archiveUncompressedSize;
 
     @Override
     public String layoutDirectionString() {
@@ -71,12 +71,6 @@ public class GameCenterData implements IGameCenterData {
     public GameSplashAnimation splashAnimation() {
         return splashAnimation;
     }
-
-    @SerializedName("instanceUserData")
-    public Map<String, Object> instanceUserData;
-
-    @SerializedName("archiveUncompressedSize")
-    public Long archiveUncompressedSize;
 
     public int loggerLevel() {
         if (loggerLevel == null) return 0;
