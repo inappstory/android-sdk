@@ -23,7 +23,7 @@ public final class ToGameCenterData extends ToModelParser<GameCenterData> {
                     new JSONObject(value)
             );
             GameCenterData gameCenterData = new GameCenterData();
-            gameCenterData.id = jsonObj.getString(
+            gameCenterData.id = jsonObj.optStringNullable(
                     ModelFields.GameCenterData.id
             );
             gameCenterData.layoutDirection = jsonObj.optStringNullable(

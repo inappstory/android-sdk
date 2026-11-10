@@ -40,6 +40,7 @@ public class GetGameModelUseCase {
                                 new NetworkCallback<GameCenterData>() {
                                     @Override
                                     public void onSuccess(final GameCenterData response) {
+                                        if (response.id() == null) response.id = gameId;
                                         callback.onCreateLog(response.loggerLevel());
                                         if (response.url == null ||
                                                 response.url.isEmpty() ||
@@ -54,7 +55,7 @@ public class GetGameModelUseCase {
 
                                     @Override
                                     public void errorDefault(String message) {
-                                        callback.onError( message);
+                                        callback.onError(message);
                                     }
 
                                     @Override

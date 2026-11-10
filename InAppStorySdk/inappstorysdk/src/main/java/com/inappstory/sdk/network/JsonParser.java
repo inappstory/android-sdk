@@ -283,6 +283,7 @@ public class JsonParser {
     }
 
     public static Map<String, Object> toObjectMap(JSONObject jsonobj) throws JSONException {
+        if (jsonobj == null) return null;
         Map<String, Object> map = new HashMap<>();
         Iterator<String> keys = jsonobj.keys();
         while (keys.hasNext()) {
