@@ -81,7 +81,6 @@ public final class ToGameCenterData extends ToModelParser<GameCenterData> {
                     new ToGameSplashAnimation(jsonObj.optJSONObject(
                             ModelFields.GameCenterData.splashAnimation
                     )).parse();
-
             gameCenterData.instanceUserData = JsonParser.toObjectMap(jsonObj.optJSONObject(
                     ModelFields.GameCenterData.instanceUserData
             ));
