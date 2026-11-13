@@ -1,4 +1,4 @@
-package com.inappstory.inappstorysdk;
+package com.inappstory.sdk;
 
 import static org.junit.Assert.assertEquals;
 

@@ -1,6 +1,5 @@
 package com.inappstory.sdk.parse;
 
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 
@@ -11,15 +10,12 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Objects;
 
 public class ExtendedJsonObject {
     private final JSONObject value;
 
     public ExtendedJsonObject(@NonNull JSONObject value) {
         this.value = value;
-   //     cleanJson(this.value);
-        Log.e("cleaned", value.toString());
     }
 
     void cleanJsonArray(JSONArray jsonArray) throws JSONException {
@@ -49,7 +45,6 @@ public class ExtendedJsonObject {
                     cleanJson((JSONObject) value);
                 } else if ("null".equals(value.toString().trim())) {
                     jsonObject.put(key, null);
-                    Log.e("cleaned", key);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
