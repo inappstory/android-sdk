@@ -75,8 +75,8 @@ public class ToGameCenterDataTest {
         assertTrue(result.resources.isEmpty());
         assertNotNull(result.splashScreen);
         assertNotNull(result.splashLandscapeScreen);
-        assertNotNull(result.options);
-        assertNotNull(result.gameLaunchConditions);
+        assertNull(result.options);
+        assertNull(result.gameLaunchConditions);
         assertNotNull(result.splashAnimation);
         assertNotNull(result.instanceUserData);
         assertEquals(5, result.instanceUserData.get("level"));

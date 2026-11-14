@@ -30,7 +30,7 @@ public class ToDialogStructureTest {
         assertNotNull(result);
         assertNotNull(result.configV2);
         assertEquals(1.5f, result.configV2.factor, 0.001f);
-        assertNotNull(result.size);
+        assertNull(result.size);
     }
 
     @Test

@@ -164,12 +164,14 @@ public class ExtendedJsonObject {
             if ("null".equals(value.get(name).toString().trim())) {
                 return null;
             }
-            return value.optJSONObject(name);
+            JSONObject obj = value.optJSONObject(name);
+            if (obj != null && obj.length() == 0) {
+                return null;
+            }
+            return obj;
         } catch (JSONException e) {
             return null;
         }
-
-
     }
 
     public JSONArray optJSONArray(String name) {

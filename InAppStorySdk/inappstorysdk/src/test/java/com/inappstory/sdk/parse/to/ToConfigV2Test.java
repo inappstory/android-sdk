@@ -26,7 +26,7 @@ public class ToConfigV2Test {
         ConfigV2 result = new ToConfigV2(json).parse();
 
         assertNotNull(result);
-        assertNotNull(result.main);
+        assertNull(result.main);
         assertEquals(1.75f, result.factor, 0.001f);
     }
 

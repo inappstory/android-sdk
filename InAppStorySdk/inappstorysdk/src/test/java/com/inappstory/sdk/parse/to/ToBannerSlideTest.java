@@ -33,7 +33,7 @@ public class ToBannerSlideTest {
         assertEquals(2, result.slideIndex);
         assertEquals(5000, result.duration);
         assertEquals("<html><body>Banner</body></html>", result.html);
-        assertNotNull(result.slidePayload);
+        assertNull(result.slidePayload);
         assertNotNull(result.resources);
         assertTrue(result.resources.isEmpty());
         assertNotNull(result.placeholders);

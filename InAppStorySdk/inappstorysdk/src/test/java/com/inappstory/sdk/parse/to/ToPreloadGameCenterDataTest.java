@@ -41,9 +41,9 @@ public class ToPreloadGameCenterDataTest {
         assertEquals("sha1_hash", result.archiveSha1);
         assertNotNull(result.archiveItems);
         assertNotNull(result.resources);
-        assertNotNull(result.splashScreen);
-        assertNotNull(result.splashLandscapeScreen);
-        assertNotNull(result.splashAnimation);
+        assertNull(result.splashScreen);
+        assertNull(result.splashLandscapeScreen);
+        assertNull(result.splashAnimation);
     }
 
     @Test

@@ -34,13 +34,13 @@ public class ToButtonStructureTest {
         ButtonStructure result = new ToButtonStructure(json).parse();
 
         assertNotNull(result);
-        assertNotNull(result.text);
+        assertNull(result.text);
         assertNotNull(result.border);
         assertEquals("#112233", result.border.color);
         assertEquals(1.5f, result.border.width, 0.001f);
         assertNotNull(result.background);
         assertEquals("#AABBCC", result.background.color);
-        assertNotNull(result.padding);
+        assertNull(result.padding);
     }
 
     @Test

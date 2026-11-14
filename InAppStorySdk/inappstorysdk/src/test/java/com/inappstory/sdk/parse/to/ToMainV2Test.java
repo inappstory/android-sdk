@@ -24,14 +24,14 @@ public class ToMainV2Test {
         json.put(ModelFields.MainV2.question, new JSONObject());
         MainV2 result = new ToMainV2(json).parse();
         assertNotNull(result);
-        assertNotNull(result.border);
+        assertNull(result.border);
         assertNotNull(result.background);
         assertEquals("#FFFFFF", result.background.color);
         assertNotNull(result.padding);
         assertEquals(10.0f, result.padding.top, 0.001f);
-        assertNotNull(result.input);
-        assertNotNull(result.button);
-        assertNotNull(result.question);
+        assertNull(result.input);
+        assertNull(result.button);
+        assertNull(result.question);
     }
 
     @Test
