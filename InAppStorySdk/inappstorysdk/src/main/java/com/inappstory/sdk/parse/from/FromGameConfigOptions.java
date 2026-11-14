@@ -45,7 +45,8 @@ public class FromGameConfigOptions extends ModelToStringParser<GameConfigOptions
             }
             object.put(ModelFields.GameConfigOptions.placeholders, placeholders);
         }
-        object.put(ModelFields.GameConfigOptions.userExtraOptions, new JSONObject(model.userExtraOptions));
+        if (model.userExtraOptions != null)
+            object.put(ModelFields.GameConfigOptions.userExtraOptions, new JSONObject(model.userExtraOptions));
         return object;
     }
 }

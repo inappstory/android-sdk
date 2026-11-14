@@ -7,6 +7,7 @@ import com.inappstory.sdk.stories.api.models.UGCVersionToSDKBuild;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class SessionEditor {
 
@@ -19,7 +20,7 @@ public class SessionEditor {
     @SerializedName(ModelFields.SessionEditor.versionsMap)
     public List<UGCVersionToSDKBuild> versionsMap;
     @SerializedName(ModelFields.SessionEditor.config)
-    public HashMap<String, Object> config;
+    public Map<String, Object> config;
     @SerializedName(ModelFields.SessionEditor.messages)
-    public HashMap<String, String> messages;
+    public Map<String, String> messages;
 }

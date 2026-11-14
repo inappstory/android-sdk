@@ -40,12 +40,9 @@ public final class ToSessionEditor extends ToModelParser<SessionEditor> {
                     new ToUGCVersionToSDKBuildList(jsonObj.optJSONArray(
                             ModelFields.SessionEditor.versionsMap
                     )).parse();
-
-            sessionEditor.config = new HashMap<>(
-                    JsonParser.toObjectMap(jsonObj.optJSONObject(
-                            ModelFields.SessionEditor.config
-                    ))
-            );
+            sessionEditor.config = JsonParser.toObjectMap(jsonObj.optJSONObject(
+                    ModelFields.SessionEditor.config
+            ));
             Map<String, String> msgs = JsonParser.toMap(jsonObj.optJSONObject(
                     ModelFields.SessionEditor.messages
             ));

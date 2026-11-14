@@ -4,6 +4,7 @@ import com.inappstory.sdk.network.annotations.models.SerializedName;
 import com.inappstory.sdk.parse.fieldkeys.ModelFields;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 public class GameConfigOptions {
@@ -26,7 +27,7 @@ public class GameConfigOptions {
     @SerializedName(ModelFields.GameConfigOptions.userAgent)
     public String userAgent;
     @SerializedName(ModelFields.GameConfigOptions.placeholders)
-    public ArrayList<GameDataPlaceholder> placeholders;
+    public List<GameDataPlaceholder> placeholders;
     @SerializedName(ModelFields.GameConfigOptions.screenOrientation)
     public String screenOrientation;
     @SerializedName(ModelFields.GameConfigOptions.fullScreen)
